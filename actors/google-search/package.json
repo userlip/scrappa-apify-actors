@@ -10,7 +10,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@scrappa/shared": "workspace:*",
     "apify": "^3.2.6"
   },
   "devDependencies": {

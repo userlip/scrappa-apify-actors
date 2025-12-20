@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { ScrappaClient, createActorInput, validateRequiredFields } from '@scrappa/shared';
+import { ScrappaClient, createActorInput, validateRequiredFields } from './shared/index.js';
 
 interface GoogleSearchInput {
     apiKey: string;

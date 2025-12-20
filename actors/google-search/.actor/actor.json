@@ -3,7 +3,7 @@
   "name": "scrappa-google-search",
   "title": "Scrappa Google Search",
   "description": "Scrape Google Search results using Scrappa API. Get organic results, ads, knowledge panels, related searches, and more.",
-  "version": "1.0.0",
+  "version": "1.0",
   "buildTag": "latest",
   "meta": {
     "templateId": "ts-start"
