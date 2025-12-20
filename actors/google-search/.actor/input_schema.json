@@ -1,0 +1,100 @@
+{
+  "title": "Scrappa Google Search Input",
+  "description": "Configure your Google Search request",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "apiKey": {
+      "title": "Scrappa API Key",
+      "type": "string",
+      "description": "Your Scrappa API key from https://scrappa.co",
+      "editor": "textfield",
+      "isSecret": true
+    },
+    "query": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "The search query to perform",
+      "editor": "textfield",
+      "prefill": "web scraping"
+    },
+    "location": {
+      "title": "Location",
+      "type": "string",
+      "description": "Location for localized results (e.g., 'New York, NY')",
+      "editor": "textfield"
+    },
+    "gl": {
+      "title": "Country Code (gl)",
+      "type": "string",
+      "description": "Two-letter country code (e.g., 'us', 'de', 'uk')",
+      "editor": "textfield",
+      "maxLength": 2
+    },
+    "hl": {
+      "title": "Language Code (hl)",
+      "type": "string",
+      "description": "Two-letter interface language code (e.g., 'en', 'de', 'es')",
+      "editor": "textfield",
+      "maxLength": 2
+    },
+    "google_domain": {
+      "title": "Google Domain",
+      "type": "string",
+      "description": "Google domain to use (e.g., 'google.com', 'google.de')",
+      "editor": "textfield"
+    },
+    "start": {
+      "title": "Start Position",
+      "type": "integer",
+      "description": "Pagination offset (0, 10, 20, etc.)",
+      "editor": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "amount": {
+      "title": "Results Amount",
+      "type": "integer",
+      "description": "Number of results to return (1-100)",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10
+    },
+    "safe": {
+      "title": "Safe Search",
+      "type": "string",
+      "description": "Safe search mode",
+      "editor": "select",
+      "enum": ["off", "active"],
+      "default": "off"
+    },
+    "tbs": {
+      "title": "Time Filter (tbs)",
+      "type": "string",
+      "description": "Time-based search filter (e.g., 'qdr:d' for past day, 'qdr:w' for past week)",
+      "editor": "textfield"
+    },
+    "tbm": {
+      "title": "Search Type",
+      "type": "string",
+      "description": "Type of search results",
+      "editor": "select",
+      "enum": ["", "isch", "vid", "nws", "shop"],
+      "enumTitles": ["Web (default)", "Images", "Videos", "News", "Shopping"]
+    },
+    "lr": {
+      "title": "Language Restriction (lr)",
+      "type": "string",
+      "description": "Restrict results to specific languages",
+      "editor": "textfield"
+    },
+    "cr": {
+      "title": "Country Restriction (cr)",
+      "type": "string",
+      "description": "Restrict results to specific countries",
+      "editor": "textfield"
+    }
+  },
+  "required": ["apiKey", "query"]
+}

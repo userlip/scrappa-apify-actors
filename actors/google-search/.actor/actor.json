@@ -1,0 +1,35 @@
+{
+  "actorSpecification": 1,
+  "name": "scrappa-google-search",
+  "title": "Scrappa Google Search",
+  "description": "Scrape Google Search results using Scrappa API. Get organic results, ads, knowledge panels, related searches, and more.",
+  "version": "1.0.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "overview": {
+          "title": "Overview",
+          "transformation": {
+            "fields": ["position", "title", "link", "snippet"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "Position", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "link": { "label": "URL", "format": "link" },
+              "snippet": { "label": "Snippet", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
