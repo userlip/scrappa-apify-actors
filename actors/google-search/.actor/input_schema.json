@@ -4,13 +4,6 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "apiKey": {
-      "title": "API Key",
-      "type": "string",
-      "description": "Your Scrappa API key. Get one at https://scrappa.co",
-      "editor": "textfield",
-      "isSecret": true
-    },
     "query": {
       "title": "Search Query",
       "type": "string",
@@ -86,5 +79,5 @@
       "default": ""
     }
   },
-  "required": ["apiKey", "query"]
+  "required": ["query"]
 }

@@ -1,9 +1,7 @@
 import { Actor } from 'apify';
-import { ScrappaClient, createActorInput, validateRequiredFields } from './shared/index.js';
+import { ScrappaClient } from './shared/index.js';
 
 interface GoogleSearchInput {
-    apiKey: string;
-    baseUrl?: string;
     query: string;
     location?: string;
     gl?: string;
@@ -65,16 +63,20 @@ interface GoogleSearchResponse {
 await Actor.init();
 
 try {
-    const input = await createActorInput<GoogleSearchInput>();
+    // Get API key from environment variable (set as Apify secret)
+    const apiKey = process.env.SCRAPPA_API_KEY;
+    if (!apiKey) {
+        throw new Error('SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings.');
+    }
 
-    validateRequiredFields(input, ['apiKey', 'query']);
+    const input = await Actor.getInput<GoogleSearchInput>();
+    if (!input?.query) {
+        throw new Error('Search query is required');
+    }
 
     console.log(`Searching Google for: "${input.query}"`);
 
-    const client = new ScrappaClient({
-        apiKey: input.apiKey,
-        baseUrl: input.baseUrl,
-    });
+    const client = new ScrappaClient({ apiKey });
 
     const params: Record<string, unknown> = {
         query: input.query,

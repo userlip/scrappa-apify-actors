@@ -18,7 +18,6 @@ Extract Google Search results at scale. Get organic results, knowledge panels, P
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `apiKey` | string | Yes | Your Scrappa API key from https://scrappa.co |
 | `query` | string | Yes | Search query |
 | `location` | string | No | Location for geo-targeted results (e.g., "New York, NY") |
 | `gl` | string | No | Country code (e.g., "us", "uk", "de") |
@@ -47,7 +46,7 @@ Each organic result is saved to the dataset:
 
 ### Key-Value Store (Full Response)
 
-The complete API response is saved to the `OUTPUT` key, including:
+The complete response is saved to the `OUTPUT` key, including:
 
 ```json
 {
@@ -71,7 +70,6 @@ The complete API response is saved to the `OUTPUT` key, including:
 
 ```json
 {
-  "apiKey": "your-api-key",
   "query": "best pizza in chicago",
   "location": "Chicago, IL, USA",
   "gl": "us",
@@ -82,9 +80,8 @@ The complete API response is saved to the `OUTPUT` key, including:
 
 ## Pricing
 
-This actor uses the [Scrappa API](https://scrappa.co). You need a Scrappa API key to use it. Pricing is based on your Scrappa subscription plan.
+$0.30 per 1,000 results. No additional API keys required.
 
 ## Support
 
-- **API Documentation**: https://scrappa.co/documentation
-- **Get API Key**: https://scrappa.co
+For issues or questions, contact us through Apify.
