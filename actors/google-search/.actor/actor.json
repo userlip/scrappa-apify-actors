@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
-  "name": "scrappa-google-search",
-  "title": "Scrappa Google Search",
-  "description": "Scrape Google Search results using Scrappa API. Get organic results, ads, knowledge panels, related searches, and more.",
+  "name": "google-search-scraper",
+  "title": "Google Search Scraper",
+  "description": "Scrape Google Search results at scale. Extract organic results, knowledge panels, related searches, People Also Ask, local results, and more. Supports geo-targeting, language settings, and pagination.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {
@@ -14,18 +14,20 @@
     "dataset": {
       "actorSpecification": 1,
       "views": {
-        "overview": {
-          "title": "Overview",
+        "organic": {
+          "title": "Organic Results",
           "transformation": {
-            "fields": ["position", "title", "link", "snippet"]
+            "fields": ["position", "title", "link", "displayed_link", "snippet", "source"]
           },
           "display": {
             "component": "table",
             "properties": {
-              "position": { "label": "Position", "format": "number" },
+              "position": { "label": "#", "format": "number" },
               "title": { "label": "Title", "format": "text" },
               "link": { "label": "URL", "format": "link" },
-              "snippet": { "label": "Snippet", "format": "text" }
+              "displayed_link": { "label": "Display URL", "format": "text" },
+              "snippet": { "label": "Snippet", "format": "text" },
+              "source": { "label": "Source", "format": "text" }
             }
           }
         }

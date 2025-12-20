@@ -25,19 +25,40 @@ interface OrganicResult {
     position: number;
     title: string;
     link: string;
-    snippet?: string;
+    redirect_link?: string;
     displayed_link?: string;
+    snippet?: string;
+    source?: string;
+}
+
+interface RelatedSearch {
+    query: string;
+    link: string;
+    type?: string;
 }
 
 interface GoogleSearchResponse {
-    organic_results?: OrganicResult[];
     search_information?: {
+        query_displayed?: string;
         total_results?: number;
-        time_taken_displayed?: number;
     };
-    ads?: unknown[];
+    organic_results?: OrganicResult[];
+    related_searches?: RelatedSearch[];
+    people_also_search_for?: unknown[];
+    related_questions?: unknown[];
+    things_to_know?: unknown[];
     knowledge_graph?: unknown;
-    related_searches?: unknown[];
+    see_results_about?: unknown;
+    twitter_card?: unknown;
+    inline_videos?: unknown[];
+    inline_images?: unknown[];
+    local_map?: unknown;
+    local_results?: unknown;
+    popular_products?: unknown;
+    perspectives?: unknown[];
+    total_results?: number;
+    engine_used?: string;
+    service_used?: string;
     [key: string]: unknown;
 }
 
@@ -75,18 +96,30 @@ try {
 
     const response = await client.get<GoogleSearchResponse>('/search', params);
 
-    // Push organic results to dataset
+    // Push organic results to dataset (main output for table view)
     if (response.organic_results && response.organic_results.length > 0) {
         await Actor.pushData(response.organic_results);
-        console.log(`Pushed ${response.organic_results.length} organic results to dataset`);
+        console.log(`Found ${response.organic_results.length} organic results`);
     }
 
-    // Store full response in key-value store
+    // Store full response in key-value store for complete data access
     const store = await Actor.openKeyValueStore();
     await store.setValue('OUTPUT', response);
 
+    // Log summary
     console.log('Google Search completed successfully');
-    console.log(`Total results: ${response.search_information?.total_results ?? 'unknown'}`);
+
+    const summary = {
+        organic_results: response.organic_results?.length ?? 0,
+        related_searches: response.related_searches?.length ?? 0,
+        related_questions: response.related_questions?.length ?? 0,
+        inline_videos: response.inline_videos?.length ?? 0,
+        inline_images: response.inline_images?.length ?? 0,
+        has_knowledge_graph: !!response.knowledge_graph,
+        has_local_results: !!response.local_results,
+    };
+
+    console.log('Results summary:', JSON.stringify(summary));
 
 } catch (error) {
     console.error(`Actor failed: ${error instanceof Error ? error.message : String(error)}`);

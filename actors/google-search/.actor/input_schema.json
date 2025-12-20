@@ -1,61 +1,61 @@
 {
-  "title": "Scrappa Google Search Input",
-  "description": "Configure your Google Search request",
+  "title": "Google Search Scraper",
+  "description": "Extract Google Search results including organic listings, knowledge panels, People Also Ask, and more.",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
     "apiKey": {
-      "title": "Scrappa API Key",
+      "title": "API Key",
       "type": "string",
-      "description": "Your Scrappa API key from https://scrappa.co",
+      "description": "Your Scrappa API key. Get one at https://scrappa.co",
       "editor": "textfield",
       "isSecret": true
     },
     "query": {
       "title": "Search Query",
       "type": "string",
-      "description": "The search query to perform",
+      "description": "The search term or phrase to look up on Google",
       "editor": "textfield",
-      "prefill": "web scraping"
+      "prefill": "best restaurants in new york"
     },
     "location": {
       "title": "Location",
       "type": "string",
-      "description": "Location for localized results (e.g., 'New York, NY')",
+      "description": "Geographic location for localized results (e.g., 'New York, NY, USA', 'London, UK')",
       "editor": "textfield"
     },
     "gl": {
-      "title": "Country Code (gl)",
+      "title": "Country",
       "type": "string",
-      "description": "Two-letter country code (e.g., 'us', 'de', 'uk')",
+      "description": "Two-letter country code for Google's country service (e.g., 'us', 'uk', 'de', 'fr')",
       "editor": "textfield",
       "maxLength": 2
     },
     "hl": {
-      "title": "Language Code (hl)",
+      "title": "Language",
       "type": "string",
-      "description": "Two-letter interface language code (e.g., 'en', 'de', 'es')",
+      "description": "Two-letter language code for the interface (e.g., 'en', 'de', 'es', 'fr')",
       "editor": "textfield",
       "maxLength": 2
     },
     "google_domain": {
       "title": "Google Domain",
       "type": "string",
-      "description": "Google domain to use (e.g., 'google.com', 'google.de')",
+      "description": "Google domain to query (e.g., 'google.com', 'google.de', 'google.co.uk')",
       "editor": "textfield"
     },
     "start": {
       "title": "Start Position",
       "type": "integer",
-      "description": "Pagination offset (0, 10, 20, etc.)",
+      "description": "Result offset for pagination. Use 0 for first page, 10 for second, 20 for third, etc.",
       "editor": "number",
       "minimum": 0,
       "default": 0
     },
     "amount": {
-      "title": "Results Amount",
+      "title": "Number of Results",
       "type": "integer",
-      "description": "Number of results to return (1-100)",
+      "description": "How many results to return per request (1-100)",
       "editor": "number",
       "minimum": 1,
       "maximum": 100,
@@ -64,36 +64,26 @@
     "safe": {
       "title": "Safe Search",
       "type": "string",
-      "description": "Safe search mode",
+      "description": "Filter explicit content from results",
       "editor": "select",
       "enum": ["off", "active"],
+      "enumTitles": ["Off - Show all results", "Active - Filter explicit content"],
       "default": "off"
     },
     "tbs": {
-      "title": "Time Filter (tbs)",
+      "title": "Time Filter",
       "type": "string",
-      "description": "Time-based search filter (e.g., 'qdr:d' for past day, 'qdr:w' for past week)",
+      "description": "Filter results by time. Examples: 'qdr:h' (past hour), 'qdr:d' (past day), 'qdr:w' (past week), 'qdr:m' (past month), 'qdr:y' (past year)",
       "editor": "textfield"
     },
     "tbm": {
       "title": "Search Type",
       "type": "string",
-      "description": "Type of search results",
+      "description": "Type of Google search to perform",
       "editor": "select",
-      "enum": ["", "isch", "vid", "nws", "shop"],
-      "enumTitles": ["Web (default)", "Images", "Videos", "News", "Shopping"]
-    },
-    "lr": {
-      "title": "Language Restriction (lr)",
-      "type": "string",
-      "description": "Restrict results to specific languages",
-      "editor": "textfield"
-    },
-    "cr": {
-      "title": "Country Restriction (cr)",
-      "type": "string",
-      "description": "Restrict results to specific countries",
-      "editor": "textfield"
+      "enum": ["", "nws", "vid", "isch", "shop"],
+      "enumTitles": ["Web Search (default)", "News", "Videos", "Images", "Shopping"],
+      "default": ""
     }
   },
   "required": ["apiKey", "query"]

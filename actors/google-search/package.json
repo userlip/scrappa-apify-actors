@@ -1,5 +1,5 @@
 {
-  "name": "scrappa-google-search",
+  "name": "google-search-scraper",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/main.js",
