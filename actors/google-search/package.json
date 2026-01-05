@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "apify": "^3.2.6"
+    "apify": "^3.5.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
