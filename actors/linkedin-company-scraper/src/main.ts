@@ -93,9 +93,15 @@ try {
 
     const params: Record<string, unknown> = {
         url: input.url,
-        use_cache: input.use_cache ?? false,
-        maximum_cache_age: input.maximum_cache_age,
     };
+
+    if (input.use_cache) {
+        params.use_cache = 1;
+    }
+
+    if (input.maximum_cache_age !== undefined) {
+        params.maximum_cache_age = input.maximum_cache_age;
+    }
 
     const response = await client.get<LinkedInCompanyResponse>('/linkedin/company', params);
 
@@ -131,8 +137,9 @@ try {
     console.log('Results summary:', JSON.stringify(summary, null, 2));
 
 } catch (error) {
-    console.error('Actor failed: ' + (error instanceof Error ? error.message : String(error)));
-    throw error;
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Actor failed: ' + message);
+    await Actor.fail(message);
 }
 
 await Actor.exit();
