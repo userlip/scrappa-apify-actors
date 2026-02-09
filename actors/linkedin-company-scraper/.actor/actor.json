@@ -1,0 +1,41 @@
+{
+  "actorSpecification": 1,
+  "name": "linkedin-company-scraper",
+  "title": "LinkedIn Company Scraper - $0.30/1k results",
+  "description": "Scrape public LinkedIn company pages. Get company info, employees, posts, funding, locations, and specialties. No LinkedIn login required.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "company": {
+          "title": "Company Information",
+          "transformation": {
+            "fields": ["name", "industry", "size", "website", "followers", "employee_count", "type"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": { "label": "Company Name", "format": "text" },
+              "industry": { "label": "Industry", "format": "text" },
+              "size": { "label": "Size", "format": "text" },
+              "website": { "label": "Website", "format": "link" },
+              "followers": { "label": "Followers", "format": "number" },
+              "employee_count": { "label": "Employees", "format": "number" },
+              "type": { "label": "Type", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

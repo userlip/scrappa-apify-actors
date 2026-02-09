@@ -1,0 +1,30 @@
+{
+  "title": "LinkedIn Company Scraper",
+  "description": "Scrape public LinkedIn company pages to extract comprehensive company information, employees, posts, funding, locations, and specialties.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "url": {
+      "title": "LinkedIn Company URL",
+      "type": "string",
+      "description": "Full LinkedIn company page URL (e.g., https://www.linkedin.com/company/microsoft)",
+      "editor": "textfield",
+      "prefill": "https://www.linkedin.com/company/microsoft"
+    },
+    "use_cache": {
+      "title": "Use Cache",
+      "type": "boolean",
+      "description": "Whether to use cached results if available",
+      "editor": "checkbox",
+      "default": false
+    },
+    "maximum_cache_age": {
+      "title": "Maximum Cache Age",
+      "type": "integer",
+      "description": "Maximum age of cached results in seconds. Only used when 'Use Cache' is enabled.",
+      "editor": "number",
+      "minimum": 1
+    }
+  },
+  "required": ["url"]
+}
