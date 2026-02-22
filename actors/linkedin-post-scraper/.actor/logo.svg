@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A66C2"/>
+      <stop offset="100%" style="stop-color:#004182"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="256" height="256" rx="32" fill="url(#bg)"/>
+  <!-- Document/Post icon -->
+  <rect x="55" y="40" width="120" height="160" rx="8" fill="white"/>
+  <!-- Text lines -->
+  <rect x="75" y="65" width="80" height="10" rx="2" fill="#0A66C2"/>
+  <rect x="75" y="85" width="60" height="8" rx="2" fill="#B0B0B0"/>
+  <rect x="75" y="100" width="70" height="8" rx="2" fill="#B0B0B0"/>
+  <rect x="75" y="115" width="55" height="8" rx="2" fill="#B0B0B0"/>
+  <!-- Image placeholder -->
+  <rect x="75" y="135" width="80" height="50" rx="4" fill="#E0E0E0"/>
+  <polygon points="95,170 115,150 135,165 155,145" fill="#0A66C2" opacity="0.5"/>
+  <!-- LinkedIn 'in' badge -->
+  <rect x="170" y="170" width="56" height="56" rx="8" fill="white"/>
+  <text x="198" y="210" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#0A66C2" text-anchor="middle">in</text>
+</svg>

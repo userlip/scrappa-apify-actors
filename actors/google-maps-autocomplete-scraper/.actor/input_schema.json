@@ -1,0 +1,16 @@
+{
+  "title": "Google Maps Autocomplete",
+  "description": "Get autocomplete suggestions for search queries from Google Maps.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Partial search term for autocomplete (e.g., 'time sq', 'starbucks new')",
+      "editor": "textfield",
+      "prefill": "new york"
+    }
+  },
+  "required": ["query"]
+}

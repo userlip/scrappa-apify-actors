@@ -1,0 +1,33 @@
+{
+  "title": "LinkedIn Post Scraper ($0.30/1k results)",
+  "description": "Scrape public LinkedIn posts and articles without login. Extract content, author info, reactions, comments, and more.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "url": {
+      "title": "LinkedIn Post URL",
+      "type": "string",
+      "description": "URL of the LinkedIn post or article to scrape (e.g., https://linkedin.com/pulse/... or https://linkedin.com/posts/...)",
+      "editor": "textfield",
+      "prefill": "https://www.linkedin.com/posts/mattnavarra_how-linkedins-algorithm-works-in-2025-youll-activity-7303106971757346816-V3Z2"
+    },
+    "use_cache": {
+      "title": "Use Cache",
+      "type": "boolean",
+      "description": "Use cached results if available to reduce costs",
+      "editor": "checkbox",
+      "default": true
+    },
+    "maximum_cache_age": {
+      "title": "Maximum Cache Age (seconds)",
+      "type": "integer",
+      "description": "Maximum age of cached results in seconds. Set to 0 to always fetch fresh data.",
+      "editor": "number",
+      "minimum": 0,
+      "default": 3600
+    }
+  },
+  "required": [
+    "url"
+  ]
+}

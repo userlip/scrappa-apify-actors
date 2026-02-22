@@ -1,0 +1,32 @@
+{
+  "title": "LinkedIn Profile Scraper ($0.30/1k results)",
+  "description": "Scrape public LinkedIn profile data including experience, education, skills, and more.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "url": {
+      "title": "LinkedIn Profile URL",
+      "type": "string",
+      "description": "Full LinkedIn profile URL (e.g., https://www.linkedin.com/in/username)",
+      "editor": "textfield",
+      "prefill": "https://www.linkedin.com/in/williamhgates",
+      "pattern": "^https://([a-z]{2,3}\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
+    },
+    "use_cache": {
+      "title": "Use Cache",
+      "type": "boolean",
+      "description": "Use cached data if available to reduce costs and speed up requests",
+      "editor": "checkbox",
+      "default": true
+    },
+    "maximum_cache_age": {
+      "title": "Maximum Cache Age",
+      "type": "integer",
+      "description": "Maximum age of cached data in seconds (default: 2592000 = 30 days). Only used if use_cache is enabled.",
+      "editor": "number",
+      "minimum": 0,
+      "default": 2592000
+    }
+  },
+  "required": ["url"]
+}

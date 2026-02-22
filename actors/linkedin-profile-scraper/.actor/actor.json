@@ -1,0 +1,42 @@
+{
+  "actorSpecification": 1,
+  "name": "linkedin-profile-scraper",
+  "title": "LinkedIn Profile Scraper ($0.30/1k results)",
+  "description": "Scrape public LinkedIn profile data. Get experience, education, skills, articles, recommendations, and more. No LinkedIn login required.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "profiles": {
+          "title": "Profile Data",
+          "transformation": {
+            "fields": ["name", "location", "followers", "connections", "about"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": { "label": "Name", "format": "text" },
+              "location": { "label": "Location", "format": "text" },
+              "followers": { "label": "Followers", "format": "number" },
+              "connections": { "label": "Connections", "format": "number" },
+              "about": { "label": "About", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

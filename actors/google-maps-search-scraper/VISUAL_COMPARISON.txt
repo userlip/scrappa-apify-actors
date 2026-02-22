@@ -1,0 +1,256 @@
+================================================================================
+                    SIDE-BY-SIDE COMPARISON
+        Google Maps Search API: Scrappa vs Apify Actor Implementation
+================================================================================
+
+INPUT PARAMETERS:
+────────────────────────────────────────────────────────────────────────────────
+
+SCRAPPA API                          │ APIFY ACTOR                          │ STATUS
+────────────────────────────────────────────────────────────────────────────────
+query (required, string)             │ query (required, string)             │ ✓ MATCH
+hl (optional, string)                │ language (optional, string)          │ ✗ NAME
+  Default: 'en'                      │   Default: 'en'                      │   MISMATCH
+  Format: ISO 639-1                  │   Format: unchecked                  │   VALIDATION
+  Validation: regex pattern          │   Validation: maxLength 5            │   MISSING
+gl (optional, string)                │ country (optional, string)           │ ✗ NAME
+  Format: 2-letter exact             │   Format: unchecked                  │   MISMATCH
+  Validation: regex pattern          │   Validation: maxLength 2            │   VALIDATION
+                                     │                                      │   MISSING
+debug (optional, flag)               │ (MISSING)                            │ ✗ MISSING
+  Super Admin only                   │                                      │
+
+────────────────────────────────────────────────────────────────────────────────
+
+RESPONSE FIELDS:
+────────────────────────────────────────────────────────────────────────────────
+
+Captured by Both:                    Captured by Scrappa Only:             Captured by Neither:
+  • name                             • price_level                         • (none that Scrappa has)
+  • rating                           • price_level_text
+  • review_count                     • domain
+  • website                          • latitude
+  • type                             • longitude
+  • business_id                      • subtypes
+  • phone_numbers (array)            • district
+                                     • full_address (CRITICAL)
+Partial Mapping Issue:               • timezone
+  Actor.json shows "phone"           • short_description
+  (should be phone_numbers)          • full_description
+                                     • owner_id
+                                     • owner_name
+                                     • owner_link
+                                     • order_link
+                                     • google_mid
+                                     • place_id (CRITICAL)
+                                     • photos_sample (CRITICAL)
+                                       └─ photo_id
+                                       └─ photo_url
+                                       └─ photo_url_large
+                                       └─ video_thumbnail_url
+                                       └─ latitude
+                                       └─ longitude
+                                       └─ type
+                                     • opening_hours (CRITICAL)
+                                       └─ day
+                                       └─ hours
+                                       └─ date
+                                       └─ special_day
+                                     • current_status
+
+COVERAGE: 8/28 fields (28.6%)
+
+────────────────────────────────────────────────────────────────────────────────
+
+RESPONSE ROOT PROPERTY:
+────────────────────────────────────────────────────────────────────────────────
+
+API Returns:          │ Actor Expects:        │ Status
+────────────────────────────────────────────────────────────────────────────────
+{                     │ {                     │
+  "items": [          │   "results": [        │ ✗ CRITICAL BUG
+    { ... },          │     { ... },          │   
+    { ... }           │     { ... }           │ Code line 49:
+  ]                   │   ]                   │ if (response.results && ...)
+}                     │ }                     │ 
+                      │                       │ This condition will ALWAYS
+                      │                       │ be FALSE because the array
+                      │                       │ property is "items" not
+                      │                       │ "results"
+
+────────────────────────────────────────────────────────────────────────────────
+
+CRITICAL ISSUES FOUND:
+────────────────────────────────────────────────────────────────────────────────
+
+1. RESPONSE PROPERTY MISMATCH (Will silently fail)
+   Location: main.ts line 49
+   Problem: Code checks for response.results, API returns response.items
+   Impact: Data is NOT pushed to Actor dataset - users see no results
+   Fix: Change line 49 from "response.results" to "response.items"
+
+2. MISSING 20 RESPONSE FIELDS (71% data loss)
+   Missing critical fields:
+   • full_address - Business location (needed for most use cases)
+   • place_id - Google identifier (needed for lookups)
+   • photos_sample - Visual content (important for users)
+   • opening_hours - Business hours (key business information)
+
+3. WRONG PARAMETER NAMES (User confusion)
+   Schema says: language, country
+   API expects: hl, gl
+   Note: main.ts correctly maps them internally, but schema is confusing
+   Fix: Rename parameters in input_schema.json to match API names
+
+4. MISSING VALIDATION (Garbage in, garbage out)
+   Language accepts: any 5-char string including numbers, symbols
+   Country accepts: any 2-char string including numbers, symbols
+   Should enforce: ISO codes with regex patterns
+
+5. MISSING DEBUG PARAMETER (Inconsistency)
+   Scrappa API supports debug parameter
+   Actor completely omits it
+   Fix: Add debug as optional parameter to input_schema.json
+
+────────────────────────────────────────────────────────────────────────────────
+
+DATASET VIEW MISMATCH:
+────────────────────────────────────────────────────────────────────────────────
+
+actor.json transformation references these fields:
+  • name
+  • rating
+  • review_count
+  • address (✗ API returns "full_address", not "address")
+  • phone (✗ API returns "phone_numbers", not "phone")
+  • website
+  • type
+
+Missing high-value fields:
+  • latitude, longitude (location mapping)
+  • place_id, business_id (identification)
+  • full_address (complete location)
+  • timezone (useful metadata)
+
+────────────────────────────────────────────────────────────────────────────────
+
+CODE STRUCTURE ISSUES:
+────────────────────────────────────────────────────────────────────────────────
+
+BusinessResult Interface (main.ts lines 10-20):
+  
+  interface BusinessResult {
+      name: string;
+      rating?: number;
+      review_count?: number;
+      address: string;        ✗ API returns "full_address", nullable
+      phone_numbers?: string[];
+      website?: string;
+      type?: string;
+      business_id?: string;
+      [key: string]: unknown;  ✗ This defeats type safety
+  }
+
+Problems:
+  • Missing 20+ documented fields
+  • "address" field doesn't exist in API response
+  • [key: string]: unknown allows any property without checking
+  • No structure for photos_sample or opening_hours
+  • No proper typing for complex nested objects
+
+────────────────────────────────────────────────────────────────────────────────
+
+VALIDATION COMPARISON:
+────────────────────────────────────────────────────────────────────────────────
+
+Language Parameter (hl):
+
+Scrappa Regex: ^[a-zA-Z]{2}(-[a-zA-Z]{2})?$
+
+Valid:
+  ✓ en, de, fr, es, it, pt, nl, pl, ru, ja, zh
+  ✓ en-US, de-DE, fr-FR, pt-BR, zh-CN, zh-TW
+
+Invalid (correctly rejected):
+  ✗ e (too short)
+  ✗ english (too long)
+  ✗ en_US (underscore not hyphen)
+  ✗ 12345 (numbers)
+  ✗ en-USA (region too long)
+
+Apify maxLength 5:
+
+Accepts (WRONG):
+  ✗ 12345 (numbers)
+  ✗ en-GBX (region too long)
+  ✗ hello (not a language)
+  ✗ !!!!! (special chars)
+  ✗ ABCDE (random uppercase)
+
+Correctly rejects:
+  ✗ english (6 chars, too long)
+  ✗ deutschesprache (too long)
+
+────────────────────────────────────────────────────────────────────────────────
+
+Country Parameter (gl):
+
+Scrappa Regex: ^[a-zA-Z]{2}$
+
+Valid:
+  ✓ us, uk, de, fr, es, it, jp, cn, br, au, ca, in
+
+Invalid (correctly rejected):
+  ✗ u (too short)
+  ✗ usa (too long)
+  ✗ us1 (contains number)
+  ✗ u.s (contains period)
+
+Apify maxLength 2:
+
+Accepts (WRONG):
+  ✗ 12 (numbers)
+  ✗ !@ (special chars)
+  ✗ US (would work, valid, but no format enforcement)
+
+Correctly rejects:
+  ✗ usa (3 chars, too long)
+  ✗ united (too long)
+
+────────────────────────────────────────────────────────────────────────────────
+
+PARAMETER MAPPING IN CODE:
+────────────────────────────────────────────────────────────────────────────────
+
+Line 43-47 of main.ts (ScrappaClient call):
+
+  const response = await client.get<GoogleMapsSearchResponse>(
+      '/maps/simple-search', 
+      {
+          query: input.query,           ✓ CORRECT
+          hl: input.language || 'en',   ✓ CORRECT (maps language→hl)
+          gl: input.country,            ✓ CORRECT (maps country→gl)
+      }
+  );
+
+Assessment: Parameter mapping is CORRECT in code, but input schema uses
+wrong parameter names, creating confusion for users. The mapping happens
+internally in the Actor, but it would be clearer to match the API names.
+
+────────────────────────────────────────────────────────────────────────────────
+
+FILE LOCATIONS:
+────────────────────────────────────────────────────────────────────────────────
+
+Scrappa Source Files:
+  ✓ /Users/marindelija/Documents/Development/scrappa/app/Http/Requests/SimpleSearchRequest.php
+  ✓ /Users/marindelija/Documents/Development/scrappa/app/Http/Controllers/Api/GoogleMapsApiController.php
+  ✓ /Users/marindelija/Documents/Development/scrappa/database/data/google-maps-api.json
+
+Apify Actor Files to Fix:
+  ✗ /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/src/main.ts
+  ✗ /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/input_schema.json
+  ✗ /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/actor.json
+  ✗ /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/README.md
+
+================================================================================

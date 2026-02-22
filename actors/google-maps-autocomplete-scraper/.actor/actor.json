@@ -1,0 +1,36 @@
+{
+  "actorSpecification": 1,
+  "name": "google-maps-autocomplete-scraper",
+  "title": "Google Maps Autocomplete",
+  "description": "Get search suggestions and autocomplete predictions from Google Maps. Useful for location discovery, address validation, and building search interfaces.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": { "templateId": "ts-start" },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "overview": {
+          "title": "Suggestions",
+          "transformation": { "fields": ["main_text", "type", "country", "latitude", "longitude"] },
+          "display": {
+            "component": "table",
+            "properties": {
+              "main_text": { "label": "Suggestion", "format": "text" },
+              "type": { "label": "Type", "format": "text" },
+              "country": { "label": "Country", "format": "text" },
+              "latitude": { "label": "Lat", "format": "number" },
+              "longitude": { "label": "Lon", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

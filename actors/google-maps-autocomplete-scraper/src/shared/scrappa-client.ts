@@ -40,14 +40,13 @@ export class ScrappaClient {
         // Add query params for GET requests
         if (method === 'GET') {
             Object.entries(params).forEach(([key, value]) => {
-                if (value === undefined || value === null) {
-                    return;
-                }
-                // Handle booleans: convert to '1'/'0' for proper API handling
-                if (typeof value === 'boolean') {
-                    url.searchParams.set(key, value ? '1' : '0');
-                } else {
-                    url.searchParams.set(key, String(value));
+                if (value !== undefined && value !== null && value !== '') {
+                    // Convert booleans to 1/0 for Laravel API compatibility
+                    if (typeof value === 'boolean') {
+                        url.searchParams.set(key, value ? '1' : '0');
+                    } else {
+                        url.searchParams.set(key, String(value));
+                    }
                 }
             });
         }

@@ -1,0 +1,49 @@
+{
+  "title": "Google Maps Search",
+  "description": "Search for businesses on Google Maps with a simple query.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "What to search for (e.g., 'restaurants in NYC', 'coffee shops', 'plumber')",
+      "editor": "textfield",
+      "prefill": "starbucks times square new york"
+    },
+    "hl": {
+      "title": "Language (HL)",
+      "type": "string",
+      "description": "ISO 639-1 language code (e.g., 'en', 'de', 'es', 'fr' or with region 'en-US', 'de-DE')",
+      "editor": "textfield",
+      "default": "en",
+      "maxLength": 5
+    },
+    "gl": {
+      "title": "Region (GL)",
+      "type": "string",
+      "description": "ISO 3166-1 alpha-2 country code for region-specific results (e.g., 'us', 'de', 'fr', 'uk')",
+      "editor": "textfield",
+      "prefill": "us",
+      "maxLength": 2
+    },
+    "use_cache": {
+      "title": "Use Cache",
+      "type": "boolean",
+      "description": "Use cached results if available to reduce costs and speed up results",
+      "editor": "checkbox",
+      "default": true
+    },
+    "maximum_cache_age": {
+      "title": "Maximum Cache Age (seconds)",
+      "type": "integer",
+      "description": "Maximum age of cached results in seconds. Set to 0 to always fetch fresh data.",
+      "editor": "number",
+      "minimum": 0,
+      "default": 3600
+    }
+  },
+  "required": [
+    "query"
+  ]
+}

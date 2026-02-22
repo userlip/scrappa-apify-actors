@@ -1,0 +1,119 @@
+================================================================================
+GOOGLE MAPS SEARCH API - INVESTIGATION QUICK SUMMARY
+================================================================================
+
+CRITICAL BUGS FOUND:
+====================
+
+1. WRONG RESPONSE PROPERTY NAME (WILL SILENTLY FAIL)
+   ✗ Code expects: response.results
+   ✓ API actually returns: response.items
+   Location: main.ts line 49
+   Impact: Data will NOT be pushed to Actor dataset
+
+2. MISSING 20+ RESPONSE FIELDS
+   Only captures 8 fields, API provides 30+
+   Missing: 
+   - Coordinates (latitude, longitude)
+   - Location details (full_address, district, timezone)
+   - Business identifiers (place_id, business_id, google_mid)
+   - Media (photos_sample array)
+   - Operating info (opening_hours)
+   - Descriptions (short_description, full_description)
+   - Owner details (owner_id, owner_name, owner_link)
+
+3. WRONG PARAMETER NAMES IN INPUT SCHEMA
+   ✗ Schema says: "language" and "country"
+   ✓ API expects: "hl" and "gl"
+   Note: main.ts correctly maps language→hl and country→gl, so works but confusing
+
+================================================================================
+
+REQUIRED PARAMETERS:
+====================
+
+Scrappa API:
+  • query (string, REQUIRED)
+  • hl (string, OPTIONAL, default: 'en', format: ISO 639-1 or with region)
+  • gl (string, OPTIONAL, format: ISO 3166-1 alpha-2, 2-char exactly)
+  • debug (OPTIONAL, bool, Super Admin only)
+
+Apify Actor (input_schema.json):
+  • query (string, REQUIRED) ✓
+  • language (string, OPTIONAL, default: 'en') [name mismatch ✗]
+  • country (string, OPTIONAL) [name mismatch ✗]
+  • debug MISSING ✗
+
+================================================================================
+
+RESPONSE FIELD COMPARISON:
+
+API Returns (items array):
+  name, price_level, price_level_text, review_count, rating, website, domain,
+  latitude, longitude, business_id, subtypes, district, full_address, timezone,
+  short_description, full_description, owner_id, owner_name, owner_link,
+  order_link, google_mid, type, phone_numbers, place_id, photos_sample,
+  opening_hours, current_status
+  
+  TOTAL: 28+ fields with complex nested objects
+
+Actor Currently Captures:
+  name, rating, review_count, address, phone_numbers, website, type, business_id
+  
+  TOTAL: 8 fields (28% coverage)
+
+Dataset View Shows:
+  name, rating, review_count, address, phone (WRONG - should be phone_numbers), 
+  website, type
+  
+  TOTAL: 7 fields
+
+================================================================================
+
+VALIDATION ISSUES:
+
+API Validation (Scrappa):
+  • hl: regex /^[a-zA-Z]{2}(-[a-zA-Z]{2})?$/  (en, de, fr, en-US, de-DE, etc)
+  • gl: regex /^[a-zA-Z]{2}$/  (exactly 2 letters: us, de, uk, jp)
+
+Actor Validation (input_schema.json):
+  • language: maxLength 5 only (ACCEPTS ANY STRING UP TO 5 CHARS)
+  • country: maxLength 2 only (ACCEPTS ANY 2-CHAR STRING)
+  NO REGEX PATTERNS ✗
+
+================================================================================
+
+QUICK FIX CHECKLIST:
+
+CRITICAL (Must fix):
+  [ ] Fix main.ts line 49: response.results → response.items
+  [ ] Expand BusinessResult interface to include 30+ fields
+  [ ] Add missing response fields to type definitions
+
+HIGH PRIORITY (Should fix):
+  [ ] Fix input_schema: Use hl/gl parameter names OR add pattern validation
+  [ ] Add debug parameter to input_schema
+  [ ] Add regex validation: hl = /^[a-zA-Z]{2}(-[a-zA-Z]{2})?$/
+  [ ] Add regex validation: gl = /^[a-zA-Z]{2}$/
+  [ ] Update actor.json dataset view with more fields
+
+MEDIUM PRIORITY (Nice to have):
+  [ ] Add photos_sample handling
+  [ ] Add opening_hours handling
+  [ ] Expand README documentation
+  [ ] Increase memory allocation if needed (256MB current)
+
+================================================================================
+
+FILES AFFECTED:
+  1. /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/src/main.ts
+  2. /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/input_schema.json
+  3. /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/actor.json
+  4. /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/README.md
+
+REFERENCE SOURCES:
+  • Scrappa: /Users/marindelija/Documents/Development/scrappa/app/Http/Requests/SimpleSearchRequest.php
+  • Scrappa: /Users/marindelija/Documents/Development/scrappa/app/Http/Controllers/Api/GoogleMapsApiController.php
+  • Scrappa: /Users/marindelija/Documents/Development/scrappa/database/data/google-maps-api.json
+
+================================================================================

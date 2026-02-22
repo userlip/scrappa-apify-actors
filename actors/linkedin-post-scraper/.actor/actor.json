@@ -1,0 +1,42 @@
+{
+  "actorSpecification": 1,
+  "name": "linkedin-post-scraper",
+  "title": "LinkedIn Post Scraper ($0.30/1k results)",
+  "description": "Scrape public LinkedIn posts and articles. Get content, author info, reactions, comments, and related articles. No LinkedIn login required.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "posts": {
+          "title": "LinkedIn Posts",
+          "transformation": {
+            "fields": ["title", "author_name", "date_published", "reactions_total", "comments_count"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": { "label": "Title", "format": "text" },
+              "author_name": { "label": "Author", "format": "text" },
+              "date_published": { "label": "Published", "format": "text" },
+              "reactions_total": { "label": "Reactions", "format": "number" },
+              "comments_count": { "label": "Comments", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
