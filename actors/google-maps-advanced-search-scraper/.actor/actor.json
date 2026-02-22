@@ -1,0 +1,38 @@
+{
+  "actorSpecification": 1,
+  "name": "google-maps-advanced-search-scraper",
+  "title": "Google Maps Advanced Search",
+  "description": "Search for businesses on Google Maps with precise location bounds. Specify exact coordinates and zoom level for location-aware results.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "icon": "🎯",
+  "meta": { "templateId": "ts-start" },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "overview": {
+          "title": "Search Results",
+          "transformation": { "fields": ["name", "rating", "review_count", "address", "latitude", "longitude"] },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": { "label": "Name", "format": "text" },
+              "rating": { "label": "Rating", "format": "number" },
+              "review_count": { "label": "Reviews", "format": "number" },
+              "address": { "label": "Address", "format": "text" },
+              "latitude": { "label": "Lat", "format": "number" },
+              "longitude": { "label": "Lon", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
