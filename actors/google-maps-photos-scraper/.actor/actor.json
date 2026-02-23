@@ -1,0 +1,35 @@
+{
+  "actorSpecification": 1,
+  "name": "google-maps-photos-scraper",
+  "title": "Google Maps Photos",
+  "description": "Extract all photos for a business from Google Maps. Get photo URLs, metadata, and coordinates for building image galleries and visual archives.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": { "templateId": "ts-start" },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "overview": {
+          "title": "Photos",
+          "transformation": { "fields": ["photo_url", "photo_id", "latitude", "longitude"] },
+          "display": {
+            "component": "table",
+            "properties": {
+              "photo_url": { "label": "Photo", "format": "link" },
+              "photo_id": { "label": "ID", "format": "text" },
+              "latitude": { "label": "Lat", "format": "number" },
+              "longitude": { "label": "Lon", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

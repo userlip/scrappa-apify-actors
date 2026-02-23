@@ -1,0 +1,45 @@
+{
+  "actorSpecification": 1,
+  "name": "google-maps-business-details-scraper",
+  "title": "Google Maps Business Details",
+  "description": "Extract detailed Google Maps business information including ratings, reviews, photos, hours, contact details, and more. Fetches live data for a specific business location.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "icon": "🏢",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "overview": {
+          "title": "Business Details",
+          "transformation": {
+            "fields": ["name", "rating", "review_count", "address", "phone", "website", "type"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": { "label": "Business Name", "format": "text" },
+              "rating": { "label": "Rating", "format": "number" },
+              "review_count": { "label": "Reviews", "format": "number" },
+              "address": { "label": "Address", "format": "text" },
+              "phone": { "label": "Phone", "format": "text" },
+              "website": { "label": "Website", "format": "link" },
+              "type": { "label": "Type", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

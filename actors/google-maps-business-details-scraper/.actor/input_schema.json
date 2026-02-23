@@ -1,0 +1,33 @@
+{
+  "title": "Google Maps Business Details",
+  "description": "Extract detailed information for a specific business from Google Maps including ratings, reviews, photos, and operating hours.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "business_id": {
+      "title": "Business ID",
+      "type": "string",
+      "description": "Google Maps business identifier in format: 0x[hex]:0x[hex] (e.g., 0x1234abcd:0x5678efgh). Obtain this from the Search or Autocomplete actor.",
+      "editor": "textfield",
+      "prefill": "0x808fba02425dad8f:0x6c296c66619367e0"
+    },
+    "use_cache": {
+      "title": "Use Cache",
+      "type": "boolean",
+      "description": "Use cached results if available to reduce costs and speed up results",
+      "editor": "checkbox",
+      "default": true
+    },
+    "maximum_cache_age": {
+      "title": "Maximum Cache Age (seconds)",
+      "type": "integer",
+      "description": "Maximum age of cached results in seconds. Set to 0 to always fetch fresh data.",
+      "editor": "number",
+      "minimum": 0,
+      "default": 3600
+    }
+  },
+  "required": [
+    "business_id"
+  ]
+}
