@@ -60,6 +60,14 @@ try {
         throw new Error('Search query and zoom level are required');
     }
 
+    // Charge for the search event (covers base compute cost)
+    const chargeResult = await Actor.charge({ eventName: 'search', count: 1 });
+    if (chargeResult.eventChargeLimitReached) {
+        console.log('User budget limit reached, stopping.');
+        await Actor.exit();
+        process.exit(0);
+    }
+
     const locationInfo = input.latitude && input.longitude
         ? `at lat ${input.latitude}, lon ${input.longitude}`
         : '(auto-resolved location)';
@@ -76,9 +84,9 @@ try {
         gl: input.gl,
     });
 
-    // Push results to dataset (API returns 'items' not 'results')
+    // Push results to dataset with per-result charging
     if (response.items && response.items.length > 0) {
-        await Actor.pushData(response.items);
+        await Actor.pushData(response.items, 'result');
         console.log(`Found ${response.items.length} results`);
     } else {
         console.log('No results found for the given search criteria');
