@@ -16,6 +16,9 @@
   "resources": {
     "memoryMbytes": 128
   },
+  "defaultRunOptions": {
+    "timeoutSecs": 90
+  },
   "storages": {
     "dataset": {
       "actorSpecification": 1,
