@@ -71,12 +71,37 @@ export class ScrappaClient {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
-        let response: Response;
         try {
-            response = await fetch(url.toString(), {
+            const response = await fetch(url.toString(), {
                 ...options,
                 signal: controller.signal,
             });
+
+            if (!response.ok) {
+                let errorMessage: string;
+                // Clone response before reading to allow fallback to text() if json() fails
+                const responseClone = response.clone();
+                try {
+                    const errorData = await response.json() as { message?: string; errors?: Record<string, string[]> };
+                    errorMessage = errorData.message ?? `HTTP ${response.status}`;
+
+                    if (errorData.errors) {
+                        const errorDetails = Object.entries(errorData.errors)
+                            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+                            .join('; ');
+                        errorMessage += ` - ${errorDetails}`;
+                    }
+                } catch (error) {
+                    if (error instanceof Error && error.name === 'AbortError') {
+                        throw error;
+                    }
+                    errorMessage = await responseClone.text() || `HTTP ${response.status}`;
+                }
+
+                throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
+            }
+
+            return response.json() as Promise<T>;
         } catch (error) {
             if (error instanceof Error && error.name === 'AbortError') {
                 throw new Error(`Scrappa API request timed out after ${this.timeoutMs}ms`);
@@ -85,28 +110,5 @@ export class ScrappaClient {
         } finally {
             clearTimeout(timeoutId);
         }
-
-        if (!response.ok) {
-            let errorMessage: string;
-            // Clone response before reading to allow fallback to text() if json() fails
-            const responseClone = response.clone();
-            try {
-                const errorData = await response.json() as { message?: string; errors?: Record<string, string[]> };
-                errorMessage = errorData.message ?? `HTTP ${response.status}`;
-
-                if (errorData.errors) {
-                    const errorDetails = Object.entries(errorData.errors)
-                        .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-                        .join('; ');
-                    errorMessage += ` - ${errorDetails}`;
-                }
-            } catch {
-                errorMessage = await responseClone.text() || `HTTP ${response.status}`;
-            }
-
-            throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
-        }
-
-        return response.json() as Promise<T>;
     }
 }
