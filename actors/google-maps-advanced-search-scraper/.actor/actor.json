@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "google-maps-advanced-search-scraper",
   "title": "Google Maps Advanced Search",
-  "description": "Search for businesses on Google Maps with precise location bounds. Specify exact coordinates and zoom level for location-aware results.",
+  "description": "Scrape Google Maps business results with coordinate-based advanced search. Use a query plus latitude, longitude, and zoom to target precise map areas for local lead generation, competitor research, territory analysis, and bounds-focused location workflows.",
   "version": "1.0",
   "buildTag": "latest",
   "icon": "🎯",
