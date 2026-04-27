@@ -103,8 +103,8 @@ async function main(): Promise<void> {
             url,
         };
 
-        if (input.use_cache !== undefined) {
-            params.use_cache = input.use_cache;
+        if (input.use_cache) {
+            params.use_cache = 1;
         }
 
         if (input.maximum_cache_age !== undefined) {
