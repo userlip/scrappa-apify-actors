@@ -60,6 +60,8 @@ interface GoogleSearchResponse {
     [key: string]: unknown;
 }
 
+const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+
 await Actor.init();
 
 try {
@@ -76,7 +78,7 @@ try {
 
     console.log(`Searching Google for: "${input.query}"`);
 
-    const client = new ScrappaClient({ apiKey });
+    const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
 
     const params: Record<string, unknown> = {
         query: input.query,
@@ -124,8 +126,12 @@ try {
     console.log('Results summary:', JSON.stringify(summary));
 
 } catch (error) {
-    console.error(`Actor failed: ${error instanceof Error ? error.message : String(error)}`);
-    throw error;
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const message = rawMessage.includes('timed out')
+        ? `${rawMessage}. The Google Search request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try a smaller amount or run the query again.`
+        : rawMessage;
+    console.error('Actor failed: ' + message);
+    await Actor.fail(message);
 }
 
 await Actor.exit();
