@@ -1,0 +1,40 @@
+{
+  "actorSpecification": 1,
+  "name": "scrappa-google-search",
+  "title": "Scrappa Google Search",
+  "description": "Scrape Google Search results at scale. Extract organic results, knowledge panels, related searches, People Also Ask, local results, and more. Supports geo-targeting, language settings, and pagination.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "organic": {
+          "title": "Organic Results",
+          "transformation": {
+            "fields": ["position", "title", "link", "displayed_link", "snippet", "source"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "#", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "link": { "label": "URL", "format": "link" },
+              "displayed_link": { "label": "Display URL", "format": "text" },
+              "snippet": { "label": "Snippet", "format": "text" },
+              "source": { "label": "Source", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

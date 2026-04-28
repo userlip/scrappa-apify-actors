@@ -1,0 +1,83 @@
+{
+  "title": "Scrappa Google Search",
+  "description": "Extract Google Search results including organic listings, knowledge panels, People Also Ask, and more.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "The search term or phrase to look up on Google",
+      "editor": "textfield",
+      "prefill": "best restaurants in new york"
+    },
+    "location": {
+      "title": "Location",
+      "type": "string",
+      "description": "Geographic location for localized results (e.g., 'New York, NY, USA', 'London, UK')",
+      "editor": "textfield"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code for Google's country service (e.g., 'us', 'uk', 'de', 'fr')",
+      "editor": "textfield",
+      "maxLength": 2
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter language code for the interface (e.g., 'en', 'de', 'es', 'fr')",
+      "editor": "textfield",
+      "maxLength": 2
+    },
+    "google_domain": {
+      "title": "Google Domain",
+      "type": "string",
+      "description": "Google domain to query (e.g., 'google.com', 'google.de', 'google.co.uk')",
+      "editor": "textfield"
+    },
+    "start": {
+      "title": "Start Position",
+      "type": "integer",
+      "description": "Result offset for pagination. Use 0 for first page, 10 for second, 20 for third, etc.",
+      "editor": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "amount": {
+      "title": "Number of Results",
+      "type": "integer",
+      "description": "How many results to return per request (1-100)",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10
+    },
+    "safe": {
+      "title": "Safe Search",
+      "type": "string",
+      "description": "Filter explicit content from results",
+      "editor": "select",
+      "enum": ["off", "active"],
+      "enumTitles": ["Off - Show all results", "Active - Filter explicit content"],
+      "default": "off"
+    },
+    "tbs": {
+      "title": "Time Filter",
+      "type": "string",
+      "description": "Filter results by time. Examples: 'qdr:h' (past hour), 'qdr:d' (past day), 'qdr:w' (past week), 'qdr:m' (past month), 'qdr:y' (past year)",
+      "editor": "textfield"
+    },
+    "tbm": {
+      "title": "Search Type",
+      "type": "string",
+      "description": "Type of Google search to perform",
+      "editor": "select",
+      "enum": ["", "nws", "vid", "isch", "shop"],
+      "enumTitles": ["Web Search (default)", "News", "Videos", "Images", "Shopping"],
+      "default": ""
+    }
+  },
+  "required": ["query"]
+}
