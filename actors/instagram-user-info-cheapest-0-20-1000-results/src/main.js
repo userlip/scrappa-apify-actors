@@ -103,13 +103,17 @@ Actor.main(async () => {
             return;
         }
 
+        if (response.status >= 400 || data?.success === false) {
+            const statusPrefix = response.status >= 400
+                ? `HTTP ${response.status}`
+                : 'an error response';
+            await Actor.fail(`Scrappa API returned ${statusPrefix}: ${getResponseMessage(data)}`);
+            return;
+        }
+
         const item = flattenProfile(data);
         await Actor.pushData(item);
-        if (response.status >= 400 || data?.success === false) {
-            console.warn(`Scrappa returned a structured error for ${username}: ${getResponseMessage(data)}`);
-        } else {
-            console.log(`Successfully fetched Instagram user info for: ${username}`);
-        }
+        console.log(`Successfully fetched Instagram user info for: ${username}`);
     } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
             await Actor.fail(`Scrappa API request timed out after ${REQUEST_TIMEOUT_MS}ms`);
