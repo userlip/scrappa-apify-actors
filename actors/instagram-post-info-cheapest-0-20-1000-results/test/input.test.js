@@ -39,3 +39,10 @@ test('rejects missing URL and shortcode input', () => {
         /Instagram post URL or shortcode is required/,
     );
 });
+
+test('rejects null input with the expected validation error', () => {
+    assert.throws(
+        () => resolveInstagramPostInput(null),
+        /Instagram post URL or shortcode is required/,
+    );
+});

@@ -3,6 +3,8 @@ export function firstNonEmptyString(...values) {
 }
 
 export function resolveInstagramPostInput(input = {}) {
+    input = input ?? {};
+
     const url = firstNonEmptyString(input.url);
     const shortcode = firstNonEmptyString(input.shortcode, input.media_id);
     const identifier = url ?? shortcode;
