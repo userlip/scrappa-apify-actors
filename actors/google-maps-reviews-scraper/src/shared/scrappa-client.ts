@@ -75,9 +75,11 @@ export class ScrappaClient {
         const response = await fetch(url.toString(), options);
 
         if (!response.ok) {
-            let errorMessage: string;
+            const responseBody = await response.text();
+            let errorMessage = responseBody || `HTTP ${response.status}`;
+
             try {
-                const errorData = await response.json() as { message?: string; errors?: Record<string, string[]> };
+                const errorData = JSON.parse(responseBody) as { message?: string; errors?: Record<string, string[]> };
                 errorMessage = errorData.message ?? `HTTP ${response.status}`;
 
                 if (errorData.errors) {
@@ -87,7 +89,7 @@ export class ScrappaClient {
                     errorMessage += ` - ${errorDetails}`;
                 }
             } catch {
-                errorMessage = await response.text() || `HTTP ${response.status}`;
+                // Keep the raw response body for non-JSON error pages.
             }
 
             throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
