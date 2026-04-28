@@ -64,11 +64,14 @@ try {
     try {
         const response = await client.get<GoogleMapsPhotosResponse>('/maps/photos', params);
 
-        // Scrappa currently returns an items envelope; keep data as a legacy fallback.
-        photos = Array.isArray(response)
-            ? response
-            : (response.items ?? response.data ?? []);
-        nextPage = Array.isArray(response) ? null : (response.nextPage ?? null);
+        // Handle both response types: direct array or wrapped object.
+        // The Scrappa /maps/photos API currently returns { items, nextPage }.
+        if (Array.isArray(response)) {
+            photos = response;
+        } else {
+            photos = response.items ?? response.data ?? [];
+            nextPage = response.nextPage ?? null;
+        }
     } catch (apiError) {
         const statusCode = (apiError as any)?.statusCode;
 

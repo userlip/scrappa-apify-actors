@@ -1,0 +1,90 @@
+{
+  "title": "Search YouTube data",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "q": {
+      "title": "Query",
+      "type": "string",
+      "description": "Search query",
+      "editor": "textfield",
+      "prefill": "Javascript tutorial"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "array",
+      "description": "Sort by: relevance, rating, upload_date, view_count",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["relevance", "rating", "upload_date", "view_count"]
+      },
+      "prefill": ["relevance"]
+    },
+    "duration": {
+      "title": "Duration",
+      "type": "array",
+      "description": "Video duration: short, medium, long",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["short", "medium", "long"]
+      },
+      "prefill": ["short"]
+    },
+    "upload_date": {
+      "title": "Upload date",
+      "type": "array",
+      "description": "Upload date",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["hour", "today", "week", "month", "year"]
+      },
+      "prefill": ["hour"]
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer",
+      "description": "Maximum number of results to return",
+      "default": 1,
+      "minimum": 1,
+      "maximum": 1024
+    },
+    "continuation": {
+      "title": "Continuation",
+      "type": "string",
+      "description": "Pagination token for next page",
+      "editor": "textfield"
+    },
+    "contentType": {
+      "title": "Content type",
+      "type": "array",
+      "description": "Filter by content type",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["live", "recorded", "premiere"]
+      },
+      "prefill": ["live"]
+    },
+    "features": {
+      "title": "Features",
+      "type": "string",
+      "description": "Comma-separated: live,4k,hd,subtitles,cc,360,vr180,3d,hdr",
+      "editor": "textfield"
+    },
+    "type": {
+      "title": "Type",
+      "type": "array",
+      "description": "Filter by result type",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["all", "video", "channel", "playlist", "movie"]
+      },
+      "prefill": ["all"]
+    }
+  },
+  "required": ["q"]
+}
