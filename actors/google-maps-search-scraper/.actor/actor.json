@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "google-maps-search-scraper",
   "title": "Google Maps Search",
-  "description": "Search for businesses on Google Maps at scale. Find restaurants, services, shops, and more with detailed information including ratings, reviews, hours, and contact details.",
+  "description": "Discover Google Maps businesses by query and location. Extract names, ratings, reviews, addresses, phone numbers, websites, categories, photos, hours, and business IDs for lead generation.",
   "version": "1.0",
   "buildTag": "latest",
   "icon": "🔍",
