@@ -1,0 +1,39 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "success": {
+      "type": "boolean"
+    },
+    "data": {
+      "type": "object"
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Instagram Post",
+      "transformation": {
+        "fields": ["success", "data", "error"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "success": {
+            "label": "Success",
+            "format": "boolean"
+          },
+          "data": {
+            "label": "Post Data",
+            "format": "object"
+          },
+          "error": {
+            "label": "Error",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}
