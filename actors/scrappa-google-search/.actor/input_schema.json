@@ -9,6 +9,7 @@
       "type": "string",
       "description": "The search term or phrase to look up on Google",
       "editor": "textfield",
+      "minLength": 1,
       "prefill": "best restaurants in new york"
     },
     "location": {
