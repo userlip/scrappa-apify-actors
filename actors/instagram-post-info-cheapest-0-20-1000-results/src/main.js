@@ -5,6 +5,12 @@ import { resolveInstagramPostInput } from './input.js';
 
 await Actor.init();
 
+function getResponseMessage(data) {
+    return data?.message
+        ?? data?.error
+        ?? 'Unknown Scrappa API error';
+}
+
 try {
     const apiKey = process.env.SCRAPPA_API_KEY;
     if (!apiKey) {
@@ -25,6 +31,10 @@ try {
         timeout: 60000,
     });
     const data = response.data;
+
+    if (data?.success === false) {
+        throw new Error(`Scrappa Instagram Post API returned an error response: ${getResponseMessage(data)}`);
+    }
 
     await Actor.pushData(data);
 

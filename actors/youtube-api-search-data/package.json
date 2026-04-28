@@ -1,0 +1,17 @@
+{
+  "name": "youtube-api-search-data",
+  "version": "0.0.2",
+  "type": "module",
+  "description": "Apify Actor for Scrappa YouTube search data.",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "apify": "^3.2.6"
+  },
+  "scripts": {
+    "start": "node ./src/main.js",
+    "test": "node --test"
+  },
+  "license": "ISC"
+}
