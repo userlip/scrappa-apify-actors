@@ -1,0 +1,19 @@
+{
+    "actorSpecification": 1,
+    "name": "instagram-post-info-cheapest-0-20-1000-results",
+    "title": "Instagram Post Info | Cheapest 0.20$/1000 results",
+    "description": "Retrieve detailed Instagram post data using a shortcode via the Scrappa Instagram Post API.",
+    "version": "0.0",
+    "buildTag": "latest",
+    "meta": {
+        "templateId": "js-start"
+    },
+    "input": "./input_schema.json",
+    "dockerfile": "./Dockerfile",
+    "environmentVariables": {
+        "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+    },
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}
