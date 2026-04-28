@@ -158,10 +158,6 @@ async function main(): Promise<void> {
             await Actor.pushData(response);
         }
 
-        // Store full response in key-value store for complete data access
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
-
         // Log summary
         console.log('LinkedIn profile scraping completed');
 
@@ -197,8 +193,6 @@ async function main(): Promise<void> {
                 message,
             };
             await Actor.pushData(failedResult);
-            const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', failedResult);
         } else {
             console.error('Actor failed: ' + message);
             await Actor.fail(message);
