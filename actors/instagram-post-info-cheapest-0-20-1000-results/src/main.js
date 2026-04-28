@@ -1,6 +1,7 @@
 // main.js
 import axios from 'axios';
 import { Actor } from 'apify';
+import { resolveInstagramPostInput } from './input.js';
 
 await Actor.init();
 
@@ -11,16 +12,9 @@ try {
     }
 
     const input = await Actor.getInput();
-    const identifier = input?.url ?? input?.shortcode ?? input?.media_id;
-
-    if (!identifier) {
-        throw new Error('Instagram post URL or shortcode is required. Provide url, shortcode, or media_id in the input.');
-    }
+    const { identifier, params } = resolveInstagramPostInput(input);
 
     const apiUrl = 'https://scrappa.co/api/instagram/post';
-    const params = input?.url
-        ? { url: input.url }
-        : { shortcode: identifier };
 
     const response = await axios.get(apiUrl, {
         params,
