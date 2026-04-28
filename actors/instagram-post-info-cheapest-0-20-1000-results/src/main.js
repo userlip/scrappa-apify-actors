@@ -2,6 +2,12 @@
 import axios from 'axios';
 import { Actor } from 'apify';
 
+function getResponseMessage(data) {
+    return data?.message
+        ?? data?.error
+        ?? 'Unknown Scrappa API error';
+}
+
 await Actor.init();
 
 try {
@@ -34,6 +40,10 @@ try {
         timeout: 60000,
     });
     const data = response.data;
+
+    if (data?.success === false) {
+        throw new Error(`Scrappa Instagram Post API returned an error response: ${getResponseMessage(data)}`);
+    }
 
     await Actor.pushData(data);
 
