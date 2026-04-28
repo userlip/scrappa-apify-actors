@@ -12,7 +12,7 @@
     },
     "scripts": {
         "start": "node ./src/main.js",
-        "test": "node --check ./src/main.js"
+        "test": "node --check ./src/main.js && node --test"
     },
     "author": "Scrappa",
     "license": "ISC"

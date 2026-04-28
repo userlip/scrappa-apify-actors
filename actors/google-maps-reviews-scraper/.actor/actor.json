@@ -1,0 +1,44 @@
+{
+  "actorSpecification": 1,
+  "name": "google-maps-reviews-scraper",
+  "title": "Google Maps Reviews Scraper",
+  "description": "Extract customer reviews from a Google Maps business. Get review text, ratings, reviewer metadata, owner responses, review links, images, and pagination tokens.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "overview": {
+          "title": "Reviews",
+          "transformation": {
+            "fields": ["author_name", "rating", "review_text", "timestamp", "review_likes", "review_language", "review_id"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "author_name": { "label": "Reviewer", "format": "text" },
+              "rating": { "label": "Rating", "format": "number" },
+              "review_text": { "label": "Review", "format": "text" },
+              "timestamp": { "label": "Timestamp", "format": "number" },
+              "review_likes": { "label": "Likes", "format": "number" },
+              "review_language": { "label": "Language", "format": "text" },
+              "review_id": { "label": "Review ID", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
