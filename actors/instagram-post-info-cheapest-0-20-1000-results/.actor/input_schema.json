@@ -21,5 +21,31 @@
       "description": "Legacy input name. This actor treats media_id as the Instagram post shortcode.",
       "editor": "textfield"
     }
-  }
+  },
+  "anyOf": [
+    {
+      "required": ["url"],
+      "properties": {
+        "url": {
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "required": ["shortcode"],
+      "properties": {
+        "shortcode": {
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "required": ["media_id"],
+      "properties": {
+        "media_id": {
+          "minLength": 1
+        }
+      }
+    }
+  ]
 }
