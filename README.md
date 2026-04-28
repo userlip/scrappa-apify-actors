@@ -8,7 +8,7 @@ Apify Actors for [Scrappa](https://scrappa.co) APIs - Google Search, Maps, YouTu
 scrappa-apify-actors/
 ├── actors/           # Individual Apify actors
 │   ├── google-search/
-│   ├── google-maps-business/
+│   ├── google-maps-business-details-scraper/
 │   └── ...
 ├── shared/           # Shared Scrappa client library
 └── package.json      # Workspace root
@@ -71,25 +71,24 @@ apify push
 
 ## Available Actors
 
-| Actor | Description | Status |
-|-------|-------------|--------|
-| `google-search` | Google Search results | ✅ Ready |
-| `google-search-light` | Lightweight Google Search | 🔜 Planned |
-| `google-maps-business` | Google Maps business info | 🔜 Planned |
-| `google-maps-reviews` | Google Maps reviews | 🔜 Planned |
-| `google-jobs` | Google Jobs listings | 🔜 Planned |
-| `google-news` | Google News results | 🔜 Planned |
-| `google-images` | Google Images search | 🔜 Planned |
-| `youtube-search` | YouTube video search | 🔜 Planned |
-| `youtube-video` | YouTube video details | 🔜 Planned |
-| `linkedin-profile` | LinkedIn profile scraping | 🔜 Planned |
-| `linkedin-company` | LinkedIn company info | 🔜 Planned |
-| `trustpilot-search` | Trustpilot business search | 🔜 Planned |
-| `trustpilot-reviews` | Trustpilot reviews | 🔜 Planned |
-| `kununu-search` | Kununu company search | 🔜 Planned |
-| `kununu-reviews` | Kununu company reviews | 🔜 Planned |
-| `brave-search` | Brave Search results | 🔜 Planned |
-| `startpage-search` | Startpage Search results | 🔜 Planned |
+This repository contains source directories for the following live Scrappa Apify Actors.
+
+| Local directory | Apify actor | Actor ID | Description | Status |
+|-----------------|-------------|----------|-------------|--------|
+| `actors/google-maps-advanced-search-scraper` | `google-maps-advanced-search-scraper` | `DT8bUdm2Vn4HjlyDo` | Google Maps coordinate-based advanced search | Live |
+| `actors/google-maps-autocomplete-scraper` | `google-maps-autocomplete-scraper` | `hhS8GkceJHFiexWe6` | Google Maps autocomplete suggestions | Live |
+| `actors/google-maps-business-details-scraper` | `google-maps-business-details-scraper` | `JCqaAyY3Vy7K5UoRd` | Google Maps business details | Live |
+| `actors/google-maps-photos-scraper` | `google-maps-photos-scraper` | `gLbfii9Nq4H7auMnN` | Google Maps business photos | Live |
+| `actors/google-maps-reviews-scraper` | `google-maps-reviews-scraper` | `QvxzSeJiQrMggt1Vn` | Google Maps business reviews | Live |
+| `actors/google-maps-search-scraper` | `google-maps-search-scraper` | `3fXhf8bJruXVWgDKy` | Google Maps business search | Live |
+| `actors/google-search` | `google-search-scraper` | `2pU7EbKhShUz8BAnN` | Google Search results | Live |
+| `actors/instagram-post-info-cheapest-0-20-1000-results` | `instagram-post-info-cheapest-0-20-1000-results` | `nfdzs1z0cRIU1Bfhw` | Instagram post details | Live |
+| `actors/instagram-user-info-cheapest-0-20-1000-results` | `instagram-user-info-cheapest-0-20-1000-results` | `VZrsJ6bO3h92y0duj` | Instagram user profile details | Live |
+| `actors/linkedin-company-scraper` | `linkedin-company-scraper` | `EMGCTVXuOBRERiDMf` | LinkedIn company pages | Live |
+| `actors/linkedin-post-scraper` | `linkedin-post-scraper` | `hVDOXgRoKJbnATxzs` | LinkedIn posts and articles | Live |
+| `actors/linkedin-profile-scraper` | `linkedin-profile-scraper` | `87AaxKjjQrK0F0g60` | LinkedIn public profiles | Live |
+| `actors/scrappa-google-search` | `scrappa-google-search` | `8ejIZ0nfRPShvWBSP` | Scrappa Google Search | Live |
+| `actors/youtube-api-search-data` | `youtube-api-search-data` | `ziD2fUoLsdzKlc6zR` | YouTube search data | Live |
 
 ## API Key
 
