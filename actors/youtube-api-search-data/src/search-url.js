@@ -32,7 +32,8 @@ function featureValue(value) {
 }
 
 export function buildSearchUrl(input = {}) {
-    const query = singleValue(input.q);
+    const actorInput = input && typeof input === 'object' ? input : {};
+    const query = singleValue(actorInput.q);
     if (!query) {
         throw new Error('Search query "q" is required.');
     }
@@ -40,13 +41,13 @@ export function buildSearchUrl(input = {}) {
     const params = new URLSearchParams({ q: query });
 
     const stringParams = {
-        sort: singleValue(input.sort) || 'relevance',
-        duration: singleValue(input.duration),
-        upload_date: singleValue(input.upload_date),
-        continuation: singleValue(input.continuation),
-        contentType: singleValue(input.contentType),
-        features: featureValue(input.features),
-        type: singleValue(input.type),
+        sort: singleValue(actorInput.sort) || 'relevance',
+        duration: singleValue(actorInput.duration),
+        upload_date: singleValue(actorInput.upload_date),
+        continuation: singleValue(actorInput.continuation),
+        contentType: singleValue(actorInput.contentType),
+        features: featureValue(actorInput.features),
+        type: singleValue(actorInput.type),
     };
 
     for (const [key, value] of Object.entries(stringParams)) {
@@ -55,7 +56,7 @@ export function buildSearchUrl(input = {}) {
         }
     }
 
-    const limit = positiveInteger(input.limit);
+    const limit = positiveInteger(actorInput.limit);
     if (limit) {
         params.set('limit', String(limit));
     }

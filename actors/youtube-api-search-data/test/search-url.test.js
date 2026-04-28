@@ -45,4 +45,8 @@ describe('buildSearchUrl', () => {
     it('requires q', () => {
         assert.throws(() => buildSearchUrl({ sort: ['relevance'] }), /q/);
     });
+
+    it('handles missing actor input with a validation error', () => {
+        assert.throws(() => buildSearchUrl(null), /q/);
+    });
 });

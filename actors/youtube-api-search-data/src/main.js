@@ -1,20 +1,24 @@
 import { Actor } from 'apify';
-import axios from 'axios';
 import { buildSearchUrl } from './search-url.js';
 
 Actor.main(async () => {
-    const input = await Actor.getInput();
-    const apiUrl = buildSearchUrl(input);
-
     try {
+        const input = (await Actor.getInput()) ?? {};
+        const apiUrl = buildSearchUrl(input);
+
         console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl);
-        const results = response.data?.results ?? [];
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+            throw new Error(`Scrappa API request failed with ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const results = data?.results ?? [];
 
         await Actor.pushData(results);
         console.log(`Successfully fetched ${Array.isArray(results) ? results.length : 1} results for query: ${input.q}`);
 
-        const continuation = response.data?.continuation ?? response.data?.pagination?.continuationToken;
+        const continuation = data?.continuation ?? data?.pagination?.continuationToken;
         if (continuation) {
             console.log(`Continuation token available for next page: ${continuation}`);
         }
