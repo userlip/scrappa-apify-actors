@@ -1,0 +1,13 @@
+{
+  "actorSpecification": 1,
+  "name": "youtube-api-search-data",
+  "title": "Youtube Api Search Data",
+  "description": "Search YouTube data with query, type, sort, duration, upload date, content type, feature, limit, and continuation filters.",
+  "version": "0.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "js-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile"
+}
