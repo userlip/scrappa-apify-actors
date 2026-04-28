@@ -1,14 +1,15 @@
 // main.js
 import axios from 'axios';
 import { Actor } from 'apify';
+import { resolveInstagramPostInput } from './input.js';
+
+await Actor.init();
 
 function getResponseMessage(data) {
     return data?.message
         ?? data?.error
         ?? 'Unknown Scrappa API error';
 }
-
-await Actor.init();
 
 try {
     const apiKey = process.env.SCRAPPA_API_KEY;
@@ -17,19 +18,9 @@ try {
     }
 
     const input = await Actor.getInput();
-    const url = input?.url?.trim();
-    const shortcode = input?.shortcode?.trim();
-    const mediaId = input?.media_id?.trim();
-    const identifier = url || shortcode || mediaId;
-
-    if (!identifier) {
-        throw new Error('Instagram post URL or shortcode is required. Provide url, shortcode, or media_id in the input.');
-    }
+    const { identifier, params } = resolveInstagramPostInput(input);
 
     const apiUrl = 'https://scrappa.co/api/instagram/post';
-    const params = url
-        ? { url }
-        : { shortcode: identifier };
 
     const response = await axios.get(apiUrl, {
         params,
