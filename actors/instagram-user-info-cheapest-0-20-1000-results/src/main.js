@@ -1,7 +1,7 @@
 import { Actor } from 'apify';
-import axios from 'axios';
 
 const SCRAPPA_API_URL = 'https://scrappa.co/api/instagram/user';
+const REQUEST_TIMEOUT_MS = 90000;
 
 function normalizeUsername(username) {
     return username.trim().replace(/^@+/, '');
@@ -18,6 +18,38 @@ function flattenProfile(response) {
         ...response,
         ...user,
     };
+}
+
+function getResponseMessage(data) {
+    return data?.message
+        ?? data?.error
+        ?? 'Unknown Scrappa API error';
+}
+
+function isAuthenticationFailure(status, data) {
+    const code = typeof data?.code === 'string' ? data.code.toLowerCase() : '';
+    const message = String(getResponseMessage(data)).toLowerCase();
+
+    return status === 401
+        || status === 403
+        || code.includes('unauthorized')
+        || code.includes('forbidden')
+        || message.includes('authentication required')
+        || message.includes('unauthorized')
+        || message.includes('invalid api key')
+        || message.includes('forbidden');
+}
+
+function parseResponseBody(body, status) {
+    if (!body) {
+        return { message: `HTTP ${status}` };
+    }
+
+    try {
+        return JSON.parse(body);
+    } catch {
+        return { message: body };
+    }
 }
 
 Actor.main(async () => {
@@ -38,36 +70,53 @@ Actor.main(async () => {
     console.log(`Fetching Instagram user info for: ${username}`);
 
     try {
-        const response = await axios.get(SCRAPPA_API_URL, {
-            params: { username },
-            headers: {
-                'X-API-KEY': apiKey,
-                Accept: 'application/json',
-            },
-            timeout: 90000,
-            validateStatus: (status) => status < 500,
-        });
+        const url = new URL(SCRAPPA_API_URL);
+        url.searchParams.set('username', username);
 
-        if (response.status === 401 && response.data?.code === 'UNAUTHORIZED') {
-            await Actor.fail('Scrappa API authentication failed. Check the SCRAPPA_API_KEY Actor secret.');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+        let response;
+        try {
+            response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-API-KEY': apiKey,
+                    Accept: 'application/json',
+                },
+                signal: controller.signal,
+            });
+        } finally {
+            clearTimeout(timeoutId);
+        }
+
+        const body = await response.text();
+        const data = parseResponseBody(body, response.status);
+
+        if (isAuthenticationFailure(response.status, data)) {
+            await Actor.fail(`Scrappa API authentication failed: ${getResponseMessage(data)}. Check the SCRAPPA_API_KEY Actor secret.`);
             return;
         }
 
-        const item = flattenProfile(response.data);
+        if (response.status >= 500) {
+            await Actor.fail(`Scrappa API returned HTTP ${response.status}: ${getResponseMessage(data)}`);
+            return;
+        }
+
+        const item = flattenProfile(data);
         await Actor.pushData(item);
-        if (response.status >= 400 || response.data?.success === false) {
-            console.warn(`Scrappa returned a structured error for ${username}: ${response.data?.error ?? response.status}`);
+        if (response.status >= 400 || data?.success === false) {
+            console.warn(`Scrappa returned a structured error for ${username}: ${getResponseMessage(data)}`);
         } else {
             console.log(`Successfully fetched Instagram user info for: ${username}`);
         }
     } catch (error) {
-        const status = error.response?.status;
-        const message = error.response?.data?.message
-            ?? error.response?.data?.error
-            ?? error.message
-            ?? String(error);
-        const statusPrefix = status ? `Scrappa API returned HTTP ${status}: ` : '';
+        if (error instanceof Error && error.name === 'AbortError') {
+            await Actor.fail(`Scrappa API request timed out after ${REQUEST_TIMEOUT_MS}ms`);
+            return;
+        }
 
-        await Actor.fail(`${statusPrefix}${message}`);
+        const message = error instanceof Error ? error.message : String(error);
+        await Actor.fail(message);
     }
 });

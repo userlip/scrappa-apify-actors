@@ -7,8 +7,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "apify": "^3.4.5",
-    "axios": "^1.12.2"
+    "apify": "^3.2.6"
   },
   "scripts": {
     "start": "node ./src/main.js",
