@@ -1,0 +1,71 @@
+{
+  "title": "Google Maps Reviews Scraper",
+  "description": "Extract customer reviews from a specific Google Maps business using the business ID and sort preference.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "business_id": {
+      "title": "Business ID",
+      "type": "string",
+      "description": "Google Maps business/place ID in format 0x[hex]:0x[hex] (e.g., '0x540556df42a1ed52:0xc7ea5e2d51f2f65f')",
+      "editor": "textfield",
+      "prefill": "0x808fba02425dad8f:0x6c296c66619367e0"
+    },
+    "sort": {
+      "title": "Sort Reviews By",
+      "type": "integer",
+      "description": "Sort order (1=Most Relevant, 2=Newest, 3=Highest Rating, 4=Lowest Rating)",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 4,
+      "default": 1
+    },
+    "limit": {
+      "title": "Limit Per Page",
+      "type": "integer",
+      "description": "Number of reviews per page (1-20, default: 10)",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    },
+    "page": {
+      "title": "Page Token",
+      "type": "string",
+      "description": "Pagination token for retrieving next page of results (optional)",
+      "editor": "textfield"
+    },
+    "search": {
+      "title": "Search Within Reviews",
+      "type": "string",
+      "description": "Search query to filter reviews (optional)",
+      "editor": "textfield"
+    },
+    "debug": {
+      "title": "Debug Mode",
+      "type": "boolean",
+      "description": "Enable debug output for troubleshooting",
+      "editor": "checkbox",
+      "default": false
+    },
+    "use_cache": {
+      "title": "Use Cache",
+      "type": "boolean",
+      "description": "Use cached results if available to reduce costs and speed up results",
+      "editor": "checkbox",
+      "default": true
+    },
+    "maximum_cache_age": {
+      "title": "Maximum Cache Age (seconds)",
+      "type": "integer",
+      "description": "Maximum age of cached results in seconds. Set to 0 to always fetch fresh data.",
+      "editor": "number",
+      "minimum": 0,
+      "default": 3600
+    }
+  },
+  "required": [
+    "business_id",
+    "sort"
+  ]
+}
