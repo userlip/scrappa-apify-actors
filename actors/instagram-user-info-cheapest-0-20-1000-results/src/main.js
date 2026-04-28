@@ -77,6 +77,7 @@ Actor.main(async () => {
         const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
         let response;
+        let body;
         try {
             response = await fetch(url, {
                 method: 'GET',
@@ -86,11 +87,11 @@ Actor.main(async () => {
                 },
                 signal: controller.signal,
             });
+            body = await response.text();
         } finally {
             clearTimeout(timeoutId);
         }
 
-        const body = await response.text();
         const data = parseResponseBody(body, response.status);
 
         if (isAuthenticationFailure(response.status, data)) {
