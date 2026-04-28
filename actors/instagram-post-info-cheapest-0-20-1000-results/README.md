@@ -1,0 +1,1 @@
+Retrieve detailed Instagram post data using the post's media ID. Returns engagement metrics, media URLs, and post content in JSON format. The media ID can be extracted from any Instagram post URL.

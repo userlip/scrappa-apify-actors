@@ -1,0 +1,19 @@
+{
+    "name": "instagram-post-info-cheapest-0-20-1000-results",
+    "version": "0.0.1",
+    "type": "module",
+    "description": "Apify actor for Scrappa Instagram post details.",
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "dependencies": {
+        "apify": "^3.2.6",
+        "axios": "^1.5.0"
+    },
+    "scripts": {
+        "start": "node ./src/main.js",
+        "test": "node --check ./src/main.js"
+    },
+    "author": "Scrappa",
+    "license": "ISC"
+}

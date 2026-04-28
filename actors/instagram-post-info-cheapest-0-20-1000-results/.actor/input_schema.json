@@ -1,0 +1,25 @@
+{
+  "title": "Instagram Post Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "url": {
+      "title": "Instagram post URL",
+      "type": "string",
+      "description": "The full Instagram post URL. Recommended format: https://www.instagram.com/username/p/SHORTCODE/",
+      "editor": "textfield"
+    },
+    "shortcode": {
+      "title": "Instagram post shortcode",
+      "type": "string",
+      "description": "The Instagram post shortcode, for example DUBtwxGEqz2.",
+      "editor": "textfield"
+    },
+    "media_id": {
+      "title": "Instagram media id / shortcode",
+      "type": "string",
+      "description": "Legacy input name. This actor treats media_id as the Instagram post shortcode.",
+      "editor": "textfield"
+    }
+  }
+}
