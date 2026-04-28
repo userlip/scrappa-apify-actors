@@ -129,6 +129,10 @@ async function main(): Promise<void> {
         await Actor.pushData(datasetItem);
         console.log(`Successfully scraped LinkedIn post: "${response.title ?? 'Unknown'}"`);
 
+        // Store full response in key-value store for complete data access.
+        const store = await Actor.openKeyValueStore();
+        await store.setValue('OUTPUT', response);
+
         // Log summary
         console.log('LinkedIn Post scraping completed successfully');
 
