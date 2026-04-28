@@ -23,7 +23,12 @@ interface Photo {
     [key: string]: unknown;
 }
 
-type GoogleMapsPhotosResponse = Photo[] | { data?: Photo[]; [key: string]: unknown };
+type GoogleMapsPhotosResponse = Photo[] | {
+    items?: Photo[];
+    data?: Photo[];
+    nextPage?: string | null;
+    [key: string]: unknown;
+};
 
 await Actor.init();
 
@@ -53,15 +58,17 @@ try {
     }
 
     let photos: Photo[] = [];
+    let nextPage: string | null = null;
     let handled404 = false;
 
     try {
         const response = await client.get<GoogleMapsPhotosResponse>('/maps/photos', params);
 
-        // Handle both response types: direct array or wrapped in object
+        // Scrappa currently returns an items envelope; keep data as a legacy fallback.
         photos = Array.isArray(response)
             ? response
-            : (response.data ?? []);
+            : (response.items ?? response.data ?? []);
+        nextPage = Array.isArray(response) ? null : (response.nextPage ?? null);
     } catch (apiError) {
         const statusCode = (apiError as any)?.statusCode;
 
@@ -74,7 +81,7 @@ try {
                 error: 'Business not found',
             }]);
             const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', { photos: [], total: 0, error: 'Business not found' });
+            await store.setValue('OUTPUT', { photos: [], total: 0, nextPage: null, error: 'Business not found' });
             handled404 = true;
         } else {
             // Re-throw non-404 errors
@@ -91,7 +98,7 @@ try {
         }
 
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', { photos, total: photos.length });
+        await store.setValue('OUTPUT', { photos, total: photos.length, nextPage });
     }
 
     console.log('Photos extraction completed');
