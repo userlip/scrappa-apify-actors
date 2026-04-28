@@ -19,14 +19,16 @@
       "views": {
         "overview": {
           "title": "Search Results",
-          "transformation": { "fields": ["name", "rating", "review_count", "address", "latitude", "longitude"] },
+          "transformation": { "fields": ["name", "rating", "review_count", "full_address", "phone_numbers", "website", "latitude", "longitude"] },
           "display": {
             "component": "table",
             "properties": {
               "name": { "label": "Name", "format": "text" },
               "rating": { "label": "Rating", "format": "number" },
               "review_count": { "label": "Reviews", "format": "number" },
-              "address": { "label": "Address", "format": "text" },
+              "full_address": { "label": "Address", "format": "text" },
+              "phone_numbers": { "label": "Phone numbers", "format": "array" },
+              "website": { "label": "Website", "format": "link" },
               "latitude": { "label": "Lat", "format": "number" },
               "longitude": { "label": "Lon", "format": "number" }
             }
