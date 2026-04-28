@@ -123,6 +123,8 @@ async function main(): Promise<void> {
                 console.log('Company not found (404): ' + url);
                 const failResult = { success: false, url, message: 'Company not found', status_code: 404 };
                 await Actor.pushData(failResult);
+                const store = await Actor.openKeyValueStore();
+                await store.setValue('OUTPUT', failResult);
                 await Actor.exit();
                 return;
             }
@@ -136,6 +138,8 @@ async function main(): Promise<void> {
                 console.log('Company not found: ' + url);
                 const failResult = { success: false, url, message: response.message ?? 'Company not found', status_code: 404 };
                 await Actor.pushData(failResult);
+                const store = await Actor.openKeyValueStore();
+                await store.setValue('OUTPUT', failResult);
                 await Actor.exit();
                 return;
             }
@@ -146,6 +150,10 @@ async function main(): Promise<void> {
         // Push company data to dataset
         await Actor.pushData(response);
         console.log('Successfully scraped company: ' + (response.name ?? 'Unknown'));
+
+        // Store full response in key-value store for complete data access.
+        const store = await Actor.openKeyValueStore();
+        await store.setValue('OUTPUT', response);
 
         // Log summary
         console.log('LinkedIn Company scrape completed successfully');
