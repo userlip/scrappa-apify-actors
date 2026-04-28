@@ -11,15 +11,18 @@ try {
     }
 
     const input = await Actor.getInput();
-    const identifier = input?.url ?? input?.shortcode ?? input?.media_id;
+    const url = input?.url?.trim();
+    const shortcode = input?.shortcode?.trim();
+    const mediaId = input?.media_id?.trim();
+    const identifier = url || shortcode || mediaId;
 
     if (!identifier) {
         throw new Error('Instagram post URL or shortcode is required. Provide url, shortcode, or media_id in the input.');
     }
 
     const apiUrl = 'https://scrappa.co/api/instagram/post';
-    const params = input?.url
-        ? { url: input.url }
+    const params = url
+        ? { url }
         : { shortcode: identifier };
 
     const response = await axios.get(apiUrl, {
