@@ -1,0 +1,54 @@
+{
+  "actorSpecification": 1,
+  "name": "instagram-user-info-cheapest-0-20-1000-results",
+  "title": "Instagram User Info | Cheapest $0.20/1000 results",
+  "description": "Get Instagram user profile data including biography, follower counts, verification status, profile picture, and related public profile fields by username.",
+  "version": "0.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "js-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "profiles": {
+          "title": "Instagram Profiles",
+          "transformation": {
+            "fields": [
+              "username",
+              "full_name",
+              "biography",
+              "follower_count",
+              "following_count",
+              "media_count",
+              "is_verified",
+              "is_private"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "username": { "label": "Username", "format": "text" },
+              "full_name": { "label": "Full Name", "format": "text" },
+              "biography": { "label": "Biography", "format": "text" },
+              "follower_count": { "label": "Followers", "format": "number" },
+              "following_count": { "label": "Following", "format": "number" },
+              "media_count": { "label": "Posts", "format": "number" },
+              "is_verified": { "label": "Verified", "format": "boolean" },
+              "is_private": { "label": "Private", "format": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

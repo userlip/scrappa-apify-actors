@@ -1,0 +1,19 @@
+{
+  "name": "instagram-user-info-cheapest-0-20-1000-results",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Apify actor for fetching Instagram user profile information through Scrappa.",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "apify": "^3.4.5",
+    "axios": "^1.12.2"
+  },
+  "scripts": {
+    "start": "node ./src/main.js",
+    "test": "node --check ./src/main.js"
+  },
+  "author": "Scrappa",
+  "license": "ISC"
+}
