@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "google-maps-reviews-scraper",
   "title": "Google Maps Reviews Scraper",
-  "description": "Extract customer reviews from a Google Maps business. Get review text, ratings, reviewer metadata, owner responses, review links, images, and pagination tokens.",
+  "description": "Extract Google Maps reviews at scale. Get review text, ratings, reviewer details, timestamps, helpful votes, owner responses, pagination, filtering, and sorting for review analysis.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {
