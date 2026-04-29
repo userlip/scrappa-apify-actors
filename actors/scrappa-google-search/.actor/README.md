@@ -1,6 +1,6 @@
 # Scrappa Google Search
 
-Extract Google Search results at scale. Get organic results, knowledge panels, People Also Ask, related searches, local results, and more.
+Scrape Google Search results at scale. Extract organic results, knowledge panels, related searches, People Also Ask, local results, and more. Supports geo-targeting, language settings, and pagination.
 
 ## Features
 
