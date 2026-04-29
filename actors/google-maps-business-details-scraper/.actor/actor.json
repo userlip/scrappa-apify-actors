@@ -24,7 +24,7 @@
         "overview": {
           "title": "Business Details",
           "transformation": {
-            "fields": ["name", "rating", "review_count", "address", "phone", "website", "type"]
+            "fields": ["name", "rating", "review_count", "full_address", "phone_number", "website", "type"]
           },
           "display": {
             "component": "table",
@@ -32,8 +32,8 @@
               "name": { "label": "Business Name", "format": "text" },
               "rating": { "label": "Rating", "format": "number" },
               "review_count": { "label": "Reviews", "format": "number" },
-              "address": { "label": "Address", "format": "text" },
-              "phone": { "label": "Phone", "format": "text" },
+              "full_address": { "label": "Address", "format": "text" },
+              "phone_number": { "label": "Phone", "format": "text" },
               "website": { "label": "Website", "format": "link" },
               "type": { "label": "Type", "format": "text" }
             }
