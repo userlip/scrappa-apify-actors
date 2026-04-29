@@ -2,12 +2,12 @@
 
 Extract photo records for a specific Google Maps business by `business_id`. This actor is built for local SEO audits, competitive research, storefront monitoring, travel and hospitality datasets, visual QA, and workflows that already discovered a place with a Google Maps Search, Advanced Search, Autocomplete, or Business Details actor.
 
-Use it when you need Google Maps business photos as structured records with image URLs, coordinates, author/source metadata when available, and pagination data for downstream collection.
+Use it when you need Google Maps business photos as structured records with image URLs, dimensions, contributor metadata, posting age, and pagination data for downstream collection.
 
 ## What It Does
 
 - Looks up a single Google Maps business by `business_id`.
-- Returns photo records with image URLs, photo identifiers, coordinates, author/source metadata, ownership flags, likes, timestamps, and video thumbnails when Google exposes them.
+- Returns photo records with image URLs, photo identifiers, dimensions, contributor metadata, posting age, coordinates, ownership flags, likes, timestamps, and video thumbnails when Google exposes them.
 - Saves each photo as a separate item in the default Apify dataset for easy export to JSON, CSV, Excel, or integrations.
 - Saves the full Scrappa API response to the `OUTPUT` key-value store record, including `photos`, `total`, and `nextPage`.
 - Supports cached responses for faster repeat runs and lower cost.
@@ -48,6 +48,11 @@ The actor saves each photo as a separate dataset item when photos are found. Fie
 - `photo_id`
 - `photo_url`
 - `photo_url_large`
+- `width`
+- `height`
+- `contributor_name`
+- `contributor_url`
+- `posted_at`
 - `latitude`
 - `longitude`
 - `video_thumbnail_url`
@@ -67,14 +72,11 @@ The full response is also stored in the key-value store under `OUTPUT`:
       "photo_id": "AF1QipExamplePhotoId",
       "photo_url": "https://lh3.googleusercontent.com/p/example=w408-h306-k-no",
       "photo_url_large": "https://lh3.googleusercontent.com/p/example=w1200-h900-k-no",
-      "latitude": 40.7581,
-      "longitude": -73.9856,
-      "photo_index": 0,
-      "source": "Google Maps",
-      "author": "Example Local Guide",
-      "published_at": "2025-11-18T14:22:00Z",
-      "is_owner": false,
-      "likes": 12
+      "width": 4032,
+      "height": 2268,
+      "contributor_name": "Example Local Guide",
+      "contributor_url": "https://www.google.com/maps/contrib/example",
+      "posted_at": "7 months ago"
     }
   ],
   "total": 1,
@@ -89,15 +91,11 @@ The full response is also stored in the key-value store under `OUTPUT`:
   "photo_id": "AF1QipExamplePhotoId",
   "photo_url": "https://lh3.googleusercontent.com/p/example=w408-h306-k-no",
   "photo_url_large": "https://lh3.googleusercontent.com/p/example=w1200-h900-k-no",
-  "latitude": 40.7581,
-  "longitude": -73.9856,
-  "video_thumbnail_url": null,
-  "photo_index": 0,
-  "source": "Google Maps",
-  "author": "Example Local Guide",
-  "published_at": "2025-11-18T14:22:00Z",
-  "is_owner": false,
-  "likes": 12
+  "width": 4032,
+  "height": 2268,
+  "contributor_name": "Example Local Guide",
+  "contributor_url": "https://www.google.com/maps/contrib/example",
+  "posted_at": "7 months ago"
 }
 ```
 

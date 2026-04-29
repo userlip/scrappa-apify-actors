@@ -18,14 +18,25 @@
       "views": {
         "overview": {
           "title": "Photos",
-          "transformation": { "fields": ["photo_url", "photo_id", "latitude", "longitude"] },
+          "transformation": {
+            "fields": [
+              "photo_url_large",
+              "width",
+              "height",
+              "contributor_name",
+              "posted_at",
+              "photo_id"
+            ]
+          },
           "display": {
             "component": "table",
             "properties": {
-              "photo_url": { "label": "Photo", "format": "link" },
-              "photo_id": { "label": "ID", "format": "text" },
-              "latitude": { "label": "Lat", "format": "number" },
-              "longitude": { "label": "Lon", "format": "number" }
+              "photo_url_large": { "label": "Photo", "format": "link" },
+              "width": { "label": "Width", "format": "number" },
+              "height": { "label": "Height", "format": "number" },
+              "contributor_name": { "label": "Contributor", "format": "text" },
+              "posted_at": { "label": "Posted", "format": "text" },
+              "photo_id": { "label": "ID", "format": "text" }
             }
           }
         }
