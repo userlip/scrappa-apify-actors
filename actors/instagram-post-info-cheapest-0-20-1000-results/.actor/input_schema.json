@@ -2,6 +2,17 @@
   "title": "Instagram Post Input",
   "type": "object",
   "schemaVersion": 1,
+  "anyOf": [
+    {
+      "required": ["url"]
+    },
+    {
+      "required": ["shortcode"]
+    },
+    {
+      "required": ["media_id"]
+    }
+  ],
   "properties": {
     "url": {
       "title": "Instagram post URL",
