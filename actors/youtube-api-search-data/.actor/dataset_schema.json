@@ -1,0 +1,217 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "type": {
+        "type": "string",
+        "title": "Result type",
+        "description": "The type of YouTube search result, such as Video, Channel, Playlist, Movie, or another result type returned by YouTube.",
+        "example": "Video"
+      },
+      "id": {
+        "type": "string",
+        "title": "Result ID",
+        "description": "The YouTube identifier for the result, such as a video ID, channel ID, or playlist ID.",
+        "example": "W6NZfCO5SIk"
+      },
+      "title": {
+        "type": "string",
+        "title": "Title",
+        "description": "The title of the YouTube search result.",
+        "example": "JavaScript Course for Beginners - Your First Step to Web Development"
+      },
+      "description": {
+        "type": ["string", "null"],
+        "title": "Description",
+        "description": "The result description or snippet returned by YouTube.",
+        "example": "Learn JavaScript basics with this quick, beginner-friendly course..."
+      },
+      "thumbnail": {
+        "type": ["string", "null"],
+        "title": "Thumbnail",
+        "description": "The main thumbnail image URL for the search result.",
+        "example": "https://i.ytimg.com/vi/W6NZfCO5SIk/hq720.jpg"
+      },
+      "duration": {
+        "type": ["string", "null"],
+        "title": "Duration",
+        "description": "The display duration for video results.",
+        "example": "48:17"
+      },
+      "viewCount": {
+        "type": ["string", "null"],
+        "title": "View count",
+        "description": "The view count text returned by YouTube.",
+        "example": "14,962,240 views"
+      },
+      "publishedTime": {
+        "type": ["string", "null"],
+        "title": "Published time",
+        "description": "The relative publish time returned by YouTube.",
+        "example": "8 years ago"
+      },
+      "channel": {
+        "type": ["object", "null"],
+        "title": "Channel",
+        "description": "Channel metadata for the result when available.",
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "title": "Channel ID",
+            "description": "The YouTube channel ID.",
+            "example": "UCWv7vMbMWH4-V0ZXdmDpPBA"
+          },
+          "name": {
+            "type": ["string", "null"],
+            "title": "Channel name",
+            "description": "The display name of the channel.",
+            "example": "Programming with Mosh"
+          },
+          "thumbnail": {
+            "type": ["string", "null"],
+            "title": "Channel thumbnail",
+            "description": "The channel thumbnail image URL.",
+            "example": "https://yt3.ggpht.com/HCv0fXFEEcD0HRyF0_qR1K7b7qO3KCzmIoyH1DEJYB94CIUFhIE5i2t2IDIPX97W1-DK4hegww=s68-c-k-c0x00ffffff-no-rj"
+          },
+          "verified": {
+            "type": ["boolean", "null"],
+            "title": "Verified channel",
+            "description": "Whether YouTube marks the channel as verified.",
+            "example": true
+          },
+          "isVerifiedArtist": {
+            "type": ["boolean", "null"],
+            "title": "Verified artist",
+            "description": "Whether YouTube marks the channel as a verified artist.",
+            "example": false
+          },
+          "url": {
+            "type": ["string", "null"],
+            "title": "Channel URL",
+            "description": "The YouTube channel URL when provided.",
+            "example": "https://www.youtube.com/@programmingwithmosh"
+          }
+        }
+      },
+      "badges": {
+        "type": ["array", "null"],
+        "title": "Badges",
+        "description": "Labels or badges attached to the search result, such as CC or other YouTube result markers.",
+        "items": {
+          "type": "string"
+        },
+        "example": ["CC"]
+      },
+      "isLive": {
+        "type": ["boolean", "null"],
+        "title": "Is live",
+        "description": "Whether the result is currently live.",
+        "example": false
+      },
+      "isShort": {
+        "type": ["boolean", "null"],
+        "title": "Is Short",
+        "description": "Whether the result is a YouTube Short.",
+        "example": false
+      },
+      "isPremium": {
+        "type": ["boolean", "null"],
+        "title": "Is Premium",
+        "description": "Whether the result is marked as YouTube Premium content.",
+        "example": false
+      },
+      "expandableMetadata": {
+        "type": ["object", "null"],
+        "title": "Expandable metadata",
+        "description": "Additional metadata returned by YouTube, such as chapter summaries or expandable result details.",
+        "example": {
+          "title": "Intro | 1 JavaScript Basics | 2 Numbers and Math",
+          "thumbnail": "https://i.ytimg.com/vi/EerdGm-ehJQ/hqdefault.jpg",
+          "label": "27 chapters"
+        }
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "YouTube Search Results",
+      "transformation": {
+        "fields": [
+          "type",
+          "id",
+          "title",
+          "channel.name",
+          "channel.url",
+          "duration",
+          "viewCount",
+          "publishedTime",
+          "thumbnail",
+          "badges",
+          "isLive",
+          "isShort",
+          "isPremium"
+        ],
+        "flatten": ["channel"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "type": {
+            "label": "Type",
+            "format": "text"
+          },
+          "id": {
+            "label": "ID",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "channel.name": {
+            "label": "Channel",
+            "format": "text"
+          },
+          "channel.url": {
+            "label": "Channel URL",
+            "format": "link"
+          },
+          "duration": {
+            "label": "Duration",
+            "format": "text"
+          },
+          "viewCount": {
+            "label": "Views",
+            "format": "text"
+          },
+          "publishedTime": {
+            "label": "Published",
+            "format": "text"
+          },
+          "thumbnail": {
+            "label": "Thumbnail",
+            "format": "image"
+          },
+          "badges": {
+            "label": "Badges",
+            "format": "array"
+          },
+          "isLive": {
+            "label": "Live",
+            "format": "boolean"
+          },
+          "isShort": {
+            "label": "Short",
+            "format": "boolean"
+          },
+          "isPremium": {
+            "label": "Premium",
+            "format": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
