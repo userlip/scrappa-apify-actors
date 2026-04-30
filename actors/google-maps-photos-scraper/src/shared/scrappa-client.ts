@@ -95,7 +95,7 @@ export class ScrappaClient {
             return response.json() as Promise<T>;
         } catch (error) {
             if (error instanceof Error && error.name === 'AbortError') {
-                throw new Error(`Scrappa API request timed out after ${this.timeoutMs}ms`);
+                throw new Error(`Scrappa API request timed out after ${this.timeoutMs}ms`, { cause: error });
             }
             throw error;
         } finally {
