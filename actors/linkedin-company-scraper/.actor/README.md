@@ -1,6 +1,8 @@
 # LinkedIn Company Scraper
 
-Scrape public LinkedIn company pages without a LinkedIn login. Use this Actor to enrich company records, qualify B2B accounts, monitor competitors, and collect public company profile data from LinkedIn at a predictable price.
+Scrape public LinkedIn company pages without a LinkedIn login. Use this actor to collect company profile data, websites, industries, headcount signals, follower counts, specialties, public posts, public employees, similar pages, locations, and funding details when LinkedIn exposes them.
+
+This actor is powered by Scrappa and is priced for simple Apify runs at **$0.30 per 1,000 results**.
 
 ## What You Get
 
@@ -11,16 +13,19 @@ Scrape public LinkedIn company pages without a LinkedIn login. Use this Actor to
 - Public employees, posts, similar pages, and funding data when available
 - Cache controls for faster repeat runs and lower duplicate work
 - One clean dataset item per company URL, plus the full response in `OUTPUT`
+- No LinkedIn login and no extra API key required inside Apify
 
-## Input
+## Best For
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `url` | string | Yes | Full LinkedIn company page URL. Example: `https://www.linkedin.com/company/microsoft` |
-| `use_cache` | boolean | No | Use Scrappa cached results when available. Default: `false` |
-| `maximum_cache_age` | integer | No | Maximum cache age in seconds. Only applies when `use_cache` is enabled |
+- Lead generation teams enriching account lists from LinkedIn company URLs
+- Sales ops teams checking company size, industry, website, and follower count
+- Market researchers comparing competitors and similar LinkedIn pages
+- Recruiters and talent teams mapping company pages and visible employee signals
+- RevOps and data teams that need a no-login LinkedIn company enrichment step in Apify
 
-### Example Input
+## Tested Input
+
+This input was tested successfully on Apify with actor `EMGCTVXuOBRERiDMf`:
 
 ```json
 {
@@ -30,34 +35,63 @@ Scrape public LinkedIn company pages without a LinkedIn login. Use this Actor to
 }
 ```
 
-## Output
+The actor accepts public LinkedIn company URLs in this format:
 
-Each run pushes one company object to the default dataset and stores the same full response in the key-value store under `OUTPUT`.
+```text
+https://www.linkedin.com/company/company-slug
+```
 
-### Main Fields
+Country subdomains such as `de.linkedin.com` or `uk.linkedin.com` are normalized to `www.linkedin.com`, and query strings are removed before scraping.
 
-| Field | Description |
-| --- | --- |
-| `success` | Whether the scrape completed successfully |
-| `name` | Company name from LinkedIn |
-| `description` | Public company description/about text |
-| `logo` | Company logo URL |
-| `website` | Website listed on the LinkedIn page |
-| `employee_count` | Public LinkedIn employee count |
-| `address` | Array of office address objects when available |
-| `posts` | Array of public company posts when available |
-| `followers` | Public LinkedIn follower count |
-| `similar_pages` | Related company pages suggested by LinkedIn |
-| `specialties` | Array of specialties and topic keywords |
-| `employees` | Array of public employee preview objects when available |
-| `funding` | Funding object when available, otherwise `null` |
-| `industry` | LinkedIn industry label |
-| `size` | LinkedIn company size label |
-| `type` | Company type, such as `Public Company` |
-| `cached` | Whether the result came from cache |
-| `cached_at` | Timestamp for the cached result when returned |
+## Input
 
-### Example Output
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `url` | string | Yes | Full public LinkedIn company URL, for example `https://www.linkedin.com/company/microsoft`. |
+| `use_cache` | boolean | No | When enabled, asks Scrappa to return a cached result when available. Default in the Apify input form is `false`. |
+| `maximum_cache_age` | integer | No | Maximum cache age in seconds. Use `2592000` for up to 30 days. Only useful when cache is enabled. |
+
+## Cache Behavior
+
+By default, the actor requests fresh data. If `use_cache` is set to `true`, the actor sends `use_cache=1` to Scrappa and may return an existing Scrappa result instead of triggering a new scrape.
+
+Use `maximum_cache_age` to control how old a cached result can be. For example, `2592000` allows cached data up to 30 days old. Cached responses include:
+
+- `cached`: `true` or `false`
+- `cached_at`: timestamp for the cached Scrappa result, when available
+
+Cache is useful for repeated enrichment jobs, QA runs, marketplace tests, and workflows where company profile data does not need to be refreshed on every run.
+
+## Output Fields
+
+Each successful company scrape is pushed to the default Apify dataset and saved in the key-value store under `OUTPUT`.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `success` | boolean | Whether Scrappa returned a successful company result. |
+| `name` | string | Company name from the LinkedIn page. |
+| `description` | string | Public company description or about text when available. |
+| `logo` | string | Company logo URL when available. |
+| `website` | string | Website URL listed on LinkedIn. |
+| `employee_count` | number | Public LinkedIn employee count signal. |
+| `followers` | number | LinkedIn follower count. |
+| `industry` | string | Company industry. |
+| `size` | string | LinkedIn company size range, for example `10,001+ employees`. |
+| `type` | string | Company type, for example `Public Company` or `Privately Held`. |
+| `address` | array | Public location objects with available street, city, state, country, and postal code fields. |
+| `posts` | array | Public company post summaries when available. |
+| `similar_pages` | array | Similar LinkedIn company pages with `name` and `url`. |
+| `specialties` | array or string | Company specialties listed on LinkedIn. Scrappa may return either a list or a comma-separated text value depending on the source page. |
+| `employees` | array | Public employee preview objects with `name`, `title`, and `profile_url` when available. |
+| `funding` | object or null | Funding details when LinkedIn exposes them. |
+| `cached` | boolean | Whether the result came from Scrappa cache. |
+| `cached_at` | string | Cache timestamp when returned by Scrappa. |
+| `message` | string | Error or not-found message for unsuccessful results. |
+| `status_code` | number | Status code for unsuccessful results, including `404` for not found. |
+
+Nested arrays are returned only when LinkedIn exposes the data publicly for the requested company. Some valid company pages return empty arrays for posts, employees, addresses, or similar pages.
+
+## Example Output
 
 ```json
 {
@@ -71,13 +105,7 @@ Each run pushes one company object to the default dataset and stores the same fu
   "posts": [],
   "followers": 28121865,
   "similar_pages": [],
-  "specialties": [
-    "Business Software",
-    "Developer Tools",
-    "Cloud Computing",
-    "AI",
-    "Machine Learning"
-  ],
+  "specialties": "Business Software, Developer Tools, Home & Educational Software, Tablets, Search, Advertising, Servers, Windows Operating System, Windows Applications & Platforms, Smartphones, Cloud Computing, Quantum Computing, Future of Work, Productivity, AI, Artificial Intelligence, Machine Learning, Laptops, Mixed Reality, Virtual Reality, Gaming, Developers, and IT Professional",
   "employees": [],
   "funding": null,
   "industry": "Software Development",
@@ -88,32 +116,11 @@ Each run pushes one company object to the default dataset and stores the same fu
 }
 ```
 
-## Cache Controls
+## Direct Scrappa API For Higher Volume
 
-Use caching when you are refreshing the same company list or testing workflows:
+Use this Apify actor when you want a managed marketplace actor, scheduled runs, datasets, webhooks, and Apify integrations.
 
-- Set `use_cache` to `true` to allow cached results.
-- Set `maximum_cache_age` to control freshness in seconds.
-- Use `2592000` for a 30-day cache window.
-- Leave `use_cache` as `false` when you need the freshest available company profile data.
-
-## Pricing
-
-This Actor is priced at **$0.30 per 1,000 results**. There is no LinkedIn login requirement and no extra API key needed inside Apify.
-
-## Best For
-
-- B2B account enrichment from LinkedIn company URLs
-- Lead scoring and sales operations workflows
-- Market mapping by industry, size, and specialties
-- Competitive intelligence and category tracking
-- CRM cleanup for company websites, descriptions, and employee counts
-
-## Need Higher Volume?
-
-If you need direct API access, higher-throughput enrichment, or want to run LinkedIn company scraping inside your own backend, upgrade to the Scrappa API.
-
-Use the same data source directly:
+For higher-volume enrichment, lower-latency workflows, or direct backend integration, use the Scrappa API directly:
 
 ```bash
 curl "https://scrappa.co/api/linkedin/company?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fmicrosoft&use_cache=1&maximum_cache_age=2592000" \
@@ -121,8 +128,15 @@ curl "https://scrappa.co/api/linkedin/company?url=https%3A%2F%2Fwww.linkedin.com
   -H "Accept: application/json"
 ```
 
-Direct API access is the better fit when you need bulk company enrichment, scheduled syncs, CRM integrations, or custom retry and caching logic outside Apify.
+Direct API is the better fit when you need to enrich many LinkedIn company URLs from your own application, control retry logic, or combine LinkedIn company data with other Scrappa endpoints. Create or manage API keys from your Scrappa dashboard.
+
+## Notes
+
+- No LinkedIn login is required.
+- Only public LinkedIn company page data is returned.
+- The actor handles not-found companies gracefully by saving a dataset item with `success: false`, `message`, and `status_code: 404`.
+- Output availability depends on what LinkedIn exposes publicly for the specific company page.
 
 ## Support
 
-For issues or questions, contact us through Apify.
+For Apify run questions, open an issue on the actor page. For higher-volume direct API access, use Scrappa.

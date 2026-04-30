@@ -11,6 +11,11 @@ interface Photo {
     photo_id?: string;
     photo_url?: string;
     photo_url_large?: string;
+    width?: number;
+    height?: number;
+    contributor_name?: string;
+    contributor_url?: string;
+    posted_at?: string;
     latitude?: number;
     longitude?: number;
     video_thumbnail_url?: string;
