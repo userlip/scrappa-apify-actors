@@ -2,6 +2,10 @@ export function firstNonEmptyString(...values) {
     return values.find((value) => typeof value === 'string' && value.trim() !== '')?.trim();
 }
 
+export function looksLikeUrl(value) {
+    return /^(?:https?:\/\/|www\.)/i.test(value);
+}
+
 export function resolveInstagramPostInput(input = {}) {
     input = input ?? {};
 
@@ -15,6 +19,6 @@ export function resolveInstagramPostInput(input = {}) {
 
     return {
         identifier,
-        params: url ? { url } : { shortcode },
+        params: url && looksLikeUrl(url) ? { url } : { shortcode: identifier },
     };
 }

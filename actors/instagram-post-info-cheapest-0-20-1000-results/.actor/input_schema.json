@@ -2,22 +2,12 @@
   "title": "Instagram Post Input",
   "type": "object",
   "schemaVersion": 1,
-  "anyOf": [
-    {
-      "required": ["url"]
-    },
-    {
-      "required": ["shortcode"]
-    },
-    {
-      "required": ["media_id"]
-    }
-  ],
+  "required": ["url"],
   "properties": {
     "url": {
-      "title": "Instagram post URL",
+      "title": "Instagram post URL or shortcode",
       "type": "string",
-      "description": "The full Instagram post URL. Recommended format: https://www.instagram.com/username/p/SHORTCODE/",
+      "description": "The full Instagram post URL, or the Instagram shortcode. Recommended URL format: https://www.instagram.com/username/p/SHORTCODE/",
       "minLength": 1,
       "editor": "textfield"
     },

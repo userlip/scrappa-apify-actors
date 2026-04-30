@@ -22,6 +22,15 @@ test('falls back to shortcode when URL is empty', () => {
     });
 });
 
+test('uses required URL field as shortcode when it is not a URL', () => {
+    assert.deepEqual(resolveInstagramPostInput({
+        url: ' DXHKcyvEWfr ',
+    }), {
+        identifier: 'DXHKcyvEWfr',
+        params: { shortcode: 'DXHKcyvEWfr' },
+    });
+});
+
 test('falls back to legacy media_id when URL and shortcode are empty', () => {
     assert.deepEqual(resolveInstagramPostInput({
         url: '   ',
