@@ -33,6 +33,8 @@ Use it when you need Google Maps business photos as structured records with imag
 
 ## Example Input
 
+Googleplex example:
+
 ```json
 {
   "business_id": "0x808fba02425dad8f:0x6c296c66619367e0",
@@ -109,7 +111,7 @@ When a business cannot be found, the actor returns a structured dataset item:
 }
 ```
 
-## Cache Behavior
+## Caching Behavior
 
 Cache is enabled by default because photo collections are often reused across audits, enrichment jobs, and repeat exports.
 
@@ -133,7 +135,7 @@ Cache is enabled by default because photo collections are often reused across au
 - Use `photo_url_large` when you need higher-resolution images and `photo_url` for lightweight previews.
 - Expect fields to vary by business because Google Maps does not expose the same metadata for every photo.
 
-## Scale With Scrappa
+## Scale With Scrappa API
 
 This actor is a good fit for Apify workflows, scheduled jobs, exports, and no-code integrations. For larger Google Maps photo pipelines, direct API access through Scrappa can support higher-throughput enrichment, tighter backend integration, and coordinated use of related endpoints such as Google Maps Search, Business Details, Reviews, and Photos.
 
