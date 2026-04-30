@@ -2,6 +2,7 @@ export interface ScrappaConfig {
     apiKey: string;
     baseUrl?: string;
     debug?: boolean;
+    timeoutMs?: number;
 }
 
 export interface ScrappaError {
@@ -14,11 +15,13 @@ export class ScrappaClient {
     private apiKey: string;
     private baseUrl: string;
     private debug: boolean;
+    private timeoutMs: number;
 
     constructor(config: ScrappaConfig) {
         this.apiKey = config.apiKey;
         this.baseUrl = config.baseUrl ?? 'https://scrappa.co/api';
         this.debug = config.debug ?? false;
+        this.timeoutMs = config.timeoutMs ?? 60000;
     }
 
     async get<T>(endpoint: string, params: Record<string, unknown> = {}): Promise<T> {
@@ -73,15 +76,30 @@ export class ScrappaClient {
             console.log(`[Scrappa] ${method} ${url.toString()}`);
         }
 
-        const response = await fetch(url.toString(), options);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
-        if (!response.ok) {
-            const errorMessage = await this.readErrorMessage(response);
+        try {
+            const response = await fetch(url.toString(), {
+                ...options,
+                signal: controller.signal,
+            });
 
-            throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
+            if (!response.ok) {
+                const errorMessage = await this.readErrorMessage(response);
+
+                throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
+            }
+
+            return response.json() as Promise<T>;
+        } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw new Error(`Scrappa API request timed out after ${this.timeoutMs}ms`);
+            }
+            throw error;
+        } finally {
+            clearTimeout(timeoutId);
         }
-
-        return response.json() as Promise<T>;
     }
 
     private async readErrorMessage(response: Response): Promise<string> {

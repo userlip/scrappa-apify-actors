@@ -51,3 +51,31 @@ test('surfaces non-JSON upstream errors without body-read crash', async () => {
         globalThis.fetch = originalFetch;
     }
 });
+
+test('aborts Scrappa requests after the configured timeout', async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = async (_url, options = {}) => {
+        const signal = options.signal;
+        return new Promise((_resolve, reject) => {
+            signal.addEventListener('abort', () => {
+                reject(new DOMException('The operation was aborted.', 'AbortError'));
+            });
+        });
+    };
+
+    try {
+        const client = new ScrappaClient({
+            apiKey: 'test',
+            baseUrl: 'https://example.com/api',
+            timeoutMs: 10,
+        });
+
+        await assert.rejects(
+            () => client.get('/maps/simple-search', { query: 'pizza' }),
+            /Scrappa API request timed out after 10ms/
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
