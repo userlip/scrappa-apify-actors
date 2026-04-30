@@ -44,9 +44,10 @@ export class ScrappaClient {
         if (method === 'GET') {
             Object.entries(params).forEach(([key, value]) => {
                 if (value !== undefined && value !== null && value !== '') {
-                    // Convert booleans to 1/0 for Laravel API compatibility
                     if (typeof value === 'boolean') {
-                        url.searchParams.set(key, value ? '1' : '0');
+                        if (value) {
+                            url.searchParams.set(key, '1');
+                        }
                     } else {
                         url.searchParams.set(key, String(value));
                     }

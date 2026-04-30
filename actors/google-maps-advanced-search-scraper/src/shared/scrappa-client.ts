@@ -44,7 +44,13 @@ export class ScrappaClient {
         if (method === 'GET') {
             Object.entries(params).forEach(([key, value]) => {
                 if (value !== undefined && value !== null && value !== '') {
-                    url.searchParams.set(key, String(value));
+                    if (typeof value === 'boolean') {
+                        if (value) {
+                            url.searchParams.set(key, '1');
+                        }
+                    } else {
+                        url.searchParams.set(key, String(value));
+                    }
                 }
             });
         }
