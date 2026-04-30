@@ -17,6 +17,14 @@ Private accounts can still return public metadata that is visible without loggin
 
 Use one Instagram username per run.
 
+### Input Fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `username` | String | Yes | Instagram username to look up. Use a handle such as `natgeo`; an optional leading `@` is normalized automatically. |
+
+## Example Input
+
 ```json
 {
   "username": "natgeo"
@@ -24,12 +32,6 @@ Use one Instagram username per run.
 ```
 
 You can enter the username with or without the `@` symbol. For example, `natgeo` and `@natgeo` are both accepted.
-
-### Input fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `username` | String | Yes | Instagram username to look up. Use a handle such as `natgeo`; an optional leading `@` is normalized automatically. |
 
 ## Output
 
@@ -48,9 +50,10 @@ Each run saves one profile object to the default Apify dataset. The exact fields
 | `is_verified` | Whether the account is verified. |
 | `is_private` | Whether the account is private. |
 | `is_business_account` | Whether Instagram marks the profile as a business account, when available. |
+| `is_professional_account` | Whether Instagram marks the profile as a professional account, when available. |
 | `category_name` | Public category label, when available. |
 
-Example dataset item:
+## Example Output
 
 ```json
 {
