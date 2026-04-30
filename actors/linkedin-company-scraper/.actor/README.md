@@ -4,6 +4,17 @@ Scrape public LinkedIn company pages without a LinkedIn login. Use this actor to
 
 This actor is powered by Scrappa and is priced for simple Apify runs at **$0.30 per 1,000 results**.
 
+## What You Get
+
+- Company name, description, logo, website, industry, type, and size
+- Public follower count and employee count
+- Specialties and positioning keywords from the company page
+- Public office address data when LinkedIn exposes it
+- Public employees, posts, similar pages, and funding data when available
+- Cache controls for faster repeat runs and lower duplicate work
+- One clean dataset item per company URL, plus the full response in `OUTPUT`
+- No LinkedIn login and no extra API key required inside Apify
+
 ## Best For
 
 - Lead generation teams enriching account lists from LinkedIn company URLs
