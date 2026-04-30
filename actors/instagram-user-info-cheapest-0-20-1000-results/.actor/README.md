@@ -4,7 +4,7 @@ Extract public Instagram profile information by username. This Actor is built fo
 
 No Instagram login, cookies, proxy setup, or browser session is required. Provide a username and the Actor returns the available public profile fields to an Apify dataset.
 
-## What you can scrape
+## What It Does
 
 - Public profile identity fields such as username, full name, biography, external URL, profile picture, and category.
 - Audience and activity counts such as followers, following, and media count.
@@ -80,19 +80,37 @@ Results are stored in the Actor's default dataset. From Apify, you can export th
 
 Use JSON for full nested/raw fields, or CSV and Excel when you want spreadsheet-friendly columns for profile research, enrichment, or reporting.
 
-## No-login positioning
+## Authentication
 
 This Actor does not require an Instagram account. It does not ask for Instagram credentials, session cookies, or two-factor authentication codes.
 
 That makes it simple to run in Apify tasks, schedules, and API workflows. It also means the Actor only returns public information available through the profile lookup and does not unlock private account content.
 
-## Typical use cases
+## Common Use Cases
 
 - Enrich a list of Instagram handles with follower counts and bios.
 - Check whether a public account is verified, private, or business-related.
 - Monitor creator, brand, competitor, or publisher profile metadata.
 - Export profile records into a CRM, spreadsheet, or data warehouse.
 - Validate Instagram usernames before running larger data workflows.
+
+## Recommended Workflow
+
+1. Prepare a list of Instagram usernames from your CRM, spreadsheet, research workflow, or another Apify Actor.
+2. Run this Actor once per username to fetch the public profile record.
+3. Export the dataset as JSON when you need full raw fields, or CSV/Excel when you need spreadsheet-friendly profile columns.
+4. Join the exported profile data with your existing leads, creator lists, competitor trackers, or enrichment pipeline.
+
+## Tips For Better Results
+
+- Use exact Instagram usernames instead of display names or profile URLs.
+- Keep both `username` and any exported account ID fields in downstream systems so you can deduplicate profile records later.
+- Re-run important profiles periodically if you monitor follower count, biography, verification, or business-account changes.
+- For high-volume enrichment across many usernames, use Apify tasks or API calls to schedule repeat runs.
+
+## Pricing
+
+$0.20 per 1,000 results. No Instagram login required.
 
 ## Notes and limits
 
