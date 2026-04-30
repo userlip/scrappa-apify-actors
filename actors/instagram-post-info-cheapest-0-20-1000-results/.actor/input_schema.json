@@ -2,7 +2,6 @@
   "title": "Instagram Post Input",
   "type": "object",
   "schemaVersion": 1,
-  "required": ["url"],
   "properties": {
     "url": {
       "title": "Instagram post URL or shortcode",
@@ -14,14 +13,14 @@
     "shortcode": {
       "title": "Instagram post shortcode",
       "type": "string",
-      "description": "The Instagram post shortcode, for example DUBtwxGEqz2.",
+      "description": "Legacy input alias. Prefer the URL or shortcode field above for new integrations. Example shortcode: DUBtwxGEqz2.",
       "minLength": 1,
       "editor": "textfield"
     },
     "media_id": {
       "title": "Instagram media id / shortcode",
       "type": "string",
-      "description": "Legacy input name. This actor treats media_id as the Instagram post shortcode.",
+      "description": "Deprecated legacy input name. Use the URL or shortcode field above for new integrations. This actor treats media_id as the Instagram post shortcode.",
       "minLength": 1,
       "editor": "textfield"
     }

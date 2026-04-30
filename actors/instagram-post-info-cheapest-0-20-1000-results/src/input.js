@@ -3,7 +3,7 @@ export function firstNonEmptyString(...values) {
 }
 
 export function looksLikeUrl(value) {
-    return /^(?:https?:\/\/|www\.)/i.test(value);
+    return /^(?:https?:\/\/|www\.|[a-z0-9][a-z0-9.-]*\.[a-z]{2,}\/)/i.test(value);
 }
 
 export function resolveInstagramPostInput(input = {}) {
@@ -19,6 +19,7 @@ export function resolveInstagramPostInput(input = {}) {
 
     return {
         identifier,
+        // The primary field accepts either a URL or a shortcode for Apify schema compatibility.
         params: url && looksLikeUrl(url) ? { url } : { shortcode: identifier },
     };
 }
