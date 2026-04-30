@@ -27,7 +27,7 @@
               "rating": { "label": "Rating", "format": "number" },
               "review_count": { "label": "Reviews", "format": "number" },
               "full_address": { "label": "Address", "format": "text" },
-              "phone_numbers": { "label": "Phone numbers", "format": "text" },
+              "phone_numbers": { "label": "Phone numbers", "format": "array" },
               "website": { "label": "Website", "format": "link" },
               "type": { "label": "Type", "format": "text" }
             }
