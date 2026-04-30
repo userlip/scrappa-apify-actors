@@ -2,7 +2,7 @@
 
 Extract public Instagram profile information by username. This Actor is built for profile lookups, creator research, lead enrichment, competitor monitoring, and quick checks of public Instagram account metadata.
 
-No Instagram login, cookies, proxy setup, or browser session is required. Provide a username and the Actor returns the available public profile fields to an Apify dataset.
+No Instagram login, cookies, proxy setup, or browser session is required. Provide a username and the Actor returns the available public profile fields to an Apify dataset. The Actor uses a Scrappa API key configured as the `SCRAPPA_API_KEY` environment variable; set this secret if you fork or self-deploy the Actor.
 
 ## What It Does
 
@@ -110,7 +110,7 @@ That makes it simple to run in Apify tasks, schedules, and API workflows. It als
 
 ## Pricing
 
-$0.20 per 1,000 results. No Instagram login required.
+$0.20 per 1,000 results. No Instagram login required. Requires `SCRAPPA_API_KEY` in the Actor environment.
 
 ## Notes and limits
 
