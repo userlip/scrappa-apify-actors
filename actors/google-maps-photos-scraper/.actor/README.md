@@ -106,7 +106,7 @@ When a business cannot be found, the actor returns a structured dataset item:
 ```json
 {
   "success": false,
-  "business_id": "0xinvalid:0xinvalid",
+  "business_id": "0x0000000000000000:0x0000000000000000",
   "error": "Business not found"
 }
 ```
