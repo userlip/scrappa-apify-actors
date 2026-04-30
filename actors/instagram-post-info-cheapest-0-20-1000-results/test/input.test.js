@@ -12,10 +12,29 @@ test('uses a non-empty URL when provided', () => {
     });
 });
 
+test('uses a bare domain URL as URL input', () => {
+    assert.deepEqual(resolveInstagramPostInput({
+        url: ' instagram.com/natgeo/p/DXHKcyvEWfr/ ',
+        shortcode: 'SHOULD_NOT_BE_USED',
+    }), {
+        identifier: 'instagram.com/natgeo/p/DXHKcyvEWfr/',
+        params: { url: 'instagram.com/natgeo/p/DXHKcyvEWfr/' },
+    });
+});
+
 test('falls back to shortcode when URL is empty', () => {
     assert.deepEqual(resolveInstagramPostInput({
         url: '',
         shortcode: 'DXHKcyvEWfr',
+    }), {
+        identifier: 'DXHKcyvEWfr',
+        params: { shortcode: 'DXHKcyvEWfr' },
+    });
+});
+
+test('uses URL field as shortcode when it is not a URL', () => {
+    assert.deepEqual(resolveInstagramPostInput({
+        url: ' DXHKcyvEWfr ',
     }), {
         identifier: 'DXHKcyvEWfr',
         params: { shortcode: 'DXHKcyvEWfr' },
