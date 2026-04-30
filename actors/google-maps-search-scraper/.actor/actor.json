@@ -19,15 +19,15 @@
       "views": {
         "overview": {
           "title": "Search Results",
-          "transformation": { "fields": ["name", "rating", "review_count", "address", "phone", "website", "type"] },
+          "transformation": { "fields": ["name", "rating", "review_count", "full_address", "phone_numbers", "website", "type"] },
           "display": {
             "component": "table",
             "properties": {
               "name": { "label": "Name", "format": "text" },
               "rating": { "label": "Rating", "format": "number" },
               "review_count": { "label": "Reviews", "format": "number" },
-              "address": { "label": "Address", "format": "text" },
-              "phone": { "label": "Phone", "format": "text" },
+              "full_address": { "label": "Address", "format": "text" },
+              "phone_numbers": { "label": "Phone numbers", "format": "array" },
               "website": { "label": "Website", "format": "link" },
               "type": { "label": "Type", "format": "text" }
             }
