@@ -25,7 +25,11 @@ export function buildSearchParams(input: GoogleMapsSearchInput): Record<string, 
 
     if (input.use_cache !== false) {
         params.use_cache = 1;
-        if (input.maximum_cache_age !== undefined) {
+        if (
+            typeof input.maximum_cache_age === 'number'
+            && Number.isInteger(input.maximum_cache_age)
+            && input.maximum_cache_age >= 1
+        ) {
             params.maximum_cache_age = input.maximum_cache_age;
         }
     }

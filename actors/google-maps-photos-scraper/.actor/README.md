@@ -29,7 +29,7 @@ Use it when you need Google Maps business photos as structured records with imag
 |-------|------|----------|-------------|
 | `business_id` | string | Yes | Google Maps business identifier, typically in the `0x...:0x...` format. Use a `business_id` returned by Scrappa Google Maps Search, Advanced Search, Autocomplete, Business Details, Reviews, or another Google Maps discovery workflow. |
 | `use_cache` | boolean | No | Use cached data when available. Defaults to `true`. Set to `false` when you need the freshest available photo list. |
-| `maximum_cache_age` | integer | No | Maximum allowed cache age in seconds. Defaults to `3600`. Set to `0` to always request fresh data when cache is enabled. |
+| `maximum_cache_age` | integer | No | Maximum allowed cache age in seconds. Defaults to `3600`. Must be at least `1` when cache is enabled. Set `use_cache` to `false` when you need the freshest available photo list. |
 
 ## Example Input
 
@@ -117,7 +117,7 @@ Cache is enabled by default because photo collections are often reused across au
 
 - Leave `use_cache` as `true` for faster repeat runs and lower-cost workflows.
 - Set `maximum_cache_age` to the maximum age you will accept, in seconds. The default is `3600` seconds.
-- Set `maximum_cache_age` to `0` when cache is enabled but you want the freshest available response.
+- Set `use_cache` to `false` when you want the freshest available response.
 - Set `use_cache` to `false` when you are checking for newly added or recently removed Google Maps photos.
 
 ## Recommended Workflow

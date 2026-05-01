@@ -28,7 +28,6 @@ test('omits use_cache when it is explicitly false', () => {
 
     assert.deepEqual(params, {
         url,
-        maximum_cache_age: 1,
     });
     assert.deepEqual(warnings, []);
 });
@@ -61,6 +60,22 @@ test('does not forward cache age when it is negative', () => {
     });
     assert.equal(warnings.length, 1);
     assert.match(warnings[0], /maximum_cache_age must be at least 1, got -1/);
+});
+
+test('does not forward cache age when it is not an integer number', () => {
+    for (const maximum_cache_age of [1.5, '3600', null, Number.NaN]) {
+        const warnings = [];
+        const params = buildLinkedInPostParams(
+            { url, use_cache: true, maximum_cache_age },
+            (message) => warnings.push(message),
+        );
+
+        assert.deepEqual(params, {
+            url,
+            use_cache: true,
+        });
+        assert.equal(warnings.length, 1);
+    }
 });
 
 test('omits cache age when it is undefined', () => {

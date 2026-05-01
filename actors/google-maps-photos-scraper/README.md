@@ -39,7 +39,7 @@ Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format. Google Plac
 | --- | --- | --- | --- | --- |
 | `business_id` | string | Yes | - | Google Maps business ID for the listing you want to inspect, in `0x[hex]:0x[hex]` format. |
 | `use_cache` | boolean | No | `true` | Uses cached Scrappa results when available for faster and lower-cost runs. |
-| `maximum_cache_age` | integer | No | `3600` | Controls how old cached results can be, in seconds. Set to `0` when you need the freshest available data. |
+| `maximum_cache_age` | integer | No | `3600` | Controls how old cached results can be, in seconds. Must be at least `1` when cache is enabled. Disable `use_cache` when you need the freshest available data. |
 
 ## Output
 

@@ -27,7 +27,7 @@ Use it when you need one authoritative business record with contact data, rating
 |-------|------|----------|-------------|
 | `business_id` | string | Yes | Google Maps business identifier, typically in the `0x...:0x...` format. Use a `business_id` returned by Scrappa Google Maps Search, Advanced Search, Autocomplete, Reviews, or another Google Maps discovery workflow. |
 | `use_cache` | boolean | No | Use cached data when available. Defaults to `true`. Set to `false` when you need the freshest available profile. |
-| `maximum_cache_age` | integer | No | Maximum allowed cache age in seconds. Defaults to `3600`. Set to `0` to always request fresh data when cache is enabled. |
+| `maximum_cache_age` | integer | No | Maximum allowed cache age in seconds. Defaults to `3600`. Must be at least `1` when cache is enabled. Set `use_cache` to `false` when you need the freshest available profile. |
 
 ## Example Input
 

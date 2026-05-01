@@ -23,7 +23,7 @@ Extract customer reviews from a Google Maps business. Get review text, ratings, 
 | `search` | string | No | Search query to match within reviews |
 | `debug` | boolean | No | Enable debug logging |
 | `use_cache` | boolean | No | Use cached results when available (default: true) |
-| `maximum_cache_age` | integer | No | Maximum cache age in seconds (default: 3600, set 0 for fresh data) |
+| `maximum_cache_age` | integer | No | Maximum cache age in seconds. Defaults to `3600`. Must be at least `1` when cache is enabled. Set `use_cache` to `false` for fresh data. |
 
 ## Output
 

@@ -1,7 +1,7 @@
 export interface LinkedInPostInput {
     url: string;
     use_cache?: boolean;
-    maximum_cache_age?: number;
+    maximum_cache_age?: unknown;
 }
 
 export function buildLinkedInPostParams(
@@ -18,8 +18,12 @@ export function buildLinkedInPostParams(
         params.use_cache = true;
     }
 
-    if (input.maximum_cache_age !== undefined) {
-        if (input.maximum_cache_age >= 1) {
+    if (input.maximum_cache_age !== undefined && input.use_cache) {
+        if (
+            typeof input.maximum_cache_age === 'number'
+            && Number.isInteger(input.maximum_cache_age)
+            && input.maximum_cache_age >= 1
+        ) {
             params.maximum_cache_age = input.maximum_cache_age;
         } else {
             warn(`maximum_cache_age must be at least 1, got ${input.maximum_cache_age}. Using default cache behavior.`);

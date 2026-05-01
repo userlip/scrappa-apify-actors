@@ -21,7 +21,7 @@
     "maximum_cache_age": {
       "title": "Maximum Cache Age (seconds)",
       "type": "integer",
-      "description": "Maximum age of cached results in seconds. Must be at least 1.",
+      "description": "Maximum age of cached results in seconds. Must be at least 1. Only used if Use Cache is enabled.",
       "editor": "number",
       "minimum": 1,
       "default": 3600
