@@ -6,8 +6,10 @@ CURRENT STATUS:
 ===============
 
 The investigation below captured issues that have since been fixed in the
-Google Maps Search actor. Current verification passes with:
+Google Maps Search actor. Current verification passes from
+actors/google-maps-search-scraper with:
 
+  • npm run build
   • npm run typecheck
   • node --test test/*.test.mjs
 
@@ -110,14 +112,16 @@ MEDIUM PRIORITY (Nice to have):
 ================================================================================
 
 FILES AFFECTED:
-  1. /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/src/main.ts
-  2. /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/input_schema.json
-  3. /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/actor.json
-  4. /Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/README.md
+  1. actors/google-maps-search-scraper/src/main.ts
+  2. actors/google-maps-search-scraper/src/output-aliases.ts
+  3. actors/google-maps-search-scraper/src/search-params.ts
+  4. actors/google-maps-search-scraper/.actor/input_schema.json
+  5. actors/google-maps-search-scraper/.actor/actor.json
+  6. actors/google-maps-search-scraper/.actor/README.md
 
 REFERENCE SOURCES:
-  • Scrappa: /Users/marindelija/Documents/Development/scrappa/app/Http/Requests/SimpleSearchRequest.php
-  • Scrappa: /Users/marindelija/Documents/Development/scrappa/app/Http/Controllers/Api/GoogleMapsApiController.php
-  • Scrappa: /Users/marindelija/Documents/Development/scrappa/database/data/google-maps-api.json
+  • Scrappa SimpleSearchRequest
+  • Scrappa GoogleMapsApiController
+  • Scrappa Google Maps API fixture data
 
 ================================================================================

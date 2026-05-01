@@ -2,8 +2,11 @@
 
 ## Current Status
 
-The issues below were investigated before the Google Maps Search actor was updated. As of the current code, the critical schema, response mapping, validation, debug, dataset view, and documentation issues are fixed. Verification:
+The issues below were investigated before the Google Maps Search actor was updated. As of the current code, the critical schema, response mapping, validation, debug, dataset view, and documentation issues are fixed.
 
+Verification from `actors/google-maps-search-scraper`:
+
+- `npm run build`
 - `npm run typecheck`
 - `node --test test/*.test.mjs`
 
@@ -323,9 +326,11 @@ After fixes are applied:
 
 ---
 
-## FILES TO MODIFY
+## FILES REVIEWED
 
-1. `/Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/src/main.ts`
-2. `/Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/input_schema.json`
-3. `/Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/actor.json`
-4. `/Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/README.md`
+1. `actors/google-maps-search-scraper/src/main.ts`
+2. `actors/google-maps-search-scraper/src/output-aliases.ts`
+3. `actors/google-maps-search-scraper/src/search-params.ts`
+4. `actors/google-maps-search-scraper/.actor/input_schema.json`
+5. `actors/google-maps-search-scraper/.actor/actor.json`
+6. `actors/google-maps-search-scraper/.actor/README.md`
