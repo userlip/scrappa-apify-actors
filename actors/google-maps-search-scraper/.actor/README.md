@@ -20,7 +20,7 @@ Search for businesses on Google Maps at scale. This actor returns Scrappa Google
 | `gl` | string | No | Region code in ISO 3166-1 alpha-2 format, such as `us`, `de`, or `uk`. |
 | `debug` | boolean | No | Enable Scrappa debug output for troubleshooting. Useful only for accounts with debug access. Defaults to `false`. |
 | `use_cache` | boolean | No | Use cached data when available. Defaults to `true`. |
-| `maximum_cache_age` | integer | No | Maximum allowed cache age in seconds. Defaults to `3600`. Set to `0` to request fresh data when cache is enabled. |
+| `maximum_cache_age` | integer | No | Maximum allowed cache age in seconds. Defaults to `3600`. Must be at least `1` when cache is enabled. Set `use_cache` to `false` when you need the freshest available data. |
 | `fallback_zoom` | integer | No | Zoom level used when retrying via advanced search after a transient simple-search failure. Defaults to `13`. |
 
 ## Example Input
