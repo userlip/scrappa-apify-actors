@@ -22,9 +22,9 @@
     "maximum_cache_age": {
       "title": "Maximum Cache Age",
       "type": "integer",
-      "description": "Maximum age of cached data in seconds (default: 2592000 = 30 days). Only used if use_cache is enabled.",
+      "description": "Maximum age of cached data in seconds (default: 2592000 = 30 days). Must be at least 1 second. Only used if use_cache is enabled.",
       "editor": "number",
-      "minimum": 0,
+      "minimum": 1,
       "default": 2592000
     }
   },

@@ -140,11 +140,14 @@ async function main(): Promise<void> {
 
         const params: Record<string, unknown> = {
             url: normalizedUrl,
-            maximum_cache_age: input.maximum_cache_age,
         };
 
         if (input.use_cache) {
             params.use_cache = 1;
+        }
+
+        if (input.maximum_cache_age !== undefined) {
+            params.maximum_cache_age = input.maximum_cache_age;
         }
 
         const response = await client.get<LinkedInProfileResponse>('/linkedin/profile', params);
