@@ -1,11 +1,7 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/index.js';
-
-interface LinkedInPostInput {
-    url: string;
-    use_cache?: boolean;
-    maximum_cache_age?: number;
-}
+import { buildLinkedInPostParams } from './search-params.js';
+import type { LinkedInPostInput } from './search-params.js';
 
 interface Author {
     name?: string;
@@ -69,14 +65,7 @@ async function main(): Promise<void> {
 
         const client = new ScrappaClient({ apiKey });
 
-        const params: Record<string, unknown> = {
-            url: input.url,
-            maximum_cache_age: input.maximum_cache_age,
-        };
-
-        if (input.use_cache) {
-            params.use_cache = 1;
-        }
+        const params = buildLinkedInPostParams(input);
 
         let response: LinkedInPostResponse;
         try {
