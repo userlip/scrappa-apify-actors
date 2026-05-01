@@ -2,7 +2,7 @@
 
 Extract photo URLs and visual metadata from a Google Maps business listing by business ID. Use this actor to build location galleries, audit brand imagery, monitor customer-uploaded photos, and collect visual evidence for local business research.
 
-Apify actor ID: `gLbfii9Nq4H7auMnN`
+Apify actor: [`gLbfii9Nq4H7auMnN`](https://console.apify.com/actors/gLbfii9Nq4H7auMnN)
 
 ## Best for
 
@@ -54,8 +54,13 @@ The actor also writes an `OUTPUT` key-value store record with:
 
 ```json
 {
-  "photos": [],
-  "total": 0,
+  "photos": [
+    {
+      "photo_id": "CIABIhCZJXgWXJBLW3f-sOE573RB",
+      "photo_url": "https://lh3.googleusercontent.com/..."
+    }
+  ],
+  "total": 1,
   "nextPage": null
 }
 ```
@@ -85,7 +90,7 @@ Caching is enabled by default because photo lists usually do not change minute b
 For higher-volume or direct API workflows, use Scrappa's Google Maps endpoints directly and keep this actor as the Apify-ready no-code runner.
 
 ```bash
-curl "https://scrappa.co/api/maps/photos?business_id=0x808fba02425dad8f:0x6c296c66619367e0&use_cache=1&maximum_cache_age=3600" \
+curl 'https://scrappa.co/api/maps/photos?business_id=0x808fba02425dad8f:0x6c296c66619367e0&use_cache=1&maximum_cache_age=3600' \
   -H "X-API-Key: YOUR_SCRAPPA_API_KEY" \
   -H "Accept: application/json"
 ```
