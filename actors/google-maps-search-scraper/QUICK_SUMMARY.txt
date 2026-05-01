@@ -6,8 +6,8 @@ CURRENT STATUS:
 ===============
 
 The investigation below captured issues that have since been fixed in the
-Google Maps Search actor. Current verification passes from
-actors/google-maps-search-scraper with:
+Google Maps Search actor. Run verification from
+actors/google-maps-search-scraper:
 
   • npm run build
   • npm run typecheck
