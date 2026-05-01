@@ -16,10 +16,10 @@ Pricing: **$0.30 per 1,000 results**. No Google Maps API key required.
 
 ## Best for
 
-- Directory builders enriching local business profiles with visual data.
-- Brand, reputation, and operations teams reviewing location imagery.
+- Local SEO and directory data teams.
+- Brand, reputation, and field operations teams.
 - Franchise, hospitality, healthcare, agency, and retail analysts.
-- Data teams joining Google Maps search, details, reviews, and photos exports.
+- Developers building Google Maps enrichment pipelines.
 
 ## Input
 
