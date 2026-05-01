@@ -2,9 +2,18 @@
 
 Extract photo URLs and visual metadata from a Google Maps business listing by business ID. Use this actor to build location galleries, audit brand imagery, monitor customer-uploaded photos, and collect visual evidence for local business research.
 
+Apify actor ID: `gLbfii9Nq4H7auMnN`
+
+## Best for
+
+- Local business directories and CRM enrichment that need Google Maps image URLs.
+- Brand, reputation, or operations teams monitoring customer-uploaded photos.
+- Franchise, hotel, restaurant, clinic, agency, and retail location audits.
+- Competitor tracking and site-selection research that uses visual evidence.
+
 ## Input
 
-Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format.
+Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format. Google Place IDs such as `ChIJ...` are not accepted by this actor; use the Google Maps business ID format shown below.
 
 ```json
 {
@@ -16,9 +25,11 @@ Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format.
 
 ### Input fields
 
-- `business_id` - Required. Google Maps business ID for the listing you want to inspect.
-- `use_cache` - Optional. Defaults to `true`. Uses cached Scrappa results when available for faster and lower-cost runs.
-- `maximum_cache_age` - Optional. Defaults to `3600` seconds. Controls how old cached results can be. Set to `0` when you need the freshest available data.
+| Field | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `business_id` | string | Yes | - | Google Maps business ID for the listing you want to inspect, in `0x[hex]:0x[hex]` format. |
+| `use_cache` | boolean | No | `true` | Uses cached Scrappa results when available for faster and lower-cost runs. |
+| `maximum_cache_age` | integer | No | `3600` | Controls how old cached results can be, in seconds. Set to `0` when you need the freshest available data. |
 
 ## Output
 
@@ -49,6 +60,8 @@ The actor also writes an `OUTPUT` key-value store record with:
 }
 ```
 
+This key-value store record is a summary envelope for the run. `photos` contains the same photo objects pushed to the dataset, `total` is the number of photos returned, and `nextPage` is included when the upstream response provides pagination context.
+
 If the business ID is not found, the dataset receives a structured error item instead of an unhandled failure.
 
 ## Cache behavior
@@ -67,4 +80,22 @@ Caching is enabled by default because photo lists usually do not change minute b
 - Enrich Google Maps search or business-details datasets with high-resolution image URLs.
 - Collect visual audit evidence for reputation management, competitor tracking, site selection, and field operations.
 
+## Direct API
+
 For higher-volume or direct API workflows, use Scrappa's Google Maps endpoints directly and keep this actor as the Apify-ready no-code runner.
+
+```bash
+curl "https://scrappa.co/api/maps/photos?business_id=0x808fba02425dad8f:0x6c296c66619367e0&use_cache=1&maximum_cache_age=3600" \
+  -H "X-API-Key: YOUR_SCRAPPA_API_KEY" \
+  -H "Accept: application/json"
+```
+
+## Notes
+
+- Photo availability and metadata depend on the public Google Maps listing data available for the business.
+- `photo_url` and `photo_url_large` values are direct image URLs returned by the upstream data source.
+- Cached responses are best for repeat enrichment and monitoring jobs where minute-level freshness is not required.
+
+## Support
+
+If a run returns no photos for a business that visibly has Google Maps photos, confirm the `business_id` format first. For repeat failures, include the actor run ID, the input business ID, and whether cache was enabled when contacting support.
