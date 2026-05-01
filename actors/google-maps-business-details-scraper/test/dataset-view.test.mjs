@@ -21,12 +21,10 @@ test('dataset overview uses fields emitted by business details results', async (
     );
 
     const view = actorJson.storages.dataset.views.overview;
-    const emittedFields = new Set(expectedFields);
 
     assert.deepEqual(view.transformation.fields, expectedFields);
 
-    for (const field of view.transformation.fields) {
-        assert.ok(emittedFields.has(field), `${field} is not emitted by business details results`);
+    for (const field of expectedFields) {
         assert.ok(view.display.properties[field], `${field} is missing display properties`);
     }
 
