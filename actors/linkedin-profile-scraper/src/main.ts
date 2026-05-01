@@ -1,5 +1,6 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/index.js';
+import { buildLinkedInProfileParams } from './request-params.js';
 
 interface LinkedInProfileInput {
     url: string;
@@ -138,17 +139,11 @@ async function main(): Promise<void> {
 
         const client = new ScrappaClient({ apiKey });
 
-        const params: Record<string, unknown> = {
+        const params = buildLinkedInProfileParams({
             url: normalizedUrl,
-        };
-
-        if (input.use_cache) {
-            params.use_cache = 1;
-
-            if (input.maximum_cache_age !== undefined && input.maximum_cache_age > 0) {
-                params.maximum_cache_age = input.maximum_cache_age;
-            }
-        }
+            use_cache: input.use_cache,
+            maximum_cache_age: input.maximum_cache_age,
+        });
 
         const response = await client.get<LinkedInProfileResponse>('/linkedin/profile', params);
 
