@@ -34,6 +34,7 @@ try {
         query: input.query,
         hl: input.hl || 'en',
         gl: input.gl,
+        // Also forward debug to the API for server-side diagnostics when enabled.
         debug: input.debug,
     };
 

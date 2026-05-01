@@ -1,11 +1,4 @@
-export interface BusinessResult {
-    [key: string]: unknown;
-}
-
-export interface GoogleMapsSearchResponse {
-    items?: BusinessResult[];
-    [key: string]: unknown;
-}
+import type { GoogleMapsSearchResponse } from './output-aliases.js';
 
 export interface ScrappaLikeClient {
     get<T>(endpoint: string, params?: Record<string, unknown>): Promise<T>;
