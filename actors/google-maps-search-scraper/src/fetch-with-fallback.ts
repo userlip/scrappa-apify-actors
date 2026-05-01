@@ -1,6 +1,6 @@
 export interface BusinessResult {
     name?: string;
-    price_level?: number | string | null;
+    price_level?: string | null;
     price_level_text?: string | null;
     review_count?: number | null;
     rating?: number | null;
@@ -68,7 +68,7 @@ export function isTransientUpstreamError(message: string): boolean {
 export async function fetchWithFallback(
     client: ScrappaLikeClient,
     baseParams: Record<string, unknown>,
-    fallbackZoom = 13
+    fallbackZoom: number
 ): Promise<GoogleMapsSearchResponse> {
     try {
         return await client.get<GoogleMapsSearchResponse>('/maps/simple-search', baseParams);
