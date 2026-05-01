@@ -13,7 +13,7 @@ export function buildLinkedInPostParams(
     };
 
     if (input.use_cache) {
-        params.use_cache = 1;
+        params.use_cache = true;
     }
 
     if (input.maximum_cache_age !== undefined) {
