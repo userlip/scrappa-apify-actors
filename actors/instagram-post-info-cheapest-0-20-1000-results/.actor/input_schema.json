@@ -13,7 +13,7 @@
     "shortcode": {
       "title": "Instagram post shortcode",
       "type": "string",
-      "description": "Legacy input alias. Prefer the URL or shortcode field above for new integrations. Example shortcode: DUBtwxGEqz2.",
+      "description": "Instagram post shortcode. Use this when you do not have the full post URL. Example shortcode: DUBtwxGEqz2.",
       "minLength": 1,
       "editor": "textfield"
     },
