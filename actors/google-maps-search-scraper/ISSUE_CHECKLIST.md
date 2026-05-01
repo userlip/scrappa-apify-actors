@@ -4,7 +4,7 @@
 
 The issues below were investigated before the Google Maps Search actor was updated. As of the current code, the critical schema, response mapping, validation, debug, dataset view, and documentation issues are fixed.
 
-Run verification from `actors/google-maps-search-scraper`:
+Run these commands from `actors/google-maps-search-scraper`:
 
 - `npm run build`
 - `npm run typecheck`
@@ -279,8 +279,8 @@ Run verification from `actors/google-maps-search-scraper`:
 |----------|-------|----------------|
 | Critical | 3 | Fixed |
 | High | 4 | Fixed |
-| Medium | 3 | 2 fixed, 1 monitor item |
-| Low | 0 | None |
+| Medium | 2 | Fixed |
+| Low | 1 | Monitor memory usage |
 | **Total** | **10** | **9 fixed, 1 monitor item** |
 
 ---

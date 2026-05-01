@@ -6,7 +6,7 @@ CURRENT STATUS:
 ===============
 
 The investigation below captured issues that have since been fixed in the
-Google Maps Search actor. Run verification from
+Google Maps Search actor. Run these commands from
 actors/google-maps-search-scraper:
 
   • npm run build
@@ -107,7 +107,9 @@ MEDIUM PRIORITY (Nice to have):
   [x] Preserve photos_sample handling
   [x] Preserve opening_hours handling
   [x] Expand README documentation
-  [ ] Increase memory allocation if needed (256MB current)
+
+LOW PRIORITY (Monitor):
+  [ ] Monitor memory usage in production; keep 256MB unless runs show memory pressure
 
 ================================================================================
 
