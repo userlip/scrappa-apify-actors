@@ -77,9 +77,10 @@ try {
 
     if (input.use_cache !== false) {
         params.use_cache = 1;
-    }
-    if (input.maximum_cache_age !== undefined) {
-        params.maximum_cache_age = input.maximum_cache_age;
+
+        if (input.maximum_cache_age !== undefined && input.maximum_cache_age > 0) {
+            params.maximum_cache_age = input.maximum_cache_age;
+        }
     }
 
     const response = await client.get<GoogleMapsReviewsResponse>('/maps/reviews', params);
