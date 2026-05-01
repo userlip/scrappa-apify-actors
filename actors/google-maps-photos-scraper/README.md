@@ -60,7 +60,7 @@ The actor pushes one dataset item per photo. Available fields can vary by listin
 }
 ```
 
-Other records may include additional metadata such as `latitude`, `longitude`, `photo_index`, `source`, `author`, `published_at`, `is_owner`, `likes`, or `video_thumbnail_url` when Google Maps provides those values.
+Dataset records may also include `latitude`, `longitude`, `photo_index`, `source`, `author`, `published_at`, `is_owner`, `likes`, or `video_thumbnail_url` when Google Maps provides those values.
 
 ### Key-value store summary
 
