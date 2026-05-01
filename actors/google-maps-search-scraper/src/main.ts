@@ -2,11 +2,13 @@ import { Actor } from 'apify';
 import { ScrappaClient } from './shared/index.js';
 import { fetchWithFallback } from './fetch-with-fallback.js';
 import { addSearchResponseAliases } from './output-aliases.js';
+import type { GoogleMapsSearchResponse } from './output-aliases.js';
 
 interface GoogleMapsSearchInput {
     query: string;
     hl?: string;
     gl?: string;
+    debug?: boolean;
     use_cache?: boolean;
     maximum_cache_age?: number;
     fallback_zoom?: number;
@@ -27,11 +29,12 @@ try {
 
     console.log(`Searching Google Maps for: "${input.query}"`);
 
-    const client = new ScrappaClient({ apiKey });
+    const client = new ScrappaClient({ apiKey, debug: input.debug });
     const params: Record<string, unknown> = {
         query: input.query,
         hl: input.hl || 'en',
         gl: input.gl,
+        debug: input.debug,
     };
 
     if (input.use_cache !== false) {
@@ -41,7 +44,9 @@ try {
         params.maximum_cache_age = input.maximum_cache_age;
     }
 
-    const response = addSearchResponseAliases(await fetchWithFallback(client, params, input.fallback_zoom ?? 13));
+    const response: GoogleMapsSearchResponse = addSearchResponseAliases(
+        await fetchWithFallback(client, params, input.fallback_zoom ?? 13)
+    );
 
     if (response.items && response.items.length > 0) {
         await Actor.pushData(response.items);

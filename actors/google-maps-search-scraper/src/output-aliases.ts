@@ -1,8 +1,50 @@
+export interface PhotoSample {
+    photo_id?: string;
+    photo_url?: string;
+    photo_url_large?: string;
+    video_thumbnail_url?: string;
+    latitude?: number;
+    longitude?: number;
+    type?: string;
+}
+
+export interface OpeningHour {
+    day?: string;
+    hours?: string;
+    date?: string;
+    special_day?: boolean;
+}
+
 export interface GoogleMapsSearchResult {
+    name?: string;
+    type?: string;
+    subtypes?: string[];
+    rating?: number;
+    review_count?: number;
+    price_level?: string;
+    price_level_text?: string;
     full_address?: string;
     address?: string;
+    district?: string;
+    timezone?: string;
+    latitude?: number;
+    longitude?: number;
     phone_numbers?: string[];
     phone?: string;
+    website?: string;
+    domain?: string;
+    business_id?: string;
+    place_id?: string;
+    google_mid?: string;
+    owner_id?: string;
+    owner_name?: string;
+    owner_link?: string;
+    order_link?: string;
+    short_description?: string;
+    full_description?: string;
+    current_status?: string;
+    photos_sample?: PhotoSample[];
+    opening_hours?: OpeningHour[];
     [key: string]: unknown;
 }
 
