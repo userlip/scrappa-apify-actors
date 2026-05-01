@@ -14,7 +14,7 @@
     "hl": {
       "title": "Language (HL)",
       "type": "string",
-      "description": "Language code or BCP 47 language tag (e.g., 'en', 'de', 'es', 'fr' or with region 'en-US', 'de-DE')",
+      "description": "Two-letter language code, optionally with a two-letter region (e.g., 'en', 'de', 'es', 'fr', 'en-US', 'de-DE')",
       "editor": "textfield",
       "default": "en",
       "pattern": "^[a-zA-Z]{2}(-[a-zA-Z]{2})?$",

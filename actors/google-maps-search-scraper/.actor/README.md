@@ -16,7 +16,7 @@ Search for businesses on Google Maps at scale. This actor returns Scrappa Google
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `query` | string | Yes | Search query, such as `restaurants in NYC`, `coffee shops`, or `plumber near Austin`. |
-| `hl` | string | No | Language code or BCP 47 language tag, such as `en`, `de`, or `en-US`. Defaults to `en`. |
+| `hl` | string | No | Two-letter language code, optionally with a two-letter region, such as `en`, `de`, or `en-US`. Defaults to `en`. |
 | `gl` | string | No | Region code in ISO 3166-1 alpha-2 format, such as `us`, `de`, or `uk`. |
 | `debug` | boolean | No | Enable Scrappa debug output for troubleshooting. Useful only for accounts with debug access. Defaults to `false`. |
 | `use_cache` | boolean | No | Use cached data when available. Defaults to `true`. |
