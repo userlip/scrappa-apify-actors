@@ -3,16 +3,8 @@ import { ScrappaClient } from './shared/index.js';
 import { fetchWithFallback } from './fetch-with-fallback.js';
 import { addSearchResponseAliases } from './output-aliases.js';
 import type { GoogleMapsSearchResponse } from './output-aliases.js';
-
-interface GoogleMapsSearchInput {
-    query: string;
-    hl?: string;
-    gl?: string;
-    debug?: boolean;
-    use_cache?: boolean;
-    maximum_cache_age?: number;
-    fallback_zoom?: number;
-}
+import { buildSearchParams } from './search-params.js';
+import type { GoogleMapsSearchInput } from './search-params.js';
 
 await Actor.init();
 
@@ -30,20 +22,7 @@ try {
     console.log(`Searching Google Maps for: "${input.query}"`);
 
     const client = new ScrappaClient({ apiKey, debug: input.debug });
-    const params: Record<string, unknown> = {
-        query: input.query,
-        hl: input.hl || 'en',
-        gl: input.gl,
-        // Also forward debug to the API for server-side diagnostics when enabled.
-        debug: input.debug,
-    };
-
-    if (input.use_cache !== false) {
-        params.use_cache = 1;
-    }
-    if (input.maximum_cache_age !== undefined) {
-        params.maximum_cache_age = input.maximum_cache_age;
-    }
+    const params = buildSearchParams(input);
 
     const response: GoogleMapsSearchResponse = addSearchResponseAliases(
         await fetchWithFallback(client, params, input.fallback_zoom ?? 13)

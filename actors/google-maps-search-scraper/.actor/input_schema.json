@@ -14,7 +14,7 @@
     "hl": {
       "title": "Language (HL)",
       "type": "string",
-      "description": "ISO 639-1 language code (e.g., 'en', 'de', 'es', 'fr' or with region 'en-US', 'de-DE')",
+      "description": "Language code or BCP 47 language tag (e.g., 'en', 'de', 'es', 'fr' or with region 'en-US', 'de-DE')",
       "editor": "textfield",
       "default": "en",
       "pattern": "^[a-zA-Z]{2}(-[a-zA-Z]{2})?$",

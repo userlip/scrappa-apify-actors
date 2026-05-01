@@ -66,6 +66,39 @@ test('logs requests locally and forwards debug=1 when debug is enabled', async (
     assert.ok(!logs.some((log) => log.includes('test')));
 });
 
+test('does not log requests or send debug when debug is disabled', async () => {
+    const originalFetch = globalThis.fetch;
+    const originalLog = console.log;
+    let capturedUrl = '';
+    const logs = [];
+
+    globalThis.fetch = async (url) => {
+        capturedUrl = String(url);
+        return new Response(JSON.stringify({ items: [] }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    };
+    console.log = (...args) => logs.push(args.join(' '));
+
+    try {
+        const client = new ScrappaClient({
+            apiKey: 'test',
+            baseUrl: 'https://example.com/api',
+        });
+        await client.get('/maps/simple-search', {
+            query: 'pizza',
+            debug: false,
+        });
+    } finally {
+        globalThis.fetch = originalFetch;
+        console.log = originalLog;
+    }
+
+    assert.ok(!capturedUrl.includes('debug='));
+    assert.deepEqual(logs, []);
+});
+
 test('surfaces non-JSON upstream errors without body-read crash', async () => {
     const originalFetch = globalThis.fetch;
 
