@@ -16,10 +16,10 @@ Pricing: **$0.30 per 1,000 results**. No Google Maps API key required.
 
 ## Best for
 
-- Local business directories and CRM enrichment that need Google Maps image URLs.
-- Brand, reputation, or operations teams monitoring customer-uploaded photos.
-- Franchise, hotel, restaurant, clinic, agency, and retail location audits.
-- Competitor tracking and site-selection research that uses visual evidence.
+- Directory builders enriching local business profiles with visual data.
+- Brand, reputation, and operations teams reviewing location imagery.
+- Franchise, hospitality, healthcare, agency, and retail analysts.
+- Data teams joining Google Maps search, details, reviews, and photos exports.
 
 ## Input
 
@@ -103,7 +103,7 @@ Caching is enabled by default because photo lists usually do not change minute b
 
 - Build photo galleries for local business directories, lead lists, and internal CRM records.
 - Monitor new customer-uploaded photos for brand, cleanliness, merchandising, or store-condition signals.
-- Compare location imagery across franchises, hotels, restaurants, clinics, agencies, and retail chains.
+- Compare storefront, room, menu, venue, or product imagery across locations.
 - Enrich Google Maps search or business-details datasets with high-resolution image URLs.
 - Collect visual audit evidence for reputation management, competitor tracking, site selection, and field operations.
 
