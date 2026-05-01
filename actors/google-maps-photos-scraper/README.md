@@ -4,6 +4,16 @@ Extract photo URLs and visual metadata from a Google Maps business listing by bu
 
 Apify actor: [`gLbfii9Nq4H7auMnN`](https://console.apify.com/actors/gLbfii9Nq4H7auMnN)
 
+Pricing: **$0.30 per 1,000 results**. No Google Maps API key required.
+
+## What you get
+
+- Photo URLs, large photo URLs, dimensions, and photo IDs.
+- Contributor names, contributor profile URLs, and relative posting age when available.
+- One dataset item per photo for CSV, JSON, Excel, and integration exports.
+- Cache controls for faster repeat runs and lower-cost monitoring jobs.
+- Structured error items for missing businesses instead of failed empty exports.
+
 ## Best for
 
 - Local business directories and CRM enrichment that need Google Maps image URLs.
@@ -73,6 +83,14 @@ This key-value store record is a summary envelope for the run. `photos` contains
 
 If the business ID is not found, the dataset receives a structured error item instead of an unhandled failure.
 
+```json
+{
+  "success": false,
+  "business_id": "0x0000000000000000:0x0000000000000000",
+  "error": "Business not found"
+}
+```
+
 ## Cache behavior
 
 Caching is enabled by default because photo lists usually do not change minute by minute. This makes repeat runs faster and can reduce request cost. Use `maximum_cache_age` to tune freshness:
@@ -81,7 +99,7 @@ Caching is enabled by default because photo lists usually do not change minute b
 - `86400` - Useful for daily monitoring or bulk research where speed matters more than immediate freshness.
 - `0` - Use when you are checking a recent listing update or validating newly uploaded photos.
 
-## Visual-data use cases
+## Example visual-data workflows
 
 - Build photo galleries for local business directories, lead lists, and internal CRM records.
 - Monitor new customer-uploaded photos for brand, cleanliness, merchandising, or store-condition signals.
