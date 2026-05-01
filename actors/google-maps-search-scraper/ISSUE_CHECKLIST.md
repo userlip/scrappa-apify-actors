@@ -1,5 +1,12 @@
 # Google Maps Search Actor - Issue Checklist
 
+## Current Status
+
+The issues below were investigated before the Google Maps Search actor was updated. As of the current code, the critical schema, response mapping, validation, debug, dataset view, and documentation issues are fixed. Verification:
+
+- `npm run typecheck`
+- `node --test test/*.test.mjs`
+
 ## CRITICAL ISSUES (Must Fix Immediately)
 
 ### Issue 1: Wrong Response Array Property Name
@@ -21,7 +28,7 @@
   ```
 - **Impact:** Without this fix, no data is pushed to the dataset. Users see empty results.
 - **Test:** Search for a common term (e.g., "pizza restaurants") and verify data appears in dataset
-- **Status:** ⬜ Not Fixed
+- **Status:** ✅ Fixed - `src/main.ts` now reads and pushes `response.items`.
 
 ---
 
@@ -54,7 +61,7 @@
   - Status: current_status
 
 - **Fix Required:** Expand interface to include all 28 response fields
-- **Status:** ⬜ Not Fixed
+- **Status:** ✅ Fixed - response item types now cover the Scrappa output fields in `src/output-aliases.ts`, including photos and opening hours.
 
 ---
 
@@ -77,7 +84,7 @@
       [key: string]: unknown;
   }
   ```
-- **Status:** ⬜ Not Fixed
+- **Status:** ✅ Fixed - `GoogleMapsSearchResponse` now exposes `items`.
 
 ---
 
@@ -114,7 +121,7 @@
 - **Fix Option B - Keep names but add documentation:**
   Keep current names but add note: "Sent as `hl` and `gl` parameters to the API"
 - **Recommendation:** Option A (rename to match API for clarity)
-- **Status:** ⬜ Not Fixed
+- **Status:** ✅ Fixed - the input schema now uses `hl` and `gl`.
 
 ---
 
@@ -146,7 +153,7 @@
   ```
 - **Current Behavior:** Accepts "12345", "hello", "!@", etc.
 - **Fixed Behavior:** Only accepts valid ISO codes
-- **Status:** ⬜ Not Fixed
+- **Status:** ✅ Fixed - `hl` and `gl` now have regex patterns matching the API format.
 
 ---
 
@@ -169,7 +176,7 @@
   }
   ```
 - **Note:** May not be used in actor if not needed, but should be in schema for API consistency
-- **Status:** ⬜ Not Fixed
+- **Status:** ✅ Fixed - `debug` is exposed in the input schema and forwarded by `buildSearchParams`.
 
 ---
 
@@ -208,7 +215,7 @@
     ]
   }
   ```
-- **Status:** ⬜ Not Fixed
+- **Status:** ✅ Fixed - the dataset view now uses `full_address`, `phone_numbers`, location fields, and IDs.
 
 ---
 
@@ -228,7 +235,7 @@
   2. Flatten to separate columns (more work)
   3. Store as JSON strings (compatible with most systems)
 
-- **Status:** ⬜ Needs Decision
+- **Status:** ✅ Fixed - complex objects are preserved as nested dataset fields.
 
 ---
 
@@ -244,7 +251,7 @@
   }
   ```
 - **Recommendation:** Keep at 256MB for now; increase to 512MB if crashes occur with large datasets
-- **Status:** ⬜ Monitor
+- **Status:** ⬜ Monitor - no code change required unless production runs show memory pressure.
 
 ---
 
@@ -259,19 +266,19 @@
   - timezone information
 
 - **Fix Required:** Expand output section with complete field list
-- **Status:** ⬜ Not Fixed
+- **Status:** ✅ Fixed - `.actor/README.md` now documents inputs, output fields, aliases, nested fields, and example output.
 
 ---
 
 ## SUMMARY
 
-| Priority | Count | Issues |
-|----------|-------|--------|
-| Critical | 3 | Response property name, incomplete types, missing fields |
-| High | 4 | Wrong param names, missing validation, wrong config, dataset view |
-| Medium | 3 | Complex objects, memory, documentation |
-| Low | 0 | None |
-| **Total** | **10** | **Multiple issues across all critical files** |
+| Priority | Count | Current Status |
+|----------|-------|----------------|
+| Critical | 3 | Fixed |
+| High | 4 | Fixed |
+| Medium | 2 | Fixed |
+| Low | 1 | Monitor memory usage |
+| **Total** | **10** | **9 fixed, 1 monitor item** |
 
 ---
 
@@ -279,21 +286,21 @@
 
 After fixes are applied:
 
-- [ ] Fix Issue 1: Change `response.results` to `response.items`
-- [ ] Fix Issue 2: Expand BusinessResult interface to 28 fields
-- [ ] Fix Issue 3: Fix GoogleMapsSearchResponse interface
-- [ ] Fix Issue 4: Rename parameters or add clear documentation
-- [ ] Fix Issue 5: Add regex pattern validation
-- [ ] Fix Issue 6: Add debug parameter to schema
-- [ ] Fix Issue 7: Update dataset view field names
-- [ ] Fix Issue 8: Review complex object handling
+- [x] Fix Issue 1: Change `response.results` to `response.items`
+- [x] Fix Issue 2: Expand response item interface to cover Scrappa fields
+- [x] Fix Issue 3: Fix GoogleMapsSearchResponse interface
+- [x] Fix Issue 4: Rename parameters or add clear documentation
+- [x] Fix Issue 5: Add regex pattern validation
+- [x] Fix Issue 6: Add debug parameter to schema
+- [x] Fix Issue 7: Update dataset view field names
+- [x] Fix Issue 8: Review complex object handling
 - [ ] Monitor Issue 9: Check memory usage in production
-- [ ] Fix Issue 10: Expand documentation
+- [x] Fix Issue 10: Expand documentation
 
 ### Manual Testing Steps
 
 1. **Test basic search:**
-   - Input: query="pizza restaurants", language="en", country="us"
+   - Input: query="pizza restaurants", hl="en", gl="us"
    - Verify: Results appear in dataset (not empty)
    - Verify: All 8 core fields populated (name, rating, review_count, full_address, phone_numbers, website, type, business_id)
 
@@ -304,10 +311,10 @@ After fixes are applied:
    - Verify: opening_hours array included
 
 3. **Test parameter validation:**
-   - Try language="12345" - should fail
-   - Try country="123" - should fail (3 chars)
-   - Try language="en-US" - should succeed
-   - Try country="de" - should succeed
+   - Try hl="12345" - should fail
+   - Try gl="123" - should fail (3 chars)
+   - Try hl="en-US" - should succeed
+   - Try gl="de" - should succeed
 
 4. **Test dataset view:**
    - Verify fields display correctly
@@ -322,4 +329,3 @@ After fixes are applied:
 2. `/Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/input_schema.json`
 3. `/Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/actor.json`
 4. `/Users/marindelija/Documents/Development/scrappa-apify-actors/actors/google-maps-search/.actor/README.md`
-

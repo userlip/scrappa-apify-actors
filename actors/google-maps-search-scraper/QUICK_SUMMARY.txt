@@ -2,30 +2,35 @@
 GOOGLE MAPS SEARCH API - INVESTIGATION QUICK SUMMARY
 ================================================================================
 
-CRITICAL BUGS FOUND:
-====================
+CURRENT STATUS:
+===============
 
-1. WRONG RESPONSE PROPERTY NAME (WILL SILENTLY FAIL)
-   ✗ Code expects: response.results
+The investigation below captured issues that have since been fixed in the
+Google Maps Search actor. Current verification passes with:
+
+  • npm run typecheck
+  • node --test test/*.test.mjs
+
+RESOLVED BUGS:
+==============
+
+1. WRONG RESPONSE PROPERTY NAME
+   ✓ Current code uses: response.items
    ✓ API actually returns: response.items
-   Location: main.ts line 49
-   Impact: Data will NOT be pushed to Actor dataset
+   Location: src/main.ts
+   Status: Fixed
 
-2. MISSING 20+ RESPONSE FIELDS
-   Only captures 8 fields, API provides 30+
-   Missing: 
-   - Coordinates (latitude, longitude)
-   - Location details (full_address, district, timezone)
-   - Business identifiers (place_id, business_id, google_mid)
-   - Media (photos_sample array)
-   - Operating info (opening_hours)
-   - Descriptions (short_description, full_description)
-   - Owner details (owner_id, owner_name, owner_link)
+2. MISSING RESPONSE FIELDS
+   ✓ Current response item type covers the Scrappa output fields
+   ✓ Dataset items preserve nested photos_sample and opening_hours data
+   Location: src/output-aliases.ts
+   Status: Fixed
 
 3. WRONG PARAMETER NAMES IN INPUT SCHEMA
-   ✗ Schema says: "language" and "country"
+   ✓ Current schema exposes: "hl" and "gl"
    ✓ API expects: "hl" and "gl"
-   Note: main.ts correctly maps language→hl and country→gl, so works but confusing
+   Location: .actor/input_schema.json
+   Status: Fixed
 
 ================================================================================
 
@@ -40,9 +45,12 @@ Scrappa API:
 
 Apify Actor (input_schema.json):
   • query (string, REQUIRED) ✓
-  • language (string, OPTIONAL, default: 'en') [name mismatch ✗]
-  • country (string, OPTIONAL) [name mismatch ✗]
-  • debug MISSING ✗
+  • hl (string, OPTIONAL, default: 'en') ✓
+  • gl (string, OPTIONAL) ✓
+  • debug (OPTIONAL, bool) ✓
+  • use_cache (OPTIONAL, bool) ✓
+  • maximum_cache_age (OPTIONAL, integer) ✓
+  • fallback_zoom (OPTIONAL, integer) ✓
 
 ================================================================================
 
@@ -57,16 +65,13 @@ API Returns (items array):
   
   TOTAL: 28+ fields with complex nested objects
 
-Actor Currently Captures:
-  name, rating, review_count, address, phone_numbers, website, type, business_id
-  
-  TOTAL: 8 fields (28% coverage)
+Actor Currently Pushes:
+  Every item from the Scrappa items array, with dataset-friendly address and
+  phone aliases added when full_address and phone_numbers are present.
 
 Dataset View Shows:
-  name, rating, review_count, address, phone (WRONG - should be phone_numbers), 
-  website, type
-  
-  TOTAL: 7 fields
+  name, type, rating, review_count, full_address, latitude, longitude,
+  phone_numbers, website, business_id, place_id, timezone
 
 ================================================================================
 
@@ -77,30 +82,29 @@ API Validation (Scrappa):
   • gl: regex /^[a-zA-Z]{2}$/  (exactly 2 letters: us, de, uk, jp)
 
 Actor Validation (input_schema.json):
-  • language: maxLength 5 only (ACCEPTS ANY STRING UP TO 5 CHARS)
-  • country: maxLength 2 only (ACCEPTS ANY 2-CHAR STRING)
-  NO REGEX PATTERNS ✗
+  • hl: regex /^[a-zA-Z]{2}(-[a-zA-Z]{2})?$/ ✓
+  • gl: regex /^[a-zA-Z]{2}$/ ✓
 
 ================================================================================
 
 QUICK FIX CHECKLIST:
 
 CRITICAL (Must fix):
-  [ ] Fix main.ts line 49: response.results → response.items
-  [ ] Expand BusinessResult interface to include 30+ fields
-  [ ] Add missing response fields to type definitions
+  [x] Fix main.ts: response.results → response.items
+  [x] Expand response item type to include Scrappa fields
+  [x] Add missing response fields to type definitions
 
 HIGH PRIORITY (Should fix):
-  [ ] Fix input_schema: Use hl/gl parameter names OR add pattern validation
-  [ ] Add debug parameter to input_schema
-  [ ] Add regex validation: hl = /^[a-zA-Z]{2}(-[a-zA-Z]{2})?$/
-  [ ] Add regex validation: gl = /^[a-zA-Z]{2}$/
-  [ ] Update actor.json dataset view with more fields
+  [x] Fix input_schema: Use hl/gl parameter names
+  [x] Add debug parameter to input_schema
+  [x] Add regex validation: hl = /^[a-zA-Z]{2}(-[a-zA-Z]{2})?$/
+  [x] Add regex validation: gl = /^[a-zA-Z]{2}$/
+  [x] Update actor.json dataset view with more fields
 
 MEDIUM PRIORITY (Nice to have):
-  [ ] Add photos_sample handling
-  [ ] Add opening_hours handling
-  [ ] Expand README documentation
+  [x] Preserve photos_sample handling
+  [x] Preserve opening_hours handling
+  [x] Expand README documentation
   [ ] Increase memory allocation if needed (256MB current)
 
 ================================================================================
