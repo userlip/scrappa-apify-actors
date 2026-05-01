@@ -105,10 +105,13 @@ async function main(): Promise<void> {
 
         if (input.use_cache) {
             params.use_cache = 1;
-        }
-
-        if (input.maximum_cache_age !== undefined) {
-            params.maximum_cache_age = input.maximum_cache_age;
+            if (
+                typeof input.maximum_cache_age === 'number'
+                && Number.isInteger(input.maximum_cache_age)
+                && input.maximum_cache_age >= 1
+            ) {
+                params.maximum_cache_age = input.maximum_cache_age;
+            }
         }
 
         let response: LinkedInCompanyResponse;

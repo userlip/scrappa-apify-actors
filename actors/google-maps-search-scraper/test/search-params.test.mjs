@@ -52,3 +52,19 @@ test('includes cache age when cache is enabled', () => {
         }
     );
 });
+
+test('omits zero and invalid cache ages when cache is enabled', () => {
+    for (const maximum_cache_age of [0, -1, 1.5, '3600', null, Number.NaN]) {
+        assert.deepEqual(
+            buildSearchParams({
+                query: 'pizza',
+                maximum_cache_age,
+            }),
+            {
+                query: 'pizza',
+                hl: 'en',
+                use_cache: 1,
+            }
+        );
+    }
+});
