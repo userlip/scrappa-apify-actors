@@ -39,7 +39,7 @@
       "type": "integer",
       "description": "Maximum age of cached results in seconds. Set to 0 to always fetch fresh data.",
       "editor": "number",
-      "minimum": 0,
+      "minimum": 1,
       "default": 3600
     }
   },
