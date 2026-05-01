@@ -34,6 +34,21 @@ test('does not forward cache age when it is zero', () => {
     assert.match(warnings[0], /maximum_cache_age must be at least 1, got 0/);
 });
 
+test('does not forward cache age when it is negative', () => {
+    const warnings = [];
+    const params = buildLinkedInPostParams(
+        { url, use_cache: true, maximum_cache_age: -1 },
+        (message) => warnings.push(message),
+    );
+
+    assert.deepEqual(params, {
+        url,
+        use_cache: 1,
+    });
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /maximum_cache_age must be at least 1, got -1/);
+});
+
 test('omits cache age when it is undefined', () => {
     const warnings = [];
     const params = buildLinkedInPostParams(
