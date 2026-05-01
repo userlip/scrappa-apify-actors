@@ -7,8 +7,14 @@ test('builds search params with default language and cache settings', () => {
     assert.deepEqual(buildSearchParams({ query: 'pizza' }), {
         query: 'pizza',
         hl: 'en',
-        gl: undefined,
-        debug: undefined,
+        use_cache: 1,
+    });
+});
+
+test('preserves an empty language value for schema validation to reject', () => {
+    assert.deepEqual(buildSearchParams({ query: 'pizza', hl: '' }), {
+        query: 'pizza',
+        hl: '',
         use_cache: 1,
     });
 });
@@ -41,8 +47,6 @@ test('includes cache age when cache is enabled', () => {
         {
             query: 'pizza',
             hl: 'en',
-            gl: undefined,
-            debug: undefined,
             use_cache: 1,
             maximum_cache_age: 3600,
         }

@@ -11,11 +11,17 @@ export interface GoogleMapsSearchInput {
 export function buildSearchParams(input: GoogleMapsSearchInput): Record<string, unknown> {
     const params: Record<string, unknown> = {
         query: input.query,
-        hl: input.hl || 'en',
-        gl: input.gl,
-        // Also forward debug to the API for server-side diagnostics when enabled.
-        debug: input.debug,
+        hl: input.hl ?? 'en',
     };
+
+    if (input.gl !== undefined) {
+        params.gl = input.gl;
+    }
+
+    // Also forward debug to the API for server-side diagnostics when enabled.
+    if (input.debug !== undefined) {
+        params.debug = input.debug;
+    }
 
     if (input.use_cache !== false) {
         params.use_cache = 1;
