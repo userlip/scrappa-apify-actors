@@ -4,8 +4,41 @@
     "success": {
       "type": "boolean"
     },
-    "data": {
-      "type": "object"
+    "id": {
+      "type": "string"
+    },
+    "shortcode": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "caption": {
+      "type": "string"
+    },
+    "likes_count": {
+      "type": "integer"
+    },
+    "comments_count": {
+      "type": "integer"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "is_video": {
+      "type": "boolean"
+    },
+    "display_url": {
+      "type": "string"
+    },
+    "video_url": {
+      "type": "string"
+    },
+    "owner_username": {
+      "type": "string"
+    },
+    "owner_id": {
+      "type": "string"
     },
     "error": {
       "type": "string"
@@ -15,7 +48,7 @@
     "overview": {
       "title": "Instagram Post",
       "transformation": {
-        "fields": ["success", "data", "error"]
+        "fields": ["success", "shortcode", "url", "caption", "likes_count", "comments_count", "timestamp", "is_video", "owner_username", "display_url", "video_url", "id", "owner_id", "error"]
       },
       "display": {
         "component": "table",
@@ -24,9 +57,53 @@
             "label": "Success",
             "format": "boolean"
           },
-          "data": {
-            "label": "Post Data",
-            "format": "object"
+          "shortcode": {
+            "label": "Shortcode",
+            "format": "text"
+          },
+          "url": {
+            "label": "URL",
+            "format": "link"
+          },
+          "caption": {
+            "label": "Caption",
+            "format": "text"
+          },
+          "likes_count": {
+            "label": "Likes",
+            "format": "number"
+          },
+          "comments_count": {
+            "label": "Comments",
+            "format": "number"
+          },
+          "timestamp": {
+            "label": "Timestamp",
+            "format": "date"
+          },
+          "is_video": {
+            "label": "Video",
+            "format": "boolean"
+          },
+          "owner_username": {
+            "label": "Owner",
+            "format": "text"
+          },
+          "display_url": {
+            "label": "Image",
+            "format": "image"
+          },
+          "video_url": {
+            "label": "Video URL",
+            "format": "link"
+          },
+          "id": {
+            "label": "ID",
+            "format": "text"
+          },
+          "owner_id": {
+            "label": "Owner ID",
+            "format": "text"
           },
           "error": {
             "label": "Error",
