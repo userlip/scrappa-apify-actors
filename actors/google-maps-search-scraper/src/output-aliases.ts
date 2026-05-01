@@ -2,10 +2,11 @@ export interface PhotoSample {
     photo_id?: string;
     photo_url?: string;
     photo_url_large?: string;
-    video_thumbnail_url?: string;
-    latitude?: number;
-    longitude?: number;
-    type?: string;
+    video_thumbnail_url?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    type?: string | null;
+    [key: string]: unknown;
 }
 
 export interface OpeningHour {
@@ -13,40 +14,45 @@ export interface OpeningHour {
     hours?: string;
     date?: string;
     special_day?: boolean;
+    [key: string]: unknown;
 }
 
 export interface GoogleMapsSearchResult {
     name?: string;
-    type?: string;
+    type?: string | null;
     subtypes?: string[];
-    rating?: number;
-    review_count?: number;
-    price_level?: string;
-    price_level_text?: string;
-    full_address?: string;
+    rating?: number | null;
+    review_count?: number | null;
+    price_level?: string | null;
+    price_level_text?: string | null;
+    full_address?: string | null;
     address?: string;
-    district?: string;
-    timezone?: string;
-    latitude?: number;
-    longitude?: number;
+    district?: string | null;
+    timezone?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
     phone_numbers?: string[];
     phone?: string;
-    website?: string;
-    domain?: string;
-    business_id?: string;
-    place_id?: string;
-    google_mid?: string;
-    owner_id?: string;
-    owner_name?: string;
-    owner_link?: string;
-    order_link?: string;
-    short_description?: string;
-    full_description?: string;
-    current_status?: string;
+    website?: string | null;
+    domain?: string | null;
+    business_id?: string | null;
+    place_id?: string | null;
+    google_mid?: string | null;
+    owner_id?: string | null;
+    owner_name?: string | null;
+    owner_link?: string | null;
+    order_link?: string | null;
+    short_description?: string | null;
+    full_description?: string | null;
+    current_status?: string | null;
     photos_sample?: PhotoSample[];
     opening_hours?: OpeningHour[];
     [key: string]: unknown;
 }
+
+export type GoogleMapsPhotoSample = PhotoSample;
+
+export type GoogleMapsOpeningHours = OpeningHour;
 
 export interface GoogleMapsSearchResponse {
     items?: GoogleMapsSearchResult[];

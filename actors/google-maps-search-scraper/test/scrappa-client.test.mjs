@@ -61,6 +61,7 @@ test('logs requests locally and forwards debug=1 when debug is enabled', async (
         console.log = originalLog;
     }
 
+    assert.ok(capturedUrl.includes('query=pizza'));
     assert.ok(capturedUrl.includes('debug=1'));
     assert.ok(logs.some((log) => log.startsWith('[Scrappa] GET https://example.com/api/maps/simple-search')));
     assert.ok(!logs.some((log) => log.includes('test')));

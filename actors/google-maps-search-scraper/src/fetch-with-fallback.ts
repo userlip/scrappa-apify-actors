@@ -15,7 +15,7 @@ export function isTransientUpstreamError(message: string): boolean {
 export async function fetchWithFallback(
     client: ScrappaLikeClient,
     baseParams: Record<string, unknown>,
-    fallbackZoom = 13
+    fallbackZoom: number
 ): Promise<GoogleMapsSearchResponse> {
     try {
         return await client.get<GoogleMapsSearchResponse>('/maps/simple-search', baseParams);

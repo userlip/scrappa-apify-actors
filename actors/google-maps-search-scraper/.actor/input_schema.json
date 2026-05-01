@@ -32,7 +32,7 @@
     "debug": {
       "title": "Debug Mode",
       "type": "boolean",
-      "description": "Enable Scrappa debug logging. This is intended for admin troubleshooting.",
+      "description": "Enable Scrappa debug output for troubleshooting. This is only useful for accounts with debug access.",
       "editor": "checkbox",
       "default": false
     },
@@ -50,6 +50,15 @@
       "editor": "number",
       "minimum": 0,
       "default": 3600
+    },
+    "fallback_zoom": {
+      "title": "Fallback Zoom",
+      "type": "integer",
+      "description": "Zoom level used if the simple search endpoint has a transient upstream failure and the actor retries through advanced search.",
+      "editor": "number",
+      "minimum": 3,
+      "maximum": 21,
+      "default": 13
     }
   },
   "required": [

@@ -1,48 +1,105 @@
 # Google Maps Search
 
-Search for businesses on Google Maps at scale. Find restaurants, services, shops, and more with detailed information.
+Search for businesses on Google Maps at scale. This actor returns Scrappa Google Maps search records with business identity, contact, location, rating, category, photo, status, and opening-hours fields.
 
 ## Features
 
-- **Business Discovery** - Search for any type of business or service
-- **Complete Data** - Ratings, review counts, address, phone, website
-- **Photos & Hours** - Opening hours and sample photos for each result
-- **Multiple Results** - Returns all matching businesses from search
-- **No Location Limit** - Search globally for any query
-- **Rich Information** - Price level, business type, status
+- Search Google Maps by natural-language query.
+- Return each business as a separate Apify dataset item.
+- Include rich fields such as `full_address`, coordinates, `business_id`, `place_id`, `phone_numbers`, `photos_sample`, and `opening_hours` when Google exposes them.
+- Save the complete Scrappa API response to the `OUTPUT` key-value store record.
+- Use cached Scrappa responses by default for faster repeat runs and lower cost.
+- Retry through advanced search with a configurable zoom level after transient simple-search upstream failures.
 
 ## Input
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `query` | string | Yes | Search query (e.g., "restaurants in NYC") |
-| `hl` | string | No | Language code (e.g., `en`, `de`, `en-US`; default: `en`) |
-| `gl` | string | No | Country or region code (e.g., `us`, `uk`, `de`) |
-| `debug` | boolean | No | Enable Scrappa debug logging for admin troubleshooting |
-| `use_cache` | boolean | No | Use cached results when available |
-| `maximum_cache_age` | integer | No | Maximum cache age in seconds |
+| `query` | string | Yes | Search query, such as `restaurants in NYC`, `coffee shops`, or `plumber near Austin`. |
+| `hl` | string | No | Language code or BCP 47 language tag, such as `en`, `de`, or `en-US`. Defaults to `en`. |
+| `gl` | string | No | Region code in ISO 3166-1 alpha-2 format, such as `us`, `de`, or `uk`. |
+| `debug` | boolean | No | Enable Scrappa debug output for troubleshooting. Useful only for accounts with debug access. Defaults to `false`. |
+| `use_cache` | boolean | No | Use cached data when available. Defaults to `true`. |
+| `maximum_cache_age` | integer | No | Maximum allowed cache age in seconds. Defaults to `3600`. Set to `0` to request fresh data when cache is enabled. |
+| `fallback_zoom` | integer | No | Zoom level used when retrying via advanced search after a transient simple-search failure. Defaults to `13`. |
+
+## Example Input
+
+```json
+{
+  "query": "pizza restaurants in Manhattan",
+  "hl": "en",
+  "gl": "us",
+  "use_cache": true,
+  "maximum_cache_age": 3600,
+  "fallback_zoom": 13
+}
+```
 
 ## Output
 
-The actor returns one dataset item per business. Fields can include:
+The actor pushes every item from the Scrappa `items` response array into the default dataset. Fields vary by business, but records can include:
 
-| Field | Description |
-|-------|-------------|
-| `name` | Business name |
-| `type`, `subtypes` | Primary and secondary business categories |
-| `rating`, `review_count` | Google rating and review count |
-| `price_level`, `price_level_text` | Price metadata when available |
-| `full_address`, `district`, `timezone` | Address and local context |
-| `latitude`, `longitude` | Business coordinates |
-| `phone_numbers`, `website`, `domain` | Contact and website details |
-| `business_id`, `place_id`, `google_mid` | Google and Scrappa identifiers |
-| `owner_id`, `owner_name`, `owner_link` | Owner metadata when available |
-| `order_link` | Ordering URL when available |
-| `short_description`, `full_description` | Business descriptions |
-| `current_status` | Current open or operating status |
-| `photos_sample` | Sample photo objects with photo URLs and coordinates |
-| `opening_hours` | Opening hour objects by day, including special days |
+- `name`
+- `price_level`
+- `price_level_text`
+- `review_count`
+- `rating`
+- `website`
+- `domain`
+- `latitude`
+- `longitude`
+- `business_id`
+- `subtypes`
+- `district`
+- `full_address`
+- `address`
+- `timezone`
+- `short_description`
+- `full_description`
+- `owner_id`
+- `owner_name`
+- `owner_link`
+- `order_link`
+- `google_mid`
+- `type`
+- `phone_numbers`
+- `phone`
+- `place_id`
+- `photos_sample`
+- `opening_hours`
+- `current_status`
+
+`address` and `phone` are dataset-friendly aliases added by the actor from `full_address` and `phone_numbers`. The original Scrappa fields are preserved.
+
+## Example Dataset Item
+
+```json
+{
+  "name": "Example Pizza",
+  "type": "Pizza restaurant",
+  "rating": 4.5,
+  "review_count": 1250,
+  "full_address": "123 Main St, New York, NY 10001",
+  "address": "123 Main St, New York, NY 10001",
+  "latitude": 40.7501,
+  "longitude": -73.997,
+  "phone_numbers": ["+1 212-555-0100"],
+  "phone": "+1 212-555-0100",
+  "website": "https://example.com",
+  "business_id": "0x89c259af336b3341:0x1234567890abcdef",
+  "place_id": "ChIJExamplePlaceId",
+  "timezone": "America/New_York",
+  "current_status": "Open"
+}
+```
+
+## Nested Fields
+
+`photos_sample` contains sample photo objects when available, including fields such as `photo_id`, `photo_url`, `photo_url_large`, `video_thumbnail_url`, `latitude`, `longitude`, and `type`.
+
+`opening_hours` contains day-level hours objects when available, including fields such as `day`, `hours`, `date`, and `special_day`.
 
 ## Pricing
 
-$0.30 per 1,000 results. No API keys required.
+$0.30 per 1,000 results. No Google Maps API key required.
