@@ -323,7 +323,7 @@ After fixes are applied:
 
 4. **Test dataset view:**
    - Verify fields display correctly
-   - Verify no "address" or "phone" fields (should be full_address, phone_numbers)
+   - Verify `full_address` and `phone_numbers` are preserved, with `address` and `phone` aliases also available
    - Verify latitude/longitude are displayed
 
 ---
