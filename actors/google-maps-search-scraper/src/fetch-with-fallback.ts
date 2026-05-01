@@ -1,5 +1,6 @@
 export interface BusinessResult {
     name?: string;
+    // Scrappa documents Google Maps price_level as a string value.
     price_level?: string | null;
     price_level_text?: string | null;
     review_count?: number | null;

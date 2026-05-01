@@ -17,12 +17,12 @@ test('falls back to advanced search when simple search fails transiently', async
     };
 
     const baseParams = { query: "joe's pizza manhattan", hl: 'en', gl: 'us' };
-    const response = await fetchWithFallback(client, baseParams, 13);
+    const response = await fetchWithFallback(client, baseParams, 17);
 
     assert.equal(calls.length, 2);
     assert.equal(calls[0].endpoint, '/maps/simple-search');
     assert.equal(calls[1].endpoint, '/maps/advanced-search');
-    assert.equal(calls[1].params.zoom, 13);
+    assert.equal(calls[1].params.zoom, 17);
     assert.equal(response.items.length, 1);
 });
 
