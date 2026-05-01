@@ -1,14 +1,21 @@
-export interface GoogleMapsSearchResult {
-    full_address?: string;
+import type {
+    BusinessOpeningHours,
+    BusinessPhotoSample,
+    BusinessResult,
+    GoogleMapsSearchResponse as ScrappaGoogleMapsSearchResponse,
+} from './fetch-with-fallback.js';
+
+export interface GoogleMapsSearchResult extends BusinessResult {
     address?: string;
-    phone_numbers?: string[];
     phone?: string;
-    [key: string]: unknown;
 }
 
-export interface GoogleMapsSearchResponse {
+export type GoogleMapsPhotoSample = BusinessPhotoSample;
+
+export type GoogleMapsOpeningHours = BusinessOpeningHours;
+
+export interface GoogleMapsSearchResponse extends Omit<ScrappaGoogleMapsSearchResponse, 'items'> {
     items?: GoogleMapsSearchResult[];
-    [key: string]: unknown;
 }
 
 export function addContactAliases(item: GoogleMapsSearchResult): GoogleMapsSearchResult {

@@ -7,6 +7,7 @@ interface GoogleMapsSearchInput {
     query: string;
     hl?: string;
     gl?: string;
+    debug?: boolean;
     use_cache?: boolean;
     maximum_cache_age?: number;
     fallback_zoom?: number;
@@ -27,12 +28,16 @@ try {
 
     console.log(`Searching Google Maps for: "${input.query}"`);
 
-    const client = new ScrappaClient({ apiKey });
+    const client = new ScrappaClient({ apiKey, debug: input.debug === true });
     const params: Record<string, unknown> = {
         query: input.query,
         hl: input.hl || 'en',
         gl: input.gl,
     };
+
+    if (input.debug === true) {
+        params.debug = true;
+    }
 
     if (input.use_cache !== false) {
         params.use_cache = 1;

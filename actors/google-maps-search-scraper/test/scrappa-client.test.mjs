@@ -31,6 +31,32 @@ test('does not send use_cache=0 when use_cache is false', async () => {
     assert.ok(!capturedUrl.includes('use_cache=0'));
 });
 
+test('serializes true boolean query params as 1', async () => {
+    const originalFetch = globalThis.fetch;
+    let capturedUrl = '';
+
+    globalThis.fetch = async (url) => {
+        capturedUrl = String(url);
+        return new Response(JSON.stringify({ items: [] }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    };
+
+    try {
+        const client = new ScrappaClient({ apiKey: 'test', baseUrl: 'https://example.com/api' });
+        await client.get('/maps/simple-search', {
+            query: 'pizza',
+            debug: true,
+        });
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+
+    assert.ok(capturedUrl.includes('query=pizza'));
+    assert.ok(capturedUrl.includes('debug=1'));
+});
+
 test('surfaces non-JSON upstream errors without body-read crash', async () => {
     const originalFetch = globalThis.fetch;
 
