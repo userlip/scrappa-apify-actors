@@ -2,7 +2,6 @@ import { Actor } from 'apify';
 import { ScrappaClient } from './shared/index.js';
 import { fetchWithFallback } from './fetch-with-fallback.js';
 import { addSearchResponseAliases } from './output-aliases.js';
-import type { GoogleMapsSearchResponse } from './output-aliases.js';
 import { buildSearchParams } from './search-params.js';
 import type { GoogleMapsSearchInput } from './search-params.js';
 
@@ -24,7 +23,7 @@ try {
     const client = new ScrappaClient({ apiKey, debug: input.debug });
     const params = buildSearchParams(input);
 
-    const response: GoogleMapsSearchResponse = addSearchResponseAliases(
+    const response = addSearchResponseAliases(
         await fetchWithFallback(client, params, input.fallback_zoom ?? 13)
     );
 

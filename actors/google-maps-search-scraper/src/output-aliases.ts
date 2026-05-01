@@ -50,10 +50,6 @@ export interface GoogleMapsSearchResult {
     [key: string]: unknown;
 }
 
-export type GoogleMapsPhotoSample = PhotoSample;
-
-export type GoogleMapsOpeningHours = OpeningHour;
-
 export interface GoogleMapsSearchResponse {
     items?: GoogleMapsSearchResult[];
     [key: string]: unknown;
