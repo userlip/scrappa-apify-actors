@@ -33,6 +33,8 @@ Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format. Google Plac
 
 ## Output
 
+### Dataset items
+
 The actor pushes one dataset item per photo. Available fields can vary by listing and Google Maps source data, but successful photo records commonly include:
 
 ```json
@@ -49,6 +51,8 @@ The actor pushes one dataset item per photo. Available fields can vary by listin
 ```
 
 Other records may include additional metadata such as `latitude`, `longitude`, `photo_index`, `source`, `author`, `published_at`, `is_owner`, `likes`, or `video_thumbnail_url` when Google Maps provides those values.
+
+### Key-value store summary
 
 The actor also writes an `OUTPUT` key-value store record with:
 
