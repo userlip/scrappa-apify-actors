@@ -19,17 +19,37 @@
       "views": {
         "overview": {
           "title": "Search Results",
-          "transformation": { "fields": ["name", "rating", "review_count", "full_address", "phone_numbers", "website", "type"] },
+          "transformation": {
+            "fields": [
+              "name",
+              "type",
+              "rating",
+              "review_count",
+              "full_address",
+              "latitude",
+              "longitude",
+              "phone_numbers",
+              "website",
+              "business_id",
+              "place_id",
+              "timezone"
+            ]
+          },
           "display": {
             "component": "table",
             "properties": {
               "name": { "label": "Name", "format": "text" },
+              "type": { "label": "Type", "format": "text" },
               "rating": { "label": "Rating", "format": "number" },
               "review_count": { "label": "Reviews", "format": "number" },
               "full_address": { "label": "Address", "format": "text" },
+              "latitude": { "label": "Latitude", "format": "number" },
+              "longitude": { "label": "Longitude", "format": "number" },
               "phone_numbers": { "label": "Phone numbers", "format": "array" },
               "website": { "label": "Website", "format": "link" },
-              "type": { "label": "Type", "format": "text" }
+              "business_id": { "label": "Business ID", "format": "text" },
+              "place_id": { "label": "Place ID", "format": "text" },
+              "timezone": { "label": "Timezone", "format": "text" }
             }
           }
         }
