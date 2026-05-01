@@ -242,6 +242,23 @@ Run these commands from `actors/google-maps-search-scraper`:
 
 ---
 
+### Issue 10: Incomplete Documentation
+- **File:** `.actor/README.md`
+- **Severity:** MEDIUM - Users don't know what data is available
+- **Description:** README doesn't list all 28 available response fields
+- **Current:** Generic description, doesn't mention:
+  - photos_sample availability
+  - opening_hours structure
+  - location data (latitude/longitude)
+  - timezone information
+
+- **Fix Required:** Expand output section with complete field list
+- **Status:** ✅ Fixed - `.actor/README.md` now documents inputs, output fields, aliases, nested fields, and example output.
+
+---
+
+## LOW PRIORITY ISSUES
+
 ### Issue 9: Memory Allocation Review
 - **File:** `.actor/actor.json`
 - **Lines:** 12-14 (resources section)
@@ -255,21 +272,6 @@ Run these commands from `actors/google-maps-search-scraper`:
   ```
 - **Recommendation:** Keep at 256MB for now; increase to 512MB if crashes occur with large datasets
 - **Status:** ⬜ Monitor - no code change required unless production runs show memory pressure.
-
----
-
-### Issue 10: Incomplete Documentation
-- **File:** `.actor/README.md`
-- **Severity:** MEDIUM - Users don't know what data is available
-- **Description:** README doesn't list all 28 available response fields
-- **Current:** Generic description, doesn't mention:
-  - photos_sample availability
-  - opening_hours structure
-  - location data (latitude/longitude)
-  - timezone information
-
-- **Fix Required:** Expand output section with complete field list
-- **Status:** ✅ Fixed - `.actor/README.md` now documents inputs, output fields, aliases, nested fields, and example output.
 
 ---
 
