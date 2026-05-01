@@ -12,6 +12,8 @@ export function buildLinkedInPostParams(
         url: input.url,
     };
 
+    // ScrappaClient converts true to use_cache=1 and intentionally drops false,
+    // because Scrappa rejects use_cache=0.
     if (input.use_cache) {
         params.use_cache = true;
     }

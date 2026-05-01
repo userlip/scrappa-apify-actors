@@ -14,7 +14,7 @@
     "use_cache": {
       "title": "Use Cache",
       "type": "boolean",
-      "description": "Use cached results if available to reduce costs",
+      "description": "Use cached results if available to reduce costs. When disabled, the actor omits the cache flag because Scrappa does not accept use_cache=0.",
       "editor": "checkbox",
       "default": true
     },
