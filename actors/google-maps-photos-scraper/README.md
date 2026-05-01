@@ -75,7 +75,7 @@ The actor also writes an `OUTPUT` key-value store record with:
     }
   ],
   "total": 1,
-  "nextPage": null
+  "nextPage": "CAESBkVnSUl..."
 }
 ```
 
@@ -101,7 +101,7 @@ Caching is enabled by default because photo lists usually do not change minute b
 
 ## Example visual-data workflows
 
-- Build photo galleries for local business directories, lead lists, and internal CRM records.
+- Export Google Maps photo galleries into CSV, JSON, Excel, or downstream review queues.
 - Monitor new customer-uploaded photos for brand, cleanliness, merchandising, or store-condition signals.
 - Compare storefront, room, menu, venue, or product imagery across locations.
 - Enrich Google Maps search or business-details datasets with high-resolution image URLs.
