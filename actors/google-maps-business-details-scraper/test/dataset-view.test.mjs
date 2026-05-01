@@ -5,6 +5,15 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const expectedFields = [
+    'name',
+    'rating',
+    'review_count',
+    'full_address',
+    'phone_number',
+    'website',
+    'type',
+];
 
 test('dataset overview uses fields emitted by business details results', async () => {
     const actorJson = JSON.parse(
@@ -12,25 +21,9 @@ test('dataset overview uses fields emitted by business details results', async (
     );
 
     const view = actorJson.storages.dataset.views.overview;
-    const emittedFields = new Set([
-        'name',
-        'rating',
-        'review_count',
-        'full_address',
-        'phone_number',
-        'website',
-        'type',
-    ]);
+    const emittedFields = new Set(expectedFields);
 
-    assert.deepEqual(view.transformation.fields, [
-        'name',
-        'rating',
-        'review_count',
-        'full_address',
-        'phone_number',
-        'website',
-        'type',
-    ]);
+    assert.deepEqual(view.transformation.fields, expectedFields);
 
     for (const field of view.transformation.fields) {
         assert.ok(emittedFields.has(field), `${field} is not emitted by business details results`);
