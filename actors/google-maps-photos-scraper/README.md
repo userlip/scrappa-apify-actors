@@ -16,10 +16,10 @@ Pricing: **$0.30 per 1,000 results**. No Google Maps API key required.
 
 ## Best for
 
-- Local SEO and directory data teams.
-- Brand, reputation, and field operations teams.
-- Franchise, hospitality, healthcare, agency, and retail analysts.
-- Developers building Google Maps enrichment pipelines.
+- Local SEO teams.
+- Brand and reputation teams.
+- Field operations teams.
+- Data engineers and enrichment developers.
 
 ## Input
 
@@ -106,6 +106,21 @@ Caching is enabled by default because photo lists usually do not change minute b
 - Compare storefront, room, menu, venue, or product imagery across locations.
 - Enrich Google Maps search or business-details datasets with high-resolution image URLs.
 - Collect visual audit evidence for reputation management, competitor tracking, site selection, and field operations.
+
+## Recommended workflow
+
+1. Run Google Maps Search, Advanced Search, Autocomplete, or Business Details to collect `business_id` values.
+2. Run this actor once per target `business_id`.
+3. Export photo records to your data warehouse, local SEO audit, visual review queue, or media monitoring pipeline.
+4. Store `business_id` with every photo record so you can join photos back to business details, reviews, ratings, categories, and location data.
+
+## Tips for better results
+
+- Use exact `business_id` values from recent Google Maps discovery runs.
+- Keep `use_cache` enabled for recurring audits, deduplication, and large enrichment jobs.
+- Disable cache only for freshness-sensitive checks, such as monitoring whether a competitor added new photos this week.
+- Use `photo_url_large` when you need higher-resolution images and `photo_url` for lightweight previews.
+- Expect fields to vary by business because Google Maps does not expose the same metadata for every photo.
 
 ## Direct API
 
