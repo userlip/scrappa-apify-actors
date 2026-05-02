@@ -5,6 +5,12 @@ export interface ScrappaConfig {
     timeoutMs?: number;
 }
 
+export interface ScrappaError {
+    status: number;
+    message: string;
+    errors?: Record<string, string[]>;
+}
+
 export class ScrappaClient {
     private apiKey: string;
     private baseUrl: string;
@@ -19,16 +25,47 @@ export class ScrappaClient {
     }
 
     async get<T>(endpoint: string, params: Record<string, unknown> = {}): Promise<T> {
+        return this.request<T>('GET', endpoint, params);
+    }
+
+    async post<T>(endpoint: string, body: Record<string, unknown> = {}): Promise<T> {
+        return this.request<T>('POST', endpoint, {}, body);
+    }
+
+    private async request<T>(
+        method: 'GET' | 'POST',
+        endpoint: string,
+        params: Record<string, unknown> = {},
+        body?: Record<string, unknown>
+    ): Promise<T> {
         const url = new URL(`${this.baseUrl}${endpoint}`);
 
-        Object.entries(params).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-                url.searchParams.set(key, String(value));
-            }
-        });
+        // Add query params for GET requests
+        if (method === 'GET') {
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    url.searchParams.set(key, String(value));
+                }
+            });
+        }
+
+        const headers: Record<string, string> = {
+            'X-API-Key': this.apiKey,
+            'Accept': 'application/json',
+        };
+
+        const options: RequestInit = {
+            method,
+            headers,
+        };
+
+        if (method === 'POST' && body) {
+            headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(body);
+        }
 
         if (this.debug) {
-            console.log(`[Scrappa] GET ${url.toString()}`);
+            console.log(`[Scrappa] ${method} ${url.toString()}`);
         }
 
         const controller = new AbortController();
@@ -36,11 +73,7 @@ export class ScrappaClient {
 
         try {
             const response = await fetch(url.toString(), {
-                method: 'GET',
-                headers: {
-                    'X-API-Key': this.apiKey,
-                    'Accept': 'application/json',
-                },
+                ...options,
                 signal: controller.signal,
             });
 
@@ -58,9 +91,9 @@ export class ScrappaClient {
                             .join('; ');
                         errorMessage += ` - ${details}`;
                     }
-                } catch (error) {
-                    if (error instanceof Error && error.name === 'AbortError') {
-                        throw error;
+                } catch (parseError) {
+                    if (parseError instanceof Error && parseError.name === 'AbortError') {
+                        throw parseError;
                     }
                     errorMessage = await responseClone.text() || `HTTP ${response.status}`;
                 }

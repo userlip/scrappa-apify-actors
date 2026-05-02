@@ -15,6 +15,9 @@ export interface GoogleNewsInput {
 const TOKEN_FIELDS = ['topic_token', 'kgmid', 'publication_token', 'section_token', 'story_token'] as const;
 
 type TokenField = typeof TOKEN_FIELDS[number];
+type TokenFieldInputKeyCheck = Exclude<TokenField, keyof GoogleNewsInput> extends never ? true : never;
+const tokenFieldsMatchInputKeys: TokenFieldInputKeyCheck = true;
+void tokenFieldsMatchInputKeys;
 
 function cleanOptionalString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null || value === '') {
@@ -129,10 +132,19 @@ export function buildGoogleNewsParams(input: GoogleNewsInput): Record<string, un
 }
 
 export function describeGoogleNewsRequest(params: Record<string, unknown>): string {
+    const paginationParts = [];
+    if (typeof params.page === 'number') {
+        paginationParts.push(`page ${params.page}`);
+    }
+    if (typeof params.start === 'number') {
+        paginationParts.push(`start ${params.start}`);
+    }
+    const pagination = paginationParts.length > 0 ? ` (${paginationParts.join(', ')})` : '';
+
     if (typeof params.q === 'string') {
-        return `query "${params.q}"`;
+        return `query "${params.q}"${pagination}`;
     }
 
     const token = TOKEN_FIELDS.find((field) => typeof params[field] === 'string');
-    return token ? `${token} ${String(params[token])}` : 'Google News request';
+    return token ? `${token} ${String(params[token])}${pagination}` : `Google News request${pagination}`;
 }

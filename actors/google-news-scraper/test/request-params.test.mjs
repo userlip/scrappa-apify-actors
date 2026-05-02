@@ -93,11 +93,11 @@ test('rejects invalid country and language codes', () => {
 
 test('describes requests for logs', () => {
     assert.equal(
-        describeGoogleNewsRequest({ q: 'markets' }),
-        'query "markets"',
+        describeGoogleNewsRequest({ q: 'markets', page: 2 }),
+        'query "markets" (page 2)',
     );
     assert.equal(
-        describeGoogleNewsRequest({ story_token: 'CAAqExample' }),
-        'story_token CAAqExample',
+        describeGoogleNewsRequest({ story_token: 'CAAqExample', start: 10 }),
+        'story_token CAAqExample (start 10)',
     );
 });
