@@ -1,0 +1,85 @@
+{
+  "title": "Google News Scraper",
+  "description": "Search Google News by keyword or browse topic, publication, section, story, and Knowledge Graph token pages.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "q": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Keyword or phrase to search in Google News. Leave empty when using a token parameter.",
+      "editor": "textfield",
+      "prefill": "artificial intelligence"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter Google News country code, such as us, gb, de, or fr.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "us"
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter Google News interface language, such as en, de, es, or fr.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "en"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "Page number for pagination. Do not use together with Start Offset.",
+      "editor": "number",
+      "minimum": 1,
+      "default": 1
+    },
+    "start": {
+      "title": "Start Offset",
+      "type": "integer",
+      "description": "Zero-based result offset for pagination. Do not use together with Page.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "so": {
+      "title": "Sort Order",
+      "type": "integer",
+      "description": "Sort order: 0 for relevance, 1 for date.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0
+    },
+    "topic_token": {
+      "title": "Topic Token",
+      "type": "string",
+      "description": "Google News topic token. Cannot be used with Search Query.",
+      "editor": "textfield"
+    },
+    "kgmid": {
+      "title": "Knowledge Graph ID",
+      "type": "string",
+      "description": "Google Knowledge Graph entity ID starting with /m/ or /g/. Must be used alone.",
+      "editor": "textfield"
+    },
+    "publication_token": {
+      "title": "Publication Token",
+      "type": "string",
+      "description": "Google News publication token. Cannot be used with Search Query.",
+      "editor": "textfield"
+    },
+    "section_token": {
+      "title": "Section Token",
+      "type": "string",
+      "description": "Google News section token. Cannot be used with Search Query.",
+      "editor": "textfield"
+    },
+    "story_token": {
+      "title": "Story Token",
+      "type": "string",
+      "description": "Google News story cluster token. Cannot be used with Search Query.",
+      "editor": "textfield"
+    }
+  }
+}
