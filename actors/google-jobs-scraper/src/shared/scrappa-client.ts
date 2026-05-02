@@ -5,7 +5,7 @@ export interface ScrappaConfig {
     timeoutMs?: number;
 }
 
-export interface ScrappaError {
+interface ScrappaError {
     message?: string;
     errors?: Record<string, string[]>;
 }
