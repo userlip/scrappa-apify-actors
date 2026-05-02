@@ -100,6 +100,13 @@ test('builds params from numeric profile input as user_id', () => {
     );
 });
 
+test('builds params from @-prefixed numeric profile input as unique_id', () => {
+    assert.deepEqual(
+        buildTikTokProfileParams({ profile: '@107955' }),
+        { unique_id: '@107955' },
+    );
+});
+
 test('rejects digit-only profile input longer than user_id limit', () => {
     assert.throws(
         () => buildTikTokProfileParams({ profile: '1'.repeat(31) }),

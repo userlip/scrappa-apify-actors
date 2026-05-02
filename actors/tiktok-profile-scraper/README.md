@@ -17,4 +17,4 @@ npm test
 }
 ```
 
-You can also provide a full profile URL, such as `https://www.tiktok.com/@tiktok`, or a numeric TikTok user ID in `profile`.
+You can also provide a full profile URL, such as `https://www.tiktok.com/@tiktok`, or a numeric TikTok user ID in `profile`. Bare numeric values are treated as user IDs; prefix numeric usernames with `@`.

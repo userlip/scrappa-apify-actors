@@ -14,7 +14,7 @@ Extract public TikTok profile data through Scrappa. Use it for creator vetting, 
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `profile` | string | Yes | TikTok username with or without `@`, full profile URL, or numeric user ID |
+| `profile` | string | Yes | TikTok username with or without `@`, full profile URL, or numeric user ID. Bare numeric values are treated as user IDs; prefix numeric usernames with `@`. |
 
 ## Example Input
 
