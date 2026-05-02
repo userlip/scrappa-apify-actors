@@ -68,6 +68,9 @@ function normalizeTikTokProfileLookup(value: string): { key: 'unique_id' | 'user
     if (/^\d{1,30}$/.test(trimmed)) {
         return { key: 'user_id', value: trimmed, logValue: `user_id:${trimmed}` };
     }
+    if (/^\d+$/.test(trimmed)) {
+        throw new Error('TikTok numeric user ID must be 30 digits or fewer');
+    }
 
     const uniqueId = normalizeTikTokUniqueId(trimmed);
     return { key: 'unique_id', value: uniqueId, logValue: uniqueId };

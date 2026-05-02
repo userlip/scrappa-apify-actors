@@ -49,6 +49,13 @@ test('builds params from numeric profile input as user_id', () => {
     );
 });
 
+test('rejects digit-only profile input longer than user_id limit', () => {
+    assert.throws(
+        () => buildTikTokProfileParams({ profile: '1'.repeat(31) }),
+        /must be 30 digits or fewer/,
+    );
+});
+
 test('includes both lookup values when both are provided', () => {
     assert.deepEqual(
         buildTikTokProfileParams({ unique_id: 'tiktok', user_id: '107955' }),
