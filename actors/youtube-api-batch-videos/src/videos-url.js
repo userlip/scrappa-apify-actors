@@ -18,6 +18,10 @@ export function buildBatchVideosUrl(input = {}) {
     }
 
     const normalizedIds = ids.split(',').map((id) => id.trim()).filter(Boolean);
+    if (normalizedIds.length === 0) {
+        throw new Error('Video IDs "ids" must include at least one non-empty ID.');
+    }
+
     if (normalizedIds.length > 50) {
         throw new Error('Video IDs "ids" must contain 50 or fewer comma-separated IDs.');
     }

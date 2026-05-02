@@ -21,6 +21,11 @@ describe('buildBatchVideosUrl', () => {
         assert.throws(() => buildBatchVideosUrl({ ids: '   ' }), /ids/);
     });
 
+    it('rejects comma-only input with no valid IDs', () => {
+        assert.throws(() => buildBatchVideosUrl({ ids: ',' }), /ids/);
+        assert.throws(() => buildBatchVideosUrl({ ids: ' , , ' }), /ids/);
+    });
+
     it('rejects more than 50 IDs', () => {
         const ids = Array.from({ length: 51 }, (_, index) => `video-${index}`).join(',');
 
