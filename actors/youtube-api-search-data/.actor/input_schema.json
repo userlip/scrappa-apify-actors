@@ -35,7 +35,7 @@
     "upload_date": {
       "title": "Upload date",
       "type": "array",
-      "description": "Upload date",
+      "description": "Upload date filter. Mapped to Scrappa publishedAfter.",
       "editor": "select",
       "items": {
         "type": "string",
@@ -47,31 +47,14 @@
       "title": "Limit",
       "type": "integer",
       "description": "Maximum number of results to return",
-      "default": 1,
+      "default": 10,
       "minimum": 1,
-      "maximum": 1024
+      "maximum": 20
     },
     "continuation": {
       "title": "Continuation",
       "type": "string",
       "description": "Pagination token for next page",
-      "editor": "textfield"
-    },
-    "contentType": {
-      "title": "Content type",
-      "type": "array",
-      "description": "Filter by content type",
-      "editor": "select",
-      "items": {
-        "type": "string",
-        "enum": ["live", "recorded", "premiere"]
-      },
-      "prefill": ["live"]
-    },
-    "features": {
-      "title": "Features",
-      "type": "string",
-      "description": "Comma-separated: live,4k,hd,subtitles,cc,360,vr180,3d,hdr",
       "editor": "textfield"
     },
     "type": {

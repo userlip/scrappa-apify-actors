@@ -1,98 +1,132 @@
 # Google Maps Reviews Scraper
 
-Extract customer reviews from a Google Maps business. Get review text, ratings, reviewer metadata, owner responses, review links, images, and pagination tokens.
+Extract Google Maps reviews for a specific business by `business_id`. Use it to monitor new reviews, analyze customer sentiment, audit competitor locations, enrich local lead lists, and build review datasets without maintaining Google Maps scraping infrastructure.
 
-## Features
+## What this actor does
 
-- **Review Content** - Review text, ratings, review IDs, and review links
-- **Metadata** - Timestamps, likes, language tags, images, and owner responses
-- **Reviewer Profiles** - Author name, profile link, photo, review count, and local guide level when available
-- **Search** - Search within reviews for a specific business
-- **Sorting** - Sort by most relevant, newest, highest rating, or lowest rating
-- **Pagination** - Use the returned page token to retrieve additional review pages
-- **Caching Controls** - Use cached results or request fresh data by maximum cache age
+- Looks up one Google Maps business by `business_id`.
+- Returns review text, rating, reviewer metadata, review links, images, likes, language, owner responses, and pagination.
+- Supports review sorting by most relevant, newest, highest rating, or lowest rating.
+- Supports keyword search inside reviews for targeted reputation and support workflows.
+- Saves each review as a dataset row and stores the full Scrappa response in the `OUTPUT` key-value store record.
+
+## Common use cases
+
+- Track new reviews for your own locations.
+- Monitor competitor reviews by market, category, or city.
+- Find complaint themes such as service, price, delivery, warranty, wait time, or staff.
+- Join reviews with Google Maps Search, Business Details, and Photos data using the same `business_id`.
+- Export review records to CSV, Google Sheets, Make, n8n, Zapier, BI tools, or your own API pipeline.
+
+## How to get a `business_id`
+
+This actor starts from a Google Maps `business_id`, not a search query. The fastest path is:
+
+1. Run the Scrappa Google Maps Search actor or Google Maps Advanced Search actor with a query such as `coffee shops in Austin` or `dentists near Miami`.
+2. Open the dataset for that run.
+3. Copy the `business_id` value for the business you want.
+4. Paste that value into this actor.
+
+The ID usually looks like this:
+
+```text
+0x808fba02425dad8f:0x6c296c66619367e0
+```
+
+Keep the `business_id` in your downstream system so you can join search results, business details, photos, and reviews later.
 
 ## Input
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `business_id` | string | Yes | Google Maps business/place ID in `0x...:0x...` format |
-| `sort` | integer | Yes | Sort order: `1` most relevant, `2` newest, `3` highest rating, `4` lowest rating |
-| `limit` | integer | No | Number of reviews per page, 1-20 (default: 10) |
-| `page` | string | No | Pagination token from a previous response |
-| `search` | string | No | Search query to match within reviews |
-| `debug` | boolean | No | Enable debug logging |
-| `use_cache` | boolean | No | Use cached results when available (default: true) |
-| `maximum_cache_age` | integer | No | Maximum cache age in seconds (default: 3600, set 0 for fresh data) |
+| `business_id` | string | Yes | Google Maps business identifier in `0x...:0x...` format. Copy it from Google Maps Search, Advanced Search, Autocomplete, or Business Details results. |
+| `sort` | integer | Yes | `1` most relevant, `2` newest, `3` highest rating, `4` lowest rating. Default: `2` newest. |
+| `limit` | integer | No | Reviews to return on this page, from 1 to 20. Default: `10`. |
+| `page` | string | No | Pagination token from the previous response's `nextPage` field. |
+| `search` | string | No | Keyword to search inside reviews. Leave blank to return all matching reviews for the selected sort. |
+| `debug` | boolean | No | Enable Scrappa debug output for troubleshooting. |
+| `use_cache` | boolean | No | Use cached results when available. Default: `true`. |
+| `maximum_cache_age` | integer | No | Maximum cache age in seconds. Default: `3600`; set `0` to request fresh data. |
 
-## Output
+## Tested first-run example
 
-### Dataset (Review Records)
-
-Each review is saved as a record in the dataset:
-
-```json
-{
-  "review_id": "ChdDSUhNMG9nS0VJQ0FnSUN...",
-  "author_name": "John D.",
-  "rating": 5,
-  "review_text": ["Amazing pizza and friendly staff! Highly recommend."],
-  "timestamp": 1705314600,
-  "review_likes": 23,
-  "review_language": ["en"],
-  "owner_response_text": "Thank you for the great review!",
-  "owner_response_timestamp": 1705333500,
-  "author_profile_photo": "https://...",
-  "author_review_count": 156,
-  "author_local_guide_level": 6,
-  "author_link": "https://www.google.com/maps/contrib/...",
-  "review_link": "https://www.google.com/maps/reviews/...",
-  "images": ["https://..."]
-}
-```
-
-### Key-Value Store (Full Response)
-
-The complete response is saved to the `OUTPUT` key:
-
-```json
-{
-  "items": [
-    {
-      "review_id": "ChdDSUhNMG9nS0VJQ0FnSUN...",
-      "author_name": "John D.",
-      "rating": 5,
-      "review_text": ["Amazing pizza and friendly staff! Highly recommend."]
-    }
-  ],
-  "nextPage": "CAESBkVnSUl..."
-}
-```
-
-## Example Input
+This input was tested against the live Apify actor on May 2, 2026. The run succeeded and returned review dataset rows for the sample business.
 
 ```json
 {
   "business_id": "0x808fba02425dad8f:0x6c296c66619367e0",
   "sort": 2,
-  "limit": 10,
+  "limit": 5,
   "search": "service",
   "use_cache": true,
   "maximum_cache_age": 3600
 }
 ```
 
-## Pricing
+Use `limit: 5` for a quick first run. For production collection, use `limit: 20` and pass the returned `nextPage` token into the next run.
 
-**Standard Pricing:**
-- $0.30 per 1,000 reviews extracted
+## Output
 
-**Volume Discounts (For Gold Members & Above):**
-- $0.25 per 1,000 reviews (at 100k+ monthly usage)
-- $0.20 per 1,000 reviews (at 500k+ monthly usage)
+### Dataset rows
 
-No API keys required - just use the actor and pay as you go.
+Each review is saved as one dataset item:
+
+```json
+{
+  "review_id": "Ci9DQUlRQUNvZENodHljRjlvT21GTFFsSXpZbXRNTkRaYWRqUkljREl6T1d4RmNFRRAB",
+  "rating": 1,
+  "timestamp": 1775965549283,
+  "author_name": "Michael Carlton",
+  "author_profile_photo": "https://lh3.googleusercontent.com/...",
+  "author_link": "https://www.google.com/maps/contrib/107018891077092762969?hl=en",
+  "author_review_count": 48,
+  "author_local_guide_level": 1,
+  "review_language": ["en"],
+  "review_text": ["This review is for a warranty request from Google..."],
+  "owner_response_text": null,
+  "owner_response_timestamp": null,
+  "review_link": "https://www.google.com/maps/reviews/data=...",
+  "review_likes": null,
+  "images": ["https://lh3.googleusercontent.com/..."]
+}
+```
+
+Field availability depends on what Google exposes for the review. Some reviews do not include images, owner responses, likes, or local guide metadata.
+
+### Full response
+
+The complete response is also stored in the key-value store under `OUTPUT`:
+
+```json
+{
+  "items": [
+    {
+      "review_id": "Ci9DQUlRQUNvZENodHljRjlvT21GTFFsSXpZbXRNTkRaYWRqUkljREl6T1d4RmNFRRAB",
+      "author_name": "Michael Carlton",
+      "rating": 1,
+      "review_text": ["This review is for a warranty request from Google..."]
+    }
+  ],
+  "nextPage": "CAESBkVnSUl..."
+}
+```
+
+Use `nextPage` when you need the next page of reviews for the same business and sort/search settings.
+
+## Production tips
+
+- Start with `sort: 2` and a small `limit` to confirm the business is correct.
+- Use `search` for complaint mining and QA workflows; leave it blank for full review collection.
+- Store `business_id`, `review_id`, `timestamp`, `rating`, and `review_link` in your database for deduplication.
+- Keep `use_cache` enabled for testing and repeated QA runs. Set `maximum_cache_age` to `0` only when freshness matters more than cost and speed.
+- Schedule repeated runs with `sort: 2` to monitor new review activity.
+
+## Pricing and scale
+
+Standard price: `$0.30 per 1,000 reviews extracted`.
+
+For higher-volume review monitoring, competitor intelligence, local SEO audits, or direct API access outside Apify, use Scrappa directly at `https://scrappa.co`. Scrappa can support larger review pipelines while keeping the same Google Maps data model used by this actor.
 
 ## Support
 
-For issues or questions, contact us through Apify.
+For Apify run issues, open an issue on this actor with the run ID, input JSON, and expected result. For direct Scrappa API access or larger usage, contact Scrappa through `https://scrappa.co`.

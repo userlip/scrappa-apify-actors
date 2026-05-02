@@ -1,29 +1,29 @@
 {
   "title": "Google Maps Reviews Scraper",
-  "description": "Extract customer reviews from a specific Google Maps business using the business ID and sort preference.",
+  "description": "Extract customer reviews from a specific Google Maps business. Paste a business_id from Google Maps Search, Advanced Search, Autocomplete, or Business Details.",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
     "business_id": {
       "title": "Business ID",
       "type": "string",
-      "description": "Google Maps business/place ID in format 0x[hex]:0x[hex] (e.g., '0x540556df42a1ed52:0xc7ea5e2d51f2f65f')",
+      "description": "Google Maps business/place ID in 0x[hex]:0x[hex] format. To get one, run Google Maps Search or Advanced Search and copy the business_id field from the business you want to monitor.",
       "editor": "textfield",
       "prefill": "0x808fba02425dad8f:0x6c296c66619367e0"
     },
     "sort": {
       "title": "Sort Reviews By",
       "type": "integer",
-      "description": "Sort order (1=Most Relevant, 2=Newest, 3=Highest Rating, 4=Lowest Rating)",
+      "description": "Review order. Use Newest for monitoring, Most Relevant for representative samples, or rating sorts for sentiment QA.",
       "editor": "number",
       "minimum": 1,
       "maximum": 4,
-      "default": 1
+      "default": 2
     },
     "limit": {
       "title": "Limit Per Page",
       "type": "integer",
-      "description": "Number of reviews per page (1-20, default: 10)",
+      "description": "Number of reviews to return on this page. Start with 5-10 for a first test, then increase to 20 for production pagination.",
       "editor": "number",
       "minimum": 1,
       "maximum": 20,
@@ -32,13 +32,13 @@
     "page": {
       "title": "Page Token",
       "type": "string",
-      "description": "Pagination token for retrieving next page of results (optional)",
+      "description": "Paste the nextPage token from a previous run to retrieve the next page of reviews.",
       "editor": "textfield"
     },
     "search": {
       "title": "Search Within Reviews",
       "type": "string",
-      "description": "Search query to filter reviews (optional)",
+      "description": "Optional keyword to match inside reviews, for example service, price, delivery, warranty, or rude.",
       "editor": "textfield"
     },
     "debug": {

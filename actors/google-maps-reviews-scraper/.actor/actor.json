@@ -3,6 +3,11 @@
   "name": "google-maps-reviews-scraper",
   "title": "Google Maps Reviews Scraper",
   "description": "Extract Google Maps reviews at scale. Get review text, ratings, reviewer details, timestamps, helpful votes, owner responses, pagination, filtering, and sorting for review analysis.",
+  "categories": [
+    "LEAD_GENERATION",
+    "MARKETING",
+    "AUTOMATION"
+  ],
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

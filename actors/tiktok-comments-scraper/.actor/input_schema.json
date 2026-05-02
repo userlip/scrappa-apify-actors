@@ -1,0 +1,32 @@
+{
+  "title": "TikTok Comments Scraper",
+  "description": "Extract comments from a public TikTok video URL.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "url": {
+      "title": "TikTok Video URL",
+      "type": "string",
+      "description": "Full TikTok video URL to fetch comments from.",
+      "editor": "textfield",
+      "prefill": "https://www.tiktok.com/@tiktok/video/7568510388342443294",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/@[^/]+/[Vv][Ii][Dd][Ee][Oo]/[0-9]+/?(?:[?#].*)?$"
+    },
+    "count": {
+      "title": "Comments Per Page",
+      "type": "integer",
+      "description": "Number of comments to return from this page. Scrappa accepts 1-50.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    },
+    "cursor": {
+      "title": "Cursor",
+      "type": "string",
+      "description": "Pagination cursor from a previous run. Leave empty for the first page.",
+      "editor": "textfield"
+    }
+  },
+  "required": ["url"]
+}
