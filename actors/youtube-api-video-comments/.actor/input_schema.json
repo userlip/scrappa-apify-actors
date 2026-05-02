@@ -25,6 +25,7 @@
                 "type": "string",
                 "enum": ["TOP_COMMENTS", "NEWEST_FIRST"]
             },
+            "maxItems": 1,
             "prefill": ["TOP_COMMENTS"]
         }
     },

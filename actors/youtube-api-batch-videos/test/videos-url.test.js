@@ -14,4 +14,10 @@ describe('buildBatchVideosUrl', () => {
         assert.throws(() => buildBatchVideosUrl({}), /ids/);
         assert.throws(() => buildBatchVideosUrl({ ids: '   ' }), /ids/);
     });
+
+    it('rejects more than 50 IDs', () => {
+        const ids = Array.from({ length: 51 }, (_, index) => `video-${index}`).join(',');
+
+        assert.throws(() => buildBatchVideosUrl({ ids }), /50 or fewer/);
+    });
 });

@@ -11,5 +11,9 @@ storage
 # installed files
 node_modules
 
+# local environment files
+.env
+.env.*
+
 # git folder
 .git

@@ -17,6 +17,11 @@ export function buildBatchVideosUrl(input = {}) {
         throw new Error('Video IDs "ids" are required.');
     }
 
+    const idCount = ids.split(',').map((id) => id.trim()).filter(Boolean).length;
+    if (idCount > 50) {
+        throw new Error('Video IDs "ids" must contain 50 or fewer comma-separated IDs.');
+    }
+
     const params = new URLSearchParams({ ids });
 
     return `${API_BASE_URL}?${params.toString()}`;
