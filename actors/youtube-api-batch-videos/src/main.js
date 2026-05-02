@@ -29,7 +29,7 @@ Actor.main(async () => {
         const videos = data?.videos ?? [];
 
         await Actor.pushData(videos);
-        console.log(`Successfully fetched ${Array.isArray(videos) ? videos.length : 1} batch video(s) for ids: ${input.ids}`);
+        console.log(`Successfully fetched ${videos.length} batch video(s) for ids: ${input.ids}`);
     } catch (error) {
         const message = errorMessage(error);
         console.error(`Failed to fetch YouTube batch videos: ${message}`);
