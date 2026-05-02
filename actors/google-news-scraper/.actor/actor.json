@@ -1,0 +1,52 @@
+{
+  "actorSpecification": 1,
+  "name": "google-news-scraper",
+  "title": "Google News Scraper",
+  "description": "Scrape Google News articles for keywords, topics, publications, and story clusters. Extract titles, links, sources, snippets, dates, thumbnails, and Google News tokens for media monitoring and market research.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "news": {
+          "title": "News Results",
+          "transformation": {
+            "fields": ["position", "title", "link", "source_name", "date", "iso_date", "snippet", "thumbnail", "story_token", "request_q", "request_gl", "request_hl"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "#", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "link": { "label": "URL", "format": "link" },
+              "source_name": { "label": "Source", "format": "text" },
+              "date": { "label": "Date", "format": "text" },
+              "iso_date": { "label": "ISO Date", "format": "date" },
+              "snippet": { "label": "Snippet", "format": "text" },
+              "thumbnail": { "label": "Thumbnail", "format": "image" },
+              "story_token": { "label": "Story Token", "format": "text" },
+              "request_q": { "label": "Query", "format": "text" },
+              "request_gl": { "label": "Country", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
