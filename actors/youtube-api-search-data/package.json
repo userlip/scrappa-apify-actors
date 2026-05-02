@@ -13,5 +13,6 @@
     "start": "node ./src/main.js",
     "test": "node --test"
   },
+  "author": "Scrappa",
   "license": "ISC"
 }
