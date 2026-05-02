@@ -1,12 +1,7 @@
 import { Actor } from 'apify';
-import { ScrappaClient } from './shared/index.js';
+import { ScrappaClient } from './shared/scrappa-client.js';
 import { buildTikTokCommentsParams } from './request-params.js';
-
-interface TikTokCommentsInput {
-    url: string;
-    count?: number;
-    cursor?: string;
-}
+import type { TikTokCommentsInput } from './request-params.js';
 
 interface TikTokCommentUser {
     user_id?: string;
