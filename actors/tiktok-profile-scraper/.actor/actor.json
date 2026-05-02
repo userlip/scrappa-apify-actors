@@ -1,0 +1,51 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-profile-scraper",
+  "title": "TikTok Profile Scraper",
+  "description": "Extract public TikTok profile data by username, profile URL, or user ID. Get follower counts, bio, avatar, verification status, region, language, and engagement metrics through Scrappa.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "profiles": {
+          "title": "Profiles",
+          "transformation": {
+            "fields": ["unique_id", "nickname", "user_id", "follower_count", "following_count", "heart_count", "video_count", "verified", "private_account", "region", "avatar"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "unique_id": { "label": "Username", "format": "text" },
+              "nickname": { "label": "Name", "format": "text" },
+              "user_id": { "label": "User ID", "format": "text" },
+              "follower_count": { "label": "Followers", "format": "number" },
+              "following_count": { "label": "Following", "format": "number" },
+              "heart_count": { "label": "Likes", "format": "number" },
+              "video_count": { "label": "Videos", "format": "number" },
+              "verified": { "label": "Verified", "format": "boolean" },
+              "private_account": { "label": "Private", "format": "boolean" },
+              "region": { "label": "Region", "format": "text" },
+              "avatar": { "label": "Avatar", "format": "link" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
