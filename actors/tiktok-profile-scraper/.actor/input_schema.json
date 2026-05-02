@@ -7,7 +7,7 @@
     "profile": {
       "title": "TikTok Profile",
       "type": "string",
-      "description": "TikTok username with or without @, full profile URL, or numeric user ID. Equivalent regex: ^(?:@?[A-Za-z0-9._]{2,255}|[0-9]{1,30}|https://([^/]+\\.)?tiktok\\.com/@[^/?#]+/?(?:[?#].*)?)$",
+      "description": "TikTok username with or without @, full HTTPS TikTok profile URL, or numeric user ID up to 30 digits.",
       "editor": "textfield",
       "prefill": "@tiktok",
       "pattern": "^(?![0-9]{31,}$)(?:@?[A-Za-z0-9._]{2,255}|[0-9]{1,30}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/@[^/?#]+/?(?:[?#].*)?)$"
