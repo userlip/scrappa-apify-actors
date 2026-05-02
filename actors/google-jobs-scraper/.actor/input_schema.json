@@ -46,12 +46,10 @@
     "lrad": {
       "title": "Search Radius",
       "type": "integer",
-      "description": "Search radius around the encoded location in miles. Requires uule.",
-      "editor": "select",
+      "description": "Search radius around the encoded location in miles. Supported values: 5, 10, 25, 50, or 100. Requires uule.",
+      "editor": "number",
       "minimum": 5,
-      "maximum": 100,
-      "enum": [5, 10, 25, 50, 100],
-      "enumTitles": ["5 miles", "10 miles", "25 miles", "50 miles", "100 miles"]
+      "maximum": 100
     },
     "uds": {
       "title": "Filter Token",
