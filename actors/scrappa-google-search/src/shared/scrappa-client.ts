@@ -44,7 +44,14 @@ export class ScrappaClient {
         if (method === 'GET') {
             Object.entries(params).forEach(([key, value]) => {
                 if (value !== undefined && value !== null && value !== '') {
-                    url.searchParams.set(key, String(value));
+                    // Skip false booleans - Laravel rejects use_cache=0
+                    if (typeof value === 'boolean') {
+                        if (value) {
+                            url.searchParams.set(key, '1');
+                        }
+                    } else {
+                        url.searchParams.set(key, String(value));
+                    }
                 }
             });
         }
@@ -78,37 +85,59 @@ export class ScrappaClient {
             });
 
             if (!response.ok) {
-                let errorMessage: string;
-                // Clone response before reading to allow fallback to text() if json() fails
-                const responseClone = response.clone();
-                try {
-                    const errorData = await response.json() as { message?: string; errors?: Record<string, string[]> };
-                    errorMessage = errorData.message ?? `HTTP ${response.status}`;
-
-                    if (errorData.errors) {
-                        const errorDetails = Object.entries(errorData.errors)
-                            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-                            .join('; ');
-                        errorMessage += ` - ${errorDetails}`;
-                    }
-                } catch (error) {
-                    if (error instanceof Error && error.name === 'AbortError') {
-                        throw error;
-                    }
-                    errorMessage = await responseClone.text() || `HTTP ${response.status}`;
-                }
+                const errorMessage = await this.readErrorMessage(response);
 
                 throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
             }
 
-            return response.json() as Promise<T>;
+            return await response.json() as T;
         } catch (error) {
             if (error instanceof Error && error.name === 'AbortError') {
-                throw new Error(`Scrappa API request timed out after ${this.timeoutMs}ms`);
+                throw new Error(`Scrappa API request timed out after ${this.timeoutMs}ms`, { cause: error });
             }
             throw error;
         } finally {
             clearTimeout(timeoutId);
+        }
+    }
+
+    private async readErrorMessage(response: Response): Promise<string> {
+        const fallback = response.statusText || `HTTP ${response.status}`;
+
+        let bodyText: string;
+        try {
+            bodyText = await response.text();
+        } catch {
+            return fallback;
+        }
+
+        if (!bodyText) {
+            return fallback;
+        }
+
+        const jsonMessage = this.tryParseJsonError(bodyText, fallback);
+        if (jsonMessage) {
+            return jsonMessage;
+        }
+
+        return bodyText.replace(/\s+/g, ' ').trim().slice(0, 500);
+    }
+
+    private tryParseJsonError(bodyText: string, fallback: string): string | null {
+        try {
+            const errorData = JSON.parse(bodyText) as { message?: string; errors?: Record<string, string[]> };
+            let message = errorData.message ?? fallback;
+            if (errorData.errors) {
+                const errorDetails = Object.entries(errorData.errors)
+                    .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+                    .join('; ');
+                if (errorDetails) {
+                    message += ` - ${errorDetails}`;
+                }
+            }
+            return message;
+        } catch {
+            return null;
         }
     }
 }
