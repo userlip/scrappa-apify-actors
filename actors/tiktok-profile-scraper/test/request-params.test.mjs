@@ -122,10 +122,17 @@ test('input schema rejects digit-only profile input longer than user_id limit', 
     assert.equal(pattern.test('1'.repeat(31)), false);
 });
 
-test('includes both lookup values when both are provided', () => {
+test('uses legacy unique_id instead of user_id when both are provided', () => {
     assert.deepEqual(
         buildTikTokProfileParams({ unique_id: 'tiktok', user_id: '107955' }),
-        { unique_id: '@tiktok', user_id: '107955' },
+        { unique_id: '@tiktok' },
+    );
+});
+
+test('does not validate legacy user_id after accepting unique_id', () => {
+    assert.deepEqual(
+        buildTikTokProfileParams({ unique_id: 'tiktok', user_id: 'abc' }),
+        { unique_id: '@tiktok' },
     );
 });
 
