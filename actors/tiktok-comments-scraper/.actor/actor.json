@@ -1,0 +1,47 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-comments-scraper",
+  "title": "TikTok Comments Scraper",
+  "description": "Extract comments from public TikTok video URLs. Get comment text, author details, likes, reply counts, timestamps, and pagination cursors through Scrappa.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "comments": {
+          "title": "Comments",
+          "transformation": {
+            "fields": ["text", "user", "digg_count", "reply_count", "create_time", "comment_id", "video_url"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "text": { "label": "Comment", "format": "text" },
+              "user": { "label": "User", "format": "object" },
+              "digg_count": { "label": "Likes", "format": "number" },
+              "reply_count": { "label": "Replies", "format": "number" },
+              "create_time": { "label": "Created", "format": "number" },
+              "comment_id": { "label": "Comment ID", "format": "text" },
+              "video_url": { "label": "Video URL", "format": "link" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
