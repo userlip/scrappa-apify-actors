@@ -1,6 +1,6 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/scrappa-client.js';
-import { buildTikTokCommentsParams, requireTikTokVideoUrl } from './request-params.js';
+import { buildTikTokCommentsParams, formatTikTokVideoUrlForLog, requireTikTokVideoUrl } from './request-params.js';
 import type { TikTokCommentsInput } from './request-params.js';
 
 interface TikTokCommentUser {
@@ -50,7 +50,7 @@ async function main(): Promise<void> {
         requireTikTokVideoUrl(input.url);
 
         const params = buildTikTokCommentsParams(input);
-        console.log(`Fetching TikTok comments for: ${input.url}`);
+        console.log(`Fetching TikTok comments for: ${formatTikTokVideoUrlForLog(input.url)}`);
 
         const client = new ScrappaClient({ apiKey });
         const response = await client.get<TikTokCommentsResponse>('/tiktok/comments/list', params);
@@ -93,4 +93,8 @@ async function main(): Promise<void> {
     await Actor.exit();
 }
 
-main();
+main().catch((error) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Actor failed: ' + message);
+    process.exitCode = 1;
+});

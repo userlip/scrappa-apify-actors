@@ -26,6 +26,13 @@ export function requireTikTokVideoUrl(url: string): void {
     }
 }
 
+export function formatTikTokVideoUrlForLog(url: string): string {
+    const parsed = new URL(url);
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString();
+}
+
 export function buildTikTokCommentsParams(
     input: TikTokCommentsInput,
     warn: (message: string) => void = console.warn,

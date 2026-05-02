@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildTikTokCommentsParams, requireTikTokVideoUrl } from '../dist/request-params.js';
+import { buildTikTokCommentsParams, formatTikTokVideoUrlForLog, requireTikTokVideoUrl } from '../dist/request-params.js';
 
 const url = 'https://www.tiktok.com/@tiktok/video/7568510388342443294';
 
@@ -84,5 +84,12 @@ test('rejects non-HTTPS TikTok video URLs', () => {
     assert.throws(
         () => requireTikTokVideoUrl('http://www.tiktok.com/@tiktok/video/7568510388342443294'),
         /must use HTTPS/,
+    );
+});
+
+test('formats TikTok video URLs for logs without query parameters or fragments', () => {
+    assert.equal(
+        formatTikTokVideoUrlForLog(`${url}?utm_source=test&token=abc#comments`),
+        url,
     );
 });
