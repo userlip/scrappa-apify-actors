@@ -29,6 +29,24 @@ test('adds @ to usernames without one', () => {
     );
 });
 
+test('rejects invalid unique_id username characters', () => {
+    for (const value of ['tik tok', 'tik-tok', 'tik/tok']) {
+        assert.throws(
+            () => buildTikTokProfileParams({ unique_id: value }),
+            /username must be 2 to 255 characters/,
+        );
+    }
+});
+
+test('rejects unique_id username outside length bounds', () => {
+    for (const value of ['a', 'a'.repeat(256), '@a', `@${'a'.repeat(256)}`]) {
+        assert.throws(
+            () => buildTikTokProfileParams({ unique_id: value }),
+            /username must be 2 to 255 characters/,
+        );
+    }
+});
+
 test('extracts unique_id from a TikTok profile URL', () => {
     assert.equal(
         normalizeTikTokUniqueId('https://www.tiktok.com/@tiktok?lang=en'),

@@ -60,7 +60,12 @@ export function normalizeTikTokUniqueId(value: string): string {
         throw new Error('A valid TikTok profile URL or username is required');
     }
 
-    return trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
+    const username = trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+    if (!/^[A-Za-z0-9._]{2,255}$/.test(username)) {
+        throw new Error('TikTok username must be 2 to 255 characters and contain only letters, numbers, dots, or underscores');
+    }
+
+    return `@${username}`;
 }
 
 function normalizeTikTokProfileLookup(value: string): { key: 'unique_id' | 'user_id'; value: string; logValue: string } {
