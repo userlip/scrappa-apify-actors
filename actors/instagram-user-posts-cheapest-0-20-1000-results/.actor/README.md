@@ -9,7 +9,7 @@ No Instagram login, cookies, proxy setup, or browser session is required. Provid
 - Fetches recent public posts and reels from an Instagram user profile.
 - Returns post fields such as shortcode, media type, caption, timestamp, likes, comments, plays, media URLs, location, author, and permalink when available.
 - Supports pagination with `max_id`, using the previous response's `next_max_id` value.
-- Saves the full upstream response as `OUTPUT` in the default key-value store for access to pagination metadata and raw fields.
+- Saves the full upstream response as `OUTPUT` in the default key-value store for access to pagination metadata, including `more_available` and `next_max_id`, plus raw fields.
 
 Private accounts can still return public metadata that is visible without logging in, but this Actor does not bypass privacy restrictions or access private posts.
 
@@ -43,7 +43,7 @@ Next page:
 
 ## Output
 
-Each run saves one dataset item per returned post. The exact fields can vary depending on what Instagram returns, but common fields include:
+Each run saves one dataset item per returned post. If Scrappa returns zero posts, the dataset remains empty and the full response is still available in the default key-value store as `OUTPUT`. The exact fields can vary depending on what Instagram returns, but common fields include:
 
 | Field | Description |
 | --- | --- |
@@ -60,8 +60,6 @@ Each run saves one dataset item per returned post. The exact fields can vary dep
 | `location` | Location metadata, when available. |
 | `author` | Author metadata. |
 | `permalink` | Instagram post permalink. |
-| `more_available` | Whether Scrappa returned another page. |
-| `next_max_id` | Cursor to use as `max_id` for the next run. |
 
 ## Example Output
 
@@ -86,9 +84,7 @@ Each run saves one dataset item per returned post. The exact fields can vary dep
   "author": {
     "username": "natgeo"
   },
-  "permalink": "https://www.instagram.com/natgeo/p/DUBtwxGEqz2/",
-  "more_available": true,
-  "next_max_id": "QVFDcF..."
+  "permalink": "https://www.instagram.com/natgeo/p/DUBtwxGEqz2/"
 }
 ```
 
@@ -112,7 +108,7 @@ This Actor does not require an Instagram account. It does not ask for Instagram 
 
 1. Run this Actor with a public Instagram username.
 2. Export the dataset for the returned page of posts.
-3. If `more_available` is true, run again with `max_id` set to the returned `next_max_id`.
+3. Open the `OUTPUT` key-value store record. If `more_available` is true, run again with `max_id` set to the returned `next_max_id`.
 4. Use the exported post URLs or shortcodes with the Instagram Post Info Actor when you need deeper single-post details.
 
 ## Pricing

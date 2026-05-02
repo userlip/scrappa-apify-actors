@@ -49,13 +49,13 @@ function isAuthenticationFailure(status, data) {
 
 function parseResponseBody(body, status) {
     if (!body) {
-        return { message: `HTTP ${status}` };
+        return { data: { message: `HTTP ${status}` }, isJson: false };
     }
 
     try {
-        return JSON.parse(body);
+        return { data: JSON.parse(body), isJson: true };
     } catch {
-        return { message: body };
+        return { data: { message: body }, isJson: false };
     }
 }
 
@@ -103,7 +103,7 @@ Actor.main(async () => {
             clearTimeout(timeoutId);
         }
 
-        const data = parseResponseBody(body, response.status);
+        const { data, isJson } = parseResponseBody(body, response.status);
 
         if (isAuthenticationFailure(response.status, data)) {
             await Actor.fail(`Scrappa API authentication failed: ${getResponseMessage(data)}. Check the SCRAPPA_API_KEY Actor secret.`);
@@ -112,6 +112,11 @@ Actor.main(async () => {
 
         if (response.status >= 500) {
             await Actor.fail(`Scrappa API returned HTTP ${response.status}: ${getResponseMessage(data)}`);
+            return;
+        }
+
+        if (!isJson) {
+            await Actor.fail(`Scrappa API returned a non-JSON response: ${getResponseMessage(data)}`);
             return;
         }
 
@@ -126,21 +131,17 @@ Actor.main(async () => {
         const posts = postsFromResponse(data);
         const metadata = {
             request_username: username,
-            posts_count: data?.posts_count ?? data?.data?.posts_count ?? posts.length,
-            more_available: data?.more_available ?? data?.data?.more_available,
-            next_max_id: data?.next_max_id ?? data?.data?.next_max_id,
         };
+
+        if (posts.length === 0) {
+            console.log(`No Instagram posts returned for: ${username}`);
+        }
 
         if (posts.length > 0) {
             await Actor.pushData(posts.map((post) => ({
                 ...metadata,
                 ...post,
             })));
-        } else {
-            await Actor.pushData({
-                ...metadata,
-                posts: [],
-            });
         }
 
         const store = await Actor.openKeyValueStore();

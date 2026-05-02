@@ -34,9 +34,7 @@
               "like_count",
               "comment_count",
               "play_count",
-              "permalink",
-              "more_available",
-              "next_max_id"
+              "permalink"
             ]
           },
           "display": {
@@ -52,9 +50,7 @@
               "like_count": { "label": "Likes", "format": "number" },
               "comment_count": { "label": "Comments", "format": "number" },
               "play_count": { "label": "Plays", "format": "number" },
-              "permalink": { "label": "Permalink", "format": "link" },
-              "more_available": { "label": "More Available", "format": "boolean" },
-              "next_max_id": { "label": "Next Cursor", "format": "text" }
+              "permalink": { "label": "Permalink", "format": "link" }
             }
           }
         }
