@@ -48,6 +48,8 @@
       "type": "integer",
       "description": "Search radius around the encoded location in miles. Requires uule.",
       "editor": "select",
+      "minimum": 5,
+      "maximum": 100,
       "enum": [5, 10, 25, 50, 100],
       "enumTitles": ["5 miles", "10 miles", "25 miles", "50 miles", "100 miles"]
     },
