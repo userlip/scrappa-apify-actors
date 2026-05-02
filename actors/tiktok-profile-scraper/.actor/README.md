@@ -14,16 +14,13 @@ Extract public TikTok profile data through Scrappa. Use it for creator vetting, 
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `unique_id` | string | No | TikTok username with or without `@`, or a full profile URL |
-| `user_id` | string | No | Numeric TikTok user ID |
-
-Provide at least one of `unique_id` or `user_id`.
+| `profile` | string | Yes | TikTok username with or without `@`, full profile URL, or numeric user ID |
 
 ## Example Input
 
 ```json
 {
-  "unique_id": "@tiktok"
+  "profile": "@tiktok"
 }
 ```
 

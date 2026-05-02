@@ -35,6 +35,9 @@ function extractProfile(data: TikTokProfileResponse['data']): TikTokProfile | nu
     }
 
     if (Array.isArray(data)) {
+        if (data.length > 1) {
+            console.warn(`Scrappa returned ${data.length} profiles for a single lookup. Saving the first profile only.`);
+        }
         return data[0] ?? null;
     }
 

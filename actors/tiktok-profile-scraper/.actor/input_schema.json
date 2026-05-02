@@ -4,20 +4,14 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "unique_id": {
-      "title": "TikTok Username or Profile URL",
+    "profile": {
+      "title": "TikTok Profile",
       "type": "string",
-      "description": "TikTok username with or without @, or a full profile URL like https://www.tiktok.com/@tiktok.",
+      "description": "TikTok username with or without @, full profile URL, or numeric user ID.",
       "editor": "textfield",
       "prefill": "@tiktok",
-      "pattern": "^(?:@?[A-Za-z0-9._]{2,255}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/@[^/?#]+/?(?:[?#].*)?)$"
-    },
-    "user_id": {
-      "title": "TikTok User ID",
-      "type": "string",
-      "description": "Numeric TikTok user ID. Use this instead of username when you already have the account ID.",
-      "editor": "textfield",
-      "pattern": "^[0-9]{1,100}$"
+      "pattern": "^(?:@?[A-Za-z0-9._]{2,255}|[0-9]{1,30}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/@[^/?#]+/?(?:[?#].*)?)$"
     }
-  }
+  },
+  "required": ["profile"]
 }

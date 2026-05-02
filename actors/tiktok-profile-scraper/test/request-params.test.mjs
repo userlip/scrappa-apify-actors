@@ -14,9 +14,16 @@ test('builds params from a username with @', () => {
     );
 });
 
+test('builds params from required profile input', () => {
+    assert.deepEqual(
+        buildTikTokProfileParams({ profile: '@tiktok' }),
+        { unique_id: '@tiktok' },
+    );
+});
+
 test('adds @ to usernames without one', () => {
     assert.deepEqual(
-        buildTikTokProfileParams({ unique_id: 'tiktok' }),
+        buildTikTokProfileParams({ profile: 'tiktok' }),
         { unique_id: '@tiktok' },
     );
 });
@@ -31,6 +38,13 @@ test('extracts unique_id from a TikTok profile URL', () => {
 test('builds params from user_id', () => {
     assert.deepEqual(
         buildTikTokProfileParams({ user_id: ' 107955 ' }),
+        { user_id: '107955' },
+    );
+});
+
+test('builds params from numeric profile input as user_id', () => {
+    assert.deepEqual(
+        buildTikTokProfileParams({ profile: '107955' }),
         { user_id: '107955' },
     );
 });
@@ -82,7 +96,16 @@ test('rejects non-profile TikTok URLs', () => {
     );
 });
 
+test('rejects malformed URL-like profile values', () => {
+    for (const value of ['https://', 'https://www.tiktok.com', 'www.tiktok.com/@tiktok', '//www.tiktok.com/@tiktok']) {
+        assert.throws(
+            () => buildTikTokProfileParams({ profile: value }),
+            /valid TikTok profile URL or username|required|must use the format/,
+        );
+    }
+});
+
 test('formats lookup values for logs', () => {
-    assert.equal(formatTikTokProfileLookupForLog({ unique_id: 'tiktok' }), '@tiktok');
-    assert.equal(formatTikTokProfileLookupForLog({ user_id: '107955' }), 'user_id:107955');
+    assert.equal(formatTikTokProfileLookupForLog({ profile: 'tiktok' }), '@tiktok');
+    assert.equal(formatTikTokProfileLookupForLog({ profile: '107955' }), 'user_id:107955');
 });
