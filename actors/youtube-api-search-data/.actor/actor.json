@@ -9,6 +9,7 @@
     "templateId": "js-start"
   },
   "input": "./input_schema.json",
+  "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
   "storages": {
     "dataset": "./dataset_schema.json"
   },

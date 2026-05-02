@@ -18,11 +18,9 @@ Search YouTube for videos, channels, playlists, movies, live streams, and filter
 | `q` | string | Yes | YouTube search query. |
 | `sort` | array | No | Sort order. One of `relevance`, `rating`, `upload_date`, or `view_count`. Defaults to `relevance`. |
 | `duration` | array | No | Video duration filter. One of `short`, `medium`, or `long`. |
-| `upload_date` | array | No | Upload date filter. One of `hour`, `today`, `week`, `month`, or `year`. |
-| `limit` | integer | No | Maximum results to return, from `1` to `1024`. |
+| `upload_date` | array | No | Upload date filter. One of `hour`, `today`, `week`, `month`, or `year`. The actor maps this to Scrappa `publishedAfter`. |
+| `limit` | integer | No | Maximum results to return, from `1` to `20`. |
 | `continuation` | string | No | Continuation token for the next page of results. |
-| `contentType` | array | No | Content status filter. One of `live`, `recorded`, or `premiere`. |
-| `features` | string | No | Comma-separated features: `live`, `4k`, `hd`, `subtitles`, `cc`, `360`, `vr180`, `3d`, `hdr`. |
 | `type` | array | No | Result type. One of `all`, `video`, `channel`, `playlist`, or `movie`. |
 
 Apify select fields are arrays in JSON input. Use a single selected value in each array, for example `"type": ["video"]`.
@@ -38,7 +36,7 @@ Apify select fields are arrays in JSON input. Use a single selected value in eac
   "sort": ["upload_date"],
   "upload_date": ["week"],
   "duration": ["medium"],
-  "limit": 25
+  "limit": 20
 }
 ```
 
@@ -49,19 +47,16 @@ Apify select fields are arrays in JSON input. Use a single selected value in eac
   "q": "iphone 16 pro review",
   "type": ["video"],
   "sort": ["view_count"],
-  "features": "hd,cc",
-  "limit": 50
+  "limit": 20
 }
 ```
 
-### Live Streams
+### AI News Videos
 
 ```json
 {
   "q": "ai news live",
   "type": ["video"],
-  "contentType": ["live"],
-  "features": "live",
   "limit": 20
 }
 ```
@@ -84,7 +79,7 @@ Apify select fields are arrays in JSON input. Use a single selected value in eac
   "q": "javascript tutorial",
   "type": ["video"],
   "sort": ["relevance"],
-  "limit": 25,
+  "limit": 20,
   "continuation": "PASTE_CONTINUATION_TOKEN_FROM_PREVIOUS_RUN"
 }
 ```
