@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -54,6 +55,14 @@ test('rejects digit-only profile input longer than user_id limit', () => {
         () => buildTikTokProfileParams({ profile: '1'.repeat(31) }),
         /must be 30 digits or fewer/,
     );
+});
+
+test('input schema rejects digit-only profile input longer than user_id limit', () => {
+    const schema = JSON.parse(readFileSync(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
+    const pattern = new RegExp(schema.properties.profile.pattern);
+
+    assert.equal(pattern.test('1'.repeat(30)), true);
+    assert.equal(pattern.test('1'.repeat(31)), false);
 });
 
 test('includes both lookup values when both are provided', () => {
