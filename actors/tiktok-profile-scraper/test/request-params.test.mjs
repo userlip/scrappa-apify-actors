@@ -43,6 +43,20 @@ test('builds params from user_id', () => {
     );
 });
 
+test('rejects non-numeric user_id input', () => {
+    assert.throws(
+        () => buildTikTokProfileParams({ user_id: 'abc' }),
+        /user_id must contain digits only/,
+    );
+});
+
+test('rejects user_id input longer than user_id limit', () => {
+    assert.throws(
+        () => buildTikTokProfileParams({ user_id: '1'.repeat(31) }),
+        /must be 30 digits or fewer/,
+    );
+});
+
 test('builds params from numeric profile input as user_id', () => {
     assert.deepEqual(
         buildTikTokProfileParams({ profile: '107955' }),

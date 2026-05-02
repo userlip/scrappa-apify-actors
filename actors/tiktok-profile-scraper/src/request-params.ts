@@ -65,15 +65,27 @@ export function normalizeTikTokUniqueId(value: string): string {
 
 function normalizeTikTokProfileLookup(value: string): { key: 'unique_id' | 'user_id'; value: string; logValue: string } {
     const trimmed = value.trim();
-    if (/^\d{1,30}$/.test(trimmed)) {
-        return { key: 'user_id', value: trimmed, logValue: `user_id:${trimmed}` };
-    }
     if (/^\d+$/.test(trimmed)) {
-        throw new Error('TikTok numeric user ID must be 30 digits or fewer');
+        const userId = normalizeTikTokUserId(trimmed);
+        return { key: 'user_id', value: userId, logValue: `user_id:${userId}` };
     }
 
     const uniqueId = normalizeTikTokUniqueId(trimmed);
     return { key: 'unique_id', value: uniqueId, logValue: uniqueId };
+}
+
+function normalizeTikTokUserId(value: string): string {
+    const trimmed = value.trim();
+    if (trimmed === '') {
+        return '';
+    }
+    if (!/^\d+$/.test(trimmed)) {
+        throw new Error('TikTok user_id must contain digits only');
+    }
+    if (trimmed.length > 30) {
+        throw new Error('TikTok numeric user ID must be 30 digits or fewer');
+    }
+    return trimmed;
 }
 
 export function buildTikTokProfileParams(
@@ -102,7 +114,7 @@ export function buildTikTokProfileParams(
     }
 
     if (typeof input.user_id === 'string') {
-        const userId = input.user_id.trim();
+        const userId = normalizeTikTokUserId(input.user_id);
         if (userId !== '') {
             params.user_id = userId;
         }
