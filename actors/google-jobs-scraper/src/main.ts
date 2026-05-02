@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { ScrappaClient } from './shared/index.js';
+import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 import { buildJobsParams } from './jobs-params.js';
 import type { GoogleJobsInput } from './jobs-params.js';
 
@@ -85,7 +85,7 @@ try {
 
 } catch (error) {
     const rawMessage = error instanceof Error ? error.message : String(error);
-    const message = rawMessage.includes('timed out')
+    const message = error instanceof ScrappaTimeoutError
         ? `${rawMessage}. The Google Jobs request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try again or refine the query.`
         : rawMessage;
     console.error('Actor failed: ' + message);
