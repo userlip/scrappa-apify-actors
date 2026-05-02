@@ -1,0 +1,81 @@
+export interface TikTokProfileInput {
+    unique_id?: unknown;
+    user_id?: unknown;
+}
+
+export function formatTikTokProfileLookupForLog(input: TikTokProfileInput): string {
+    const uniqueId = typeof input.unique_id === 'string' ? input.unique_id.trim() : '';
+    const userId = typeof input.user_id === 'string' ? input.user_id.trim() : '';
+
+    if (uniqueId !== '') {
+        return normalizeTikTokUniqueId(uniqueId);
+    }
+
+    if (userId !== '') {
+        return `user_id:${userId}`;
+    }
+
+    return 'unknown TikTok profile';
+}
+
+export function normalizeTikTokUniqueId(value: string): string {
+    const trimmed = value.trim();
+
+    if (trimmed === '') {
+        return '';
+    }
+
+    try {
+        const parsed = new URL(trimmed);
+        if (!/(^|\.)tiktok\.com$/i.test(parsed.hostname)) {
+            throw new Error('TikTok profile URL must be on tiktok.com');
+        }
+        if (parsed.protocol !== 'https:') {
+            throw new Error('TikTok profile URL must use HTTPS');
+        }
+
+        const match = parsed.pathname.match(/^\/(@[^/?#]+)\/?$/i);
+        if (!match) {
+            throw new Error('TikTok profile URL must use the format https://www.tiktok.com/@username');
+        }
+
+        return match[1];
+    } catch (error) {
+        if (error instanceof Error && error.message.startsWith('TikTok profile URL')) {
+            throw error;
+        }
+    }
+
+    return trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
+}
+
+export function buildTikTokProfileParams(
+    input: TikTokProfileInput,
+    warn: (message: string) => void = console.warn,
+): Record<string, unknown> {
+    const params: Record<string, unknown> = {};
+
+    if (typeof input.unique_id === 'string') {
+        const uniqueId = normalizeTikTokUniqueId(input.unique_id);
+        if (uniqueId !== '') {
+            params.unique_id = uniqueId;
+        }
+    } else if (input.unique_id !== undefined && input.unique_id !== null && input.unique_id !== '') {
+        warn(`unique_id must be a string, got ${typeof input.unique_id}.`);
+    }
+
+    if (typeof input.user_id === 'string') {
+        const userId = input.user_id.trim();
+        if (userId !== '') {
+            params.user_id = userId;
+        }
+    } else if (input.user_id !== undefined && input.user_id !== null && input.user_id !== '') {
+        warn(`user_id must be a string, got ${typeof input.user_id}.`);
+    }
+
+    if (!params.unique_id && !params.user_id) {
+        throw new Error('TikTok unique_id or user_id is required');
+    }
+
+    return params;
+}
