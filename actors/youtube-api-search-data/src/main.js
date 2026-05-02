@@ -29,7 +29,7 @@ Actor.main(async () => {
         const results = data?.results ?? [];
 
         await Actor.pushData(results);
-        console.log(`Successfully fetched ${Array.isArray(results) ? results.length : 1} results for query: ${input.q}`);
+        console.log(`Successfully fetched ${results.length} results for query: ${input.q}`);
 
         const continuation = data?.continuation ?? data?.pagination?.continuationToken;
         if (continuation) {
