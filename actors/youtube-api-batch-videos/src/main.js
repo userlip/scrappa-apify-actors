@@ -1,42 +1,31 @@
 import { Actor } from 'apify';
 import axios from 'axios';
+import { buildBatchVideosUrl } from './videos-url.js';
 
+const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
-async function searchBatchVideos(ids) {
-  
-    
-    // Construct the base API URL with required parameters
-    let apiUrl = `https://ytapi.scrappa.co/videos/batch?ids=${encodeURIComponent(ids)}`;
-
-
-    try {
-        console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl);
-        const data = response.data.videos;
-        
-        // Save the fetched data to the default dataset.
-        await Actor.pushData(data);
-        console.log(`Successfully fetched ${data.length} batch videos for query: ${ids}`);
-        
-       
-    } catch (error) {
-
-        console.error(`Failed to fetch batch videos for query: ${ids}`, error.message);
-        throw error;
+function errorMessage(error) {
+    if (error?.code === 'ECONNABORTED') {
+        return `Scrappa API request timed out after ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s`;
     }
+
+    return error instanceof Error ? error.message : String(error);
 }
 
-// Main Actor logic
 Actor.main(async () => {
-    // The init() call configures the Actor for its environment.
-    await Actor.init();
+    try {
+        const input = (await Actor.getInput()) ?? {};
+        const apiUrl = buildBatchVideosUrl(input);
 
-    const input = await Actor.getInput();
-    const { ids } = input;
+        console.log(`Fetching from: ${apiUrl}`);
+        const response = await axios.get(apiUrl, { timeout: SCRAPPA_REQUEST_TIMEOUT_MS });
+        const videos = response.data?.videos ?? [];
 
-    // Directly call the function with the input, as there is only one possible task.
-    await searchBatchVideos(ids);
-
-    // Gracefully exit the Actor process.
-    await Actor.exit();
+        await Actor.pushData(videos);
+        console.log(`Successfully fetched ${Array.isArray(videos) ? videos.length : 1} batch video(s) for ids: ${input.ids}`);
+    } catch (error) {
+        const message = errorMessage(error);
+        console.error(`Failed to fetch YouTube batch videos: ${message}`);
+        await Actor.fail(message);
+    }
 });

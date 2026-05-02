@@ -11,13 +11,13 @@
             "prefill": "dQw4w9WgXcQ"
         },
         "continuation": {
-            "title": "continuation",
+            "title": "Continuation",
             "type": "string",
             "description": "Pagination token for next page",
             "editor": "textfield"
         },
-         "sort": {
-            "title": "sort",
+        "sort": {
+            "title": "Sort",
             "type": "array",
             "description": "Sort by: TOP_COMMENTS, NEWEST_FIRST",
             "editor": "select",

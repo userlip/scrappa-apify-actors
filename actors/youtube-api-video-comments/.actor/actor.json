@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-video-comments",
-    "title": "Scrape single page in JavaScript",
-    "description": "Scrape data from single page with provided URL.",
+    "title": "YouTube Video Comments Scraper",
+    "description": "Fetch YouTube video comments by video ID, sort order, and continuation token.",
     "version": "0.0",
     "meta": {
         "templateId": "js-start"

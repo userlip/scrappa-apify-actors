@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-batch-videos",
-    "title": "Scrape single page in JavaScript",
-    "description": "Scrape data from single page with provided URL.",
+    "title": "YouTube Batch Video Details Scraper",
+    "description": "Fetch details for up to 50 YouTube videos by comma-separated video IDs.",
     "version": "0.0",
     "meta": {
         "templateId": "js-start"

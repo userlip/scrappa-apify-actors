@@ -1,45 +1,35 @@
 import { Actor } from 'apify';
 import axios from 'axios';
+import { buildVideoDetailsUrl } from './video-url.js';
 
-async function searchVideoDetail(id) {
-    // Validate that the required query parameter is present.
-    if (!id) {
-        throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');
+const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+
+function errorMessage(error) {
+    if (error?.code === 'ECONNABORTED') {
+        return `Scrappa API request timed out after ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s`;
     }
-    
-    // Construct the base API URL with required parameters
-    let apiUrl = `https://ytapi.scrappa.co/videos?id=${encodeURIComponent(id)}`;
 
+    return error instanceof Error ? error.message : String(error);
+}
+
+Actor.main(async () => {
     try {
+        const input = (await Actor.getInput()) ?? {};
+        const apiUrl = buildVideoDetailsUrl(input);
+
         console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl);
+        const response = await axios.get(apiUrl, { timeout: SCRAPPA_REQUEST_TIMEOUT_MS });
         const data = response.data;
-        
-        // Save the fetched data to the default dataset.
+
         await Actor.pushData(data);
-        console.log(`Successfully fetched ${data.length} id for query: ${id}`);
-        
-        // Log if there's a continuation token for next page
-        if (response.data.continuation) {
+        console.log(`Successfully fetched ${Array.isArray(data) ? data.length : 1} video detail result(s) for id: ${input.id}`);
+
+        if (response.data?.continuation) {
             console.log(`Continuation token available for next page: ${response.data.continuation}`);
         }
     } catch (error) {
-        console.error(`Failed to fetch id for query: ${id}`, error.message);
-        throw error;
+        const message = errorMessage(error);
+        console.error(`Failed to fetch YouTube video details: ${message}`);
+        await Actor.fail(message);
     }
-}
-
-// Main Actor logic
-Actor.main(async () => {
-    // The init() call configures the Actor for its environment.
-    await Actor.init();
-
-    const input = await Actor.getInput();
-    const { id } = input;
-
-    // Directly call the function with the input, as there is only one possible task.
-    await searchVideoDetail(id);
-
-    // Gracefully exit the Actor process.
-    await Actor.exit();
 });

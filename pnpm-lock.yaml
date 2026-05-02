@@ -42,9 +42,6 @@ importers:
       axios:
         specifier: ^1.5.0
         version: 1.13.2
-      cheerio:
-        specifier: ^1.0.0-rc.12
-        version: 1.0.0-rc.12
 
   actors/youtube-api-get-video-details:
     dependencies:
@@ -54,9 +51,6 @@ importers:
       axios:
         specifier: ^1.5.0
         version: 1.13.2
-      cheerio:
-        specifier: ^1.0.0-rc.12
-        version: 1.0.0-rc.12
 
   actors/youtube-api-video-comments:
     dependencies:
@@ -66,9 +60,6 @@ importers:
       axios:
         specifier: ^1.5.0
         version: 1.13.2
-      cheerio:
-        specifier: ^1.0.0-rc.12
-        version: 1.0.0-rc.12
 
   shared:
     dependencies:

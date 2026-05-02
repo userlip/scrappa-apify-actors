@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-video-details",
-    "title": "Scrape single page in JavaScript",
-    "description": "Scrape data from single page with provided URL.",
+    "title": "YouTube Video Details Scraper",
+    "description": "Fetch detailed YouTube video metadata by video ID.",
     "version": "0.0",
     "meta": {
         "templateId": "js-start"
