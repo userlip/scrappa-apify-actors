@@ -49,7 +49,7 @@ function isAuthenticationFailure(status, data) {
 
 function parseResponseBody(body, status) {
     if (!body) {
-        return { data: { message: `HTTP ${status}` }, isJson: false };
+        return { data: { message: `HTTP ${status} with an empty response body` }, isJson: false };
     }
 
     try {
