@@ -17,6 +17,10 @@ export function requireTikTokVideoUrl(url: string): void {
         throw new Error('A TikTok video URL is required');
     }
 
+    if (parsed.protocol !== 'https:') {
+        throw new Error('A TikTok video URL must use HTTPS');
+    }
+
     if (!/^\/@[^/]+\/video\/\d+\/?$/i.test(parsed.pathname)) {
         throw new Error('A TikTok video URL must use the format https://www.tiktok.com/@username/video/1234567890');
     }

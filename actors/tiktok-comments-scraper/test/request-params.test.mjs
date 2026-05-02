@@ -79,3 +79,10 @@ test('rejects non-TikTok URLs', () => {
         /TikTok video URL is required/,
     );
 });
+
+test('rejects non-HTTPS TikTok video URLs', () => {
+    assert.throws(
+        () => requireTikTokVideoUrl('http://www.tiktok.com/@tiktok/video/7568510388342443294'),
+        /must use HTTPS/,
+    );
+});

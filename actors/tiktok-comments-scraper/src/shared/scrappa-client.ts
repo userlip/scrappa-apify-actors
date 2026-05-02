@@ -107,7 +107,10 @@ export class ScrappaClient {
         let bodyText: string;
         try {
             bodyText = await response.text();
-        } catch {
+        } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw error;
+            }
             return fallback;
         }
 
