@@ -1,15 +1,21 @@
 import { Actor } from 'apify';
-import { buildSearchUrl } from './search-url.js';
+import { getScrappaApiKey } from './api-key.js';
+import { buildSearchRequest } from './search-url.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
 Actor.main(async () => {
     try {
+        const apiKey = getScrappaApiKey();
         const input = (await Actor.getInput()) ?? {};
-        const apiUrl = buildSearchUrl(input);
+        const { url: apiUrl, query } = buildSearchRequest(input);
 
         console.log(`Fetching from: ${apiUrl}`);
         const response = await fetch(apiUrl, {
+            headers: {
+                'X-API-Key': apiKey,
+                'Accept': 'application/json',
+            },
             signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
         });
         if (!response.ok) {
@@ -20,7 +26,7 @@ Actor.main(async () => {
         const results = data?.results ?? [];
 
         await Actor.pushData(results);
-        console.log(`Successfully fetched ${Array.isArray(results) ? results.length : 1} results for query: ${input.q}`);
+        console.log(`Successfully fetched ${Array.isArray(results) ? results.length : 1} results for query: ${query}`);
 
         const continuation = data?.continuation ?? data?.pagination?.continuationToken;
         if (continuation) {
