@@ -16,7 +16,6 @@ test('forwards Google Jobs search parameters', () => {
         }),
         {
             q: 'software engineer',
-            next_page_token: undefined,
             hl: 'en',
             gl: 'us',
             google_domain: 'google.com',
@@ -29,13 +28,6 @@ test('forwards Google Jobs search parameters', () => {
 
 test('allows next page token without query', () => {
     assert.deepEqual(buildJobsParams({ next_page_token: 'next-token' }), {
-        q: undefined,
         next_page_token: 'next-token',
-        hl: undefined,
-        gl: undefined,
-        google_domain: undefined,
-        uule: undefined,
-        lrad: undefined,
-        uds: undefined,
     });
 });
