@@ -29,7 +29,7 @@ Actor.main(async () => {
         const comments = data?.comments ?? [];
 
         await Actor.pushData(comments);
-        console.log(`Successfully fetched ${Array.isArray(comments) ? comments.length : 1} comment(s) for video id: ${input.id}`);
+        console.log(`Successfully fetched ${comments.length} comment(s) for video id: ${input.id}`);
 
         if (data?.continuation) {
             console.log(`Continuation token available for next page: ${data.continuation}`);
