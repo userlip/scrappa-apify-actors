@@ -62,76 +62,85 @@ interface GoogleSearchResponse {
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
-await Actor.init();
+async function main(): Promise<void> {
+    await Actor.init();
 
-try {
-    // Get API key from environment variable (set as Apify secret)
-    const apiKey = process.env.SCRAPPA_API_KEY;
-    if (!apiKey) {
-        throw new Error('SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings.');
+    try {
+        // Get API key from environment variable (set as Apify secret)
+        const apiKey = process.env.SCRAPPA_API_KEY;
+        if (!apiKey) {
+            throw new Error('SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings.');
+        }
+
+        const input = await Actor.getInput<GoogleSearchInput>();
+        if (!input?.query) {
+            throw new Error('Search query is required');
+        }
+
+        console.log(`Searching Google for: "${input.query}"`);
+
+        const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
+
+        const params: Record<string, unknown> = {
+            query: input.query,
+            location: input.location,
+            gl: input.gl,
+            hl: input.hl,
+            google_domain: input.google_domain,
+            start: input.start,
+            amount: input.amount,
+            safe: input.safe,
+            tbs: input.tbs,
+            tbm: input.tbm,
+            lr: input.lr,
+            cr: input.cr,
+            uule: input.uule,
+            nfpr: input.nfpr,
+            filter: input.filter,
+        };
+
+        const response = await client.get<GoogleSearchResponse>('/search', params);
+
+        // Push organic results to dataset (main output for table view)
+        if (response.organic_results && response.organic_results.length > 0) {
+            await Actor.pushData(response.organic_results);
+            console.log(`Found ${response.organic_results.length} organic results`);
+        }
+
+        // Store full response in key-value store for complete data access
+        const store = await Actor.openKeyValueStore();
+        await store.setValue('OUTPUT', response);
+
+        // Log summary
+        console.log('Google Search completed successfully');
+
+        const summary = {
+            organic_results: response.organic_results?.length ?? 0,
+            related_searches: response.related_searches?.length ?? 0,
+            related_questions: response.related_questions?.length ?? 0,
+            inline_videos: response.inline_videos?.length ?? 0,
+            inline_images: response.inline_images?.length ?? 0,
+            has_knowledge_graph: !!response.knowledge_graph,
+            has_local_results: !!response.local_results,
+        };
+
+        console.log('Results summary:', JSON.stringify(summary));
+
+    } catch (error) {
+        const rawMessage = error instanceof Error ? error.message : String(error);
+        const message = rawMessage.includes('timed out')
+            ? `${rawMessage}. The Google Search request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try a smaller amount or run the query again.`
+            : rawMessage;
+        console.error('Actor failed: ' + message);
+        await Actor.fail(message);
+        return;
     }
 
-    const input = await Actor.getInput<GoogleSearchInput>();
-    if (!input?.query) {
-        throw new Error('Search query is required');
-    }
-
-    console.log(`Searching Google for: "${input.query}"`);
-
-    const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-
-    const params: Record<string, unknown> = {
-        query: input.query,
-        location: input.location,
-        gl: input.gl,
-        hl: input.hl,
-        google_domain: input.google_domain,
-        start: input.start,
-        amount: input.amount,
-        safe: input.safe,
-        tbs: input.tbs,
-        tbm: input.tbm,
-        lr: input.lr,
-        cr: input.cr,
-        uule: input.uule,
-        nfpr: input.nfpr,
-        filter: input.filter,
-    };
-
-    const response = await client.get<GoogleSearchResponse>('/search', params);
-
-    // Push organic results to dataset (main output for table view)
-    if (response.organic_results && response.organic_results.length > 0) {
-        await Actor.pushData(response.organic_results);
-        console.log(`Found ${response.organic_results.length} organic results`);
-    }
-
-    // Store full response in key-value store for complete data access
-    const store = await Actor.openKeyValueStore();
-    await store.setValue('OUTPUT', response);
-
-    // Log summary
-    console.log('Google Search completed successfully');
-
-    const summary = {
-        organic_results: response.organic_results?.length ?? 0,
-        related_searches: response.related_searches?.length ?? 0,
-        related_questions: response.related_questions?.length ?? 0,
-        inline_videos: response.inline_videos?.length ?? 0,
-        inline_images: response.inline_images?.length ?? 0,
-        has_knowledge_graph: !!response.knowledge_graph,
-        has_local_results: !!response.local_results,
-    };
-
-    console.log('Results summary:', JSON.stringify(summary));
-
-} catch (error) {
-    const rawMessage = error instanceof Error ? error.message : String(error);
-    const message = rawMessage.includes('timed out')
-        ? `${rawMessage}. The Google Search request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try a smaller amount or run the query again.`
-        : rawMessage;
-    console.error('Actor failed: ' + message);
-    await Actor.fail(message);
+    await Actor.exit();
 }
 
-await Actor.exit();
+main().catch((error) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Actor failed: ' + message);
+    process.exitCode = 1;
+});

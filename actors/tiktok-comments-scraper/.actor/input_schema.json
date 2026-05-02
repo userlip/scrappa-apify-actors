@@ -10,7 +10,7 @@
       "description": "Full TikTok video URL to fetch comments from.",
       "editor": "textfield",
       "prefill": "https://www.tiktok.com/@tiktok/video/7568510388342443294",
-      "pattern": "^https://([^/]+\\.)?tiktok\\.com/@[^/]+/video/[0-9]+/?(?:[?#].*)?$"
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/@[^/]+/[Vv][Ii][Dd][Ee][Oo]/[0-9]+/?(?:[?#].*)?$"
     },
     "count": {
       "title": "Comments Per Page",
