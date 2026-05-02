@@ -1,6 +1,5 @@
 import { Actor } from 'apify';
-import { getScrappaApiKey } from './api-key.js';
-import { buildSearchRequest } from './search-url.js';
+import { buildBatchVideosUrl } from './videos-url.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
@@ -15,16 +14,11 @@ function errorMessage(error) {
 
 Actor.main(async () => {
     try {
-        const apiKey = getScrappaApiKey();
         const input = (await Actor.getInput()) ?? {};
-        const { url: apiUrl, query } = buildSearchRequest(input);
+        const apiUrl = buildBatchVideosUrl(input);
 
         console.log(`Fetching from: ${apiUrl}`);
         const response = await fetch(apiUrl, {
-            headers: {
-                'X-API-Key': apiKey,
-                'Accept': 'application/json',
-            },
             signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
         });
         if (!response.ok) {
@@ -32,18 +26,13 @@ Actor.main(async () => {
         }
 
         const data = await response.json();
-        const results = data?.results ?? [];
+        const videos = data?.videos ?? [];
 
-        await Actor.pushData(results);
-        console.log(`Successfully fetched ${results.length} results for query: ${query}`);
-
-        const continuation = data?.continuation ?? data?.pagination?.continuationToken;
-        if (continuation) {
-            console.log(`Continuation token available for next page: ${continuation}`);
-        }
+        await Actor.pushData(videos);
+        console.log(`Successfully fetched ${videos.length} batch video(s) for ids: ${input.ids}`);
     } catch (error) {
         const message = errorMessage(error);
-        console.error(`Failed to fetch YouTube search data: ${message}`);
+        console.error(`Failed to fetch YouTube batch videos: ${message}`);
         await Actor.fail(message);
     }
 });

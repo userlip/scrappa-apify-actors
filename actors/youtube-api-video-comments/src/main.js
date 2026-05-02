@@ -1,6 +1,5 @@
 import { Actor } from 'apify';
-import { getScrappaApiKey } from './api-key.js';
-import { buildSearchRequest } from './search-url.js';
+import { buildVideoCommentsUrl } from './comments-url.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
@@ -15,16 +14,11 @@ function errorMessage(error) {
 
 Actor.main(async () => {
     try {
-        const apiKey = getScrappaApiKey();
         const input = (await Actor.getInput()) ?? {};
-        const { url: apiUrl, query } = buildSearchRequest(input);
+        const apiUrl = buildVideoCommentsUrl(input);
 
         console.log(`Fetching from: ${apiUrl}`);
         const response = await fetch(apiUrl, {
-            headers: {
-                'X-API-Key': apiKey,
-                'Accept': 'application/json',
-            },
             signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
         });
         if (!response.ok) {
@@ -32,18 +26,17 @@ Actor.main(async () => {
         }
 
         const data = await response.json();
-        const results = data?.results ?? [];
+        const comments = data?.comments ?? [];
 
-        await Actor.pushData(results);
-        console.log(`Successfully fetched ${results.length} results for query: ${query}`);
+        await Actor.pushData(comments);
+        console.log(`Successfully fetched ${comments.length} comment(s) for video id: ${input.id}`);
 
-        const continuation = data?.continuation ?? data?.pagination?.continuationToken;
-        if (continuation) {
-            console.log(`Continuation token available for next page: ${continuation}`);
+        if (data?.continuation) {
+            console.log(`Continuation token available for next page: ${data.continuation}`);
         }
     } catch (error) {
         const message = errorMessage(error);
-        console.error(`Failed to fetch YouTube search data: ${message}`);
+        console.error(`Failed to fetch YouTube video comments: ${message}`);
         await Actor.fail(message);
     }
 });

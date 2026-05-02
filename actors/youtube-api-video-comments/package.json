@@ -1,0 +1,18 @@
+{
+    "name": "youtube-api-video-comments",
+    "version": "0.0.1",
+    "type": "module",
+    "description": "Apify Actor for Scrappa YouTube video comments.",
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "dependencies": {
+        "apify": "^3.4.2"
+    },
+    "scripts": {
+        "start": "node ./src/main.js",
+        "test": "node --test"
+    },
+    "author": "Scrappa",
+    "license": "ISC"
+}

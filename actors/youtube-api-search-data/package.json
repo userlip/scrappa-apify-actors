@@ -7,11 +7,12 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "apify": "^3.2.6"
+    "apify": "^3.4.2"
   },
   "scripts": {
     "start": "node ./src/main.js",
     "test": "node --test"
   },
+  "author": "Scrappa",
   "license": "ISC"
 }

@@ -1,0 +1,13 @@
+{
+    "actorSpecification": 1,
+    "name": "youtube-api-batch-videos",
+    "title": "YouTube Batch Video Details Scraper",
+    "description": "Fetch details for up to 50 YouTube videos by comma-separated video IDs.",
+    "version": "0.0",
+    "buildTag": "latest",
+    "input": "./input_schema.json",
+    "dockerfile": "./Dockerfile",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}

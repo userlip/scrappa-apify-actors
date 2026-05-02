@@ -5,9 +5,6 @@
   "description": "Search YouTube by query and filter results by type, sort order, duration, upload date, content type, features, limit, and continuation token.",
   "version": "0.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "js-start"
-  },
   "input": "./input_schema.json",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
   "storages": {

@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import { buildBatchVideosUrl } from '../src/videos-url.js';
+
+describe('buildBatchVideosUrl', () => {
+    it('builds a batch videos URL with comma-separated IDs', () => {
+        const url = new URL(buildBatchVideosUrl({ ids: '7eul_Vt6SZY,6QQQKJJBJOY' }));
+
+        assert.equal(url.origin + url.pathname, 'https://ytapi.scrappa.co/videos/batch');
+        assert.equal(url.searchParams.get('ids'), '7eul_Vt6SZY,6QQQKJJBJOY');
+    });
+
+    it('normalizes whitespace around comma-separated IDs', () => {
+        const url = new URL(buildBatchVideosUrl({ ids: '7eul_Vt6SZY, 6QQQKJJBJOY' }));
+
+        assert.equal(url.searchParams.get('ids'), '7eul_Vt6SZY,6QQQKJJBJOY');
+    });
+
+    it('requires ids', () => {
+        assert.throws(() => buildBatchVideosUrl({}), /ids/);
+        assert.throws(() => buildBatchVideosUrl({ ids: '   ' }), /ids/);
+    });
+
+    it('rejects comma-only input with no valid IDs', () => {
+        assert.throws(() => buildBatchVideosUrl({ ids: ',' }), /ids/);
+        assert.throws(() => buildBatchVideosUrl({ ids: ' , , ' }), /ids/);
+    });
+
+    it('rejects more than 50 IDs', () => {
+        const ids = Array.from({ length: 51 }, (_, index) => `video-${index}`).join(',');
+
+        assert.throws(() => buildBatchVideosUrl({ ids }), /50 or fewer/);
+    });
+});
