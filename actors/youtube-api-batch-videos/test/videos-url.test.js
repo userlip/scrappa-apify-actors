@@ -10,6 +10,12 @@ describe('buildBatchVideosUrl', () => {
         assert.equal(url.searchParams.get('ids'), '7eul_Vt6SZY,6QQQKJJBJOY');
     });
 
+    it('normalizes whitespace around comma-separated IDs', () => {
+        const url = new URL(buildBatchVideosUrl({ ids: '7eul_Vt6SZY, 6QQQKJJBJOY' }));
+
+        assert.equal(url.searchParams.get('ids'), '7eul_Vt6SZY,6QQQKJJBJOY');
+    });
+
     it('requires ids', () => {
         assert.throws(() => buildBatchVideosUrl({}), /ids/);
         assert.throws(() => buildBatchVideosUrl({ ids: '   ' }), /ids/);
