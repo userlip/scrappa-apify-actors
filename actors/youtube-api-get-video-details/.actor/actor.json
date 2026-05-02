@@ -5,9 +5,6 @@
     "description": "Fetch detailed YouTube video metadata by video ID.",
     "version": "0.0",
     "buildTag": "latest",
-    "meta": {
-        "templateId": "js-start"
-    },
     "input": "./input_schema.json",
     "dockerfile": "./Dockerfile",
     "storages": {
