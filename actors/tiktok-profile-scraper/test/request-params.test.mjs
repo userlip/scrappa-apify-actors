@@ -122,6 +122,17 @@ test('input schema rejects digit-only profile input longer than user_id limit', 
     assert.equal(pattern.test('1'.repeat(31)), false);
 });
 
+test('input schema validates profile URL username shape', () => {
+    const schema = JSON.parse(readFileSync(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
+    const pattern = new RegExp(schema.properties.profile.pattern);
+
+    assert.equal(pattern.test('https://www.tiktok.com/@tiktok'), true);
+    assert.equal(pattern.test('https://www.tiktok.com/@tik.tok_123?lang=en'), true);
+    assert.equal(pattern.test('https://www.tiktok.com/@a'), false);
+    assert.equal(pattern.test('https://www.tiktok.com/@tik-tok'), false);
+    assert.equal(pattern.test(`https://www.tiktok.com/@${'a'.repeat(256)}`), false);
+});
+
 test('uses legacy unique_id instead of user_id when both are provided', () => {
     assert.deepEqual(
         buildTikTokProfileParams({ unique_id: 'tiktok', user_id: '107955' }),

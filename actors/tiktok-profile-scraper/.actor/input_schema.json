@@ -10,7 +10,7 @@
       "description": "TikTok username with or without @, full HTTPS TikTok profile URL, or numeric user ID up to 30 digits. Bare numeric values are treated as user IDs; prefix numeric usernames with @.",
       "editor": "textfield",
       "prefill": "@tiktok",
-      "pattern": "^(?![0-9]{31,}$)(?:@?[A-Za-z0-9._]{2,255}|[0-9]{1,30}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/@[^/?#]+/?(?:[?#].*)?)$"
+      "pattern": "^(?![0-9]{31,}$)(?:@?[A-Za-z0-9._]{2,255}|[0-9]{1,30}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/@[A-Za-z0-9._]{2,255}/?(?:[?#].*)?)$"
     }
   },
   "required": ["profile"]
