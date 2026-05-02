@@ -4,6 +4,24 @@ export interface TikTokCommentsInput {
     cursor?: unknown;
 }
 
+export function requireTikTokVideoUrl(url: string): void {
+    let parsed: URL;
+
+    try {
+        parsed = new URL(url);
+    } catch {
+        throw new Error('A valid TikTok video URL is required');
+    }
+
+    if (!/(^|\.)tiktok\.com$/i.test(parsed.hostname)) {
+        throw new Error('A TikTok video URL is required');
+    }
+
+    if (!/^\/@[^/]+\/video\/\d+\/?$/i.test(parsed.pathname)) {
+        throw new Error('A TikTok video URL must use the format https://www.tiktok.com/@username/video/1234567890');
+    }
+}
+
 export function buildTikTokCommentsParams(
     input: TikTokCommentsInput,
     warn: (message: string) => void = console.warn,

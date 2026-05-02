@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildTikTokCommentsParams } from '../dist/request-params.js';
+import { buildTikTokCommentsParams, requireTikTokVideoUrl } from '../dist/request-params.js';
 
 const url = 'https://www.tiktok.com/@tiktok/video/7568510388342443294';
 
@@ -55,4 +55,27 @@ test('warns and omits non-string cursor values', () => {
     assert.deepEqual(params, { url });
     assert.equal(warnings.length, 1);
     assert.match(warnings[0], /cursor must be a string/);
+});
+
+test('accepts canonical TikTok video URLs', () => {
+    assert.doesNotThrow(() => requireTikTokVideoUrl(url));
+    assert.doesNotThrow(() => requireTikTokVideoUrl(`${url}?lang=en&utm_source=test`));
+});
+
+test('rejects non-video TikTok URLs before calling Scrappa', () => {
+    assert.throws(
+        () => requireTikTokVideoUrl('https://www.tiktok.com/@tiktok'),
+        /must use the format/,
+    );
+    assert.throws(
+        () => requireTikTokVideoUrl('https://www.tiktok.com/tag/example'),
+        /must use the format/,
+    );
+});
+
+test('rejects non-TikTok URLs', () => {
+    assert.throws(
+        () => requireTikTokVideoUrl('https://example.com/@tiktok/video/7568510388342443294'),
+        /TikTok video URL is required/,
+    );
 });

@@ -1,6 +1,6 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/scrappa-client.js';
-import { buildTikTokCommentsParams } from './request-params.js';
+import { buildTikTokCommentsParams, requireTikTokVideoUrl } from './request-params.js';
 import type { TikTokCommentsInput } from './request-params.js';
 
 interface TikTokCommentUser {
@@ -32,20 +32,6 @@ interface TikTokCommentsResponse {
         [key: string]: unknown;
     };
     [key: string]: unknown;
-}
-
-function requireTikTokVideoUrl(url: string): void {
-    let parsed: URL;
-
-    try {
-        parsed = new URL(url);
-    } catch {
-        throw new Error('A valid TikTok video URL is required');
-    }
-
-    if (!/(^|\.)tiktok\.com$/i.test(parsed.hostname)) {
-        throw new Error('A TikTok video URL is required');
-    }
 }
 
 async function main(): Promise<void> {
