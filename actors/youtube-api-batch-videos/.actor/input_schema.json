@@ -9,7 +9,6 @@
             "description": "Comma-separated video IDs (max 50)",
             "editor": "textfield",
             "pattern": "^\\s*[^,\\s]+(?:\\s*,\\s*[^,\\s]+){0,49}\\s*$",
-            "patternErrorMessage": "Provide between 1 and 50 comma-separated YouTube video IDs.",
             "prefill": "7eul_Vt6SZY,6QQQKJJBJOY"
         }
     },
