@@ -1,15 +1,15 @@
 import { Actor } from 'apify';
-import axios from 'axios';
 import { buildVideoCommentsUrl } from './comments-url.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
 function errorMessage(error) {
-    if (error?.code === 'ECONNABORTED') {
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    if (rawMessage.includes('aborted')) {
         return `Scrappa API request timed out after ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s`;
     }
 
-    return error instanceof Error ? error.message : String(error);
+    return rawMessage;
 }
 
 Actor.main(async () => {
@@ -18,14 +18,21 @@ Actor.main(async () => {
         const apiUrl = buildVideoCommentsUrl(input);
 
         console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl, { timeout: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const comments = response.data?.comments ?? [];
+        const response = await fetch(apiUrl, {
+            signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
+        });
+        if (!response.ok) {
+            throw new Error(`Scrappa API request failed with ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const comments = data?.comments ?? [];
 
         await Actor.pushData(comments);
         console.log(`Successfully fetched ${Array.isArray(comments) ? comments.length : 1} comment(s) for video id: ${input.id}`);
 
-        if (response.data?.continuation) {
-            console.log(`Continuation token available for next page: ${response.data.continuation}`);
+        if (data?.continuation) {
+            console.log(`Continuation token available for next page: ${data.continuation}`);
         }
     } catch (error) {
         const message = errorMessage(error);

@@ -39,27 +39,18 @@ importers:
       apify:
         specifier: ^3.4.2
         version: 3.5.2
-      axios:
-        specifier: ^1.5.0
-        version: 1.13.2
 
   actors/youtube-api-get-video-details:
     dependencies:
       apify:
         specifier: ^3.4.2
         version: 3.5.2
-      axios:
-        specifier: ^1.5.0
-        version: 1.13.2
 
   actors/youtube-api-video-comments:
     dependencies:
       apify:
         specifier: ^3.4.2
         version: 3.5.2
-      axios:
-        specifier: ^1.5.0
-        version: 1.13.2
 
   shared:
     dependencies:

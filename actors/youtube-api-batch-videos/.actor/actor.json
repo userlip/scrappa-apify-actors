@@ -4,6 +4,7 @@
     "title": "YouTube Batch Video Details Scraper",
     "description": "Fetch details for up to 50 YouTube videos by comma-separated video IDs.",
     "version": "0.0",
+    "buildTag": "latest",
     "meta": {
         "templateId": "js-start"
     },

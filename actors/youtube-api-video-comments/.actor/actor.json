@@ -4,6 +4,7 @@
     "title": "YouTube Video Comments Scraper",
     "description": "Fetch YouTube video comments by video ID, sort order, and continuation token.",
     "version": "0.0",
+    "buildTag": "latest",
     "meta": {
         "templateId": "js-start"
     },
