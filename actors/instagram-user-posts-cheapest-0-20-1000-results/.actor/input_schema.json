@@ -1,0 +1,24 @@
+{
+  "title": "Instagram User Posts",
+  "description": "Fetch recent public Instagram posts and reels for one username.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "username": {
+      "title": "Instagram username",
+      "type": "string",
+      "description": "Instagram username without the @ symbol.",
+      "editor": "textfield",
+      "prefill": "natgeo",
+      "pattern": "^@?[a-zA-Z0-9._-]{1,30}$"
+    },
+    "max_id": {
+      "title": "Pagination cursor",
+      "type": "string",
+      "description": "Optional pagination cursor from a previous response's next_max_id field.",
+      "editor": "textfield",
+      "prefill": ""
+    }
+  },
+  "required": ["username"]
+}

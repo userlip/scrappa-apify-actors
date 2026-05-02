@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "instagram-user-posts-cheapest-0-20-1000-results",
+  "title": "Instagram User Posts | Cheapest $0.20/1k results",
+  "description": "Fetch recent Instagram posts and reels from a public user profile by username, with pagination support through max_id.",
+  "version": "0.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "js-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "posts": {
+          "title": "Instagram User Posts",
+          "transformation": {
+            "fields": [
+              "request_username",
+              "id",
+              "username",
+              "shortcode",
+              "media_type",
+              "caption",
+              "taken_at",
+              "like_count",
+              "comment_count",
+              "play_count",
+              "permalink",
+              "more_available",
+              "next_max_id"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "request_username": { "label": "Requested User", "format": "text" },
+              "id": { "label": "Post ID", "format": "text" },
+              "username": { "label": "Username", "format": "text" },
+              "shortcode": { "label": "Shortcode", "format": "text" },
+              "media_type": { "label": "Type", "format": "text" },
+              "caption": { "label": "Caption", "format": "text" },
+              "taken_at": { "label": "Posted At", "format": "date" },
+              "like_count": { "label": "Likes", "format": "number" },
+              "comment_count": { "label": "Comments", "format": "number" },
+              "play_count": { "label": "Plays", "format": "number" },
+              "permalink": { "label": "Permalink", "format": "link" },
+              "more_available": { "label": "More Available", "format": "boolean" },
+              "next_max_id": { "label": "Next Cursor", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
