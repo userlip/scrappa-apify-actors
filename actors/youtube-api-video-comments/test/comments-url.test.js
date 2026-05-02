@@ -10,8 +10,9 @@ describe('buildVideoCommentsUrl', () => {
             continuation: 'next-page',
         }));
 
-        assert.equal(url.origin + url.pathname, 'https://ytapi.scrappa.co/videos/comments');
-        assert.equal(url.searchParams.get('id'), 'dQw4w9WgXcQ');
+        assert.equal(url.origin + url.pathname, 'https://scrappa.co/api/youtube/comments');
+        assert.equal(url.searchParams.get('video_id'), 'dQw4w9WgXcQ');
+        assert.equal(url.searchParams.get('id'), null);
         assert.equal(url.searchParams.get('sort'), 'NEWEST_FIRST');
         assert.equal(url.searchParams.get('continuation'), 'next-page');
     });

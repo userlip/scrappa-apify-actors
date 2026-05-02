@@ -1,4 +1,5 @@
 import { Actor } from 'apify';
+import { getScrappaApiKey } from './api-key.js';
 import { buildVideoCommentsUrl } from './comments-url.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
@@ -14,11 +15,16 @@ function errorMessage(error) {
 
 Actor.main(async () => {
     try {
+        const apiKey = getScrappaApiKey();
         const input = (await Actor.getInput()) ?? {};
         const apiUrl = buildVideoCommentsUrl(input);
 
         console.log(`Fetching from: ${apiUrl}`);
         const response = await fetch(apiUrl, {
+            headers: {
+                'X-API-Key': apiKey,
+                'Accept': 'application/json',
+            },
             signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
         });
         if (!response.ok) {

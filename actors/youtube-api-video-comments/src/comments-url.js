@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://ytapi.scrappa.co/videos/comments';
+const API_BASE_URL = 'https://scrappa.co/api/youtube/comments';
 
 function singleValue(value) {
     const rawValue = Array.isArray(value) ? value[0] : value;
@@ -19,7 +19,7 @@ export function buildVideoCommentsUrl(input = {}) {
         throw new Error('YouTube video ID "id" is required.');
     }
 
-    const params = new URLSearchParams({ id });
+    const params = new URLSearchParams({ video_id: id });
     const sort = singleValue(actorInput.sort);
     const continuation = singleValue(actorInput.continuation);
 
