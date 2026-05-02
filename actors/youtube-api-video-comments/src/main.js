@@ -1,7 +1,6 @@
 import { Actor } from 'apify';
-import { buildVideoCommentsUrl } from './comments-url.js';
-
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+import { getScrappaApiKey } from './api-key.js';
+import { fetchVideoComments, SCRAPPA_REQUEST_TIMEOUT_MS } from './comments-client.js';
 
 function errorMessage(error) {
     const rawMessage = error instanceof Error ? error.message : String(error);
@@ -14,18 +13,12 @@ function errorMessage(error) {
 
 Actor.main(async () => {
     try {
+        const apiKey = getScrappaApiKey();
         const input = (await Actor.getInput()) ?? {};
-        const apiUrl = buildVideoCommentsUrl(input);
-
-        console.log(`Fetching from: ${apiUrl}`);
-        const response = await fetch(apiUrl, {
-            signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
+        const { data } = await fetchVideoComments(input, {
+            apiKey,
+            onRequest: (apiUrl) => console.log(`Fetching from: ${apiUrl}`),
         });
-        if (!response.ok) {
-            throw new Error(`Scrappa API request failed with ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
         const comments = data?.comments ?? [];
 
         await Actor.pushData(comments);
