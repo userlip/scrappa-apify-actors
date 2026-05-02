@@ -6,8 +6,7 @@ export interface ScrappaConfig {
 }
 
 export interface ScrappaError {
-    status: number;
-    message: string;
+    message?: string;
     errors?: Record<string, string[]>;
 }
 
@@ -132,7 +131,7 @@ export class ScrappaClient {
 
     private tryParseJsonError(bodyText: string, fallback: string): string | null {
         try {
-            const errorData = JSON.parse(bodyText) as { message?: string; errors?: Record<string, string[]> };
+            const errorData = JSON.parse(bodyText) as ScrappaError;
             let message = errorData.message ?? fallback;
             if (errorData.errors) {
                 const errorDetails = Object.entries(errorData.errors)

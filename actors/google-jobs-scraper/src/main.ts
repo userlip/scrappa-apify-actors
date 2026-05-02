@@ -55,6 +55,9 @@ try {
     if (!input?.q && !input?.next_page_token) {
         throw new Error('Job search query is required unless next_page_token is provided.');
     }
+    if (input.lrad !== undefined && !input.uule) {
+        throw new Error('Search radius (lrad) requires an encoded location (uule).');
+    }
 
     const searchLabel = input.q ? `"${input.q}"` : 'next page token';
     console.log(`Searching Google Jobs for: ${searchLabel}`);
