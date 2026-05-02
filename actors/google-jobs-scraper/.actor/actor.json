@@ -1,0 +1,41 @@
+{
+  "actorSpecification": 1,
+  "name": "google-jobs-scraper",
+  "title": "Google Jobs Scraper",
+  "description": "Search Google Jobs listings with Scrappa. Extract job titles, companies, locations, descriptions, posting metadata, filters, and pagination tokens.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "jobs": {
+          "title": "Jobs",
+          "transformation": {
+            "fields": ["title", "company", "company_name", "location", "via", "description", "job_id"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": { "label": "Title", "format": "text" },
+              "company": { "label": "Company", "format": "text" },
+              "company_name": { "label": "Company Name", "format": "text" },
+              "location": { "label": "Location", "format": "text" },
+              "via": { "label": "Via", "format": "text" },
+              "description": { "label": "Description", "format": "text" },
+              "job_id": { "label": "Job ID", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
