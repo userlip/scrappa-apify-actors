@@ -54,6 +54,24 @@ test('extracts unique_id from a TikTok profile URL', () => {
     );
 });
 
+test('rejects profile URLs with invalid username characters', () => {
+    for (const value of ['https://www.tiktok.com/@tik-tok', 'https://www.tiktok.com/@tik%20tok']) {
+        assert.throws(
+            () => buildTikTokProfileParams({ unique_id: value }),
+            /username must be 2 to 255 characters/,
+        );
+    }
+});
+
+test('rejects profile URLs with usernames outside length bounds', () => {
+    for (const value of ['https://www.tiktok.com/@a', `https://www.tiktok.com/@${'a'.repeat(256)}`]) {
+        assert.throws(
+            () => buildTikTokProfileParams({ unique_id: value }),
+            /username must be 2 to 255 characters/,
+        );
+    }
+});
+
 test('builds params from user_id', () => {
     assert.deepEqual(
         buildTikTokProfileParams({ user_id: ' 107955 ' }),

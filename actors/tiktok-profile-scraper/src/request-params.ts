@@ -49,9 +49,9 @@ export function normalizeTikTokUniqueId(value: string): string {
             throw new Error('TikTok profile URL must use the format https://www.tiktok.com/@username');
         }
 
-        return match[1];
+        return normalizeTikTokUsername(match[1]);
     } catch (error) {
-        if (error instanceof Error && error.message.startsWith('TikTok profile URL')) {
+        if (error instanceof Error && (error.message.startsWith('TikTok profile URL') || error.message.startsWith('TikTok username'))) {
             throw error;
         }
     }
@@ -60,7 +60,11 @@ export function normalizeTikTokUniqueId(value: string): string {
         throw new Error('A valid TikTok profile URL or username is required');
     }
 
-    const username = trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+    return normalizeTikTokUsername(trimmed);
+}
+
+function normalizeTikTokUsername(value: string): string {
+    const username = value.startsWith('@') ? value.slice(1) : value;
     if (!/^[A-Za-z0-9._]{2,255}$/.test(username)) {
         throw new Error('TikTok username must be 2 to 255 characters and contain only letters, numbers, dots, or underscores');
     }
