@@ -1,7 +1,7 @@
 const API_BASE_URL = 'https://ytapi.scrappa.co/videos/comments';
 
 function singleValue(value) {
-    const rawValue = Array.isArray(value) ? value.find((item) => item !== undefined && item !== null) : value;
+    const rawValue = Array.isArray(value) ? value[0] : value;
 
     if (typeof rawValue !== 'string') {
         return undefined;

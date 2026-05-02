@@ -9,5 +9,8 @@
         "templateId": "js-start"
     },
     "input": "./input_schema.json",
-    "dockerfile": "./Dockerfile"
+    "dockerfile": "./Dockerfile",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
 }

@@ -1,0 +1,126 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": ["string", "null"],
+        "title": "Comment ID",
+        "description": "The YouTube comment ID.",
+        "example": "Ugzge340dBgB75hWBm54AaABAg"
+      },
+      "text": {
+        "type": ["string", "null"],
+        "title": "Text",
+        "description": "The comment text."
+      },
+      "publishedTime": {
+        "type": ["string", "null"],
+        "title": "Published time",
+        "description": "The relative time when the comment was published.",
+        "example": "1 year ago"
+      },
+      "likeCount": {
+        "type": ["integer", "number", "string", "null"],
+        "title": "Like count",
+        "description": "The comment like count."
+      },
+      "replyCount": {
+        "type": ["integer", "number", "string", "null"],
+        "title": "Reply count",
+        "description": "The number of replies."
+      },
+      "isPinned": {
+        "type": ["boolean", "null"],
+        "title": "Pinned",
+        "description": "Whether the comment is pinned."
+      },
+      "isHearted": {
+        "type": ["boolean", "null"],
+        "title": "Hearted",
+        "description": "Whether the channel hearted the comment."
+      },
+      "isOwner": {
+        "type": ["boolean", "null"],
+        "title": "Owner",
+        "description": "Whether the comment author is the video owner."
+      },
+      "author": {
+        "type": ["object", "null"],
+        "title": "Author",
+        "description": "Comment author metadata."
+      },
+      "replies": {
+        "type": ["array", "null"],
+        "title": "Replies",
+        "description": "Replies returned with the comment when available."
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "YouTube Comments",
+      "transformation": {
+        "fields": [
+          "id",
+          "text",
+          "author.name",
+          "author.id",
+          "publishedTime",
+          "likeCount",
+          "replyCount",
+          "isPinned",
+          "isHearted",
+          "isOwner"
+        ],
+        "flatten": ["author"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "id": {
+            "label": "ID",
+            "format": "text"
+          },
+          "text": {
+            "label": "Text",
+            "format": "text"
+          },
+          "author.name": {
+            "label": "Author",
+            "format": "text"
+          },
+          "author.id": {
+            "label": "Author ID",
+            "format": "text"
+          },
+          "publishedTime": {
+            "label": "Published",
+            "format": "text"
+          },
+          "likeCount": {
+            "label": "Likes",
+            "format": "number"
+          },
+          "replyCount": {
+            "label": "Replies",
+            "format": "number"
+          },
+          "isPinned": {
+            "label": "Pinned",
+            "format": "boolean"
+          },
+          "isHearted": {
+            "label": "Hearted",
+            "format": "boolean"
+          },
+          "isOwner": {
+            "label": "Owner",
+            "format": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

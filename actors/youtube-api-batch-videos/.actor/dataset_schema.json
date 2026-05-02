@@ -1,0 +1,164 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": ["string", "null"],
+        "title": "ID",
+        "description": "The YouTube video ID.",
+        "example": "dQw4w9WgXcQ"
+      },
+      "videoId": {
+        "type": ["string", "null"],
+        "title": "Video ID",
+        "description": "The YouTube video ID returned by the API.",
+        "example": "dQw4w9WgXcQ"
+      },
+      "title": {
+        "type": ["string", "null"],
+        "title": "Title",
+        "description": "The video title.",
+        "example": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)"
+      },
+      "description": {
+        "type": ["string", "null"],
+        "title": "Description",
+        "description": "The video description."
+      },
+      "thumbnail": {
+        "type": ["string", "null"],
+        "title": "Thumbnail",
+        "description": "The video thumbnail URL.",
+        "example": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+      },
+      "duration": {
+        "type": ["string", "null"],
+        "title": "Duration",
+        "description": "The video duration.",
+        "example": "3:33"
+      },
+      "viewCount": {
+        "type": ["integer", "number", "string", "null"],
+        "title": "View count",
+        "description": "The video view count."
+      },
+      "likeCount": {
+        "type": ["integer", "number", "string", "null"],
+        "title": "Like count",
+        "description": "The video like count."
+      },
+      "publishDate": {
+        "type": ["string", "null"],
+        "title": "Publish date",
+        "description": "The video publish date."
+      },
+      "uploadDate": {
+        "type": ["string", "null"],
+        "title": "Upload date",
+        "description": "The video upload date."
+      },
+      "channel": {
+        "type": ["object", "null"],
+        "title": "Channel",
+        "description": "Channel metadata for the video."
+      },
+      "category": {
+        "type": ["string", "null"],
+        "title": "Category",
+        "description": "The YouTube category when returned."
+      },
+      "isLive": {
+        "type": ["boolean", "null"],
+        "title": "Is live",
+        "description": "Whether the video is live."
+      },
+      "isPremium": {
+        "type": ["boolean", "null"],
+        "title": "Is Premium",
+        "description": "Whether the video is marked as Premium content."
+      },
+      "comments": {
+        "type": ["array", "null"],
+        "title": "Comments",
+        "description": "Comments returned with the video details when available."
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "YouTube Videos",
+      "transformation": {
+        "fields": [
+          "id",
+          "videoId",
+          "title",
+          "channel.name",
+          "duration",
+          "viewCount",
+          "likeCount",
+          "publishDate",
+          "thumbnail",
+          "category",
+          "isLive",
+          "isPremium"
+        ],
+        "flatten": ["channel"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "id": {
+            "label": "ID",
+            "format": "text"
+          },
+          "videoId": {
+            "label": "Video ID",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "channel.name": {
+            "label": "Channel",
+            "format": "text"
+          },
+          "duration": {
+            "label": "Duration",
+            "format": "text"
+          },
+          "viewCount": {
+            "label": "Views",
+            "format": "number"
+          },
+          "likeCount": {
+            "label": "Likes",
+            "format": "number"
+          },
+          "publishDate": {
+            "label": "Published",
+            "format": "text"
+          },
+          "thumbnail": {
+            "label": "Thumbnail",
+            "format": "image"
+          },
+          "category": {
+            "label": "Category",
+            "format": "text"
+          },
+          "isLive": {
+            "label": "Live",
+            "format": "boolean"
+          },
+          "isPremium": {
+            "label": "Premium",
+            "format": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
