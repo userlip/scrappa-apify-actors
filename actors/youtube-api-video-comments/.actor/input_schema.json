@@ -1,0 +1,32 @@
+{
+    "title": "Youtube API Video Comments",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "id": {
+            "title": "Youtube ID",
+            "type": "string",
+            "description": "YouTube video ID",
+            "editor": "textfield",
+            "prefill": "dQw4w9WgXcQ"
+        },
+        "continuation": {
+            "title": "continuation",
+            "type": "string",
+            "description": "Pagination token for next page",
+            "editor": "textfield"
+        },
+         "sort": {
+            "title": "sort",
+            "type": "array",
+            "description": "Sort by: TOP_COMMENTS, NEWEST_FIRST",
+            "editor": "select",
+            "items": {
+                "type": "string",
+                "enum": ["TOP_COMMENTS", "NEWEST_FIRST"]
+            },
+            "prefill": ["TOP_COMMENTS"]
+        }
+    },
+    "required": ["id"]
+}

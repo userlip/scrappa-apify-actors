@@ -1,0 +1,15 @@
+{
+    "title": "Youtube API Video Details",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "id": {
+            "title": "YouTube video ID",
+            "type": "string",
+            "description": "YouTube video ID",
+            "editor": "textfield",
+            "prefill": "dQw4w9WgXcQ"
+        }
+    },
+    "required": ["id"]
+}

@@ -1,0 +1,15 @@
+{
+    "title": "Youtube API Batch Videos",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "ids": {
+            "title": "Youtube IDs (Comma-Separated)",
+            "type": "string",
+            "description": "Comma-separated video IDs (max 50)",
+            "editor": "textfield",
+            "prefill": "7eul_Vt6SZY,6QQQKJJBJOY"
+        }
+    },
+    "required": ["ids"]
+}
