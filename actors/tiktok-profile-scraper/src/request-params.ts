@@ -113,21 +113,23 @@ export function buildTikTokProfileParams(
         warn(`profile must be a string, got ${typeof input.profile}.`);
     }
 
-    if (typeof input.unique_id === 'string') {
+    const hasProfileLookup = Boolean(params.unique_id || params.user_id);
+
+    if (!hasProfileLookup && typeof input.unique_id === 'string') {
         const uniqueId = normalizeTikTokUniqueId(input.unique_id);
         if (uniqueId !== '') {
             params.unique_id = uniqueId;
         }
-    } else if (input.unique_id !== undefined && input.unique_id !== null && input.unique_id !== '') {
+    } else if (!hasProfileLookup && input.unique_id !== undefined && input.unique_id !== null && input.unique_id !== '') {
         warn(`unique_id must be a string, got ${typeof input.unique_id}.`);
     }
 
-    if (typeof input.user_id === 'string') {
+    if (!hasProfileLookup && typeof input.user_id === 'string') {
         const userId = normalizeTikTokUserId(input.user_id);
         if (userId !== '') {
             params.user_id = userId;
         }
-    } else if (input.user_id !== undefined && input.user_id !== null && input.user_id !== '') {
+    } else if (!hasProfileLookup && input.user_id !== undefined && input.user_id !== null && input.user_id !== '') {
         warn(`user_id must be a string, got ${typeof input.user_id}.`);
     }
 

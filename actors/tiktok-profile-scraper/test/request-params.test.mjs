@@ -122,6 +122,20 @@ test('includes both lookup values when both are provided', () => {
     );
 });
 
+test('uses profile instead of legacy unique_id when both are provided', () => {
+    assert.deepEqual(
+        buildTikTokProfileParams({ profile: 'profileuser', unique_id: 'legacyuser' }),
+        { unique_id: '@profileuser' },
+    );
+});
+
+test('uses profile instead of legacy user_id when both are provided', () => {
+    assert.deepEqual(
+        buildTikTokProfileParams({ profile: 'profileuser', user_id: '107955' }),
+        { unique_id: '@profileuser' },
+    );
+});
+
 test('warns and omits non-string lookup values', () => {
     const warnings = [];
     const params = buildTikTokProfileParams(
