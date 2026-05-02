@@ -84,6 +84,7 @@ This repository contains source directories for the following live Scrappa Apify
 | `actors/google-search` | `google-search-scraper` | `2pU7EbKhShUz8BAnN` | Google Search results | Live on Apify |
 | `actors/instagram-post-info-cheapest-0-20-1000-results` | `instagram-post-info-cheapest-0-20-1000-results` | `nfdzs1z0cRIU1Bfhw` | Instagram post details | Live on Apify |
 | `actors/instagram-user-info-cheapest-0-20-1000-results` | `instagram-user-info-cheapest-0-20-1000-results` | `VZrsJ6bO3h92y0duj` | Instagram user profile details | Live on Apify |
+| `actors/instagram-user-posts-cheapest-0-20-1000-results` | `instagram-user-posts-cheapest-0-20-1000-results` | `mp03zGSA2pR31azfU` | Instagram user posts and reels | Live on Apify |
 | `actors/linkedin-company-scraper` | `linkedin-company-scraper` | `EMGCTVXuOBRERiDMf` | LinkedIn company pages | Live on Apify |
 | `actors/linkedin-post-scraper` | `linkedin-post-scraper` | `hVDOXgRoKJbnATxzs` | LinkedIn posts and articles | Live on Apify |
 | `actors/linkedin-profile-scraper` | `linkedin-profile-scraper` | `87AaxKjjQrK0F0g60` | LinkedIn public profiles | Live on Apify |
