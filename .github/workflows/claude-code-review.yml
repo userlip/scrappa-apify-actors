@@ -246,6 +246,7 @@ jobs:
           CLAUDE_CODE_SUBAGENT_MODEL: ${{ steps.ai-config.outputs.subagent_model }}
           CLAUDE_CODE_EFFORT_LEVEL: ${{ steps.ai-config.outputs.effort_level }}
         with:
+          github_token: ${{ github.token }}
           claude_code_oauth_token: ${{ steps.ai-config.outputs.token }}
           settings: |
             {
@@ -265,6 +266,55 @@ jobs:
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Please review this pull request and provide feedback on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Performance considerations
+            - Security concerns
+            - Test coverage
+
+            For Laravel projects, use Laravel Boost MCP tools, generated Boost guidelines, and relevant Boost skills such as laravel-best-practices before making framework-specific recommendations. Use Laravel documentation search through Boost when you need current Laravel, Filament, Livewire, Pest, Pint, or Tailwind guidance.
+
+            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
+
+      - name: Retry Claude Code Review
+        if: ${{ steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' && steps.ai-config.outputs.token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review.outcome == 'failure' && steps.claude-review.outputs.session_id != '' }}
+        id: claude-review-retry
+        continue-on-error: true
+        uses: anthropics/claude-code-action@ef50f123a3a9be95b60040d042717517407c7256
+        env:
+          ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.base_url }}
+          ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.token }}
+          ANTHROPIC_MODEL: ${{ steps.ai-config.outputs.model }}
+          ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ steps.ai-config.outputs.default_opus_model }}
+          ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ steps.ai-config.outputs.default_sonnet_model }}
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: ${{ steps.ai-config.outputs.default_haiku_model }}
+          CLAUDE_CODE_SUBAGENT_MODEL: ${{ steps.ai-config.outputs.subagent_model }}
+          CLAUDE_CODE_EFFORT_LEVEL: ${{ steps.ai-config.outputs.effort_level }}
+        with:
+          github_token: ${{ github.token }}
+          claude_code_oauth_token: ${{ steps.ai-config.outputs.token }}
+          settings: |
+            {
+              "env": {
+                "ANTHROPIC_BASE_URL": "${{ steps.ai-config.outputs.base_url }}",
+                "ANTHROPIC_MODEL": "${{ steps.ai-config.outputs.model }}",
+                "ANTHROPIC_DEFAULT_OPUS_MODEL": "${{ steps.ai-config.outputs.default_opus_model }}",
+                "ANTHROPIC_DEFAULT_SONNET_MODEL": "${{ steps.ai-config.outputs.default_sonnet_model }}",
+                "ANTHROPIC_DEFAULT_HAIKU_MODEL": "${{ steps.ai-config.outputs.default_haiku_model }}",
+                "CLAUDE_CODE_SUBAGENT_MODEL": "${{ steps.ai-config.outputs.subagent_model }}"
+              }
+            }
+          claude_args: ${{ steps.ai-config.outputs.claude_args }} ${{ steps.laravel-boost.outputs.claude_args }} --resume ${{ steps.claude-review.outputs.session_id }}
+          plugin_marketplaces: https://github.com/obra/superpowers-marketplace.git
+          plugins: superpowers@superpowers-marketplace
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            The first Claude Code Review attempt failed, likely due to a transient AI backend or network issue. Resume the interrupted review session and continue from the existing context.
 
             Please review this pull request and provide feedback on:
             - Code quality and best practices
@@ -292,6 +342,7 @@ jobs:
           CLAUDE_CODE_SUBAGENT_MODEL: ${{ steps.ai-config.outputs.subagent_model }}
           CLAUDE_CODE_EFFORT_LEVEL: ${{ steps.ai-config.outputs.effort_level }}
         with:
+          github_token: ${{ github.token }}
           claude_code_oauth_token: ${{ steps.ai-config.outputs.token }}
           settings: |
             {
@@ -323,8 +374,57 @@ jobs:
 
             Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
+      - name: Retry Claude Code Review with custom backend
+        if: ${{ steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' && steps.ai-config.outputs.token_type == 'ANTHROPIC_API_KEY' && steps.claude-review-custom.outcome == 'failure' && steps.claude-review-custom.outputs.session_id != '' }}
+        id: claude-review-custom-retry
+        continue-on-error: true
+        uses: anthropics/claude-code-action@ef50f123a3a9be95b60040d042717517407c7256
+        env:
+          ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.base_url }}
+          ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.token }}
+          ANTHROPIC_MODEL: ${{ steps.ai-config.outputs.model }}
+          ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ steps.ai-config.outputs.default_opus_model }}
+          ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ steps.ai-config.outputs.default_sonnet_model }}
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: ${{ steps.ai-config.outputs.default_haiku_model }}
+          CLAUDE_CODE_SUBAGENT_MODEL: ${{ steps.ai-config.outputs.subagent_model }}
+          CLAUDE_CODE_EFFORT_LEVEL: ${{ steps.ai-config.outputs.effort_level }}
+        with:
+          github_token: ${{ github.token }}
+          claude_code_oauth_token: ${{ steps.ai-config.outputs.token }}
+          settings: |
+            {
+              "env": {
+                "ANTHROPIC_BASE_URL": "${{ steps.ai-config.outputs.base_url }}",
+                "ANTHROPIC_MODEL": "${{ steps.ai-config.outputs.model }}",
+                "ANTHROPIC_DEFAULT_OPUS_MODEL": "${{ steps.ai-config.outputs.default_opus_model }}",
+                "ANTHROPIC_DEFAULT_SONNET_MODEL": "${{ steps.ai-config.outputs.default_sonnet_model }}",
+                "ANTHROPIC_DEFAULT_HAIKU_MODEL": "${{ steps.ai-config.outputs.default_haiku_model }}",
+                "CLAUDE_CODE_SUBAGENT_MODEL": "${{ steps.ai-config.outputs.subagent_model }}"
+              }
+            }
+          claude_args: ${{ steps.ai-config.outputs.claude_args }} ${{ steps.laravel-boost.outputs.claude_args }} --resume ${{ steps.claude-review-custom.outputs.session_id }}
+          plugin_marketplaces: https://github.com/obra/superpowers-marketplace.git
+          plugins: superpowers@superpowers-marketplace
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            The first Claude Code Review attempt failed, likely due to a transient AI backend or network issue. Resume the interrupted review session and continue from the existing context.
+
+            Please review this pull request and provide feedback on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Performance considerations
+            - Security concerns
+            - Test coverage
+
+            For Laravel projects, use Laravel Boost MCP tools, generated Boost guidelines, and relevant Boost skills such as laravel-best-practices before making framework-specific recommendations. Use Laravel documentation search through Boost when you need current Laravel, Filament, Livewire, Pest, Pint, or Tailwind guidance.
+
+            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
+
       - name: Warn when Claude review is unavailable
-        if: ${{ steps.ensure-jq.outcome == 'failure' || steps.ai-config.outcome == 'failure' || steps.laravel-boost.outcome == 'failure' || steps.claude-review.outcome == 'failure' || steps.claude-review-custom.outcome == 'failure' }}
+        if: ${{ steps.ensure-jq.outcome == 'failure' || steps.ai-config.outcome == 'failure' || steps.laravel-boost.outcome == 'failure' || (steps.ai-config.outputs.token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review.outcome == 'failure' && (steps.claude-review.outputs.session_id == '' || steps.claude-review-retry.outcome == 'failure')) || (steps.ai-config.outputs.token_type == 'ANTHROPIC_API_KEY' && steps.claude-review-custom.outcome == 'failure' && (steps.claude-review-custom.outputs.session_id == '' || steps.claude-review-custom-retry.outcome == 'failure')) }}
         shell: bash
         run: |
           echo "::warning::Claude review is currently unavailable due to an external AI service or authentication issue."
