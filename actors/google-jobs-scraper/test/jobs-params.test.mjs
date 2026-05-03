@@ -49,3 +49,9 @@ test('preserves next page token without injecting a default query', () => {
         next_page_token: 'next-token',
     });
 });
+
+test('preserves partial input without injecting a default query', () => {
+    assert.deepEqual(normalizeJobsInput({ gl: 'us' }), {
+        gl: 'us',
+    });
+});

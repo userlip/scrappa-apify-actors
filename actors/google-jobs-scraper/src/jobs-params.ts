@@ -16,14 +16,15 @@ export function normalizeJobsInput(input?: GoogleJobsInput | null): GoogleJobsIn
         return { q: DEFAULT_JOB_SEARCH_QUERY };
     }
 
+    if (Object.keys(input).length === 0) {
+        return { q: DEFAULT_JOB_SEARCH_QUERY };
+    }
+
     if (input.q || input.next_page_token) {
         return input;
     }
 
-    return {
-        ...input,
-        q: DEFAULT_JOB_SEARCH_QUERY,
-    };
+    return input;
 }
 
 export function buildJobsParams(input: GoogleJobsInput): Record<string, unknown> {
