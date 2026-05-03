@@ -9,6 +9,24 @@ export interface GoogleJobsInput {
     uds?: string;
 }
 
+export const DEFAULT_JOB_SEARCH_QUERY = 'software engineer';
+
+export function normalizeJobsInput(input?: GoogleJobsInput | null): GoogleJobsInput {
+    if (!input) {
+        return { q: DEFAULT_JOB_SEARCH_QUERY };
+    }
+
+    if (Object.keys(input).length === 0) {
+        return { q: DEFAULT_JOB_SEARCH_QUERY };
+    }
+
+    if (input.q || input.next_page_token) {
+        return input;
+    }
+
+    return input;
+}
+
 export function buildJobsParams(input: GoogleJobsInput): Record<string, unknown> {
     const params: Record<string, unknown> = {};
     const entries: [keyof GoogleJobsInput, unknown][] = [

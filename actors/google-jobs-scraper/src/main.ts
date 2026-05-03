@@ -1,6 +1,6 @@
 import { Actor } from 'apify';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
-import { buildJobsParams } from './jobs-params.js';
+import { buildJobsParams, normalizeJobsInput } from './jobs-params.js';
 import type { GoogleJobsInput } from './jobs-params.js';
 
 interface GoogleJob {
@@ -51,7 +51,7 @@ try {
         throw new Error('SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings.');
     }
 
-    const input = await Actor.getInput<GoogleJobsInput>();
+    const input = normalizeJobsInput(await Actor.getInput<GoogleJobsInput>());
     if (!input?.q && !input?.next_page_token) {
         throw new Error('Job search query is required unless next_page_token is provided.');
     }
