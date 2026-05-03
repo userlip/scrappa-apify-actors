@@ -9,7 +9,6 @@
       "type": "string",
       "description": "Job search query. Leave empty only when using a next page token.",
       "editor": "textfield",
-      "default": "software engineer",
       "prefill": "software engineer"
     },
     "next_page_token": {
