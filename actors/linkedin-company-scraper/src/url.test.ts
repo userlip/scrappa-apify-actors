@@ -20,6 +20,13 @@ test('normalizeLinkedInCompanyUrl normalizes regional and mobile LinkedIn hosts'
     );
 });
 
+test('normalizeLinkedInCompanyUrl accepts plain http LinkedIn URLs', () => {
+    assert.equal(
+        normalizeLinkedInCompanyUrl('http://linkedin.com/company/microsoft'),
+        'http://www.linkedin.com/company/microsoft',
+    );
+});
+
 test('normalizeLinkedInCompanyUrl rejects non-company LinkedIn URLs', () => {
     assert.throws(
         () => normalizeLinkedInCompanyUrl('https://www.linkedin.com/school/harvard'),
