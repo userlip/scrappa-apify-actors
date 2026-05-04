@@ -1,25 +1,25 @@
 {
-    "title": "Youtube API Video Comments",
+    "title": "YouTube API Video Comments",
     "type": "object",
     "schemaVersion": 1,
     "properties": {
         "id": {
-            "title": "Youtube ID",
+            "title": "YouTube Video ID",
             "type": "string",
-            "description": "YouTube video ID",
+            "description": "The YouTube video ID to fetch comments for.",
             "editor": "textfield",
             "prefill": "dQw4w9WgXcQ"
         },
         "continuation": {
             "title": "Continuation",
             "type": "string",
-            "description": "Pagination token for next page",
+            "description": "Pagination token returned by the previous run to continue to the next comments page.",
             "editor": "textfield"
         },
         "sort": {
             "title": "Sort",
             "type": "array",
-            "description": "Sort by: TOP_COMMENTS, NEWEST_FIRST",
+            "description": "Sort order for the comments feed.",
             "editor": "select",
             "items": {
                 "type": "string",

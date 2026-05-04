@@ -2,7 +2,7 @@
     "actorSpecification": 1,
     "name": "youtube-api-video-comments",
     "title": "YouTube Video Comments Scraper",
-    "description": "Fetch YouTube video comments by video ID, sort order, and continuation token.",
+    "description": "Fetch YouTube video comments and replies by video ID, sort order, and continuation token.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

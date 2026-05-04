@@ -1,0 +1,51 @@
+name: Actor Tests
+
+on:
+  push:
+    paths:
+      - 'actors/**'
+      - '.github/workflows/actor-tests.yml'
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+    paths:
+      - 'actors/**'
+      - '.github/workflows/actor-tests.yml'
+
+jobs:
+  test-actors:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        actor:
+          - path: actors/google-jobs-scraper
+          - path: actors/google-maps-business-details-scraper
+          - path: actors/google-news-scraper
+          - path: actors/instagram-post-info-cheapest-0-20-1000-results
+          - path: actors/instagram-user-info-cheapest-0-20-1000-results
+          - path: actors/instagram-user-posts-cheapest-0-20-1000-results
+          - path: actors/linkedin-post-scraper
+          - path: actors/tiktok-comments-scraper
+          - path: actors/tiktok-profile-scraper
+          - path: actors/youtube-api-batch-videos
+          - path: actors/youtube-api-get-video-details
+          - path: actors/youtube-api-search-data
+          - path: actors/youtube-api-video-comments
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.actor.path }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.actor.path }}
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ${{ matrix.actor.path }}
+        run: npm test
