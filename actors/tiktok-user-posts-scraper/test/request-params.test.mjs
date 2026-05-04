@@ -53,6 +53,17 @@ test('warns and omits invalid count values', () => {
     assert.match(warnings[0], /count must be an integer between 1 and 50/);
 });
 
+test('warns and omits non-numeric count values', () => {
+    const warnings = [];
+    const params = buildTikTokUserPostsParams(
+        { profile: '@tiktok', count: 'abc' },
+        (message) => warnings.push(message),
+    );
+
+    assert.deepEqual(params, { unique_id: '@tiktok' });
+    assert.match(warnings[0], /count must be an integer between 1 and 50/);
+});
+
 test('warns and omits non-string cursor values', () => {
     const warnings = [];
     const params = buildTikTokUserPostsParams(
@@ -62,6 +73,13 @@ test('warns and omits non-string cursor values', () => {
 
     assert.deepEqual(params, { unique_id: '@tiktok' });
     assert.match(warnings[0], /cursor must be a string/);
+});
+
+test('omits empty cursor strings', () => {
+    assert.deepEqual(
+        buildTikTokUserPostsParams({ profile: '@tiktok', cursor: '   ' }),
+        { unique_id: '@tiktok' },
+    );
 });
 
 test('rejects missing lookup input', () => {

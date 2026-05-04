@@ -43,6 +43,7 @@ export class ScrappaClient {
         if (method === 'GET') {
             Object.entries(params).forEach(([key, value]) => {
                 if (value !== undefined && value !== null && value !== '') {
+                    // Skip false booleans - Laravel rejects use_cache=0
                     if (typeof value === 'boolean') {
                         if (value) {
                             url.searchParams.set(key, '1');
@@ -56,7 +57,7 @@ export class ScrappaClient {
 
         const headers: Record<string, string> = {
             'X-API-Key': this.apiKey,
-            Accept: 'application/json',
+            'Accept': 'application/json',
         };
 
         const options: RequestInit = {
