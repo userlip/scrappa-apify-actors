@@ -1,5 +1,6 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/scrappa-client.js';
+import { normalizeTikTokProfileRecord } from './normalize-profile.js';
 import { buildTikTokProfileParams, formatTikTokProfileLookupForLog } from './request-params.js';
 import type { TikTokProfileInput } from './request-params.js';
 
@@ -69,14 +70,15 @@ async function main(): Promise<void> {
         }
 
         const profile = extractProfile(response.data);
+        const normalizedProfile = profile ? normalizeTikTokProfileRecord(profile) : null;
 
-        if (profile) {
+        if (normalizedProfile) {
             await Actor.pushData({
-                ...profile,
+                ...normalizedProfile,
                 lookup_unique_id: params.unique_id ?? null,
                 lookup_user_id: params.user_id ?? null,
             });
-            console.log(`Found TikTok profile: ${profile.unique_id ?? profile.user_id ?? 'unknown'}`);
+            console.log(`Found TikTok profile: ${normalizedProfile.unique_id ?? normalizedProfile.user_id ?? 'unknown'}`);
         } else {
             console.log('No profile found for the given TikTok lookup');
         }
@@ -85,10 +87,10 @@ async function main(): Promise<void> {
         await store.setValue('OUTPUT', response);
 
         const summary = {
-            profile_found: profile !== null,
-            unique_id: profile?.unique_id ?? null,
-            user_id: profile?.user_id ?? null,
-            follower_count: profile?.follower_count ?? null,
+            profile_found: normalizedProfile !== null,
+            unique_id: normalizedProfile?.unique_id ?? null,
+            user_id: normalizedProfile?.user_id ?? null,
+            follower_count: normalizedProfile?.follower_count ?? null,
             processed_time: response.processed_time ?? null,
         };
 
