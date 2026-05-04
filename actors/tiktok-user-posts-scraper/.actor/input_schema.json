@@ -1,0 +1,33 @@
+{
+  "title": "TikTok User Posts Scraper",
+  "description": "Extract public TikTok posts by username, profile URL, or numeric user ID.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "profile": {
+      "title": "TikTok Profile",
+      "type": "string",
+      "description": "TikTok username with or without @, full HTTPS TikTok profile URL, or numeric user ID up to 30 digits. Bare numeric values are treated as user IDs; prefix numeric usernames with @.",
+      "editor": "textfield",
+      "prefill": "@tiktok",
+      "pattern": "^(?![0-9]{31,}$)(?:@?[A-Za-z0-9._]{2,255}|[0-9]{1,30}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/@[A-Za-z0-9._]{2,255}/?(?:[?#].*)?)$"
+    },
+    "count": {
+      "title": "Posts Per Page",
+      "type": "integer",
+      "description": "Number of posts to return from this page. Scrappa accepts 1-50.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10
+    },
+    "cursor": {
+      "title": "Cursor",
+      "type": "string",
+      "description": "Pagination cursor from a previous run. Leave empty for the first page.",
+      "editor": "textfield",
+      "prefill": "0"
+    }
+  },
+  "required": ["profile"]
+}
