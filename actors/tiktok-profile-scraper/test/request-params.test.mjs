@@ -6,7 +6,7 @@ import {
     buildTikTokProfileParams,
     formatTikTokProfileLookupForLog,
     normalizeTikTokUniqueId,
-} from '../dist/request-params.js';
+} from '../src/request-params.ts';
 
 test('builds params from a username with @', () => {
     assert.deepEqual(

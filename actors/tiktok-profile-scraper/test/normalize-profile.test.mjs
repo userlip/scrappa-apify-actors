@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { normalizeTikTokProfileRecord } from '../dist/normalize-profile.js';
+import { normalizeTikTokProfileRecord } from '../src/normalize-profile.ts';
 
 test('normalizes nested Scrappa TikTok profile payload into top-level actor fields', () => {
     const normalized = normalizeTikTokProfileRecord({
@@ -79,4 +79,27 @@ test('preserves existing top-level profile fields when already present', () => {
     assert.equal(normalized.nickname, 'Existing');
     assert.equal(normalized.avatar, 'avatar.webp');
     assert.equal(normalized.follower_count, 9);
+});
+
+test('coerces numeric nested user ids to strings', () => {
+    const normalized = normalizeTikTokProfileRecord({
+        user: {
+            id: 107955,
+            uniqueId: 'tiktok',
+        },
+    });
+
+    assert.equal(normalized.user_id, '107955');
+    assert.equal(normalized.unique_id, '@tiktok');
+});
+
+test('handles profiles without nested user or stats objects', () => {
+    const normalized = normalizeTikTokProfileRecord({
+        signature: 'Existing signature',
+    });
+
+    assert.equal(normalized.signature, 'Existing signature');
+    assert.equal(normalized.user_id, undefined);
+    assert.equal(normalized.unique_id, undefined);
+    assert.equal(normalized.follower_count, undefined);
 });
