@@ -26,3 +26,17 @@ test('normalizeLinkedInCompanyUrl rejects non-company LinkedIn URLs', () => {
         /Invalid LinkedIn company URL/,
     );
 });
+
+test('normalizeLinkedInCompanyUrl rejects non-LinkedIn domains', () => {
+    assert.throws(
+        () => normalizeLinkedInCompanyUrl('https://example.com/company/acme'),
+        /Invalid LinkedIn company URL/,
+    );
+});
+
+test('normalizeLinkedInCompanyUrl rejects non-HTTP schemes', () => {
+    assert.throws(
+        () => normalizeLinkedInCompanyUrl('ftp://linkedin.com/company/acme'),
+        /Invalid LinkedIn company URL/,
+    );
+});

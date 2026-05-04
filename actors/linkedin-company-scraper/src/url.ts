@@ -3,7 +3,14 @@ export function normalizeLinkedInCompanyUrl(rawUrl: string): string {
     const withProtocol = /^[a-z]+:\/\//i.test(candidate) ? candidate : `https://${candidate}`;
     const parsed = new URL(withProtocol);
 
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        throw new Error('Invalid LinkedIn company URL. Expected format: https://www.linkedin.com/company/company-slug');
+    }
+
     parsed.hostname = parsed.hostname.replace(/^(?:(?:www|m|[a-z]{2,3})\.)?linkedin\.com$/i, 'www.linkedin.com');
+    if (parsed.hostname !== 'www.linkedin.com') {
+        throw new Error('Invalid LinkedIn company URL. Expected format: https://www.linkedin.com/company/company-slug');
+    }
     parsed.search = '';
     parsed.hash = '';
     parsed.pathname = parsed.pathname.replace(/\/+$/, '');
