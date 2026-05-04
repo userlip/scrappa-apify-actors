@@ -49,7 +49,7 @@ export function normalizeTikTokProfileRecord(profile: TikTokProfileRecord): TikT
     return {
         ...profile,
         user_id: profile.user_id ?? toOptionalString(user?.id),
-        unique_id: profile.unique_id ?? toOptionalUniqueId(user?.uniqueId),
+        unique_id: toOptionalUniqueId(profile.unique_id) ?? toOptionalUniqueId(user?.uniqueId),
         nickname: profile.nickname ?? user?.nickname,
         avatar: profile.avatar ?? user?.avatarLarger ?? user?.avatarMedium ?? user?.avatarThumb,
         signature: profile.signature ?? user?.signature,

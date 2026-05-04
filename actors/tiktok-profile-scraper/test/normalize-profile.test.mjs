@@ -81,6 +81,14 @@ test('preserves existing top-level profile fields when already present', () => {
     assert.equal(normalized.follower_count, 9);
 });
 
+test('normalizes top-level unique_id values without an @ prefix', () => {
+    const normalized = normalizeTikTokProfileRecord({
+        unique_id: 'tiktok',
+    });
+
+    assert.equal(normalized.unique_id, '@tiktok');
+});
+
 test('coerces numeric nested user ids to strings', () => {
     const normalized = normalizeTikTokProfileRecord({
         user: {
