@@ -7,6 +7,10 @@ export function normalizeLinkedInCompanyUrl(rawUrl: string): string {
         throw new Error('Invalid LinkedIn company URL. Expected format: https://www.linkedin.com/company/company-slug');
     }
 
+    if (parsed.username || parsed.password || parsed.port) {
+        throw new Error('Invalid LinkedIn company URL. Expected format: https://www.linkedin.com/company/company-slug');
+    }
+
     parsed.hostname = parsed.hostname.replace(/^(?:(?:www|m|[a-z]{2,3})\.)?linkedin\.com$/i, 'www.linkedin.com');
     if (parsed.hostname !== 'www.linkedin.com') {
         throw new Error('Invalid LinkedIn company URL. Expected format: https://www.linkedin.com/company/company-slug');

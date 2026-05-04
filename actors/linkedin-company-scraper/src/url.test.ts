@@ -47,3 +47,17 @@ test('normalizeLinkedInCompanyUrl rejects non-HTTP schemes', () => {
         /Invalid LinkedIn company URL/,
     );
 });
+
+test('normalizeLinkedInCompanyUrl rejects LinkedIn URLs with credentials', () => {
+    assert.throws(
+        () => normalizeLinkedInCompanyUrl('https://user:pass@linkedin.com/company/acme'),
+        /Invalid LinkedIn company URL/,
+    );
+});
+
+test('normalizeLinkedInCompanyUrl rejects LinkedIn URLs with explicit ports', () => {
+    assert.throws(
+        () => normalizeLinkedInCompanyUrl('https://linkedin.com:444/company/acme'),
+        /Invalid LinkedIn company URL/,
+    );
+});
