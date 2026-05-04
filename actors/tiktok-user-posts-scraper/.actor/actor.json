@@ -1,0 +1,50 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-user-posts-scraper",
+  "title": "TikTok User Posts Scraper",
+  "description": "Extract public TikTok posts by username, profile URL, or user ID. Get captions, engagement metrics, author metadata, timestamps, and pagination cursors through Scrappa.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "posts": {
+          "title": "Posts",
+          "transformation": {
+            "fields": ["desc", "author", "digg_count", "comment_count", "share_count", "play_count", "create_time", "aweme_id", "lookup_unique_id", "lookup_user_id"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "desc": { "label": "Caption", "format": "text" },
+              "author": { "label": "Author", "format": "object" },
+              "digg_count": { "label": "Likes", "format": "number" },
+              "comment_count": { "label": "Comments", "format": "number" },
+              "share_count": { "label": "Shares", "format": "number" },
+              "play_count": { "label": "Views", "format": "number" },
+              "create_time": { "label": "Created", "format": "number" },
+              "aweme_id": { "label": "Post ID", "format": "text" },
+              "lookup_unique_id": { "label": "Lookup Username", "format": "text" },
+              "lookup_user_id": { "label": "Lookup User ID", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
