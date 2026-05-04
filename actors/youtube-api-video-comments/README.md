@@ -1,6 +1,6 @@
 # YouTube API Video Comments
 
-Fetch comments for a YouTube video by video ID. The Actor supports YouTube comment sort order and continuation tokens for pagination.
+Fetch comments and reply threads for a YouTube video by video ID. The Actor supports YouTube comment sort order and continuation tokens for pagination.
 
 ## Input
 
@@ -33,7 +33,7 @@ When the API returns a next-page token, the Actor logs it as `Continuation token
 
 ## Output
 
-The Actor stores one dataset item per comment returned by the API. Fields depend on the current Scrappa YouTube response, and typically include comment text, author metadata, like counts, publish time, and reply metadata.
+The Actor stores one dataset item per top-level comment returned by the API. Fields typically include the comment text, author metadata, like counts, publish time, reply counts, and embedded replies when available.
 
 ## Pricing
 
