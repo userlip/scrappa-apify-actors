@@ -1,5 +1,7 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/index.js';
+import { buildLinkedInCompanyParams } from './request-params.js';
+import { normalizeLinkedInCompanyUrl } from './url.js';
 
 interface LinkedInCompanyInput {
     url: string;
@@ -82,34 +84,18 @@ async function main(): Promise<void> {
             throw new Error('LinkedIn company URL is required');
         }
 
-        // Normalize URL instead of strict validation
-        let url = input.url.trim();
-        // Replace country subdomains (de., uk., ca., etc.) with www.
-        url = url.replace(/^(https?:\/\/)[a-z]{2,3}\.linkedin\.com/i, '$1www.linkedin.com');
-        // Strip query parameters
-        url = url.split('?')[0];
-        // Extract just the company slug, allowing dots (e.g., j.p.morgan)
-        const companyMatch = url.match(/^(https?:\/\/(?:www\.)?linkedin\.com\/company\/[a-zA-Z0-9._-]+)\/?.*$/i);
-        if (!companyMatch) {
-            throw new Error('Invalid LinkedIn company URL. Expected format: https://www.linkedin.com/company/company-slug');
+        const normalizedUrl = normalizeLinkedInCompanyUrl(input.url);
+        console.log('Scraping LinkedIn company: "' + normalizedUrl + '"');
+        if (normalizedUrl !== input.url) {
+            console.log('(normalized from: ' + input.url + ')');
         }
-        url = companyMatch[1];
-
-        console.log('Scraping LinkedIn company: "' + url + '"');
 
         const client = new ScrappaClient({ apiKey });
-
-        const params: Record<string, unknown> = {
-            url,
-        };
-
-        if (input.use_cache) {
-            params.use_cache = 1;
-        }
-
-        if (input.maximum_cache_age !== undefined) {
-            params.maximum_cache_age = input.maximum_cache_age;
-        }
+        const params = buildLinkedInCompanyParams({
+            url: normalizedUrl,
+            use_cache: input.use_cache,
+            maximum_cache_age: input.maximum_cache_age,
+        });
 
         let response: LinkedInCompanyResponse;
 
@@ -120,8 +106,8 @@ async function main(): Promise<void> {
 
             // Handle 404s gracefully - push a failure result instead of failing the actor
             if (message.includes('(404)')) {
-                console.log('Company not found (404): ' + url);
-                const failResult = { success: false, url, message: 'Company not found', status_code: 404 };
+                console.log('Company not found (404): ' + normalizedUrl);
+                const failResult = { success: false, url: normalizedUrl, message: 'Company not found', status_code: 404 };
                 await Actor.pushData(failResult);
                 const store = await Actor.openKeyValueStore();
                 await store.setValue('OUTPUT', failResult);
@@ -133,18 +119,21 @@ async function main(): Promise<void> {
         }
 
         if (!response.success) {
-            // Handle non-success responses (including 404s from API-level response)
+            // Keep the run green when Scrappa returns a structured failure payload.
             if (response.status_code === 404) {
-                console.log('Company not found: ' + url);
-                const failResult = { success: false, url, message: response.message ?? 'Company not found', status_code: 404 };
-                await Actor.pushData(failResult);
-                const store = await Actor.openKeyValueStore();
-                await store.setValue('OUTPUT', failResult);
-                await Actor.exit();
-                return;
+                console.log('Company not found: ' + normalizedUrl);
             }
 
-            throw new Error(response.message ?? 'Failed to scrape LinkedIn company');
+            console.warn('Company scraping returned success: false' + (response.message ? ` (${response.message})` : ''));
+            const failedResult = {
+                url: normalizedUrl,
+                ...response,
+            };
+            await Actor.pushData(failedResult);
+            const store = await Actor.openKeyValueStore();
+            await store.setValue('OUTPUT', failedResult);
+            await Actor.exit();
+            return;
         }
 
         // Push company data to dataset
