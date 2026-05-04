@@ -31,7 +31,7 @@ Each TikTok profile is saved as one dataset item:
 ```json
 {
   "user_id": "107955",
-  "unique_id": "tiktok",
+  "unique_id": "@tiktok",
   "nickname": "TikTok",
   "avatar": "https://...",
   "signature": "The official TikTok account",
@@ -47,6 +47,7 @@ Each TikTok profile is saved as one dataset item:
 }
 ```
 
+The dataset item also preserves the raw nested `user` and `stats` objects returned by Scrappa.
 The full API response is saved to `OUTPUT`.
 
 ## Support
