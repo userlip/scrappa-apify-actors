@@ -23,19 +23,19 @@ jobs:
           set -euo pipefail
 
           matrix="$(
-            python3 <<'PY'
-            import json
-            from pathlib import Path
+            python3 -c '
+import json
+from pathlib import Path
 
-            actors = []
+actors = []
 
-            for package_json in sorted(Path("actors").glob("*/package.json")):
-                data = json.loads(package_json.read_text())
-                if (data.get("scripts") or {}).get("test"):
-                    actors.append({"path": str(package_json.parent)})
+for package_json in sorted(Path("actors").glob("*/package.json")):
+    data = json.loads(package_json.read_text())
+    if (data.get("scripts") or {}).get("test"):
+        actors.append({"path": str(package_json.parent)})
 
-            print(json.dumps(actors))
-            PY
+print(json.dumps(actors))
+'
           )"
 
           echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
