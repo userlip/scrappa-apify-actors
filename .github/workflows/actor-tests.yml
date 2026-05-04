@@ -1,6 +1,10 @@
 name: Actor Tests
 
 on:
+  push:
+    paths:
+      - 'actors/**'
+      - '.github/workflows/actor-tests.yml'
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
     paths:
