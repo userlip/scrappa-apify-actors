@@ -69,6 +69,14 @@ interface LinkedInCompanyResponse {
     status_code?: number;
 }
 
+type LinkedInCompanyResult = LinkedInCompanyResponse & { url?: string };
+
+async function persistActorResult(result: LinkedInCompanyResult): Promise<void> {
+    await Actor.pushData(result);
+    const store = await Actor.openKeyValueStore();
+    await store.setValue('OUTPUT', result);
+}
+
 async function main(): Promise<void> {
     await Actor.init();
 
@@ -108,9 +116,7 @@ async function main(): Promise<void> {
             if (message.includes('(404)')) {
                 console.log('Company not found (404): ' + normalizedUrl);
                 const failResult = { success: false, url: normalizedUrl, message: 'Company not found', status_code: 404 };
-                await Actor.pushData(failResult);
-                const store = await Actor.openKeyValueStore();
-                await store.setValue('OUTPUT', failResult);
+                await persistActorResult(failResult);
                 await Actor.exit();
                 return;
             }
@@ -129,20 +135,14 @@ async function main(): Promise<void> {
                 url: normalizedUrl,
                 ...response,
             };
-            await Actor.pushData(failedResult);
-            const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', failedResult);
+            await persistActorResult(failedResult);
             await Actor.exit();
             return;
         }
 
         // Push company data to dataset
-        await Actor.pushData(response);
+        await persistActorResult(response);
         console.log('Successfully scraped company: ' + (response.name ?? 'Unknown'));
-
-        // Store full response in key-value store for complete data access
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
 
         // Log summary
         console.log('LinkedIn Company scrape completed successfully');

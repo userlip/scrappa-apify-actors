@@ -1,6 +1,7 @@
 export interface LinkedInCompanyRequestInput {
     url: string;
     use_cache?: boolean;
+    // Input is deserialized from Actor.getInput(), so validate at runtime before forwarding it.
     maximum_cache_age?: unknown;
 }
 
