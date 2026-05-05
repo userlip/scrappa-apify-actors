@@ -51,6 +51,17 @@ test('rejects Maps short links because they do not contain identifiers locally',
     );
 });
 
+test('recognizes alternate Google Maps hosts without identifiers', () => {
+    assert.throws(
+        () => normalizeBusinessId('https://maps.google.com/maps/place/Googleplex/@37.4220656,-122.0862784,17z'),
+        /must contain an extractable/,
+    );
+    assert.throws(
+        () => normalizeBusinessId('https://www.google.com.au/maps/place/Googleplex/@37.4220656,-122.0862784,17z'),
+        /must contain an extractable/,
+    );
+});
+
 test('decodes repeatedly encoded URLs before extracting identifiers', () => {
     const mapsUrl = 'https://www.google.com/maps/search/?api=1&query_place_id=ChIJj61dQgK6j4AR4GeTYWZsKWw';
     const encodedTwice = encodeURIComponent(encodeURIComponent(mapsUrl));
