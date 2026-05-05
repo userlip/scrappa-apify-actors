@@ -2,56 +2,11 @@ import { Actor } from 'apify';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 import { buildJobsParams, normalizeJobsInput } from './jobs-params.js';
 import type { GoogleJobsInput } from './jobs-params.js';
-
-interface GoogleJob {
-    title: string;
-    company?: string;
-    company_name?: string;
-    location?: string;
-    via?: string;
-    description?: string;
-    extensions?: string[];
-    detected_extensions?: Record<string, unknown>;
-    job_id?: string;
-    thumbnail?: string;
-    related_links?: unknown[];
-    [key: string]: unknown;
-}
-
-interface GoogleJobsResponse {
-    jobs?: GoogleJob[];
-    jobs_results?: GoogleJob[];
-    filters?: unknown[];
-    next_page_token?: string;
-    search_information?: {
-        query_displayed?: string;
-        total_results?: number;
-    };
-    pagination?: {
-        next_page_token?: string;
-        [key: string]: unknown;
-    };
-    [key: string]: unknown;
-}
+import { getJobs, getNextPageToken } from './jobs-response.js';
+import type { GoogleJobsResponse } from './jobs-response.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
-
-function getJobs(response: GoogleJobsResponse): GoogleJob[] {
-    if (Array.isArray(response.jobs)) {
-        return response.jobs;
-    }
-
-    if (Array.isArray(response.jobs_results)) {
-        return response.jobs_results;
-    }
-
-    return [];
-}
-
-function getNextPageToken(response: GoogleJobsResponse): string | undefined {
-    return response.next_page_token ?? response.pagination?.next_page_token;
-}
 
 await Actor.init();
 
