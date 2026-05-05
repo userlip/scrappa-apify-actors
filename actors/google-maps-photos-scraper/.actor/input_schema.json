@@ -5,9 +5,9 @@
   "schemaVersion": 1,
   "properties": {
     "business_id": {
-      "title": "Business ID",
+      "title": "Business ID, Place ID, or Maps URL",
       "type": "string",
-      "description": "Google Maps business ID in format: 0x[hex]:0x[hex]",
+      "description": "Google Maps business ID in 0x[hex]:0x[hex] format, a ChIJ... Place ID, or a Google Maps URL that contains one of those identifiers.",
       "editor": "textfield",
       "prefill": "0x808fba02425dad8f:0x6c296c66619367e0"
     },
