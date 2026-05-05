@@ -2,46 +2,11 @@ import { Actor } from 'apify';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 import { buildJobsParams, normalizeJobsInput } from './jobs-params.js';
 import type { GoogleJobsInput } from './jobs-params.js';
-
-interface GoogleJob {
-    title: string;
-    company?: string;
-    company_name?: string;
-    location?: string;
-    via?: string;
-    description?: string;
-    extensions?: string[];
-    detected_extensions?: Record<string, unknown>;
-    job_id?: string;
-    thumbnail?: string;
-    related_links?: unknown[];
-    [key: string]: unknown;
-}
-
-interface GoogleJobsResponse {
-    jobs?: GoogleJob[];
-    filters?: unknown[];
-    next_page_token?: string;
-    search_information?: {
-        query_displayed?: string;
-        total_results?: number;
-    };
-    pagination?: {
-        next_page_token?: string;
-        [key: string]: unknown;
-    };
-    [key: string]: unknown;
-}
+import { getJobs, getNextPageToken } from './jobs-response.js';
+import type { GoogleJobsResponse } from './jobs-response.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
-
-function getJobs(response: GoogleJobsResponse): GoogleJob[] {
-    return Array.isArray(response.jobs) ? response.jobs : [];
-}
-
-function getNextPageToken(response: GoogleJobsResponse): string | undefined {
-    return response.next_page_token ?? response.pagination?.next_page_token;
-}
+const SCRAPPA_MAX_ATTEMPTS = 3;
 
 await Actor.init();
 
@@ -63,7 +28,9 @@ try {
     console.log(`Searching Google Jobs for: ${searchLabel}`);
 
     const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-    const response = await client.get<GoogleJobsResponse>('/google/jobs', buildJobsParams(input));
+    const response = await client.get<GoogleJobsResponse>('/google/jobs', buildJobsParams(input), {
+        attempts: SCRAPPA_MAX_ATTEMPTS,
+    });
     const jobs = getJobs(response);
 
     if (jobs.length > 0) {
@@ -91,7 +58,6 @@ try {
     const message = error instanceof ScrappaTimeoutError
         ? `${rawMessage}. The Google Jobs request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try again or refine the query.`
         : rawMessage;
-    console.error('Actor failed: ' + message);
     await Actor.fail(message);
 }
 

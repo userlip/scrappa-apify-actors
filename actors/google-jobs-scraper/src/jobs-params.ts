@@ -9,22 +9,48 @@ export interface GoogleJobsInput {
     uds?: string;
 }
 
-export const DEFAULT_JOB_SEARCH_QUERY = 'software engineer';
+export const DEFAULT_JOB_SEARCH_QUERY = 'nurse jobs in Austin';
+
+export const DEFAULT_JOB_SEARCH_INPUT: GoogleJobsInput = {
+    q: DEFAULT_JOB_SEARCH_QUERY,
+    gl: 'us',
+    hl: 'en',
+    google_domain: 'google.com',
+};
+
+const KNOWN_INPUT_KEYS = new Set<keyof GoogleJobsInput>([
+    'q',
+    'next_page_token',
+    'hl',
+    'gl',
+    'google_domain',
+    'uule',
+    'lrad',
+    'uds',
+]);
 
 export function normalizeJobsInput(input?: GoogleJobsInput | null): GoogleJobsInput {
     if (!input) {
-        return { q: DEFAULT_JOB_SEARCH_QUERY };
+        return { ...DEFAULT_JOB_SEARCH_INPUT };
     }
 
-    if (Object.keys(input).length === 0) {
-        return { q: DEFAULT_JOB_SEARCH_QUERY };
+    const normalized = trimStringFields(input);
+    const hasKnownInput = Object.entries(normalized).some(([key, value]) => {
+        return KNOWN_INPUT_KEYS.has(key as keyof GoogleJobsInput) && value !== undefined && value !== '';
+    });
+
+    if (!hasKnownInput) {
+        return { ...DEFAULT_JOB_SEARCH_INPUT };
     }
 
-    if (input.q || input.next_page_token) {
-        return input;
+    if (normalized.q || normalized.next_page_token) {
+        return normalized;
     }
 
-    return input;
+    return {
+        ...DEFAULT_JOB_SEARCH_INPUT,
+        ...normalized,
+    };
 }
 
 export function buildJobsParams(input: GoogleJobsInput): Record<string, unknown> {
@@ -47,4 +73,25 @@ export function buildJobsParams(input: GoogleJobsInput): Record<string, unknown>
     }
 
     return params;
+}
+
+function trimStringFields(input: GoogleJobsInput): GoogleJobsInput {
+    const normalized: GoogleJobsInput = {};
+
+    for (const [key, value] of Object.entries(input) as [keyof GoogleJobsInput, unknown][]) {
+        if (!KNOWN_INPUT_KEYS.has(key)) {
+            continue;
+        }
+
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (trimmed !== '') {
+                normalized[key] = trimmed as never;
+            }
+        } else if (value !== undefined && value !== null) {
+            normalized[key] = value as never;
+        }
+    }
+
+    return normalized;
 }
