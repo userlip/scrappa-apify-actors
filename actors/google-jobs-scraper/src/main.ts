@@ -58,7 +58,6 @@ try {
     const message = error instanceof ScrappaTimeoutError
         ? `${rawMessage}. The Google Jobs request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try again or refine the query.`
         : rawMessage;
-    console.error('Actor failed: ' + message);
     await Actor.fail(message);
 }
 

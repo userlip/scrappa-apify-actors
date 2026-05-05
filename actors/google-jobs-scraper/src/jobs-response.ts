@@ -38,6 +38,10 @@ export function getJobs(response: GoogleJobsResponse): GoogleJob[] {
         return response.jobs_results;
     }
 
+    if (!Array.isArray(response.jobs)) {
+        console.debug('Unexpected Google Jobs response shape: expected "jobs" or "jobs_results" array.');
+    }
+
     return Array.isArray(response.jobs) ? response.jobs : [];
 }
 

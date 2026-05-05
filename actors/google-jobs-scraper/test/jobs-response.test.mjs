@@ -23,7 +23,22 @@ test('falls back to jobs_results when jobs is empty', () => {
 
 test('returns an empty jobs array when no fallback results exist', () => {
     assert.deepEqual(getJobs({ jobs: [] }), []);
-    assert.deepEqual(getJobs({}), []);
+});
+
+test('logs unexpected response shapes before returning no jobs', () => {
+    const originalDebug = console.debug;
+    const messages = [];
+    console.debug = (message) => messages.push(message);
+
+    try {
+        assert.deepEqual(getJobs({}), []);
+    } finally {
+        console.debug = originalDebug;
+    }
+
+    assert.deepEqual(messages, [
+        'Unexpected Google Jobs response shape: expected "jobs" or "jobs_results" array.',
+    ]);
 });
 
 test('reads next page token from top-level or pagination response fields', () => {
