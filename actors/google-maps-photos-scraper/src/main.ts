@@ -105,7 +105,7 @@ try {
             const statusCode = (apiError as any)?.statusCode;
 
             if (statusCode === 404 || statusCode === 422) {
-                const error = statusCode === 404 ? 'Business not found' : 'Invalid business ID';
+                const error = statusCode === 404 ? 'Business not found' : 'Invalid input';
                 console.log(`Photos request returned ${statusCode}: ${businessId}`);
                 await Actor.pushData([{
                     success: false,

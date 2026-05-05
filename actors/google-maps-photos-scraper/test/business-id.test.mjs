@@ -44,6 +44,30 @@ test('rejects Google Maps URLs without an extractable supported identifier', () 
     );
 });
 
+test('rejects Maps short links because they do not contain identifiers locally', () => {
+    assert.throws(
+        () => normalizeBusinessId('https://maps.app.goo.gl/exampleShortCode'),
+        /must contain an extractable/,
+    );
+});
+
+test('decodes repeatedly encoded URLs before extracting identifiers', () => {
+    const mapsUrl = 'https://www.google.com/maps/search/?api=1&query_place_id=ChIJj61dQgK6j4AR4GeTYWZsKWw';
+    const encodedTwice = encodeURIComponent(encodeURIComponent(mapsUrl));
+
+    assert.deepEqual(normalizeBusinessId(encodedTwice), {
+        businessId: 'ChIJj61dQgK6j4AR4GeTYWZsKWw',
+        source: 'url',
+    });
+});
+
+test('rejects empty strings in the normalizer', () => {
+    assert.throws(
+        () => normalizeBusinessId('   '),
+        /Business ID is required/,
+    );
+});
+
 test('passes non-url values through for API validation', () => {
     assert.deepEqual(normalizeBusinessId('not-a-real-business-id'), {
         businessId: 'not-a-real-business-id',
