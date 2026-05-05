@@ -21,6 +21,22 @@ export class ScrappaTimeoutError extends Error {
     }
 }
 
+export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
+    return Math.min(1000 * Math.pow(2, failedAttempt) + jitterMs, 10000);
+}
+
+export function isRetryableScrappaError(error: unknown): boolean {
+    if (error instanceof ScrappaTimeoutError) {
+        return true;
+    }
+
+    if (!(error instanceof Error)) {
+        return false;
+    }
+
+    return /Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message);
+}
+
 export class ScrappaClient {
     private apiKey: string;
     private baseUrl: string;
@@ -66,11 +82,11 @@ export class ScrappaClient {
             } catch (error) {
                 lastError = error;
 
-                if (attempt >= attempts || !this.shouldRetry(error)) {
+                if (attempt >= attempts || !isRetryableScrappaError(error)) {
                     break;
                 }
 
-                const delayMs = 1000 * attempt;
+                const delayMs = getRetryDelayMs(attempt);
                 console.warn(`Scrappa API request failed (${this.describeError(error)}). Retrying attempt ${attempt + 1}/${attempts} in ${delayMs}ms.`);
                 await new Promise((resolve) => setTimeout(resolve, delayMs));
             }
@@ -146,18 +162,6 @@ export class ScrappaClient {
         } finally {
             clearTimeout(timeoutId);
         }
-    }
-
-    private shouldRetry(error: unknown): boolean {
-        if (error instanceof ScrappaTimeoutError) {
-            return true;
-        }
-
-        if (!(error instanceof Error)) {
-            return false;
-        }
-
-        return /Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message);
     }
 
     private describeError(error: unknown): string {

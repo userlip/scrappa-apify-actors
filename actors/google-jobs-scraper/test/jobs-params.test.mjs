@@ -37,6 +37,10 @@ test('allows next page token without query', () => {
     });
 });
 
+test('filters undefined values from Google Jobs parameters', () => {
+    assert.deepEqual(buildJobsParams({ q: undefined, gl: undefined, lrad: undefined }), {});
+});
+
 test('uses the default query when input is empty', () => {
     assert.deepEqual(normalizeJobsInput({}), DEFAULT_JOB_SEARCH_INPUT);
 });
