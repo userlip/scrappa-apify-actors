@@ -23,7 +23,7 @@ Pricing: **$0.30 per 1,000 results**. No Google Maps API key required.
 
 ## Input
 
-Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format. Google Place IDs such as `ChIJ...` are not accepted by this actor; use the Google Maps business ID format shown below.
+Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format, a Google Place ID such as `ChIJ...`, or a Google Maps URL that contains one of those identifiers. URLs copied from Google Maps sometimes include only coordinates and a place name; for those, first run Google Maps Search or Business Details and use the returned `business_id` or `place_id`.
 
 ```json
 {
@@ -37,7 +37,7 @@ Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format. Google Plac
 
 | Field | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
-| `business_id` | string | Yes | - | Google Maps business ID for the listing you want to inspect, in `0x[hex]:0x[hex]` format. |
+| `business_id` | string | Yes | - | Google Maps business ID, Place ID, or Maps URL containing one of those identifiers. |
 | `use_cache` | boolean | No | `true` | Uses cached Scrappa results when available for faster and lower-cost runs. |
 | `maximum_cache_age` | integer | No | `3600` | Controls how old cached results can be, in seconds. Set to `0` when you need the freshest available data. |
 
@@ -81,7 +81,7 @@ The actor also writes an `OUTPUT` key-value store record with:
 
 This key-value store record is a summary envelope for the run. `photos` contains the same photo objects pushed to the dataset, `total` is the number of photos returned, and `nextPage` is included when the upstream response provides pagination context.
 
-If the business ID is not found, the dataset receives a structured error item instead of an unhandled failure.
+If the business ID is not found, or if a Maps URL does not contain a supported identifier, the dataset receives a structured error item instead of an unhandled failure.
 
 ```json
 {
@@ -116,7 +116,7 @@ Caching is enabled by default because photo lists usually do not change minute b
 
 ## Tips for better results
 
-- Use exact `business_id` values from recent Google Maps discovery runs.
+- Use exact `business_id` or `place_id` values from recent Google Maps discovery runs.
 - Keep `use_cache` enabled for recurring audits, deduplication, and large enrichment jobs.
 - Disable cache only for freshness-sensitive checks, such as monitoring whether a competitor added new photos this week.
 - Use `photo_url_large` when you need higher-resolution images and `photo_url` for lightweight previews.
