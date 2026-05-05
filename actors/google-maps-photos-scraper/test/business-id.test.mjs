@@ -43,3 +43,10 @@ test('rejects Google Maps URLs without an extractable supported identifier', () 
         /must contain an extractable/,
     );
 });
+
+test('passes non-url values through for API validation', () => {
+    assert.deepEqual(normalizeBusinessId('not-a-real-business-id'), {
+        businessId: 'not-a-real-business-id',
+        source: 'business_id',
+    });
+});

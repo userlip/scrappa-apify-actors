@@ -105,13 +105,11 @@ try {
             const statusCode = (apiError as any)?.statusCode;
 
             if (statusCode === 404 || statusCode === 422) {
-                const error = statusCode === 404
-                    ? 'Business not found'
-                    : apiError instanceof Error ? apiError.message : 'Invalid business ID';
+                const error = statusCode === 404 ? 'Business not found' : 'Invalid business ID';
                 console.log(`Photos request returned ${statusCode}: ${businessId}`);
                 await Actor.pushData([{
                     success: false,
-                    business_id: businessId,
+                    business_id: input.business_id,
                     error,
                 }]);
                 const store = await Actor.openKeyValueStore();

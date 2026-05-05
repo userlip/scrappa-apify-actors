@@ -65,7 +65,6 @@ function findPlaceId(value: string): string | null {
 }
 
 function looksLikeGoogleMapsUrl(value: string): boolean {
-    return /^https?:\/\/(?:www\.)?google\.[^/]+\/maps\//i.test(value)
-        || /^https?:\/\/maps\.app\.goo\.gl\//i.test(value)
-        || /^https?:\/\/goo\.gl\/maps\//i.test(value);
+    return /^https?:\/\/(?:www\.)?google\.(?:com|[a-z]{2}(?:\.[a-z]{2})?)\/maps\//i.test(value)
+        || /^https?:\/\/maps\.app\.goo\.gl\//i.test(value);
 }
