@@ -71,12 +71,13 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-04. It lists all 39 live actors, including actors that are currently missing a matching local source directory in this repo.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-05. It lists all 40 live actors, including actors that are currently missing a matching local source directory in this repo.
 
 Current coverage in this repository:
-- 39 live actors in Apify
-- 22 local actor directories in this repo
+- 40 live actors in Apify
+- 24 local actor directories in this repo
 - 17 live actors missing a local source directory here
+- 1 live actor pending Store publication and pricing
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage |
 |---|---|---|---|---|
@@ -116,6 +117,7 @@ Current coverage in this repository:
 | `Missing locally` | `youtube-api-search-by-category` | `O1ltDU9qk4adR2x86` | Youtube API Search By Category | Live on Apify, source directory not in this repo |
 | `actors/youtube-api-search-data` | `youtube-api-search-data` | `ziD2fUoLsdzKlc6zR` | YouTube Search Data Scraper | Local source present + live on Apify |
 | `Missing locally` | `youtube-api-search-suggestions` | `oecJ81oeff1KozCtd` | Youtube API Search Suggestions | Live on Apify, source directory not in this repo |
+| `actors/youtube-transcript-scraper` | `youtube-transcript-scraper` | `ztc698cHC09lkCDYE` | YouTube Transcript Scraper | Local source present + live on Apify; pending Store publication and pricing |
 | `Missing locally` | `youtube-api-trending-videos` | `T7ddx0tgVCwMHi9ET` | Youtube API Trending Videos | Live on Apify, source directory not in this repo |
 | `Missing locally` | `youtube-api-video-chapters` | `fq5Kq9OfBRWYu9go1` | Youtube API Video Chapters | Live on Apify, source directory not in this repo |
 | `actors/youtube-api-video-comments` | `youtube-api-video-comments` | `ZT2Z352FLhgqgtMrg` | Youtube API Video Comments | Local source present + live on Apify |
