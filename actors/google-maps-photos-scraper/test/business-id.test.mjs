@@ -62,6 +62,13 @@ test('recognizes alternate Google Maps hosts without identifiers', () => {
     );
 });
 
+test('recognizes query-style Google Maps URLs without identifiers', () => {
+    assert.throws(
+        () => normalizeBusinessId('https://www.google.com/maps?cid=123456789'),
+        /must contain an extractable/,
+    );
+});
+
 test('decodes repeatedly encoded URLs before extracting identifiers', () => {
     const mapsUrl = 'https://www.google.com/maps/search/?api=1&query_place_id=ChIJj61dQgK6j4AR4GeTYWZsKWw';
     const encodedTwice = encodeURIComponent(encodeURIComponent(mapsUrl));
