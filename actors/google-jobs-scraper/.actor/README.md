@@ -14,7 +14,7 @@ Search job listings indexed by Google Jobs through the Scrappa Google Jobs API.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `q` | string | Conditionally | Job search query. Required unless `next_page_token` is provided. Defaults to `software engineer` when the actor is started with an empty input. |
+| `q` | string | Conditionally | Job search query. Required unless `next_page_token` is provided. Defaults to `nurse jobs in Austin` when the actor is started with empty or placeholder input. |
 | `next_page_token` | string | Conditionally | Token from a previous response to fetch the next page. |
 | `gl` | string | No | Two-letter country code, for example `us`, `uk`, or `de`. |
 | `hl` | string | No | Two-letter language code, for example `en`, `de`, or `es`. |
@@ -56,7 +56,7 @@ The complete Scrappa response is saved to the `OUTPUT` key, including filters an
 
 ```json
 {
-  "q": "software engineer",
+  "q": "nurse jobs in Austin",
   "gl": "us",
   "hl": "en",
   "google_domain": "google.com"

@@ -20,6 +20,7 @@ interface GoogleJob {
 
 interface GoogleJobsResponse {
     jobs?: GoogleJob[];
+    jobs_results?: GoogleJob[];
     filters?: unknown[];
     next_page_token?: string;
     search_information?: {
@@ -34,9 +35,18 @@ interface GoogleJobsResponse {
 }
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+const SCRAPPA_MAX_ATTEMPTS = 3;
 
 function getJobs(response: GoogleJobsResponse): GoogleJob[] {
-    return Array.isArray(response.jobs) ? response.jobs : [];
+    if (Array.isArray(response.jobs)) {
+        return response.jobs;
+    }
+
+    if (Array.isArray(response.jobs_results)) {
+        return response.jobs_results;
+    }
+
+    return [];
 }
 
 function getNextPageToken(response: GoogleJobsResponse): string | undefined {
@@ -63,7 +73,9 @@ try {
     console.log(`Searching Google Jobs for: ${searchLabel}`);
 
     const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-    const response = await client.get<GoogleJobsResponse>('/google/jobs', buildJobsParams(input));
+    const response = await client.get<GoogleJobsResponse>('/google/jobs', buildJobsParams(input), {
+        attempts: SCRAPPA_MAX_ATTEMPTS,
+    });
     const jobs = getJobs(response);
 
     if (jobs.length > 0) {

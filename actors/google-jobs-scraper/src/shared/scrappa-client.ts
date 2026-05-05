@@ -5,6 +5,10 @@ export interface ScrappaConfig {
     timeoutMs?: number;
 }
 
+interface ScrappaRequestOptions {
+    attempts?: number;
+}
+
 interface ScrappaError {
     message?: string;
     errors?: Record<string, string[]>;
@@ -30,15 +34,52 @@ export class ScrappaClient {
         this.timeoutMs = config.timeoutMs ?? 60000;
     }
 
-    async get<T>(endpoint: string, params: Record<string, unknown> = {}): Promise<T> {
-        return this.request<T>('GET', endpoint, params);
+    async get<T>(
+        endpoint: string,
+        params: Record<string, unknown> = {},
+        options: ScrappaRequestOptions = {}
+    ): Promise<T> {
+        return this.request<T>('GET', endpoint, params, undefined, options);
     }
 
-    async post<T>(endpoint: string, body: Record<string, unknown> = {}): Promise<T> {
-        return this.request<T>('POST', endpoint, {}, body);
+    async post<T>(
+        endpoint: string,
+        body: Record<string, unknown> = {},
+        options: ScrappaRequestOptions = {}
+    ): Promise<T> {
+        return this.request<T>('POST', endpoint, {}, body, options);
     }
 
     private async request<T>(
+        method: 'GET' | 'POST',
+        endpoint: string,
+        params: Record<string, unknown> = {},
+        body?: Record<string, unknown>,
+        options: ScrappaRequestOptions = {}
+    ): Promise<T> {
+        const attempts = Math.max(1, options.attempts ?? 1);
+        let lastError: unknown;
+
+        for (let attempt = 1; attempt <= attempts; attempt++) {
+            try {
+                return await this.send<T>(method, endpoint, params, body);
+            } catch (error) {
+                lastError = error;
+
+                if (attempt >= attempts || !this.shouldRetry(error)) {
+                    break;
+                }
+
+                const delayMs = 1000 * attempt;
+                console.warn(`Scrappa API request failed (${this.describeError(error)}). Retrying attempt ${attempt + 1}/${attempts} in ${delayMs}ms.`);
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
+            }
+        }
+
+        throw lastError;
+    }
+
+    private async send<T>(
         method: 'GET' | 'POST',
         endpoint: string,
         params: Record<string, unknown> = {},
@@ -105,6 +146,26 @@ export class ScrappaClient {
         } finally {
             clearTimeout(timeoutId);
         }
+    }
+
+    private shouldRetry(error: unknown): boolean {
+        if (error instanceof ScrappaTimeoutError) {
+            return true;
+        }
+
+        if (!(error instanceof Error)) {
+            return false;
+        }
+
+        return /Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message);
+    }
+
+    private describeError(error: unknown): string {
+        if (error instanceof Error) {
+            return error.message;
+        }
+
+        return String(error);
     }
 
     private async readErrorMessage(response: Response): Promise<string> {
