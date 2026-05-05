@@ -42,6 +42,8 @@ export function buildTranscriptUrl(input = {}) {
 
     const params = new URLSearchParams({ video_id: id });
     const language = singleValue(actorInput.language);
+    // Keep the Scrappa endpoint alias available for API callers even though
+    // the Actor UI exposes the clearer `language` field.
     const lang = singleValue(actorInput.lang);
     const hl = singleValue(actorInput.hl);
     const gl = singleValue(actorInput.gl);
