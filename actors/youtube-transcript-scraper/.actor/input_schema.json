@@ -1,0 +1,43 @@
+{
+    "title": "YouTube Transcript Scraper",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "id": {
+            "title": "YouTube Video ID",
+            "type": "string",
+            "description": "The 11-character YouTube video ID to fetch a transcript for.",
+            "editor": "textfield",
+            "prefill": "dQw4w9WgXcQ"
+        },
+        "language": {
+            "title": "Transcript Language",
+            "type": "string",
+            "description": "Preferred transcript or translation language code, such as en, es, de, or fr. Leave empty to use YouTube's default transcript.",
+            "editor": "textfield",
+            "prefill": "en"
+        },
+        "hl": {
+            "title": "Interface Language",
+            "type": "string",
+            "description": "Two-letter YouTube interface language code used for transcript metadata.",
+            "editor": "textfield",
+            "prefill": "en"
+        },
+        "gl": {
+            "title": "Country",
+            "type": "string",
+            "description": "Two-letter country code used for YouTube localization.",
+            "editor": "textfield",
+            "prefill": "US"
+        },
+        "debug": {
+            "title": "Debug",
+            "type": "boolean",
+            "description": "Include Scrappa debug metadata when available.",
+            "editor": "checkbox",
+            "default": false
+        }
+    },
+    "required": ["id"]
+}

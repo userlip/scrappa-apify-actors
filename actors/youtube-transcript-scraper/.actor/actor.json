@@ -1,0 +1,14 @@
+{
+    "actorSpecification": 1,
+    "name": "youtube-transcript-scraper",
+    "title": "YouTube Transcript Scraper",
+    "description": "Extract YouTube transcript segments and full transcript text by video ID.",
+    "version": "0.0",
+    "buildTag": "latest",
+    "input": "./input_schema.json",
+    "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
+    "dockerfile": "./Dockerfile",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}
