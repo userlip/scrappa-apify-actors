@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { Actor } from 'apify';
 import { resolveInstagramPostInput } from './input.js';
+import { flattenInstagramPostResponse } from './output.js';
 
 await Actor.init();
 
@@ -36,7 +37,7 @@ try {
         throw new Error(`Scrappa Instagram Post API returned an error response: ${getResponseMessage(data)}`);
     }
 
-    await Actor.pushData(data);
+    await Actor.pushData(flattenInstagramPostResponse(data));
 
     const store = await Actor.openKeyValueStore();
     await store.setValue('OUTPUT', data);
