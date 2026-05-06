@@ -16,7 +16,7 @@ Extract public TikTok follower lists for a creator through Scrappa. Use it for a
 |-------|------|----------|-------------|
 | `profile` | string | Yes | TikTok username with or without `@`, full profile URL, or numeric user ID. Bare numeric values are treated as user IDs; prefix numeric usernames with `@`. |
 | `count` | integer | No | Number of followers to return. Scrappa accepts `1-50`. |
-| `time` | integer | No | Follower pagination token/time marker from a previous run. Use `0` for the first page. |
+| `time` | integer | No | Follower pagination token/time marker from a previous run. Leave empty for the first page. |
 
 The actor also accepts `cursor` as a compatibility alias and sends it to Scrappa as `time`.
 
@@ -25,8 +25,7 @@ The actor also accepts `cursor` as a compatibility alias and sends it to Scrappa
 ```json
 {
   "profile": "@tiktok",
-  "count": 10,
-  "time": 0
+  "count": 10
 }
 ```
 

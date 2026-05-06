@@ -24,10 +24,9 @@
     "time": {
       "title": "Pagination Time",
       "type": "integer",
-      "description": "Follower pagination token/time marker from a previous run. Leave 0 for the first page.",
+      "description": "Follower pagination token/time marker from a previous run. Leave empty for the first page. The actor also accepts cursor as an alias when provided through API input.",
       "editor": "number",
-      "minimum": 0,
-      "default": 0
+      "minimum": 0
     }
   },
   "required": ["profile"]
