@@ -70,6 +70,8 @@ test('transforms Indeed fallback results to Google Jobs dataset shape', () => {
     assert.equal(response.jobs_results?.[0].company_name, 'Example Health');
     assert.equal(response.jobs_results?.[0].via, 'Indeed');
     assert.equal(response.jobs_results?.[0].description, 'Care for patients & coordinate shifts.');
+    assert.equal(response.jobs_results?.[0].link, 'https://example.com/apply');
+    assert.equal(response.jobs_results?.[0].share_link, undefined);
     assert.deepEqual(response.jobs_results?.[0].extensions, ['2026-05-01', 'Full-time', 'Day shift']);
 });
 

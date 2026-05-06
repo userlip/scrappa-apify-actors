@@ -149,7 +149,6 @@ function transformIndeedJob(job: IndeedJob, index: number): GoogleJob {
         via: 'Indeed',
         description: getDescription(job),
         link,
-        share_link: link,
         job_id: jobId,
         extensions: buildExtensions(job),
         detected_extensions: {
