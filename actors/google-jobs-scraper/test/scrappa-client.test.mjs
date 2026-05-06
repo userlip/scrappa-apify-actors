@@ -19,6 +19,18 @@ test('classifies transient Scrappa errors as retryable', () => {
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (429): Too Many Requests')), true);
 });
 
+test('allows Scrappa timeout errors to preserve contextual messages', () => {
+    const cause = new ScrappaTimeoutError(60000);
+    const error = new ScrappaTimeoutError(60000, {
+        cause,
+        message: 'Google Jobs failed, and Indeed fallback also failed: timeout',
+    });
+
+    assert.equal(error.message, 'Google Jobs failed, and Indeed fallback also failed: timeout');
+    assert.equal(error.cause, cause);
+    assert.equal(isRetryableScrappaError(error), true);
+});
+
 test('does not retry validation or unknown errors', () => {
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (400): Bad Request')), false);
     assert.equal(isRetryableScrappaError(new Error('Network failed')), false);

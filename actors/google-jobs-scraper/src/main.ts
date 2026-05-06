@@ -1,12 +1,14 @@
 import { Actor } from 'apify';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient, ScrappaTimeoutError, isRetryableScrappaError } from './shared/index.js';
 import { buildJobsParams, normalizeJobsInput } from './jobs-params.js';
 import type { GoogleJobsInput } from './jobs-params.js';
 import { getJobs, getNextPageToken } from './jobs-response.js';
 import type { GoogleJobsResponse } from './jobs-response.js';
+import { buildIndeedFallbackParams, transformIndeedFallbackResponse } from './jobs-fallback.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
+const SCRAPPA_FALLBACK_ATTEMPTS = 2;
 
 await Actor.init();
 
@@ -28,9 +30,7 @@ try {
     console.log(`Searching Google Jobs for: ${searchLabel}`);
 
     const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-    const response = await client.get<GoogleJobsResponse>('/google/jobs', buildJobsParams(input), {
-        attempts: SCRAPPA_MAX_ATTEMPTS,
-    });
+    const response = await getJobsResponse(client, input);
     const jobs = getJobs(response);
 
     if (jobs.length > 0) {
@@ -62,3 +62,37 @@ try {
 }
 
 await Actor.exit();
+
+async function getJobsResponse(client: ScrappaClient, input: GoogleJobsInput): Promise<GoogleJobsResponse> {
+    try {
+        return await client.get<GoogleJobsResponse>('/google/jobs', buildJobsParams(input), {
+            attempts: SCRAPPA_MAX_ATTEMPTS,
+        });
+    } catch (error) {
+        if (input.next_page_token || !isRetryableScrappaError(error)) {
+            throw error;
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`Google Jobs request failed after retries (${message}). Falling back to Scrappa Indeed jobs for this search.`);
+
+        let fallbackResponse: Record<string, unknown>;
+        try {
+            fallbackResponse = await client.get<Record<string, unknown>>('/indeed/jobs', buildIndeedFallbackParams(input), {
+                attempts: SCRAPPA_FALLBACK_ATTEMPTS,
+            });
+        } catch (fallbackError) {
+            const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+            const combinedMessage = `Google Jobs failed (${message}), and Indeed fallback also failed: ${fallbackMessage}`;
+            if (fallbackError instanceof ScrappaTimeoutError) {
+                throw new ScrappaTimeoutError(SCRAPPA_REQUEST_TIMEOUT_MS, {
+                    cause: fallbackError,
+                    message: combinedMessage,
+                });
+            }
+            throw new Error(combinedMessage, { cause: fallbackError });
+        }
+
+        return transformIndeedFallbackResponse(fallbackResponse, input, message);
+    }
+}
