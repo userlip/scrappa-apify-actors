@@ -83,7 +83,14 @@ async function getJobsResponse(client: ScrappaClient, input: GoogleJobsInput): P
             });
         } catch (fallbackError) {
             const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
-            throw new Error(`Google Jobs failed (${message}), and Indeed fallback also failed: ${fallbackMessage}`);
+            const combinedMessage = `Google Jobs failed (${message}), and Indeed fallback also failed: ${fallbackMessage}`;
+            if (fallbackError instanceof ScrappaTimeoutError) {
+                throw new ScrappaTimeoutError(SCRAPPA_REQUEST_TIMEOUT_MS, {
+                    cause: fallbackError,
+                    message: combinedMessage,
+                });
+            }
+            throw new Error(combinedMessage, { cause: fallbackError });
         }
 
         return transformIndeedFallbackResponse(fallbackResponse, input, message);
