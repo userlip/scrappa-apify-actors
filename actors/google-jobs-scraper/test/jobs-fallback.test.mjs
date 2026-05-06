@@ -155,3 +155,39 @@ test('strips HTML and decodes common entities in fallback descriptions', () => {
 
     assert.equal(response.jobs_results?.[0].description, 'Use <care> & coordinate "shifts" \'daily\'.');
 });
+
+test('prefers plain fallback descriptions over HTML descriptions', () => {
+    const response = transformIndeedFallbackResponse(
+        {
+            jobs: [
+                {
+                    title: 'Nurse',
+                    description: 'Plain description wins.',
+                    description_html: '<p>HTML description loses.</p>',
+                },
+            ],
+        },
+        { q: 'nurse jobs' },
+        'timeout'
+    );
+
+    assert.equal(response.jobs_results?.[0].description, 'Plain description wins.');
+});
+
+test('filters empty and non-string fallback attributes from extensions', () => {
+    const response = transformIndeedFallbackResponse(
+        {
+            jobs: [
+                {
+                    title: 'Nurse',
+                    date_published: '',
+                    attributes: ['Full-time', '', null, 42, 'Day shift'],
+                },
+            ],
+        },
+        { q: 'nurse jobs' },
+        'timeout'
+    );
+
+    assert.deepEqual(response.jobs_results?.[0].extensions, ['Full-time', 'Day shift']);
+});
