@@ -1,5 +1,5 @@
 {
-    "title": "Youtube API Channel Podcasts",
+    "title": "Youtube API Channel Videos",
     "type": "object",
     "schemaVersion": 1,
     "properties": {
@@ -16,16 +16,13 @@
             "description": "Pagination token for next page",
             "editor": "textfield"
         },
-         "sort": {
-            "title": "sort",
-            "type": "array",
+        "sort": {
+            "title": "Sort",
+            "type": "string",
             "description": "Sort by (newest, popular, oldest)",
             "editor": "select",
-            "items": {
-                "type": "string",
-                "enum": ["newest","popular","oldest"]
-            },
-            "prefill": ["newest"]
+            "enum": ["newest", "popular", "oldest"],
+            "prefill": "newest"
         }
     },
     "required": ["id"]

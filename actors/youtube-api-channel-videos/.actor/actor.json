@@ -1,12 +1,13 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-channel-videos",
-    "title": "Scrape single page in JavaScript",
-    "description": "Scrape data from single page with provided URL.",
+    "title": "YouTube Channel Videos Scraper",
+    "description": "Fetch uploaded videos for a YouTube channel by channel ID, sort order, and continuation token.",
     "version": "0.0",
-    "meta": {
-        "templateId": "js-start"
-    },
+    "buildTag": "latest",
     "input": "./input_schema.json",
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "./Dockerfile",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
 }

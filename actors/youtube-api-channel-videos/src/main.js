@@ -1,55 +1,46 @@
 import { Actor } from 'apify';
-import axios from 'axios';
+import { buildChannelVideosUrl } from './channel-videos-url.js';
 
-async function getChannelVideos(id, sort, continuation = '') {
-    // Validate that the required query parameter is present.
-    if (!id) {
-        throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');
-    }
-    
-    // Construct the base API URL with required parameters
-    let apiUrl = `https://ytapi.scrappa.co/channels/videos?id=${encodeURIComponent(id)}`;
-    
-    // Add optional parameters only if they have valid values
-    if (sort && typeof sort === 'string' && sort.trim() !== '') {
-        apiUrl += `&sort=${encodeURIComponent(sort)}`;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+
+function errorMessage(error) {
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    if (rawMessage.includes('aborted')) {
+        return `Scrappa API request timed out after ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s`;
     }
 
-    if (continuation && typeof continuation === 'string' && continuation.trim() !== '') {
-        apiUrl += `&continuation=${encodeURIComponent(continuation)}`;
+    return rawMessage;
+}
+
+async function getChannelVideos(input) {
+    const apiUrl = buildChannelVideosUrl(input);
+
+    console.log(`Fetching from: ${apiUrl}`);
+    const response = await fetch(apiUrl, {
+        signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+        throw new Error(`Scrappa API request failed with ${response.status} ${response.statusText}`);
     }
 
-    try {
-        console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl);
-        const data = response.data.videos;
-        
-        // Save the fetched data to the default dataset.
-        await Actor.pushData(data);
-        console.log(`Successfully fetched ${data.length} videos for query: ${id}`);
-        
-        // Log if there's a continuation token for next page
-        if (response.data.continuation) {
-            console.log(`Continuation token available for next page: ${response.data.continuation}`);
-        }
-    } catch (error) {
-        console.log()
-        console.error(`Failed to fetch videos for query: ${id}`, error.message);
-        throw error;
+    const responseData = await response.json();
+    const videos = responseData?.videos ?? [];
+
+    await Actor.pushData(videos);
+    console.log(`Successfully fetched ${videos.length} videos for channel id: ${input.id}`);
+
+    if (responseData?.continuation) {
+        console.log(`Continuation token available for next page: ${responseData.continuation}`);
     }
 }
 
-// Main Actor logic
 Actor.main(async () => {
-    // The init() call configures the Actor for its environment.
-    await Actor.init();
-
-    const input = await Actor.getInput();
-    const { id, sort, continuation } = input;
-
-    // Directly call the function with the input, as there is only one possible task.
-    await getChannelVideos(id, sort, continuation);
-
-    // Gracefully exit the Actor process.
-    await Actor.exit();
+    try {
+        const input = (await Actor.getInput()) ?? {};
+        await getChannelVideos(input);
+    } catch (error) {
+        const message = errorMessage(error);
+        console.error(`Failed to fetch YouTube channel videos: ${message}`);
+        await Actor.fail(message);
+    }
 });

@@ -3,9 +3,6 @@
 # You can also use any other image from Docker Hub.
 FROM apify/actor-node:22
 
-# Check preinstalled packages
-RUN npm ls crawlee apify puppeteer playwright
-
 # Copy just package.json and package-lock.json
 # to speed up the build using Docker layer cache.
 COPY --chown=myuser:myuser package*.json ./
@@ -14,9 +11,7 @@ COPY --chown=myuser:myuser package*.json ./
 # keep the image small. Avoid logging too much and print the dependency
 # tree for debugging
 RUN npm --quiet set progress=false \
-    && npm install --omit=dev --omit=optional \
-    && echo "Installed NPM packages:" \
-    && (npm list --omit=dev --all || true) \
+    && npm ci --omit=dev --omit=optional \
     && echo "Node.js version:" \
     && node --version \
     && echo "NPM version:" \
