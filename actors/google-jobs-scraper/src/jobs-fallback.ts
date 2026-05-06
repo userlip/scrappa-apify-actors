@@ -95,7 +95,9 @@ export function transformIndeedFallbackResponse(
 }
 
 function isIndeedJobsResponse(response: unknown): response is IndeedJobsResponse {
-    return response !== null && typeof response === 'object';
+    return response !== null
+        && typeof response === 'object'
+        && ('success' in response || 'jobs' in response || 'data' in response);
 }
 
 function parseJobsQuery(query: string): { query: string; location?: string } {
@@ -185,6 +187,8 @@ function getDescription(job: IndeedJob): string {
         .replace(/<[^>]+>/g, ' ')
         .replace(/&nbsp;/g, ' ')
         .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
         .replace(/&#039;|&apos;/g, "'")
         .replace(/&quot;/g, '"')
         .replace(/\s+/g, ' ')

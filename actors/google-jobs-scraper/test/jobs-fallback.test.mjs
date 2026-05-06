@@ -72,3 +72,51 @@ test('transforms Indeed fallback results to Google Jobs dataset shape', () => {
     assert.equal(response.jobs_results?.[0].description, 'Care for patients & coordinate shifts.');
     assert.deepEqual(response.jobs_results?.[0].extensions, ['2026-05-01', 'Full-time', 'Day shift']);
 });
+
+test('transforms top-level Indeed fallback response shape', () => {
+    const response = transformIndeedFallbackResponse(
+        {
+            jobs: [
+                {
+                    id: 'top-level-job',
+                    title: 'Clinic RN',
+                    company: 'Example Clinic',
+                    location: 'Austin, TX',
+                    description: 'Direct patient care',
+                },
+            ],
+        },
+        { q: 'rn jobs in Austin' },
+        'Scrappa API error (502): Bad Gateway'
+    );
+
+    assert.equal(response.search_information?.total_results, 1);
+    assert.equal(response.jobs_results?.[0].job_id, 'top-level-job');
+    assert.equal(response.jobs_results?.[0].company_name, 'Example Clinic');
+    assert.equal(response.jobs_results?.[0].description, 'Direct patient care');
+});
+
+test('returns empty fallback results for non-object responses', () => {
+    const response = transformIndeedFallbackResponse(null, { q: 'nurse jobs in Austin' }, 'timeout');
+
+    assert.deepEqual(response.jobs_results, []);
+    assert.equal(response.search_information?.total_results, 0);
+    assert.equal(response.fallback_reason, 'timeout');
+});
+
+test('strips HTML and decodes common entities in fallback descriptions', () => {
+    const response = transformIndeedFallbackResponse(
+        {
+            jobs: [
+                {
+                    title: 'Nurse',
+                    description_html: '<div>Use &lt;care&gt; &amp; coordinate &quot;shifts&quot; &apos;daily&apos;.</div>',
+                },
+            ],
+        },
+        { q: 'nurse jobs' },
+        'timeout'
+    );
+
+    assert.equal(response.jobs_results?.[0].description, 'Use <care> & coordinate "shifts" \'daily\'.');
+});

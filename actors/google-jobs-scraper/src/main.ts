@@ -8,6 +8,7 @@ import { buildIndeedFallbackParams, transformIndeedFallbackResponse } from './jo
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
+const SCRAPPA_FALLBACK_ATTEMPTS = 2;
 
 await Actor.init();
 
@@ -75,8 +76,8 @@ async function getJobsResponse(client: ScrappaClient, input: GoogleJobsInput): P
         const message = error instanceof Error ? error.message : String(error);
         console.warn(`Google Jobs request failed after retries (${message}). Falling back to Scrappa Indeed jobs for this search.`);
 
-        const fallbackResponse = await client.get('/indeed/jobs', buildIndeedFallbackParams(input), {
-            attempts: 2,
+        const fallbackResponse = await client.get<Record<string, unknown>>('/indeed/jobs', buildIndeedFallbackParams(input), {
+            attempts: SCRAPPA_FALLBACK_ATTEMPTS,
         });
 
         return transformIndeedFallbackResponse(fallbackResponse, input, message);
