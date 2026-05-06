@@ -7,24 +7,14 @@ export interface TikTokFollowersInput {
     cursor?: unknown;
 }
 
+type TikTokLookup = {
+    key: 'unique_id' | 'user_id';
+    value: string;
+    logValue: string;
+};
+
 export function formatTikTokFollowersLookupForLog(input: TikTokFollowersInput): string {
-    const profile = typeof input.profile === 'string' ? input.profile.trim() : '';
-    const uniqueId = typeof input.unique_id === 'string' ? input.unique_id.trim() : '';
-    const userId = typeof input.user_id === 'string' ? input.user_id.trim() : '';
-
-    if (profile !== '') {
-        return normalizeTikTokProfileLookup(profile).logValue;
-    }
-
-    if (uniqueId !== '') {
-        return normalizeTikTokUniqueId(uniqueId);
-    }
-
-    if (userId !== '') {
-        return `user_id:${userId}`;
-    }
-
-    return 'unknown TikTok profile';
+    return resolveTikTokFollowersLookup(input)?.logValue ?? 'unknown TikTok profile';
 }
 
 export function normalizeTikTokUniqueId(value: string): string {
@@ -75,7 +65,7 @@ function normalizeTikTokUsername(value: string): string {
     return `@${username}`;
 }
 
-function normalizeTikTokProfileLookup(value: string): { key: 'unique_id' | 'user_id'; value: string; logValue: string } {
+function normalizeTikTokProfileLookup(value: string): TikTokLookup {
     const trimmed = value.trim();
     if (/^\d+$/.test(trimmed)) {
         const userId = normalizeTikTokUserId(trimmed);
@@ -84,6 +74,40 @@ function normalizeTikTokProfileLookup(value: string): { key: 'unique_id' | 'user
 
     const uniqueId = normalizeTikTokUniqueId(trimmed);
     return { key: 'unique_id', value: uniqueId, logValue: uniqueId };
+}
+
+function resolveTikTokFollowersLookup(
+    input: TikTokFollowersInput,
+    warn?: (message: string) => void,
+): TikTokLookup | null {
+    if (typeof input.profile === 'string') {
+        const profile = input.profile.trim();
+        if (profile !== '') {
+            return normalizeTikTokProfileLookup(profile);
+        }
+    } else if (input.profile !== undefined && input.profile !== null && input.profile !== '') {
+        warn?.(`profile must be a string, got ${typeof input.profile}.`);
+    }
+
+    if (typeof input.unique_id === 'string') {
+        const uniqueId = normalizeTikTokUniqueId(input.unique_id);
+        if (uniqueId !== '') {
+            return { key: 'unique_id', value: uniqueId, logValue: uniqueId };
+        }
+    } else if (input.unique_id !== undefined && input.unique_id !== null && input.unique_id !== '') {
+        warn?.(`unique_id must be a string, got ${typeof input.unique_id}.`);
+    }
+
+    if (typeof input.user_id === 'string') {
+        const userId = normalizeTikTokUserId(input.user_id);
+        if (userId !== '') {
+            return { key: 'user_id', value: userId, logValue: `user_id:${userId}` };
+        }
+    } else if (input.user_id !== undefined && input.user_id !== null && input.user_id !== '') {
+        warn?.(`user_id must be a string, got ${typeof input.user_id}.`);
+    }
+
+    return null;
 }
 
 function normalizeTikTokUserId(value: string): string {
@@ -106,34 +130,9 @@ export function buildTikTokFollowersParams(
 ): Record<string, unknown> {
     const params: Record<string, unknown> = {};
 
-    if (typeof input.profile === 'string') {
-        const profile = input.profile.trim();
-        if (profile !== '') {
-            const lookup = normalizeTikTokProfileLookup(profile);
-            params[lookup.key] = lookup.value;
-        }
-    } else if (input.profile !== undefined && input.profile !== null && input.profile !== '') {
-        warn(`profile must be a string, got ${typeof input.profile}.`);
-    }
-
-    const hasLookup = () => Boolean(params.unique_id || params.user_id);
-
-    if (!hasLookup() && typeof input.unique_id === 'string') {
-        const uniqueId = normalizeTikTokUniqueId(input.unique_id);
-        if (uniqueId !== '') {
-            params.unique_id = uniqueId;
-        }
-    } else if (!hasLookup() && input.unique_id !== undefined && input.unique_id !== null && input.unique_id !== '') {
-        warn(`unique_id must be a string, got ${typeof input.unique_id}.`);
-    }
-
-    if (!hasLookup() && typeof input.user_id === 'string') {
-        const userId = normalizeTikTokUserId(input.user_id);
-        if (userId !== '') {
-            params.user_id = userId;
-        }
-    } else if (!hasLookup() && input.user_id !== undefined && input.user_id !== null && input.user_id !== '') {
-        warn(`user_id must be a string, got ${typeof input.user_id}.`);
+    const lookup = resolveTikTokFollowersLookup(input, warn);
+    if (lookup) {
+        params[lookup.key] = lookup.value;
     }
 
     if (input.count !== undefined) {
@@ -171,7 +170,7 @@ export function buildTikTokFollowersParams(
         warn(`${paginationField} must be a non-negative integer or digit string, got ${typeof paginationValue}. Starting from the first page.`);
     }
 
-    if (!params.unique_id && !params.user_id) {
+    if (!lookup) {
         throw new Error('TikTok unique_id or user_id is required');
     }
 
