@@ -34,6 +34,17 @@ test('extractPagination supports snake-case has_more', () => {
     );
 });
 
+test('extractPagination falls back to min_time and max_time pagination markers', () => {
+    assert.deepEqual(
+        extractPagination({ has_more: true, min_time: '1711111111', max_time: '1711112222' }),
+        { hasNextPage: true, nextTime: '1711111111' },
+    );
+    assert.deepEqual(
+        extractPagination({ hasMore: true, max_time: 1711112222 }),
+        { hasNextPage: true, nextTime: 1711112222 },
+    );
+});
+
 test('extractPagination handles array or null response data', () => {
     assert.deepEqual(extractPagination([{ user_id: '1' }]), { hasNextPage: false, nextTime: null });
     assert.deepEqual(extractPagination(null), { hasNextPage: false, nextTime: null });

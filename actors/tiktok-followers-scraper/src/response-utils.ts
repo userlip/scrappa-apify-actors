@@ -15,6 +15,8 @@ export interface TikTokFollowersData {
     hasMore?: boolean;
     has_more?: boolean;
     time?: string | number | null;
+    min_time?: string | number | null;
+    max_time?: string | number | null;
     [key: string]: unknown;
 }
 
@@ -63,6 +65,6 @@ export function extractPagination(data: TikTokFollowersResponse['data']): {
 
     return {
         hasNextPage: Boolean(data.hasMore ?? data.has_more ?? false),
-        nextTime: data.time ?? null,
+        nextTime: data.time ?? data.min_time ?? data.max_time ?? null,
     };
 }
