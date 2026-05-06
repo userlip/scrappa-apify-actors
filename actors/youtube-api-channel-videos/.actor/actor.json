@@ -1,0 +1,13 @@
+{
+    "actorSpecification": 1,
+    "name": "youtube-api-channel-videos",
+    "title": "YouTube Channel Videos Scraper",
+    "description": "Fetch uploaded videos for a YouTube channel by channel ID, sort order, and continuation token.",
+    "version": "0.0",
+    "buildTag": "latest",
+    "input": "./input_schema.json",
+    "dockerfile": "./Dockerfile",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}
