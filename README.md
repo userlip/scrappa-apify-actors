@@ -71,11 +71,11 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-05. It lists all 40 live actors, including actors that are currently missing a matching local source directory in this repo.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-06. It lists all 41 live actors, including actors that are currently missing a matching local source directory in this repo.
 
 Current coverage in this repository:
-- 40 live actors in Apify
-- 24 local actor directories in this repo
+- 41 live actors in Apify
+- 25 local actor directories in this repo
 - 17 live actors missing a local source directory here
 - 1 live actor pending Store publication and pricing
 
@@ -98,6 +98,7 @@ Current coverage in this repository:
 | `actors/linkedin-profile-scraper` | `linkedin-profile-scraper` | `87AaxKjjQrK0F0g60` | LinkedIn Profile Scraper - $0.30/1k results | Local source present + live on Apify |
 | `actors/scrappa-google-search` | `scrappa-google-search` | `8ejIZ0nfRPShvWBSP` | Scrappa Google Search | Local source present + live on Apify |
 | `actors/tiktok-comments-scraper` | `tiktok-comments-scraper` | `oaJANlheGg9o3EZjU` | Tiktok Comments Scraper | Local source present + live on Apify |
+| `actors/tiktok-followers-scraper` | `tiktok-followers-scraper` | `1WE6uJzTx1DbS5u39` | TikTok Followers Scraper | Local source present + live on Apify |
 | `actors/tiktok-profile-scraper` | `tiktok-profile-scraper` | `ElkkSkWZ7xAaOqsr4` | Tiktok Profile Scraper | Local source present + live on Apify |
 | `actors/youtube-api-batch-videos` | `youtube-api-batch-videos` | `6ZUj6u4SWuJxOQnn9` | Youtube API Batch Videos | Local source present + live on Apify |
 | `Missing locally` | `youtube-api-channel-podcasts` | `Y3mKYlGNhsrBE7aZO` | Youtube Api Channel Podcasts | Live on Apify, source directory not in this repo |
