@@ -76,9 +76,15 @@ async function getJobsResponse(client: ScrappaClient, input: GoogleJobsInput): P
         const message = error instanceof Error ? error.message : String(error);
         console.warn(`Google Jobs request failed after retries (${message}). Falling back to Scrappa Indeed jobs for this search.`);
 
-        const fallbackResponse = await client.get<Record<string, unknown>>('/indeed/jobs', buildIndeedFallbackParams(input), {
-            attempts: SCRAPPA_FALLBACK_ATTEMPTS,
-        });
+        let fallbackResponse: Record<string, unknown>;
+        try {
+            fallbackResponse = await client.get<Record<string, unknown>>('/indeed/jobs', buildIndeedFallbackParams(input), {
+                attempts: SCRAPPA_FALLBACK_ATTEMPTS,
+            });
+        } catch (fallbackError) {
+            const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+            throw new Error(`Google Jobs failed (${message}), and Indeed fallback also failed: ${fallbackMessage}`);
+        }
 
         return transformIndeedFallbackResponse(fallbackResponse, input, message);
     }

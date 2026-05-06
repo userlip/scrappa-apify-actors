@@ -1,4 +1,5 @@
 export interface GoogleJob {
+    position?: number;
     title: string;
     company?: string;
     company_name?: string;

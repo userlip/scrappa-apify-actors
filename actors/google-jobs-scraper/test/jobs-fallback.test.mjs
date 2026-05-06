@@ -65,7 +65,7 @@ test('transforms Indeed fallback results to Google Jobs dataset shape', () => {
     assert.equal(response.service_used, 'indeed');
     assert.equal(response.fallback_from, 'google_jobs');
     assert.equal(response.search_information?.total_results, 1);
-    assert.deepEqual(response.pagination, { next_cursor: 'cursor' });
+    assert.deepEqual(response.pagination, { next_cursor: 'cursor', next_page_token: 'cursor' });
     assert.equal(response.jobs_results?.[0].title, 'Registered Nurse');
     assert.equal(response.jobs_results?.[0].company_name, 'Example Health');
     assert.equal(response.jobs_results?.[0].via, 'Indeed');
@@ -96,12 +96,46 @@ test('transforms top-level Indeed fallback response shape', () => {
     assert.equal(response.jobs_results?.[0].description, 'Direct patient care');
 });
 
+test('maps Indeed fallback next cursor to Google Jobs next page token', () => {
+    const response = transformIndeedFallbackResponse(
+        {
+            data: {
+                jobs: [],
+                pagination: {
+                    next_cursor: 'indeed-cursor',
+                    page: 1,
+                },
+            },
+        },
+        { q: 'rn jobs in Austin' },
+        'Scrappa API error (504): Gateway Timeout'
+    );
+
+    assert.equal(response.next_page_token, 'indeed-cursor');
+    assert.deepEqual(response.pagination, {
+        next_cursor: 'indeed-cursor',
+        next_page_token: 'indeed-cursor',
+        page: 1,
+    });
+});
+
 test('returns empty fallback results for non-object responses', () => {
     const response = transformIndeedFallbackResponse(null, { q: 'nurse jobs in Austin' }, 'timeout');
 
     assert.deepEqual(response.jobs_results, []);
     assert.equal(response.search_information?.total_results, 0);
     assert.equal(response.fallback_reason, 'timeout');
+});
+
+test('treats unsuccessful Indeed wrapper without data as empty fallback response', () => {
+    const response = transformIndeedFallbackResponse(
+        { success: false, message: 'upstream failed' },
+        { q: 'nurse jobs in Austin' },
+        'timeout'
+    );
+
+    assert.deepEqual(response.jobs_results, []);
+    assert.equal(response.metadata, undefined);
 });
 
 test('strips HTML and decodes common entities in fallback descriptions', () => {

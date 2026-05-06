@@ -77,6 +77,7 @@ export function transformIndeedFallbackResponse(
     const payload = fallbackResponse.data ?? fallbackResponse;
     const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
     const transformedJobs = jobs.map((job, index) => transformIndeedJob(job, index));
+    const pagination = normalizePagination(payload.pagination);
 
     return {
         jobs_results: transformedJobs,
@@ -86,7 +87,8 @@ export function transformIndeedFallbackResponse(
             query_displayed: input.q,
             total_results: transformedJobs.length,
         },
-        pagination: payload.pagination,
+        pagination,
+        next_page_token: pagination?.next_page_token,
         metadata: payload.metadata,
         service_used: 'indeed',
         fallback_from: 'google_jobs',
@@ -97,7 +99,25 @@ export function transformIndeedFallbackResponse(
 function isIndeedJobsResponse(response: unknown): response is IndeedJobsResponse {
     return response !== null
         && typeof response === 'object'
-        && ('success' in response || 'jobs' in response || 'data' in response);
+        && (
+            'data' in response
+            || Array.isArray((response as Record<string, unknown>).jobs)
+        );
+}
+
+function normalizePagination(pagination: unknown): GoogleJobsResponse['pagination'] | undefined {
+    if (!pagination || typeof pagination !== 'object') {
+        return undefined;
+    }
+
+    const normalized = { ...(pagination as Record<string, unknown>) };
+    const nextPageToken = getStringValue(normalized.next_page_token) ?? getStringValue(normalized.next_cursor);
+
+    if (nextPageToken) {
+        normalized.next_page_token = nextPageToken;
+    }
+
+    return normalized;
 }
 
 function parseJobsQuery(query: string): { query: string; location?: string } {
@@ -172,6 +192,10 @@ function getLocation(location: IndeedJob['location']): string {
     return [location.city, location.state, location.country]
         .filter((part): part is string => typeof part === 'string' && part.trim() !== '')
         .join(', ');
+}
+
+function getStringValue(value: unknown): string | undefined {
+    return typeof value === 'string' && value.trim() ? value : undefined;
 }
 
 function getDescription(job: IndeedJob): string {
