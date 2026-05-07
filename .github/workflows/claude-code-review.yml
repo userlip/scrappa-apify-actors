@@ -88,9 +88,25 @@ jobs:
           effort_level="$(jq -er '.effort_level // ""' <<< "$broker_response")"
           base_url="$(jq -er '.base_url // ""' <<< "$broker_response")"
           display_name="$(jq -er '.display_name // ""' <<< "$broker_response")"
+          backup_token="$(jq -er '.backup.token // ""' <<< "$broker_response")"
+          backup_token_type="$(jq -er '.backup.token_type // ""' <<< "$broker_response")"
+          backup_backend="$(jq -er '.backup.backend // ""' <<< "$broker_response")"
+          backup_model="$(jq -er '.backup.model // ""' <<< "$broker_response")"
+          backup_default_opus_model="$(jq -er '.backup.default_opus_model // ""' <<< "$broker_response")"
+          backup_default_sonnet_model="$(jq -er '.backup.default_sonnet_model // ""' <<< "$broker_response")"
+          backup_default_haiku_model="$(jq -er '.backup.default_haiku_model // ""' <<< "$broker_response")"
+          backup_subagent_model="$(jq -er '.backup.subagent_model // ""' <<< "$broker_response")"
+          backup_effort_level="$(jq -er '.backup.effort_level // ""' <<< "$broker_response")"
+          backup_base_url="$(jq -er '.backup.base_url // ""' <<< "$broker_response")"
+          backup_display_name="$(jq -er '.backup.display_name // ""' <<< "$broker_response")"
 
           if [[ "$token_type" != "CLAUDE_CODE_OAUTH_TOKEN" && "$token_type" != "ANTHROPIC_API_KEY" ]]; then
             echo "::error::Unsupported AI backend token type: $token_type"
+            exit 1
+          fi
+
+          if [[ -n "$backup_token_type" && "$backup_token_type" != "CLAUDE_CODE_OAUTH_TOKEN" && "$backup_token_type" != "ANTHROPIC_API_KEY" ]]; then
+            echo "::error::Unsupported backup AI backend token type: $backup_token_type"
             exit 1
           fi
 
@@ -109,14 +125,28 @@ jobs:
           validate_model_identifier "$default_sonnet_model" "ANTHROPIC_DEFAULT_SONNET_MODEL"
           validate_model_identifier "$default_haiku_model" "ANTHROPIC_DEFAULT_HAIKU_MODEL"
           validate_model_identifier "$subagent_model" "CLAUDE_CODE_SUBAGENT_MODEL"
+          validate_model_identifier "$backup_model" "BACKUP_ANTHROPIC_MODEL"
+          validate_model_identifier "$backup_default_opus_model" "BACKUP_ANTHROPIC_DEFAULT_OPUS_MODEL"
+          validate_model_identifier "$backup_default_sonnet_model" "BACKUP_ANTHROPIC_DEFAULT_SONNET_MODEL"
+          validate_model_identifier "$backup_default_haiku_model" "BACKUP_ANTHROPIC_DEFAULT_HAIKU_MODEL"
+          validate_model_identifier "$backup_subagent_model" "BACKUP_CLAUDE_CODE_SUBAGENT_MODEL"
 
           if [[ -n "$effort_level" && ! "$effort_level" =~ ^(minimal|low|medium|high|max)$ ]]; then
             echo "::error::Unsupported Claude Code effort level: $effort_level"
             exit 1
           fi
 
+          if [[ -n "$backup_effort_level" && ! "$backup_effort_level" =~ ^(minimal|low|medium|high|max)$ ]]; then
+            echo "::error::Unsupported backup Claude Code effort level: $backup_effort_level"
+            exit 1
+          fi
+
           echo "::add-mask::${token}"
+          [[ -n "$backup_token" ]] && echo "::add-mask::${backup_token}"
           echo "::notice::Claude Code backend: ${display_name:-$backend} (${token_type}), model: ${model:-default}, base URL: ${base_url:-default}"
+          if [[ -n "$backup_token" ]]; then
+            echo "::notice::Backup Claude Code backend: ${backup_display_name:-$backup_backend} (${backup_token_type}), model: ${backup_model:-default}, base URL: ${backup_base_url:-default}"
+          fi
           {
             echo "token=${token}"
             echo "token_type=${token_type}"
@@ -128,10 +158,25 @@ jobs:
             echo "default_haiku_model=${default_haiku_model}"
             echo "subagent_model=${subagent_model}"
             echo "effort_level=${effort_level}"
+            echo "backup_token=${backup_token}"
+            echo "backup_token_type=${backup_token_type}"
+            echo "backup_backend=${backup_backend}"
+            echo "backup_base_url=${backup_base_url}"
+            echo "backup_model=${backup_model}"
+            echo "backup_default_opus_model=${backup_default_opus_model}"
+            echo "backup_default_sonnet_model=${backup_default_sonnet_model}"
+            echo "backup_default_haiku_model=${backup_default_haiku_model}"
+            echo "backup_subagent_model=${backup_subagent_model}"
+            echo "backup_effort_level=${backup_effort_level}"
             if [[ -n "$model" ]]; then
               echo "claude_args=--model ${model}"
             else
               echo "claude_args="
+            fi
+            if [[ -n "$backup_model" ]]; then
+              echo "backup_claude_args=--model ${backup_model}"
+            else
+              echo "backup_claude_args="
             fi
           } >> "$GITHUB_OUTPUT"
 
@@ -235,7 +280,7 @@ jobs:
         if: ${{ steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' && steps.ai-config.outputs.token_type == 'CLAUDE_CODE_OAUTH_TOKEN' }}
         id: claude-review
         continue-on-error: true
-        uses: anthropics/claude-code-action@ef50f123a3a9be95b60040d042717517407c7256
+        uses: anthropics/claude-code-action@9db782c3a17ef2bfc274cd17411bc3e0a5ba1345
         env:
           ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.base_url }}
           ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.token }}
@@ -282,7 +327,7 @@ jobs:
         if: ${{ steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' && steps.ai-config.outputs.token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review.outcome == 'failure' && steps.claude-review.outputs.session_id != '' }}
         id: claude-review-retry
         continue-on-error: true
-        uses: anthropics/claude-code-action@ef50f123a3a9be95b60040d042717517407c7256
+        uses: anthropics/claude-code-action@9db782c3a17ef2bfc274cd17411bc3e0a5ba1345
         env:
           ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.base_url }}
           ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.token }}
@@ -331,7 +376,7 @@ jobs:
         if: ${{ steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' && steps.ai-config.outputs.token_type == 'ANTHROPIC_API_KEY' }}
         id: claude-review-custom
         continue-on-error: true
-        uses: anthropics/claude-code-action@ef50f123a3a9be95b60040d042717517407c7256
+        uses: anthropics/claude-code-action@9db782c3a17ef2bfc274cd17411bc3e0a5ba1345
         env:
           ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.base_url }}
           ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.token }}
@@ -378,7 +423,7 @@ jobs:
         if: ${{ steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' && steps.ai-config.outputs.token_type == 'ANTHROPIC_API_KEY' && steps.claude-review-custom.outcome == 'failure' && steps.claude-review-custom.outputs.session_id != '' }}
         id: claude-review-custom-retry
         continue-on-error: true
-        uses: anthropics/claude-code-action@ef50f123a3a9be95b60040d042717517407c7256
+        uses: anthropics/claude-code-action@9db782c3a17ef2bfc274cd17411bc3e0a5ba1345
         env:
           ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.base_url }}
           ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.token }}
@@ -423,8 +468,130 @@ jobs:
 
             Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
+      - name: Prepare Claude Code Review backup
+        if: ${{ steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' && ((steps.ai-config.outputs.token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review.outcome == 'failure' && (steps.claude-review.outputs.session_id == '' || steps.claude-review-retry.outcome == 'failure')) || (steps.ai-config.outputs.token_type == 'ANTHROPIC_API_KEY' && steps.claude-review-custom.outcome == 'failure' && (steps.claude-review-custom.outputs.session_id == '' || steps.claude-review-custom-retry.outcome == 'failure'))) }}
+        id: claude-review-backup
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${{ steps.ai-config.outputs.backup_token }}" ]]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          session_id="${{ steps.claude-review.outputs.session_id }}"
+          if [[ -z "$session_id" ]]; then
+            session_id="${{ steps.claude-review-custom.outputs.session_id }}"
+          fi
+
+          echo "available=true" >> "$GITHUB_OUTPUT"
+          if [[ -n "$session_id" ]]; then
+            echo "resume_args=--resume ${session_id}" >> "$GITHUB_OUTPUT"
+          else
+            echo "resume_args=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Claude Code Review with backup
+        if: ${{ steps.claude-review-backup.outputs.available == 'true' && steps.ai-config.outputs.backup_token_type == 'CLAUDE_CODE_OAUTH_TOKEN' }}
+        id: claude-review-backup-oauth
+        continue-on-error: true
+        uses: anthropics/claude-code-action@9db782c3a17ef2bfc274cd17411bc3e0a5ba1345
+        env:
+          ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.backup_base_url }}
+          ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.backup_token }}
+          ANTHROPIC_MODEL: ${{ steps.ai-config.outputs.backup_model }}
+          ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ steps.ai-config.outputs.backup_default_opus_model }}
+          ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ steps.ai-config.outputs.backup_default_sonnet_model }}
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: ${{ steps.ai-config.outputs.backup_default_haiku_model }}
+          CLAUDE_CODE_SUBAGENT_MODEL: ${{ steps.ai-config.outputs.backup_subagent_model }}
+          CLAUDE_CODE_EFFORT_LEVEL: ${{ steps.ai-config.outputs.backup_effort_level }}
+        with:
+          github_token: ${{ github.token }}
+          claude_code_oauth_token: ${{ steps.ai-config.outputs.backup_token }}
+          settings: |
+            {
+              "env": {
+                "ANTHROPIC_BASE_URL": "${{ steps.ai-config.outputs.backup_base_url }}",
+                "ANTHROPIC_MODEL": "${{ steps.ai-config.outputs.backup_model }}",
+                "ANTHROPIC_DEFAULT_OPUS_MODEL": "${{ steps.ai-config.outputs.backup_default_opus_model }}",
+                "ANTHROPIC_DEFAULT_SONNET_MODEL": "${{ steps.ai-config.outputs.backup_default_sonnet_model }}",
+                "ANTHROPIC_DEFAULT_HAIKU_MODEL": "${{ steps.ai-config.outputs.backup_default_haiku_model }}",
+                "CLAUDE_CODE_SUBAGENT_MODEL": "${{ steps.ai-config.outputs.backup_subagent_model }}"
+              }
+            }
+          claude_args: ${{ steps.ai-config.outputs.backup_claude_args }} ${{ steps.laravel-boost.outputs.claude_args }} ${{ steps.claude-review-backup.outputs.resume_args }}
+          plugin_marketplaces: https://github.com/obra/superpowers-marketplace.git
+          plugins: superpowers@superpowers-marketplace
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            The primary Claude Code Review backend and resume retry failed. Continue the review using the configured backup AI backend.
+
+            Please review this pull request and provide feedback on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Performance considerations
+            - Security concerns
+            - Test coverage
+
+            For Laravel projects, use Laravel Boost MCP tools, generated Boost guidelines, and relevant Boost skills such as laravel-best-practices before making framework-specific recommendations. Use Laravel documentation search through Boost when you need current Laravel, Filament, Livewire, Pest, Pint, or Tailwind guidance.
+
+            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
+
+      - name: Run Claude Code Review with backup custom backend
+        if: ${{ steps.claude-review-backup.outputs.available == 'true' && steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_API_KEY' }}
+        id: claude-review-backup-custom
+        continue-on-error: true
+        uses: anthropics/claude-code-action@9db782c3a17ef2bfc274cd17411bc3e0a5ba1345
+        env:
+          ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.backup_base_url }}
+          ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.backup_token }}
+          ANTHROPIC_MODEL: ${{ steps.ai-config.outputs.backup_model }}
+          ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ steps.ai-config.outputs.backup_default_opus_model }}
+          ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ steps.ai-config.outputs.backup_default_sonnet_model }}
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: ${{ steps.ai-config.outputs.backup_default_haiku_model }}
+          CLAUDE_CODE_SUBAGENT_MODEL: ${{ steps.ai-config.outputs.backup_subagent_model }}
+          CLAUDE_CODE_EFFORT_LEVEL: ${{ steps.ai-config.outputs.backup_effort_level }}
+        with:
+          github_token: ${{ github.token }}
+          claude_code_oauth_token: ${{ steps.ai-config.outputs.backup_token }}
+          settings: |
+            {
+              "env": {
+                "ANTHROPIC_BASE_URL": "${{ steps.ai-config.outputs.backup_base_url }}",
+                "ANTHROPIC_MODEL": "${{ steps.ai-config.outputs.backup_model }}",
+                "ANTHROPIC_DEFAULT_OPUS_MODEL": "${{ steps.ai-config.outputs.backup_default_opus_model }}",
+                "ANTHROPIC_DEFAULT_SONNET_MODEL": "${{ steps.ai-config.outputs.backup_default_sonnet_model }}",
+                "ANTHROPIC_DEFAULT_HAIKU_MODEL": "${{ steps.ai-config.outputs.backup_default_haiku_model }}",
+                "CLAUDE_CODE_SUBAGENT_MODEL": "${{ steps.ai-config.outputs.backup_subagent_model }}"
+              }
+            }
+          claude_args: ${{ steps.ai-config.outputs.backup_claude_args }} ${{ steps.laravel-boost.outputs.claude_args }} ${{ steps.claude-review-backup.outputs.resume_args }}
+          plugin_marketplaces: https://github.com/obra/superpowers-marketplace.git
+          plugins: superpowers@superpowers-marketplace
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            The primary Claude Code Review backend and resume retry failed. Continue the review using the configured backup AI backend.
+
+            Please review this pull request and provide feedback on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Performance considerations
+            - Security concerns
+            - Test coverage
+
+            For Laravel projects, use Laravel Boost MCP tools, generated Boost guidelines, and relevant Boost skills such as laravel-best-practices before making framework-specific recommendations. Use Laravel documentation search through Boost when you need current Laravel, Filament, Livewire, Pest, Pint, or Tailwind guidance.
+
+            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
+
       - name: Warn when Claude review is unavailable
-        if: ${{ steps.ensure-jq.outcome == 'failure' || steps.ai-config.outcome == 'failure' || steps.laravel-boost.outcome == 'failure' || (steps.ai-config.outputs.token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review.outcome == 'failure' && (steps.claude-review.outputs.session_id == '' || steps.claude-review-retry.outcome == 'failure')) || (steps.ai-config.outputs.token_type == 'ANTHROPIC_API_KEY' && steps.claude-review-custom.outcome == 'failure' && (steps.claude-review-custom.outputs.session_id == '' || steps.claude-review-custom-retry.outcome == 'failure')) }}
+        if: ${{ steps.ensure-jq.outcome == 'failure' || steps.ai-config.outcome == 'failure' || steps.laravel-boost.outcome == 'failure' || steps.claude-review-backup.outputs.available == 'false' || (steps.ai-config.outputs.backup_token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review-backup-oauth.outcome == 'failure') || (steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_API_KEY' && steps.claude-review-backup-custom.outcome == 'failure') }}
         shell: bash
         run: |
           echo "::warning::Claude review is currently unavailable due to an external AI service or authentication issue."
