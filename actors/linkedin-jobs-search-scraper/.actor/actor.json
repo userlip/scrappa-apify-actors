@@ -1,0 +1,42 @@
+{
+  "actorSpecification": 1,
+  "name": "linkedin-jobs-search-scraper",
+  "title": "LinkedIn Jobs Search Scraper ($0.30/1k results)",
+  "description": "Search public LinkedIn job listings through Scrappa. Extract LinkedIn job result titles, URLs, snippets, search metadata, and pagination.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "jobs": {
+          "title": "LinkedIn Job Results",
+          "transformation": {
+            "fields": ["position", "title", "link", "displayed_link", "snippet"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "Position", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "link": { "label": "LinkedIn URL", "format": "link" },
+              "displayed_link": { "label": "Displayed Link", "format": "text" },
+              "snippet": { "label": "Snippet", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

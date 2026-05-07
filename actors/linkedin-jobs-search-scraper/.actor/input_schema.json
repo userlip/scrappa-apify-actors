@@ -1,0 +1,104 @@
+{
+  "title": "LinkedIn Jobs Search Scraper ($0.30/1k results)",
+  "description": "Search public LinkedIn job listings via Google with an automatic LinkedIn jobs page constraint.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Job Search Query",
+      "type": "string",
+      "description": "Job search query. Include role, company, seniority, location, or hiring keywords. Empty input defaults to a narrow US example query.",
+      "editor": "textfield",
+      "prefill": "software engineer remote"
+    },
+    "num": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "description": "Number of results to return. Scrappa accepts 1 to 20 results per page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "Page number for pagination. Use either page or start, not both.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "start": {
+      "title": "Start Index",
+      "type": "integer",
+      "description": "Starting result index for pagination. Use either start or page, not both.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 170
+    },
+    "hl": {
+      "title": "Interface Language",
+      "type": "string",
+      "description": "Two-letter language code for Google's interface, for example en, de, es, or fr.",
+      "editor": "textfield",
+      "maxLength": 5,
+      "default": "en"
+    },
+    "gl": {
+      "title": "Geolocation Country",
+      "type": "string",
+      "description": "Two-letter country code for geolocation, for example us, de, uk, or fr.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "us"
+    },
+    "lr": {
+      "title": "Language Restrict",
+      "type": "string",
+      "description": "Restrict results to a language, for example lang_en or lang_de.",
+      "editor": "textfield"
+    },
+    "cr": {
+      "title": "Country Restrict",
+      "type": "string",
+      "description": "Restrict results to a country, for example countryUS or countryDE.",
+      "editor": "textfield"
+    },
+    "safe": {
+      "title": "Safe Search",
+      "type": "string",
+      "description": "Google safe search setting.",
+      "editor": "select",
+      "enum": ["off", "active"],
+      "enumTitles": ["Off", "Active"],
+      "default": "off"
+    },
+    "dateRestrict": {
+      "title": "Date Restrict",
+      "type": "string",
+      "description": "Filter by date range, for example d7, w1, m1, or y1.",
+      "editor": "textfield"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "description": "Sort parameter supported by Google Search, for example date.",
+      "editor": "textfield"
+    },
+    "filter": {
+      "title": "Duplicate Filter",
+      "type": "integer",
+      "description": "Enable or disable duplicate filtering.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "rights": {
+      "title": "Usage Rights",
+      "type": "string",
+      "description": "Usage-rights filter supported by Google Search.",
+      "editor": "textfield"
+    }
+  },
+  "required": []
+}
