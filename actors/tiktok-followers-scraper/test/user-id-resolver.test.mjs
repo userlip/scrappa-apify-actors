@@ -79,6 +79,22 @@ test('throws when profile lookup returns null data', async () => {
     );
 });
 
+test('throws when profile lookup returns empty data array', async () => {
+    const client = {
+        async get() {
+            return {
+                code: 0,
+                data: [],
+            };
+        },
+    };
+
+    await assert.rejects(
+        () => resolveTikTokFollowersUserId(client, { unique_id: '@missing' }),
+        /Could not resolve TikTok user_id/,
+    );
+});
+
 test('throws when profile lookup returns empty user_id', async () => {
     const client = {
         async get() {
@@ -109,6 +125,21 @@ test('throws when profile lookup returns non-scalar user_id', async () => {
         () => resolveTikTokFollowersUserId(client, { unique_id: '@missing' }),
         /Could not resolve TikTok user_id/,
     );
+});
+
+test('accepts profile responses without a code field', async () => {
+    const client = {
+        async get() {
+            return {
+                data: { user_id: '107955' },
+            };
+        },
+    };
+
+    const params = await resolveTikTokFollowersUserId(client, { unique_id: '@tiktok' });
+
+    assert.equal(params.user_id, '107955');
+    assert.equal(params.unique_id, undefined);
 });
 
 test('throws when profile lookup does not return user_id', async () => {
