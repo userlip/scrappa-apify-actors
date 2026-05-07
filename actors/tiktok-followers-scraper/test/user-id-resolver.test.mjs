@@ -51,6 +51,66 @@ test('does not resolve when user_id is already present', async () => {
     assert.deepEqual(params, { user_id: '107955', count: 10 });
 });
 
+test('passes through empty unique_id params without profile lookup', async () => {
+    const client = {
+        async get() {
+            throw new Error('profile lookup should not be called');
+        },
+    };
+
+    const params = await resolveTikTokFollowersUserId(client, { unique_id: '', count: 10 });
+
+    assert.deepEqual(params, { unique_id: '', count: 10 });
+});
+
+test('throws when profile lookup returns null data', async () => {
+    const client = {
+        async get() {
+            return {
+                code: 0,
+                data: null,
+            };
+        },
+    };
+
+    await assert.rejects(
+        () => resolveTikTokFollowersUserId(client, { unique_id: '@missing' }),
+        /Could not resolve TikTok user_id/,
+    );
+});
+
+test('throws when profile lookup returns empty user_id', async () => {
+    const client = {
+        async get() {
+            return {
+                code: 0,
+                data: { user_id: '   ' },
+            };
+        },
+    };
+
+    await assert.rejects(
+        () => resolveTikTokFollowersUserId(client, { unique_id: '@missing' }),
+        /Could not resolve TikTok user_id/,
+    );
+});
+
+test('throws when profile lookup returns non-scalar user_id', async () => {
+    const client = {
+        async get() {
+            return {
+                code: 0,
+                data: { user_id: { value: '107955' } },
+            };
+        },
+    };
+
+    await assert.rejects(
+        () => resolveTikTokFollowersUserId(client, { unique_id: '@missing' }),
+        /Could not resolve TikTok user_id/,
+    );
+});
+
 test('throws when profile lookup does not return user_id', async () => {
     const client = {
         async get() {

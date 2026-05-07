@@ -58,6 +58,10 @@ function extractUserId(data: TikTokProfileResponse['data']): string | null {
         return null;
     }
 
+    if (typeof userId !== 'string' && typeof userId !== 'number') {
+        return null;
+    }
+
     const normalized = String(userId).trim();
     return normalized === '' ? null : normalized;
 }
