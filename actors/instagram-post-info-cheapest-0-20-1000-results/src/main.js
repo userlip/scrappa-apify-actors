@@ -2,14 +2,9 @@
 import axios from 'axios';
 import { Actor } from 'apify';
 import { resolveInstagramPostInput } from './input.js';
+import { getResponseMessage, requestWithRetries } from './retry.js';
 
 await Actor.init();
-
-function getResponseMessage(data) {
-    return data?.message
-        ?? data?.error
-        ?? 'Unknown Scrappa API error';
-}
 
 try {
     const apiKey = process.env.SCRAPPA_API_KEY;
@@ -22,19 +17,39 @@ try {
 
     const apiUrl = 'https://scrappa.co/api/instagram/post';
 
-    const response = await axios.get(apiUrl, {
-        params,
-        headers: {
-            'X-API-Key': apiKey,
-            Accept: 'application/json',
+    const response = await requestWithRetries(async () => {
+        const scrappaResponse = await axios.get(apiUrl, {
+            params,
+            headers: {
+                'X-API-Key': apiKey,
+                Accept: 'application/json',
+            },
+            timeout: 60000,
+        });
+
+        if (scrappaResponse.data?.success === false) {
+            const error = new Error(
+                `Scrappa Instagram Post API returned an error response: ${getResponseMessage(scrappaResponse.data)}`,
+            );
+            error.response = {
+                status: scrappaResponse.data?.status_code,
+                data: scrappaResponse.data,
+            };
+            throw error;
+        }
+
+        return scrappaResponse;
+    }, {
+        onRetry: (error, attempt, delayMs) => {
+            const status = error?.response?.status;
+            const responseMessage = getResponseMessage(error?.response?.data);
+            console.warn(
+                `Scrappa Instagram Post API transient failure${status ? ` (${status})` : ''}: `
+                + `${responseMessage}. Retry ${attempt} in ${Math.round(delayMs / 1000)}s.`,
+            );
         },
-        timeout: 60000,
     });
     const data = response.data;
-
-    if (data?.success === false) {
-        throw new Error(`Scrappa Instagram Post API returned an error response: ${getResponseMessage(data)}`);
-    }
 
     await Actor.pushData(data);
 
