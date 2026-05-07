@@ -29,43 +29,42 @@ export interface TikTokFollowingResponse {
     [key: string]: unknown;
 }
 
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+    return Boolean(value) && typeof value === 'object';
+}
+
+function extractStringValue(value: unknown): string | null {
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        return trimmed === '' ? null : trimmed;
+    }
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return String(value);
+    }
+
+    return null;
+}
+
 export function extractProfileUserId(data: unknown): string | null {
     if (!data) {
         return null;
     }
 
     const profile = Array.isArray(data) ? data[0] : data;
-    if (
-        profile
-        && typeof profile === 'object'
-        && 'user_id' in profile
-        && typeof profile.user_id === 'string'
-        && profile.user_id.trim() !== ''
-    ) {
-        return profile.user_id.trim();
+    if (!isRecord(profile)) {
+        return null;
     }
 
-    if (
-        profile
-        && typeof profile === 'object'
-        && 'id' in profile
-        && typeof profile.id === 'string'
-        && profile.id.trim() !== ''
-    ) {
-        return profile.id.trim();
+    const topLevelUserId = extractStringValue(profile.user_id) ?? extractStringValue(profile.id);
+    if (topLevelUserId) {
+        return topLevelUserId;
     }
 
-    if (
-        profile
-        && typeof profile === 'object'
-        && 'user' in profile
-        && profile.user
-        && typeof profile.user === 'object'
-        && 'id' in profile.user
-        && typeof profile.user.id === 'string'
-        && profile.user.id.trim() !== ''
-    ) {
-        return profile.user.id.trim();
+    if (isRecord(profile.user)) {
+        return extractStringValue(profile.user.user_id) ?? extractStringValue(profile.user.id);
     }
 
     return null;

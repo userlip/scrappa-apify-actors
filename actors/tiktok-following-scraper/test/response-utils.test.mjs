@@ -23,9 +23,13 @@ test('extractFollowing falls back to alternate user arrays', () => {
 
 test('extractProfileUserId reads profile object or first array item', () => {
     assert.equal(extractProfileUserId({ user_id: ' 107955 ' }), '107955');
+    assert.equal(extractProfileUserId({ user_id: 107959 }), '107959');
     assert.equal(extractProfileUserId([{ user_id: '107956' }]), '107956');
     assert.equal(extractProfileUserId({ id: '107957' }), '107957');
+    assert.equal(extractProfileUserId({ id: 107960 }), '107960');
+    assert.equal(extractProfileUserId({ user: { user_id: 107961 } }), '107961');
     assert.equal(extractProfileUserId({ user: { id: '107958' } }), '107958');
+    assert.equal(extractProfileUserId({ user: { id: 107962 } }), '107962');
 });
 
 test('extractProfileUserId returns null for missing profile IDs', () => {

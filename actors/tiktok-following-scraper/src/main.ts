@@ -27,6 +27,7 @@ async function main(): Promise<void> {
         }
 
         const params = buildTikTokFollowingParams(input);
+        const originalLookupUniqueId = typeof params.unique_id === 'string' ? params.unique_id : null;
         console.log(`Fetching TikTok following for: ${formatTikTokFollowingLookupForLog(input)}`);
 
         const client = new ScrappaClient({ apiKey });
@@ -59,7 +60,7 @@ async function main(): Promise<void> {
         if (following.length > 0) {
             await Actor.pushData(following.map((followedUser) => ({
                 ...followedUser,
-                lookup_unique_id: params.unique_id ?? null,
+                lookup_unique_id: originalLookupUniqueId,
                 lookup_user_id: params.user_id ?? null,
             })));
             console.log(`Found ${following.length} followed accounts`);
