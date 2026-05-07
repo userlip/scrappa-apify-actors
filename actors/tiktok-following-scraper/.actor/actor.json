@@ -1,0 +1,48 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-following-scraper",
+  "title": "TikTok Following Scraper",
+  "description": "Extract the public TikTok accounts a user follows by username, profile URL, or user ID. Get followed account IDs, usernames, nicknames, avatars, follower counts, verification status, and pagination tokens through Scrappa.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "following": {
+          "title": "Following",
+          "transformation": {
+            "fields": ["unique_id", "user_id", "nickname", "avatar", "follower_count", "verified", "lookup_unique_id", "lookup_user_id"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "unique_id": { "label": "Username", "format": "text" },
+              "user_id": { "label": "User ID", "format": "text" },
+              "nickname": { "label": "Nickname", "format": "text" },
+              "avatar": { "label": "Avatar", "format": "image" },
+              "follower_count": { "label": "Follower Count", "format": "number" },
+              "verified": { "label": "Verified", "format": "boolean" },
+              "lookup_unique_id": { "label": "Lookup Username", "format": "text" },
+              "lookup_user_id": { "label": "Lookup User ID", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
