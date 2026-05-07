@@ -4,6 +4,7 @@ import { buildTikTokFollowersParams, formatTikTokFollowersLookupForLog } from '.
 import type { TikTokFollowersInput } from './request-params.js';
 import { extractFollowers, extractPagination } from './response-utils.js';
 import type { TikTokFollowersResponse } from './response-utils.js';
+import { resolveTikTokFollowersUserId } from './user-id-resolver.js';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -23,7 +24,8 @@ async function main(): Promise<void> {
         console.log(`Fetching TikTok followers for: ${formatTikTokFollowersLookupForLog(input)}`);
 
         const client = new ScrappaClient({ apiKey });
-        const response = await client.get<TikTokFollowersResponse>('/tiktok/user/followers', params);
+        const resolvedParams = await resolveTikTokFollowersUserId(client, params);
+        const response = await client.get<TikTokFollowersResponse>('/tiktok/user/followers', resolvedParams);
 
         if (response.code !== undefined && response.code !== 0) {
             throw new Error(`Scrappa TikTok Followers API returned code ${response.code}: ${response.msg ?? 'Unknown error'}`);
@@ -36,7 +38,7 @@ async function main(): Promise<void> {
             await Actor.pushData(followers.map((follower) => ({
                 ...follower,
                 lookup_unique_id: params.unique_id ?? null,
-                lookup_user_id: params.user_id ?? null,
+                lookup_user_id: resolvedParams.user_id ?? params.user_id ?? null,
             })));
             console.log(`Found ${followers.length} followers`);
         } else {

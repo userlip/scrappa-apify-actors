@@ -5,6 +5,7 @@ Extract public TikTok follower lists for a creator through Scrappa. Use it for a
 ## Features
 
 - Lookup by TikTok username, full profile URL, or numeric user ID
+- Resolve username inputs to the numeric TikTok `user_id` required by the followers endpoint
 - Fetch a page of public followers with profile and verification metadata
 - Support pagination via Scrappa's `time` marker
 - Dataset rows optimized for Apify table views
@@ -42,7 +43,7 @@ Each TikTok follower is saved as one dataset item:
   "follower_count": 162300000,
   "verified": true,
   "lookup_unique_id": "@tiktok",
-  "lookup_user_id": null
+  "lookup_user_id": "107955"
 }
 ```
 
