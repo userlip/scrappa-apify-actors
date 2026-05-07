@@ -62,9 +62,9 @@ try {
 
     if (axios.isAxiosError(error)) {
         const status = error.response?.status;
-        const responseMessage = error.response?.data?.message
-            ?? error.response?.data?.error
-            ?? error.response?.statusText;
+        const responseMessage = error.response?.data
+            ? getResponseMessage(error.response.data)
+            : error.response?.statusText;
 
         message = `Scrappa Instagram Post API request failed${status ? ` (${status})` : ''}: ${responseMessage ?? message}`;
     }
