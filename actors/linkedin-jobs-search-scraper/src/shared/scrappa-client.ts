@@ -62,8 +62,16 @@ export class ScrappaClient {
         return this.request<T>('GET', endpoint, params, undefined, options);
     }
 
+    async post<T>(
+        endpoint: string,
+        body: Record<string, unknown> = {},
+        options: ScrappaRequestOptions = {}
+    ): Promise<T> {
+        return this.request<T>('POST', endpoint, {}, body, options);
+    }
+
     private async request<T>(
-        method: 'GET',
+        method: 'GET' | 'POST',
         endpoint: string,
         params: Record<string, unknown> = {},
         body?: Record<string, unknown>,
@@ -92,7 +100,7 @@ export class ScrappaClient {
     }
 
     private async send<T>(
-        method: 'GET',
+        method: 'GET' | 'POST',
         endpoint: string,
         params: Record<string, unknown> = {},
         body?: Record<string, unknown>
@@ -119,6 +127,16 @@ export class ScrappaClient {
             'User-Agent': 'thescrappa-linkedin-jobs-search-scraper/1.0',
         };
 
+        const options: RequestInit = {
+            method,
+            headers,
+        };
+
+        if (method === 'POST' && body) {
+            headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(body);
+        }
+
         if (this.debug) {
             console.log(`[Scrappa] ${method} ${url.toString()}`);
         }
@@ -128,8 +146,7 @@ export class ScrappaClient {
 
         try {
             const response = await fetch(url.toString(), {
-                method,
-                headers,
+                ...options,
                 signal: controller.signal,
             });
 
