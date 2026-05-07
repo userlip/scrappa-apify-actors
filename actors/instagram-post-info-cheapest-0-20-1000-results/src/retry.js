@@ -2,7 +2,6 @@ const TRANSIENT_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504]);
 const TRANSIENT_MESSAGE_PATTERNS = [
     /rate\s*limited/i,
     /too many requests/i,
-    /\bhttp\s*429\b/i,
     /\b429\b/i,
     /temporarily unavailable/i,
     /timeout/i,
