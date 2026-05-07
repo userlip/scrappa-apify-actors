@@ -10,7 +10,7 @@ export interface LinkedInJobsSearchInput {
     safe?: 'active' | 'off' | string;
     dateRestrict?: string;
     sort?: string;
-    filter?: 0 | 1 | number;
+    filter?: number;
     rights?: string;
 }
 
