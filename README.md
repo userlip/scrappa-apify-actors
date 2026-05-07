@@ -104,7 +104,7 @@ Current coverage in this repository:
 | `actors/tiktok-user-posts-scraper` | `tiktok-user-posts-scraper` | `iSnxQQAvqnI0ZKL9F` | TikTok User Posts Scraper | Local source present + live on Apify |
 | `actors/youtube-api-batch-videos` | `youtube-api-batch-videos` | `6ZUj6u4SWuJxOQnn9` | Youtube API Batch Videos | Local source present + live on Apify |
 | `Missing locally` | `youtube-api-channel-podcasts` | `Y3mKYlGNhsrBE7aZO` | Youtube Api Channel Podcasts | Live on Apify, source directory not in this repo |
-| `Missing locally` | `youtube-api-channel-videos` | `w464EbPGGZqcmrC8j` | Youtube Api Channel Videos | Live on Apify, source directory not in this repo |
+| `actors/youtube-api-channel-videos` | `youtube-api-channel-videos` | `w464EbPGGZqcmrC8j` | Youtube Api Channel Videos | Local source present + live on Apify |
 | `Missing locally` | `youtube-api-get-channel-about-details` | `vKqlzEXa47Ubpuix5` | Youtube Api Get Channel "About" Details | Live on Apify, source directory not in this repo |
 | `Missing locally` | `youtube-api-get-channel-community` | `S9Gf6PSqzz6hxvMNA` | Youtube Api Get Channel Community | Live on Apify, source directory not in this repo |
 | `Missing locally` | `youtube-api-get-channel-details` | `svtEvWGEssObsU72e` | Youtube Api Get Channel Details | Live on Apify, source directory not in this repo |
