@@ -71,12 +71,12 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-05. It lists all 40 live actors, including actors that are currently missing a matching local source directory in this repo.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-07. It lists all 42 live actors, including actors that are currently missing a matching local source directory in this repo.
 
 Current coverage in this repository:
-- 40 live actors in Apify
-- 24 local actor directories in this repo
-- 17 live actors missing a local source directory here
+- 42 live actors in Apify
+- 26 local actor directories in this repo
+- 16 live actors missing a local source directory here
 - 1 live actor pending Store publication and pricing
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage |
@@ -98,10 +98,12 @@ Current coverage in this repository:
 | `actors/linkedin-profile-scraper` | `linkedin-profile-scraper` | `87AaxKjjQrK0F0g60` | LinkedIn Profile Scraper - $0.30/1k results | Local source present + live on Apify |
 | `actors/scrappa-google-search` | `scrappa-google-search` | `8ejIZ0nfRPShvWBSP` | Scrappa Google Search | Local source present + live on Apify |
 | `actors/tiktok-comments-scraper` | `tiktok-comments-scraper` | `oaJANlheGg9o3EZjU` | Tiktok Comments Scraper | Local source present + live on Apify |
+| `actors/tiktok-followers-scraper` | `tiktok-followers-scraper` | `1WE6uJzTx1DbS5u39` | TikTok Followers Scraper | Local source present + live on Apify |
 | `actors/tiktok-profile-scraper` | `tiktok-profile-scraper` | `ElkkSkWZ7xAaOqsr4` | Tiktok Profile Scraper | Local source present + live on Apify |
+| `actors/tiktok-user-posts-scraper` | `tiktok-user-posts-scraper` | `iSnxQQAvqnI0ZKL9F` | TikTok User Posts Scraper | Local source present + live on Apify |
 | `actors/youtube-api-batch-videos` | `youtube-api-batch-videos` | `6ZUj6u4SWuJxOQnn9` | Youtube API Batch Videos | Local source present + live on Apify |
 | `Missing locally` | `youtube-api-channel-podcasts` | `Y3mKYlGNhsrBE7aZO` | Youtube Api Channel Podcasts | Live on Apify, source directory not in this repo |
-| `Missing locally` | `youtube-api-channel-videos` | `w464EbPGGZqcmrC8j` | Youtube Api Channel Videos | Live on Apify, source directory not in this repo |
+| `actors/youtube-api-channel-videos` | `youtube-api-channel-videos` | `w464EbPGGZqcmrC8j` | Youtube Api Channel Videos | Local source present + live on Apify |
 | `Missing locally` | `youtube-api-get-channel-about-details` | `vKqlzEXa47Ubpuix5` | Youtube Api Get Channel "About" Details | Live on Apify, source directory not in this repo |
 | `Missing locally` | `youtube-api-get-channel-community` | `S9Gf6PSqzz6hxvMNA` | Youtube Api Get Channel Community | Live on Apify, source directory not in this repo |
 | `Missing locally` | `youtube-api-get-channel-details` | `svtEvWGEssObsU72e` | Youtube Api Get Channel Details | Live on Apify, source directory not in this repo |
