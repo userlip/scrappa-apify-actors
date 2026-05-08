@@ -1,0 +1,57 @@
+{
+  "actorSpecification": 1,
+  "name": "google-images-scraper",
+  "title": "Google Images Scraper",
+  "description": "Search Google Images with Scrappa. Extract image thumbnails, original image URLs, source pages, dimensions, titles, product flags, filters, and localization metadata.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "images": {
+          "title": "Image Results",
+          "transformation": {
+            "fields": ["position", "thumbnail_url", "image_url", "title", "source", "source_url", "width", "height", "is_product", "request_q", "request_page", "request_gl", "request_hl", "request_imgsz", "request_imgtype", "request_imgcolor", "request_imgar"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "#", "format": "number" },
+              "thumbnail_url": { "label": "Thumbnail", "format": "image" },
+              "image_url": { "label": "Original Image", "format": "link" },
+              "title": { "label": "Title", "format": "text" },
+              "source": { "label": "Source", "format": "text" },
+              "source_url": { "label": "Source URL", "format": "link" },
+              "width": { "label": "Width", "format": "number" },
+              "height": { "label": "Height", "format": "number" },
+              "is_product": { "label": "Product", "format": "boolean" },
+              "request_q": { "label": "Query", "format": "text" },
+              "request_page": { "label": "Page", "format": "number" },
+              "request_gl": { "label": "Country", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" },
+              "request_imgsz": { "label": "Size Filter", "format": "text" },
+              "request_imgtype": { "label": "Type Filter", "format": "text" },
+              "request_imgcolor": { "label": "Color Filter", "format": "text" },
+              "request_imgar": { "label": "Aspect Filter", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
