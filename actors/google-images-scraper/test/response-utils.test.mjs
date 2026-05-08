@@ -17,7 +17,13 @@ test('returns an empty result set for unexpected response shapes', () => {
 
     try {
         assert.deepEqual(extractImageResults({ results: [{ position: 1 }] }), []);
-        assert.deepEqual(warnings, ['Scrappa Google Images response did not include an image result array']);
+        assert.deepEqual(extractImageResults(null), []);
+        assert.deepEqual(extractImageResults('unexpected'), []);
+        assert.deepEqual(warnings, [
+            'Scrappa Google Images response did not include an image result array',
+            'Scrappa Google Images response did not include an image result array',
+            'Scrappa Google Images response did not include an image result array',
+        ]);
     } finally {
         console.warn = originalWarn;
     }

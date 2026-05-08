@@ -13,13 +13,14 @@ export interface GoogleImageResult {
 
 export type GoogleImagesResponse = GoogleImageResult[] | { data?: GoogleImageResult[]; [key: string]: unknown };
 
-export function extractImageResults(response: GoogleImagesResponse): GoogleImageResult[] {
+export function extractImageResults(response: unknown): GoogleImageResult[] {
     if (Array.isArray(response)) {
         return response;
     }
 
-    if (Array.isArray(response.data)) {
-        return response.data;
+    if (response && typeof response === 'object' && Array.isArray((response as { data?: unknown }).data)) {
+        const { data } = response as { data: GoogleImageResult[] };
+        return data;
     }
 
     console.warn('Scrappa Google Images response did not include an image result array');
