@@ -144,5 +144,7 @@ export function describeGoogleImagesRequest(params: Record<string, unknown>): st
     const page = typeof params.page === 'number' ? ` page ${params.page}` : '';
     const filterSuffix = filters.length > 0 ? ` (${filters.join(', ')})` : '';
 
-    return `query "${String(params.q)}"${page}${filterSuffix}`;
+    const query = typeof params.q === 'string' ? params.q : 'unknown query';
+
+    return `query "${query}"${page}${filterSuffix}`;
 }

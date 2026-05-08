@@ -25,7 +25,9 @@
       "type": "string",
       "description": "Two-letter interface language code, such as en, de, es, or fr.",
       "editor": "textfield",
+      "minLength": 2,
       "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
       "default": "en"
     },
     "gl": {
@@ -33,7 +35,9 @@
       "type": "string",
       "description": "Two-letter country code for localized Google Images results, such as us, gb, de, or jp.",
       "editor": "textfield",
+      "minLength": 2,
       "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
       "default": "us"
     },
     "imgsz": {

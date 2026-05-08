@@ -25,12 +25,18 @@ function extractImageResults(response: GoogleImagesResponse): GoogleImageResult[
         return response;
     }
 
-    return Array.isArray(response.data) ? response.data : [];
+    if (Array.isArray(response.data)) {
+        return response.data;
+    }
+
+    console.warn('Scrappa Google Images response did not include an image result array');
+    return [];
 }
 
 function enrichResult(result: GoogleImageResult, params: Record<string, unknown>): Record<string, unknown> {
     return {
         ...result,
+        position: result.position ?? null,
         image_url: result.original ?? null,
         thumbnail_url: result.thumbnail ?? null,
         source_url: result.link ?? null,
