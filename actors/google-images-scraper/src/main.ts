@@ -42,6 +42,7 @@ function enrichResult(result: GoogleImageResult, params: Record<string, unknown>
         source_url: result.link ?? null,
         width: result.original_width ?? null,
         height: result.original_height ?? null,
+        is_product: result.is_product ?? false,
         request_q: params.q ?? null,
         request_page: params.page ?? null,
         request_hl: params.hl ?? null,
