@@ -1,0 +1,92 @@
+{
+  "title": "Google Images Scraper",
+  "description": "Search Google Images with filters for size, type, color, aspect ratio, safe search, language, country, and pagination.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["q"],
+  "properties": {
+    "q": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Keyword or phrase to search in Google Images.",
+      "editor": "textfield",
+      "prefill": "coffee product photography"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "Page number for pagination. Page 1 starts at the first image result.",
+      "editor": "number",
+      "minimum": 1,
+      "default": 1
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter interface language code, such as en, de, es, or fr.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
+      "default": "en"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code for localized Google Images results, such as us, gb, de, or jp.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
+      "default": "us"
+    },
+    "imgsz": {
+      "title": "Image Size",
+      "type": "string",
+      "description": "Filter by image size.",
+      "editor": "select",
+      "enum": ["large", "medium", "icon"],
+      "enumTitles": ["Large", "Medium", "Icon"]
+    },
+    "imgtype": {
+      "title": "Image Type",
+      "type": "string",
+      "description": "Filter by image type.",
+      "editor": "select",
+      "enum": ["photo", "clipart", "lineart", "gif", "face"],
+      "enumTitles": ["Photo", "Clipart", "Line Art", "Animated GIF", "Face"]
+    },
+    "imgcolor": {
+      "title": "Image Color",
+      "type": "string",
+      "description": "Filter by dominant image color.",
+      "editor": "select",
+      "enum": ["color", "gray", "trans", "red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "white", "black", "brown"],
+      "enumTitles": ["Full Color", "Gray", "Transparent", "Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Purple", "Pink", "White", "Black", "Brown"]
+    },
+    "imgar": {
+      "title": "Aspect Ratio",
+      "type": "string",
+      "description": "Filter by image aspect ratio.",
+      "editor": "select",
+      "enum": ["tall", "square", "wide"],
+      "enumTitles": ["Tall", "Square", "Wide"]
+    },
+    "tbs": {
+      "title": "Advanced Filters",
+      "type": "string",
+      "description": "Google tbs filter syntax, such as qdr:d for past day, qdr:w for past week, qdr:m for past month, or qdr:y for past year.",
+      "editor": "textfield",
+      "maxLength": 500
+    },
+    "safe": {
+      "title": "Safe Search",
+      "type": "string",
+      "description": "Safe search filtering.",
+      "editor": "select",
+      "enum": ["active", "off"],
+      "enumTitles": ["Active", "Off"],
+      "default": "active"
+    }
+  }
+}
