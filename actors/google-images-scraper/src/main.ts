@@ -1,60 +1,11 @@
 import { Actor } from 'apify';
 import { buildGoogleImagesParams, describeGoogleImagesRequest } from './request-params.js';
 import type { GoogleImagesInput } from './request-params.js';
+import { enrichResult, extractImageResults } from './response-utils.js';
+import type { GoogleImagesResponse } from './response-utils.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
 
-interface GoogleImageResult {
-    position?: number;
-    thumbnail?: string;
-    source?: string;
-    title?: string;
-    link?: string;
-    original?: string;
-    original_width?: number;
-    original_height?: number;
-    is_product?: boolean;
-    [key: string]: unknown;
-}
-
-type GoogleImagesResponse = GoogleImageResult[] | { data?: GoogleImageResult[]; [key: string]: unknown };
-
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
-
-function extractImageResults(response: GoogleImagesResponse): GoogleImageResult[] {
-    if (Array.isArray(response)) {
-        return response;
-    }
-
-    if (Array.isArray(response.data)) {
-        return response.data;
-    }
-
-    console.warn('Scrappa Google Images response did not include an image result array');
-    return [];
-}
-
-function enrichResult(result: GoogleImageResult, params: Record<string, unknown>): Record<string, unknown> {
-    return {
-        ...result,
-        position: result.position ?? null,
-        image_url: result.original ?? null,
-        thumbnail_url: result.thumbnail ?? null,
-        source_url: result.link ?? null,
-        width: result.original_width ?? null,
-        height: result.original_height ?? null,
-        is_product: result.is_product ?? false,
-        request_q: params.q ?? null,
-        request_page: params.page ?? null,
-        request_hl: params.hl ?? null,
-        request_gl: params.gl ?? null,
-        request_imgsz: params.imgsz ?? null,
-        request_imgtype: params.imgtype ?? null,
-        request_imgcolor: params.imgcolor ?? null,
-        request_imgar: params.imgar ?? null,
-        request_tbs: params.tbs ?? null,
-        request_safe: params.safe ?? null,
-    };
-}
 
 async function main(): Promise<void> {
     await Actor.init();
