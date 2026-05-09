@@ -47,6 +47,7 @@ const LOCALES = [
 
 const SORT_VALUES = ['relevance', 'recency'] as const;
 const DATE_POSTED_VALUES = ['any', 'last_12_months', 'last_6_months', 'last_3_months', 'last_30_days'] as const;
+const DEFAULT_PER_PAGE = 20;
 
 function cleanDomain(value: unknown): string {
     if (typeof value !== 'string') {
@@ -160,8 +161,7 @@ export function buildTrustpilotCompanyReviewsPlan(input: TrustpilotCompanyReview
         company_domain: companyDomain,
     };
 
-    const perPage = cleanInteger(input.per_page, 'per_page', 1, 100);
-    if (perPage !== undefined) baseParams.per_page = perPage;
+    baseParams.per_page = cleanInteger(input.per_page, 'per_page', 1, 100) ?? DEFAULT_PER_PAGE;
 
     const locale = cleanEnum(input.locale, 'locale', LOCALES);
     if (locale !== undefined) baseParams.locale = locale;

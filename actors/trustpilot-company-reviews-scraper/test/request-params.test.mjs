@@ -50,6 +50,7 @@ test('builds filter params', () => {
 
     assert.deepEqual(plan.baseParams, {
         company_domain: 'example.com',
+        per_page: 20,
         rating: '1,2',
         verified: 1,
         with_replies: 0,
@@ -64,6 +65,7 @@ test('defaults pagination controls', () => {
 
     assert.equal(plan.startPage, 1);
     assert.equal(plan.maxPages, 1);
+    assert.equal(plan.baseParams.per_page, 20);
     assert.equal(describeTrustpilotCompanyReviewsRequest(plan), 'example.com (page 1)');
 });
 
@@ -76,6 +78,16 @@ test('rejects invalid domains and pagination beyond page 10', () => {
     assert.throws(
         () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', page: 8, max_pages: 4 }),
         /page plus max_pages cannot request beyond page 10/,
+    );
+
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', page: 1.5 }),
+        /page must be an integer/,
+    );
+
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', per_page: 101 }),
+        /per_page must be between 1 and 100/,
     );
 });
 
@@ -93,5 +105,10 @@ test('rejects invalid filters', () => {
     assert.throws(
         () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', verified: 'true' }),
         /verified must be a boolean/,
+    );
+
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', query: 'x'.repeat(201) }),
+        /query must be 200 characters or fewer/,
     );
 });
