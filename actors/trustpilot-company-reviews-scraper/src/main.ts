@@ -115,12 +115,15 @@ function collectReviews(response: TrustpilotCompanyReviewsResponse): Array<{
     for (const source of REVIEW_ARRAYS) {
         const reviews = response[source] ?? [];
         for (const review of reviews) {
-            const key = review.id ?? JSON.stringify([review.title, review.text, review.rating, review.createdAt]);
-            if (seen.has(key)) {
+            const id = typeof review.id === 'string' ? review.id.trim() : undefined;
+            if (id && seen.has(id)) {
                 continue;
             }
 
-            seen.add(key);
+            if (id) {
+                seen.add(id);
+            }
+
             collected.push({ review, source });
         }
     }
