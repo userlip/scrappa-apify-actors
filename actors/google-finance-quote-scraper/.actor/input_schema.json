@@ -1,0 +1,47 @@
+{
+  "title": "Google Finance Quote Scraper",
+  "description": "Fetch a complete Google Finance quote for one ticker symbol.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["symbol"],
+  "properties": {
+    "symbol": {
+      "title": "Symbol",
+      "type": "string",
+      "description": "Ticker symbol to fetch, such as AAPL, MSFT, TSLA, or VOO.",
+      "editor": "textfield",
+      "prefill": "AAPL"
+    },
+    "exchange": {
+      "title": "Exchange",
+      "type": "string",
+      "description": "Google Finance exchange code, such as NASDAQ, NYSE, NSE, LON, or TSE. Recommended to avoid symbol ambiguity.",
+      "editor": "textfield",
+      "prefill": "NASDAQ"
+    },
+    "period_type": {
+      "title": "Financials Period",
+      "type": "string",
+      "description": "Financial statement period filter.",
+      "editor": "select",
+      "default": "quarterly",
+      "enum": ["quarterly", "annual"],
+      "enumTitles": ["Quarterly", "Annual"]
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Google Finance language code, such as en, de, es, or zh-cn.",
+      "editor": "textfield",
+      "default": "en"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code, such as us, gb, de, or ca.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "us"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "actorSpecification": 1,
+  "name": "google-finance-quote-scraper",
+  "title": "Google Finance Quote Scraper",
+  "description": "Scrape complete Google Finance quote data for a ticker, including current quote summary, key stats, company profile, financials, news, and related tickers.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "quotes": {
+          "title": "Quotes",
+          "transformation": {
+            "fields": ["symbol", "exchange", "name", "current_price", "currency", "price_change", "percent_change", "market_status", "key_stats", "about", "financials", "news", "related_tickers", "request_symbol", "request_exchange", "request_period_type"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "symbol": { "label": "Symbol", "format": "text" },
+              "exchange": { "label": "Exchange", "format": "text" },
+              "name": { "label": "Name", "format": "text" },
+              "current_price": { "label": "Price", "format": "number" },
+              "currency": { "label": "Currency", "format": "text" },
+              "price_change": { "label": "Change", "format": "number" },
+              "percent_change": { "label": "% Change", "format": "number" },
+              "market_status": { "label": "Market Status", "format": "text" },
+              "key_stats": { "label": "Key Stats", "format": "object" },
+              "about": { "label": "Company Profile", "format": "object" },
+              "financials": { "label": "Financials", "format": "object" },
+              "news": { "label": "News", "format": "object" },
+              "related_tickers": { "label": "Related Tickers", "format": "object" },
+              "request_symbol": { "label": "Requested Symbol", "format": "text" },
+              "request_exchange": { "label": "Requested Exchange", "format": "text" },
+              "request_period_type": { "label": "Period Type", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
