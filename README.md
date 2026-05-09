@@ -71,16 +71,17 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-08. It lists all 44 live actors, including actors that are currently missing a matching local source directory in this repo.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-09. It lists all 45 live actors, including actors that are currently missing a matching local source directory in this repo.
 
 Current coverage in this repository:
-- 44 live actors in Apify
-- 28 local actor directories in this repo
+- 45 live actors in Apify
+- 29 local actor directories in this repo
 - 16 live actors missing a local source directory here
 - 0 local actors pending Apify publication and pricing
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage |
 |---|---|---|---|---|
+| `actors/google-images-scraper` | `google-images-scraper` | `MrbqFgdpNTQcRW0Vt` | Google Images Scraper | Local source present + live on Apify |
 | `actors/google-jobs-scraper` | `google-jobs-scraper` | `4DwyH8vZcinXWrHBA` | Google Jobs Scraper | Local source present + live on Apify |
 | `actors/google-maps-advanced-search-scraper` | `google-maps-advanced-search-scraper` | `DT8bUdm2Vn4HjlyDo` | Google Maps Advanced Search Scraper | Local source present + live on Apify |
 | `actors/google-maps-autocomplete-scraper` | `google-maps-autocomplete-scraper` | `hhS8GkceJHFiexWe6` | Google Maps Autocomplete Scraper | Local source present + live on Apify |
