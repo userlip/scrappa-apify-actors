@@ -1,0 +1,49 @@
+{
+  "title": "Google Trends Interest Scraper",
+  "description": "Fetch Google Trends interest-over-time data for one keyword.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["q"],
+  "properties": {
+    "q": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Keyword or phrase to analyze in Google Trends.",
+      "editor": "textfield",
+      "prefill": "tesla"
+    },
+    "geo": {
+      "title": "Location",
+      "type": "string",
+      "description": "Geographic location code, such as US, GB, DE, or Worldwide.",
+      "editor": "textfield",
+      "default": "US"
+    },
+    "time_range": {
+      "title": "Time Range",
+      "type": "string",
+      "description": "Time period for the trend timeline.",
+      "editor": "select",
+      "default": "1y",
+      "enum": ["1h", "4h", "1d", "7d", "30d", "90d", "1y", "5y", "all"],
+      "enumTitles": ["Past hour", "Past 4 hours", "Past day", "Past 7 days", "Past 30 days", "Past 90 days", "Past 12 months", "Past 5 years", "All time"]
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter language code, such as en, de, es, or fr.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "en"
+    },
+    "search_type": {
+      "title": "Search Type",
+      "type": "string",
+      "description": "Google Trends vertical to analyze.",
+      "editor": "select",
+      "default": "web",
+      "enum": ["web", "images", "news", "youtube", "shopping"],
+      "enumTitles": ["Web Search", "Image Search", "News Search", "YouTube Search", "Google Shopping"]
+    }
+  }
+}
