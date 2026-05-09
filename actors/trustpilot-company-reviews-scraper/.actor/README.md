@@ -26,6 +26,7 @@ Extract Trustpilot reviews for a company domain through Scrappa. Use it for revi
 | `with_replies` | boolean | No | Return only reviews with company replies |
 | `query` | string | No | Search within review title or text |
 | `date_posted` | string | No | `any`, `last_30_days`, `last_3_months`, `last_6_months`, or `last_12_months` |
+| `fields` | string | No | Optional comma-separated Scrappa response fields, for example `reviews,businessUnit.displayName,pagination` |
 
 ## Example Input
 

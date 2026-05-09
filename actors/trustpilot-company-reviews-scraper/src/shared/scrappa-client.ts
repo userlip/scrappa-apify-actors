@@ -98,10 +98,7 @@ export class ScrappaClient {
                             .join('; ');
                         errorMessage += ` - ${details}`;
                     }
-                } catch (parseError) {
-                    if (parseError instanceof Error && parseError.name === 'AbortError') {
-                        throw parseError;
-                    }
+                } catch {
                     errorMessage = await responseClone.text() || `HTTP ${response.status}`;
                 }
 

@@ -8,6 +8,7 @@ Scrape Trustpilot company reviews by domain using Scrappa's `/api/trustpilot/com
 - Filters for rating, keyword, verified status, replies, date range, locale, and sort order
 - Multi-page collection up to Trustpilot's public page limit
 - Full Scrappa responses saved to key-value store record `OUTPUT`
+- Optional `fields` selection supports comma-separated Scrappa fields such as `reviews,businessUnit.displayName,pagination`
 
 ## Example Input
 

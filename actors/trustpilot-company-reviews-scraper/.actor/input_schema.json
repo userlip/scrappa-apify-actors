@@ -93,7 +93,7 @@
     "fields": {
       "title": "Fields",
       "type": "string",
-      "description": "Optional comma-separated Scrappa response fields to include. Leave empty for the full response.",
+      "description": "Optional comma-separated Scrappa response fields to include, such as reviews, relevantReviews, aiSummaryReviews, businessUnit.displayName, and pagination. Leave empty for the full response.",
       "editor": "textfield",
       "maxLength": 500
     }
