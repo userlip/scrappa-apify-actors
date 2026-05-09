@@ -26,7 +26,7 @@
         "quotes": {
           "title": "Quotes",
           "transformation": {
-            "fields": ["symbol", "exchange", "name", "current_price", "currency", "price_change", "percent_change", "market_status", "key_stats", "about", "financials", "news", "related_tickers", "request_symbol", "request_exchange", "request_period_type"]
+            "fields": ["symbol", "exchange", "name", "current_price", "currency", "price_change", "percent_change", "market_status", "key_stats", "about", "financials", "news", "discover_more", "related_tickers", "request_symbol", "request_exchange", "request_period_type", "request_hl", "request_gl"]
           },
           "display": {
             "component": "table",
@@ -43,10 +43,13 @@
               "about": { "label": "Company Profile", "format": "object" },
               "financials": { "label": "Financials", "format": "object" },
               "news": { "label": "News", "format": "object" },
+              "discover_more": { "label": "Discover More", "format": "object" },
               "related_tickers": { "label": "Related Tickers", "format": "object" },
               "request_symbol": { "label": "Requested Symbol", "format": "text" },
               "request_exchange": { "label": "Requested Exchange", "format": "text" },
-              "request_period_type": { "label": "Period Type", "format": "text" }
+              "request_period_type": { "label": "Period Type", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" },
+              "request_gl": { "label": "Country", "format": "text" }
             }
           }
         }

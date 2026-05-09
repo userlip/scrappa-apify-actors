@@ -11,10 +11,10 @@ test('builds one dataset item with nested quote data', () => {
                     symbol: 'AAPL',
                     exchange: 'NASDAQ',
                     name: 'Apple Inc',
-                    current_price: 198.53,
+                    current_price: '198.53',
                     currency: 'USD',
-                    price_change: 1.18,
-                    percent_change: 0.6,
+                    price_change: '1.18',
+                    percent_change: '0.6',
                     market_status: 'Closed',
                 },
                 key_stats: {

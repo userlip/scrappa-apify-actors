@@ -3,9 +3,10 @@ import { buildGoogleFinanceQuoteParams, describeGoogleFinanceQuoteRequest } from
 import type { GoogleFinanceQuoteInput } from './request-params.js';
 import { buildQuoteDatasetItem } from './response-utils.js';
 import type { GoogleFinanceQuoteResponse } from './response-utils.js';
-import { ScrappaClient } from './shared/scrappa-client.js';
+import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+const SCRAPPA_MAX_ATTEMPTS = 3;
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -25,7 +26,9 @@ async function main(): Promise<void> {
         console.log(`Fetching Google Finance quote for ${describeGoogleFinanceQuoteRequest(params)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<GoogleFinanceQuoteResponse>('/google-finance/quote', params);
+        const response = await client.get<GoogleFinanceQuoteResponse>('/google-finance/quote', params, {
+            attempts: SCRAPPA_MAX_ATTEMPTS,
+        });
         const item = buildQuoteDatasetItem(response, params);
 
         await Actor.pushData(item);
@@ -44,7 +47,7 @@ async function main(): Promise<void> {
         }));
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
-        const message = rawMessage.includes('timed out')
+        const message = error instanceof ScrappaTimeoutError
             ? `${rawMessage}. The Google Finance quote request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Provide an exchange code to reduce lookup latency, or run the request again.`
             : rawMessage;
         console.error('Actor failed: ' + message);
