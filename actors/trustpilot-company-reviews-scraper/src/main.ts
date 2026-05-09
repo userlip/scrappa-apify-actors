@@ -5,7 +5,7 @@ import {
     describeTrustpilotCompanyReviewsRequest,
 } from './request-params.js';
 import type { TrustpilotCompanyReviewsInput } from './request-params.js';
-import { ScrappaClient } from './shared/scrappa-client.js';
+import { ScrappaClient } from './shared/index.js';
 
 interface TrustpilotReviewConsumer {
     displayName?: string;
