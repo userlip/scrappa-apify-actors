@@ -32,7 +32,16 @@ async function main(): Promise<void> {
         });
         const item = buildQuoteDatasetItem(response, params);
 
-        await Actor.pushData(item, QUOTE_RESULT_CHARGE_EVENT);
+        const chargeResult = await Actor.pushData(item, QUOTE_RESULT_CHARGE_EVENT);
+        if (chargeResult.eventChargeLimitReached) {
+            const statusMessage = 'Charge limit reached after saving the Google Finance quote result; OUTPUT was not written.';
+            console.log(statusMessage, JSON.stringify({
+                event: QUOTE_RESULT_CHARGE_EVENT,
+                charged_count: chargeResult.chargedCount,
+            }));
+            await Actor.exit({ statusMessage });
+            return;
+        }
 
         const store = await Actor.openKeyValueStore();
         await store.setValue('OUTPUT', response);
