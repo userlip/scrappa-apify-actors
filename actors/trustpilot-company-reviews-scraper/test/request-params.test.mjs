@@ -22,7 +22,6 @@ test('builds params for a basic reviews request', () => {
             company_domain: 'amazon.com',
             locale: 'en-US',
             per_page: 20,
-            sort: 'recency',
         },
         startPage: 2,
         maxPages: 3,
@@ -32,9 +31,22 @@ test('builds params for a basic reviews request', () => {
         company_domain: 'amazon.com',
         locale: 'en-US',
         per_page: 20,
-        sort: 'recency',
         page: 3,
     });
+});
+
+test('omits recency sort and sends relevance sort explicitly', () => {
+    const recencyPlan = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'example.com',
+        sort: 'recency',
+    });
+    assert.equal(recencyPlan.baseParams.sort, undefined);
+
+    const relevancePlan = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'example.com',
+        sort: 'relevance',
+    });
+    assert.equal(relevancePlan.baseParams.sort, 'relevance');
 });
 
 test('builds filter params', () => {

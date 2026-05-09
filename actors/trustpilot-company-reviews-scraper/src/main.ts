@@ -94,7 +94,7 @@ function enrichReview(
         company_domain: requestParams.company_domain,
         request_locale: requestParams.locale ?? null,
         request_page: requestParams.page,
-        request_sort: requestParams.sort ?? null,
+        request_sort: requestParams.sort ?? 'recency',
         request_rating: requestParams.rating ?? null,
         request_verified: requestParams.verified ?? null,
         request_with_replies: requestParams.with_replies ?? null,

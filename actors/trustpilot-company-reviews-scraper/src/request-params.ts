@@ -167,7 +167,7 @@ export function buildTrustpilotCompanyReviewsPlan(input: TrustpilotCompanyReview
     if (locale !== undefined) baseParams.locale = locale;
 
     const sort = cleanEnum(input.sort, 'sort', SORT_VALUES);
-    if (sort !== undefined) baseParams.sort = sort;
+    if (sort !== undefined && sort !== 'recency') baseParams.sort = sort;
 
     const rating = cleanRating(input.rating);
     if (rating !== undefined) baseParams.rating = rating;
