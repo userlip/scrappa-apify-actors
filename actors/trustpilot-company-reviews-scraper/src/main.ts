@@ -5,7 +5,7 @@ import {
     describeTrustpilotCompanyReviewsRequest,
 } from './request-params.js';
 import type { TrustpilotCompanyReviewsInput } from './request-params.js';
-import { ScrappaClient } from './shared/index.js';
+import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 interface TrustpilotReviewConsumer {
     displayName?: string;
@@ -199,7 +199,7 @@ async function main(): Promise<void> {
         console.log('Results summary:', JSON.stringify(summary));
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
-        const message = rawMessage.includes('timed out')
+        const message = error instanceof ScrappaTimeoutError
             ? `${rawMessage}. The Trustpilot reviews request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try fewer pages or run the request again.`
             : rawMessage;
         console.error('Actor failed: ' + message);
