@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
     DEFAULT_RETRY_DELAYS_MS,
+    getResponseMessage,
+    getResponseStatus,
     isCooldownAuthScrappaError,
     isRateLimitScrappaError,
     isTransientScrappaError,
@@ -10,6 +12,18 @@ import {
 
 test('uses extended cooldown delays for Instagram rate limits', () => {
     assert.deepEqual(DEFAULT_RETRY_DELAYS_MS, [30000, 90000, 180000, 300000, 600000, 900000]);
+});
+
+test('gets response messages with message before error fallback', () => {
+    assert.equal(getResponseMessage({ message: 'Primary message', error: 'Fallback error' }), 'Primary message');
+    assert.equal(getResponseMessage({ error: 'Fallback error' }), 'Fallback error');
+    assert.equal(getResponseMessage({}), 'Unknown Scrappa API error');
+});
+
+test('gets numeric response status only when present', () => {
+    assert.equal(getResponseStatus({ response: { status: 429 } }), 429);
+    assert.equal(getResponseStatus({ response: { status: '429' } }), undefined);
+    assert.equal(getResponseStatus(new Error('No response')), undefined);
 });
 
 test('treats wrapped Scrappa rate limit responses as transient', () => {
@@ -64,6 +78,15 @@ test('treats gateway and unavailable responses as transient', () => {
 
 test('treats timeout errors without response objects as transient', () => {
     assert.equal(isTransientScrappaError(new Error('Request timeout after 60000ms')), true);
+});
+
+test('does not retry authentication responses just because they mention timeout', () => {
+    assert.equal(isTransientScrappaError({
+        response: {
+            status: 401,
+            data: { message: 'Authentication timeout' },
+        },
+    }), false);
 });
 
 test('does not retry validation failures', () => {
@@ -222,7 +245,7 @@ test('requestWithRetries does not retry a direct authentication failure', async 
 
 test('requestWithRetries with empty delays runs once without retrying', async () => {
     let calls = 0;
-    const transientError = {
+    const unavailableError = {
         response: {
             status: 503,
             data: { error: 'Temporarily unavailable' },
@@ -232,12 +255,12 @@ test('requestWithRetries with empty delays runs once without retrying', async ()
     await assert.rejects(
         requestWithRetries(async () => {
             calls++;
-            throw transientError;
+            throw unavailableError;
         }, {
             delaysMs: [],
             wait: async () => {},
         }),
-        transientError,
+        unavailableError,
     );
 
     assert.equal(calls, 1);

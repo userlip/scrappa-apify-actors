@@ -9,7 +9,7 @@
         "templateId": "js-start"
     },
     "defaultRunOptions": {
-        "timeoutSecs": 2700
+        "timeoutSecs": 3300
     },
     "input": "./input_schema.json",
     "dockerfile": "./Dockerfile",

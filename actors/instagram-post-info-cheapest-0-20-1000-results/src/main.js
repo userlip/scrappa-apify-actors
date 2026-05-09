@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Actor } from 'apify';
 import { resolveInstagramPostInput } from './input.js';
 import {
+    getResponseStatus,
     getResponseMessage,
     isCooldownAuthScrappaError,
     isRateLimitScrappaError,
@@ -24,6 +25,7 @@ try {
     const apiUrl = 'https://scrappa.co/api/instagram/post';
 
     let sawRateLimitDuringRequest = false;
+    let nextRetryReason = 'transient failure';
 
     const response = await requestWithRetries(async () => {
         const scrappaResponse = await axios.get(apiUrl, {
@@ -50,18 +52,26 @@ try {
     }, {
         shouldRetry: (error) => {
             if (isTransientScrappaError(error)) {
-                sawRateLimitDuringRequest = sawRateLimitDuringRequest || isRateLimitScrappaError(error);
+                if (isRateLimitScrappaError(error)) {
+                    sawRateLimitDuringRequest = true;
+                }
+                nextRetryReason = 'transient failure';
                 return true;
             }
 
-            return sawRateLimitDuringRequest && isCooldownAuthScrappaError(error);
+            if (sawRateLimitDuringRequest && isCooldownAuthScrappaError(error)) {
+                nextRetryReason = 'cooldown auth response';
+                return true;
+            }
+
+            return false;
         },
         onRetry: (error, attempt, delayMs) => {
-            const status = error?.response?.status;
+            const status = getResponseStatus(error);
             const responseMessage = getResponseMessage(error?.response?.data);
             console.warn(
-                `Scrappa Instagram Post API transient failure${status ? ` (${status})` : ''}: `
-                + `${responseMessage}. Retry ${attempt} in ${Math.round(delayMs / 1000)}s.`,
+                `Scrappa Instagram Post API ${nextRetryReason}${status ? ` (${status})` : ''}: `
+                + `${responseMessage}. Retry ${attempt} in ${(delayMs / 1000).toFixed(1)}s.`,
             );
         },
     });

@@ -26,9 +26,18 @@ export function getResponseMessage(data) {
         ?? 'Unknown Scrappa API error';
 }
 
-export function isTransientScrappaError(error) {
+export function getResponseStatus(error) {
     const status = error?.response?.status;
-    if (typeof status === 'number' && TRANSIENT_STATUS_CODES.has(status)) {
+    return typeof status === 'number' ? status : undefined;
+}
+
+export function isTransientScrappaError(error) {
+    const status = getResponseStatus(error);
+    if (status === 401 || status === 403) {
+        return false;
+    }
+
+    if (status !== undefined && TRANSIENT_STATUS_CODES.has(status)) {
         return true;
     }
 
@@ -40,7 +49,7 @@ export function isTransientScrappaError(error) {
 }
 
 export function isRateLimitScrappaError(error) {
-    const status = error?.response?.status;
+    const status = getResponseStatus(error);
     if (status === 429) {
         return true;
     }
@@ -55,7 +64,7 @@ export function isRateLimitScrappaError(error) {
 }
 
 export function isCooldownAuthScrappaError(error) {
-    const status = error?.response?.status;
+    const status = getResponseStatus(error);
     if (status !== 401 && status !== 403) {
         return false;
     }
