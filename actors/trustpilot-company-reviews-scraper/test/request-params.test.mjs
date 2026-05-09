@@ -62,6 +62,7 @@ test('builds filter params', () => {
 
     assert.deepEqual(plan.baseParams, {
         company_domain: 'example.com',
+        locale: 'en-US',
         per_page: 20,
         rating: '1,2',
         verified: 1,
@@ -77,7 +78,10 @@ test('defaults pagination controls', () => {
 
     assert.equal(plan.startPage, 1);
     assert.equal(plan.maxPages, 1);
+    assert.equal(plan.baseParams.locale, 'en-US');
     assert.equal(plan.baseParams.per_page, 20);
+    assert.equal(plan.baseParams.sort, undefined);
+    assert.equal(plan.baseParams.date_posted, undefined);
     assert.equal(describeTrustpilotCompanyReviewsRequest(plan), 'example.com (page 1)');
 });
 
