@@ -62,3 +62,20 @@ test('falls back to request symbol and empty arrays when sections are missing', 
     assert.deepEqual(item.news, []);
     assert.deepEqual(item.related_tickers, []);
 });
+
+test('does not treat discover_more section wrappers as related tickers', () => {
+    const discoverMore = [
+        { title: 'You may be interested in', description: 'Popular market lists' },
+        { title: 'Indexes', groups: [{ symbol: '.INX' }] },
+    ];
+
+    const item = buildQuoteDatasetItem(
+        { quote: { discover_more: discoverMore } },
+        { symbol: 'AAPL' },
+    );
+
+    assert.deepEqual(item.discover_more, discoverMore);
+    assert.deepEqual(item.related_tickers, []);
+    assert.equal(item.result_counts.related_tickers, 0);
+    assert.equal(item.result_counts.discover_more, 2);
+});

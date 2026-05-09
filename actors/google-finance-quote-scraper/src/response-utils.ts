@@ -76,7 +76,7 @@ function extractRelatedTickers(discoverMore: unknown[]): unknown[] {
         }
     }
 
-    return related.length > 0 ? related : discoverMore;
+    return related;
 }
 
 export function buildQuoteDatasetItem(

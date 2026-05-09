@@ -78,6 +78,36 @@ test('parses Scrappa JSON error messages and validation details', async () => {
     }
 });
 
+test('preserves timeout classification when reading an error response aborts', async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = async () => ({
+        ok: false,
+        status: 500,
+        statusText: 'Server Error',
+        text: async () => {
+            const error = new Error('aborted');
+            error.name = 'AbortError';
+            throw error;
+        },
+    });
+
+    try {
+        const client = new ScrappaClient({
+            apiKey: 'test-key',
+            baseUrl: 'https://example.test/api',
+            timeoutMs: 1000,
+        });
+
+        await assert.rejects(
+            () => client.get('/google-finance/quote'),
+            ScrappaTimeoutError,
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test('classifies retryable Scrappa errors and timeout errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (429): Rate limited')), true);
