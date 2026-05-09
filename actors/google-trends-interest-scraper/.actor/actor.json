@@ -1,0 +1,53 @@
+{
+  "actorSpecification": 1,
+  "name": "google-trends-interest-scraper",
+  "title": "Google Trends Interest Scraper",
+  "description": "Scrape Google Trends interest-over-time timelines for SEO, content, product, and market research. Extract dated 0-100 interest values, average, max, min, response metadata, and the full Scrappa response.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 200
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "timeline": {
+          "title": "Timeline Points",
+          "transformation": {
+            "fields": ["position", "date", "timestamp", "value", "average", "max_value", "min_value", "request_q", "request_geo", "request_time_range", "request_hl", "request_search_type", "response_time_ms"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "#", "format": "number" },
+              "date": { "label": "Date", "format": "text" },
+              "timestamp": { "label": "Timestamp", "format": "number" },
+              "value": { "label": "Interest", "format": "number" },
+              "average": { "label": "Average", "format": "number" },
+              "max_value": { "label": "Max", "format": "number" },
+              "min_value": { "label": "Min", "format": "number" },
+              "request_q": { "label": "Query", "format": "text" },
+              "request_geo": { "label": "Location", "format": "text" },
+              "request_time_range": { "label": "Time Range", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" },
+              "request_search_type": { "label": "Search Type", "format": "text" },
+              "response_time_ms": { "label": "Response Time", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
