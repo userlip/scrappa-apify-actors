@@ -33,7 +33,7 @@ async function main(): Promise<void> {
         const item = buildQuoteDatasetItem(response, params);
 
         const chargeResult = await Actor.pushData(item, QUOTE_RESULT_CHARGE_EVENT);
-        if (chargeResult.chargedCount < 1) {
+        if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < 1) {
             const statusMessage = 'Charge limit reached before saving the Google Finance quote result; OUTPUT was not written.';
             console.log(statusMessage, JSON.stringify({
                 event: QUOTE_RESULT_CHARGE_EVENT,
