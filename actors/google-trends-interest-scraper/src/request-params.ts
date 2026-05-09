@@ -9,9 +9,6 @@ export interface GoogleTrendsInterestInput {
 const TIME_RANGE_VALUES = ['1h', '4h', '1d', '7d', '30d', '90d', '1y', '5y', 'all'] as const;
 const SEARCH_TYPE_VALUES = ['web', 'images', 'news', 'youtube', 'shopping'] as const;
 
-type TimeRange = typeof TIME_RANGE_VALUES[number];
-type SearchType = typeof SEARCH_TYPE_VALUES[number];
-
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null || value === '') {
         return undefined;
@@ -92,9 +89,9 @@ export function buildGoogleTrendsInterestParams(input: GoogleTrendsInterestInput
     };
 
     const geo = cleanGeo(input.geo);
-    const timeRange = cleanEnum(input.time_range, 'time_range', TIME_RANGE_VALUES) as TimeRange | undefined;
+    const timeRange = cleanEnum(input.time_range, 'time_range', TIME_RANGE_VALUES);
     const hl = cleanLanguage(input.hl);
-    const searchType = cleanEnum(input.search_type, 'search_type', SEARCH_TYPE_VALUES) as SearchType | undefined;
+    const searchType = cleanEnum(input.search_type, 'search_type', SEARCH_TYPE_VALUES);
 
     if (geo !== undefined) params.geo = geo;
     if (timeRange !== undefined) params.time_range = timeRange;

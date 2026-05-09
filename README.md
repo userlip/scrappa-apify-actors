@@ -71,16 +71,17 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-09. It lists all 45 live actors, including actors that are currently missing a matching local source directory in this repo.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-09. It lists all 47 live actors, including actors that are currently missing a matching local source directory in this repo.
 
 Current coverage in this repository:
-- 45 live actors in Apify
-- 29 local actor directories in this repo
+- 47 live actors in Apify
+- 31 local actor directories in this repo
 - 16 live actors missing a local source directory here
 - 0 local actors pending Apify publication and pricing
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage |
 |---|---|---|---|---|
+| `actors/google-finance-quote-scraper` | `google-finance-quote-scraper` | `aE7VcbT6CIWBxob7U` | Google Finance Quote Scraper | Local source present + live on Apify |
 | `actors/google-images-scraper` | `google-images-scraper` | `MrbqFgdpNTQcRW0Vt` | Google Images Scraper | Local source present + live on Apify |
 | `actors/google-jobs-scraper` | `google-jobs-scraper` | `4DwyH8vZcinXWrHBA` | Google Jobs Scraper | Local source present + live on Apify |
 | `actors/google-maps-advanced-search-scraper` | `google-maps-advanced-search-scraper` | `DT8bUdm2Vn4HjlyDo` | Google Maps Advanced Search Scraper | Local source present + live on Apify |
@@ -91,6 +92,7 @@ Current coverage in this repository:
 | `actors/google-maps-search-scraper` | `google-maps-search-scraper` | `3fXhf8bJruXVWgDKy` | Google Maps Search Scraper | Local source present + live on Apify |
 | `actors/google-news-scraper` | `google-news-scraper` | `HYG9AqNEDSHMHgH4O` | Google News Scraper | Local source present + live on Apify |
 | `actors/google-search` | `google-search-scraper` | `2pU7EbKhShUz8BAnN` | Google Search Scraper | Local source present + live on Apify |
+| `actors/google-trends-interest-scraper` | `google-trends-interest-scraper` | `1D1neAFKb8LnbKvHG` | Google Trends Interest Scraper | Local source present + live on Apify |
 | `actors/instagram-post-info-cheapest-0-20-1000-results` | `instagram-post-info-cheapest-0-20-1000-results` | `nfdzs1z0cRIU1Bfhw` | Instagram Post Info \| Cheapest $0.20/1k results | Local source present + live on Apify |
 | `actors/instagram-user-info-cheapest-0-20-1000-results` | `instagram-user-info-cheapest-0-20-1000-results` | `VZrsJ6bO3h92y0duj` | Instagram User Info \| Cheapest $0.20/1k results | Local source present + live on Apify |
 | `actors/instagram-user-posts-cheapest-0-20-1000-results` | `instagram-user-posts-cheapest-0-20-1000-results` | `mp03zGSA2pR31azfU` | Instagram User Posts Cheapest 0 20 1000 Results | Local source present + live on Apify |

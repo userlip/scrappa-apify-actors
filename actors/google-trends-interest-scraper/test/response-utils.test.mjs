@@ -34,6 +34,11 @@ test('falls back to interest_over_time data_points', () => {
     ]);
 });
 
+test('returns no timeline points when the response has no timeline arrays', () => {
+    assert.deepEqual(getTimelinePoints({}), []);
+    assert.deepEqual(buildTimelineDatasetItems({}, { q: 'tesla' }), []);
+});
+
 test('builds Apify dataset items with request and summary context', () => {
     const items = buildTimelineDatasetItems(
         {
