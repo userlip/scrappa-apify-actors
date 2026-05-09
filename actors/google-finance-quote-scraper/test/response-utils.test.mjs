@@ -52,7 +52,7 @@ test('builds one dataset item with nested quote data', () => {
 
 test('falls back to request symbol and empty arrays when sections are missing', () => {
     const item = buildQuoteDatasetItem(
-        { quote: { summary: { price: 125 } } },
+        { quote: { summary: { price: '   ', last_price: 125 } } },
         { symbol: 'VOO' },
     );
 

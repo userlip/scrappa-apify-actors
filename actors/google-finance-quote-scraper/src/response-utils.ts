@@ -36,7 +36,12 @@ function firstNumber(...values: unknown[]): number | undefined {
         }
 
         if (typeof value === 'string') {
-            const parsed = Number(value.replace(/,/g, '').trim());
+            const cleaned = value.replace(/,/g, '').trim();
+            if (cleaned === '') {
+                continue;
+            }
+
+            const parsed = Number(cleaned);
             if (Number.isFinite(parsed)) {
                 return parsed;
             }
