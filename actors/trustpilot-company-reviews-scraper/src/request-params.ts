@@ -19,6 +19,7 @@ export interface TrustpilotReviewsRequestPlan {
     maxPages: number;
 }
 
+// Keep in sync with .actor/input_schema.json locale enum.
 const LOCALES = [
     'da-DK',
     'de-AT',
