@@ -31,7 +31,7 @@
         "reviews": {
           "title": "Trustpilot Reviews",
           "transformation": {
-            "fields": ["consumer_name", "rating", "title", "text", "published_date", "language", "isVerified", "reply", "id", "company_domain", "request_page", "request_sort", "request_rating"]
+            "fields": ["consumer_name", "rating", "title", "text", "published_date", "language", "isVerified", "reply", "id", "review_source", "company_domain", "request_page", "request_sort", "request_rating"]
           },
           "display": {
             "component": "table",
@@ -45,6 +45,7 @@
               "isVerified": { "label": "Verified", "format": "boolean" },
               "reply": { "label": "Reply", "format": "object" },
               "id": { "label": "Review ID", "format": "text" },
+              "review_source": { "label": "Source Array", "format": "text" },
               "company_domain": { "label": "Company Domain", "format": "text" },
               "request_page": { "label": "Page", "format": "number" },
               "request_sort": { "label": "Sort", "format": "text" },

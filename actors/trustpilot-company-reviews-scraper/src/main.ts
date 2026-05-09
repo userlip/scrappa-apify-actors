@@ -57,6 +57,8 @@ interface TrustpilotCompanyReviewsResponse {
 }
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
+const REVIEW_ARRAYS = ['reviews', 'relevantReviews', 'aiSummaryReviews'] as const;
+type ReviewArrayName = typeof REVIEW_ARRAYS[number];
 
 function consumerName(consumer: TrustpilotReviewConsumer | undefined): string | undefined {
     return consumer?.displayName;
@@ -82,9 +84,11 @@ function enrichReview(
     review: TrustpilotReview,
     requestParams: Record<string, unknown>,
     response: TrustpilotCompanyReviewsResponse,
+    reviewSource: ReviewArrayName,
 ): Record<string, unknown> {
     return {
         ...review,
+        review_source: reviewSource,
         consumer_name: consumerName(review.consumer),
         published_date: publishedDate(review),
         company_domain: requestParams.company_domain,
@@ -99,6 +103,29 @@ function enrichReview(
         page_total_count: response.pagination?.total_count ?? null,
         page_total_pages: response.pagination?.total_pages ?? null,
     };
+}
+
+function collectReviews(response: TrustpilotCompanyReviewsResponse): Array<{
+    review: TrustpilotReview;
+    source: ReviewArrayName;
+}> {
+    const seen = new Set<string>();
+    const collected: Array<{ review: TrustpilotReview; source: ReviewArrayName }> = [];
+
+    for (const source of REVIEW_ARRAYS) {
+        const reviews = response[source] ?? [];
+        for (const review of reviews) {
+            const key = review.id ?? JSON.stringify([review.title, review.text, review.rating, review.createdAt]);
+            if (seen.has(key)) {
+                continue;
+            }
+
+            seen.add(key);
+            collected.push({ review, source });
+        }
+    }
+
+    return collected;
 }
 
 async function main(): Promise<void> {
@@ -130,9 +157,9 @@ async function main(): Promise<void> {
             const response = await client.get<TrustpilotCompanyReviewsResponse>('/trustpilot/company-reviews', params);
             responses.push(response);
 
-            const reviews = response.reviews ?? [];
+            const reviews = collectReviews(response);
             if (reviews.length > 0) {
-                const enrichedReviews = reviews.map((review) => enrichReview(review, params, response));
+                const enrichedReviews = reviews.map(({ review, source }) => enrichReview(review, params, response, source));
                 allReviews.push(...enrichedReviews);
                 await Actor.pushData(enrichedReviews);
                 console.log(`Found ${reviews.length} reviews on page ${page}`);
@@ -183,8 +210,4 @@ async function main(): Promise<void> {
     await Actor.exit();
 }
 
-main().catch((error) => {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('Actor failed: ' + message);
-    process.exitCode = 1;
-});
+main();
