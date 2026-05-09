@@ -7,7 +7,12 @@ const TRANSIENT_MESSAGE_PATTERNS = [
     /timeout/i,
 ];
 
-export const DEFAULT_RETRY_DELAYS_MS = [20000, 60000];
+const COOLDOWN_AUTH_MESSAGE_PATTERNS = [
+    /authentication required/i,
+    /unauthorized/i,
+];
+
+export const DEFAULT_RETRY_DELAYS_MS = [30000, 90000, 180000, 300000, 600000, 900000];
 
 export function sleep(ms) {
     return new Promise((resolve) => {
@@ -32,6 +37,34 @@ export function isTransientScrappaError(error) {
     const combinedMessage = `${responseMessage} ${errorMessage}`;
 
     return TRANSIENT_MESSAGE_PATTERNS.some((pattern) => pattern.test(combinedMessage));
+}
+
+export function isRateLimitScrappaError(error) {
+    const status = error?.response?.status;
+    if (status === 429) {
+        return true;
+    }
+
+    const responseMessage = getResponseMessage(error?.response?.data);
+    const errorMessage = error instanceof Error ? error.message : String(error ?? '');
+    const combinedMessage = `${responseMessage} ${errorMessage}`;
+
+    return TRANSIENT_MESSAGE_PATTERNS
+        .slice(0, 3)
+        .some((pattern) => pattern.test(combinedMessage));
+}
+
+export function isCooldownAuthScrappaError(error) {
+    const status = error?.response?.status;
+    if (status !== 401 && status !== 403) {
+        return false;
+    }
+
+    const responseMessage = getResponseMessage(error?.response?.data);
+    const errorMessage = error instanceof Error ? error.message : String(error ?? '');
+    const combinedMessage = `${responseMessage} ${errorMessage}`;
+
+    return COOLDOWN_AUTH_MESSAGE_PATTERNS.some((pattern) => pattern.test(combinedMessage));
 }
 
 export async function requestWithRetries(request, {

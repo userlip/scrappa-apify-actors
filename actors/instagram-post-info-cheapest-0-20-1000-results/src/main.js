@@ -2,7 +2,13 @@
 import axios from 'axios';
 import { Actor } from 'apify';
 import { resolveInstagramPostInput } from './input.js';
-import { getResponseMessage, requestWithRetries } from './retry.js';
+import {
+    getResponseMessage,
+    isCooldownAuthScrappaError,
+    isRateLimitScrappaError,
+    isTransientScrappaError,
+    requestWithRetries,
+} from './retry.js';
 
 await Actor.init();
 
@@ -16,6 +22,8 @@ try {
     const { identifier, params } = resolveInstagramPostInput(input);
 
     const apiUrl = 'https://scrappa.co/api/instagram/post';
+
+    let sawRateLimitDuringRequest = false;
 
     const response = await requestWithRetries(async () => {
         const scrappaResponse = await axios.get(apiUrl, {
@@ -40,6 +48,14 @@ try {
 
         return scrappaResponse;
     }, {
+        shouldRetry: (error) => {
+            if (isTransientScrappaError(error)) {
+                sawRateLimitDuringRequest = sawRateLimitDuringRequest || isRateLimitScrappaError(error);
+                return true;
+            }
+
+            return sawRateLimitDuringRequest && isCooldownAuthScrappaError(error);
+        },
         onRetry: (error, attempt, delayMs) => {
             const status = error?.response?.status;
             const responseMessage = getResponseMessage(error?.response?.data);
