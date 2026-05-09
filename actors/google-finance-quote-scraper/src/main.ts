@@ -7,6 +7,7 @@ import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
+const QUOTE_RESULT_CHARGE_EVENT = 'quote-result';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -31,7 +32,21 @@ async function main(): Promise<void> {
         });
         const item = buildQuoteDatasetItem(response, params);
 
-        await Actor.pushData(item);
+        const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
+        if (isPayPerEvent) {
+            const chargeResult = await Actor.pushData(item, QUOTE_RESULT_CHARGE_EVENT);
+            if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < 1) {
+                const statusMessage = 'Charge limit reached before saving the Google Finance quote result; OUTPUT was not written.';
+                console.log(statusMessage, JSON.stringify({
+                    event: QUOTE_RESULT_CHARGE_EVENT,
+                    charged_count: chargeResult.chargedCount,
+                }));
+                await Actor.exit({ statusMessage });
+                return;
+            }
+        } else {
+            await Actor.pushData(item);
+        }
 
         const store = await Actor.openKeyValueStore();
         await store.setValue('OUTPUT', response);
