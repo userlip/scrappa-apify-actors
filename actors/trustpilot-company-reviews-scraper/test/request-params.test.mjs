@@ -49,6 +49,23 @@ test('omits recency sort and sends relevance sort explicitly', () => {
     assert.equal(relevancePlan.baseParams.sort, 'relevance');
 });
 
+test('normalizes copied Trustpilot company URLs to hostnames', () => {
+    const urlWithQuery = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'https://www.amazon.com?ref=nav#reviews',
+    });
+    assert.equal(urlWithQuery.baseParams.company_domain, 'amazon.com');
+
+    const urlWithPort = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'https://www.amazon.com:443/review-path?sort=recency',
+    });
+    assert.equal(urlWithPort.baseParams.company_domain, 'amazon.com');
+
+    const bareUrlWithPath = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'www.amazon.com/review-path?languages=en',
+    });
+    assert.equal(bareUrlWithPath.baseParams.company_domain, 'amazon.com');
+});
+
 test('builds filter params', () => {
     const plan = buildTrustpilotCompanyReviewsPlan({
         company_domain: 'example.com',

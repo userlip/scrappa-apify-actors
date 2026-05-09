@@ -58,9 +58,14 @@ function cleanDomain(value: unknown): string {
         throw new Error('company_domain is required and must be a string');
     }
 
-    let domain = value.trim().toLowerCase();
-    domain = domain.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
-    domain = domain.split('/')[0] ?? domain;
+    const rawValue = value.trim();
+    let domain: string;
+    try {
+        const url = new URL(/^https?:\/\//i.test(rawValue) ? rawValue : `https://${rawValue}`);
+        domain = url.hostname.toLowerCase().replace(/^www\./i, '');
+    } catch {
+        throw new Error('company_domain must be a valid domain name, for example amazon.com');
+    }
 
     if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) {
         throw new Error('company_domain must be a valid domain name, for example amazon.com');
