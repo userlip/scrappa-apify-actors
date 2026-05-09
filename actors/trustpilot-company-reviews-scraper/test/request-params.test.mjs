@@ -1,0 +1,147 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import {
+    buildPageParams,
+    buildTrustpilotCompanyReviewsPlan,
+    describeTrustpilotCompanyReviewsRequest,
+} from '../dist/request-params.js';
+
+test('builds params for a basic reviews request', () => {
+    const plan = buildTrustpilotCompanyReviewsPlan({
+        company_domain: ' https://www.Amazon.com/review-path ',
+        locale: 'en-US',
+        page: 2,
+        max_pages: 3,
+        per_page: 20,
+        sort: 'recency',
+    });
+
+    assert.deepEqual(plan, {
+        baseParams: {
+            company_domain: 'amazon.com',
+            locale: 'en-US',
+            per_page: 20,
+        },
+        startPage: 2,
+        maxPages: 3,
+    });
+
+    assert.deepEqual(buildPageParams(plan, 3), {
+        company_domain: 'amazon.com',
+        locale: 'en-US',
+        per_page: 20,
+        page: 3,
+    });
+});
+
+test('omits recency sort and sends relevance sort explicitly', () => {
+    const recencyPlan = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'example.com',
+        sort: 'recency',
+    });
+    assert.equal(recencyPlan.baseParams.sort, undefined);
+
+    const relevancePlan = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'example.com',
+        sort: 'relevance',
+    });
+    assert.equal(relevancePlan.baseParams.sort, 'relevance');
+});
+
+test('normalizes copied Trustpilot company URLs to hostnames', () => {
+    const urlWithQuery = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'https://www.amazon.com?ref=nav#reviews',
+    });
+    assert.equal(urlWithQuery.baseParams.company_domain, 'amazon.com');
+
+    const urlWithPort = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'https://www.amazon.com:443/review-path?sort=recency',
+    });
+    assert.equal(urlWithPort.baseParams.company_domain, 'amazon.com');
+
+    const bareUrlWithPath = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'www.amazon.com/review-path?languages=en',
+    });
+    assert.equal(bareUrlWithPath.baseParams.company_domain, 'amazon.com');
+});
+
+test('builds filter params', () => {
+    const plan = buildTrustpilotCompanyReviewsPlan({
+        company_domain: 'example.com',
+        rating: ' 1, 2 ',
+        verified: true,
+        with_replies: false,
+        query: ' refund ',
+        date_posted: 'last_30_days',
+        fields: 'reviews,businessUnit.displayName',
+    });
+
+    assert.deepEqual(plan.baseParams, {
+        company_domain: 'example.com',
+        locale: 'en-US',
+        per_page: 20,
+        rating: '1,2',
+        verified: 1,
+        with_replies: 0,
+        query: 'refund',
+        date_posted: 'last_30_days',
+        fields: 'reviews,businessUnit.displayName',
+    });
+});
+
+test('defaults pagination controls', () => {
+    const plan = buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com' });
+
+    assert.equal(plan.startPage, 1);
+    assert.equal(plan.maxPages, 1);
+    assert.equal(plan.baseParams.locale, 'en-US');
+    assert.equal(plan.baseParams.per_page, 20);
+    assert.equal(plan.baseParams.sort, undefined);
+    assert.equal(plan.baseParams.date_posted, undefined);
+    assert.equal(describeTrustpilotCompanyReviewsRequest(plan), 'example.com (page 1)');
+});
+
+test('rejects invalid domains and pagination beyond page 10', () => {
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'invalid' }),
+        /company_domain must be a valid domain name/,
+    );
+
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', page: 8, max_pages: 4 }),
+        /page plus max_pages cannot request beyond page 10/,
+    );
+
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', page: 1.5 }),
+        /page must be an integer/,
+    );
+
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', per_page: 101 }),
+        /per_page must be between 1 and 100/,
+    );
+});
+
+test('rejects invalid filters', () => {
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', rating: '0,6' }),
+        /rating must be a comma-separated list/,
+    );
+
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', locale: 'en' }),
+        /locale must be one of/,
+    );
+
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', verified: 'true' }),
+        /verified must be a boolean/,
+    );
+
+    assert.throws(
+        () => buildTrustpilotCompanyReviewsPlan({ company_domain: 'example.com', query: 'x'.repeat(201) }),
+        /query must be 200 characters or fewer/,
+    );
+});

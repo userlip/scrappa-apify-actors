@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "trustpilot-company-reviews-scraper",
+  "title": "Trustpilot Company Reviews Scraper",
+  "description": "Scrape Trustpilot company reviews by domain. Extract review text, ratings, reviewer names, dates, verification status, company replies, filters, and pagination metadata for reputation monitoring and competitor research.",
+  "categories": [
+    "MARKETING",
+    "LEAD_GENERATION",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "reviews": {
+          "title": "Trustpilot Reviews",
+          "transformation": {
+            "fields": ["consumer_name", "rating", "title", "text", "published_date", "language", "isVerified", "reply", "id", "review_source", "company_domain", "request_page", "request_sort", "request_rating"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "consumer_name": { "label": "Reviewer", "format": "text" },
+              "rating": { "label": "Rating", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "text": { "label": "Review", "format": "text" },
+              "published_date": { "label": "Published", "format": "date" },
+              "language": { "label": "Language", "format": "text" },
+              "isVerified": { "label": "Verified", "format": "boolean" },
+              "reply": { "label": "Reply", "format": "object" },
+              "id": { "label": "Review ID", "format": "text" },
+              "review_source": { "label": "Source Array", "format": "text" },
+              "company_domain": { "label": "Company Domain", "format": "text" },
+              "request_page": { "label": "Page", "format": "number" },
+              "request_sort": { "label": "Sort", "format": "text" },
+              "request_rating": { "label": "Rating Filter", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

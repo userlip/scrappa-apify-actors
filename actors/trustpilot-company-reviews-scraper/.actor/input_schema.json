@@ -1,0 +1,102 @@
+{
+  "title": "Trustpilot Company Reviews Scraper",
+  "description": "Extract structured Trustpilot reviews for a company domain for review monitoring, reputation analysis, and competitor research.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "company_domain": {
+      "title": "Company Domain",
+      "type": "string",
+      "description": "Company domain with or without protocol, for example amazon.com or https://www.amazon.com.",
+      "editor": "textfield",
+      "prefill": "amazon.com"
+    },
+    "locale": {
+      "title": "Locale",
+      "type": "string",
+      "description": "Trustpilot locale used for the review page.",
+      "editor": "select",
+      "default": "en-US",
+      "enum": ["da-DK", "de-AT", "de-CH", "de-DE", "en-AU", "en-CA", "en-GB", "en-IE", "en-NZ", "en-US", "es-ES", "fi-FI", "fr-BE", "nl-BE", "fr-FR", "it-IT", "ja-JP", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "sv-SE"],
+      "enumTitles": ["Danish (Denmark)", "German (Austria)", "German (Switzerland)", "German (Germany)", "English (Australia)", "English (Canada)", "English (United Kingdom)", "English (Ireland)", "English (New Zealand)", "English (United States)", "Spanish (Spain)", "Finnish (Finland)", "French (Belgium)", "Dutch (Belgium)", "French (France)", "Italian (Italy)", "Japanese (Japan)", "Norwegian (Norway)", "Dutch (Netherlands)", "Polish (Poland)", "Portuguese (Brazil)", "Portuguese (Portugal)", "Swedish (Sweden)"]
+    },
+    "page": {
+      "title": "Start Page",
+      "type": "integer",
+      "description": "First Trustpilot review page to fetch. Trustpilot limits public access to approximately the first 10 pages.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 1
+    },
+    "max_pages": {
+      "title": "Max Pages",
+      "type": "integer",
+      "description": "Number of pages to fetch in this run. Page plus Max Pages cannot go beyond page 10.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 1
+    },
+    "per_page": {
+      "title": "Reviews Per Page",
+      "type": "integer",
+      "description": "Maximum reviews returned per page after Scrappa filtering.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "description": "Use recency for monitoring or relevance for representative samples.",
+      "editor": "select",
+      "default": "recency",
+      "enum": ["recency", "relevance"],
+      "enumTitles": ["Most recent", "Relevance"]
+    },
+    "rating": {
+      "title": "Rating Filter",
+      "type": "string",
+      "description": "Comma-separated ratings from 1 to 5, for example 1,2 for negative-review monitoring or 4,5 for positive reviews.",
+      "editor": "textfield"
+    },
+    "verified": {
+      "title": "Verified Only",
+      "type": "boolean",
+      "description": "Only return verified reviews.",
+      "editor": "checkbox"
+    },
+    "with_replies": {
+      "title": "With Company Replies Only",
+      "type": "boolean",
+      "description": "Only return reviews that include company replies.",
+      "editor": "checkbox"
+    },
+    "query": {
+      "title": "Search Within Reviews",
+      "type": "string",
+      "description": "Keyword to search in review title or text, such as refund, delivery, support, or warranty.",
+      "editor": "textfield",
+      "maxLength": 200
+    },
+    "date_posted": {
+      "title": "Date Posted",
+      "type": "string",
+      "description": "Limit reviews by publication date.",
+      "editor": "select",
+      "default": "any",
+      "enum": ["any", "last_30_days", "last_3_months", "last_6_months", "last_12_months"],
+      "enumTitles": ["Any time", "Last 30 days", "Last 3 months", "Last 6 months", "Last 12 months"]
+    },
+    "fields": {
+      "title": "Fields",
+      "type": "string",
+      "description": "Optional comma-separated Scrappa response fields to include, such as reviews, relevantReviews, aiSummaryReviews, businessUnit.displayName, and pagination. Leave empty for the full response.",
+      "editor": "textfield",
+      "maxLength": 500
+    }
+  },
+  "required": ["company_domain"]
+}
