@@ -7,6 +7,7 @@ import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
+const QUOTE_RESULT_CHARGE_EVENT = 'quote-result';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -31,7 +32,7 @@ async function main(): Promise<void> {
         });
         const item = buildQuoteDatasetItem(response, params);
 
-        await Actor.pushData(item);
+        await Actor.pushData(item, QUOTE_RESULT_CHARGE_EVENT);
 
         const store = await Actor.openKeyValueStore();
         await store.setValue('OUTPUT', response);
