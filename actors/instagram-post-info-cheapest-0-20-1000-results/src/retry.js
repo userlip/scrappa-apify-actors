@@ -7,7 +7,12 @@ const TRANSIENT_MESSAGE_PATTERNS = [
     /timeout/i,
 ];
 
-export const DEFAULT_RETRY_DELAYS_MS = [20000, 60000];
+const COOLDOWN_AUTH_MESSAGE_PATTERNS = [
+    /authentication required/i,
+    /unauthorized/i,
+];
+
+export const DEFAULT_RETRY_DELAYS_MS = [30000, 90000, 180000, 300000, 600000, 900000];
 
 export function sleep(ms) {
     return new Promise((resolve) => {
@@ -21,9 +26,18 @@ export function getResponseMessage(data) {
         ?? 'Unknown Scrappa API error';
 }
 
-export function isTransientScrappaError(error) {
+export function getResponseStatus(error) {
     const status = error?.response?.status;
-    if (typeof status === 'number' && TRANSIENT_STATUS_CODES.has(status)) {
+    return typeof status === 'number' ? status : undefined;
+}
+
+export function isTransientScrappaError(error) {
+    const status = getResponseStatus(error);
+    if (status === 401 || status === 403) {
+        return false;
+    }
+
+    if (status !== undefined && TRANSIENT_STATUS_CODES.has(status)) {
         return true;
     }
 
@@ -32,6 +46,34 @@ export function isTransientScrappaError(error) {
     const combinedMessage = `${responseMessage} ${errorMessage}`;
 
     return TRANSIENT_MESSAGE_PATTERNS.some((pattern) => pattern.test(combinedMessage));
+}
+
+export function isRateLimitScrappaError(error) {
+    const status = getResponseStatus(error);
+    if (status === 429) {
+        return true;
+    }
+
+    const responseMessage = getResponseMessage(error?.response?.data);
+    const errorMessage = error instanceof Error ? error.message : String(error ?? '');
+    const combinedMessage = `${responseMessage} ${errorMessage}`;
+
+    return TRANSIENT_MESSAGE_PATTERNS
+        .slice(0, 3)
+        .some((pattern) => pattern.test(combinedMessage));
+}
+
+export function isCooldownAuthScrappaError(error) {
+    const status = getResponseStatus(error);
+    if (status !== 401 && status !== 403) {
+        return false;
+    }
+
+    const responseMessage = getResponseMessage(error?.response?.data);
+    const errorMessage = error instanceof Error ? error.message : String(error ?? '');
+    const combinedMessage = `${responseMessage} ${errorMessage}`;
+
+    return COOLDOWN_AUTH_MESSAGE_PATTERNS.some((pattern) => pattern.test(combinedMessage));
 }
 
 export async function requestWithRetries(request, {
