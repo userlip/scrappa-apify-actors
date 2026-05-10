@@ -1,0 +1,13 @@
+{
+  "actorSpecification": 1,
+  "name": "youtube-api-search-suggestions",
+  "title": "YouTube Search Suggestions Scraper",
+  "description": "Get YouTube autocomplete search suggestions for a query, with optional locale targeting.",
+  "version": "0.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  },
+  "dockerfile": "./Dockerfile"
+}

@@ -1,0 +1,73 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "title": "Query",
+        "description": "The original search query.",
+        "example": "javascript"
+      },
+      "suggestion": {
+        "type": "string",
+        "title": "Suggestion",
+        "description": "A YouTube autocomplete suggestion.",
+        "example": "javascript tutorial"
+      },
+      "position": {
+        "type": "integer",
+        "title": "Position",
+        "description": "One-based position of the suggestion in the returned list.",
+        "example": 4
+      },
+      "hl": {
+        "type": ["string", "null"],
+        "title": "Language",
+        "description": "Language code used for the request.",
+        "example": "en"
+      },
+      "gl": {
+        "type": ["string", "null"],
+        "title": "Country",
+        "description": "Country code used for the request.",
+        "example": "US"
+      }
+    },
+    "required": ["query", "suggestion", "position"]
+  },
+  "views": {
+    "overview": {
+      "title": "YouTube Search Suggestions",
+      "transformation": {
+        "fields": ["query", "suggestion", "position", "hl", "gl"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "query": {
+            "label": "Query",
+            "format": "text"
+          },
+          "suggestion": {
+            "label": "Suggestion",
+            "format": "text"
+          },
+          "position": {
+            "label": "Position",
+            "format": "number"
+          },
+          "hl": {
+            "label": "Language",
+            "format": "text"
+          },
+          "gl": {
+            "label": "Country",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "title": "YouTube Search Suggestions",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "q": {
+      "title": "Query",
+      "type": "string",
+      "description": "Search query to get YouTube autocomplete suggestions for.",
+      "editor": "textfield",
+      "prefill": "javascript"
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "YouTube interface language code.",
+      "editor": "textfield",
+      "default": "en",
+      "prefill": "en"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code used for localized suggestions.",
+      "editor": "textfield",
+      "default": "US",
+      "prefill": "US"
+    }
+  },
+  "required": ["q"]
+}
