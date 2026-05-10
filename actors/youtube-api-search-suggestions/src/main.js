@@ -20,6 +20,7 @@ Actor.main(async () => {
         console.log(`Fetching from: ${request.url}`);
         const response = await fetch(request.url, {
             headers: {
+                // This legacy suggestions endpoint is public and does not require SCRAPPA_API_KEY.
                 'Accept': 'application/json',
             },
             signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
