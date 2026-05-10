@@ -125,7 +125,7 @@ export class ScrappaClient {
         const headers: Record<string, string> = {
             'X-API-Key': this.apiKey,
             'Accept': 'application/json',
-            'User-Agent': 'thescrappa-google-jobs-scraper/1.0',
+            'User-Agent': 'thescrappa-indeed-jobs-scraper/1.0',
         };
 
         const options: RequestInit = {

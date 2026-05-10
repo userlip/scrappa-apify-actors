@@ -50,10 +50,12 @@ export interface IndeedJobsResponse {
 }
 
 export function getIndeedJobs(response: IndeedJobsResponse): IndeedJob[] {
-    const payload = response.data ?? response;
+    if (Array.isArray(response.data?.jobs)) {
+        return response.data.jobs;
+    }
 
-    if (Array.isArray(payload.jobs)) {
-        return payload.jobs;
+    if (Array.isArray(response.jobs)) {
+        return response.jobs;
     }
 
     console.debug('Unexpected Indeed Jobs response shape: expected "data.jobs" or "jobs" array.');

@@ -24,6 +24,15 @@ test('returns jobs from top-level response shape', () => {
     assert.deepEqual(getIndeedJobs({ jobs }), jobs);
 });
 
+test('falls back to top-level jobs when data exists without jobs', () => {
+    const jobs = [{ title: 'Nurse' }];
+
+    assert.deepEqual(getIndeedJobs({
+        data: { metadata: { total_results: 1 } },
+        jobs,
+    }), jobs);
+});
+
 test('returns an empty jobs array for unexpected response shape', () => {
     const originalDebug = console.debug;
     const messages = [];
