@@ -1,0 +1,44 @@
+{
+  "actorSpecification": 1,
+  "name": "indeed-jobs-scraper",
+  "title": "Indeed Jobs Scraper ($0.30/1k results)",
+  "description": "Search Indeed job listings with Scrappa. Extract job titles, companies, locations, salaries, descriptions, attributes, apply URLs, and pagination cursors.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "jobs": {
+          "title": "Indeed Jobs",
+          "transformation": {
+            "fields": ["title", "company", "location", "salary", "attributes", "date_published", "apply_url"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": { "label": "Title", "format": "text" },
+              "company": { "label": "Company", "format": "object" },
+              "location": { "label": "Location", "format": "object" },
+              "salary": { "label": "Salary", "format": "object" },
+              "attributes": { "label": "Attributes", "format": "array" },
+              "date_published": { "label": "Date Published", "format": "text" },
+              "apply_url": { "label": "Apply URL", "format": "link" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
