@@ -1,4 +1,4 @@
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+export const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
 export function errorMessage(error) {
     const rawMessage = error instanceof Error ? error.message : String(error);
@@ -12,4 +12,3 @@ export function errorMessage(error) {
 
     return rawMessage;
 }
-

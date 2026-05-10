@@ -1,8 +1,6 @@
 import { Actor } from 'apify';
-import { errorMessage } from './errors.js';
+import { errorMessage, SCRAPPA_REQUEST_TIMEOUT_MS } from './errors.js';
 import { buildSuggestionsRequest, suggestionsToDatasetItems } from './suggestions-url.js';
-
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
 Actor.main(async () => {
     try {
