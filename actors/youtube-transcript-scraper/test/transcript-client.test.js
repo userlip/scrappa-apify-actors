@@ -52,6 +52,7 @@ describe('fetchTranscript', () => {
         const result = await fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
             apiKey: 'secret-key',
             retryBaseDelayMs: 5,
+            randomFn: () => 0,
             sleepFn: async (ms) => delays.push(ms),
             fetchFn: async () => {
                 calls++;
@@ -84,6 +85,7 @@ describe('fetchTranscript', () => {
                 apiKey: 'secret-key',
                 maxAttempts: 2,
                 retryBaseDelayMs: 5,
+                randomFn: () => 0,
                 sleepFn: async () => {},
                 fetchFn: async () => {
                     calls++;
@@ -106,6 +108,7 @@ describe('fetchTranscript', () => {
         const result = await fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
             apiKey: 'secret-key',
             retryBaseDelayMs: 5,
+            randomFn: () => 0,
             sleepFn: async () => {},
             fetchFn: async () => {
                 calls++;
@@ -123,5 +126,43 @@ describe('fetchTranscript', () => {
 
         assert.equal(calls, 2);
         assert.equal(result.data.videoId, 'dQw4w9WgXcQ');
+    });
+
+    it('adds jitter to retry delays', async () => {
+        const delays = [];
+
+        await assert.rejects(
+            () => fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+                apiKey: 'secret-key',
+                maxAttempts: 2,
+                retryBaseDelayMs: 100,
+                retryJitterRatio: 0.2,
+                randomFn: () => 0.5,
+                sleepFn: async (ms) => delays.push(ms),
+                fetchFn: async () => ({
+                    ok: false,
+                    status: 522,
+                    statusText: '',
+                }),
+            }),
+            /522 <none>/,
+        );
+
+        assert.deepEqual(delays, [110]);
+    });
+
+    it('adds context to invalid JSON responses', async () => {
+        await assert.rejects(
+            () => fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+                apiKey: 'secret-key',
+                fetchFn: async () => ({
+                    ok: true,
+                    json: async () => {
+                        throw new SyntaxError('Unexpected token <');
+                    },
+                }),
+            }),
+            /Scrappa API returned an invalid JSON response.*Unexpected token </,
+        );
     });
 });
