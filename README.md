@@ -71,12 +71,12 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-10. It lists all 48 live actors, including actors that are currently missing a matching local source directory in this repo.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-10. It lists all 50 live actors, including actors that are currently missing a matching local source directory in this repo.
 
 Current coverage in this repository:
-- 48 live actors in Apify
-- 32 local actor directories in this repo
-- 16 live actors missing a local source directory here
+- 50 live actors in Apify
+- 35 local actor directories in this repo
+- 15 live actors missing a local source directory here
 - 0 local actors pending Apify publication and pricing
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage |
@@ -96,6 +96,7 @@ Current coverage in this repository:
 | `actors/instagram-post-info-cheapest-0-20-1000-results` | `instagram-post-info-cheapest-0-20-1000-results` | `nfdzs1z0cRIU1Bfhw` | Instagram Post Info \| Cheapest $0.20/1k results | Local source present + live on Apify |
 | `actors/instagram-user-info-cheapest-0-20-1000-results` | `instagram-user-info-cheapest-0-20-1000-results` | `VZrsJ6bO3h92y0duj` | Instagram User Info \| Cheapest $0.20/1k results | Local source present + live on Apify |
 | `actors/instagram-user-posts-cheapest-0-20-1000-results` | `instagram-user-posts-cheapest-0-20-1000-results` | `mp03zGSA2pR31azfU` | Instagram User Posts Cheapest 0 20 1000 Results | Local source present + live on Apify |
+| `actors/indeed-jobs-scraper` | `indeed-jobs-scraper` | `OVlDREBAcO4iPyW64` | Indeed Jobs Scraper ($0.30/1k results) | Local source present + live on Apify |
 | `actors/linkedin-company-scraper` | `linkedin-company-scraper` | `EMGCTVXuOBRERiDMf` | LinkedIn Company Scraper - $0.30/1k results | Local source present + live on Apify |
 | `actors/linkedin-jobs-search-scraper` | `linkedin-jobs-search-scraper` | `GAAKVpkPvj3lMbO6G` | LinkedIn Jobs Search Scraper ($0.30/1k results) | Local source present + live on Apify |
 | `actors/linkedin-post-scraper` | `linkedin-post-scraper` | `hVDOXgRoKJbnATxzs` | LinkedIn Post Scraper - $0.30/1k results | Local source present + live on Apify |
@@ -107,6 +108,7 @@ Current coverage in this repository:
 | `actors/tiktok-following-scraper` | `tiktok-following-scraper` | `a3CzWl85xlYKi9UIn` | TikTok Following Scraper | Local source present + live on Apify |
 | `actors/tiktok-profile-scraper` | `tiktok-profile-scraper` | `ElkkSkWZ7xAaOqsr4` | Tiktok Profile Scraper | Local source present + live on Apify |
 | `actors/tiktok-user-posts-scraper` | `tiktok-user-posts-scraper` | `iSnxQQAvqnI0ZKL9F` | TikTok User Posts Scraper | Local source present + live on Apify |
+| `actors/trustpilot-company-reviews-scraper` | `trustpilot-company-reviews-scraper` | `nBSazp2iBmBm1FQvz` | Trustpilot Company Reviews Scraper | Local source present + live on Apify |
 | `actors/youtube-api-batch-videos` | `youtube-api-batch-videos` | `6ZUj6u4SWuJxOQnn9` | Youtube API Batch Videos | Local source present + live on Apify |
 | `Missing locally` | `youtube-api-channel-podcasts` | `Y3mKYlGNhsrBE7aZO` | Youtube Api Channel Podcasts | Live on Apify, source directory not in this repo |
 | `actors/youtube-api-channel-videos` | `youtube-api-channel-videos` | `w464EbPGGZqcmrC8j` | Youtube Api Channel Videos | Local source present + live on Apify |
@@ -124,7 +126,7 @@ Current coverage in this repository:
 | `Missing locally` | `youtube-api-related-videos` | `eKzA6GhEOJACIiCUW` | Youtube API Related videos | Live on Apify, source directory not in this repo |
 | `Missing locally` | `youtube-api-search-by-category` | `O1ltDU9qk4adR2x86` | Youtube API Search By Category | Live on Apify, source directory not in this repo |
 | `actors/youtube-api-search-data` | `youtube-api-search-data` | `ziD2fUoLsdzKlc6zR` | YouTube Search Data Scraper | Local source present + live on Apify |
-| `Missing locally` | `youtube-api-search-suggestions` | `oecJ81oeff1KozCtd` | Youtube API Search Suggestions | Live on Apify, source directory not in this repo |
+| `actors/youtube-api-search-suggestions` | `youtube-api-search-suggestions` | `oecJ81oeff1KozCtd` | YouTube Search Suggestions Scraper | Local source present + live on Apify |
 | `actors/youtube-transcript-scraper` | `youtube-transcript-scraper` | `ztc698cHC09lkCDYE` | YouTube Transcript Scraper | Local source present + live on Apify |
 | `Missing locally` | `youtube-api-trending-videos` | `T7ddx0tgVCwMHi9ET` | Youtube API Trending Videos | Live on Apify, source directory not in this repo |
 | `Missing locally` | `youtube-api-video-chapters` | `fq5Kq9OfBRWYu9go1` | Youtube API Video Chapters | Live on Apify, source directory not in this repo |
