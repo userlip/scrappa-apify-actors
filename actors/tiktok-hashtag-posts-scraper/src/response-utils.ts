@@ -61,6 +61,11 @@ export interface TikTokChallengeSearchResponse {
     [key: string]: unknown;
 }
 
+export interface TikTokChallengeSelection {
+    challenge: TikTokChallenge;
+    isExactMatch: boolean;
+}
+
 export function extractPosts(data: TikTokHashtagPostsResponse['data']): TikTokHashtagPost[] {
     if (!data) {
         return [];
@@ -105,7 +110,7 @@ export function extractChallenges(data: TikTokChallengeSearchResponse['data']): 
     return [];
 }
 
-export function selectChallengeForHashtag(challenges: TikTokChallenge[], hashtag: string): TikTokChallenge | null {
+export function selectChallengeForHashtag(challenges: TikTokChallenge[], hashtag: string): TikTokChallengeSelection | null {
     if (challenges.length === 0) {
         return null;
     }
@@ -113,7 +118,17 @@ export function selectChallengeForHashtag(challenges: TikTokChallenge[], hashtag
     const normalizedTarget = normalizeChallengeName(hashtag);
     const exactMatch = challenges.find((challenge) => normalizeChallengeName(getChallengeName(challenge)) === normalizedTarget);
 
-    return exactMatch ?? challenges[0] ?? null;
+    if (exactMatch) {
+        return {
+            challenge: exactMatch,
+            isExactMatch: true,
+        };
+    }
+
+    return {
+        challenge: challenges[0],
+        isExactMatch: false,
+    };
 }
 
 export function getChallengeId(challenge: TikTokChallenge): string | null {

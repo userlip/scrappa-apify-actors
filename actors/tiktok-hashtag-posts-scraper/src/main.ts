@@ -36,15 +36,18 @@ async function main(): Promise<void> {
                 throw new Error(`Scrappa TikTok Challenge Search API returned code ${searchResponse.code}: ${searchResponse.msg ?? 'Unknown error'}`);
             }
 
-            const challenge = selectChallengeForHashtag(extractChallenges(searchResponse.data), postsParams.challenge_name);
-            const challengeId = challenge ? getChallengeId(challenge) : null;
-            if (!challenge || !challengeId) {
+            const selection = selectChallengeForHashtag(extractChallenges(searchResponse.data), postsParams.challenge_name);
+            const challengeId = selection ? getChallengeId(selection.challenge) : null;
+            if (!selection || !challengeId) {
                 throw new Error(`Could not resolve TikTok hashtag "${postsParams.challenge_name}" to a challenge_id`);
             }
 
             postsParams.challenge_id = challengeId;
-            resolvedChallengeName = getChallengeName(challenge) || postsParams.challenge_name;
+            resolvedChallengeName = getChallengeName(selection.challenge) || postsParams.challenge_name;
             delete postsParams.challenge_name;
+            if (!selection.isExactMatch) {
+                console.warn(`No exact challenge match found for hashtag "${params.challenge_name}". Using first TikTok search result: challenge_id:${challengeId}${resolvedChallengeName ? ` (${resolvedChallengeName})` : ''}`);
+            }
             console.log(`Resolved hashtag to challenge_id:${challengeId}${resolvedChallengeName ? ` (${resolvedChallengeName})` : ''}`);
         }
 

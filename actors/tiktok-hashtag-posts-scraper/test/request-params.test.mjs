@@ -122,9 +122,20 @@ test('formats lookup values for logs', () => {
     assert.equal(formatTikTokHashtagPostsLookupForLog({ hashtag: '33380' }), 'challenge_id:33380');
 });
 
+test('formats unknown lookup for logs', () => {
+    assert.equal(formatTikTokHashtagPostsLookupForLog({ hashtag: ' ' }), 'unknown TikTok hashtag');
+});
+
 test('normalizes TikTok hashtag URLs into challenge_name values', () => {
     assert.equal(
         normalizeTikTokHashtag('https://www.tiktok.com/tag/tik.tok_123?lang=en'),
         'tik.tok_123',
+    );
+});
+
+test('rejects malformed URL-like hashtag values', () => {
+    assert.throws(
+        () => normalizeTikTokHashtag('//www.tiktok.com/tag/fyp'),
+        /A valid TikTok hashtag URL or hashtag name is required/,
     );
 });

@@ -66,15 +66,25 @@ test('selectChallengeForHashtag prefers exact case-insensitive match', () => {
         { id: '33380', cha_name: 'Cosplay' },
     ], 'cosplay');
 
-    assert.deepEqual(selected, { id: '33380', cha_name: 'Cosplay' });
+    assert.deepEqual(selected, {
+        challenge: { id: '33380', cha_name: 'Cosplay' },
+        isExactMatch: true,
+    });
 });
 
-test('selectChallengeForHashtag falls back to first search result', () => {
+test('selectChallengeForHashtag marks first-result fallback as approximate', () => {
     const selected = selectChallengeForHashtag([
         { id: '1637342470396934', cha_name: 'fypシ' },
     ], 'fyp');
 
-    assert.deepEqual(selected, { id: '1637342470396934', cha_name: 'fypシ' });
+    assert.deepEqual(selected, {
+        challenge: { id: '1637342470396934', cha_name: 'fypシ' },
+        isExactMatch: false,
+    });
+});
+
+test('selectChallengeForHashtag returns null when search has no challenges', () => {
+    assert.equal(selectChallengeForHashtag([], 'missing'), null);
 });
 
 test('getChallengeId and getChallengeName support alternate field names', () => {

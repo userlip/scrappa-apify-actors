@@ -28,8 +28,14 @@ export function normalizeTikTokHashtag(value: string): string {
         || trimmed.startsWith('//')
         || /(^|\.)tiktok\.com(\/|$)/i.test(trimmed);
 
-    try {
-        const parsed = new URL(trimmed);
+    if (isUrlLike) {
+        let parsed: URL;
+        try {
+            parsed = new URL(trimmed);
+        } catch {
+            throw new Error('A valid TikTok hashtag URL or hashtag name is required');
+        }
+
         if (!/(^|\.)tiktok\.com$/i.test(parsed.hostname)) {
             throw new Error('TikTok hashtag URL must be on tiktok.com');
         }
@@ -43,14 +49,6 @@ export function normalizeTikTokHashtag(value: string): string {
         }
 
         return normalizeHashtagName(decodeURIComponent(match[1]));
-    } catch (error) {
-        if (error instanceof Error && (error.message.startsWith('TikTok hashtag URL') || error.message.startsWith('TikTok hashtag'))) {
-            throw error;
-        }
-    }
-
-    if (isUrlLike) {
-        throw new Error('A valid TikTok hashtag URL or hashtag name is required');
     }
 
     return normalizeHashtagName(trimmed);
