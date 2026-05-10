@@ -90,6 +90,16 @@ test('selectChallengeForHashtag returns null when search has no challenges', () 
 test('getChallengeId and getChallengeName support alternate field names', () => {
     assert.equal(getChallengeId({ challenge_id: '33380' }), '33380');
     assert.equal(getChallengeId({ id: '33380' }), '33380');
+    assert.equal(getChallengeId({ challenge_id: 33380 }), '33380');
+    assert.equal(getChallengeId({ id: 42 }), '42');
     assert.equal(getChallengeName({ challenge_name: 'cosplay' }), 'cosplay');
     assert.equal(getChallengeName({ cha_name: 'Cosplay' }), 'Cosplay');
+});
+
+test('getChallengeId rejects missing, blank, and non-finite values', () => {
+    assert.equal(getChallengeId({}), null);
+    assert.equal(getChallengeId({ challenge_id: '' }), null);
+    assert.equal(getChallengeId({ id: '   ' }), null);
+    assert.equal(getChallengeId({ id: Infinity }), null);
+    assert.equal(getChallengeId({ challenge_id: NaN }), null);
 });

@@ -133,7 +133,16 @@ export function selectChallengeForHashtag(challenges: TikTokChallenge[], hashtag
 
 export function getChallengeId(challenge: TikTokChallenge): string | null {
     const id = challenge.challenge_id ?? challenge.id;
-    return typeof id === 'string' && id.trim() !== '' ? id.trim() : null;
+    if (typeof id === 'string') {
+        const trimmed = id.trim();
+        return trimmed !== '' ? trimmed : null;
+    }
+
+    if (typeof id === 'number' && Number.isFinite(id)) {
+        return String(id);
+    }
+
+    return null;
 }
 
 export function getChallengeName(challenge: TikTokChallenge): string {
