@@ -45,6 +45,27 @@ describe('fetchTranscript', () => {
         assert.equal(calls, 1);
     });
 
+    it('does not retry validation errors from Scrappa', async () => {
+        let calls = 0;
+
+        await assert.rejects(
+            () => fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+                apiKey: 'secret-key',
+                fetchFn: async () => {
+                    calls++;
+                    return {
+                        ok: false,
+                        status: 422,
+                        statusText: 'Unprocessable Content',
+                    };
+                },
+            }),
+            /422 Unprocessable Content/,
+        );
+
+        assert.equal(calls, 1);
+    });
+
     it('retries transient Scrappa responses before returning parsed JSON', async () => {
         let calls = 0;
         const delays = [];
@@ -252,6 +273,35 @@ describe('fetchTranscript', () => {
         );
 
         assert.deepEqual(delays, [3000]);
+    });
+
+    it('uses computed backoff when Retry-After is shorter', async () => {
+        const delays = [];
+
+        const result = await fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+            apiKey: 'secret-key',
+            retryBaseDelayMs: 1000,
+            randomFn: () => 0,
+            sleepFn: async (ms) => delays.push(ms),
+            fetchFn: async () => {
+                if (delays.length === 0) {
+                    return {
+                        ok: false,
+                        status: 429,
+                        statusText: 'Too Many Requests',
+                        headers: new Headers({ 'retry-after': '0' }),
+                    };
+                }
+
+                return {
+                    ok: true,
+                    json: async () => ({ videoId: 'dQw4w9WgXcQ', transcript: [] }),
+                };
+            },
+        });
+
+        assert.equal(result.data.videoId, 'dQw4w9WgXcQ');
+        assert.deepEqual(delays, [1000]);
     });
 
     it('adds context to invalid JSON responses', async () => {
