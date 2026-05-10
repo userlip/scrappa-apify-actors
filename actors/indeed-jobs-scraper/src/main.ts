@@ -8,6 +8,7 @@ import {
     getIndeedJobs,
     getIndeedMetadata,
     getIndeedPagination,
+    toIndeedDatasetJob,
 } from './indeed-response.js';
 import type { IndeedJobsResponse } from './indeed-response.js';
 
@@ -36,10 +37,11 @@ try {
         { attempts: SCRAPPA_MAX_ATTEMPTS }
     );
     const jobs = getIndeedJobs(response);
+    const datasetJobs = jobs.map(toIndeedDatasetJob);
 
-    if (jobs.length > 0) {
-        await Actor.pushData(jobs);
-        console.log(`Found ${jobs.length} Indeed job result(s)`);
+    if (datasetJobs.length > 0) {
+        await Actor.pushData(datasetJobs);
+        console.log(`Found ${datasetJobs.length} Indeed job result(s)`);
     } else {
         console.log('No Indeed job results found for the given search criteria');
     }

@@ -31,14 +31,14 @@
         "jobs": {
           "title": "Indeed Jobs",
           "transformation": {
-            "fields": ["title", "company", "location", "salary", "attributes", "date_published", "apply_url"]
+            "fields": ["title", "company_name", "location_formatted", "salary", "attributes", "date_published", "apply_url"]
           },
           "display": {
             "component": "table",
             "properties": {
               "title": { "label": "Title", "format": "text" },
-              "company": { "label": "Company", "format": "object" },
-              "location": { "label": "Location", "format": "object" },
+              "company_name": { "label": "Company", "format": "text" },
+              "location_formatted": { "label": "Location", "format": "text" },
               "salary": { "label": "Salary", "format": "object" },
               "attributes": { "label": "Attributes", "format": "array" },
               "date_published": { "label": "Date Published", "format": "text" },

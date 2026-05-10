@@ -36,10 +36,12 @@ Each job in `data.jobs` is saved to the dataset.
 {
   "id": "example-job-id",
   "title": "Software Engineer",
+  "company_name": "Example Corp",
   "company": {
     "name": "Example Corp",
     "website": "https://example.com"
   },
+  "location_formatted": "New York, NY",
   "location": {
     "city": "New York",
     "state": "NY",

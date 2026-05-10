@@ -36,6 +36,11 @@ export interface IndeedJob {
     [key: string]: unknown;
 }
 
+export interface IndeedDatasetJob extends IndeedJob {
+    company_name: string | null;
+    location_formatted: string | null;
+}
+
 export interface IndeedJobsResponse {
     success?: boolean;
     data?: {
@@ -68,6 +73,14 @@ export function getIndeedPagination(response: IndeedJobsResponse): Record<string
 
 export function getIndeedMetadata(response: IndeedJobsResponse): Record<string, unknown> | undefined {
     return response.data?.metadata ?? response.metadata;
+}
+
+export function toIndeedDatasetJob(job: IndeedJob): IndeedDatasetJob {
+    return {
+        ...job,
+        company_name: getCompanyName(job.company) ?? null,
+        location_formatted: getFormattedLocation(job.location) ?? null,
+    };
 }
 
 export function getCompanyName(company: IndeedJob['company']): string | undefined {

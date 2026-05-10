@@ -7,6 +7,7 @@ import {
     getIndeedJobs,
     getIndeedMetadata,
     getIndeedPagination,
+    toIndeedDatasetJob,
 } from '../dist/indeed-response.js';
 
 test('returns jobs from wrapped Scrappa response data', () => {
@@ -67,4 +68,18 @@ test('formats Indeed locations for table summaries', () => {
     assert.equal(getFormattedLocation({ formatted: 'New York, NY' }), 'New York, NY');
     assert.equal(getFormattedLocation({ city: 'Berlin', country: 'DE' }), 'Berlin, DE');
     assert.equal(getFormattedLocation(null), undefined);
+});
+
+test('adds table-friendly dataset aliases while preserving raw job fields', () => {
+    const job = {
+        title: 'Software Engineer',
+        company: { name: 'Example Corp' },
+        location: { formatted: 'New York, NY' },
+    };
+
+    assert.deepEqual(toIndeedDatasetJob(job), {
+        ...job,
+        company_name: 'Example Corp',
+        location_formatted: 'New York, NY',
+    });
 });
