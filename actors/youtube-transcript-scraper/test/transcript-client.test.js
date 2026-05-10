@@ -196,6 +196,64 @@ describe('fetchTranscript', () => {
         assert.deepEqual(delays, [110]);
     });
 
+    it('honors Retry-After delta seconds on retryable responses', async () => {
+        let calls = 0;
+        const delays = [];
+
+        const result = await fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+            apiKey: 'secret-key',
+            retryBaseDelayMs: 100,
+            randomFn: () => 0,
+            sleepFn: async (ms) => delays.push(ms),
+            fetchFn: async () => {
+                calls++;
+
+                if (calls === 1) {
+                    return {
+                        ok: false,
+                        status: 429,
+                        statusText: 'Too Many Requests',
+                        headers: new Headers({ 'retry-after': '3' }),
+                    };
+                }
+
+                return {
+                    ok: true,
+                    json: async () => ({ videoId: 'dQw4w9WgXcQ', transcript: [] }),
+                };
+            },
+        });
+
+        assert.equal(result.data.videoId, 'dQw4w9WgXcQ');
+        assert.deepEqual(delays, [3000]);
+    });
+
+    it('honors Retry-After HTTP dates on retryable responses', async () => {
+        const delays = [];
+        const nowMs = Date.UTC(2026, 4, 10, 12, 0, 0);
+        const retryAt = new Date(nowMs + 3000).toUTCString();
+
+        await assert.rejects(
+            () => fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+                apiKey: 'secret-key',
+                maxAttempts: 2,
+                retryBaseDelayMs: 100,
+                randomFn: () => 0,
+                nowFn: () => nowMs,
+                sleepFn: async (ms) => delays.push(ms),
+                fetchFn: async () => ({
+                    ok: false,
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                    headers: new Headers({ 'retry-after': retryAt }),
+                }),
+            }),
+            /503 Service Unavailable/,
+        );
+
+        assert.deepEqual(delays, [3000]);
+    });
+
     it('adds context to invalid JSON responses', async () => {
         await assert.rejects(
             () => fetchTranscript({ id: 'dQw4w9WgXcQ' }, {

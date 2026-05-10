@@ -40,6 +40,39 @@ function retryDelayMs(attempt, baseDelayMs, maxDelayMs, jitterRatio, randomFn) {
     return Math.min(delayMs + jitterMs, maxDelayMs);
 }
 
+function retryAfterDelayMs(response, nowMs) {
+    const retryAfter = response.headers?.get?.('retry-after');
+    if (!retryAfter) {
+        return null;
+    }
+
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds) && seconds >= 0) {
+        return seconds * 1000;
+    }
+
+    const retryAtMs = Date.parse(retryAfter);
+    if (Number.isFinite(retryAtMs)) {
+        return Math.max(0, retryAtMs - nowMs);
+    }
+
+    return null;
+}
+
+function responseRetryDelayMs(response, {
+    attempt,
+    retryBaseDelayMs,
+    retryMaxDelayMs,
+    retryJitterRatio,
+    randomFn,
+    nowFn,
+}) {
+    const backoffMs = retryDelayMs(attempt, retryBaseDelayMs, retryMaxDelayMs, retryJitterRatio, randomFn);
+    const headerDelayMs = retryAfterDelayMs(response, nowFn());
+
+    return headerDelayMs === null ? backoffMs : Math.max(backoffMs, headerDelayMs);
+}
+
 function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
@@ -65,6 +98,7 @@ export async function fetchTranscript(input, {
     retryMaxDelayMs = SCRAPPA_RETRY_MAX_DELAY_MS,
     retryJitterRatio = SCRAPPA_RETRY_JITTER_RATIO,
     randomFn = Math.random,
+    nowFn = Date.now,
     sleepFn = sleep,
 } = {}) {
     let lastError;
@@ -103,6 +137,15 @@ export async function fetchTranscript(input, {
             throw lastError;
         }
 
-        await sleepFn(retryDelayMs(attempt, retryBaseDelayMs, retryMaxDelayMs, retryJitterRatio, randomFn));
+        await sleepFn(responseRetryDelayMs(response, {
+            attempt,
+            retryBaseDelayMs,
+            retryMaxDelayMs,
+            retryJitterRatio,
+            randomFn,
+            nowFn,
+        }));
     }
+
+    throw lastError ?? new Error('Scrappa API request failed without a response');
 }
