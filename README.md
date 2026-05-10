@@ -71,13 +71,13 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-09. It lists all 47 live actors, including actors that are currently missing a matching local source directory in this repo.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-10. It lists all 48 live actors, including actors that are currently missing a matching local source directory in this repo.
 
 Current coverage in this repository:
-- 47 live actors in Apify
-- 31 local actor directories in this repo
+- 48 live actors in Apify
+- 32 local actor directories in this repo
 - 16 live actors missing a local source directory here
-- 0 local actors pending Apify publication and pricing
+- 0 local actors pending Apify publication
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage |
 |---|---|---|---|---|
@@ -102,6 +102,7 @@ Current coverage in this repository:
 | `actors/linkedin-profile-scraper` | `linkedin-profile-scraper` | `87AaxKjjQrK0F0g60` | LinkedIn Profile Scraper - $0.30/1k results | Local source present + live on Apify |
 | `actors/scrappa-google-search` | `scrappa-google-search` | `8ejIZ0nfRPShvWBSP` | Scrappa Google Search | Local source present + live on Apify |
 | `actors/tiktok-comments-scraper` | `tiktok-comments-scraper` | `oaJANlheGg9o3EZjU` | Tiktok Comments Scraper | Local source present + live on Apify |
+| `actors/tiktok-hashtag-posts-scraper` | `tiktok-hashtag-posts-scraper` | `H2dZTreGZ7s3XJsQ7` | TikTok Hashtag Posts Scraper | Local source present + live on Apify; paid pricing scheduled for 2026-05-24 |
 | `actors/tiktok-followers-scraper` | `tiktok-followers-scraper` | `1WE6uJzTx1DbS5u39` | TikTok Followers Scraper | Local source present + live on Apify |
 | `actors/tiktok-following-scraper` | `tiktok-following-scraper` | `a3CzWl85xlYKi9UIn` | TikTok Following Scraper | Local source present + live on Apify |
 | `actors/tiktok-profile-scraper` | `tiktok-profile-scraper` | `ElkkSkWZ7xAaOqsr4` | Tiktok Profile Scraper | Local source present + live on Apify |
