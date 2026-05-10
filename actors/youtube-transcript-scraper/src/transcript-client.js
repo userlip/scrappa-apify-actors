@@ -28,6 +28,11 @@ function requestError(response) {
     return new Error(`Scrappa API request failed with ${response.status} ${statusText(response)}`);
 }
 
+function networkRequestError(error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return new Error(`Scrappa API request failed before receiving a response: ${message}`);
+}
+
 function retryDelayMs(attempt, baseDelayMs, maxDelayMs, jitterRatio, randomFn) {
     const delayMs = Math.min(baseDelayMs * (2 ** (attempt - 1)), maxDelayMs);
     const jitterMs = delayMs * jitterRatio * randomFn();
@@ -41,7 +46,7 @@ function sleep(ms) {
     });
 }
 
-async function parseJsonResponse(response, apiUrl) {
+async function parseJsonOrThrow(response, apiUrl) {
     try {
         return await response.json();
     } catch (error) {
@@ -75,7 +80,7 @@ export async function fetchTranscript(input, {
         try {
             response = await fetchFn(apiUrl, requestOptions);
         } catch (error) {
-            lastError = error;
+            lastError = networkRequestError(error);
 
             if (attempt >= attempts) {
                 throw lastError;
@@ -88,7 +93,7 @@ export async function fetchTranscript(input, {
         if (response.ok) {
             return {
                 apiUrl,
-                data: await parseJsonResponse(response, apiUrl),
+                data: await parseJsonOrThrow(response, apiUrl),
             };
         }
 

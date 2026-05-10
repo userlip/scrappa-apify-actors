@@ -128,6 +128,51 @@ describe('fetchTranscript', () => {
         assert.equal(result.data.videoId, 'dQw4w9WgXcQ');
     });
 
+    it('passes the api URL and attempt number to the request callback', async () => {
+        const requests = [];
+
+        await fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+            apiKey: 'secret-key',
+            retryBaseDelayMs: 5,
+            randomFn: () => 0,
+            sleepFn: async () => {},
+            onRequest: (apiUrl, attempt) => requests.push({ apiUrl, attempt }),
+            fetchFn: async () => {
+                if (requests.length === 1) {
+                    return {
+                        ok: false,
+                        status: 522,
+                        statusText: '',
+                    };
+                }
+
+                return {
+                    ok: true,
+                    json: async () => ({ videoId: 'dQw4w9WgXcQ', transcript: [] }),
+                };
+            },
+        });
+
+        assert.equal(requests.length, 2);
+        assert.equal(requests[0].attempt, 1);
+        assert.equal(requests[1].attempt, 2);
+        assert.match(requests[0].apiUrl, /\/api\/youtube\/transcript\?video_id=dQw4w9WgXcQ/);
+        assert.equal(requests[1].apiUrl, requests[0].apiUrl);
+    });
+
+    it('adds Scrappa context to exhausted network errors', async () => {
+        await assert.rejects(
+            () => fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+                apiKey: 'secret-key',
+                maxAttempts: 1,
+                fetchFn: async () => {
+                    throw new TypeError('fetch failed');
+                },
+            }),
+            /Scrappa API request failed before receiving a response: fetch failed/,
+        );
+    });
+
     it('adds jitter to retry delays', async () => {
         const delays = [];
 
