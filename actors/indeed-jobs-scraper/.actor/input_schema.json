@@ -1,0 +1,94 @@
+{
+  "title": "Indeed Jobs Scraper ($0.30/1k results)",
+  "description": "Search Indeed job listings by keyword, location, country, and filters.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Job Search Query",
+      "type": "string",
+      "description": "Search keywords, for example software engineer, nurse, or marketing manager. Empty input defaults to a narrow US example query.",
+      "editor": "textfield",
+      "prefill": "software engineer"
+    },
+    "location": {
+      "title": "Location",
+      "type": "string",
+      "description": "City, state, region, or remote location, for example New York, San Francisco, CA, Berlin, or remote.",
+      "editor": "textfield",
+      "prefill": "New York"
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code supported by Indeed, for example US, GB, CA, AU, DE, or FR.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "US"
+    },
+    "radius": {
+      "title": "Search Radius",
+      "type": "integer",
+      "description": "Search radius from the provided location. Scrappa accepts 0 to 100.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "radius_unit": {
+      "title": "Radius Unit",
+      "type": "string",
+      "description": "Unit used for the search radius.",
+      "editor": "select",
+      "enum": ["MILES", "KILOMETERS"],
+      "enumTitles": ["Miles", "Kilometers"],
+      "default": "MILES"
+    },
+    "job_type": {
+      "title": "Job Type",
+      "type": "string",
+      "description": "Filter by job type.",
+      "editor": "select",
+      "enum": ["full_time", "part_time", "contract", "internship", "remote"],
+      "enumTitles": ["Full-time", "Part-time", "Contract", "Internship", "Remote"]
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "description": "Sort order for Indeed results.",
+      "editor": "select",
+      "enum": ["relevance", "date"],
+      "enumTitles": ["Relevance", "Date"],
+      "default": "relevance"
+    },
+    "limit": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "description": "Number of jobs to return in one request. Scrappa accepts 1 to 100.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    },
+    "cursor": {
+      "title": "Pagination Cursor",
+      "type": "string",
+      "description": "Cursor returned as data.pagination.next_cursor by a previous response.",
+      "editor": "textfield"
+    },
+    "hl": {
+      "title": "Interface Language",
+      "type": "string",
+      "description": "Two-letter language code for localization, for example en, de, fr, or es.",
+      "editor": "textfield",
+      "maxLength": 2
+    },
+    "gl": {
+      "title": "Geolocation Country",
+      "type": "string",
+      "description": "Two-letter country code for geolocation/localization, for example US, DE, GB, or FR.",
+      "editor": "textfield",
+      "maxLength": 2
+    }
+  },
+  "required": []
+}
