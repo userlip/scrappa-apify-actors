@@ -15,15 +15,14 @@ function normalizedCountry(value) {
 }
 
 export function buildSuggestionsRequest(input = {}) {
-    const actorInput = input && typeof input === 'object' ? input : {};
-    const query = stringValue(actorInput.q);
+    const query = stringValue(input?.q);
     if (!query) {
         throw new Error('Search query "q" is required.');
     }
 
     const params = new URLSearchParams({ q: query });
-    const hl = stringValue(actorInput.hl);
-    const gl = normalizedCountry(actorInput.gl);
+    const hl = stringValue(input?.hl);
+    const gl = normalizedCountry(input?.gl);
 
     if (hl) {
         params.set('hl', hl);
