@@ -97,7 +97,7 @@ function resolveTikTokChallengeLookup(
         if (hashtag !== '') {
             return normalizeTikTokChallengeLookup(hashtag);
         }
-    } else if (input.hashtag !== undefined && input.hashtag !== null && input.hashtag !== '') {
+    } else if (input.hashtag !== undefined && input.hashtag !== null) {
         warn?.(`hashtag must be a string, got ${typeof input.hashtag}.`);
     }
 
@@ -106,7 +106,7 @@ function resolveTikTokChallengeLookup(
         if (challengeName !== '') {
             return { key: 'challenge_name', value: challengeName, logValue: `#${challengeName}` };
         }
-    } else if (input.challenge_name !== undefined && input.challenge_name !== null && input.challenge_name !== '') {
+    } else if (input.challenge_name !== undefined && input.challenge_name !== null) {
         warn?.(`challenge_name must be a string, got ${typeof input.challenge_name}.`);
     }
 
@@ -115,7 +115,7 @@ function resolveTikTokChallengeLookup(
         if (challengeId !== '') {
             return { key: 'challenge_id', value: challengeId, logValue: `challenge_id:${challengeId}` };
         }
-    } else if (input.challenge_id !== undefined && input.challenge_id !== null && input.challenge_id !== '') {
+    } else if (input.challenge_id !== undefined && input.challenge_id !== null) {
         warn?.(`challenge_id must be a string, got ${typeof input.challenge_id}.`);
     }
 

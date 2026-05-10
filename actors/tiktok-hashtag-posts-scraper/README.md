@@ -18,7 +18,7 @@ TikTok hashtag scraper for extracting public posts from a hashtag or challenge t
 | `hashtag` | string | Yes | TikTok hashtag with or without `#`, full hashtag URL, or numeric challenge ID. Bare numeric values are treated as challenge IDs. |
 | `region` | string | No | Optional country or region code, such as `US`. |
 | `count` | integer | No | Number of posts to return. Scrappa accepts `1-50`. |
-| `cursor` | string | No | Pagination cursor from a previous run. Leave empty for the first page. |
+| `cursor` | string or number | No | Pagination cursor from a previous run. Leave empty for the first page. Numeric cursors are accepted. |
 
 ## Example Input
 
