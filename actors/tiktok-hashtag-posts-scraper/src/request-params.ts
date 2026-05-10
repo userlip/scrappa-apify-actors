@@ -142,7 +142,7 @@ export function buildTikTokHashtagPostsParams(
                 warn('region must be a 2 to 10 character country or region code. Omitting region.');
             }
         }
-    } else if (input.region !== undefined && input.region !== null && input.region !== '') {
+    } else if (input.region !== undefined && input.region !== null) {
         warn(`region must be a string, got ${typeof input.region}. Omitting region.`);
     }
 
@@ -170,7 +170,7 @@ export function buildTikTokHashtagPostsParams(
         } else {
             warn(`cursor must be a finite string or number, got ${String(input.cursor)}. Starting from the first page.`);
         }
-    } else if (input.cursor !== undefined && input.cursor !== null && input.cursor !== '') {
+    } else if (input.cursor !== undefined && input.cursor !== null) {
         warn(`cursor must be a string or number, got ${typeof input.cursor}. Starting from the first page.`);
     }
 
