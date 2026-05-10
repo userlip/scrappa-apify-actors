@@ -10,7 +10,7 @@
       "description": "TikTok hashtag with or without #, full HTTPS TikTok hashtag URL, or numeric challenge ID. Bare numeric values are treated as challenge IDs.",
       "editor": "textfield",
       "prefill": "fyp",
-      "pattern": "^(?:#?[A-Za-z0-9._]{1,255}|[0-9]{1,100}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/tag/[^/?#]+/?(?:[?#].*)?)$"
+      "pattern": "^(?:#?[^\\s?#/=:]{1,255}|[0-9]{1,100}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/tag/[^/?#]+/?(?:[?#].*)?)$"
     },
     "region": {
       "title": "Region",
@@ -30,9 +30,9 @@
     },
     "cursor": {
       "title": "Cursor",
-      "type": "string",
-      "description": "Pagination cursor from a previous run. Leave empty for the first page.",
-      "editor": "textfield",
+      "type": ["string", "number"],
+      "description": "Pagination cursor from a previous run. Leave empty for the first page. API callers may also pass numeric cursors.",
+      "editor": "json",
       "prefill": "0"
     }
   },

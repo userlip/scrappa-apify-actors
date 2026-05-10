@@ -71,15 +71,33 @@ test('warns and omits non-numeric count values', () => {
     assert.match(warnings[0], /count must be an integer between 1 and 50/);
 });
 
-test('warns and omits non-string cursor values', () => {
+test('accepts numeric cursor values', () => {
+    assert.deepEqual(
+        buildTikTokHashtagPostsParams({ hashtag: 'fyp', cursor: 123 }),
+        { challenge_name: 'fyp', cursor: '123' },
+    );
+});
+
+test('warns and omits non-string, non-number cursor values', () => {
     const warnings = [];
     const params = buildTikTokHashtagPostsParams(
-        { hashtag: 'fyp', cursor: 123 },
+        { hashtag: 'fyp', cursor: true },
         (message) => warnings.push(message),
     );
 
     assert.deepEqual(params, { challenge_name: 'fyp' });
-    assert.match(warnings[0], /cursor must be a string/);
+    assert.match(warnings[0], /cursor must be a string or number/);
+});
+
+test('warns and omits non-finite numeric cursor values', () => {
+    const warnings = [];
+    const params = buildTikTokHashtagPostsParams(
+        { hashtag: 'fyp', cursor: Number.NaN },
+        (message) => warnings.push(message),
+    );
+
+    assert.deepEqual(params, { challenge_name: 'fyp' });
+    assert.match(warnings[0], /cursor must be a finite string or number/);
 });
 
 test('omits empty cursor strings', () => {
@@ -112,8 +130,19 @@ test('rejects non-HTTPS TikTok hashtag URLs', () => {
 
 test('rejects malformed TikTok hashtags', () => {
     assert.throws(
-        () => buildTikTokHashtagPostsParams({ challenge_name: 'tik-tok' }),
+        () => buildTikTokHashtagPostsParams({ challenge_name: 'tik/tok' }),
         /TikTok hashtag must be 1 to 255 characters/,
+    );
+});
+
+test('accepts Unicode and emoji hashtag names', () => {
+    assert.deepEqual(
+        buildTikTokHashtagPostsParams({ hashtag: '#booktok🧡' }),
+        { challenge_name: 'booktok🧡' },
+    );
+    assert.deepEqual(
+        buildTikTokHashtagPostsParams({ hashtag: '猫' }),
+        { challenge_name: '猫' },
     );
 });
 

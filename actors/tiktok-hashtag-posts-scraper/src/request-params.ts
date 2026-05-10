@@ -56,8 +56,8 @@ export function normalizeTikTokHashtag(value: string): string {
 
 function normalizeHashtagName(value: string): string {
     const hashtag = value.startsWith('#') ? value.slice(1) : value;
-    if (!/^[\p{L}\p{N}._]{1,255}$/u.test(hashtag)) {
-        throw new Error('TikTok hashtag must be 1 to 255 characters and contain only letters, numbers, dots, or underscores');
+    if (!/^[^\s?#/=:]{1,255}$/u.test(hashtag)) {
+        throw new Error('TikTok hashtag must be 1 to 255 characters and cannot contain whitespace or URL delimiter characters');
     }
 
     return hashtag;
@@ -164,8 +164,14 @@ export function buildTikTokHashtagPostsParams(
         if (cursor !== '') {
             params.cursor = cursor;
         }
+    } else if (typeof input.cursor === 'number') {
+        if (Number.isFinite(input.cursor)) {
+            params.cursor = String(input.cursor);
+        } else {
+            warn(`cursor must be a finite string or number, got ${String(input.cursor)}. Starting from the first page.`);
+        }
     } else if (input.cursor !== undefined && input.cursor !== null && input.cursor !== '') {
-        warn(`cursor must be a string, got ${typeof input.cursor}. Starting from the first page.`);
+        warn(`cursor must be a string or number, got ${typeof input.cursor}. Starting from the first page.`);
     }
 
     if (!lookup) {
