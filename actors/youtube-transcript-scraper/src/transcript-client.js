@@ -73,6 +73,10 @@ function responseRetryDelayMs(response, {
     return headerDelayMs === null ? backoffMs : Math.max(backoffMs, headerDelayMs);
 }
 
+async function releaseResponseBody(response) {
+    await response.body?.cancel?.();
+}
+
 function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
@@ -137,6 +141,7 @@ export async function fetchTranscript(input, {
             throw lastError;
         }
 
+        await releaseResponseBody(response);
         await sleepFn(responseRetryDelayMs(response, {
             attempt,
             retryBaseDelayMs,
