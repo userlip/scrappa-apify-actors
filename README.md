@@ -77,7 +77,7 @@ Current coverage in this repository:
 - 48 live actors in Apify
 - 32 local actor directories in this repo
 - 16 live actors missing a local source directory here
-- 0 local actors pending Apify publication
+- 0 local actors pending Apify publication and pricing
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage |
 |---|---|---|---|---|
