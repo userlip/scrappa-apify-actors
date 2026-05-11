@@ -2,7 +2,11 @@
 
 Last live metadata check: 2026-05-11 via Apify Actor detail API for the `TheScrappa` organization.
 
-This checklist tracks public Scrappa actors whose paid pricing is scheduled for future activation in May 2026. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized. Listing copy such as "$0.20/1k results" is not evidence of active paid pricing.
+This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation in May 2026. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
+Listing copy such as "$0.20/1k results" is not evidence of active paid pricing.
+
+Actors can be included here even when their source files are missing locally; the audit scope is the live Apify actor, not local repository coverage.
+Actors that were private on 2026-05-11 are excluded from the exact-date queue until they become public, but the portfolio backstop below must catch them before or when publication happens.
 
 ## Verification Standard
 
@@ -20,7 +24,8 @@ If any check fails, treat it as P0: update or re-schedule paid pricing immediate
 Use this API command shape for evidence collection without committing secrets:
 
 ```bash
-curl -s "https://api.apify.com/v2/acts/ACTOR_ID?token=$APIFY_TOKEN" \
+curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
+  "https://api.apify.com/v2/acts/ACTOR_ID" \
   | jq '{id: .data.id, name: .data.name, isPublic: .data.isPublic, pricingInfo: .data.pricingInfo, currentPricingInfo: .data.currentPricingInfo, pricingInfos: .data.pricingInfos}'
 ```
 
@@ -79,3 +84,21 @@ Run this backstop on every activation date after checking the due actors:
 - [ ] Record all flagged actor IDs, slugs, blocker messages, and the exact follow-up action/date.
 
 The activation audit is complete only when every public actor is either actively paid or has a documented Apify blocker with the earliest allowed paid activation date.
+
+## Private Scheduled Actors
+
+These actors also had May 17, 2026 scheduled pricing in the live API, but `isPublic` was `false` on 2026-05-11.
+They are intentionally excluded from the public activation queue above and must be added to the queue before publication if they are made public:
+
+- `Y3mKYlGNhsrBE7aZO` - `youtube-api-channel-podcasts`
+- `vKqlzEXa47Ubpuix5` - `youtube-api-get-channel-about-details`
+- `svtEvWGEssObsU72e` - `youtube-api-get-channel-details`
+- `WT3XhaJ0lUYmp0eFu` - `youtube-api-get-channel-livestreams`
+- `3ERhmU2MUBjdR4AOq` - `youtube-api-get-channel-playlists`
+- `608amsD2lD6xRKbax` - `youtube-api-get-channel-shorts`
+- `yJiDippxXaK5hWQRC` - `youtube-api-get-channel-statistics`
+- `N5ol78TtqiMj4MtM6` - `youtube-api-hashtags`
+- `hueJrwkrbo20Ufrna` - `youtube-api-playlists`
+- `eKzA6GhEOJACIiCUW` - `youtube-api-related-videos`
+- `T7ddx0tgVCwMHi9ET` - `youtube-api-trending-videos`
+- `fq5Kq9OfBRWYu9go1` - `youtube-api-video-chapters`
