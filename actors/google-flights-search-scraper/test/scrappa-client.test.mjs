@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
     ScrappaClient,
+    ScrappaNetworkError,
     ScrappaTimeoutError,
     getRetryDelayMs,
     isRetryableScrappaError,
@@ -110,10 +111,45 @@ test('preserves timeout classification when reading an error response aborts', a
 
 test('classifies retryable Scrappa errors and timeout errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);
+    assert.equal(isRetryableScrappaError(new ScrappaNetworkError()), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (429): Rate limited')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (503): Service unavailable')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (422): Invalid request')), false);
     assert.equal(isRetryableScrappaError('Scrappa API error (503): Service unavailable'), false);
+});
+
+test('retries transient fetch network failures', async () => {
+    const originalFetch = globalThis.fetch;
+    const originalSetTimeout = globalThis.setTimeout;
+    let attempts = 0;
+
+    globalThis.fetch = async () => {
+        attempts += 1;
+        if (attempts === 1) {
+            throw new TypeError('fetch failed');
+        }
+
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    };
+    globalThis.setTimeout = (callback) => {
+        callback();
+        return 0;
+    };
+
+    try {
+        const client = new ScrappaClient({
+            apiKey: 'test-key',
+            baseUrl: 'https://example.test/api',
+        });
+
+        const result = await client.get('/flights/one-way', {}, { attempts: 2 });
+
+        assert.deepEqual(result, { ok: true });
+        assert.equal(attempts, 2);
+    } finally {
+        globalThis.fetch = originalFetch;
+        globalThis.setTimeout = originalSetTimeout;
+    }
 });
 
 test('calculates deterministic retry delay with bounded backoff', () => {

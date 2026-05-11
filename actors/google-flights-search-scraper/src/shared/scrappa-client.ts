@@ -25,12 +25,19 @@ export class ScrappaTimeoutError extends Error {
     }
 }
 
+export class ScrappaNetworkError extends Error {
+    constructor(options?: ErrorOptions) {
+        super('Scrappa API request failed before receiving a response', options);
+        this.name = 'ScrappaNetworkError';
+    }
+}
+
 export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
     return Math.min(1000 * Math.pow(2, failedAttempt) + jitterMs, 10000);
 }
 
 export function isRetryableScrappaError(error: unknown): boolean {
-    if (error instanceof ScrappaTimeoutError) {
+    if (error instanceof ScrappaTimeoutError || error instanceof ScrappaNetworkError) {
         return true;
     }
 
@@ -145,10 +152,7 @@ export class ScrappaClient {
         const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
         try {
-            const response = await fetch(url.toString(), {
-                ...requestOptions,
-                signal: controller.signal,
-            });
+            const response = await this.fetchResponse(url, requestOptions, controller);
 
             if (!response.ok) {
                 const errorMessage = await this.readErrorMessage(response);
@@ -163,6 +167,29 @@ export class ScrappaClient {
             throw error;
         } finally {
             clearTimeout(timeoutId);
+        }
+    }
+
+    private async fetchResponse(
+        url: URL,
+        requestOptions: RequestInit,
+        controller: AbortController,
+    ): Promise<Response> {
+        try {
+            return await fetch(url.toString(), {
+                ...requestOptions,
+                signal: controller.signal,
+            });
+        } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw error;
+            }
+
+            if (error instanceof TypeError) {
+                throw new ScrappaNetworkError({ cause: error });
+            }
+
+            throw error;
         }
     }
 
