@@ -75,8 +75,8 @@ This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-10. I
 
 Current coverage in this repository:
 - 49 live `thescrappa` actors in Apify
-- 34 local actor directories in this repo
-- 16 live actors missing a local source directory here
+- 35 local actor directories in this repo
+- 15 live actors missing a local source directory here
 - 1 local actor pending Apify publication and pricing
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
 
@@ -106,7 +106,7 @@ Current coverage in this repository:
 | `actors/tiktok-comments-scraper` | `tiktok-comments-scraper` | `oaJANlheGg9o3EZjU` | TikTok Comments Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/tiktok-followers-scraper` | `tiktok-followers-scraper` | `1WE6uJzTx1DbS5u39` | TikTok Followers Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-21 (`PAY_PER_EVENT`); verify activation |
 | `actors/tiktok-following-scraper` | `tiktok-following-scraper` | `a3CzWl85xlYKi9UIn` | TikTok Following Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-21 (`PAY_PER_EVENT`); verify activation |
-| `Missing locally` | `tiktok-hashtag-posts-scraper` | `H2dZTreGZ7s3XJsQ7` | TikTok Hashtag Posts Scraper | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-24 (`PAY_PER_EVENT`); verify activation |
+| `actors/tiktok-hashtag-posts-scraper` | `tiktok-hashtag-posts-scraper` | `H2dZTreGZ7s3XJsQ7` | TikTok Hashtag Posts Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-24 (`PAY_PER_EVENT`); verify activation |
 | `actors/tiktok-profile-scraper` | `tiktok-profile-scraper` | `ElkkSkWZ7xAaOqsr4` | TikTok Profile Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-19 (`PAY_PER_EVENT`); verify activation |
 | `actors/tiktok-user-posts-scraper` | `tiktok-user-posts-scraper` | `iSnxQQAvqnI0ZKL9F` | TikTok User Posts Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-19 (`PAY_PER_EVENT`); verify activation |
 | `actors/trustpilot-company-reviews-scraper` | `trustpilot-company-reviews-scraper` | `nBSazp2iBmBm1FQvz` | Trustpilot Company Reviews Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-23 (`PAY_PER_EVENT`); verify activation |

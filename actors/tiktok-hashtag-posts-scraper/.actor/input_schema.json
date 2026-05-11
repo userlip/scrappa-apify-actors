@@ -1,0 +1,40 @@
+{
+  "title": "TikTok Hashtag Posts Scraper",
+  "description": "Extract public TikTok posts by hashtag, hashtag URL, or numeric challenge ID.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "hashtag": {
+      "title": "TikTok Hashtag",
+      "type": "string",
+      "description": "TikTok hashtag with or without #, full HTTPS TikTok hashtag URL, or numeric challenge ID. Bare numeric values are treated as challenge IDs.",
+      "editor": "textfield",
+      "prefill": "fyp",
+      "pattern": "^(?:(?![0-9]{101,}$)#?[^\\s?#/=:]{1,255}|[0-9]{1,100}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/tag/[^/?#]+/?(?:[?#].*)?)$"
+    },
+    "region": {
+      "title": "Region",
+      "type": "string",
+      "description": "Optional country or region code, such as US.",
+      "editor": "textfield",
+      "prefill": "US"
+    },
+    "count": {
+      "title": "Posts Per Page",
+      "type": "integer",
+      "description": "Number of posts to return from this page. Scrappa accepts 1-50.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10
+    },
+    "cursor": {
+      "title": "Cursor",
+      "type": ["string", "number"],
+      "description": "Pagination cursor from a previous run. Leave empty for the first page. API callers may also pass numeric cursors.",
+      "editor": "json",
+      "prefill": "0"
+    }
+  },
+  "required": ["hashtag"]
+}

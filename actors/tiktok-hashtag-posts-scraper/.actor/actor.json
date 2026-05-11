@@ -1,0 +1,53 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-hashtag-posts-scraper",
+  "title": "TikTok Hashtag Posts Scraper",
+  "description": "TikTok hashtag scraper for extracting public posts by hashtag, hashtag URL, or challenge ID. Get captions, engagement metrics, author metadata, timestamps, and pagination cursors through Scrappa.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "posts": {
+          "title": "Hashtag Posts",
+          "transformation": {
+            "fields": ["desc", "author", "digg_count", "comment_count", "share_count", "play_count", "create_time", "aweme_id", "lookup_challenge_name", "lookup_challenge_id", "resolved_challenge_name", "resolved_challenge_id", "lookup_region"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "desc": { "label": "Caption", "format": "text" },
+              "author": { "label": "Author", "format": "object" },
+              "digg_count": { "label": "Likes", "format": "number" },
+              "comment_count": { "label": "Comments", "format": "number" },
+              "share_count": { "label": "Shares", "format": "number" },
+              "play_count": { "label": "Views", "format": "number" },
+              "create_time": { "label": "Created", "format": "number" },
+              "aweme_id": { "label": "Post ID", "format": "text" },
+              "lookup_challenge_name": { "label": "Lookup Hashtag", "format": "text" },
+              "lookup_challenge_id": { "label": "Lookup Challenge ID", "format": "text" },
+              "resolved_challenge_name": { "label": "Resolved Hashtag", "format": "text" },
+              "resolved_challenge_id": { "label": "Resolved Challenge ID", "format": "text" },
+              "lookup_region": { "label": "Region", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
