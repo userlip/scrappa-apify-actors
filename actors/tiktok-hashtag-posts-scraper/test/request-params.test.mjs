@@ -146,6 +146,13 @@ test('accepts Unicode and emoji hashtag names', () => {
     );
 });
 
+test('treats domain-like hashtag values as hashtag names', () => {
+    assert.deepEqual(
+        buildTikTokHashtagPostsParams({ hashtag: 'example.tiktok.com' }),
+        { challenge_name: 'example.tiktok.com' },
+    );
+});
+
 test('formats lookup values for logs', () => {
     assert.equal(formatTikTokHashtagPostsLookupForLog({ hashtag: 'fyp' }), '#fyp');
     assert.equal(formatTikTokHashtagPostsLookupForLog({ hashtag: '33380' }), 'challenge_id:33380');

@@ -72,15 +72,10 @@ test('selectChallengeForHashtag prefers exact case-insensitive match', () => {
     });
 });
 
-test('selectChallengeForHashtag marks first-result fallback as approximate', () => {
-    const selected = selectChallengeForHashtag([
+test('selectChallengeForHashtag returns null when no exact match is found', () => {
+    assert.equal(selectChallengeForHashtag([
         { id: '1637342470396934', cha_name: 'fypシ' },
-    ], 'fyp');
-
-    assert.deepEqual(selected, {
-        challenge: { id: '1637342470396934', cha_name: 'fypシ' },
-        isExactMatch: false,
-    });
+    ], 'fyp'), null);
 });
 
 test('selectChallengeForHashtag returns null when search has no challenges', () => {

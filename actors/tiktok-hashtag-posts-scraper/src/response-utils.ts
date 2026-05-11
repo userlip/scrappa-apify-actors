@@ -125,10 +125,7 @@ export function selectChallengeForHashtag(challenges: TikTokChallenge[], hashtag
         };
     }
 
-    return {
-        challenge: challenges[0],
-        isExactMatch: false,
-    };
+    return null;
 }
 
 export function getChallengeId(challenge: TikTokChallenge): string | null {

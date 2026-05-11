@@ -25,8 +25,7 @@ export function normalizeTikTokHashtag(value: string): string {
     }
 
     const isUrlLike = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)
-        || trimmed.startsWith('//')
-        || /(^|\.)tiktok\.com(\/|$)/i.test(trimmed);
+        || trimmed.startsWith('//');
 
     if (isUrlLike) {
         let parsed: URL;

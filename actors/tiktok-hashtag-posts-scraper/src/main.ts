@@ -45,9 +45,6 @@ async function main(): Promise<void> {
             postsParams.challenge_id = challengeId;
             resolvedChallengeName = getChallengeName(selection.challenge) || postsParams.challenge_name;
             delete postsParams.challenge_name;
-            if (!selection.isExactMatch) {
-                console.warn(`No exact challenge match found for hashtag "${params.challenge_name}". Using first TikTok search result: challenge_id:${challengeId}${resolvedChallengeName ? ` (${resolvedChallengeName})` : ''}`);
-            }
             console.log(`Resolved hashtag to challenge_id:${challengeId}${resolvedChallengeName ? ` (${resolvedChallengeName})` : ''}`);
         }
 
