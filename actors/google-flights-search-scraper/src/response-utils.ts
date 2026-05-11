@@ -64,13 +64,18 @@ function firstNumber(...values: unknown[]): number | null {
     return null;
 }
 
-function countStops(legs: FlightLeg[]): number | null {
+function countStops(legs: FlightLeg[], segmentLegs: FlightLeg[][] = []): number | null {
     const stopCounts = legs
         .map((leg) => firstNumber(leg.stops))
         .filter((value): value is number => value !== null);
 
     if (stopCounts.length > 0) {
         return Math.max(...stopCounts);
+    }
+
+    const populatedSegments = segmentLegs.filter((segment) => segment.length > 0);
+    if (populatedSegments.length > 0) {
+        return Math.max(...populatedSegments.map((segment) => Math.max(0, segment.length - 1)));
     }
 
     return legs.length > 0 ? Math.max(0, legs.length - 1) : null;
@@ -119,6 +124,7 @@ export function buildFlightDatasetItems(
         const legs = Array.isArray(flight.legs) ? flight.legs : [];
         const outboundLegs = Array.isArray(flight.outbound_legs) ? flight.outbound_legs : [];
         const returnLegs = Array.isArray(flight.return_legs) ? flight.return_legs : [];
+        const derivedLegs = legs.length > 0 ? legs : [...outboundLegs, ...returnLegs];
         const displayLegs = outboundLegs.length > 0 ? outboundLegs : legs;
         const firstLeg = displayLegs[0] ?? {};
         const lastOutboundLeg = displayLegs[displayLegs.length - 1] ?? {};
@@ -129,9 +135,9 @@ export function buildFlightDatasetItems(
             price: firstNumber(flight.price),
             currency: firstString(flight.currency, params.currency),
             total_duration_minutes: firstNumber(flight.total_duration_minutes),
-            stops: countStops(legs),
-            airline_names: flightAirlines(flight, legs),
-            flight_numbers: legFlightNumbers(legs),
+            stops: countStops(derivedLegs, [outboundLegs, returnLegs]),
+            airline_names: flightAirlines(flight, derivedLegs),
+            flight_numbers: legFlightNumbers(derivedLegs),
             departure_airport: firstString(firstLeg.departure_airport, params.origin),
             arrival_airport: firstString(lastOutboundLeg.arrival_airport, params.destination),
             departure_time: firstString(firstLeg.departure_time),

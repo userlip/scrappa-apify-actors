@@ -143,6 +143,7 @@ test('uses outbound legs for round-trip display route fields', () => {
     assert.equal(items[0].arrival_airport, 'LAX');
     assert.equal(items[0].departure_time, '2026-09-15T08:00:00');
     assert.equal(items[0].arrival_time, '2026-09-15T11:00:00');
+    assert.equal(items[0].stops, 0);
     assert.deepEqual(items[0].return_legs, [
         {
             departure_airport: 'LAX',
@@ -151,6 +152,52 @@ test('uses outbound legs for round-trip display route fields', () => {
             arrival_time: '2026-09-22T23:00:00',
         },
     ]);
+});
+
+test('derives leg fields from segmented round-trip legs when flat legs are missing', () => {
+    const items = buildFlightDatasetItems(
+        {
+            flights: [
+                {
+                    price: 475,
+                    airline_name: 'Delta',
+                    outbound_legs: [
+                        {
+                            departure_airport: 'JFK',
+                            arrival_airport: 'ATL',
+                            airline: 'DL',
+                            flight_number: 'DL100',
+                        },
+                        {
+                            departure_airport: 'ATL',
+                            arrival_airport: 'LAX',
+                            airline: 'DL',
+                            flight_number: 'DL200',
+                        },
+                    ],
+                    return_legs: [
+                        {
+                            departure_airport: 'LAX',
+                            arrival_airport: 'JFK',
+                            airline: 'DL',
+                            flight_number: 'DL300',
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            origin: 'JFK',
+            destination: 'LAX',
+            departure_date: '2026-09-15',
+            return_date: '2026-09-22',
+        },
+        'round_trip',
+    );
+
+    assert.deepEqual(items[0].airline_names, ['Delta']);
+    assert.deepEqual(items[0].flight_numbers, ['DL100', 'DL200', 'DL300']);
+    assert.equal(items[0].stops, 1);
 });
 
 test('falls back to request route when leg airports are missing', () => {
