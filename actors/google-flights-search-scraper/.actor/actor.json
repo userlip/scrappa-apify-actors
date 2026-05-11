@@ -27,7 +27,7 @@
         "flights": {
           "title": "Flights",
           "transformation": {
-            "fields": ["position", "trip_type", "price", "currency", "total_duration_minutes", "stops", "airline_names", "flight_numbers", "departure_airport", "arrival_airport", "departure_time", "arrival_time", "booking_token", "legs", "request_origin", "request_destination", "request_departure_date", "request_return_date", "request_cabin_class", "request_max_stops", "request_sort_by"]
+            "fields": ["position", "trip_type", "price", "currency", "total_duration_minutes", "stops", "airline_names", "flight_numbers", "departure_airport", "arrival_airport", "departure_time", "arrival_time", "booking_token", "legs", "outbound_legs", "return_legs", "request_origin", "request_destination", "request_departure_date", "request_return_date", "request_cabin_class", "request_max_stops", "request_sort_by"]
           },
           "display": {
             "component": "table",
@@ -46,6 +46,8 @@
               "arrival_time": { "label": "Arrival", "format": "date" },
               "booking_token": { "label": "Booking Token", "format": "text" },
               "legs": { "label": "Legs", "format": "object" },
+              "outbound_legs": { "label": "Outbound Legs", "format": "object" },
+              "return_legs": { "label": "Return Legs", "format": "object" },
               "request_origin": { "label": "Requested Origin", "format": "text" },
               "request_destination": { "label": "Requested Destination", "format": "text" },
               "request_departure_date": { "label": "Departure Date", "format": "date" },

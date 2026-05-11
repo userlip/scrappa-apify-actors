@@ -26,6 +26,8 @@ export interface FlightResult {
     currency?: string | null;
     total_duration_minutes?: number | null;
     legs?: FlightLeg[];
+    outbound_legs?: FlightLeg[];
+    return_legs?: FlightLeg[];
     booking_token?: string | null;
     [key: string]: unknown;
 }
@@ -47,7 +49,12 @@ function firstNumber(...values: unknown[]): number | null {
         }
 
         if (typeof value === 'string') {
-            const parsed = Number(value.replace(/,/g, '').trim());
+            const cleaned = value.replace(/,/g, '').trim();
+            if (cleaned === '') {
+                continue;
+            }
+
+            const parsed = Number(cleaned);
             if (Number.isFinite(parsed)) {
                 return parsed;
             }
@@ -77,11 +84,18 @@ function legFlightNumbers(legs: FlightLeg[]): string[] {
 
 function flightAirlines(flight: FlightResult, legs: FlightLeg[]): string[] {
     const topLevelAirline = firstString(flight.airline_name, flight.airline);
+    const legAirlines = legs.map((leg) => {
+        const legAirlineName = firstString(leg.airline_name);
+        if (legAirlineName !== null) {
+            return legAirlineName;
+        }
 
-    return [...new Set([
+        return topLevelAirline === null ? firstString(leg.airline) : null;
+    });
+
+    return [...new Set<string>([
         topLevelAirline,
-        ...legs
-        .map((leg) => firstString(leg.airline_name, topLevelAirline ? undefined : leg.airline))
+        ...legAirlines,
     ].filter((value): value is string => value !== null))];
 }
 
@@ -103,8 +117,11 @@ export function buildFlightDatasetItems(
 
     return getFlights(response).map((flight, index) => {
         const legs = Array.isArray(flight.legs) ? flight.legs : [];
-        const firstLeg = legs[0] ?? {};
-        const lastLeg = legs[legs.length - 1] ?? {};
+        const outboundLegs = Array.isArray(flight.outbound_legs) ? flight.outbound_legs : [];
+        const returnLegs = Array.isArray(flight.return_legs) ? flight.return_legs : [];
+        const displayLegs = outboundLegs.length > 0 ? outboundLegs : legs;
+        const firstLeg = displayLegs[0] ?? {};
+        const lastOutboundLeg = displayLegs[displayLegs.length - 1] ?? {};
 
         return {
             position: index + 1,
@@ -116,12 +133,13 @@ export function buildFlightDatasetItems(
             airline_names: flightAirlines(flight, legs),
             flight_numbers: legFlightNumbers(legs),
             departure_airport: firstString(firstLeg.departure_airport, params.origin),
-            arrival_airport: firstString(lastLeg.arrival_airport, params.destination),
+            arrival_airport: firstString(lastOutboundLeg.arrival_airport, params.destination),
             departure_time: firstString(firstLeg.departure_time),
-            arrival_time: firstString(lastLeg.arrival_time),
+            arrival_time: firstString(lastOutboundLeg.arrival_time),
             booking_token: firstString(flight.booking_token),
             legs,
-            raw_flight: flight,
+            outbound_legs: outboundLegs,
+            return_legs: returnLegs,
             search_metadata: metadata,
             request_origin: params.origin,
             request_destination: params.destination,
