@@ -60,7 +60,9 @@
       "type": "string",
       "description": "Three-letter currency code such as USD, EUR, or GBP.",
       "editor": "textfield",
+      "minLength": 3,
       "maxLength": 3,
+      "pattern": "^[A-Za-z]{3}$",
       "default": "USD"
     },
     "gl": {
@@ -68,7 +70,9 @@
       "type": "string",
       "description": "Two-letter Google country code such as us, fr, gb, or de.",
       "editor": "textfield",
+      "minLength": 2,
       "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
       "default": "us"
     },
     "hl": {
@@ -76,7 +80,9 @@
       "type": "string",
       "description": "Two-letter language code such as en, fr, de, or es.",
       "editor": "textfield",
+      "minLength": 2,
       "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
       "default": "en"
     },
     "sort_by": {
@@ -99,7 +105,8 @@
       "type": "integer",
       "description": "Maximum nightly price. Must be greater than Minimum Price and within 5000.",
       "editor": "number",
-      "minimum": 0
+      "minimum": 1,
+      "maximum": 5000
     },
     "hotel_class": {
       "title": "Hotel Class",

@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildGoogleHotelsSearchParams, describeGoogleHotelsSearchRequest } from '../dist/request-params.js';
+const requestParamsModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/request-params.ts'
+    : '../dist/request-params.js';
+const { buildGoogleHotelsSearchParams, describeGoogleHotelsSearchRequest } = await import(requestParamsModule);
 
 test('builds params for a complete hotel search request', () => {
     assert.deepEqual(
@@ -73,6 +76,14 @@ test('requires query and valid date range', () => {
         }),
         /check_in_date must be a valid calendar date/,
     );
+    assert.throws(
+        () => buildGoogleHotelsSearchParams({
+            q: 'Paris',
+            check_in_date: '2020-01-01',
+            check_out_date: '2026-06-15',
+        }),
+        /check_in_date must be today or a future date/,
+    );
 });
 
 test('validates guest and price constraints', () => {
@@ -96,6 +107,30 @@ test('validates guest and price constraints', () => {
         }),
         /max_price must be greater than min_price/,
     );
+    assert.throws(
+        () => buildGoogleHotelsSearchParams({
+            q: 'Paris',
+            check_in_date: '2026-06-15',
+            check_out_date: '2026-06-18',
+            min_price: 0,
+            max_price: 5001,
+        }),
+        /max_price must be between 1 and 5000/,
+    );
+    assert.deepEqual(
+        buildGoogleHotelsSearchParams({
+            q: 'Paris',
+            check_in_date: '2026-06-15',
+            check_out_date: '2026-06-18',
+            min_price: 200,
+        }),
+        {
+            q: 'Paris',
+            check_in_date: '2026-06-15',
+            check_out_date: '2026-06-18',
+            min_price: 200,
+        },
+    );
 });
 
 test('rejects unsupported filter combinations', () => {
@@ -118,6 +153,56 @@ test('rejects unsupported filter combinations', () => {
             hotel_class: 4,
         }),
         /hotel_class and brands are not available/,
+    );
+    assert.throws(
+        () => buildGoogleHotelsSearchParams({
+            q: 'Paris',
+            check_in_date: '2026-06-15',
+            check_out_date: '2026-06-18',
+            vacation_rentals: true,
+            eco_certified: true,
+        }),
+        /free_cancellation, eco_certified, and special_offers are not available/,
+    );
+    assert.throws(
+        () => buildGoogleHotelsSearchParams({
+            q: 'Paris',
+            check_in_date: '2026-06-15',
+            check_out_date: '2026-06-18',
+            vacation_rentals: false,
+            bedrooms: 2,
+        }),
+        /bedrooms and bathrooms are only available/,
+    );
+});
+
+test('rejects malformed codes and comma-separated integer lists', () => {
+    assert.throws(
+        () => buildGoogleHotelsSearchParams({
+            q: 'Paris',
+            check_in_date: '2026-06-15',
+            check_out_date: '2026-06-18',
+            currency: 'EURO',
+        }),
+        /currency must be 3 characters or fewer/,
+    );
+    assert.throws(
+        () => buildGoogleHotelsSearchParams({
+            q: 'Paris',
+            check_in_date: '2026-06-15',
+            check_out_date: '2026-06-18',
+            amenities: '35,bad,9',
+        }),
+        /amenities\[1\] must be an integer/,
+    );
+    assert.throws(
+        () => buildGoogleHotelsSearchParams({
+            q: 'Paris',
+            check_in_date: '2026-06-15',
+            check_out_date: '2026-06-18',
+            property_types: '17,,18',
+        }),
+        /property_types\[1\] must be an integer/,
     );
 });
 
@@ -143,6 +228,19 @@ test('builds vacation rental params and describes requests', () => {
     });
     assert.equal(
         describeGoogleHotelsSearchRequest(params),
-        '"Aspen cabins" 2026-12-10 to 2026-12-14 (vacation_rentals=true, next_page_token=page-token)',
+        '"Aspen cabins" 2026-12-10 to 2026-12-14 (bathrooms=2, bedrooms=2, next_page_token=page-token, vacation_rentals=true)',
+    );
+});
+
+test('describes all active params including boolean filters', () => {
+    assert.equal(
+        describeGoogleHotelsSearchRequest({
+            q: 'Paris',
+            check_in_date: '2026-06-15',
+            check_out_date: '2026-06-18',
+            free_cancellation: true,
+            currency: 'EUR',
+        }),
+        '"Paris" 2026-06-15 to 2026-06-18 (currency=EUR, free_cancellation=true)',
     );
 });

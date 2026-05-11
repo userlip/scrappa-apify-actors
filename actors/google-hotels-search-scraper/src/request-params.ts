@@ -29,6 +29,7 @@ export interface GoogleHotelsSearchInput {
 const SORT_BY_VALUES = [3, 8, 13] as const;
 const HOTEL_CLASS_VALUES = [2, 3, 4, 5] as const;
 const RATING_VALUES = [7, 8, 9] as const;
+const MAX_PRICE = 5000;
 
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null || value === '') {
@@ -60,7 +61,7 @@ function cleanRequiredString(value: unknown, field: string, maxLength: number): 
     return cleaned;
 }
 
-function cleanDate(value: unknown, field: string): string {
+function cleanDate(value: unknown, field: string, options: { futureOrToday?: boolean } = {}): string {
     const date = cleanRequiredString(value, field, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         throw new Error(`${field} must use YYYY-MM-DD format`);
@@ -69,6 +70,13 @@ function cleanDate(value: unknown, field: string): string {
     const parsed = new Date(`${date}T00:00:00.000Z`);
     if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
         throw new Error(`${field} must be a valid calendar date`);
+    }
+
+    if (options.futureOrToday) {
+        const today = new Date().toISOString().slice(0, 10);
+        if (date < today) {
+            throw new Error(`${field} must be today or a future date`);
+        }
     }
 
     return date;
@@ -143,7 +151,14 @@ function cleanIntegerArray(value: unknown, field: string, min?: number, max?: nu
     if (Array.isArray(value)) {
         values = value;
     } else if (typeof value === 'string') {
-        values = value.split(',').map((part) => Number(part.trim())).filter((part) => !Number.isNaN(part));
+        const parts = value.split(',').map((part) => part.trim());
+        values = parts.map((part, index) => {
+            if (part === '' || !/^-?\d+$/.test(part)) {
+                throw new Error(`${field}[${index}] must be an integer`);
+            }
+
+            return Number(part);
+        });
     } else {
         throw new Error(`${field} must be an array of integers or a comma-separated string`);
     }
@@ -165,7 +180,7 @@ function cleanIntegerArray(value: unknown, field: string, min?: number, max?: nu
 }
 
 function setParam(params: Record<string, unknown>, field: string, value: unknown): void {
-    if (value === undefined) {
+    if (value === undefined || value === false) {
         return;
     }
 
@@ -175,7 +190,7 @@ function setParam(params: Record<string, unknown>, field: string, value: unknown
 export function buildGoogleHotelsSearchParams(input: GoogleHotelsSearchInput): Record<string, unknown> {
     const params: Record<string, unknown> = {
         q: cleanRequiredString(input.q, 'q', 200),
-        check_in_date: cleanDate(input.check_in_date, 'check_in_date'),
+        check_in_date: cleanDate(input.check_in_date, 'check_in_date', { futureOrToday: true }),
         check_out_date: cleanDate(input.check_out_date, 'check_out_date'),
     };
 
@@ -194,7 +209,7 @@ export function buildGoogleHotelsSearchParams(input: GoogleHotelsSearchInput): R
     }
 
     const minPrice = cleanInteger(input.min_price, 'min_price', 0);
-    const maxPrice = cleanInteger(input.max_price, 'max_price', 0);
+    const maxPrice = cleanInteger(input.max_price, 'max_price', 1, MAX_PRICE);
     if (minPrice !== undefined && maxPrice !== undefined) {
         if (maxPrice <= minPrice) {
             throw new Error('max_price must be greater than min_price');
@@ -268,8 +283,10 @@ export function describeGoogleHotelsSearchRequest(params: Record<string, unknown
         `"${String(params.q ?? 'unknown location')}"`,
         `${String(params.check_in_date)} to ${String(params.check_out_date)}`,
     ];
-    const filters = ['adults', 'children', 'currency', 'gl', 'hl', 'sort_by', 'min_price', 'max_price', 'hotel_class', 'rating', 'vacation_rentals', 'property_token', 'next_page_token']
-        .filter((field) => params[field] !== undefined)
+    const excludedFields = new Set(['q', 'check_in_date', 'check_out_date']);
+    const filters = Object.keys(params)
+        .filter((field) => !excludedFields.has(field) && params[field] !== undefined)
+        .sort()
         .map((field) => `${field}=${String(params[field])}`);
 
     return filters.length > 0 ? `${parts.join(' ')} (${filters.join(', ')})` : parts.join(' ');

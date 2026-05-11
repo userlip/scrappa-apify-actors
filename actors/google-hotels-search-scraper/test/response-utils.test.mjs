@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildHotelDatasetItem, getHotelProperties } from '../dist/response-utils.js';
+const responseUtilsModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/response-utils.ts'
+    : '../dist/response-utils.js';
+const { buildHotelDatasetItem, getHotelProperties } = await import(responseUtilsModule);
 
 test('extracts properties from primary and legacy response shapes', () => {
     assert.deepEqual(getHotelProperties({ properties: [{ name: 'Hotel A' }] }), [{ name: 'Hotel A' }]);
