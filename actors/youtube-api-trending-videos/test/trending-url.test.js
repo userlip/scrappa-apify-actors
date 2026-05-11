@@ -32,6 +32,25 @@ describe('buildTrendingRequest', () => {
 
         assert.equal(request.url, 'https://ytapi.scrappa.co/trending');
     });
+
+    it('uses the first non-null array value and ignores extras', () => {
+        const url = new URL(buildTrendingRequest({
+            category: [null, undefined, 'gaming', 'music'],
+            type: [null, 'now'],
+        }).url);
+
+        assert.equal(url.searchParams.get('category'), 'gaming');
+        assert.equal(url.searchParams.get('type'), 'now');
+    });
+
+    it('ignores non-string scalar values', () => {
+        const request = buildTrendingRequest({
+            category: 123,
+            type: false,
+        });
+
+        assert.equal(request.url, 'https://ytapi.scrappa.co/trending');
+    });
 });
 
 describe('trendingVideosToDatasetItems', () => {
@@ -53,6 +72,10 @@ describe('trendingVideosToDatasetItems', () => {
 
     it('returns an empty array when no result list is present', () => {
         assert.deepEqual(trendingVideosToDatasetItems({}), []);
+    });
+
+    it('returns an empty array when the result fields are not arrays', () => {
+        assert.deepEqual(trendingVideosToDatasetItems({ results: {}, videos: {} }), []);
     });
 });
 

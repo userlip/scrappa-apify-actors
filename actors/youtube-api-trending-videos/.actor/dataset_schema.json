@@ -50,7 +50,44 @@
       "channel": {
         "type": ["object", "null"],
         "title": "Channel",
-        "description": "Channel metadata for the video."
+        "description": "Channel metadata for the video.",
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "title": "Channel ID",
+            "description": "The YouTube channel ID.",
+            "example": "UC-J-KZfRV8c13fOCkhXdLiQ"
+          },
+          "name": {
+            "type": ["string", "null"],
+            "title": "Channel name",
+            "description": "The channel display name.",
+            "example": "Dua Lipa"
+          },
+          "thumbnail": {
+            "type": ["string", "null"],
+            "title": "Channel thumbnail",
+            "description": "The channel thumbnail image URL."
+          },
+          "verified": {
+            "type": ["boolean", "null"],
+            "title": "Verified channel",
+            "description": "Whether YouTube marks the channel as verified.",
+            "example": false
+          },
+          "isVerifiedArtist": {
+            "type": ["boolean", "null"],
+            "title": "Verified artist",
+            "description": "Whether YouTube marks the channel as a verified artist.",
+            "example": true
+          },
+          "url": {
+            "type": ["string", "null"],
+            "title": "Channel URL",
+            "description": "The YouTube channel URL.",
+            "example": "https://www.youtube.com/channel/UC-J-KZfRV8c13fOCkhXdLiQ"
+          }
+        }
       },
       "badges": {
         "type": ["array", "null"],
