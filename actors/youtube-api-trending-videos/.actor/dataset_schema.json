@@ -1,0 +1,133 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "type": {
+        "type": "string",
+        "title": "Result type",
+        "description": "The result type returned by YouTube.",
+        "example": "Video"
+      },
+      "id": {
+        "type": "string",
+        "title": "Video ID",
+        "description": "The YouTube video identifier.",
+        "example": "k2qgadSvNyU"
+      },
+      "title": {
+        "type": "string",
+        "title": "Title",
+        "description": "The video title.",
+        "example": "Dua Lipa - New Rules (Official Music Video)"
+      },
+      "description": {
+        "type": ["string", "null"],
+        "title": "Description",
+        "description": "The video description or snippet."
+      },
+      "thumbnail": {
+        "type": ["string", "null"],
+        "title": "Thumbnail",
+        "description": "The video thumbnail URL."
+      },
+      "duration": {
+        "type": ["string", "null"],
+        "title": "Duration",
+        "description": "The display duration for the video."
+      },
+      "viewCount": {
+        "type": ["string", "null"],
+        "title": "View count",
+        "description": "The display view count returned by YouTube."
+      },
+      "publishedTime": {
+        "type": ["string", "null"],
+        "title": "Published time",
+        "description": "The relative publish time returned by YouTube."
+      },
+      "channel": {
+        "type": ["object", "null"],
+        "title": "Channel",
+        "description": "Channel metadata for the video."
+      },
+      "badges": {
+        "type": ["array", "null"],
+        "title": "Badges",
+        "description": "Labels returned by YouTube.",
+        "items": {
+          "type": "string"
+        }
+      },
+      "isLive": {
+        "type": ["boolean", "null"],
+        "title": "Is live"
+      },
+      "isShort": {
+        "type": ["boolean", "null"],
+        "title": "Is Short"
+      },
+      "isPremium": {
+        "type": ["boolean", "null"],
+        "title": "Is Premium"
+      },
+      "expandableMetadata": {
+        "type": ["object", "null"],
+        "title": "Expandable metadata"
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "YouTube Trending Videos",
+      "transformation": {
+        "fields": [
+          "type",
+          "id",
+          "title",
+          "channel.name",
+          "channel.url",
+          "duration",
+          "viewCount",
+          "publishedTime",
+          "thumbnail",
+          "badges",
+          "isLive",
+          "isShort",
+          "isPremium"
+        ],
+        "flatten": ["channel"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "type": {
+            "label": "Type",
+            "format": "text"
+          },
+          "id": {
+            "label": "ID",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "channel.name": {
+            "label": "Channel",
+            "format": "text"
+          },
+          "channel.url": {
+            "label": "Channel URL",
+            "format": "link"
+          },
+          "thumbnail": {
+            "label": "Thumbnail",
+            "format": "image"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "actorSpecification": 1,
+  "name": "youtube-api-trending-videos",
+  "title": "YouTube Trending Videos Scraper",
+  "description": "Get YouTube trending videos by category and trending type.",
+  "version": "0.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  },
+  "dockerfile": "./Dockerfile"
+}
