@@ -79,7 +79,11 @@ function responseRetryDelayMs(response, {
 }
 
 async function releaseResponseBody(response) {
-    await response.body?.cancel?.();
+    try {
+        await response.body?.cancel?.();
+    } catch {
+        // Body cleanup should not turn a retryable Scrappa response into a hard failure.
+    }
 }
 
 function sleep(ms) {

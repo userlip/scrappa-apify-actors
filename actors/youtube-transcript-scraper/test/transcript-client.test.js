@@ -405,6 +405,44 @@ describe('fetchTranscript', () => {
         assert.equal(cancelCalls, 1);
     });
 
+    it('continues retrying when response body cancellation fails', async () => {
+        let calls = 0;
+        let cancelCalls = 0;
+
+        const result = await fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+            apiKey: 'secret-key',
+            retryBaseDelayMs: 5,
+            randomFn: () => 0,
+            sleepFn: async () => {},
+            fetchFn: async () => {
+                calls++;
+
+                if (calls === 1) {
+                    return {
+                        ok: false,
+                        status: 522,
+                        statusText: '',
+                        body: {
+                            cancel: async () => {
+                                cancelCalls++;
+                                throw new Error('stream already closed');
+                            },
+                        },
+                    };
+                }
+
+                return {
+                    ok: true,
+                    json: async () => ({ videoId: 'dQw4w9WgXcQ', transcript: [] }),
+                };
+            },
+        });
+
+        assert.equal(result.data.videoId, 'dQw4w9WgXcQ');
+        assert.equal(calls, 2);
+        assert.equal(cancelCalls, 1);
+    });
+
     it('adds context to invalid JSON responses', async () => {
         await assert.rejects(
             () => fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
