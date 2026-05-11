@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { buildTranscriptRequest, fetchTranscript } from '../src/transcript-client.js';
+import {
+    SCRAPPA_MAX_TIMER_DELAY_MS,
+    buildTranscriptRequest,
+    fetchTranscript,
+} from '../src/transcript-client.js';
 
 describe('buildTranscriptRequest', () => {
     it('adds Scrappa API headers', () => {
@@ -302,6 +306,67 @@ describe('fetchTranscript', () => {
 
         assert.equal(result.data.videoId, 'dQw4w9WgXcQ');
         assert.deepEqual(delays, [1000]);
+    });
+
+    it('clamps oversized numeric Retry-After delays to the supported timer range', async () => {
+        const delays = [];
+
+        const result = await fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+            apiKey: 'secret-key',
+            retryBaseDelayMs: 100,
+            randomFn: () => 0,
+            sleepFn: async (ms) => delays.push(ms),
+            fetchFn: async () => {
+                if (delays.length === 0) {
+                    return {
+                        ok: false,
+                        status: 429,
+                        statusText: 'Too Many Requests',
+                        headers: new Headers({ 'retry-after': '9999999999' }),
+                    };
+                }
+
+                return {
+                    ok: true,
+                    json: async () => ({ videoId: 'dQw4w9WgXcQ', transcript: [] }),
+                };
+            },
+        });
+
+        assert.equal(result.data.videoId, 'dQw4w9WgXcQ');
+        assert.deepEqual(delays, [SCRAPPA_MAX_TIMER_DELAY_MS]);
+    });
+
+    it('clamps oversized HTTP-date Retry-After delays to the supported timer range', async () => {
+        const delays = [];
+        const nowMs = Date.UTC(2026, 4, 10, 12, 0, 0);
+        const retryAt = new Date(nowMs + SCRAPPA_MAX_TIMER_DELAY_MS + 60000).toUTCString();
+
+        const result = await fetchTranscript({ id: 'dQw4w9WgXcQ' }, {
+            apiKey: 'secret-key',
+            retryBaseDelayMs: 100,
+            randomFn: () => 0,
+            nowFn: () => nowMs,
+            sleepFn: async (ms) => delays.push(ms),
+            fetchFn: async () => {
+                if (delays.length === 0) {
+                    return {
+                        ok: false,
+                        status: 503,
+                        statusText: 'Service Unavailable',
+                        headers: new Headers({ 'retry-after': retryAt }),
+                    };
+                }
+
+                return {
+                    ok: true,
+                    json: async () => ({ videoId: 'dQw4w9WgXcQ', transcript: [] }),
+                };
+            },
+        });
+
+        assert.equal(result.data.videoId, 'dQw4w9WgXcQ');
+        assert.deepEqual(delays, [SCRAPPA_MAX_TIMER_DELAY_MS]);
     });
 
     it('cancels retryable response bodies before sleeping', async () => {

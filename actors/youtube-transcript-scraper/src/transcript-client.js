@@ -6,6 +6,7 @@ export const SCRAPPA_RETRY_BASE_DELAY_MS = 1000;
 export const SCRAPPA_RETRY_MAX_DELAY_MS = 10000;
 export const SCRAPPA_RETRY_JITTER_RATIO = 0.2;
 export const SCRAPPA_RETRYABLE_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504, 522]);
+export const SCRAPPA_MAX_TIMER_DELAY_MS = 2147483647;
 
 export function buildTranscriptRequest(input, apiKey, timeoutMs = SCRAPPA_REQUEST_TIMEOUT_MS) {
     const apiUrl = buildTranscriptUrl(input);
@@ -33,11 +34,15 @@ function networkRequestError(error) {
     return new Error(`Scrappa API request failed before receiving a response: ${message}`);
 }
 
+function timerDelayMs(delayMs) {
+    return Math.min(delayMs, SCRAPPA_MAX_TIMER_DELAY_MS);
+}
+
 function retryDelayMs(attempt, baseDelayMs, maxDelayMs, jitterRatio, randomFn) {
     const delayMs = Math.min(baseDelayMs * (2 ** (attempt - 1)), maxDelayMs);
     const jitterMs = delayMs * jitterRatio * randomFn();
 
-    return Math.min(delayMs + jitterMs, maxDelayMs);
+    return timerDelayMs(Math.min(delayMs + jitterMs, maxDelayMs));
 }
 
 function retryAfterDelayMs(response, nowMs) {
@@ -48,12 +53,12 @@ function retryAfterDelayMs(response, nowMs) {
 
     const seconds = Number(retryAfter);
     if (Number.isFinite(seconds) && seconds >= 0) {
-        return seconds * 1000;
+        return timerDelayMs(seconds * 1000);
     }
 
     const retryAtMs = Date.parse(retryAfter);
     if (Number.isFinite(retryAtMs)) {
-        return Math.max(0, retryAtMs - nowMs);
+        return timerDelayMs(Math.max(0, retryAtMs - nowMs));
     }
 
     return null;
