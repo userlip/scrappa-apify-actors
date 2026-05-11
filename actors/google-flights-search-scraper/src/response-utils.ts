@@ -81,6 +81,23 @@ function countStops(legs: FlightLeg[], segmentLegs: FlightLeg[][] = []): number 
     return legs.length > 0 ? Math.max(0, legs.length - 1) : null;
 }
 
+function segmentFlatRoundTripLegs(legs: FlightLeg[], params: Record<string, unknown>): FlightLeg[][] {
+    const destination = firstString(params.destination);
+    if (destination === null) {
+        return [];
+    }
+
+    const outboundEndIndex = legs.findIndex((leg) => firstString(leg.arrival_airport) === destination);
+    if (outboundEndIndex < 0 || outboundEndIndex >= legs.length - 1) {
+        return [];
+    }
+
+    return [
+        legs.slice(0, outboundEndIndex + 1),
+        legs.slice(outboundEndIndex + 1),
+    ];
+}
+
 function legFlightNumbers(legs: FlightLeg[]): string[] {
     return legs
         .map((leg) => firstString(leg.flight_number))
@@ -126,6 +143,14 @@ export function buildFlightDatasetItems(
         const returnLegs = Array.isArray(flight.return_legs) ? flight.return_legs : [];
         const derivedLegs = legs.length > 0 ? legs : [...outboundLegs, ...returnLegs];
         const displayLegs = outboundLegs.length > 0 ? outboundLegs : legs;
+        let stopSegments = outboundLegs.length > 0 || returnLegs.length > 0
+            ? [outboundLegs, returnLegs]
+            : [];
+
+        if (stopSegments.length === 0 && tripType === 'round_trip') {
+            stopSegments = segmentFlatRoundTripLegs(derivedLegs, params);
+        }
+
         const firstLeg = displayLegs[0] ?? {};
         const lastOutboundLeg = displayLegs[displayLegs.length - 1] ?? {};
 
@@ -135,7 +160,7 @@ export function buildFlightDatasetItems(
             price: firstNumber(flight.price),
             currency: firstString(flight.currency, params.currency),
             total_duration_minutes: firstNumber(flight.total_duration_minutes),
-            stops: countStops(derivedLegs, [outboundLegs, returnLegs]),
+            stops: countStops(derivedLegs, stopSegments),
             airline_names: flightAirlines(flight, derivedLegs),
             flight_numbers: legFlightNumbers(derivedLegs),
             departure_airport: firstString(firstLeg.departure_airport, params.origin),

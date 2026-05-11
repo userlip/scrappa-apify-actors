@@ -201,6 +201,39 @@ test('derives leg fields from segmented round-trip legs when flat legs are missi
     assert.equal(items[0].stops, 1);
 });
 
+test('does not count a flat round-trip return leg as an outbound stop', () => {
+    const items = buildFlightDatasetItems(
+        {
+            flights: [
+                {
+                    price: 450,
+                    legs: [
+                        {
+                            departure_airport: 'JFK',
+                            arrival_airport: 'LAX',
+                            flight_number: 'DL100',
+                        },
+                        {
+                            departure_airport: 'LAX',
+                            arrival_airport: 'JFK',
+                            flight_number: 'DL101',
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            origin: 'JFK',
+            destination: 'LAX',
+            departure_date: '2026-09-15',
+            return_date: '2026-09-22',
+        },
+        'round_trip',
+    );
+
+    assert.equal(items[0].stops, 0);
+});
+
 test('falls back to request route when leg airports are missing', () => {
     const items = buildFlightDatasetItems(
         {
