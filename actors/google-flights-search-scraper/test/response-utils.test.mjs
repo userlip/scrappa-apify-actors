@@ -197,6 +197,7 @@ test('derives leg fields from segmented round-trip legs when flat legs are missi
 
     assert.deepEqual(items[0].airline_names, ['Delta']);
     assert.deepEqual(items[0].flight_numbers, ['DL100', 'DL200', 'DL300']);
+    assert.deepEqual(items[0].legs.map((leg) => leg.flight_number), ['DL100', 'DL200', 'DL300']);
     assert.equal(items[0].stops, 1);
 });
 

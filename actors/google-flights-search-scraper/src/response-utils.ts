@@ -143,7 +143,7 @@ export function buildFlightDatasetItems(
             departure_time: firstString(firstLeg.departure_time),
             arrival_time: firstString(lastOutboundLeg.arrival_time),
             booking_token: firstString(flight.booking_token),
-            legs,
+            legs: derivedLegs,
             outbound_legs: outboundLegs,
             return_legs: returnLegs,
             search_metadata: metadata,
