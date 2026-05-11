@@ -89,15 +89,15 @@ test('warns and omits non-string, non-number cursor values', () => {
     assert.match(warnings[0], /cursor must be a string or number/);
 });
 
-test('warns and omits non-finite numeric cursor values', () => {
+test('warns and omits unsafe numeric cursor values', () => {
     const warnings = [];
     const params = buildTikTokHashtagPostsParams(
-        { hashtag: 'fyp', cursor: Number.NaN },
+        { hashtag: 'fyp', cursor: 1e21 },
         (message) => warnings.push(message),
     );
 
     assert.deepEqual(params, { challenge_name: 'fyp' });
-    assert.match(warnings[0], /cursor must be a finite string or number/);
+    assert.match(warnings[0], /cursor must be a string or safe integer/);
 });
 
 test('omits empty cursor strings', () => {

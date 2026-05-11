@@ -164,10 +164,10 @@ export function buildTikTokHashtagPostsParams(
             params.cursor = cursor;
         }
     } else if (typeof input.cursor === 'number') {
-        if (Number.isFinite(input.cursor)) {
+        if (Number.isSafeInteger(input.cursor)) {
             params.cursor = String(input.cursor);
         } else {
-            warn(`cursor must be a finite string or number, got ${String(input.cursor)}. Starting from the first page.`);
+            warn(`cursor must be a string or safe integer, got ${String(input.cursor)}. Starting from the first page.`);
         }
     } else if (input.cursor !== undefined && input.cursor !== null) {
         warn(`cursor must be a string or number, got ${typeof input.cursor}. Starting from the first page.`);
