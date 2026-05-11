@@ -1,0 +1,66 @@
+{
+  "actorSpecification": 1,
+  "name": "google-hotels-search-scraper",
+  "title": "Google Hotels Search Scraper",
+  "description": "Scrape Google Hotels search results with prices, ratings, amenities, booking links, availability dates, and pagination.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 240
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "hotels": {
+          "title": "Hotels",
+          "transformation": {
+            "fields": ["name", "type", "hotel_class", "overall_rating", "reviews", "rate_per_night_lowest", "rate_per_night_extracted_lowest", "total_rate_lowest", "total_rate_extracted_lowest", "booking_link", "property_token", "entity_id", "place_id", "latitude", "longitude", "thumbnail", "price_sources_count", "amenities_count", "request_q", "request_check_in_date", "request_check_out_date", "request_adults", "request_children", "request_currency", "request_gl", "request_hl"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": { "label": "Name", "format": "text" },
+              "type": { "label": "Type", "format": "text" },
+              "hotel_class": { "label": "Class", "format": "text" },
+              "overall_rating": { "label": "Rating", "format": "number" },
+              "reviews": { "label": "Reviews", "format": "number" },
+              "rate_per_night_lowest": { "label": "Nightly Rate", "format": "text" },
+              "rate_per_night_extracted_lowest": { "label": "Nightly Rate Numeric", "format": "number" },
+              "total_rate_lowest": { "label": "Total Rate", "format": "text" },
+              "total_rate_extracted_lowest": { "label": "Total Rate Numeric", "format": "number" },
+              "booking_link": { "label": "Booking Link", "format": "link" },
+              "property_token": { "label": "Property Token", "format": "text" },
+              "entity_id": { "label": "Entity ID", "format": "text" },
+              "place_id": { "label": "Place ID", "format": "text" },
+              "latitude": { "label": "Latitude", "format": "number" },
+              "longitude": { "label": "Longitude", "format": "number" },
+              "thumbnail": { "label": "Thumbnail", "format": "image" },
+              "price_sources_count": { "label": "Price Sources", "format": "number" },
+              "amenities_count": { "label": "Amenities", "format": "number" },
+              "request_q": { "label": "Request Query", "format": "text" },
+              "request_check_in_date": { "label": "Check-in", "format": "date" },
+              "request_check_out_date": { "label": "Check-out", "format": "date" },
+              "request_adults": { "label": "Adults", "format": "number" },
+              "request_children": { "label": "Children", "format": "number" },
+              "request_currency": { "label": "Currency", "format": "text" },
+              "request_gl": { "label": "Country", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

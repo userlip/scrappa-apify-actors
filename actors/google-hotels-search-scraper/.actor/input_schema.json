@@ -1,0 +1,201 @@
+{
+  "title": "Google Hotels Search Scraper",
+  "description": "Search Google Hotels by destination with dates, guests, price filters, rating filters, hotel class, amenities, and pagination.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["q", "check_in_date", "check_out_date"],
+  "properties": {
+    "q": {
+      "title": "Destination or Hotel Query",
+      "type": "string",
+      "description": "Location, landmark, area, or hotel query to search in Google Hotels.",
+      "editor": "textfield",
+      "prefill": "Paris, France"
+    },
+    "check_in_date": {
+      "title": "Check-in Date",
+      "type": "string",
+      "description": "Check-in date in YYYY-MM-DD format. Must be today or a future date.",
+      "editor": "textfield",
+      "prefill": "2026-06-15"
+    },
+    "check_out_date": {
+      "title": "Check-out Date",
+      "type": "string",
+      "description": "Check-out date in YYYY-MM-DD format. Must be after the check-in date.",
+      "editor": "textfield",
+      "prefill": "2026-06-18"
+    },
+    "adults": {
+      "title": "Adults",
+      "type": "integer",
+      "description": "Number of adults.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    },
+    "children": {
+      "title": "Children",
+      "type": "integer",
+      "description": "Number of children. If greater than 0, provide matching Children Ages.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 6,
+      "default": 0
+    },
+    "children_ages": {
+      "title": "Children Ages",
+      "type": "array",
+      "description": "Ages for each child, 1-17. The number of ages must match Children.",
+      "editor": "json",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 17
+      }
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string",
+      "description": "Three-letter currency code such as USD, EUR, or GBP.",
+      "editor": "textfield",
+      "maxLength": 3,
+      "default": "USD"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter Google country code such as us, fr, gb, or de.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "us"
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter language code such as en, fr, de, or es.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "en"
+    },
+    "sort_by": {
+      "title": "Sort By",
+      "type": "integer",
+      "description": "Google Hotels sort mode: 3 for lowest price, 8 for highest rating, 13 for most reviewed.",
+      "editor": "select",
+      "enum": [3, 8, 13],
+      "enumTitles": ["Lowest price", "Highest rating", "Most reviewed"]
+    },
+    "min_price": {
+      "title": "Minimum Price",
+      "type": "integer",
+      "description": "Minimum nightly price.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "max_price": {
+      "title": "Maximum Price",
+      "type": "integer",
+      "description": "Maximum nightly price. Must be greater than Minimum Price and within 5000.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "hotel_class": {
+      "title": "Hotel Class",
+      "type": "integer",
+      "description": "Hotel star class filter.",
+      "editor": "select",
+      "enum": [2, 3, 4, 5],
+      "enumTitles": ["2-star", "3-star", "4-star", "5-star"]
+    },
+    "rating": {
+      "title": "Minimum Rating",
+      "type": "integer",
+      "description": "Google Hotels minimum rating filter: 7 means 3.5+, 8 means 4.0+, 9 means 4.5+.",
+      "editor": "select",
+      "enum": [7, 8, 9],
+      "enumTitles": ["3.5+", "4.0+", "4.5+"]
+    },
+    "free_cancellation": {
+      "title": "Free Cancellation",
+      "type": "boolean",
+      "description": "Return only properties with free cancellation. Cannot be combined with price, class, rating, amenities, property type, or brand filters.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "amenities": {
+      "title": "Amenity IDs",
+      "type": "array",
+      "description": "Google Hotels amenity IDs.",
+      "editor": "json",
+      "items": { "type": "integer" }
+    },
+    "vacation_rentals": {
+      "title": "Vacation Rentals",
+      "type": "boolean",
+      "description": "Search vacation rentals instead of hotels.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "eco_certified": {
+      "title": "Eco Certified",
+      "type": "boolean",
+      "description": "Return only eco-certified hotels. Cannot be combined with other non-boolean filters.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "special_offers": {
+      "title": "Special Offers",
+      "type": "boolean",
+      "description": "Return only properties with special offers. Cannot be combined with other non-boolean filters.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "property_types": {
+      "title": "Property Type IDs",
+      "type": "array",
+      "description": "Google Hotels property type IDs.",
+      "editor": "json",
+      "items": { "type": "integer" }
+    },
+    "brands": {
+      "title": "Brand IDs",
+      "type": "array",
+      "description": "Google Hotels brand IDs.",
+      "editor": "json",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "bedrooms": {
+      "title": "Bedrooms",
+      "type": "integer",
+      "description": "Minimum bedrooms for vacation rental searches.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "bathrooms": {
+      "title": "Bathrooms",
+      "type": "integer",
+      "description": "Minimum bathrooms for vacation rental searches.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "next_page_token": {
+      "title": "Next Page Token",
+      "type": "string",
+      "description": "Pagination token returned by a previous Google Hotels search response.",
+      "editor": "textarea"
+    },
+    "property_token": {
+      "title": "Property Token",
+      "type": "string",
+      "description": "Specific Google Hotels property token, often returned by Google Hotels autocomplete.",
+      "editor": "textarea"
+    }
+  }
+}
