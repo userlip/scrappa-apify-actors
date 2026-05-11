@@ -11,11 +11,13 @@ Scrape Google Hotels search results through Scrappa. The actor returns one datas
 
 ## Example input
 
+Replace the date values with future dates before running the actor.
+
 ```json
 {
   "q": "Paris, France",
-  "check_in_date": "2026-06-15",
-  "check_out_date": "2026-06-18",
+  "check_in_date": "YYYY-MM-DD",
+  "check_out_date": "YYYY-MM-DD",
   "adults": 2,
   "currency": "EUR",
   "gl": "fr",
@@ -57,8 +59,8 @@ Dataset items contain the full property object plus normalized top-level fields 
   "latitude": 48.8711,
   "longitude": 2.3146,
   "request_q": "Paris, France",
-  "request_check_in_date": "2026-06-15",
-  "request_check_out_date": "2026-06-18"
+  "request_check_in_date": "YYYY-MM-DD",
+  "request_check_out_date": "YYYY-MM-DD"
 }
 ```
 

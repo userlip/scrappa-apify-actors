@@ -6,11 +6,13 @@ The actor saves one dataset item per property and stores the complete Scrappa re
 
 ## Example input
 
+Replace the date values with future dates before running the actor.
+
 ```json
 {
   "q": "Paris, France",
-  "check_in_date": "2026-06-15",
-  "check_out_date": "2026-06-18",
+  "check_in_date": "YYYY-MM-DD",
+  "check_out_date": "YYYY-MM-DD",
   "adults": 2,
   "currency": "EUR",
   "gl": "fr",

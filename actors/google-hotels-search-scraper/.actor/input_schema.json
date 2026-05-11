@@ -16,15 +16,13 @@
       "title": "Check-in Date",
       "type": "string",
       "description": "Check-in date in YYYY-MM-DD format. Must be today or a future date.",
-      "editor": "textfield",
-      "prefill": "2026-06-15"
+      "editor": "textfield"
     },
     "check_out_date": {
       "title": "Check-out Date",
       "type": "string",
       "description": "Check-out date in YYYY-MM-DD format. Must be after the check-in date.",
-      "editor": "textfield",
-      "prefill": "2026-06-18"
+      "editor": "textfield"
     },
     "adults": {
       "title": "Adults",
