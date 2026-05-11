@@ -91,10 +91,12 @@ test('getChallengeId and getChallengeName support alternate field names', () => 
     assert.equal(getChallengeName({ cha_name: 'Cosplay' }), 'Cosplay');
 });
 
-test('getChallengeId rejects missing, blank, and non-finite values', () => {
+test('getChallengeId rejects missing, blank, and unsafe numeric values', () => {
     assert.equal(getChallengeId({}), null);
     assert.equal(getChallengeId({ challenge_id: '' }), null);
     assert.equal(getChallengeId({ id: '   ' }), null);
     assert.equal(getChallengeId({ id: Infinity }), null);
     assert.equal(getChallengeId({ challenge_id: NaN }), null);
+    assert.equal(getChallengeId({ challenge_id: 1e21 }), null);
+    assert.equal(getChallengeId({ id: Number.MAX_SAFE_INTEGER + 1 }), null);
 });

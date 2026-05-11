@@ -135,7 +135,7 @@ export function getChallengeId(challenge: TikTokChallenge): string | null {
         return trimmed !== '' ? trimmed : null;
     }
 
-    if (typeof id === 'number' && Number.isFinite(id)) {
+    if (typeof id === 'number' && Number.isSafeInteger(id)) {
         return String(id);
     }
 
