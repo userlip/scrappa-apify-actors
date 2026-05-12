@@ -43,6 +43,21 @@ test('detects explicit non-retryable Scrappa response bodies', () => {
     }), false);
 });
 
+test('does not classify explicit non-retryable rate limit responses as retryable', () => {
+    const error = {
+        response: {
+            status: 429,
+            data: {
+                error: 'Rate limited (HTTP 429)',
+                retryable: false,
+            },
+        },
+    };
+
+    assert.equal(isTransientScrappaError(error), false);
+    assert.equal(isRateLimitScrappaError(error), false);
+});
+
 test('treats wrapped Scrappa rate limit responses as transient', () => {
     assert.equal(isTransientScrappaError({
         response: {
@@ -80,6 +95,18 @@ test('detects cooldown authentication responses without treating them as general
 
     assert.equal(isCooldownAuthScrappaError(error), true);
     assert.equal(isTransientScrappaError(error), false);
+});
+
+test('does not classify explicit non-retryable auth responses as cooldown auth', () => {
+    assert.equal(isCooldownAuthScrappaError({
+        response: {
+            status: 401,
+            data: {
+                error: 'Authentication required (HTTP 401)',
+                retryable: false,
+            },
+        },
+    }), false);
 });
 
 test('treats gateway and unavailable responses as transient', () => {
