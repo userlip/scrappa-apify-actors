@@ -1,8 +1,8 @@
 # Monetization Activation Checklist
 
-Last live metadata check: 2026-05-11 via Apify Actor detail API for the `TheScrappa` organization.
+Last live metadata check: 2026-05-12 via Apify Actor detail API for the `TheScrappa` organization.
 
-This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation in May 2026. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
+This checklist tracks Scrappa actors that were public on 2026-05-12 and whose paid pricing is scheduled for future activation in May 2026. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
 Listing copy such as "$0.20/1k results" is not evidence of active paid pricing.
 
 Actors can be included here even when their source files are missing locally; the audit scope is the live Apify actor, not local repository coverage.
@@ -72,6 +72,10 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 
 - [ ] `H2dZTreGZ7s3XJsQ7` - `tiktok-hashtag-posts-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-24T00:00:00.000Z`.
 - [ ] `MrbqFgdpNTQcRW0Vt` - `google-images-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-24T07:16:00.000Z`.
+
+### 2026-05-26
+
+- [ ] `Kc3rfsV2Hif23mctw` - `google-hotels-search-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-26T08:23:20.330Z`.
 
 ## Portfolio Backstop
 

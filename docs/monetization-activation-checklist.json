@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-11",
+  "lastCheckedAt": "2026-05-12",
   "source": "Apify Actor detail API for TheScrappa organization",
   "relatedDocument": "docs/monetization-activation-checklist.md",
-  "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled in May 2026 that require exact-date activation verification.",
+  "purpose": "Public actors with future paid pricing scheduled in May 2026 that require exact-date activation verification.",
   "verificationRules": [
     "Fetch GET /v2/acts/{actorId} on or after scheduledActivationAt.",
     "Confirm isPublic remains true.",
@@ -35,7 +35,8 @@
     { "actorId": "aE7VcbT6CIWBxob7U", "slug": "google-finance-quote-scraper", "scheduledActivationAt": "2026-05-23T12:40:05.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "nBSazp2iBmBm1FQvz", "slug": "trustpilot-company-reviews-scraper", "scheduledActivationAt": "2026-05-23T22:55:39.839Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "H2dZTreGZ7s3XJsQ7", "slug": "tiktok-hashtag-posts-scraper", "scheduledActivationAt": "2026-05-24T00:00:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
-    { "actorId": "MrbqFgdpNTQcRW0Vt", "slug": "google-images-scraper", "scheduledActivationAt": "2026-05-24T07:16:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" }
+    { "actorId": "MrbqFgdpNTQcRW0Vt", "slug": "google-images-scraper", "scheduledActivationAt": "2026-05-24T07:16:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
+    { "actorId": "Kc3rfsV2Hif23mctw", "slug": "google-hotels-search-scraper", "scheduledActivationAt": "2026-05-26T08:23:20.330Z", "expectedPricingModel": "PAY_PER_EVENT" }
   ],
   "privateScheduledActorsExcludedUntilPublic": [
     { "actorId": "Y3mKYlGNhsrBE7aZO", "slug": "youtube-api-channel-podcasts", "scheduledActivationAt": "2026-05-17T14:44:02.772Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },

@@ -71,21 +71,21 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-12. It lists all 51 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-12. It lists all 53 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Most current actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source for the maintained actors.
 
 Current coverage in this repository:
-- 51 live `thescrappa` actors in Apify
+- 53 live `thescrappa` actors in Apify
 - 38 local actor directories in this repo
-- 14 live actors missing a local source directory here
-- 1 local actor pending Apify publication and pricing
+- 15 live actors missing a local source directory here
+- 0 local actors pending Apify publication and pricing
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
-  Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
+  Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-12.
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage | Pricing follow-up |
 |---|---|---|---|---|---|
 | `actors/google-finance-quote-scraper` | `google-finance-quote-scraper` | `aE7VcbT6CIWBxob7U` | Google Finance Quote Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-23 (`PAY_PER_EVENT`); verify activation |
 | `actors/google-flights-search-scraper` | `google-flights-search-scraper` | `IIPXRhbeyXH7ssOK6` | Google Flights Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-05-11 (`PAY_PER_EVENT`, `flight-result` at $0.0002/result); cloud run verified |
-| `actors/google-hotels-search-scraper` | `Pending Apify publication` | `Pending` | Google Hotels Search Scraper | Local source present; not found in live `thescrappa` actors | P0 follow-up: publish and set or schedule paid pricing before public release |
+| `actors/google-hotels-search-scraper` | `google-hotels-search-scraper` | `Kc3rfsV2Hif23mctw` | Google Hotels Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-26 (`PAY_PER_EVENT`, result at $0.0002/result); cloud run verified |
 | `actors/google-images-scraper` | `google-images-scraper` | `MrbqFgdpNTQcRW0Vt` | Google Images Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-24 (`PAY_PER_EVENT`); verify activation |
 | `actors/google-jobs-scraper` | `google-jobs-scraper` | `4DwyH8vZcinXWrHBA` | Google Jobs Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/google-maps-advanced-search-scraper` | `google-maps-advanced-search-scraper` | `DT8bUdm2Vn4HjlyDo` | Google Maps Advanced Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-21 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
@@ -99,6 +99,7 @@ Current coverage in this repository:
 | `actors/google-trends-interest-scraper` | `google-trends-interest-scraper` | `1D1neAFKb8LnbKvHG` | Google Trends Interest Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-05-09 (`PAY_PER_EVENT`); verify `currentPricingInfo` |
 | `actors/indeed-jobs-scraper` | `indeed-jobs-scraper` | `OVlDREBAcO4iPyW64` | Indeed Jobs Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-05-10 (`PAY_PER_EVENT`); verify `currentPricingInfo` |
 | `actors/instagram-post-info-cheapest-0-20-1000-results` | `instagram-post-info-cheapest-0-20-1000-results` | `nfdzs1z0cRIU1Bfhw` | Instagram Post Info &#124; Cheapest $0.20/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-02-01 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
+| `Missing locally` | `instagram-api-scraper` | `RB9HEZitC8hIUXAha` | Instagram API Scraper | Live Apify actor present; source directory not in this repo | `pricingInfos` start 2026-03-03 (`PAY_PER_EVENT`); verify `currentPricingInfo` |
 | `actors/instagram-user-info-cheapest-0-20-1000-results` | `instagram-user-info-cheapest-0-20-1000-results` | `VZrsJ6bO3h92y0duj` | Instagram User Info &#124; Cheapest $0.20/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-01-31 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/instagram-user-posts-cheapest-0-20-1000-results` | `instagram-user-posts-cheapest-0-20-1000-results` | `mp03zGSA2pR31azfU` | Instagram User Posts Cheapest 0 20 1000 Results | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/linkedin-company-scraper` | `linkedin-company-scraper` | `EMGCTVXuOBRERiDMf` | LinkedIn Company Scraper - $0.30/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-20 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |

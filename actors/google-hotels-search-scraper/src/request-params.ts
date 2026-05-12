@@ -87,17 +87,18 @@ function cleanInteger(value: unknown, field: string, min: number, max?: number):
         return undefined;
     }
 
-    if (typeof value !== 'number' || !Number.isInteger(value)) {
+    const parsed = typeof value === 'string' && /^-?\d+$/.test(value) ? Number(value) : value;
+    if (typeof parsed !== 'number' || !Number.isInteger(parsed)) {
         throw new Error(`${field} must be an integer`);
     }
 
-    if (value < min || (max !== undefined && value > max)) {
+    if (parsed < min || (max !== undefined && parsed > max)) {
         throw new Error(max === undefined
             ? `${field} must be greater than or equal to ${min}`
             : `${field} must be between ${min} and ${max}`);
     }
 
-    return value;
+    return parsed;
 }
 
 function cleanBoolean(value: unknown, field: string): boolean | undefined {

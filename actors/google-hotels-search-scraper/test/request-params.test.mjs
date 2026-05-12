@@ -144,6 +144,27 @@ test('validates guest and price constraints', () => {
     );
 });
 
+test('accepts numeric strings from Apify select inputs', () => {
+    assert.deepEqual(
+        buildGoogleHotelsSearchParams({
+            q: 'Paris',
+            check_in_date: checkInDate,
+            check_out_date: checkOutDate,
+            sort_by: '3',
+            hotel_class: '4',
+            rating: '8',
+        }),
+        {
+            q: 'Paris',
+            check_in_date: checkInDate,
+            check_out_date: checkOutDate,
+            sort_by: 3,
+            hotel_class: 4,
+            rating: 8,
+        },
+    );
+});
+
 test('rejects unsupported filter combinations', () => {
     assert.throws(
         () => buildGoogleHotelsSearchParams({
