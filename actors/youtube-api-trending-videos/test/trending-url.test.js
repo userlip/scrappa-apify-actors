@@ -91,4 +91,13 @@ describe('continuationToken', () => {
     it('falls back to the legacy continuation field', () => {
         assert.equal(continuationToken({ continuation: 'legacy-next-page' }), 'legacy-next-page');
     });
+
+    it('prefers current pagination tokens over empty legacy continuation values', () => {
+        assert.equal(continuationToken({
+            continuation: '',
+            pagination: {
+                continuationToken: 'next-page',
+            },
+        }), 'next-page');
+    });
 });

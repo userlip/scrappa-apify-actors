@@ -39,5 +39,5 @@ export function trendingVideosToDatasetItems(data = {}) {
 }
 
 export function continuationToken(data = {}) {
-    return data?.continuation ?? data?.pagination?.continuationToken;
+    return data?.pagination?.continuationToken || data?.continuation || undefined;
 }
