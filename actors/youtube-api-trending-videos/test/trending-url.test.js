@@ -33,14 +33,25 @@ describe('buildTrendingRequest', () => {
         assert.equal(request.url, 'https://ytapi.scrappa.co/trending');
     });
 
-    it('uses the first non-null array value and ignores extras', () => {
+    it('uses the only non-empty string from array values', () => {
         const url = new URL(buildTrendingRequest({
-            category: [null, undefined, 'gaming', 'music'],
+            category: [null, undefined, '', 'gaming'],
             type: [null, 'now'],
         }).url);
 
         assert.equal(url.searchParams.get('category'), 'gaming');
         assert.equal(url.searchParams.get('type'), 'now');
+    });
+
+    it('rejects multiple selected values for single-choice filters', () => {
+        assert.throws(
+            () => buildTrendingRequest({ category: ['gaming', 'music'] }),
+            /category accepts only one selected value/,
+        );
+        assert.throws(
+            () => buildTrendingRequest({ type: ['now', 'later'] }),
+            /type accepts only one selected value/,
+        );
     });
 
     it('ignores non-string scalar values', () => {
@@ -99,5 +110,14 @@ describe('continuationToken', () => {
                 continuationToken: 'next-page',
             },
         }), 'next-page');
+    });
+
+    it('preserves an empty current pagination token over a legacy continuation value', () => {
+        assert.equal(continuationToken({
+            continuation: 'legacy-next-page',
+            pagination: {
+                continuationToken: '',
+            },
+        }), '');
     });
 });
