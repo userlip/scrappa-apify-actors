@@ -75,8 +75,8 @@ This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-11. I
 
 Current coverage in this repository:
 - 50 live `thescrappa` actors in Apify
-- 36 local actor directories in this repo
-- 15 live actors missing a local source directory here
+- 37 local actor directories in this repo
+- 14 live actors missing a local source directory here
 - 1 local actor pending Apify publication and pricing
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
 
@@ -129,7 +129,7 @@ Current coverage in this repository:
 | `Missing locally` | `youtube-api-search-by-category` | `O1ltDU9qk4adR2x86` | YouTube API Search By Category | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-search-data` | `youtube-api-search-data` | `ziD2fUoLsdzKlc6zR` | YouTube Search Data Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-search-suggestions` | `youtube-api-search-suggestions` | `oecJ81oeff1KozCtd` | YouTube API Search Suggestions | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
-| `Missing locally` | `youtube-api-trending-videos` | `T7ddx0tgVCwMHi9ET` | YouTube API Trending Videos | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
+| `actors/youtube-api-trending-videos` | `youtube-api-trending-videos` | `T7ddx0tgVCwMHi9ET` | YouTube API Trending Videos | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-video-chapters` | `fq5Kq9OfBRWYu9go1` | YouTube API Video Chapters | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-video-comments` | `youtube-api-video-comments` | `ZT2Z352FLhgqgtMrg` | YouTube Video Comments Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-transcript-scraper` | `youtube-transcript-scraper` | `ztc698cHC09lkCDYE` | YouTube Transcript Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-19 (`PAY_PER_EVENT`); verify activation |

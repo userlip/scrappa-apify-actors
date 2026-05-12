@@ -1,0 +1,29 @@
+{
+  "title": "YouTube Trending Videos",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "category": {
+      "title": "Category",
+      "type": "array",
+      "description": "Trending category to fetch.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["education", "music", "gaming", "news", "sports", "entertainment", "howto", "tech", "science"]
+      },
+      "prefill": ["education"]
+    },
+    "type": {
+      "title": "Trending type",
+      "type": "array",
+      "description": "Trending period or mode.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["now"]
+      },
+      "prefill": ["now"]
+    }
+  }
+}
