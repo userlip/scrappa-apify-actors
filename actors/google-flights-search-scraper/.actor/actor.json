@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "google-flights-search-scraper",
+  "title": "Google Flights Search Scraper",
+  "description": "Search Google Flights one-way and round-trip fares with Scrappa. Extract prices, durations, stops, airlines, flight numbers, booking tokens, legs, and search metadata.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 240,
+    "memoryMbytes": 256
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "flights": {
+          "title": "Flights",
+          "transformation": {
+            "fields": ["position", "trip_type", "price", "currency", "total_duration_minutes", "stops", "airline_names", "flight_numbers", "departure_airport", "arrival_airport", "departure_time", "arrival_time", "booking_token", "legs", "outbound_legs", "return_legs", "request_origin", "request_destination", "request_departure_date", "request_return_date", "request_cabin_class", "request_max_stops", "request_sort_by"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "Position", "format": "number" },
+              "trip_type": { "label": "Trip Type", "format": "text" },
+              "price": { "label": "Price", "format": "number" },
+              "currency": { "label": "Currency", "format": "text" },
+              "total_duration_minutes": { "label": "Duration", "format": "number" },
+              "stops": { "label": "Stops", "format": "number" },
+              "airline_names": { "label": "Airlines", "format": "object" },
+              "flight_numbers": { "label": "Flight Numbers", "format": "object" },
+              "departure_airport": { "label": "From", "format": "text" },
+              "arrival_airport": { "label": "To", "format": "text" },
+              "departure_time": { "label": "Departure", "format": "date" },
+              "arrival_time": { "label": "Arrival", "format": "date" },
+              "booking_token": { "label": "Booking Token", "format": "text" },
+              "legs": { "label": "Legs", "format": "object" },
+              "outbound_legs": { "label": "Outbound Legs", "format": "object" },
+              "return_legs": { "label": "Return Legs", "format": "object" },
+              "request_origin": { "label": "Requested Origin", "format": "text" },
+              "request_destination": { "label": "Requested Destination", "format": "text" },
+              "request_departure_date": { "label": "Departure Date", "format": "date" },
+              "request_return_date": { "label": "Return Date", "format": "date" },
+              "request_cabin_class": { "label": "Cabin", "format": "text" },
+              "request_max_stops": { "label": "Max Stops", "format": "text" },
+              "request_sort_by": { "label": "Sort", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

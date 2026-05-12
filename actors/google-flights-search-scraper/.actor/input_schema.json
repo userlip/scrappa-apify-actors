@@ -1,0 +1,203 @@
+{
+  "title": "Google Flights Search Scraper",
+  "description": "Search Google Flights one-way or round-trip fares.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["origin", "destination", "departure_date"],
+  "properties": {
+    "trip_type": {
+      "title": "Trip Type",
+      "type": "string",
+      "description": "Search one-way or round-trip Google Flights results.",
+      "editor": "select",
+      "default": "one_way",
+      "enum": ["one_way", "round_trip"],
+      "enumTitles": ["One-way", "Round-trip"]
+    },
+    "origin": {
+      "title": "Origin Airport",
+      "type": "string",
+      "description": "Three-letter IATA origin airport code.",
+      "editor": "textfield",
+      "minLength": 3,
+      "maxLength": 3,
+      "prefill": "JFK"
+    },
+    "destination": {
+      "title": "Destination Airport",
+      "type": "string",
+      "description": "Three-letter IATA destination airport code.",
+      "editor": "textfield",
+      "minLength": 3,
+      "maxLength": 3,
+      "prefill": "LAX"
+    },
+    "departure_date": {
+      "title": "Departure Date",
+      "type": "string",
+      "description": "Departure date in YYYY-MM-DD format.",
+      "editor": "datepicker",
+      "prefill": "2026-09-15"
+    },
+    "return_date": {
+      "title": "Return Date",
+      "type": "string",
+      "description": "Return date in YYYY-MM-DD format. Required when Trip Type is Round-trip.",
+      "editor": "datepicker",
+      "prefill": "2026-09-22"
+    },
+    "adults": {
+      "title": "Adults",
+      "type": "integer",
+      "description": "Number of adult passengers.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 9,
+      "default": 1
+    },
+    "children": {
+      "title": "Children",
+      "type": "integer",
+      "description": "Number of child passengers.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 9,
+      "default": 0
+    },
+    "infants_in_seat": {
+      "title": "Infants In Seat",
+      "type": "integer",
+      "description": "Number of infant passengers with their own seat.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 9,
+      "default": 0
+    },
+    "infants_on_lap": {
+      "title": "Infants On Lap",
+      "type": "integer",
+      "description": "Number of infant passengers seated on lap.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 9,
+      "default": 0
+    },
+    "cabin_class": {
+      "title": "Cabin Class",
+      "type": "string",
+      "description": "Cabin class filter.",
+      "editor": "select",
+      "default": "economy",
+      "enum": ["economy", "premium_economy", "business", "first"],
+      "enumTitles": ["Economy", "Premium Economy", "Business", "First"]
+    },
+    "exclude_basic": {
+      "title": "Exclude Basic Economy",
+      "type": "boolean",
+      "description": "Exclude basic economy fares where Google supports that filter.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "max_stops": {
+      "title": "Max Stops",
+      "type": "string",
+      "description": "Maximum stops filter.",
+      "editor": "select",
+      "default": "any",
+      "enum": ["any", "nonstop", "one_or_fewer", "two_or_fewer"],
+      "enumTitles": ["Any", "Nonstop", "One or fewer", "Two or fewer"]
+    },
+    "sort_by": {
+      "title": "Sort By",
+      "type": "string",
+      "description": "Google Flights sort order.",
+      "editor": "select",
+      "default": "top_flights",
+      "enum": ["top_flights", "cheapest", "departure_time", "arrival_time", "duration"],
+      "enumTitles": ["Top flights", "Cheapest", "Departure time", "Arrival time", "Duration"]
+    },
+    "airlines": {
+      "title": "Airlines",
+      "type": "string",
+      "description": "Optional comma-separated 2-character IATA airline codes, such as AA,DL,UA.",
+      "editor": "textfield"
+    },
+    "include_baggage": {
+      "title": "Include Baggage Info",
+      "type": "boolean",
+      "description": "Fetch baggage details for the cheapest returned flight.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string",
+      "description": "Three-letter currency code for prices.",
+      "editor": "textfield",
+      "minLength": 3,
+      "maxLength": 3,
+      "default": "USD"
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Google Flights language code, such as en, de, es, or en-us.",
+      "editor": "textfield",
+      "default": "en"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code, such as us, gb, de, or ca.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "us"
+    },
+    "departure_time_min": {
+      "title": "Departure Hour Min",
+      "type": "integer",
+      "description": "Earliest departure hour, from 0 to 23.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 23
+    },
+    "departure_time_max": {
+      "title": "Departure Hour Max",
+      "type": "integer",
+      "description": "Latest departure hour, from 0 to 23.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 23
+    },
+    "arrival_time_min": {
+      "title": "Arrival Hour Min",
+      "type": "integer",
+      "description": "Earliest arrival hour, from 0 to 23.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 23
+    },
+    "arrival_time_max": {
+      "title": "Arrival Hour Max",
+      "type": "integer",
+      "description": "Latest arrival hour, from 0 to 23.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 23
+    },
+    "max_duration_minutes": {
+      "title": "Max Duration Minutes",
+      "type": "integer",
+      "description": "Maximum total flight duration in minutes.",
+      "editor": "number",
+      "minimum": 1
+    },
+    "max_price": {
+      "title": "Max Price",
+      "type": "integer",
+      "description": "Maximum price in the selected currency.",
+      "editor": "number",
+      "minimum": 1
+    }
+  }
+}
