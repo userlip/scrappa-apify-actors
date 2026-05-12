@@ -31,7 +31,15 @@ export function getResponseStatus(error) {
     return typeof status === 'number' ? status : undefined;
 }
 
+export function hasExplicitNonRetryableResponse(error) {
+    return error?.response?.data?.retryable === false;
+}
+
 export function isTransientScrappaError(error) {
+    if (hasExplicitNonRetryableResponse(error)) {
+        return false;
+    }
+
     const status = getResponseStatus(error);
     if (status === 401 || status === 403) {
         return false;
@@ -49,6 +57,10 @@ export function isTransientScrappaError(error) {
 }
 
 export function isRateLimitScrappaError(error) {
+    if (hasExplicitNonRetryableResponse(error)) {
+        return false;
+    }
+
     const status = getResponseStatus(error);
     if (status === 429) {
         return true;
@@ -64,6 +76,10 @@ export function isRateLimitScrappaError(error) {
 }
 
 export function isCooldownAuthScrappaError(error) {
+    if (hasExplicitNonRetryableResponse(error)) {
+        return false;
+    }
+
     const status = getResponseStatus(error);
     if (status !== 401 && status !== 403) {
         return false;

@@ -4,6 +4,7 @@ import {
     DEFAULT_RETRY_DELAYS_MS,
     getResponseMessage,
     getResponseStatus,
+    hasExplicitNonRetryableResponse,
     isCooldownAuthScrappaError,
     isRateLimitScrappaError,
     isTransientScrappaError,
@@ -24,6 +25,37 @@ test('gets numeric response status only when present', () => {
     assert.equal(getResponseStatus({ response: { status: 429 } }), 429);
     assert.equal(getResponseStatus({ response: { status: '429' } }), undefined);
     assert.equal(getResponseStatus(new Error('No response')), undefined);
+});
+
+test('detects explicit non-retryable Scrappa response bodies', () => {
+    assert.equal(hasExplicitNonRetryableResponse({
+        response: {
+            status: 401,
+            data: { retryable: false },
+        },
+    }), true);
+
+    assert.equal(hasExplicitNonRetryableResponse({
+        response: {
+            status: 429,
+            data: { retryable: true },
+        },
+    }), false);
+});
+
+test('does not classify explicit non-retryable rate limit responses as retryable', () => {
+    const error = {
+        response: {
+            status: 429,
+            data: {
+                error: 'Rate limited (HTTP 429)',
+                retryable: false,
+            },
+        },
+    };
+
+    assert.equal(isTransientScrappaError(error), false);
+    assert.equal(isRateLimitScrappaError(error), false);
 });
 
 test('treats wrapped Scrappa rate limit responses as transient', () => {
@@ -63,6 +95,18 @@ test('detects cooldown authentication responses without treating them as general
 
     assert.equal(isCooldownAuthScrappaError(error), true);
     assert.equal(isTransientScrappaError(error), false);
+});
+
+test('does not classify explicit non-retryable auth responses as cooldown auth', () => {
+    assert.equal(isCooldownAuthScrappaError({
+        response: {
+            status: 401,
+            data: {
+                error: 'Authentication required (HTTP 401)',
+                retryable: false,
+            },
+        },
+    }), false);
 });
 
 test('treats gateway and unavailable responses as transient', () => {
@@ -211,6 +255,59 @@ test('requestWithRetries can retry a cooldown auth response after a rate limit',
     assert.deepEqual(result, { ok: true });
     assert.deepEqual(delays, [1, 1]);
     assert.equal(calls, 3);
+});
+
+test('requestWithRetries does not retry explicit non-retryable auth after a rate limit', async () => {
+    let calls = 0;
+    let sawRateLimit = false;
+    const authError = {
+        response: {
+            status: 401,
+            data: {
+                success: false,
+                error: 'Authentication required (HTTP 401)',
+                status_code: 401,
+                error_code: 'instagram_auth_required',
+                retryable: false,
+            },
+        },
+    };
+
+    await assert.rejects(
+        requestWithRetries(async () => {
+            calls++;
+            if (calls === 1) {
+                throw {
+                    response: {
+                        status: 429,
+                        data: {
+                            success: false,
+                            error: 'Rate limited (HTTP 429)',
+                            status_code: 429,
+                            error_code: 'instagram_rate_limited',
+                            retryable: true,
+                        },
+                    },
+                };
+            }
+
+            throw authError;
+        }, {
+            delaysMs: [1, 1],
+            shouldRetry: (error) => {
+                if (isTransientScrappaError(error)) {
+                    sawRateLimit = sawRateLimit || isRateLimitScrappaError(error);
+                    return true;
+                }
+
+                return sawRateLimit && isCooldownAuthScrappaError(error);
+            },
+            wait: async () => {},
+        }),
+        authError,
+    );
+
+    assert.equal(calls, 2);
 });
 
 test('requestWithRetries does not retry a direct authentication failure', async () => {
