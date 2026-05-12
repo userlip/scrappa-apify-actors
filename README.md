@@ -71,10 +71,10 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-11. It lists all 50 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-12. It lists all 51 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 50 live `thescrappa` actors in Apify
+- 51 live `thescrappa` actors in Apify
 - 37 local actor directories in this repo
 - 15 live actors missing a local source directory here
 - 1 local actor pending Apify publication and pricing
