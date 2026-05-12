@@ -17,4 +17,8 @@ describe('errorMessage', () => {
     it('returns the original message for non-timeout errors', () => {
         assert.equal(errorMessage(new Error('Scrappa API request failed')), 'Scrappa API request failed');
     });
+
+    it('stringifies non-Error thrown values', () => {
+        assert.equal(errorMessage('plain failure'), 'plain failure');
+    });
 });
