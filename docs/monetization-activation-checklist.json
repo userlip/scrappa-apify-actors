@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 1,
   "lastCheckedAt": "2026-05-11",
   "source": "Apify Actor detail API for TheScrappa organization",
   "relatedDocument": "docs/monetization-activation-checklist.md",
