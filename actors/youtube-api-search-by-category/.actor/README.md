@@ -19,7 +19,7 @@ Get YouTube search results from predefined category searches such as education, 
 | `sort` | array | No | Sort order. One of `relevance`, `rating`, `upload_date`, or `view_count`. Defaults to `relevance`. |
 | `duration` | array | No | Video duration filter. One of `short`, `medium`, or `long`. |
 | `upload_date` | array | No | Upload date filter. One of `hour`, `today`, `week`, `month`, or `year`. |
-| `limit` | integer | No | Maximum results to return, from `1` to `20`. |
+| `limit` | integer | No | Maximum results to request, from `1` to `1024`. The upstream API can return a smaller page with a continuation token. |
 | `continuation` | string | No | Continuation token for the next page of results. |
 | `contentType` | array | No | Filter by content type: `live`, `recorded`, or `premiere`. |
 | `features` | string | No | Comma-separated feature filters such as `hd,cc`. |

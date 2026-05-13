@@ -1,5 +1,4 @@
 const API_BASE_URL = 'https://ytapi.scrappa.co/search/category';
-const MAX_LIMIT = 20;
 
 function stringValue(value, fieldName) {
     if (Array.isArray(value)) {
@@ -79,10 +78,6 @@ export function buildCategoryRequest(input = {}) {
 
     const limit = positiveInteger(input?.limit);
     if (limit) {
-        if (limit > MAX_LIMIT) {
-            throw new Error(`Limit must be less than or equal to ${MAX_LIMIT}.`);
-        }
-
         params.set('limit', String(limit));
     }
 
