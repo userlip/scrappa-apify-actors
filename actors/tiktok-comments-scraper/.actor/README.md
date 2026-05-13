@@ -10,7 +10,7 @@ Extract comments and optional nested replies from public TikTok video URLs throu
 - Flat dataset rows with `comment_type` and `parent_comment_id` for reply/thread analysis
 - Pagination support with `cursor`
 - Dataset rows optimized for Apify table views
-- Full Scrappa response saved to the `OUTPUT` key-value-store record
+- Full top-level comments response saved to the `OUTPUT` key-value-store record
 
 ## Input
 
@@ -81,11 +81,13 @@ When `includeReplies` is enabled, replies are saved as additional dataset items:
 }
 ```
 
-The full API response is saved to `OUTPUT`, including `data.hasMore` and `data.cursor` for the next comment page. When replies are enabled, `OUTPUT` also contains the raw reply responses grouped by parent comment ID.
+The full top-level comments API response is always saved to `OUTPUT`, including `data.hasMore` and `data.cursor` for the next comment page. When replies are enabled, raw reply responses are saved separately to `REPLIES_OUTPUT` and grouped by parent comment ID.
 
 ## Pagination
 
-Run the actor once without `cursor`. If `OUTPUT.data.hasMore` is true, run it again with `cursor` set to `OUTPUT.data.cursor`.
+Run the actor once without `cursor`. If `OUTPUT.data.hasMore` is true, run it again with `cursor` set to `OUTPUT.data.cursor`. This `OUTPUT` pagination path stays the same whether `includeReplies` is enabled or disabled.
+
+Reply collection is sequential to avoid overwhelming the API. For high-reply videos, use `count` and `maxRepliesPerComment` to keep runs within the actor timeout.
 
 ## Support
 

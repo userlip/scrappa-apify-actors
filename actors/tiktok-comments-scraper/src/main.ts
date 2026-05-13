@@ -117,7 +117,7 @@ async function fetchRepliesForComment(
 
     const rows: TikTokCommentDatasetItem[] = [];
     const responses: ReplyFetchRecord[] = [];
-    let cursor: string | null | undefined;
+    let cursor: string | undefined;
 
     while (rows.length < maxRepliesPerComment) {
         const count = Math.min(50, maxRepliesPerComment - rows.length);
@@ -138,7 +138,7 @@ async function fetchRepliesForComment(
         if (!response.data?.hasMore || !response.data.cursor || replies.length === 0) {
             break;
         }
-        cursor = response.data.cursor;
+        cursor = response.data.cursor ?? undefined;
     }
 
     return { rows, responses };
@@ -190,10 +190,10 @@ async function main(): Promise<void> {
         }
 
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', replyResponses.length > 0 ? {
-            comments_response: response,
-            replies_responses: replyResponses,
-        } : response);
+        await store.setValue('OUTPUT', response);
+        if (replyResponses.length > 0) {
+            await store.setValue('REPLIES_OUTPUT', replyResponses);
+        }
 
         const summary = {
             comments_extracted: comments.length,

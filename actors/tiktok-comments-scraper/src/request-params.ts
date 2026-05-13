@@ -8,7 +8,7 @@ export interface TikTokCommentsInput {
 
 export interface TikTokCommentRepliesInput {
     comment_id: string;
-    video_id?: string | null;
+    video_id?: string;
     count?: unknown;
     cursor?: unknown;
 }

@@ -2,6 +2,8 @@
 
 Apify actor for Scrappa's `/api/tiktok/comments/list` and `/api/tiktok/comments/replies` endpoints.
 
+`OUTPUT` always contains the top-level comments response for pagination. When reply collection is enabled, raw reply responses are saved separately to `REPLIES_OUTPUT`.
+
 ## Local Development
 
 ```bash
