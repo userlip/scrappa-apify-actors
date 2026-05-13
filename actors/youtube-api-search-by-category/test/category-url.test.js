@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { describe, it } from 'node:test';
 import { buildCategoryRequest, categoryVideosToDatasetItems, continuationToken } from '../src/category-url.js';
+import { errorMessage } from '../src/errors.js';
 
 const inputSchema = JSON.parse(fs.readFileSync(new URL('../.actor/input_schema.json', import.meta.url)));
 
@@ -87,6 +88,20 @@ describe('buildCategoryRequest', () => {
         assert.equal(url.searchParams.has('continuation'), false);
         assert.equal(url.searchParams.has('features'), false);
     });
+
+    it('normalizes comma-separated feature values from strings and arrays', () => {
+        const stringUrl = new URL(buildCategoryRequest({
+            category: 'education',
+            features: ' hd, ,cc, 4k ',
+        }).url);
+        const arrayUrl = new URL(buildCategoryRequest({
+            category: 'education',
+            features: [' hd,cc ', '', ' 4k '],
+        }).url);
+
+        assert.equal(stringUrl.searchParams.get('features'), 'hd,cc,4k');
+        assert.equal(arrayUrl.searchParams.get('features'), 'hd,cc,4k');
+    });
 });
 
 describe('categoryVideosToDatasetItems', () => {
@@ -128,5 +143,17 @@ describe('input schema', () => {
         }
 
         assert.equal(inputSchema.properties.category.minItems, 1);
+    });
+});
+
+describe('errorMessage', () => {
+    it('returns a timeout message for AbortSignal timeout errors', () => {
+        const error = new DOMException('The operation was aborted', 'TimeoutError');
+
+        assert.match(errorMessage(error), /timed out after 60s/);
+    });
+
+    it('returns the raw message for non-timeout errors', () => {
+        assert.equal(errorMessage(new Error('something broke')), 'something broke');
     });
 });
