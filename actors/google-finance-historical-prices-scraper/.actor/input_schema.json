@@ -1,0 +1,68 @@
+{
+  "title": "Google Finance Historical Prices Scraper",
+  "description": "Fetch Google Finance historical price and volume data for one ticker symbol.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["symbol"],
+  "properties": {
+    "symbol": {
+      "title": "Symbol",
+      "type": "string",
+      "description": "Ticker symbol to fetch, such as AAPL, MSFT, TSLA, or VOO.",
+      "editor": "textfield",
+      "prefill": "AAPL"
+    },
+    "exchange": {
+      "title": "Exchange",
+      "type": "string",
+      "description": "Google Finance exchange code, such as NASDAQ, NYSE, NSE, LON, or TSE. Recommended to avoid symbol ambiguity.",
+      "editor": "textfield",
+      "prefill": "NASDAQ"
+    },
+    "range": {
+      "title": "Range",
+      "type": "integer",
+      "description": "Preset time range. Use either this or both start_date and end_date.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 8,
+      "prefill": 6
+    },
+    "start_date": {
+      "title": "Start Date",
+      "type": "string",
+      "description": "Custom range start date in YYYY-MM-DD format. Must be used with end_date and without range.",
+      "editor": "datepicker"
+    },
+    "end_date": {
+      "title": "End Date",
+      "type": "string",
+      "description": "Custom range end date in YYYY-MM-DD format. Must be used with start_date and without range.",
+      "editor": "datepicker"
+    },
+    "interval": {
+      "title": "Interval",
+      "type": "string",
+      "description": "Historical data interval.",
+      "editor": "select",
+      "default": "daily",
+      "enum": ["daily", "weekly", "monthly"],
+      "enumTitles": ["Daily", "Weekly", "Monthly"]
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Google Finance language code, such as en, de, es, or zh-cn.",
+      "editor": "textfield",
+      "default": "en"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Country code, such as us, gb, de, or ca.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "us"
+    }
+  }
+}
