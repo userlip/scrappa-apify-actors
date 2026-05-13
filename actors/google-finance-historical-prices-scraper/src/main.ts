@@ -37,7 +37,7 @@ async function main(): Promise<void> {
             if (isPayPerEvent) {
                 const chargeResult = await Actor.pushData(datasetItems, PRICE_POINT_CHARGE_EVENT);
                 if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
-                    const statusMessage = 'Charge limit reached before saving all Google Finance historical price points.';
+                    const statusMessage = 'Charge limit reached before saving all Google Finance historical price points; OUTPUT was not written.';
                     console.log(statusMessage, JSON.stringify({
                         event: PRICE_POINT_CHARGE_EVENT,
                         charged_count: chargeResult.chargedCount,
