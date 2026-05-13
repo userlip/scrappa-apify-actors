@@ -36,6 +36,22 @@ cd actors/google-search
 pnpm start:dev
 ```
 
+### Auditing scheduled pricing activation
+
+Public actors must not remain effectively free after scheduled paid pricing starts. Run the live Apify pricing audit with an organization token:
+
+```bash
+APIFY_TOKEN=... pnpm audit:pricing
+```
+
+For an exact activation checkpoint, pass the verification timestamp:
+
+```bash
+APIFY_TOKEN=... pnpm audit:pricing --now 2026-05-17T15:00:00.000Z
+```
+
+The audit exits with code `1` when a public actor has due paid `pricingInfos` but no active paid evidence in `pricingInfo` or `currentPricingInfo`, or when a public actor has no paid `pricingInfos`.
+
 ### Creating a new actor
 
 1. Copy an existing actor as a template:

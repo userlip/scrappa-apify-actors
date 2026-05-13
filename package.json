@@ -4,6 +4,7 @@
   "private": true,
   "description": "Apify Actors for Scrappa APIs",
   "scripts": {
+    "audit:pricing": "node scripts/audit-apify-pricing.mjs",
     "build": "pnpm -r build",
     "lint": "eslint . --ext .ts",
     "typecheck": "pnpm -r typecheck"
