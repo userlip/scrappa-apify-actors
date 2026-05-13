@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "google-finance-historical-prices-scraper",
+  "title": "Google Finance Historical Prices Scraper",
+  "description": "Scrape daily, weekly, or monthly historical price and volume time-series data from Google Finance for stock backtesting, charting, and market research workflows.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 200
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "prices": {
+          "title": "Historical Prices",
+          "transformation": {
+            "fields": ["position", "date", "date_iso", "close", "change", "percent_change", "volume", "symbol", "exchange", "currency", "previous_close", "request_symbol", "request_exchange", "request_range", "request_start_date", "request_end_date", "request_interval", "request_hl", "request_gl"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "#", "format": "number" },
+              "date": { "label": "Timestamp", "format": "number" },
+              "date_iso": { "label": "Date", "format": "text" },
+              "close": { "label": "Close", "format": "number" },
+              "change": { "label": "Change", "format": "number" },
+              "percent_change": { "label": "% Change", "format": "number" },
+              "volume": { "label": "Volume", "format": "number" },
+              "symbol": { "label": "Symbol", "format": "text" },
+              "exchange": { "label": "Exchange", "format": "text" },
+              "currency": { "label": "Currency", "format": "text" },
+              "previous_close": { "label": "Previous Close", "format": "number" },
+              "request_symbol": { "label": "Requested Symbol", "format": "text" },
+              "request_exchange": { "label": "Requested Exchange", "format": "text" },
+              "request_range": { "label": "Range", "format": "number" },
+              "request_start_date": { "label": "Start Date", "format": "text" },
+              "request_end_date": { "label": "End Date", "format": "text" },
+              "request_interval": { "label": "Interval", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" },
+              "request_gl": { "label": "Country", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

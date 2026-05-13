@@ -75,15 +75,16 @@ This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-13. I
 
 Current coverage in this repository:
 - 53 live `thescrappa` actors in Apify
-- 39 local actor directories in this repo; all 39 are now represented by live Apify actors
+- 40 local actor directories in this repo; 39 are now represented by live Apify actors
 - 14 live actors missing a local source directory here
-- 0 local actors pending Apify publication and pricing
+- 1 local actor pending Apify publication and pricing
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage | Pricing follow-up |
 |---|---|---|---|---|---|
 | `actors/google-finance-quote-scraper` | `google-finance-quote-scraper` | `aE7VcbT6CIWBxob7U` | Google Finance Quote Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-23 (`PAY_PER_EVENT`); verify activation |
+| `actors/google-finance-historical-prices-scraper` | `Pending Apify publication` | `Pending` | Google Finance Historical Prices Scraper | Local source present; not found in live `thescrappa` actors | P0 follow-up: publish and set or schedule paid `PAY_PER_EVENT` pricing before public release (`price-point` event at target $0.0002/result) |
 | `actors/google-flights-search-scraper` | `google-flights-search-scraper` | `IIPXRhbeyXH7ssOK6` | Google Flights Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-05-11 (`PAY_PER_EVENT`, `flight-result` at $0.0002/result); cloud run verified |
 | `actors/google-hotels-search-scraper` | `google-hotels-search-scraper` | `Kc3rfsV2Hif23mctw` | Google Hotels Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-26 (`PAY_PER_EVENT`, default dataset hotel result at $0.0002/result); verify activation |
 | `actors/google-images-scraper` | `google-images-scraper` | `MrbqFgdpNTQcRW0Vt` | Google Images Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-24 (`PAY_PER_EVENT`); verify activation |
