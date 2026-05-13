@@ -1,0 +1,54 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-search-scraper",
+  "title": "TikTok Search Scraper",
+  "description": "Search TikTok videos by keyword, hashtag, product, brand, or creator niche. Extract captions, engagement metrics, author metadata, timestamps, pagination cursors, and raw TikTok video fields through Scrappa.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "videos": {
+          "title": "Search Results",
+          "transformation": {
+            "fields": ["desc", "author", "digg_count", "comment_count", "share_count", "play_count", "create_time", "aweme_id", "video_id", "request_keywords", "request_region", "request_cursor", "request_publish_time", "request_sort_type"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "desc": { "label": "Caption", "format": "text" },
+              "author": { "label": "Author", "format": "object" },
+              "digg_count": { "label": "Likes", "format": "number" },
+              "comment_count": { "label": "Comments", "format": "number" },
+              "share_count": { "label": "Shares", "format": "number" },
+              "play_count": { "label": "Views", "format": "number" },
+              "create_time": { "label": "Created", "format": "number" },
+              "aweme_id": { "label": "Aweme ID", "format": "text" },
+              "video_id": { "label": "Video ID", "format": "text" },
+              "request_keywords": { "label": "Search", "format": "text" },
+              "request_region": { "label": "Region", "format": "text" },
+              "request_cursor": { "label": "Cursor", "format": "text" },
+              "request_publish_time": { "label": "Publish Filter", "format": "number" },
+              "request_sort_type": { "label": "Sort", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

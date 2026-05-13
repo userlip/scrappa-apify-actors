@@ -28,6 +28,7 @@ jobs:
           - path: actors/linkedin-post-scraper
           - path: actors/tiktok-comments-scraper
           - path: actors/tiktok-profile-scraper
+          - path: actors/tiktok-search-scraper
           - path: actors/youtube-api-batch-videos
           - path: actors/youtube-api-channel-videos
           - path: actors/youtube-api-get-video-details
