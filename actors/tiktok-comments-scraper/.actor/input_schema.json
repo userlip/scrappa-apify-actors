@@ -26,6 +26,22 @@
       "type": "string",
       "description": "Pagination cursor from a previous run. Leave empty for the first page.",
       "editor": "textfield"
+    },
+    "includeReplies": {
+      "title": "Include Comment Replies",
+      "type": "boolean",
+      "description": "When enabled, fetch replies for each top-level comment that has replies. Reply rows are added to the dataset with comment_type='reply' and parent_comment_id.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "maxRepliesPerComment": {
+      "title": "Max Replies Per Comment",
+      "type": "integer",
+      "description": "Maximum replies to fetch for each top-level comment when reply collection is enabled. Scrappa fetches replies in pages of up to 50.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 50
     }
   },
   "required": ["url"]

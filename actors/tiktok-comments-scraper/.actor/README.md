@@ -1,11 +1,13 @@
 # TikTok Comments Scraper
 
-Extract comments from public TikTok video URLs through Scrappa. Use it for creator research, campaign monitoring, social listening, sentiment analysis, and comment export workflows.
+Extract comments and optional nested replies from public TikTok video URLs through Scrappa. Use it for creator research, campaign monitoring, social listening, sentiment analysis, and comment export workflows.
 
 ## Features
 
 - Comment text, IDs, timestamps, like counts, and reply counts
 - Comment author details including TikTok user ID, username, nickname, and avatar
+- Optional reply collection through Scrappa's TikTok comment replies endpoint
+- Flat dataset rows with `comment_type` and `parent_comment_id` for reply/thread analysis
 - Pagination support with `cursor`
 - Dataset rows optimized for Apify table views
 - Full Scrappa response saved to the `OUTPUT` key-value-store record
@@ -17,13 +19,17 @@ Extract comments from public TikTok video URLs through Scrappa. Use it for creat
 | `url` | string | Yes | Public TikTok video URL |
 | `count` | integer | No | Number of comments to return, 1-50 |
 | `cursor` | string | No | Pagination cursor from a previous response |
+| `includeReplies` | boolean | No | Fetch replies for top-level comments with replies |
+| `maxRepliesPerComment` | integer | No | Maximum replies to fetch per top-level comment, 1-500 |
 
 ## Example Input
 
 ```json
 {
   "url": "https://www.tiktok.com/@tiktok/video/7568510388342443294",
-  "count": 20
+  "count": 20,
+  "includeReplies": true,
+  "maxRepliesPerComment": 50
 }
 ```
 
@@ -33,6 +39,7 @@ Each TikTok comment is saved as one dataset item:
 
 ```json
 {
+  "comment_type": "comment",
   "comment_id": "7093219663211053829",
   "text": "Great video",
   "create_time": 1710000000,
@@ -44,11 +51,37 @@ Each TikTok comment is saved as one dataset item:
     "nickname": "Example User",
     "avatar": "https://..."
   },
+  "parent_comment_id": null,
+  "parent_comment_text": null,
+  "video_id": "7568510388342443294",
   "video_url": "https://www.tiktok.com/@tiktok/video/7568510388342443294"
 }
 ```
 
-The full API response is saved to `OUTPUT`, including `data.hasMore` and `data.cursor` for the next page.
+When `includeReplies` is enabled, replies are saved as additional dataset items:
+
+```json
+{
+  "comment_type": "reply",
+  "comment_id": "7093220000000000000",
+  "text": "Reply text",
+  "create_time": 1710000100,
+  "digg_count": 8,
+  "reply_count": 0,
+  "user": {
+    "user_id": "987654321",
+    "unique_id": "reply_user",
+    "nickname": "Reply User",
+    "avatar": "https://..."
+  },
+  "parent_comment_id": "7093219663211053829",
+  "parent_comment_text": "Great video",
+  "video_id": "7568510388342443294",
+  "video_url": "https://www.tiktok.com/@tiktok/video/7568510388342443294"
+}
+```
+
+The full API response is saved to `OUTPUT`, including `data.hasMore` and `data.cursor` for the next comment page. When replies are enabled, `OUTPUT` also contains the raw reply responses grouped by parent comment ID.
 
 ## Pagination
 
