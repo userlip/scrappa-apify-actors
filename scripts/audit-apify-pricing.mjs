@@ -10,6 +10,7 @@ const PAID_PRICING_MODELS = new Set([
   'PRICE_PER_EVENT',
   'PAY_PER_EVENT',
   'MONTHLY_SUBSCRIPTION',
+  'FLAT_PRICE_PER_MONTH',
   'RENTAL',
 ]);
 
@@ -201,13 +202,27 @@ function hasPaidPricingEvent(pricingInfo) {
     return false;
   }
 
-  return Object.values(pricingPerEvent).some((event) => {
-    if (typeof event === 'number') {
-      return event > 0;
-    }
+  return Object.values(pricingPerEvent).some(hasPaidEventPrice);
+}
 
-    return Number(event?.priceUsd || event?.price || event?.unitPriceUsd || 0) > 0;
-  });
+function hasPaidEventPrice(event) {
+  if (typeof event === 'number') {
+    return event > 0;
+  }
+
+  if (!event || typeof event !== 'object') {
+    return false;
+  }
+
+  if (
+    hasPositivePrice(event.priceUsd) ||
+    hasPositivePrice(event.price) ||
+    hasPositivePrice(event.unitPriceUsd)
+  ) {
+    return true;
+  }
+
+  return Object.values(event).some(hasPaidEventPrice);
 }
 
 export function isStarted(pricingInfo, nowDate) {

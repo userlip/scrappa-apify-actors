@@ -96,6 +96,30 @@ test('isPaidPricingInfo detects paid event pricing fallbacks', () => {
   }), false);
 });
 
+test('isPaidPricingInfo treats flat monthly pricing as paid', () => {
+  assert.equal(isPaidPricingInfo({
+    pricingModel: 'FLAT_PRICE_PER_MONTH',
+  }), true);
+});
+
+test('isPaidPricingInfo detects nested actorChargeEvents pricing', () => {
+  assert.equal(isPaidPricingInfo({
+    pricingPerEvent: {
+      actorChargeEvents: {
+        result: { eventTitle: 'Result', priceUsd: 0.0002 },
+      },
+    },
+  }), true);
+
+  assert.equal(isPaidPricingInfo({
+    pricingPerEvent: {
+      actorChargeEvents: {
+        result: { eventTitle: 'Result', priceUsd: 0 },
+      },
+    },
+  }), false);
+});
+
 test('isPaidPricingInfo detects positive price fields without pricingModel', () => {
   assert.equal(isPaidPricingInfo({
     pricePerUnitUsd: 0.0002,
