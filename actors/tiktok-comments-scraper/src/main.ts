@@ -20,11 +20,13 @@ interface TikTokCommentUser {
 }
 
 interface TikTokComment {
+    id?: string;
     comment_id?: string;
     text?: string;
     create_time?: number;
     digg_count?: number;
     reply_count?: number;
+    reply_total?: number;
     user?: TikTokCommentUser;
     [key: string]: unknown;
 }
@@ -77,9 +79,20 @@ function assertSuccessfulResponse(
     }
 }
 
+function getTikTokCommentId(comment: TikTokComment): string | undefined {
+    return comment.comment_id ?? comment.id;
+}
+
+function getTikTokReplyCount(comment: TikTokComment): number {
+    return comment.reply_count ?? comment.reply_total ?? 0;
+}
+
 function toCommentDatasetItem(comment: TikTokComment, input: TikTokCommentsInput, videoId: string): TikTokCommentDatasetItem {
+    const commentId = getTikTokCommentId(comment);
+
     return {
         ...comment,
+        comment_id: commentId,
         comment_type: 'comment',
         video_url: input.url,
         video_id: videoId,
@@ -94,12 +107,16 @@ function toReplyDatasetItem(
     input: TikTokCommentsInput,
     videoId: string,
 ): TikTokCommentDatasetItem {
+    const replyId = getTikTokCommentId(reply);
+    const parentCommentId = getTikTokCommentId(parentComment) ?? null;
+
     return {
         ...reply,
+        comment_id: replyId,
         comment_type: 'reply',
         video_url: input.url,
         video_id: videoId,
-        parent_comment_id: parentComment.comment_id ?? null,
+        parent_comment_id: parentCommentId,
         parent_comment_text: parentComment.text ?? null,
     };
 }
@@ -111,7 +128,9 @@ async function fetchRepliesForComment(
     videoId: string,
     maxRepliesPerComment: number,
 ): Promise<{ rows: TikTokCommentDatasetItem[]; responses: ReplyFetchRecord[] }> {
-    if (!comment.comment_id || (comment.reply_count ?? 0) < 1) {
+    const commentId = getTikTokCommentId(comment);
+
+    if (!commentId || getTikTokReplyCount(comment) < 1) {
         return { rows: [], responses: [] };
     }
 
@@ -122,7 +141,7 @@ async function fetchRepliesForComment(
     while (rows.length < maxRepliesPerComment) {
         const count = Math.min(50, maxRepliesPerComment - rows.length);
         const params = buildTikTokCommentRepliesParams({
-            comment_id: comment.comment_id,
+            comment_id: commentId,
             video_id: videoId,
             count,
             cursor,
@@ -130,7 +149,7 @@ async function fetchRepliesForComment(
         const response = await client.get<TikTokCommentRepliesResponse>('/tiktok/comments/replies', params);
         assertSuccessfulResponse(response, 'TikTok Comment Replies');
 
-        responses.push({ parent_comment_id: comment.comment_id, response });
+        responses.push({ parent_comment_id: commentId, response });
 
         const replies = response.data?.replies ?? [];
         rows.push(...replies.map((reply) => toReplyDatasetItem(reply, comment, input, videoId)));
