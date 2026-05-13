@@ -110,6 +110,22 @@ test('getRetryDelayMs uses retry-after when present and fallback otherwise', () 
   assert.equal(getRetryDelayMs(null, 2), 1500);
 });
 
+test('getRetryDelayMs parses HTTP-date retry-after values', () => {
+  const future = new Date(Date.now() + 5000);
+  const response = {
+    headers: {
+      get(name) {
+        return name === 'retry-after' ? future.toUTCString() : null;
+      },
+    },
+  };
+
+  const delay = getRetryDelayMs(response, 1);
+
+  assert.ok(delay > 0);
+  assert.ok(delay <= 5000);
+});
+
 test('apifyGet retries transient fetch failures', async () => {
   const originalFetch = globalThis.fetch;
   let calls = 0;

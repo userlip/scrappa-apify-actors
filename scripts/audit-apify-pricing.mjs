@@ -404,6 +404,13 @@ export function getRetryDelayMs(response, attempt) {
     return retryAfterSeconds * 1000;
   }
 
+  if (retryAfter) {
+    const retryAfterDate = new Date(retryAfter);
+    if (!Number.isNaN(retryAfterDate.getTime())) {
+      return Math.max(0, retryAfterDate.getTime() - Date.now());
+    }
+  }
+
   return attempt * 750;
 }
 
