@@ -1,0 +1,65 @@
+{
+  "title": "TikTok Search Scraper",
+  "description": "Search TikTok videos by keyword, hashtag, topic, product, brand, or creator niche.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "keywords": {
+      "title": "Search Keywords",
+      "type": "string",
+      "description": "Keyword, hashtag, product, brand, topic, or creator niche to search for in TikTok videos. You can also provide query instead when calling the actor API.",
+      "editor": "textfield",
+      "prefill": "basketball",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "query": {
+      "title": "Search Query Alias",
+      "type": "string",
+      "description": "Optional alias for Search Keywords for API callers. Ignored when Search Keywords is provided.",
+      "editor": "textfield",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "region": {
+      "title": "Region",
+      "type": "string",
+      "description": "Optional country or region code, such as US, GB, JP, or DE.",
+      "editor": "textfield",
+      "prefill": "US",
+      "pattern": "^[A-Za-z]{2,10}$"
+    },
+    "count": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "description": "Number of video results to return from this page. Scrappa accepts 1-50.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10
+    },
+    "cursor": {
+      "title": "Cursor",
+      "type": "string",
+      "description": "Pagination cursor from a previous run. Leave empty for the first page.",
+      "editor": "textfield",
+      "prefill": "0"
+    },
+    "publish_time": {
+      "title": "Publish Time Filter",
+      "type": "integer",
+      "description": "Optional upstream publish-time filter. Leave empty to use TikTok's default search window; broad values can behave like no filter if TikTok has no matching retained results.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 3650
+    },
+    "sort_type": {
+      "title": "Sort Type",
+      "type": "integer",
+      "description": "Optional upstream sort type. Leave empty to use TikTok's default ranking.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 10
+    }
+  }
+}
