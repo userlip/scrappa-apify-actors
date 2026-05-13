@@ -23,8 +23,12 @@ function stringValue(value, fieldName) {
 }
 
 function positiveInteger(value) {
-    if (!Number.isInteger(value) || value <= 0) {
+    if (value === undefined || value === null) {
         return undefined;
+    }
+
+    if (!Number.isInteger(value) || value <= 0) {
+        throw new Error('Limit must be a positive integer.');
     }
 
     return value;

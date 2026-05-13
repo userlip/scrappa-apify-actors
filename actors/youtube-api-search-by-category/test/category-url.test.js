@@ -73,6 +73,17 @@ describe('buildCategoryRequest', () => {
         assert.equal(url.searchParams.get('limit'), '1024');
     });
 
+    it('rejects invalid limit values when schema validation is bypassed', () => {
+        assert.throws(
+            () => buildCategoryRequest({ category: 'education', limit: '5' }),
+            /Limit must be a positive integer/,
+        );
+        assert.throws(
+            () => buildCategoryRequest({ category: 'education', limit: 0 }),
+            /Limit must be a positive integer/,
+        );
+    });
+
     it('omits empty optional parameters and defaults sort', () => {
         const url = new URL(buildCategoryRequest({
             category: 'education',
