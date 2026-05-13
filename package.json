@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "description": "Apify Actors for Scrappa APIs",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
+    "audit:pricing": "node scripts/audit-apify-pricing.mjs",
     "build": "pnpm -r build",
     "lint": "eslint . --ext .ts",
+    "test:audit-pricing": "node --test scripts/audit-apify-pricing.test.mjs",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
