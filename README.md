@@ -38,7 +38,7 @@ pnpm start:dev
 
 ### Auditing scheduled pricing activation
 
-Public actors must not remain effectively free after scheduled paid pricing starts. Run the live Apify pricing audit with an organization token:
+Public actors must have active `pricingInfo` or `currentPricingInfo` once scheduled paid pricing takes effect. Run the live Apify pricing audit with an organization token:
 
 ```bash
 APIFY_TOKEN=... pnpm audit:pricing

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { pathToFileURL } from 'node:url';
+
 const APIFY_API_BASE_URL = 'https://api.apify.com/v2';
 const ACTOR_DETAIL_CONCURRENCY = 3;
 const MAX_API_ATTEMPTS = 4;
@@ -11,36 +13,39 @@ const PAID_PRICING_MODELS = new Set([
   'RENTAL',
 ]);
 
-const args = parseArgs(process.argv.slice(2));
-const token = process.env.APIFY_TOKEN || process.env.APIFY_API_TOKEN;
-const now = args.now ? parseDate(args.now, '--now') : new Date();
-
-if (args.help) {
-  printHelp();
-  process.exit(0);
+if (isCliEntrypoint()) {
+  runCli().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(2);
+  });
 }
 
-if (!token) {
-  console.error('Missing APIFY_TOKEN or APIFY_API_TOKEN.');
-  console.error('Run with: APIFY_TOKEN=... pnpm audit:pricing');
-  process.exit(2);
-}
+async function runCli() {
+  const args = parseArgs(process.argv.slice(2));
+  const token = process.env.APIFY_TOKEN || process.env.APIFY_API_TOKEN;
+  const now = args.now ? parseDate(args.now, '--now') : new Date();
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(2);
-});
+  if (args.help) {
+    printHelp();
+    return;
+  }
 
-async function main() {
-  const listedActors = await fetchAllActors();
-  const details = await mapWithConcurrency(listedActors, ACTOR_DETAIL_CONCURRENCY, async (actor) => fetchActorDetail(actor.id));
+  if (!token) {
+    console.error('Missing APIFY_TOKEN or APIFY_API_TOKEN.');
+    console.error('Run with: APIFY_TOKEN=... pnpm audit:pricing');
+    process.exit(2);
+  }
+
+  const listedActors = await fetchAllActors(token);
+  const details = await mapWithConcurrency(listedActors, ACTOR_DETAIL_CONCURRENCY, async (actor) => fetchActorDetail(actor.id, token));
   const publicActors = details.filter((actor) => actor.isPublic === true);
-  const reports = publicActors.map((actor) => auditActor(actor, now));
+  const reports = publicActors.map((actor) => auditActorSafely(actor, now));
 
   const overdueMissingActive = reports.filter((report) => report.status === 'OVERDUE_MISSING_ACTIVE_PRICING');
   const missingPaidPricing = reports.filter((report) => report.status === 'MISSING_PAID_PRICING');
   const futureOnly = reports.filter((report) => report.status === 'FUTURE_ONLY_PAID_PRICING');
   const active = reports.filter((report) => report.status === 'ACTIVE_PAID_PRICING');
+  const errors = reports.filter((report) => report.status === 'ERROR');
 
   if (args.json) {
     console.log(JSON.stringify({
@@ -51,10 +56,12 @@ async function main() {
         overdueMissingActivePricing: overdueMissingActive.length,
         missingPaidPricing: missingPaidPricing.length,
         futureOnlyPaidPricing: futureOnly.length,
+        errors: errors.length,
       },
       overdueMissingActivePricing: overdueMissingActive,
       missingPaidPricing,
       futureOnlyPaidPricing: futureOnly,
+      errors,
       activePaidPricing: args.includeActive ? active : undefined,
     }, null, 2));
   } else {
@@ -65,15 +72,16 @@ async function main() {
       overdueMissingActive,
       missingPaidPricing,
       futureOnly,
+      errors,
     });
   }
 
-  if (overdueMissingActive.length > 0 || missingPaidPricing.length > 0) {
+  if (overdueMissingActive.length > 0 || missingPaidPricing.length > 0 || errors.length > 0) {
     process.exit(1);
   }
 }
 
-function auditActor(actor, nowDate) {
+export function auditActor(actor, nowDate) {
   const pricingInfos = Array.isArray(actor.pricingInfos) ? actor.pricingInfos : [];
   const paidPricingInfos = pricingInfos.filter(isPaidPricingInfo);
   const activeEvidence = getActivePricingEvidence(actor, nowDate);
@@ -92,6 +100,14 @@ function auditActor(actor, nowDate) {
     paidPricingInfos: paidPricingInfos.map(formatPricingInfo),
     activeEvidence,
   };
+
+  if (paidPricingInfos.length === 0) {
+    return {
+      ...base,
+      status: 'MISSING_PAID_PRICING',
+      reason: 'Public actor has no paid pricingInfos.',
+    };
+  }
 
   if (activeEvidence) {
     return {
@@ -119,14 +135,25 @@ function auditActor(actor, nowDate) {
     };
   }
 
-  return {
-    ...base,
-    status: 'MISSING_PAID_PRICING',
-    reason: 'Public actor has no paid pricingInfos.',
-  };
+  throw new Error(`Actor ${actor.id || actor.name || 'unknown'} has paid pricingInfos, but no due or future pricingInfo could be selected.`);
 }
 
-function getActivePricingEvidence(actor, nowDate) {
+function auditActorSafely(actor, nowDate) {
+  try {
+    return auditActor(actor, nowDate);
+  } catch (error) {
+    return {
+      actorId: actor.id,
+      slug: actor.name,
+      title: actor.title || null,
+      isPublic: actor.isPublic === true,
+      status: 'ERROR',
+      reason: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+export function getActivePricingEvidence(actor, nowDate) {
   for (const field of ['currentPricingInfo', 'pricingInfo']) {
     const value = actor[field];
     if (value && isPaidPricingInfo(value) && isStarted(value, nowDate)) {
@@ -140,7 +167,7 @@ function getActivePricingEvidence(actor, nowDate) {
   return null;
 }
 
-function isPaidPricingInfo(pricingInfo) {
+export function isPaidPricingInfo(pricingInfo) {
   const pricingModel = pricingInfo?.pricingModel || pricingInfo?.pricingModelType;
   if (!pricingModel || pricingModel === 'FREE') {
     return false;
@@ -170,7 +197,7 @@ function hasPaidPricingEvent(pricingInfo) {
   });
 }
 
-function isStarted(pricingInfo, nowDate) {
+export function isStarted(pricingInfo, nowDate) {
   const startedAt = pricingInfo?.startedAt || pricingInfo?.startAt;
   if (!startedAt) {
     return true;
@@ -202,13 +229,13 @@ function formatPricingInfo(pricingInfo) {
   };
 }
 
-async function fetchAllActors() {
+async function fetchAllActors(token) {
   const actors = [];
   let offset = 0;
   const limit = 1000;
 
   while (true) {
-    const result = await apifyGet(`/acts?my=1&limit=${limit}&offset=${offset}`);
+    const result = await apifyGet(`/acts?my=1&limit=${limit}&offset=${offset}`, token);
     const items = result?.data?.items;
     if (!Array.isArray(items)) {
       throw new Error('Unexpected Apify actor list response: missing data.items.');
@@ -224,8 +251,8 @@ async function fetchAllActors() {
   }
 }
 
-async function fetchActorDetail(actorId) {
-  const result = await apifyGet(`/acts/${encodeURIComponent(actorId)}`);
+async function fetchActorDetail(actorId, token) {
+  const result = await apifyGet(`/acts/${encodeURIComponent(actorId)}`, token);
   if (!result?.data?.id) {
     throw new Error(`Unexpected Apify actor detail response for ${actorId}.`);
   }
@@ -233,14 +260,27 @@ async function fetchActorDetail(actorId) {
   return result.data;
 }
 
-async function apifyGet(path) {
+export async function apifyGet(path, token) {
+  let lastError;
+
   for (let attempt = 1; attempt <= MAX_API_ATTEMPTS; attempt += 1) {
-    const response = await fetch(`${APIFY_API_BASE_URL}${path}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    });
+    let response;
+    try {
+      response = await fetch(`${APIFY_API_BASE_URL}${path}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt < MAX_API_ATTEMPTS) {
+        await sleep(getRetryDelayMs(null, attempt));
+        continue;
+      }
+
+      break;
+    }
 
     if (response.ok) {
       return response.json();
@@ -255,7 +295,8 @@ async function apifyGet(path) {
     throw new Error(`Apify API request failed (${response.status}) for ${path}: ${body}`);
   }
 
-  throw new Error(`Apify API request failed for ${path}.`);
+  const message = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(`Apify API request failed for ${path}: ${message}`);
 }
 
 async function mapWithConcurrency(items, concurrency, callback) {
@@ -274,13 +315,14 @@ async function mapWithConcurrency(items, concurrency, callback) {
   return results;
 }
 
-function printReport({ checkedAt, publicActorsCount, active, overdueMissingActive, missingPaidPricing, futureOnly }) {
+function printReport({ checkedAt, publicActorsCount, active, overdueMissingActive, missingPaidPricing, futureOnly, errors }) {
   console.log(`Apify pricing activation audit checked at ${checkedAt.toISOString()}`);
   console.log(`Public actors checked: ${publicActorsCount}`);
   console.log(`Active paid pricing evidence: ${active.length}`);
   console.log(`Overdue missing active pricing: ${overdueMissingActive.length}`);
   console.log(`Missing paid pricing: ${missingPaidPricing.length}`);
   console.log(`Future-only paid pricing: ${futureOnly.length}`);
+  console.log(`Actor audit errors: ${errors.length}`);
 
   printActorSection('OVERDUE: paid pricing should be active but is not visible', overdueMissingActive, (report) => {
     const due = report.overduePaidPricingInfos?.[0];
@@ -288,6 +330,10 @@ function printReport({ checkedAt, publicActorsCount, active, overdueMissingActiv
   });
 
   printActorSection('MISSING: public actors without paid pricingInfos', missingPaidPricing, actorLabel);
+
+  printActorSection('ERROR: actors that could not be audited', errors, (report) => {
+    return `${actorLabel(report)} - ${report.reason}`;
+  });
 
   printActorSection('SCHEDULED: paid pricing still starts in the future', futureOnly, (report) => {
     const next = report.nextPaidPricingInfo;
@@ -310,7 +356,7 @@ function actorLabel(report) {
   return `${report.actorId} - ${report.slug}`;
 }
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const parsed = {
     help: false,
     includeActive: false,
@@ -329,7 +375,12 @@ function parseArgs(argv) {
     } else if (arg === '--json') {
       parsed.json = true;
     } else if (arg === '--now') {
-      parsed.now = argv[index + 1];
+      const value = argv[index + 1];
+      if (!value || value.startsWith('--')) {
+        throw new Error('--now requires an ISO date value.');
+      }
+
+      parsed.now = value;
       index += 1;
     } else if (arg.startsWith('--now=')) {
       parsed.now = arg.slice('--now='.length);
@@ -350,8 +401,8 @@ function parseDate(value, label) {
   return date;
 }
 
-function getRetryDelayMs(response, attempt) {
-  const retryAfter = response.headers.get('retry-after');
+export function getRetryDelayMs(response, attempt) {
+  const retryAfter = response?.headers?.get('retry-after');
   const retryAfterSeconds = retryAfter ? Number(retryAfter) : NaN;
   if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
     return retryAfterSeconds * 1000;
@@ -362,6 +413,10 @@ function getRetryDelayMs(response, attempt) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isCliEntrypoint() {
+  return process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 }
 
 function printHelp() {
