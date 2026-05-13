@@ -8,6 +8,8 @@
       "type": "array",
       "description": "Category to search in",
       "editor": "select",
+      "minItems": 1,
+      "maxItems": 1,
       "items": {
         "type": "string",
         "enum": [
@@ -40,6 +42,7 @@
       "type": "array",
       "description": "Sort by: relevance, rating, upload_date, view_count",
       "editor": "select",
+      "maxItems": 1,
       "items": {
         "type": "string",
         "enum": ["relevance", "rating", "upload_date", "view_count"]
@@ -51,6 +54,7 @@
       "type": "array",
       "description": "Video duration: short, medium, long",
       "editor": "select",
+      "maxItems": 1,
       "items": {
         "type": "string",
         "enum": ["short", "medium", "long"]
@@ -62,6 +66,7 @@
       "type": "array",
       "description": "Upload date filter",
       "editor": "select",
+      "maxItems": 1,
       "items": {
         "type": "string",
         "enum": ["hour", "today", "week", "month", "year"]
@@ -87,6 +92,7 @@
       "type": "array",
       "description": "Filter by content type",
       "editor": "select",
+      "maxItems": 1,
       "items": {
         "type": "string",
         "enum": ["live", "recorded", "premiere"]

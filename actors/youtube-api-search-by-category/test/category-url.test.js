@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { describe, it } from 'node:test';
 import { buildCategoryRequest, categoryVideosToDatasetItems, continuationToken } from '../src/category-url.js';
+
+const inputSchema = JSON.parse(fs.readFileSync(new URL('../.actor/input_schema.json', import.meta.url)));
 
 describe('buildCategoryRequest', () => {
     it('builds the Scrappa YouTube category URL from Apify select arrays', () => {
@@ -115,5 +118,15 @@ describe('continuationToken', () => {
 
     it('falls back to the legacy continuation field', () => {
         assert.equal(continuationToken({ continuation: 'legacy-next-page' }), 'legacy-next-page');
+    });
+});
+
+describe('input schema', () => {
+    it('keeps Apify select fields aligned with runtime single-value handling', () => {
+        for (const field of ['category', 'sort', 'duration', 'upload_date', 'contentType']) {
+            assert.equal(inputSchema.properties[field].maxItems, 1);
+        }
+
+        assert.equal(inputSchema.properties.category.minItems, 1);
     });
 });
