@@ -143,12 +143,21 @@ describe('input schema', () => {
         }
 
         assert.equal(inputSchema.properties.category.minItems, 1);
+        for (const field of ['sort', 'duration', 'upload_date', 'contentType']) {
+            assert.equal(inputSchema.properties[field].minItems, 0);
+        }
     });
 });
 
 describe('errorMessage', () => {
     it('returns a timeout message for AbortSignal timeout errors', () => {
         const error = new DOMException('The operation was aborted', 'TimeoutError');
+
+        assert.match(errorMessage(error), /timed out after 60s/);
+    });
+
+    it('returns a timeout message for aborted request errors', () => {
+        const error = new DOMException('The user aborted a request', 'AbortError');
 
         assert.match(errorMessage(error), /timed out after 60s/);
     });
