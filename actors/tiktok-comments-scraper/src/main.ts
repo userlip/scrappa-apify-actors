@@ -50,6 +50,7 @@ interface TikTokCommentRepliesResponse {
     processed_time?: number;
     data?: {
         replies?: TikTokComment[];
+        comments?: TikTokComment[];
         hasMore?: boolean;
         cursor?: string | null;
         [key: string]: unknown;
@@ -85,6 +86,10 @@ function getTikTokCommentId(comment: TikTokComment): string | undefined {
 
 function getTikTokReplyCount(comment: TikTokComment): number {
     return comment.reply_count ?? comment.reply_total ?? 0;
+}
+
+function extractTikTokCommentReplies(response: TikTokCommentRepliesResponse): TikTokComment[] {
+    return response.data?.replies ?? response.data?.comments ?? [];
 }
 
 function toCommentDatasetItem(comment: TikTokComment, input: TikTokCommentsInput, videoId: string): TikTokCommentDatasetItem {
@@ -151,7 +156,7 @@ async function fetchRepliesForComment(
 
         responses.push({ parent_comment_id: commentId, response });
 
-        const replies = response.data?.replies ?? [];
+        const replies = extractTikTokCommentReplies(response);
         rows.push(...replies.map((reply) => toReplyDatasetItem(reply, comment, input, videoId)));
 
         if (!response.data?.hasMore || !response.data.cursor || replies.length === 0) {
