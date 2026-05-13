@@ -79,7 +79,11 @@ export function buildCategoryRequest(input = {}) {
 
     const limit = positiveInteger(input?.limit);
     if (limit) {
-        params.set('limit', String(Math.min(limit, MAX_LIMIT)));
+        if (limit > MAX_LIMIT) {
+            throw new Error(`Limit must be less than or equal to ${MAX_LIMIT}.`);
+        }
+
+        params.set('limit', String(limit));
     }
 
     return {

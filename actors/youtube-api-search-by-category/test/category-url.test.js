@@ -67,10 +67,11 @@ describe('buildCategoryRequest', () => {
         );
     });
 
-    it('caps limit at the endpoint maximum', () => {
-        const url = new URL(buildCategoryRequest({ category: 'education', limit: 1024 }).url);
-
-        assert.equal(url.searchParams.get('limit'), '20');
+    it('rejects limits above the endpoint maximum', () => {
+        assert.throws(
+            () => buildCategoryRequest({ category: 'education', limit: 1024 }),
+            /Limit must be less than or equal to 20/,
+        );
     });
 
     it('omits empty optional parameters and defaults sort', () => {
