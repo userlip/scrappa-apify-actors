@@ -85,10 +85,10 @@
     },
     "sort_by": {
       "title": "Sort By",
-      "type": "integer",
+      "type": "string",
       "description": "Google Hotels sort mode: 3 for lowest price, 8 for highest rating, 13 for most reviewed.",
       "editor": "select",
-      "enum": [3, 8, 13],
+      "enum": ["3", "8", "13"],
       "enumTitles": ["Lowest price", "Highest rating", "Most reviewed"]
     },
     "min_price": {
@@ -108,18 +108,18 @@
     },
     "hotel_class": {
       "title": "Hotel Class",
-      "type": "integer",
+      "type": "string",
       "description": "Hotel star class filter.",
       "editor": "select",
-      "enum": [2, 3, 4, 5],
+      "enum": ["2", "3", "4", "5"],
       "enumTitles": ["2-star", "3-star", "4-star", "5-star"]
     },
     "rating": {
       "title": "Minimum Rating",
-      "type": "integer",
+      "type": "string",
       "description": "Google Hotels minimum rating filter: 7 means 3.5+, 8 means 4.0+, 9 means 4.5+.",
       "editor": "select",
-      "enum": [7, 8, 9],
+      "enum": ["7", "8", "9"],
       "enumTitles": ["3.5+", "4.0+", "4.5+"]
     },
     "free_cancellation": {

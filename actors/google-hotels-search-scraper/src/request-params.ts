@@ -130,7 +130,10 @@ function cleanEnumNumber<T extends readonly number[]>(
     field: string,
     allowedValues: T,
 ): T[number] | undefined {
-    const cleaned = cleanInteger(value, field, Math.min(...allowedValues), Math.max(...allowedValues));
+    const normalized = typeof value === 'string' && value.trim() !== '' && /^-?\d+$/.test(value.trim())
+        ? Number(value.trim())
+        : value;
+    const cleaned = cleanInteger(normalized, field, Math.min(...allowedValues), Math.max(...allowedValues));
     if (cleaned === undefined) {
         return undefined;
     }
