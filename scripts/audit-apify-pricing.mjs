@@ -38,16 +38,7 @@ async function runCli() {
 
   const listedActors = await fetchAllActors(token);
   const detailResults = await mapWithConcurrency(listedActors, ACTOR_DETAIL_CONCURRENCY, async (actor) => fetchActorDetailSafely(actor, token));
-  const detailErrors = detailResults
-    .filter((result) => result.error)
-    .map((result) => formatDetailFetchError(result.actor, result.error));
-  const publicActors = detailResults
-    .map((result) => result.detail)
-    .filter((actor) => actor?.isPublic === true);
-  const reports = [
-    ...publicActors.map((actor) => auditActorSafely(actor, now)),
-    ...detailErrors,
-  ];
+  const reports = createAuditReports(detailResults, now);
 
   const overdueMissingActive = reports.filter((report) => report.status === 'OVERDUE_MISSING_ACTIVE_PRICING');
   const missingPaidPricing = reports.filter((report) => report.status === 'MISSING_PAID_PRICING');
@@ -87,6 +78,20 @@ async function runCli() {
   if (overdueMissingActive.length > 0 || missingPaidPricing.length > 0 || errors.length > 0) {
     process.exit(1);
   }
+}
+
+export function createAuditReports(detailResults, nowDate) {
+  const detailErrors = detailResults
+    .filter((result) => result.error && result.actor?.isPublic === true)
+    .map((result) => formatDetailFetchError(result.actor, result.error));
+  const publicActors = detailResults
+    .map((result) => result.detail)
+    .filter((actor) => actor?.isPublic === true);
+
+  return [
+    ...publicActors.map((actor) => auditActorSafely(actor, nowDate)),
+    ...detailErrors,
+  ];
 }
 
 export function auditActor(actor, nowDate) {

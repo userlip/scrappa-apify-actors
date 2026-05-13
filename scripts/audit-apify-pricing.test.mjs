@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   apifyGet,
   auditActor,
+  createAuditReports,
   fetchActorDetailSafely,
   formatDetailFetchError,
   getRetryDelayMs,
@@ -192,4 +193,40 @@ test('fetchActorDetailSafely returns detail fetch errors without throwing', asyn
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test('createAuditReports ignores detail fetch errors for non-public actors', () => {
+  const reports = createAuditReports([
+    {
+      actor: { id: 'private-actor', name: 'private', isPublic: false },
+      detail: null,
+      error: new Error('private detail failed'),
+    },
+    {
+      actor: { id: 'public-actor', name: 'public', isPublic: true },
+      detail: null,
+      error: new Error('public detail failed'),
+    },
+    {
+      actor: { id: 'public-ok', name: 'public-ok', isPublic: true },
+      detail: {
+        id: 'public-ok',
+        name: 'public-ok',
+        isPublic: true,
+        pricingInfos: [{
+          pricingModel: 'PAY_PER_EVENT',
+          startedAt: '2026-05-17T14:00:00.000Z',
+        }],
+        currentPricingInfo: {
+          pricingModel: 'PAY_PER_EVENT',
+          startedAt: '2026-05-17T14:00:00.000Z',
+        },
+      },
+      error: null,
+    },
+  ], now);
+
+  assert.deepEqual(reports.map((report) => report.actorId), ['public-ok', 'public-actor']);
+  assert.equal(reports[0].status, 'ACTIVE_PAID_PRICING');
+  assert.equal(reports[1].status, 'ERROR');
 });
