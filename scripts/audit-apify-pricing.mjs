@@ -126,16 +126,12 @@ export function auditActor(actor, nowDate) {
     };
   }
 
-  if (paidPricingInfos.length > 0) {
-    return {
-      ...base,
-      status: 'FUTURE_ONLY_PAID_PRICING',
-      reason: 'Paid pricing is scheduled for a future activation time.',
-      nextPaidPricingInfo: formatPricingInfo(nextPaidPricingInfo),
-    };
-  }
-
-  throw new Error(`Actor ${actor.id || actor.name || 'unknown'} has paid pricingInfos, but no due or future pricingInfo could be selected.`);
+  return {
+    ...base,
+    status: 'FUTURE_ONLY_PAID_PRICING',
+    reason: 'Paid pricing is scheduled for a future activation time.',
+    nextPaidPricingInfo: formatPricingInfo(nextPaidPricingInfo),
+  };
 }
 
 function auditActorSafely(actor, nowDate) {
