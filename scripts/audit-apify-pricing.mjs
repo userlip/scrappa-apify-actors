@@ -37,9 +37,17 @@ async function runCli() {
   }
 
   const listedActors = await fetchAllActors(token);
-  const details = await mapWithConcurrency(listedActors, ACTOR_DETAIL_CONCURRENCY, async (actor) => fetchActorDetail(actor.id, token));
-  const publicActors = details.filter((actor) => actor.isPublic === true);
-  const reports = publicActors.map((actor) => auditActorSafely(actor, now));
+  const detailResults = await mapWithConcurrency(listedActors, ACTOR_DETAIL_CONCURRENCY, async (actor) => fetchActorDetailSafely(actor, token));
+  const detailErrors = detailResults
+    .filter((result) => result.error)
+    .map((result) => formatDetailFetchError(result.actor, result.error));
+  const publicActors = detailResults
+    .map((result) => result.detail)
+    .filter((actor) => actor?.isPublic === true);
+  const reports = [
+    ...publicActors.map((actor) => auditActorSafely(actor, now)),
+    ...detailErrors,
+  ];
 
   const overdueMissingActive = reports.filter((report) => report.status === 'OVERDUE_MISSING_ACTIVE_PRICING');
   const missingPaidPricing = reports.filter((report) => report.status === 'MISSING_PAID_PRICING');
@@ -165,7 +173,7 @@ export function getActivePricingEvidence(actor, nowDate) {
 
 export function isPaidPricingInfo(pricingInfo) {
   const pricingModel = pricingInfo?.pricingModel || pricingInfo?.pricingModelType;
-  if (!pricingModel || pricingModel === 'FREE') {
+  if (pricingModel === 'FREE') {
     return false;
   }
 
@@ -173,9 +181,13 @@ export function isPaidPricingInfo(pricingInfo) {
     return true;
   }
 
-  return pricingInfo?.pricePerUnitUsd != null ||
-    pricingInfo?.pricePerDatasetItemUsd != null ||
+  return hasPositivePrice(pricingInfo?.pricePerUnitUsd) ||
+    hasPositivePrice(pricingInfo?.pricePerDatasetItemUsd) ||
     hasPaidPricingEvent(pricingInfo);
+}
+
+function hasPositivePrice(value) {
+  return Number(value) > 0;
 }
 
 function hasPaidPricingEvent(pricingInfo) {
@@ -254,6 +266,33 @@ async function fetchActorDetail(actorId, token) {
   }
 
   return result.data;
+}
+
+export async function fetchActorDetailSafely(actor, token) {
+  try {
+    return {
+      actor,
+      detail: await fetchActorDetail(actor.id, token),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      actor,
+      detail: null,
+      error,
+    };
+  }
+}
+
+export function formatDetailFetchError(actor, error) {
+  return {
+    actorId: actor.id,
+    slug: actor.name,
+    title: actor.title || null,
+    isPublic: actor.isPublic === true,
+    status: 'ERROR',
+    reason: `Failed to fetch actor detail: ${error instanceof Error ? error.message : String(error)}`,
+  };
 }
 
 export async function apifyGet(path, token) {

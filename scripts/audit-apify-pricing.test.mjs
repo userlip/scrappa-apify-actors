@@ -4,6 +4,8 @@ import test from 'node:test';
 import {
   apifyGet,
   auditActor,
+  fetchActorDetailSafely,
+  formatDetailFetchError,
   getRetryDelayMs,
   isPaidPricingInfo,
   parseArgs,
@@ -93,6 +95,21 @@ test('isPaidPricingInfo detects paid event pricing fallbacks', () => {
   }), false);
 });
 
+test('isPaidPricingInfo detects positive price fields without pricingModel', () => {
+  assert.equal(isPaidPricingInfo({
+    pricePerUnitUsd: 0.0002,
+  }), true);
+
+  assert.equal(isPaidPricingInfo({
+    pricePerDatasetItemUsd: '0.0002',
+  }), true);
+
+  assert.equal(isPaidPricingInfo({
+    pricingModel: 'FREE',
+    pricePerUnitUsd: 0.0002,
+  }), false);
+});
+
 test('parseArgs rejects --now without a date value', () => {
   assert.throws(() => parseArgs(['--now', '--json']), /--now requires an ISO date value/);
 });
@@ -147,6 +164,31 @@ test('apifyGet retries transient fetch failures', async () => {
 
     assert.deepEqual(result, { data: { ok: true } });
     assert.equal(calls, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('fetchActorDetailSafely returns detail fetch errors without throwing', async () => {
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = async () => {
+    return {
+      ok: false,
+      status: 400,
+      text: async () => 'bad actor id',
+    };
+  };
+
+  try {
+    const result = await fetchActorDetailSafely({ id: 'actor-id', name: 'actor-slug' }, 'token');
+    const report = formatDetailFetchError(result.actor, result.error);
+
+    assert.equal(result.detail, null);
+    assert.equal(result.error instanceof Error, true);
+    assert.equal(report.status, 'ERROR');
+    assert.equal(report.actorId, 'actor-id');
+    assert.match(report.reason, /Failed to fetch actor detail/);
   } finally {
     globalThis.fetch = originalFetch;
   }
