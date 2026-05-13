@@ -1,0 +1,13 @@
+{
+  "actorSpecification": 1,
+  "name": "youtube-api-search-by-category",
+  "title": "YouTube Search By Category Scraper",
+  "description": "Get YouTube search results from predefined category searches.",
+  "version": "0.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  },
+  "dockerfile": "./Dockerfile"
+}
