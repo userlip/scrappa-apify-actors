@@ -32,6 +32,9 @@ async function main(): Promise<void> {
         });
         const datasetItems = buildHistoricalPriceDatasetItems(response, params);
 
+        const store = await Actor.openKeyValueStore();
+        await store.setValue('OUTPUT', response);
+
         if (datasetItems.length > 0) {
             const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
             if (isPayPerEvent) {
@@ -52,9 +55,6 @@ async function main(): Promise<void> {
         } else {
             console.log('No Google Finance historical price points found for this request');
         }
-
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
 
         console.log('Google Finance historical prices scraping completed successfully');
         console.log('Results summary:', JSON.stringify({

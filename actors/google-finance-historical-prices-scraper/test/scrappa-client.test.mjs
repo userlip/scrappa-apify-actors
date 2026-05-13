@@ -110,9 +110,11 @@ test('preserves timeout classification when reading an error response aborts', a
 
 test('classifies retryable Scrappa errors and timeout errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);
+    assert.equal(isRetryableScrappaError(new TypeError('fetch failed')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (429): Rate limited')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (503): Service unavailable')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (422): Invalid request')), false);
+    assert.equal(isRetryableScrappaError(new TypeError('Invalid URL')), false);
     assert.equal(isRetryableScrappaError('Scrappa API error (503): Service unavailable'), false);
 });
 

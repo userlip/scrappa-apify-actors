@@ -61,7 +61,11 @@ test('rejects invalid symbol and localization controls', () => {
     );
     assert.throws(
         () => buildGoogleFinanceHistoricalPricesParams({ symbol: 'AAPL', gl: 'country-code' }),
-        /gl must be 10 characters or fewer/,
+        /gl must be 2 characters or fewer/,
+    );
+    assert.throws(
+        () => buildGoogleFinanceHistoricalPricesParams({ symbol: 'AAPL', gl: 'u1' }),
+        /gl must be a two-letter country code/,
     );
 });
 
@@ -69,6 +73,10 @@ test('rejects invalid ranges and intervals', () => {
     assert.throws(
         () => buildGoogleFinanceHistoricalPricesParams({ symbol: 'AAPL', range: 9 }),
         /range must be between 1 and 8/,
+    );
+    assert.throws(
+        () => buildGoogleFinanceHistoricalPricesParams({ symbol: 'AAPL', range: true }),
+        /range must be an integer/,
     );
     assert.throws(
         () => buildGoogleFinanceHistoricalPricesParams({ symbol: 'AAPL', interval: 'hourly' }),

@@ -26,7 +26,6 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 8,
-      "default": 6,
       "prefill": 6
     },
     "start_date": {
@@ -62,7 +61,7 @@
       "type": "string",
       "description": "Country code, such as us, gb, de, or ca.",
       "editor": "textfield",
-      "maxLength": 10,
+      "maxLength": 2,
       "default": "us"
     }
   }

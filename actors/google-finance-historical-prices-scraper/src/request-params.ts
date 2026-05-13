@@ -60,6 +60,10 @@ function cleanRange(value: unknown): number | undefined {
         return undefined;
     }
 
+    if (typeof value === 'boolean') {
+        throw new Error('range must be an integer');
+    }
+
     const range = typeof value === 'number' ? value : Number(value);
     if (!Number.isInteger(range)) {
         throw new Error('range must be an integer');
@@ -111,9 +115,13 @@ function cleanLanguageCode(value: unknown): string | undefined {
 }
 
 function cleanCountryCode(value: unknown): string | undefined {
-    const gl = cleanString(value, 'gl', 10);
+    const gl = cleanString(value, 'gl', 2);
     if (gl === undefined) {
         return undefined;
+    }
+
+    if (!/^[a-z]{2}$/i.test(gl)) {
+        throw new Error('gl must be a two-letter country code');
     }
 
     return gl.toLowerCase();

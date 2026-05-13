@@ -34,6 +34,10 @@ export function isRetryableScrappaError(error: unknown): boolean {
         return true;
     }
 
+    if (error instanceof TypeError && /fetch failed|network|terminated|ECONN|ETIMEDOUT|ENOTFOUND|EAI_AGAIN/i.test(error.message)) {
+        return true;
+    }
+
     if (!(error instanceof Error)) {
         return false;
     }
