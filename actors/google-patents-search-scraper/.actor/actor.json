@@ -1,0 +1,83 @@
+{
+  "actorSpecification": 1,
+  "name": "google-patents-search-scraper",
+  "title": "Google Patents Search Scraper",
+  "description": "Search Google Patents for prior art, IP monitoring, patent landscaping, assignee tracking, inventor research, country coverage, status, patent type, and filing or publication date filters.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "patents": {
+          "title": "Patent Results",
+          "transformation": {
+            "fields": [
+              "rank",
+              "title",
+              "patent_id",
+              "publication_number",
+              "patent_page",
+              "assignee",
+              "inventor",
+              "language",
+              "priority_date",
+              "filing_date",
+              "grant_date",
+              "publication_date",
+              "pdf",
+              "family_countries",
+              "family_status_count",
+              "request_q",
+              "request_country",
+              "request_status",
+              "request_type",
+              "request_before",
+              "request_after"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "rank": { "label": "Rank", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "patent_id": { "label": "Patent ID", "format": "text" },
+              "publication_number": { "label": "Publication #", "format": "text" },
+              "patent_page": { "label": "Patent Page", "format": "link" },
+              "assignee": { "label": "Assignee", "format": "text" },
+              "inventor": { "label": "Inventor", "format": "text" },
+              "language": { "label": "Language", "format": "text" },
+              "priority_date": { "label": "Priority Date", "format": "date" },
+              "filing_date": { "label": "Filing Date", "format": "date" },
+              "grant_date": { "label": "Grant Date", "format": "date" },
+              "publication_date": { "label": "Publication Date", "format": "date" },
+              "pdf": { "label": "PDF", "format": "link" },
+              "family_countries": { "label": "Family Countries", "format": "text" },
+              "family_status_count": { "label": "Family Statuses", "format": "number" },
+              "request_q": { "label": "Query", "format": "text" },
+              "request_country": { "label": "Country Filter", "format": "text" },
+              "request_status": { "label": "Status Filter", "format": "text" },
+              "request_type": { "label": "Type Filter", "format": "text" },
+              "request_before": { "label": "Before Filter", "format": "text" },
+              "request_after": { "label": "After Filter", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

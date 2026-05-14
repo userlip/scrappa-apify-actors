@@ -1,0 +1,94 @@
+{
+  "title": "Google Patents Search Scraper",
+  "description": "Search Google Patents with prior-art, assignee, inventor, country, status, type, sort, and date filters.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "q": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Google Patents search query. Supports patent keywords and Boolean-style patent search text.",
+      "editor": "textfield",
+      "prefill": "wireless charging vehicle battery"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "One-based Google Patents result page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "num": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "description": "Number of patent results to request on the page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10
+    },
+    "sort": {
+      "title": "Sort Order",
+      "type": "string",
+      "description": "Leave empty for relevance, or sort by newest or oldest results.",
+      "editor": "select",
+      "enum": ["new", "old"],
+      "enumTitles": ["Newest", "Oldest"]
+    },
+    "country": {
+      "title": "Country Filter",
+      "type": "string",
+      "description": "Comma-separated patent country codes, such as US,EP,WO.",
+      "editor": "textfield"
+    },
+    "language": {
+      "title": "Language Filter",
+      "type": "string",
+      "description": "Google Patents language filter, such as ENGLISH, GERMAN, or FRENCH.",
+      "editor": "textfield"
+    },
+    "status": {
+      "title": "Patent Status",
+      "type": "string",
+      "description": "Filter by granted patents or applications.",
+      "editor": "select",
+      "enum": ["GRANT", "APPLICATION"],
+      "enumTitles": ["Grant", "Application"]
+    },
+    "type": {
+      "title": "Patent Type",
+      "type": "string",
+      "description": "Filter by utility patents or design patents.",
+      "editor": "select",
+      "enum": ["PATENT", "DESIGN"],
+      "enumTitles": ["Patent", "Design"]
+    },
+    "before": {
+      "title": "Before Date Filter",
+      "type": "string",
+      "description": "Filter patents before a filing or publication date. Format: filing:YYYYMMDD or publication:YYYYMMDD.",
+      "editor": "textfield"
+    },
+    "after": {
+      "title": "After Date Filter",
+      "type": "string",
+      "description": "Filter patents after a filing or publication date. Format: filing:YYYYMMDD or publication:YYYYMMDD.",
+      "editor": "textfield"
+    },
+    "inventor": {
+      "title": "Inventor Filter",
+      "type": "string",
+      "description": "Comma-separated inventor names for people-focused patent searches.",
+      "editor": "textfield"
+    },
+    "assignee": {
+      "title": "Assignee Filter",
+      "type": "string",
+      "description": "Comma-separated assignee or company names for IP monitoring and competitor patent tracking.",
+      "editor": "textfield"
+    }
+  },
+  "required": ["q"]
+}
