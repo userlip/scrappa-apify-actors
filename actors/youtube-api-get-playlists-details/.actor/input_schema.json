@@ -1,0 +1,15 @@
+{
+    "title": "Youtube API Playlist Details",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "id": {
+            "title": "YouTube playlist ID",
+            "type": "string",
+            "description": "YouTube playlist ID.",
+            "editor": "textfield",
+            "prefill": "PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf"
+        }
+    },
+    "required": ["id"]
+}
