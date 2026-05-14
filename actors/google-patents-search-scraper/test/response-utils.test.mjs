@@ -141,4 +141,9 @@ test('limits patent payloads for charge-aligned output', () => {
         limitPatentSearchResponse({ patents, total_results: 3 }, 1),
         { patents: patents.slice(0, 1), total_results: 3 },
     );
+
+    assert.deepEqual(
+        limitPatentSearchResponse({ success: true, data: { patents: [], total_results: 0 } }, 0),
+        { success: true, data: { patents: [], total_results: 0 } },
+    );
 });

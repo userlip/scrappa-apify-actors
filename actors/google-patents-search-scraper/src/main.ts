@@ -32,13 +32,12 @@ async function main(): Promise<void> {
         });
         const data = extractPatentSearchData(response);
         const patents = extractPatentResults(response);
-        let outputResponse = response;
 
         if (patents.length > 0) {
             const datasetItems = patents.map((result) => enrichResult(result, params));
             const chargeResult = await Actor.pushData(datasetItems, PATENT_RESULT_CHARGE_EVENT);
             if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
-                outputResponse = limitPatentSearchResponse(response, chargeResult.chargedCount);
+                const outputResponse = limitPatentSearchResponse(response, chargeResult.chargedCount);
                 const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount}/${datasetItems.length} Google Patents result(s).`;
                 console.log(statusMessage, JSON.stringify({
                     event: PATENT_RESULT_CHARGE_EVENT,
@@ -57,7 +56,7 @@ async function main(): Promise<void> {
         }
 
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', outputResponse);
+        await store.setValue('OUTPUT', response);
 
         const summary = {
             patent_results: patents.length,

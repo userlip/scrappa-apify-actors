@@ -78,7 +78,7 @@ export function limitPatentSearchResponse(
     patentLimit: number,
 ): GooglePatentsSearchResponse {
     const data = extractPatentSearchData(response);
-    const patents = Array.isArray(data.patents) ? data.patents.slice(0, Math.max(0, patentLimit)) : data.patents;
+    const patents = Array.isArray(data.patents) ? data.patents.slice(0, patentLimit) : data.patents;
     const limitedData = {
         ...data,
         patents,
