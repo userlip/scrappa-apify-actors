@@ -87,20 +87,20 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-13. It lists all 53 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-14. It lists all 54 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 53 live `thescrappa` actors in Apify
-- 40 local actor directories in this repo; 39 are now represented by live Apify actors
-- 14 live actors missing a local source directory here
-- 1 local actor pending Apify publication and pricing
+- 54 live `thescrappa` actors in Apify
+- 41 local actor directories in this repo; all 41 are now represented by live Apify actors
+- 13 live actors missing a local source directory here
+- 0 local actors pending Apify publication and pricing
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage | Pricing follow-up |
 |---|---|---|---|---|---|
 | `actors/google-finance-quote-scraper` | `google-finance-quote-scraper` | `aE7VcbT6CIWBxob7U` | Google Finance Quote Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-23 (`PAY_PER_EVENT`); verify activation |
-| `actors/google-finance-historical-prices-scraper` | `Pending Apify publication` | `Pending` | Google Finance Historical Prices Scraper | Local source present; not found in live `thescrappa` actors | P0 follow-up: publish and set or schedule paid `PAY_PER_EVENT` pricing before public release (`price-point` event at target $0.0002/result) |
+| `actors/google-finance-historical-prices-scraper` | `google-finance-historical-prices-scraper` | `zqckCpYtvPvxb2oxl` | Google Finance Historical Prices Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Public with `pricingInfos` active from 2026-05-13 (`PAY_PER_EVENT`, `price-point` at $0.0002/result); verify `currentPricingInfo` if Apify API begins populating it |
 | `actors/google-flights-search-scraper` | `google-flights-search-scraper` | `IIPXRhbeyXH7ssOK6` | Google Flights Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-05-11 (`PAY_PER_EVENT`, `flight-result` at $0.0002/result); cloud run verified |
 | `actors/google-hotels-search-scraper` | `google-hotels-search-scraper` | `Kc3rfsV2Hif23mctw` | Google Hotels Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-26 (`PAY_PER_EVENT`, default dataset hotel result at $0.0002/result); verify activation |
 | `actors/google-images-scraper` | `google-images-scraper` | `MrbqFgdpNTQcRW0Vt` | Google Images Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-24 (`PAY_PER_EVENT`); verify activation |
@@ -146,7 +146,7 @@ Current coverage in this repository:
 | `Missing locally` | `youtube-api-hashtags` | `N5ol78TtqiMj4MtM6` | YouTube API Hashtags | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-playlists` | `hueJrwkrbo20Ufrna` | YouTube API Playlists | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-related-videos` | `eKzA6GhEOJACIiCUW` | YouTube API Related Videos | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
-| `Missing locally` | `youtube-api-search-by-category` | `O1ltDU9qk4adR2x86` | YouTube API Search By Category | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
+| `actors/youtube-api-search-by-category` | `youtube-api-search-by-category` | `O1ltDU9qk4adR2x86` | YouTube API Search By Category | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-search-data` | `youtube-api-search-data` | `ziD2fUoLsdzKlc6zR` | YouTube Search Data Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-search-suggestions` | `youtube-api-search-suggestions` | `oecJ81oeff1KozCtd` | YouTube API Search Suggestions | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-trending-videos` | `youtube-api-trending-videos` | `T7ddx0tgVCwMHi9ET` | YouTube API Trending Videos | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
