@@ -40,9 +40,13 @@ export interface GooglePatentsSearchData {
     [key: string]: unknown;
 }
 
-export type GooglePatentsSearchResponse =
-    | { success?: boolean; data?: GooglePatentsSearchData; [key: string]: unknown }
-    | GooglePatentsSearchData;
+export interface GooglePatentsSearchWrappedResponse {
+    success: boolean;
+    data: GooglePatentsSearchData;
+    [key: string]: unknown;
+}
+
+export type GooglePatentsSearchResponse = GooglePatentsSearchWrappedResponse | GooglePatentsSearchData;
 
 export function extractPatentSearchData(response: GooglePatentsSearchResponse): GooglePatentsSearchData {
     if (response && typeof response === 'object' && 'data' in response && response.data && typeof response.data === 'object') {
@@ -64,7 +68,7 @@ export function extractPatentResults(response: GooglePatentsSearchResponse): Goo
 
 export function patentPageUrl(result: GooglePatentResult): string | null {
     const publicationNumber = result.publication_number
-        ?? (typeof result.patent_id === 'string' ? result.patent_id.split('/')[1] : undefined);
+        ?? (typeof result.patent_id === 'string' ? /^patent\/([^/]+)\/[a-z]{2}$/i.exec(result.patent_id)?.[1] : undefined);
 
     return publicationNumber ? `https://patents.google.com/patent/${publicationNumber}` : null;
 }

@@ -6,6 +6,7 @@ import type { GooglePatentsSearchResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+const SCRAPPA_REQUEST_ATTEMPTS = 3;
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -25,7 +26,9 @@ async function main(): Promise<void> {
         console.log(`Fetching Google Patents for ${describeGooglePatentsSearchRequest(params)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<GooglePatentsSearchResponse>('/google-patents/search', params);
+        const response = await client.get<GooglePatentsSearchResponse>('/google-patents/search', params, {
+            attempts: SCRAPPA_REQUEST_ATTEMPTS,
+        });
         const data = extractPatentSearchData(response);
         const patents = extractPatentResults(response);
 

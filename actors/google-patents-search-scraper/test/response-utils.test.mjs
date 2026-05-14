@@ -28,16 +28,19 @@ test('returns empty result set for missing patents array', () => {
 test('builds patent page URLs', () => {
     assert.equal(patentPageUrl({ publication_number: 'US123B1' }), 'https://patents.google.com/patent/US123B1');
     assert.equal(patentPageUrl({ patent_id: 'patent/EP123A1/en' }), 'https://patents.google.com/patent/EP123A1');
+    assert.equal(patentPageUrl({ patent_id: 'EP123A1' }), null);
+    assert.equal(patentPageUrl({ patent_id: 'patent/EP123A1' }), null);
     assert.equal(patentPageUrl({}), null);
 });
 
-test('enriches patent results with flattened fields and request metadata', () => {
+test('enriches patent results with flattened fields, request metadata, and upstream fields', () => {
     assert.deepEqual(
         enrichResult(
             {
                 patent_id: 'patent/US123B1/en',
                 rank: 1,
                 title: 'Charging system',
+                upstream_score: 92,
                 dates: {
                     priority: '2020-01-01',
                     filing: '2021-01-01',
@@ -60,6 +63,7 @@ test('enriches patent results with flattened fields and request metadata', () =>
             patent_id: 'patent/US123B1/en',
             rank: 1,
             title: 'Charging system',
+            upstream_score: 92,
             dates: {
                 priority: '2020-01-01',
                 filing: '2021-01-01',
