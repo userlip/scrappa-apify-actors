@@ -3,11 +3,63 @@ import { buildGoogleFinanceQuoteParams, describeGoogleFinanceQuoteRequest } from
 import type { GoogleFinanceQuoteInput } from './request-params.js';
 import { buildQuoteDatasetItem } from './response-utils.js';
 import type { GoogleFinanceQuoteResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
 const QUOTE_RESULT_CHARGE_EVENT = 'quote-result';
+
+interface QuoteFetchResult {
+    response: GoogleFinanceQuoteResponse;
+    fallback?: {
+        reason: string;
+        omitted_params: string[];
+        primary_error: string;
+    };
+}
+
+function shouldRetryBaseQuote(error: unknown, params: Record<string, unknown>): error is ScrappaHttpError {
+    return error instanceof ScrappaHttpError
+        && error.status >= 500
+        && error.status <= 599
+        && params.period_type !== undefined;
+}
+
+async function fetchQuoteWithFallback(
+    client: ScrappaClient,
+    params: Record<string, unknown>,
+): Promise<QuoteFetchResult> {
+    try {
+        const response = await client.get<GoogleFinanceQuoteResponse>('/google-finance/quote', params, {
+            attempts: SCRAPPA_MAX_ATTEMPTS,
+        });
+        return { response };
+    } catch (error) {
+        if (!shouldRetryBaseQuote(error, params)) {
+            throw error;
+        }
+
+        const fallbackParams = { ...params };
+        delete fallbackParams.period_type;
+
+        console.warn(
+            `Scrappa quote request failed with ${error.message}. Retrying base quote without period_type so the actor can still return quote data.`,
+        );
+
+        const response = await client.get<GoogleFinanceQuoteResponse>('/google-finance/quote', fallbackParams, {
+            attempts: SCRAPPA_MAX_ATTEMPTS,
+        });
+
+        return {
+            response,
+            fallback: {
+                reason: 'scrappa_5xx_after_financial_period_request',
+                omitted_params: ['period_type'],
+                primary_error: error.message,
+            },
+        };
+    }
+}
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -27,10 +79,12 @@ async function main(): Promise<void> {
         console.log(`Fetching Google Finance quote for ${describeGoogleFinanceQuoteRequest(params)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<GoogleFinanceQuoteResponse>('/google-finance/quote', params, {
-            attempts: SCRAPPA_MAX_ATTEMPTS,
-        });
-        const item = buildQuoteDatasetItem(response, params);
+        const fetchResult = await fetchQuoteWithFallback(client, params);
+        const { response } = fetchResult;
+        const item: Record<string, unknown> = {
+            ...buildQuoteDatasetItem(response, params),
+            upstream_fallback: fetchResult.fallback ?? null,
+        };
 
         const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
         if (isPayPerEvent) {
@@ -59,6 +113,7 @@ async function main(): Promise<void> {
             financials: counts.financials,
             news: counts.news,
             related_tickers: counts.related_tickers,
+            fallback: fetchResult.fallback?.reason ?? null,
         }));
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);

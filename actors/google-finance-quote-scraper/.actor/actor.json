@@ -26,7 +26,7 @@
         "quotes": {
           "title": "Quotes",
           "transformation": {
-            "fields": ["symbol", "exchange", "name", "current_price", "currency", "price_change", "percent_change", "market_status", "key_stats", "about", "financials", "news", "discover_more", "related_tickers", "request_symbol", "request_exchange", "request_period_type", "request_hl", "request_gl"]
+            "fields": ["symbol", "exchange", "name", "current_price", "currency", "price_change", "percent_change", "market_status", "key_stats", "about", "financials", "news", "discover_more", "related_tickers", "request_symbol", "request_exchange", "request_period_type", "request_hl", "request_gl", "upstream_fallback"]
           },
           "display": {
             "component": "table",
@@ -49,7 +49,8 @@
               "request_exchange": { "label": "Requested Exchange", "format": "text" },
               "request_period_type": { "label": "Period Type", "format": "text" },
               "request_hl": { "label": "Language", "format": "text" },
-              "request_gl": { "label": "Country", "format": "text" }
+              "request_gl": { "label": "Country", "format": "text" },
+              "upstream_fallback": { "label": "Upstream Fallback", "format": "object" }
             }
           }
         }

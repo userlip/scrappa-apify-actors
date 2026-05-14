@@ -25,6 +25,18 @@ export class ScrappaTimeoutError extends Error {
     }
 }
 
+export class ScrappaHttpError extends Error {
+    status: number;
+    details: string;
+
+    constructor(status: number, details: string) {
+        super(`Scrappa API error (${status}): ${details}`);
+        this.name = 'ScrappaHttpError';
+        this.status = status;
+        this.details = details;
+    }
+}
+
 export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
     return Math.min(1000 * Math.pow(2, failedAttempt) + jitterMs, 10000);
 }
@@ -36,6 +48,10 @@ export function isRetryableScrappaError(error: unknown): boolean {
 
     if (!(error instanceof Error)) {
         return false;
+    }
+
+    if (error instanceof ScrappaHttpError) {
+        return [408, 429, 500, 502, 503, 504].includes(error.status);
     }
 
     return /Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message);
@@ -152,7 +168,7 @@ export class ScrappaClient {
 
             if (!response.ok) {
                 const errorMessage = await this.readErrorMessage(response);
-                throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
+                throw new ScrappaHttpError(response.status, errorMessage);
             }
 
             return await response.json() as T;
