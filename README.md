@@ -91,9 +91,9 @@ This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-14. I
 
 Current coverage in this repository:
 - 55 live `thescrappa` actors in Apify
-- 41 local actor directories in this repo; 40 are now represented by live Apify actors
-- 15 live actors missing a local source directory here
-- 1 local actor pending Apify publication and pricing
+- 41 local actor directories in this repo; all 41 are now represented by live Apify actors
+- 14 live actors missing a local source directory here
+- 0 local actors pending Apify publication and pricing
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
