@@ -49,8 +49,8 @@ export interface GooglePatentsSearchWrappedResponse {
 export type GooglePatentsSearchResponse = GooglePatentsSearchWrappedResponse | GooglePatentsSearchData;
 
 export function extractPatentSearchData(response: GooglePatentsSearchResponse): GooglePatentsSearchData {
-    if (response && typeof response === 'object' && 'data' in response && response.data && typeof response.data === 'object') {
-        return response.data as GooglePatentsSearchData;
+    if (isWrappedPatentSearchResponse(response)) {
+        return response.data;
     }
 
     return response as GooglePatentsSearchData;
@@ -71,6 +71,27 @@ export function patentPageUrl(result: GooglePatentResult): string | null {
         ?? (typeof result.patent_id === 'string' ? /^patent\/([^/]+)\/[a-z]{2}$/i.exec(result.patent_id)?.[1] : undefined);
 
     return publicationNumber ? `https://patents.google.com/patent/${publicationNumber}` : null;
+}
+
+export function limitPatentSearchResponse(
+    response: GooglePatentsSearchResponse,
+    patentLimit: number,
+): GooglePatentsSearchResponse {
+    const data = extractPatentSearchData(response);
+    const patents = Array.isArray(data.patents) ? data.patents.slice(0, Math.max(0, patentLimit)) : data.patents;
+    const limitedData = {
+        ...data,
+        patents,
+    };
+
+    if (isWrappedPatentSearchResponse(response)) {
+        return {
+            ...response,
+            data: limitedData,
+        };
+    }
+
+    return limitedData;
 }
 
 export function enrichResult(result: GooglePatentResult, params: Record<string, unknown>): Record<string, unknown> {
@@ -112,4 +133,16 @@ export function enrichResult(result: GooglePatentResult, params: Record<string, 
         request_inventor: params.inventor ?? null,
         request_assignee: params.assignee ?? null,
     };
+}
+
+function isWrappedPatentSearchResponse(response: GooglePatentsSearchResponse): response is GooglePatentsSearchWrappedResponse {
+    return Boolean(
+        response
+        && typeof response === 'object'
+        && 'success' in response
+        && typeof response.success === 'boolean'
+        && 'data' in response
+        && response.data
+        && typeof response.data === 'object',
+    );
 }

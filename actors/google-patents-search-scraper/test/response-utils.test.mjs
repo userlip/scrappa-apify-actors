@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { enrichResult, extractPatentResults, extractPatentSearchData, patentPageUrl } from '../dist/response-utils.js';
+import {
+    enrichResult,
+    extractPatentResults,
+    extractPatentSearchData,
+    limitPatentSearchResponse,
+    patentPageUrl,
+} from '../dist/response-utils.js';
 
 test('extracts patent data from wrapped and direct responses', () => {
     const data = { patents: [{ patent_id: 'patent/US123B1/en' }], total_results: 1 };
@@ -102,5 +108,37 @@ test('enriches patent results with flattened fields, request metadata, and upstr
             request_inventor: null,
             request_assignee: null,
         },
+    );
+});
+
+test('enriches null patent page and empty family countries for boundary patent IDs', () => {
+    const result = enrichResult(
+        {
+            patent_id: 'patent/US123B1/eng',
+            family_status: [],
+        },
+        { q: 'charging' },
+    );
+
+    assert.equal(result.patent_page, null);
+    assert.equal(result.family_status_count, 0);
+    assert.equal(result.family_countries, null);
+});
+
+test('limits patent payloads for charge-aligned output', () => {
+    const patents = [
+        { patent_id: 'patent/US1/en' },
+        { patent_id: 'patent/US2/en' },
+        { patent_id: 'patent/US3/en' },
+    ];
+
+    assert.deepEqual(
+        limitPatentSearchResponse({ success: true, data: { patents, total_results: 3 }, trace_id: 'abc' }, 2),
+        { success: true, data: { patents: patents.slice(0, 2), total_results: 3 }, trace_id: 'abc' },
+    );
+
+    assert.deepEqual(
+        limitPatentSearchResponse({ patents, total_results: 3 }, 1),
+        { patents: patents.slice(0, 1), total_results: 3 },
     );
 });

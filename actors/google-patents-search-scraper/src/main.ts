@@ -1,12 +1,13 @@
 import { Actor } from 'apify';
 import { buildGooglePatentsSearchParams, describeGooglePatentsSearchRequest } from './request-params.js';
 import type { GooglePatentsSearchInput } from './request-params.js';
-import { enrichResult, extractPatentResults, extractPatentSearchData } from './response-utils.js';
+import { enrichResult, extractPatentResults, extractPatentSearchData, limitPatentSearchResponse } from './response-utils.js';
 import type { GooglePatentsSearchResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_REQUEST_ATTEMPTS = 3;
+const PATENT_RESULT_CHARGE_EVENT = 'result';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -31,16 +32,32 @@ async function main(): Promise<void> {
         });
         const data = extractPatentSearchData(response);
         const patents = extractPatentResults(response);
+        let outputResponse = response;
 
         if (patents.length > 0) {
-            await Actor.pushData(patents.map((result) => enrichResult(result, params)));
+            const datasetItems = patents.map((result) => enrichResult(result, params));
+            const chargeResult = await Actor.pushData(datasetItems, PATENT_RESULT_CHARGE_EVENT);
+            if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
+                outputResponse = limitPatentSearchResponse(response, chargeResult.chargedCount);
+                const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount}/${datasetItems.length} Google Patents result(s).`;
+                console.log(statusMessage, JSON.stringify({
+                    event: PATENT_RESULT_CHARGE_EVENT,
+                    charged_count: chargeResult.chargedCount,
+                    result_count: datasetItems.length,
+                }));
+
+                const store = await Actor.openKeyValueStore();
+                await store.setValue('OUTPUT', outputResponse);
+                await Actor.exit({ statusMessage });
+                return;
+            }
             console.log(`Found ${patents.length} patent results`);
         } else {
             console.log('No Google Patents results found for this request');
         }
 
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
+        await store.setValue('OUTPUT', outputResponse);
 
         const summary = {
             patent_results: patents.length,
