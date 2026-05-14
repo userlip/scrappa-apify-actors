@@ -68,13 +68,13 @@
     "before": {
       "title": "Before Date Filter",
       "type": "string",
-      "description": "Filter patents before a filing, publication, or priority date. Format: filing:YYYYMMDD, publication:YYYYMMDD, or priority:YYYYMMDD.",
+      "description": "Filter patents before a filing or publication date. Format: filing:YYYYMMDD or publication:YYYYMMDD.",
       "editor": "textfield"
     },
     "after": {
       "title": "After Date Filter",
       "type": "string",
-      "description": "Filter patents after a filing, publication, or priority date. Format: filing:YYYYMMDD, publication:YYYYMMDD, or priority:YYYYMMDD.",
+      "description": "Filter patents after a filing or publication date. Format: filing:YYYYMMDD or publication:YYYYMMDD.",
       "editor": "textfield"
     },
     "inventor": {

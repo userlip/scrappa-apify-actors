@@ -16,7 +16,7 @@ export interface GooglePatentsSearchInput {
 const SORT_VALUES = ['new', 'old'] as const;
 const STATUS_VALUES = ['GRANT', 'APPLICATION'] as const;
 const TYPE_VALUES = ['PATENT', 'DESIGN'] as const;
-const DATE_FILTER_TYPES = ['filing', 'publication', 'priority'] as const;
+const DATE_FILTER_TYPES = ['filing', 'publication'] as const;
 
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null || value === '') {
@@ -89,9 +89,9 @@ function cleanDateFilter(value: unknown, field: string): string | undefined {
         return undefined;
     }
 
-    const match = /^(filing|publication|priority):(\d{8})$/i.exec(cleaned);
+    const match = /^(filing|publication):(\d{8})$/i.exec(cleaned);
     if (!match) {
-        throw new Error(`${field} must use format filing:YYYYMMDD, publication:YYYYMMDD, or priority:YYYYMMDD`);
+        throw new Error(`${field} must use format filing:YYYYMMDD or publication:YYYYMMDD`);
     }
 
     const [, rawType, date] = match;
@@ -102,7 +102,7 @@ function cleanDateFilter(value: unknown, field: string): string | undefined {
 
     const type = rawType.toLowerCase();
     if (!DATE_FILTER_TYPES.includes(type as typeof DATE_FILTER_TYPES[number])) {
-        throw new Error(`${field} must start with filing, publication, or priority`);
+        throw new Error(`${field} must start with filing or publication`);
     }
 
     return `${type}:${date}`;

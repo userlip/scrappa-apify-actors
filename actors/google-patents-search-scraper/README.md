@@ -32,7 +32,7 @@ This actor is intended for paid per-result monetization. Recommended marketplace
 - `language` - Google Patents language filter such as `ENGLISH`.
 - `status` - `GRANT` or `APPLICATION`.
 - `type` - `PATENT` or `DESIGN`.
-- `before` / `after` - Date filters in `filing:YYYYMMDD`, `publication:YYYYMMDD`, or `priority:YYYYMMDD` format.
+- `before` / `after` - Date filters in `filing:YYYYMMDD` or `publication:YYYYMMDD` format.
 - `inventor` - Comma-separated inventor names.
 - `assignee` - Comma-separated assignee or company names.
 
@@ -63,6 +63,8 @@ Each dataset item is one patent result with flattened fields for easier exports:
 ```
 
 The full Scrappa response is also stored in the key-value store as `OUTPUT`.
+
+The actor preserves Scrappa's original patent result fields and adds the flattened aliases shown above, so new upstream fields may appear in exports without an actor code change.
 
 ## Notes
 

@@ -3,7 +3,7 @@ import { buildGooglePatentsSearchParams, describeGooglePatentsSearchRequest } fr
 import type { GooglePatentsSearchInput } from './request-params.js';
 import { enrichResult, extractPatentResults, extractPatentSearchData } from './response-utils.js';
 import type { GooglePatentsSearchResponse } from './response-utils.js';
-import { ScrappaClient } from './shared/scrappa-client.js';
+import { ScrappaClient, ScrappaTimeoutError } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
@@ -55,7 +55,7 @@ async function main(): Promise<void> {
         console.log('Results summary:', JSON.stringify(summary));
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
-        const message = rawMessage.includes('timed out')
+        const message = error instanceof ScrappaTimeoutError
             ? `${rawMessage}. The Google Patents request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try a more specific query or run the request again.`
             : rawMessage;
         console.error('Actor failed: ' + message);

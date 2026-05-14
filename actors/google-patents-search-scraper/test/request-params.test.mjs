@@ -75,6 +75,10 @@ test('rejects invalid date filters', () => {
         /before must use format/,
     );
     assert.throws(
+        () => buildGooglePatentsSearchParams({ q: 'battery', before: 'priority:20230101' }),
+        /before must use format/,
+    );
+    assert.throws(
         () => buildGooglePatentsSearchParams({ q: 'battery', after: 'filing:20230230' }),
         /after must include a valid calendar date/,
     );
