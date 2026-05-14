@@ -71,7 +71,7 @@ async function main(): Promise<void> {
         if (isScrappaUpstreamFailure(error)) {
             const statusMessage = `Scrappa upstream returned ${error.status} after retries; no Google Finance quote result was written. Try the run again later.`;
             console.error('Actor could not complete: ' + statusMessage);
-            await Actor.exit({ statusMessage });
+            await Actor.fail(statusMessage);
             return;
         }
 
