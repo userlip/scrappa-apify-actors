@@ -5,7 +5,7 @@ import type { GoogleFinanceQuoteInput } from './request-params.js';
 import { buildQuoteDatasetItem } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
 const QUOTE_RESULT_CHARGE_EVENT = 'quote-result';
 
