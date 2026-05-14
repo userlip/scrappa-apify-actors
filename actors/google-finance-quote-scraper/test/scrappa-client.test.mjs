@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
     ScrappaClient,
+    ScrappaHttpError,
     ScrappaTimeoutError,
     getRetryDelayMs,
     isRetryableScrappaError,
@@ -71,7 +72,13 @@ test('parses Scrappa JSON error messages and validation details', async () => {
 
         await assert.rejects(
             () => client.get('/google-finance/quote'),
-            /Scrappa API error \(422\): Invalid request - symbol: The stock symbol is required\./,
+            (error) => {
+                assert.equal(error instanceof ScrappaHttpError, true);
+                assert.equal(error.status, 422);
+                assert.equal(error.details, 'Invalid request - symbol: The stock symbol is required.');
+                assert.match(error.message, /Scrappa API error \(422\): Invalid request - symbol: The stock symbol is required\./);
+                return true;
+            },
         );
     } finally {
         globalThis.fetch = originalFetch;
@@ -110,6 +117,8 @@ test('preserves timeout classification when reading an error response aborts', a
 
 test('classifies retryable Scrappa errors and timeout errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError(500, 'Internal Server Error')), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError(422, 'Invalid request')), false);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (429): Rate limited')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (503): Service unavailable')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (422): Invalid request')), false);

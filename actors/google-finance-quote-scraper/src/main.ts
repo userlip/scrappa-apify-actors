@@ -1,13 +1,17 @@
 import { Actor } from 'apify';
+import { fetchQuoteWithFallback } from './quote-fetch.js';
 import { buildGoogleFinanceQuoteParams, describeGoogleFinanceQuoteRequest } from './request-params.js';
 import type { GoogleFinanceQuoteInput } from './request-params.js';
 import { buildQuoteDatasetItem } from './response-utils.js';
-import type { GoogleFinanceQuoteResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 25000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
 const QUOTE_RESULT_CHARGE_EVENT = 'quote-result';
+
+function isScrappaUpstreamFailure(error: unknown): error is ScrappaHttpError {
+    return error instanceof ScrappaHttpError && error.status >= 500 && error.status <= 599;
+}
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -27,10 +31,12 @@ async function main(): Promise<void> {
         console.log(`Fetching Google Finance quote for ${describeGoogleFinanceQuoteRequest(params)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<GoogleFinanceQuoteResponse>('/google-finance/quote', params, {
-            attempts: SCRAPPA_MAX_ATTEMPTS,
-        });
-        const item = buildQuoteDatasetItem(response, params);
+        const fetchResult = await fetchQuoteWithFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
+        const { response } = fetchResult;
+        const item: Record<string, unknown> = {
+            ...buildQuoteDatasetItem(response, params),
+            upstream_fallback: fetchResult.fallback ?? null,
+        };
 
         const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
         if (isPayPerEvent) {
@@ -59,11 +65,19 @@ async function main(): Promise<void> {
             financials: counts.financials,
             news: counts.news,
             related_tickers: counts.related_tickers,
+            fallback: fetchResult.fallback?.reason ?? null,
         }));
     } catch (error) {
+        if (isScrappaUpstreamFailure(error)) {
+            const statusMessage = `Scrappa upstream returned ${error.status} after retries; no Google Finance quote result was written. Try the run again later.`;
+            console.error('Actor could not complete: ' + statusMessage);
+            await Actor.fail(statusMessage);
+            return;
+        }
+
         const rawMessage = error instanceof Error ? error.message : String(error);
         const message = error instanceof ScrappaTimeoutError
-            ? `${rawMessage}. The Google Finance quote request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Provide an exchange code to reduce lookup latency, or run the request again.`
+            ? `${rawMessage}. The Google Finance quote request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Run the request again, or provide an exchange code if the symbol is ambiguous.`
             : rawMessage;
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
