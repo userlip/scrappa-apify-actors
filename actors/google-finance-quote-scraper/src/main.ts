@@ -66,7 +66,7 @@ async function main(): Promise<void> {
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
         const message = error instanceof ScrappaTimeoutError
-            ? `${rawMessage}. The Google Finance quote request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Provide an exchange code to reduce lookup latency, or run the request again.`
+            ? `${rawMessage}. The Google Finance quote request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Run the request again, or provide an exchange code if the symbol is ambiguous.`
             : rawMessage;
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
