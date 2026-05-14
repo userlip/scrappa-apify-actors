@@ -7,7 +7,7 @@ import { ScrappaClient, ScrappaTimeoutError } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_REQUEST_ATTEMPTS = 3;
-const PATENT_RESULT_CHARGE_EVENT = 'result';
+const PATENT_RESULT_CHARGE_EVENT = 'apify-default-dataset-item';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -35,7 +35,7 @@ async function main(): Promise<void> {
 
         if (patents.length > 0) {
             const datasetItems = patents.map((result) => enrichResult(result, params));
-            const chargeResult = await Actor.pushData(datasetItems, PATENT_RESULT_CHARGE_EVENT);
+            const chargeResult = await Actor.getDefaultInstance().pushData(datasetItems);
             if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
                 const outputResponse = limitPatentSearchResponse(response, chargeResult.chargedCount);
                 const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount}/${datasetItems.length} Google Patents result(s).`;
