@@ -1,3 +1,5 @@
+// Keep this standalone actor client aligned with retry/error-handling changes
+// in actors/google-jobs-scraper/src/shared/scrappa-client.ts.
 export interface ScrappaConfig {
     apiKey: string;
     baseUrl?: string;

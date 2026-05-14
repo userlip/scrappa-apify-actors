@@ -30,6 +30,7 @@ test('builds patent page URLs', () => {
     assert.equal(patentPageUrl({ patent_id: 'patent/EP123A1/en' }), 'https://patents.google.com/patent/EP123A1');
     assert.equal(patentPageUrl({ patent_id: 'EP123A1' }), null);
     assert.equal(patentPageUrl({ patent_id: 'patent/EP123A1' }), null);
+    assert.equal(patentPageUrl({ patent_id: 'patent/EP123A1/eng' }), null);
     assert.equal(patentPageUrl({}), null);
 });
 
