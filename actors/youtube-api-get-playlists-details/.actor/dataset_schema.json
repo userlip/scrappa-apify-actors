@@ -1,0 +1,126 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": ["string", "null"],
+        "title": "ID",
+        "description": "The YouTube playlist ID.",
+        "example": "PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf"
+      },
+      "playlistId": {
+        "type": ["string", "null"],
+        "title": "Playlist ID",
+        "description": "The YouTube playlist ID returned by the API.",
+        "example": "PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf"
+      },
+      "title": {
+        "type": ["string", "null"],
+        "title": "Title",
+        "description": "The playlist title."
+      },
+      "description": {
+        "type": ["string", "null"],
+        "title": "Description",
+        "description": "The playlist description."
+      },
+      "thumbnail": {
+        "type": ["string", "null"],
+        "title": "Thumbnail",
+        "description": "The playlist thumbnail URL."
+      },
+      "author": {
+        "type": ["object", "null"],
+        "title": "Author",
+        "description": "Author or channel metadata for the playlist."
+      },
+      "videoCount": {
+        "type": ["integer", "number", "string", "null"],
+        "title": "Video count",
+        "description": "The number of videos in the playlist."
+      },
+      "viewCount": {
+        "type": ["integer", "number", "string", "null"],
+        "title": "View count",
+        "description": "The playlist view count."
+      },
+      "lastUpdated": {
+        "type": ["string", "null"],
+        "title": "Last updated",
+        "description": "When the playlist was last updated."
+      },
+      "videos": {
+        "type": ["array", "null"],
+        "title": "Videos",
+        "description": "Videos returned for the playlist."
+      },
+      "continuation": {
+        "type": ["string", "null"],
+        "title": "Continuation",
+        "description": "Continuation token when more playlist videos are available."
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "YouTube Playlist Details",
+      "transformation": {
+        "fields": [
+          "id",
+          "playlistId",
+          "title",
+          "author.name",
+          "videoCount",
+          "viewCount",
+          "lastUpdated",
+          "thumbnail",
+          "continuation"
+        ],
+        "flatten": ["author"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "id": {
+            "label": "ID",
+            "format": "text"
+          },
+          "playlistId": {
+            "label": "Playlist ID",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "author.name": {
+            "label": "Author",
+            "format": "text"
+          },
+          "videoCount": {
+            "label": "Videos",
+            "format": "number"
+          },
+          "viewCount": {
+            "label": "Views",
+            "format": "text"
+          },
+          "lastUpdated": {
+            "label": "Updated",
+            "format": "text"
+          },
+          "thumbnail": {
+            "label": "Thumbnail",
+            "format": "image"
+          },
+          "continuation": {
+            "label": "Continuation",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}
