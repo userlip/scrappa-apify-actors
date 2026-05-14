@@ -1,0 +1,101 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import { enrichResult, extractPatentResults, extractPatentSearchData, patentPageUrl } from '../dist/response-utils.js';
+
+test('extracts patent data from wrapped and direct responses', () => {
+    const data = { patents: [{ patent_id: 'patent/US123B1/en' }], total_results: 1 };
+
+    assert.deepEqual(extractPatentSearchData({ success: true, data }), data);
+    assert.deepEqual(extractPatentSearchData(data), data);
+    assert.deepEqual(extractPatentResults({ success: true, data }), data.patents);
+    assert.deepEqual(extractPatentResults(data), data.patents);
+});
+
+test('returns empty result set for missing patents array', () => {
+    const originalWarn = console.warn;
+    const warnings = [];
+    console.warn = (message) => warnings.push(message);
+
+    try {
+        assert.deepEqual(extractPatentResults({ success: true, data: { total_results: 0 } }), []);
+        assert.deepEqual(warnings, ['Scrappa Google Patents response did not include a patents result array']);
+    } finally {
+        console.warn = originalWarn;
+    }
+});
+
+test('builds patent page URLs', () => {
+    assert.equal(patentPageUrl({ publication_number: 'US123B1' }), 'https://patents.google.com/patent/US123B1');
+    assert.equal(patentPageUrl({ patent_id: 'patent/EP123A1/en' }), 'https://patents.google.com/patent/EP123A1');
+    assert.equal(patentPageUrl({}), null);
+});
+
+test('enriches patent results with flattened fields and request metadata', () => {
+    assert.deepEqual(
+        enrichResult(
+            {
+                patent_id: 'patent/US123B1/en',
+                rank: 1,
+                title: 'Charging system',
+                dates: {
+                    priority: '2020-01-01',
+                    filing: '2021-01-01',
+                    grant: '2024-01-01',
+                    publication: '2022-01-01',
+                },
+                family_status: [
+                    { country: 'US', status: 'ACTIVE' },
+                    { country: 'EP', status: 'PENDING' },
+                ],
+            },
+            {
+                q: 'charging',
+                page: 1,
+                num: 10,
+                status: 'GRANT',
+            },
+        ),
+        {
+            patent_id: 'patent/US123B1/en',
+            rank: 1,
+            title: 'Charging system',
+            dates: {
+                priority: '2020-01-01',
+                filing: '2021-01-01',
+                grant: '2024-01-01',
+                publication: '2022-01-01',
+            },
+            family_status: [
+                { country: 'US', status: 'ACTIVE' },
+                { country: 'EP', status: 'PENDING' },
+            ],
+            patent_page: 'https://patents.google.com/patent/US123B1',
+            snippet: null,
+            publication_number: null,
+            language: null,
+            priority_date: '2020-01-01',
+            filing_date: '2021-01-01',
+            grant_date: '2024-01-01',
+            publication_date: '2022-01-01',
+            inventor: null,
+            assignee: null,
+            thumbnail: null,
+            pdf: null,
+            family_status_count: 2,
+            family_countries: 'US,EP',
+            request_q: 'charging',
+            request_page: 1,
+            request_num: 10,
+            request_sort: null,
+            request_before: null,
+            request_after: null,
+            request_country: null,
+            request_language: null,
+            request_status: 'GRANT',
+            request_type: null,
+            request_inventor: null,
+            request_assignee: null,
+        },
+    );
+});
