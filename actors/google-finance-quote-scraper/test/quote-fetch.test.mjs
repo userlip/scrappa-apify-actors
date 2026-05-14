@@ -96,6 +96,27 @@ test('propagates non-retryable Scrappa errors without fallback', async () => {
     assert.equal(calls.length, 1);
 });
 
+test('propagates fallback Scrappa 5xx after one degraded retry pass', async () => {
+    const originalWarn = console.warn;
+    const primaryError = new ScrappaHttpError(500, 'Internal Server Error');
+    const fallbackError = new ScrappaHttpError(503, 'Service unavailable');
+    const { client, calls } = createClientStub([primaryError, fallbackError]);
+
+    console.warn = () => {};
+
+    try {
+        await assert.rejects(
+            () => fetchQuoteWithFallback(client, { symbol: 'MSFT', period_type: 'quarterly' }, 3),
+            fallbackError,
+        );
+        assert.equal(calls.length, 2);
+        assert.deepEqual(calls[0].params, { symbol: 'MSFT', period_type: 'quarterly' });
+        assert.deepEqual(calls[1].params, { symbol: 'MSFT' });
+    } finally {
+        console.warn = originalWarn;
+    }
+});
+
 test('classifies only Scrappa 5xx errors with period_type for base quote fallback', () => {
     assert.equal(shouldRetryBaseQuote(new ScrappaHttpError(500, 'Internal Server Error'), { period_type: 'quarterly' }), true);
     assert.equal(shouldRetryBaseQuote(new ScrappaHttpError(503, 'Service unavailable'), { period_type: 'annual' }), true);
