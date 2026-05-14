@@ -84,5 +84,6 @@ Are these actors billable despite pricingInfo/currentPricingInfo being null in t
 ## Verification Follow-up
 
 - Re-run `APIFY_TOKEN=... pnpm audit:pricing --now 2026-05-14T10:20:00.000Z`.
+- If `pnpm` is unavailable in the workspace, run the underlying script directly: `APIFY_TOKEN=... node scripts/audit-apify-pricing.mjs --now 2026-05-14T10:20:00.000Z`.
 - For each support-fixed actor, confirm `pricingInfo` or `currentPricingInfo` returns the active paid row, or obtain written Apify confirmation that `pricingInfos[]` is the authoritative billable field.
 - Re-run the activation checkpoint after the next scheduled pricing date: `APIFY_TOKEN=... pnpm audit:pricing --now 2026-05-17T15:00:00.000Z`.
