@@ -6,7 +6,7 @@ export interface StepstoneJobsInput {
     sort?: 'relevance' | 'date' | string;
     job_type?: 'full_time' | 'part_time' | 'internship' | 'freelance' | string;
     work_from_home?: boolean;
-    date_posted?: 1 | 3 | 7 | 30 | number;
+    date_posted?: number;
     page?: number;
     limit?: number;
 }
