@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const requestParamsModule = process.env.TEST_SOURCE === 'src'
@@ -60,6 +61,42 @@ test('builds params for a complete hotel search request', () => {
             property_token: 'token',
         },
     );
+});
+
+test('accepts marketplace select values as numeric strings', () => {
+    assert.deepEqual(
+        buildGoogleHotelsSearchParams({
+            q: 'Paris, France',
+            check_in_date: checkInDate,
+            check_out_date: checkOutDate,
+            sort_by: '3',
+            hotel_class: '4',
+            rating: '8',
+        }),
+        {
+            q: 'Paris, France',
+            check_in_date: checkInDate,
+            check_out_date: checkOutDate,
+            sort_by: 3,
+            hotel_class: 4,
+            rating: 8,
+        },
+    );
+});
+
+test('input schema accepts numeric and string select values', async () => {
+    const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
+    for (const [field, values] of Object.entries({
+        sort_by: [3, '3', 8, '8', 13, '13'],
+        hotel_class: [2, '2', 3, '3', 4, '4', 5, '5'],
+        rating: [7, '7', 8, '8', 9, '9'],
+    })) {
+        const property = schema.properties[field];
+        assert.deepEqual(property.type, ['integer', 'string']);
+        for (const value of values) {
+            assert.ok(property.enum.includes(value), `${field} should allow ${String(value)}`);
+        }
+    }
 });
 
 test('requires query and valid date range', () => {

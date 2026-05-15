@@ -22,9 +22,9 @@ Replace the date values with future dates before running the actor.
   "currency": "EUR",
   "gl": "fr",
   "hl": "en",
-  "sort_by": 3,
-  "hotel_class": 4,
-  "rating": 8
+  "sort_by": "3",
+  "hotel_class": "4",
+  "rating": "8"
 }
 ```
 
