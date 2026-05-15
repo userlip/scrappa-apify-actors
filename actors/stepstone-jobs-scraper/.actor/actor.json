@@ -1,0 +1,58 @@
+{
+  "actorSpecification": 1,
+  "name": "stepstone-jobs-scraper",
+  "title": "Stepstone Jobs Scraper ($0.30/1k results)",
+  "description": "Search Stepstone job listings across Germany, Austria, Netherlands, and Belgium with Scrappa. Extract job titles, companies, locations, salaries, dates, descriptions, skills, labels, and pagination.",
+  "categories": [
+    "LEAD_GENERATION",
+    "MARKETING",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "jobs": {
+          "title": "Stepstone Jobs",
+          "transformation": {
+            "fields": ["title", "company_name", "company_url", "location_formatted", "location_city", "location_region", "location_country", "salary", "date_posted", "url", "skills", "labels", "work_from_home"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": { "label": "Title", "format": "text" },
+              "company_name": { "label": "Company", "format": "text" },
+              "company_url": { "label": "Company URL", "format": "link" },
+              "location_formatted": { "label": "Location", "format": "text" },
+              "location_city": { "label": "City", "format": "text" },
+              "location_region": { "label": "Region", "format": "text" },
+              "location_country": { "label": "Country", "format": "text" },
+              "salary": { "label": "Salary", "format": "object" },
+              "date_posted": { "label": "Date Posted", "format": "text" },
+              "url": { "label": "Job URL", "format": "link" },
+              "skills": { "label": "Skills", "format": "array" },
+              "labels": { "label": "Labels", "format": "array" },
+              "work_from_home": { "label": "Work From Home", "format": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
