@@ -56,8 +56,7 @@
       "title": "Work From Home",
       "type": "boolean",
       "description": "Only return listings marked as work-from-home or home-office friendly.",
-      "editor": "checkbox",
-      "default": false
+      "editor": "checkbox"
     },
     "date_posted": {
       "title": "Date Posted",
