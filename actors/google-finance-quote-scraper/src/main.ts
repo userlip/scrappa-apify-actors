@@ -14,6 +14,10 @@ function isScrappaUpstreamFailure(error: unknown): error is ScrappaHttpError {
     return error instanceof ScrappaHttpError && error.status >= 500 && error.status <= 599;
 }
 
+function isRetryableScrappaFallbackFailure(error: unknown): error is ScrappaHttpError {
+    return error instanceof ScrappaHttpError && [408, 429, 500, 502, 503, 504].includes(error.status);
+}
+
 function describeUnknownError(error: unknown): string {
     if (error instanceof Error) {
         return error.message;
@@ -79,7 +83,7 @@ async function main(): Promise<void> {
             try {
                 fallbackResult = await fetchSearchQuoteFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
             } catch (error) {
-                if (error instanceof ScrappaHttpError || error instanceof ScrappaTimeoutError) {
+                if (isRetryableScrappaFallbackFailure(error) || error instanceof ScrappaTimeoutError) {
                     await exitAfterSearchFallbackError(error);
                     return;
                 }

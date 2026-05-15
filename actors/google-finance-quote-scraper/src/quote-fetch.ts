@@ -9,6 +9,7 @@ export interface QuoteFetchResult {
         primary_error: string;
         source_endpoint?: string;
         unavailable_sections?: string[];
+        not_applicable_params?: string[];
     };
 }
 
@@ -104,10 +105,11 @@ export async function fetchSearchQuoteFallback(
         response: buildQuoteResponseFromSearchResult(result, params),
         fallback: {
             reason: 'scrappa_quote_empty_search_result',
-            omitted_params: ['period_type'],
+            omitted_params: [],
             primary_error: 'Scrappa quote response did not contain usable price, key stats, profile, financials, news, or related ticker data.',
             source_endpoint: '/google-finance/search',
             unavailable_sections: ['about', 'financials', 'news', 'discover_more'],
+            not_applicable_params: ['period_type'],
         },
     };
 }
