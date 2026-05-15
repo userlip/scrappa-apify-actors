@@ -38,7 +38,8 @@ test('builds dataset items from overview sections', () => {
     assert.equal(items[1].section, 'currencies');
     assert.equal(items[1].price, 1.0457);
     assert.equal(items[1].from_currency, 'EUR');
-    assert.deepEqual(items[0].result_counts.market_rows, 2);
+    assert.equal('raw_market_row' in items[0], false);
+    assert.equal('result_counts' in items[0], false);
 });
 
 test('builds dataset items from trend groups and news results', () => {
@@ -83,6 +84,7 @@ test('builds dataset items from trend groups and news results', () => {
     assert.equal(items[1].item_type, 'news_result');
     assert.equal(items[1].section, 'finance-news');
     assert.equal(items[1].title, 'Markets climb');
+    assert.equal('raw_news_result' in items[1], false);
 });
 
 test('counts overview, trend, and news rows', () => {

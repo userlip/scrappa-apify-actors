@@ -28,12 +28,15 @@ async function main(): Promise<void> {
         });
         const datasetItems = buildMarketsDatasetItems(response, params);
 
+        const store = await Actor.openKeyValueStore();
+        await store.setValue('OUTPUT', response);
+
         if (datasetItems.length > 0) {
             const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
             if (isPayPerEvent) {
                 const chargeResult = await Actor.pushData(datasetItems, MARKET_ITEM_CHARGE_EVENT);
                 if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
-                    const statusMessage = 'Charge limit reached before saving all Google Finance market items; OUTPUT was not written.';
+                    const statusMessage = 'Charge limit reached before saving all Google Finance market items; raw OUTPUT was written.';
                     console.log(statusMessage, JSON.stringify({
                         event: MARKET_ITEM_CHARGE_EVENT,
                         charged_count: chargeResult.chargedCount,
@@ -48,9 +51,6 @@ async function main(): Promise<void> {
         } else {
             console.log('No Google Finance market items found for this request');
         }
-
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
 
         console.log('Google Finance markets scraping completed successfully');
         console.log('Results summary:', JSON.stringify({

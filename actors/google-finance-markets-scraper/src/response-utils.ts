@@ -1,7 +1,10 @@
 export interface GoogleFinanceMarketsResponse {
-    markets?: Record<string, unknown>;
-    market_trends?: unknown[];
-    news_results?: unknown[];
+    markets?: Record<string, unknown[]>;
+    market_trends?: Array<{
+        title?: string | null;
+        results?: unknown[];
+    }>;
+    news_results?: Array<Record<string, unknown>>;
     [key: string]: unknown;
 }
 
@@ -79,7 +82,6 @@ function buildMarketRow(
         price_movement_percentage: firstNumber(movement.percentage) ?? null,
         from_currency: firstString(record.from_currency) ?? null,
         to_currency: firstString(record.to_currency) ?? null,
-        raw_market_row: record,
         request_trend: params.trend ?? null,
         request_index_market: params.index_market ?? null,
         request_hl: params.hl ?? null,
@@ -102,7 +104,6 @@ function buildNewsRow(item: unknown, position: number, params: Record<string, un
         date: firstString(record.date) ?? null,
         snippet: firstString(record.snippet) ?? null,
         thumbnail: firstString(record.thumbnail) ?? null,
-        raw_news_result: record,
         request_trend: params.trend ?? null,
         request_index_market: params.index_market ?? null,
         request_hl: params.hl ?? null,
@@ -142,10 +143,7 @@ export function buildMarketsDatasetItems(
         items.push(buildNewsRow(item, index + 1, params));
     });
 
-    return items.map((item) => ({
-        ...item,
-        result_counts: buildMarketsResultCounts(response),
-    }));
+    return items;
 }
 
 export function buildMarketsResultCounts(response: GoogleFinanceMarketsResponse): Record<string, number> {

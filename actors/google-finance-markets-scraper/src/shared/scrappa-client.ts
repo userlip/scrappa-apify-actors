@@ -54,7 +54,7 @@ export function isRetryableScrappaError(error: unknown): boolean {
         return [408, 429, 500, 502, 503, 504].includes(error.status);
     }
 
-    return /Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message);
+    return false;
 }
 
 export class ScrappaClient {

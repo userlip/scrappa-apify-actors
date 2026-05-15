@@ -1,8 +1,8 @@
 export interface GoogleFinanceMarketsInput {
-    trend?: unknown;
-    index_market?: unknown;
-    hl?: unknown;
-    gl?: unknown;
+    trend?: string;
+    index_market?: string;
+    hl?: string;
+    gl?: string;
 }
 
 export const MARKET_TRENDS = [
