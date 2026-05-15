@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "google-finance-markets-scraper",
   "title": "Google Finance Markets Scraper",
-  "description": "Scrape Google Finance market movers, trend rows, major indices, currencies, crypto, futures, and finance news from the markets endpoint.",
+  "description": "Scrape Google Finance market movers, trend rows, major indices, currencies, crypto, and finance news from the markets endpoint.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

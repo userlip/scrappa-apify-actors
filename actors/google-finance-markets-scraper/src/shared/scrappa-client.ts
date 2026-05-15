@@ -54,6 +54,10 @@ export function isRetryableScrappaError(error: unknown): boolean {
         return [408, 429, 500, 502, 503, 504].includes(error.status);
     }
 
+    if (error instanceof TypeError) {
+        return /fetch failed|failed to fetch|network/i.test(error.message);
+    }
+
     return false;
 }
 
