@@ -110,7 +110,12 @@ export function buildGoogleFinanceMarketsParams(input: GoogleFinanceMarketsInput
     const gl = cleanCountryCode(input.gl);
 
     if (trend !== undefined) params.trend = trend;
-    if (indexMarket !== undefined) params.index_market = indexMarket;
+    if (indexMarket !== undefined) {
+        if (params.trend !== 'indexes') {
+            throw new Error('index_market can only be used when trend is indexes');
+        }
+        params.index_market = indexMarket;
+    }
     if (hl !== undefined) params.hl = hl;
     if (gl !== undefined) params.gl = gl;
 

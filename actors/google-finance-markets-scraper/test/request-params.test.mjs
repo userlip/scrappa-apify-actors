@@ -43,6 +43,14 @@ test('rejects invalid trends and index markets', () => {
         () => buildGoogleFinanceMarketsParams({ index_market: 'africa' }),
         /index_market must be one of:/,
     );
+    assert.throws(
+        () => buildGoogleFinanceMarketsParams({ trend: 'gainers', index_market: 'americas' }),
+        /index_market can only be used when trend is indexes/,
+    );
+    assert.throws(
+        () => buildGoogleFinanceMarketsParams({ index_market: 'americas' }),
+        /index_market can only be used when trend is indexes/,
+    );
 });
 
 test('rejects invalid localization controls', () => {
