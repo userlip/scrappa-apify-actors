@@ -178,7 +178,7 @@ export function getActivePricingEvidence(actor, nowDate, duePaidPricingInfos = n
     (Array.isArray(actor.pricingInfos)
       ? actor.pricingInfos.filter((pricingInfo) => isPaidPricingInfo(pricingInfo) && isStarted(pricingInfo, nowDate))
       : []);
-  const latestStartedPaidPricingInfo = startedPaidPricingInfos.sort(compareStartedAt).at(-1);
+  const latestStartedPaidPricingInfo = [...startedPaidPricingInfos].sort(compareStartedAt).at(-1);
   if (latestStartedPaidPricingInfo) {
     return {
       source: 'pricingInfos',
