@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildQuoteDatasetItem } from '../dist/response-utils.js';
+import { buildQuoteDatasetItem, hasMeaningfulQuoteData } from '../dist/response-utils.js';
 
 test('builds one dataset item with nested quote data', () => {
     const item = buildQuoteDatasetItem(
@@ -78,4 +78,22 @@ test('does not treat discover_more section wrappers as related tickers', () => {
     assert.deepEqual(item.related_tickers, []);
     assert.equal(item.result_counts.related_tickers, 0);
     assert.equal(item.result_counts.discover_more, 2);
+});
+
+test('detects whether a quote response has usable quote data', () => {
+    assert.equal(hasMeaningfulQuoteData({}), false);
+    assert.equal(hasMeaningfulQuoteData({ quote: { summary: {}, key_stats: {}, about: {} } }), false);
+    assert.equal(hasMeaningfulQuoteData({ quote: { summary: { name: 'Finance', symbol: 'MSFT', exchange: 'NASDAQ' } } }), false);
+    assert.equal(hasMeaningfulQuoteData({ quote: { key_stats: { stats: [], tags: [], climate_change: {} } } }), false);
+    assert.equal(hasMeaningfulQuoteData({ quote: { key_stats: { stats: [{}], tags: [{ text: '' }], climate_change: { score: null } } } }), false);
+    assert.equal(hasMeaningfulQuoteData({ quote: { summary: { current_price: 0 } } }), true);
+    assert.equal(hasMeaningfulQuoteData({ quote: { summary: { current_price: '423.85' } } }), true);
+    assert.equal(hasMeaningfulQuoteData({ quote: { summary: { change: '0' } } }), true);
+    assert.equal(hasMeaningfulQuoteData({ quote: { summary: { change: '-1.27' } } }), true);
+    assert.equal(hasMeaningfulQuoteData({ quote: { summary: { market_state: 'Closed' } } }), true);
+    assert.equal(hasMeaningfulQuoteData({ quote: { about: { description: 'Microsoft Corporation profile' } } }), true);
+    assert.equal(hasMeaningfulQuoteData({ quote: { key_stats: { market_cap: '3.15T USD' } } }), true);
+    assert.equal(hasMeaningfulQuoteData({ quote: { key_stats: { stats: [{ label: 'Avg volume', value: '21M' }] } } }), true);
+    assert.equal(hasMeaningfulQuoteData({ quote: { key_stats: { is_index: false } } }), true);
+    assert.equal(hasMeaningfulQuoteData({ quote: { financials: [{ title: 'Income Statement' }] } }), true);
 });
