@@ -88,7 +88,10 @@ async function main(): Promise<void> {
                     return;
                 }
 
-                throw error;
+                throw new Error(
+                    `Google Finance search fallback failed for ${describeGoogleFinanceQuoteRequest(params)}: ${describeUnknownError(error)}`,
+                    error instanceof Error ? { cause: error } : undefined,
+                );
             }
 
             if (!fallbackResult || !hasMeaningfulQuoteData(fallbackResult.response)) {
