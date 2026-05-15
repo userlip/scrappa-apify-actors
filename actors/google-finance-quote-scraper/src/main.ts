@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { fetchQuoteWithFallback } from './quote-fetch.js';
+import { fetchQuoteWithFallback, fetchSearchQuoteFallback } from './quote-fetch.js';
 import { buildGoogleFinanceQuoteParams, describeGoogleFinanceQuoteRequest } from './request-params.js';
 import type { GoogleFinanceQuoteInput } from './request-params.js';
 import { buildQuoteDatasetItem, hasMeaningfulQuoteData } from './response-utils.js';
@@ -58,14 +58,24 @@ async function main(): Promise<void> {
         console.log(`Fetching Google Finance quote for ${describeGoogleFinanceQuoteRequest(params)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const fetchResult = await fetchQuoteWithFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
-        const { response } = fetchResult;
+        let fetchResult = await fetchQuoteWithFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
+        let { response } = fetchResult;
 
         if (!hasMeaningfulQuoteData(response)) {
-            await exitWithoutQuoteResult(
-                `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}; no dataset item was written or charged.`,
+            console.warn(
+                `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}; trying Google Finance search fallback.`,
             );
-            return;
+
+            const fallbackResult = await fetchSearchQuoteFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
+            if (!fallbackResult || !hasMeaningfulQuoteData(fallbackResult.response)) {
+                await exitWithoutQuoteResult(
+                    `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}; no dataset item was written or charged.`,
+                );
+                return;
+            }
+
+            fetchResult = fallbackResult;
+            response = fallbackResult.response;
         }
 
         const item: Record<string, unknown> = {
