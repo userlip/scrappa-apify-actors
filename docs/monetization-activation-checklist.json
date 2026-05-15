@@ -6,10 +6,10 @@
   "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled in May 2026 that require exact-date activation verification.",
   "inventoryBackstop": {
     "checkedAt": "2026-05-15",
-    "liveActorCount": 55,
-    "localActorManifestCount": 43,
+    "liveActorCount": 56,
+    "localActorManifestCount": 44,
     "missingLocalSourceCount": 12,
-    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale 54/41/13 coverage numbers."
+    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale 55/43/12 coverage numbers."
   },
   "verificationRules": [
     "Fetch GET /v2/acts/{actorId} on or after scheduledActivationAt.",
