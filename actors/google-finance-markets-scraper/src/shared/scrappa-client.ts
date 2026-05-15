@@ -55,7 +55,7 @@ export function isRetryableScrappaError(error: unknown): boolean {
     }
 
     if (error instanceof TypeError) {
-        return /fetch failed|failed to fetch|network/i.test(error.message);
+        return /fetch failed|failed to fetch|network|terminated|reset|econnrefused|econnreset|socket hang up|chunk/i.test(error.message);
     }
 
     return false;

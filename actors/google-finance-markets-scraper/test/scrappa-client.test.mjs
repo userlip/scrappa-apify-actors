@@ -18,6 +18,9 @@ test('identifies retryable Scrappa API failures', () => {
 test('retries low-level fetch network failures', () => {
     assert.equal(isRetryableScrappaError(new TypeError('fetch failed')), true);
     assert.equal(isRetryableScrappaError(new TypeError('Failed to fetch')), true);
+    assert.equal(isRetryableScrappaError(new TypeError('terminated')), true);
+    assert.equal(isRetryableScrappaError(new TypeError('read ECONNRESET')), true);
+    assert.equal(isRetryableScrappaError(new TypeError('socket hang up')), true);
     assert.equal(isRetryableScrappaError(new TypeError('Cannot convert undefined or null to object')), false);
 });
 
