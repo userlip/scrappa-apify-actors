@@ -62,6 +62,27 @@ test('builds params for a complete hotel search request', () => {
     );
 });
 
+test('accepts marketplace select values as numeric strings', () => {
+    assert.deepEqual(
+        buildGoogleHotelsSearchParams({
+            q: 'Paris, France',
+            check_in_date: checkInDate,
+            check_out_date: checkOutDate,
+            sort_by: '3',
+            hotel_class: '4',
+            rating: '8',
+        }),
+        {
+            q: 'Paris, France',
+            check_in_date: checkInDate,
+            check_out_date: checkOutDate,
+            sort_by: 3,
+            hotel_class: 4,
+            rating: 8,
+        },
+    );
+});
+
 test('requires query and valid date range', () => {
     assert.throws(
         () => buildGoogleHotelsSearchParams({
