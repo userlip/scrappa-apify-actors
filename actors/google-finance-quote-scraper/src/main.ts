@@ -2,7 +2,7 @@ import { Actor } from 'apify';
 import { fetchQuoteWithFallback } from './quote-fetch.js';
 import { buildGoogleFinanceQuoteParams, describeGoogleFinanceQuoteRequest } from './request-params.js';
 import type { GoogleFinanceQuoteInput } from './request-params.js';
-import { buildQuoteDatasetItem } from './response-utils.js';
+import { buildQuoteDatasetItem, hasMeaningfulQuoteData } from './response-utils.js';
 import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 25000;
@@ -11,6 +11,33 @@ const QUOTE_RESULT_CHARGE_EVENT = 'quote-result';
 
 function isScrappaUpstreamFailure(error: unknown): error is ScrappaHttpError {
     return error instanceof ScrappaHttpError && error.status >= 500 && error.status <= 599;
+}
+
+function describeUnknownError(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    if (typeof error === 'string') {
+        return error;
+    }
+
+    try {
+        const json = JSON.stringify(error);
+        if (json !== undefined) {
+            const typeName = error === null ? 'null' : typeof error;
+            return `Non-Error thrown (${typeName}): ${json}`;
+        }
+    } catch {
+        // Fall back to String() below for circular or unserializable values.
+    }
+
+    return `Non-Error thrown (${typeof error}): ${String(error)}`;
+}
+
+async function exitWithoutQuoteResult(statusMessage: string): Promise<void> {
+    console.warn(statusMessage);
+    await Actor.exit({ statusMessage });
 }
 
 async function main(): Promise<void> {
@@ -33,6 +60,14 @@ async function main(): Promise<void> {
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
         const fetchResult = await fetchQuoteWithFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
         const { response } = fetchResult;
+
+        if (!hasMeaningfulQuoteData(response)) {
+            await exitWithoutQuoteResult(
+                `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}; no dataset item was written or charged.`,
+            );
+            return;
+        }
+
         const item: Record<string, unknown> = {
             ...buildQuoteDatasetItem(response, params),
             upstream_fallback: fetchResult.fallback ?? null,
@@ -69,18 +104,20 @@ async function main(): Promise<void> {
         }));
     } catch (error) {
         if (isScrappaUpstreamFailure(error)) {
-            const statusMessage = `Scrappa upstream returned ${error.status} after retries; no Google Finance quote result was written. Try the run again later.`;
-            console.error('Actor could not complete: ' + statusMessage);
-            await Actor.fail(statusMessage);
+            const statusMessage = `Scrappa upstream returned ${error.status} after retries; no Google Finance quote result was written or charged. Try the run again later.`;
+            await exitWithoutQuoteResult(statusMessage);
             return;
         }
 
-        const rawMessage = error instanceof Error ? error.message : String(error);
-        const message = error instanceof ScrappaTimeoutError
-            ? `${rawMessage}. The Google Finance quote request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Run the request again, or provide an exchange code if the symbol is ambiguous.`
-            : rawMessage;
-        console.error('Actor failed: ' + message);
-        await Actor.fail(message);
+        if (error instanceof ScrappaTimeoutError) {
+            const statusMessage = `${error.message}. No Google Finance quote result was written or charged. Try the run again later, or provide an exchange code if the symbol is ambiguous.`;
+            await exitWithoutQuoteResult(statusMessage);
+            return;
+        }
+
+        const rawMessage = describeUnknownError(error);
+        console.error('Actor failed: ' + rawMessage);
+        await Actor.fail(rawMessage);
         return;
     }
 
@@ -88,7 +125,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = describeUnknownError(error);
     console.error('Actor failed: ' + message);
     process.exitCode = 1;
 });

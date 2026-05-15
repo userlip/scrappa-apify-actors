@@ -51,6 +51,58 @@ function firstNumber(...values: unknown[]): number | undefined {
     return undefined;
 }
 
+function hasMeaningfulValue(value: unknown): boolean {
+    if (typeof value === 'string') {
+        return value.trim() !== '';
+    }
+
+    if (typeof value === 'number') {
+        return Number.isFinite(value);
+    }
+
+    if (typeof value === 'boolean') {
+        return true;
+    }
+
+    if (Array.isArray(value)) {
+        return value.some(hasMeaningfulValue);
+    }
+
+    if (value && typeof value === 'object') {
+        return Object.values(value as Record<string, unknown>).some(hasMeaningfulValue);
+    }
+
+    return false;
+}
+
+export function hasMeaningfulQuoteData(response: GoogleFinanceQuoteResponse): boolean {
+    const quote = asRecord(response.quote);
+    const summary = asRecord(quote.summary);
+    const about = asRecord(quote.about);
+    const keyStats = asRecord(quote.key_stats);
+    const financials = asArray(quote.financials);
+    const news = asArray(quote.news);
+    const discoverMore = asArray(quote.discover_more);
+
+    if (firstNumber(summary.current_price, summary.price, summary.last_price) !== undefined) {
+        return true;
+    }
+
+    if (firstNumber(summary.price_change, summary.change, summary.percent_change, summary.change_percent) !== undefined) {
+        return true;
+    }
+
+    if (firstString(summary.market_status, summary.market_state, summary.market, about.description) !== undefined) {
+        return true;
+    }
+
+    if (financials.length > 0 || news.length > 0 || discoverMore.length > 0) {
+        return true;
+    }
+
+    return Object.values(keyStats).some(hasMeaningfulValue);
+}
+
 function firstArrayString(value: unknown): string | undefined {
     if (!Array.isArray(value)) {
         return undefined;
