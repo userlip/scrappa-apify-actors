@@ -1,0 +1,41 @@
+{
+  "title": "Google Finance Markets Scraper",
+  "description": "Fetch Google Finance market overview, market movers, trend rows, and finance news.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "trend": {
+      "title": "Trend",
+      "type": "string",
+      "description": "Google Finance market trend view.",
+      "editor": "select",
+      "enum": ["gainers", "losers", "most-active", "indexes", "climate-leaders", "cryptocurrencies", "currencies"],
+      "enumTitles": ["Gainers", "Losers", "Most active", "Indexes", "Climate leaders", "Cryptocurrencies", "Currencies"],
+      "default": "gainers"
+    },
+    "index_market": {
+      "title": "Index Market",
+      "type": "string",
+      "description": "Regional filter for the indexes trend. Only used when Trend is indexes.",
+      "editor": "select",
+      "enum": ["", "americas", "europe-middle-east-africa", "asia-pacific"],
+      "enumTitles": ["Default", "Americas", "Europe, Middle East & Africa", "Asia-Pacific"],
+      "default": ""
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Google Finance language code, such as en, de, es, or zh-cn.",
+      "editor": "textfield",
+      "default": "en"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code, such as us, gb, de, or ca.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "us"
+    }
+  }
+}
