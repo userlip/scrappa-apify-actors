@@ -188,7 +188,7 @@ test('returns search fallback for the requested symbol and exchange', async () =
     assert.equal(result.response.quote.summary.current_price, 409.43);
     assert.deepEqual(result.fallback, {
         reason: 'scrappa_quote_empty_search_result',
-        omitted_params: [],
+        omitted_params: ['period_type'],
         primary_error: 'Scrappa quote response did not contain usable price, key stats, profile, financials, news, or related ticker data.',
         source_endpoint: '/google-finance/search',
         unavailable_sections: ['about', 'financials', 'news', 'discover_more'],

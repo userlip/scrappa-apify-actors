@@ -1,5 +1,6 @@
 import { Actor } from 'apify';
 import { fetchQuoteWithFallback, fetchSearchQuoteFallback } from './quote-fetch.js';
+import type { QuoteFetchResult } from './quote-fetch.js';
 import { buildGoogleFinanceQuoteParams, describeGoogleFinanceQuoteRequest } from './request-params.js';
 import type { GoogleFinanceQuoteInput } from './request-params.js';
 import { buildQuoteDatasetItem, hasMeaningfulQuoteData } from './response-utils.js';
@@ -74,11 +75,11 @@ async function main(): Promise<void> {
                 `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}; trying Google Finance search fallback.`,
             );
 
-            let fallbackResult = null;
+            let fallbackResult: QuoteFetchResult | null = null;
             try {
                 fallbackResult = await fetchSearchQuoteFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
             } catch (error) {
-                if (isScrappaUpstreamFailure(error) || error instanceof ScrappaTimeoutError) {
+                if (error instanceof ScrappaHttpError || error instanceof ScrappaTimeoutError) {
                     await exitAfterSearchFallbackError(error);
                     return;
                 }
@@ -88,7 +89,7 @@ async function main(): Promise<void> {
 
             if (!fallbackResult || !hasMeaningfulQuoteData(fallbackResult.response)) {
                 await exitWithoutQuoteResult(
-                    `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}; no dataset item was written or charged.`,
+                    `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}, and the search fallback returned no usable quote output; no dataset item was written or charged.`,
                 );
                 return;
             }
