@@ -40,6 +40,15 @@ function describeUnknownError(error: unknown): string {
     return `Non-Error thrown (${typeof error}): ${String(error)}`;
 }
 
+function buildSearchFallbackHttpError(error: ScrappaHttpError, params: Record<string, unknown>): ScrappaHttpError {
+    const contextualError = new ScrappaHttpError(
+        error.status,
+        `Google Finance search fallback failed for ${describeGoogleFinanceQuoteRequest(params)}: ${error.details}`,
+    );
+    contextualError.stack = error.stack;
+    return contextualError;
+}
+
 async function exitWithoutQuoteResult(statusMessage: string): Promise<void> {
     console.warn(statusMessage);
     await Actor.exit({ statusMessage });
@@ -86,6 +95,10 @@ async function main(): Promise<void> {
                 if (isRetryableScrappaFallbackFailure(error) || error instanceof ScrappaTimeoutError) {
                     await exitAfterSearchFallbackError(error);
                     return;
+                }
+
+                if (error instanceof ScrappaHttpError) {
+                    throw buildSearchFallbackHttpError(error, params);
                 }
 
                 throw new Error(
