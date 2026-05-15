@@ -87,12 +87,12 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-14. It lists all 54 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-15. It lists all 55 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 54 live `thescrappa` actors in Apify
-- 41 local actor directories in this repo; all 41 are now represented by live Apify actors
-- 13 live actors missing a local source directory here
+- 55 live `thescrappa` actors in Apify
+- 43 local actor manifests in this repo; all 43 are now represented by live Apify actors
+- 12 live actors missing a local source directory here
 - 0 local actors pending Apify publication and pricing
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
@@ -142,7 +142,7 @@ Current coverage in this repository:
 | `Missing locally` | `youtube-api-get-channel-playlists` | `3ERhmU2MUBjdR4AOq` | YouTube API Get Channel Playlists | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-get-channel-shorts` | `608amsD2lD6xRKbax` | YouTube API Get Channel Shorts | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-get-channel-statistics` | `yJiDippxXaK5hWQRC` | YouTube API Get Channel Statistics | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
-| `Missing locally` | `youtube-api-get-playlists-details` | `Xhwtx7clQKnPRez1H` | YouTube API Get Playlists Details | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
+| `actors/youtube-api-get-playlists-details` | `youtube-api-get-playlists-details` | `Xhwtx7clQKnPRez1H` | YouTube API Get Playlists Details | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-get-video-details` | `youtube-api-get-video-details` | `P1Jv1QuMoId4XUPlC` | YouTube Video Details Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-hashtags` | `N5ol78TtqiMj4MtM6` | YouTube API Hashtags | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-playlists` | `hueJrwkrbo20Ufrna` | YouTube API Playlists | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
