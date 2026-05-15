@@ -16,7 +16,7 @@
     "index_market": {
       "title": "Index Market",
       "type": "string",
-      "description": "Regional filter for the indexes trend. Only used when Trend is indexes.",
+      "description": "Regional filter for the indexes trend. Leave as Default unless Trend is indexes. Stale values from other trends are ignored.",
       "editor": "select",
       "enum": ["", "americas", "europe-middle-east-africa", "asia-pacific"],
       "enumTitles": ["Default", "Americas", "Europe, Middle East & Africa", "Asia-Pacific"],

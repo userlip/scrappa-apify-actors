@@ -43,13 +43,25 @@ test('rejects invalid trends and index markets', () => {
         () => buildGoogleFinanceMarketsParams({ index_market: 'africa' }),
         /index_market must be one of:/,
     );
-    assert.throws(
-        () => buildGoogleFinanceMarketsParams({ trend: 'gainers', index_market: 'americas' }),
-        /index_market can only be used when trend is indexes/,
+});
+
+test('ignores stale index market filters unless trend is indexes', () => {
+    assert.deepEqual(
+        buildGoogleFinanceMarketsParams({
+            trend: 'gainers',
+            index_market: 'americas',
+        }),
+        {
+            trend: 'gainers',
+        },
     );
-    assert.throws(
-        () => buildGoogleFinanceMarketsParams({ index_market: 'americas' }),
-        /index_market can only be used when trend is indexes/,
+    assert.deepEqual(
+        buildGoogleFinanceMarketsParams({
+            index_market: 'americas',
+        }),
+        {
+            trend: 'gainers',
+        },
     );
 });
 
