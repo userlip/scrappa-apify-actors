@@ -79,6 +79,10 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 - [ ] `H2dZTreGZ7s3XJsQ7` - `tiktok-hashtag-posts-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-24T00:00:00.000Z`.
 - [ ] `MrbqFgdpNTQcRW0Vt` - `google-images-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-24T07:16:00.000Z`.
 
+### 2026-05-29
+
+- [ ] `WvbWRqj67ve6fwwWZ` - `google-finance-markets-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-29T08:13:17.000Z`.
+
 ## Portfolio Backstop
 
 Run this backstop on every activation date after checking the due actors:

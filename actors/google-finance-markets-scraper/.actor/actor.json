@@ -1,0 +1,66 @@
+{
+  "actorSpecification": 1,
+  "name": "google-finance-markets-scraper",
+  "title": "Google Finance Markets Scraper",
+  "description": "Scrape Google Finance market movers, trend rows, major indices, currencies, crypto, futures, and finance news from the markets endpoint.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 200
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "marketItems": {
+          "title": "Market Items",
+          "transformation": {
+            "fields": ["item_type", "section", "trend", "trend_group", "position", "stock", "name", "symbol", "exchange", "price", "currency", "price_movement_direction", "price_movement_value", "price_movement_percentage", "from_currency", "to_currency", "title", "source", "date", "link", "snippet", "thumbnail", "request_trend", "request_index_market", "request_hl", "request_gl"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "item_type": { "label": "Item Type", "format": "text" },
+              "section": { "label": "Section", "format": "text" },
+              "trend": { "label": "Trend", "format": "text" },
+              "trend_group": { "label": "Trend Group", "format": "text" },
+              "position": { "label": "Position", "format": "number" },
+              "stock": { "label": "Stock", "format": "text" },
+              "name": { "label": "Name", "format": "text" },
+              "symbol": { "label": "Symbol", "format": "text" },
+              "exchange": { "label": "Exchange", "format": "text" },
+              "price": { "label": "Price", "format": "number" },
+              "currency": { "label": "Currency", "format": "text" },
+              "price_movement_direction": { "label": "Direction", "format": "text" },
+              "price_movement_value": { "label": "Change", "format": "number" },
+              "price_movement_percentage": { "label": "% Change", "format": "number" },
+              "from_currency": { "label": "From", "format": "text" },
+              "to_currency": { "label": "To", "format": "text" },
+              "title": { "label": "News Title", "format": "text" },
+              "source": { "label": "News Source", "format": "text" },
+              "date": { "label": "News Date", "format": "text" },
+              "link": { "label": "Link", "format": "link" },
+              "snippet": { "label": "Snippet", "format": "text" },
+              "thumbnail": { "label": "Thumbnail", "format": "image" },
+              "request_trend": { "label": "Requested Trend", "format": "text" },
+              "request_index_market": { "label": "Requested Index Market", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" },
+              "request_gl": { "label": "Country", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
