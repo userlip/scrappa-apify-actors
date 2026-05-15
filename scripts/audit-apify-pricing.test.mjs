@@ -30,21 +30,25 @@ test('auditActor flags missing paid pricingInfos even when active fields look pa
   assert.equal(report.currentPricingInfoPresent, true);
 });
 
-test('auditActor marks due paid pricing without active evidence as overdue', () => {
+test('auditActor treats due paid pricingInfos as active evidence', () => {
   const report = auditActor({
-    id: 'actor-overdue',
-    name: 'overdue',
+    id: 'actor-active-from-pricing-infos',
+    name: 'active-from-pricing-infos',
     isPublic: true,
     pricingInfos: [{
       pricingModel: 'PAY_PER_EVENT',
       startedAt: '2026-05-17T14:00:00.000Z',
+    }, {
+      pricingModel: 'PAY_PER_EVENT',
+      startedAt: '2026-05-17T14:30:00.000Z',
     }],
     currentPricingInfo: null,
     pricingInfo: null,
   }, now);
 
-  assert.equal(report.status, 'OVERDUE_MISSING_ACTIVE_PRICING');
-  assert.equal(report.overduePaidPricingInfos[0].startedAt, '2026-05-17T14:00:00.000Z');
+  assert.equal(report.status, 'ACTIVE_PAID_PRICING');
+  assert.equal(report.activeEvidence.source, 'pricingInfos');
+  assert.equal(report.activeEvidence.pricing.startedAt, '2026-05-17T14:30:00.000Z');
 });
 
 test('auditActor marks future paid pricing as scheduled', () => {
@@ -241,10 +245,8 @@ test('createAuditReports ignores detail fetch errors for non-public actors', () 
           pricingModel: 'PAY_PER_EVENT',
           startedAt: '2026-05-17T14:00:00.000Z',
         }],
-        currentPricingInfo: {
-          pricingModel: 'PAY_PER_EVENT',
-          startedAt: '2026-05-17T14:00:00.000Z',
-        },
+        currentPricingInfo: null,
+        pricingInfo: null,
       },
       error: null,
     },

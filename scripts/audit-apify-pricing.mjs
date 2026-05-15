@@ -98,8 +98,8 @@ export function createAuditReports(detailResults, nowDate) {
 export function auditActor(actor, nowDate) {
   const pricingInfos = Array.isArray(actor.pricingInfos) ? actor.pricingInfos : [];
   const paidPricingInfos = pricingInfos.filter(isPaidPricingInfo);
-  const activeEvidence = getActivePricingEvidence(actor, nowDate);
   const duePaidPricingInfos = paidPricingInfos.filter((pricingInfo) => isStarted(pricingInfo, nowDate));
+  const activeEvidence = getActivePricingEvidence(actor, nowDate, duePaidPricingInfos);
   const nextPaidPricingInfo = paidPricingInfos
     .filter((pricingInfo) => !isStarted(pricingInfo, nowDate))
     .sort(compareStartedAt)[0];
@@ -163,7 +163,7 @@ function auditActorSafely(actor, nowDate) {
   }
 }
 
-export function getActivePricingEvidence(actor, nowDate) {
+export function getActivePricingEvidence(actor, nowDate, duePaidPricingInfos = null) {
   for (const field of ['currentPricingInfo', 'pricingInfo']) {
     const value = actor[field];
     if (value && isPaidPricingInfo(value) && isStarted(value, nowDate)) {
@@ -172,6 +172,18 @@ export function getActivePricingEvidence(actor, nowDate) {
         pricing: formatPricingInfo(value),
       };
     }
+  }
+
+  const startedPaidPricingInfos = duePaidPricingInfos ??
+    (Array.isArray(actor.pricingInfos)
+      ? actor.pricingInfos.filter((pricingInfo) => isPaidPricingInfo(pricingInfo) && isStarted(pricingInfo, nowDate))
+      : []);
+  const latestStartedPaidPricingInfo = startedPaidPricingInfos.sort(compareStartedAt).at(-1);
+  if (latestStartedPaidPricingInfo) {
+    return {
+      source: 'pricingInfos',
+      pricing: formatPricingInfo(latestStartedPaidPricingInfo),
+    };
   }
 
   return null;
