@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
+const responseUtilsModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/response-utils.ts'
+    : '../dist/response-utils.js';
+const {
     buildImmoweltDatasetItem,
     getImmoweltPage,
     getImmoweltPropertyListings,
     getImmoweltTotalPages,
     getImmoweltTotalResults,
     limitImmoweltPropertySearchResponse,
-} from '../dist/response-utils.js';
+} = await import(responseUtilsModule);
 
 test('returns listings from top-level and wrapped Scrappa responses', () => {
     const results = [{ title: 'Berlin flat' }];
@@ -75,9 +78,9 @@ test('adds table-friendly dataset aliases while preserving the raw listing', () 
     const originalListing = structuredClone(listing);
     const datasetItem = buildImmoweltDatasetItem(listing, {
         location: 'Berlin',
-        property_type: 'apartment',
+        type: 'apartment-rent',
         page: 1,
-        limit: 20,
+        per_page: 20,
     });
 
     assert.deepEqual(listing, originalListing);
@@ -86,9 +89,9 @@ test('adds table-friendly dataset aliases while preserving the raw listing', () 
         latitude: 52.511009,
         longitude: 13.402116,
         request_location: 'Berlin',
-        request_property_type: 'apartment',
+        request_type: 'apartment-rent',
         request_page: 1,
-        request_limit: 20,
+        request_per_page: 20,
     });
 });
 

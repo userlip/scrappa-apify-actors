@@ -14,14 +14,14 @@
       "default": "Berlin",
       "maxLength": 120
     },
-    "property_type": {
-      "title": "Property Type",
+    "type": {
+      "title": "Search Type",
       "type": "string",
-      "description": "Immowelt property type to request from Scrappa, such as apartment.",
+      "description": "Scrappa Immowelt search type.",
       "editor": "select",
-      "enum": ["apartment"],
-      "enumTitles": ["Apartment"],
-      "default": "apartment"
+      "enum": ["apartment-rent", "apartment-buy", "house-rent", "house-buy"],
+      "enumTitles": ["Apartment rent", "Apartment buy", "House rent", "House buy"],
+      "default": "apartment-rent"
     },
     "page": {
       "title": "Page",
@@ -32,13 +32,13 @@
       "maximum": 10000,
       "default": 1
     },
-    "limit": {
-      "title": "Limit",
+    "per_page": {
+      "title": "Results per page",
       "type": "integer",
       "description": "Number of listings to request for this page.",
       "editor": "number",
       "minimum": 1,
-      "maximum": 100,
+      "maximum": 50,
       "default": 20
     }
   }

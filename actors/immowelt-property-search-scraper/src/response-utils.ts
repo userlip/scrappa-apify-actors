@@ -87,9 +87,9 @@ export function buildImmoweltDatasetItem(
         is_private: listing.is_private ?? null,
         published: listing.published ?? null,
         request_location: params.location ?? null,
-        request_property_type: params.property_type ?? null,
+        request_type: params.type ?? null,
         request_page: params.page ?? null,
-        request_limit: params.limit ?? null,
+        request_per_page: params.per_page ?? null,
     };
 }
 

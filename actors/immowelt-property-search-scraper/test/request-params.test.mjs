@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
+const requestParamsModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/request-params.ts'
+    : '../dist/request-params.js';
+const {
     buildImmoweltPropertySearchParams,
     DEFAULT_IMMOWELT_PROPERTY_SEARCH_INPUT,
     describeImmoweltPropertySearchRequest,
     normalizeImmoweltPropertySearchInput,
-} from '../dist/request-params.js';
+} = await import(requestParamsModule);
 
 test('uses the default Berlin apartment search when input is missing or empty', () => {
     assert.deepEqual(normalizeImmoweltPropertySearchInput(), DEFAULT_IMMOWELT_PROPERTY_SEARCH_INPUT);
@@ -17,27 +20,41 @@ test('uses the default Berlin apartment search when input is missing or empty', 
 test('trims known string fields and preserves numeric pagination input', () => {
     assert.deepEqual(normalizeImmoweltPropertySearchInput({
         location: ' Berlin ',
-        property_type: ' apartment ',
+        type: ' apartment-rent ',
         page: 2,
-        limit: 50,
+        per_page: 50,
     }), {
         location: 'Berlin',
-        property_type: 'apartment',
+        type: 'apartment-rent',
         page: 2,
-        limit: 50,
+        per_page: 50,
+    });
+});
+
+test('maps legacy aliases onto Scrappa Immowelt parameter names', () => {
+    assert.deepEqual(normalizeImmoweltPropertySearchInput({
+        location: ' Berlin ',
+        property_type: ' apartment-buy ',
+        page: 2,
+        limit: 25,
+    }), {
+        location: 'Berlin',
+        type: 'apartment-buy',
+        page: 2,
+        per_page: 25,
     });
 });
 
 test('preserves blank required string inputs so validation fails instead of defaulting', () => {
     const normalized = normalizeImmoweltPropertySearchInput({
         location: '   ',
-        property_type: ' apartment ',
+        type: ' apartment-rent ',
     });
 
     assert.deepEqual(normalized, {
         ...DEFAULT_IMMOWELT_PROPERTY_SEARCH_INPUT,
         location: '',
-        property_type: 'apartment',
+        type: 'apartment-rent',
     });
     assert.throws(() => buildImmoweltPropertySearchParams(normalized), /location is required/);
 });
@@ -45,13 +62,13 @@ test('preserves blank required string inputs so validation fails instead of defa
 test('preserves null known inputs so validation fails instead of defaulting', () => {
     const normalized = normalizeImmoweltPropertySearchInput({
         location: null,
-        property_type: ' apartment ',
+        type: ' apartment-rent ',
     });
 
     assert.deepEqual(normalized, {
         ...DEFAULT_IMMOWELT_PROPERTY_SEARCH_INPUT,
         location: null,
-        property_type: 'apartment',
+        type: 'apartment-rent',
     });
     assert.throws(() => buildImmoweltPropertySearchParams(normalized), /location must be a string/);
 });
@@ -59,46 +76,52 @@ test('preserves null known inputs so validation fails instead of defaulting', ()
 test('builds Immowelt search params', () => {
     assert.deepEqual(buildImmoweltPropertySearchParams({
         location: 'Berlin',
-        property_type: 'apartment',
+        type: 'apartment-rent',
         page: '2',
-        limit: '25',
+        per_page: '25',
     }), {
         location: 'Berlin',
-        property_type: 'apartment',
+        type: 'apartment-rent',
         page: 2,
-        limit: 25,
+        per_page: 25,
     });
 });
 
 test('validates required strings and pagination bounds', () => {
     assert.throws(() => buildImmoweltPropertySearchParams({
         location: '',
-        property_type: 'apartment',
+        type: 'apartment-rent',
         page: 1,
-        limit: 20,
+        per_page: 20,
     }), /location is required/);
     assert.throws(() => buildImmoweltPropertySearchParams({
         location: 'Berlin',
-        property_type: 'apartment',
+        type: 'apartment',
+        page: 1,
+        per_page: 20,
+    }), /type must be one of: apartment-rent, apartment-buy, house-rent, house-buy/);
+    assert.throws(() => buildImmoweltPropertySearchParams({
+        location: 'Berlin',
+        type: 'apartment-rent',
         page: 0,
-        limit: 20,
+        per_page: 20,
     }), /page must be between 1 and 10000/);
     assert.throws(() => buildImmoweltPropertySearchParams({
         location: 'Berlin',
-        property_type: 'apartment',
+        type: 'apartment-rent',
         page: 1,
-        limit: 101,
-    }), /limit must be between 1 and 100/);
+        per_page: 51,
+    }), /per_page must be between 1 and 50/);
 });
 
 test('describes Immowelt requests for logs', () => {
     assert.equal(
         describeImmoweltPropertySearchRequest({
             location: 'Berlin',
-            property_type: 'apartment',
+            type: 'apartment-rent',
             page: 2,
-            limit: 25,
+            per_page: 25,
         }),
-        'apartment properties in Berlin (page 2, limit 25)',
+        'apartment-rent properties in Berlin (page 2, per_page 25)',
     );
 });

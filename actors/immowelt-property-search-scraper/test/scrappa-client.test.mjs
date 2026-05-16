@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { ScrappaClient } from '../dist/shared/index.js';
+const scrappaClientModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/shared/index.ts'
+    : '../dist/shared/index.js';
+const { ScrappaClient } = await import(scrappaClientModule);
 
 test('serializes true and false boolean GET parameters', async () => {
     const originalFetch = globalThis.fetch;

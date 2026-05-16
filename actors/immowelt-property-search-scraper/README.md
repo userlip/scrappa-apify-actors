@@ -15,23 +15,23 @@ so users pay only for listing rows written to the dataset.
 - Listing title, Immowelt listing ID, online ID, expose URL, image URL, and published timestamp
 - Price, formatted price text, room counts, and floor area in square meters
 - Address, latitude, longitude, and private-seller flag
-- Request context for location, property type, page, and page size
+- Request context for location, search type, page, and page size
 
 ## Example input
 
 ```json
 {
   "location": "Berlin",
-  "property_type": "apartment",
+  "type": "apartment-rent",
   "page": 1,
-  "limit": 20
+  "per_page": 20
 }
 ```
 
 ## Pagination
 
 The Scrappa response includes `page`, `total_pages`, and `total_results`. Run
-the actor again with the same `location` and `property_type` plus the next
+the actor again with the same `location` and `type` plus the next
 `page` value to continue through the result set.
 
 ## Output
@@ -55,9 +55,9 @@ Dataset items contain the full property object plus normalized top-level fields 
   "is_private": false,
   "published": "2026-05-11T19:02:59.797Z",
   "request_location": "Berlin",
-  "request_property_type": "apartment",
+  "request_type": "apartment-rent",
   "request_page": 1,
-  "request_limit": 20
+  "request_per_page": 20
 }
 ```
 

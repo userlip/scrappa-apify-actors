@@ -1,5 +1,7 @@
 export interface ImmoweltPropertySearchInput {
     location?: unknown;
+    type?: unknown;
+    per_page?: unknown;
     property_type?: unknown;
     page?: unknown;
     limit?: unknown;
@@ -7,15 +9,18 @@ export interface ImmoweltPropertySearchInput {
 
 export const DEFAULT_IMMOWELT_PROPERTY_SEARCH_INPUT = {
     location: 'Berlin',
-    property_type: 'apartment',
+    type: 'apartment-rent',
     page: 1,
-    limit: 20,
+    per_page: 20,
 } as const;
 
 const MAX_LOCATION_LENGTH = 120;
-const MAX_LIMIT = 100;
+const MAX_PER_PAGE = 50;
+const IMMOWELT_PROPERTY_TYPES = ['apartment-rent', 'apartment-buy', 'house-rent', 'house-buy'] as const;
 const KNOWN_INPUT_KEYS = new Set<keyof ImmoweltPropertySearchInput>([
     'location',
+    'type',
+    'per_page',
     'property_type',
     'page',
     'limit',
@@ -35,10 +40,16 @@ export function normalizeImmoweltPropertySearchInput(
             continue;
         }
 
+        const normalizedKey = key === 'property_type'
+            ? 'type'
+            : key === 'limit'
+                ? 'per_page'
+                : key;
+
         if (typeof value === 'string') {
-            normalized[key] = value.trim() as never;
+            normalized[normalizedKey] = value.trim() as never;
         } else if (value !== undefined) {
-            normalized[key] = value as never;
+            normalized[normalizedKey] = value as never;
         }
     }
 
@@ -58,14 +69,14 @@ export function buildImmoweltPropertySearchParams(
 ): Record<string, unknown> {
     return {
         location: cleanRequiredString(input.location, 'location', MAX_LOCATION_LENGTH),
-        property_type: cleanRequiredString(input.property_type, 'property_type', 40),
+        type: cleanEnumString(input.type, 'type', IMMOWELT_PROPERTY_TYPES),
         page: cleanInteger(input.page, 'page', 1, 10000),
-        limit: cleanInteger(input.limit, 'limit', 1, MAX_LIMIT),
+        per_page: cleanInteger(input.per_page, 'per_page', 1, MAX_PER_PAGE),
     };
 }
 
 export function describeImmoweltPropertySearchRequest(params: Record<string, unknown>): string {
-    return `${params.property_type} properties in ${params.location} (page ${params.page}, limit ${params.limit})`;
+    return `${params.type} properties in ${params.location} (page ${params.page}, per_page ${params.per_page})`;
 }
 
 function cleanRequiredString(value: unknown, field: string, maxLength: number): string {
@@ -99,4 +110,14 @@ function cleanInteger(value: unknown, field: string, min: number, max: number): 
     }
 
     return normalized;
+}
+
+function cleanEnumString<T extends readonly string[]>(value: unknown, field: string, allowedValues: T): T[number] {
+    const trimmed = cleanRequiredString(value, field, 40);
+
+    if (!allowedValues.includes(trimmed)) {
+        throw new Error(`${field} must be one of: ${allowedValues.join(', ')}`);
+    }
+
+    return trimmed;
 }

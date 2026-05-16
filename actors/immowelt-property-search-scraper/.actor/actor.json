@@ -26,7 +26,7 @@
         "properties": {
           "title": "Properties",
           "transformation": {
-            "fields": ["title", "price", "price_formatted", "rooms", "rooms_max", "size_m2", "size_m2_max", "address", "latitude", "longitude", "url", "online_id", "id", "image_url", "is_private", "published", "request_location", "request_property_type", "request_page", "request_limit"]
+            "fields": ["title", "price", "price_formatted", "rooms", "rooms_max", "size_m2", "size_m2_max", "address", "latitude", "longitude", "url", "online_id", "id", "image_url", "is_private", "published", "request_location", "request_type", "request_page", "request_per_page"]
           },
           "display": {
             "component": "table",
@@ -48,9 +48,9 @@
               "is_private": { "label": "Private Seller", "format": "boolean" },
               "published": { "label": "Published", "format": "date" },
               "request_location": { "label": "Request Location", "format": "text" },
-              "request_property_type": { "label": "Property Type", "format": "text" },
+              "request_type": { "label": "Search Type", "format": "text" },
               "request_page": { "label": "Page", "format": "number" },
-              "request_limit": { "label": "Limit", "format": "number" }
+              "request_per_page": { "label": "Per Page", "format": "number" }
             }
           }
         }

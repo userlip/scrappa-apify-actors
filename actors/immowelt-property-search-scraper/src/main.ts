@@ -38,7 +38,7 @@ async function main(): Promise<void> {
             attempts: SCRAPPA_MAX_ATTEMPTS,
         });
         const rawListings = getImmoweltPropertyListings(response);
-        const requestedLimit = params.limit as number;
+        const requestedLimit = params.per_page as number;
         const listings = rawListings
             .slice(0, requestedLimit)
             .map((listing) => buildImmoweltDatasetItem(listing, params));
@@ -79,7 +79,7 @@ async function main(): Promise<void> {
             page: getImmoweltPage(response),
             total_pages: getImmoweltTotalPages(response),
             request_location: params.location,
-            request_property_type: params.property_type,
+            request_type: params.type,
         }));
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);

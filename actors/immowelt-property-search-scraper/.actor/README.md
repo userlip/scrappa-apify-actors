@@ -1,6 +1,6 @@
 # Immowelt Property Search Scraper
 
-Scrape Immowelt property listings by location and property type. The actor saves
+Scrape Immowelt property listings by location and search type. The actor saves
 one dataset item per listing and stores the complete Scrappa response in
 key-value store key `OUTPUT`.
 
@@ -12,9 +12,9 @@ Recommended paid pricing: **$0.30 per 1,000 saved property listings** using the
 ```json
 {
   "location": "Berlin",
-  "property_type": "apartment",
+  "type": "apartment-rent",
   "page": 1,
-  "limit": 20
+  "per_page": 20
 }
 ```
 
@@ -39,8 +39,8 @@ Common top-level fields include:
 - `is_private`
 - `published`
 - `request_location`
-- `request_property_type`
+- `request_type`
 - `request_page`
-- `request_limit`
+- `request_per_page`
 
 Use `page`, `total_pages`, and `total_results` from the full `OUTPUT` object to continue pagination.
