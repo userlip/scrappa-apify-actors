@@ -44,7 +44,7 @@
     { "actorId": "H2dZTreGZ7s3XJsQ7", "slug": "tiktok-hashtag-posts-scraper", "scheduledActivationAt": "2026-05-24T00:00:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "MrbqFgdpNTQcRW0Vt", "slug": "google-images-scraper", "scheduledActivationAt": "2026-05-24T07:16:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "WvbWRqj67ve6fwwWZ", "slug": "google-finance-markets-scraper", "scheduledActivationAt": "2026-05-29T08:13:17.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
-    { "actorId": "DUUlFa5LGId75vOI0", "slug": "stepstone-jobs-scraper", "scheduledActivationAt": "2026-05-29T11:31:58.000Z", "expectedPricingModel": "PAY_PER_EVENT", "primaryEvent": "apify-default-dataset-item", "eventPriceUsd": 0.0003 }
+    { "actorId": "DUUlFa5LGId75vOI0", "slug": "stepstone-jobs-scraper", "scheduledActivationAt": "2026-05-29T11:31:58.000Z", "expectedPricingModel": "PAY_PER_EVENT" }
   ],
   "privateScheduledActorsExcludedUntilPublic": [
     { "actorId": "Y3mKYlGNhsrBE7aZO", "slug": "youtube-api-channel-podcasts", "scheduledActivationAt": "2026-05-17T14:44:02.772Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
