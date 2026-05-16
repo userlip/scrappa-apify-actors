@@ -11,11 +11,12 @@ import {
     getImmoweltPropertyListings,
     getImmoweltTotalPages,
     getImmoweltTotalResults,
+    limitImmoweltPropertySearchResponse,
 } from './response-utils.js';
 import type { ImmoweltPropertySearchResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
 const PROPERTY_RESULT_CHARGE_EVENT = 'property-result';
 
@@ -69,7 +70,7 @@ async function main(): Promise<void> {
         }
 
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
+        await store.setValue('OUTPUT', limitImmoweltPropertySearchResponse(response, listings.length));
 
         console.log('Immowelt property search completed successfully');
         console.log('Results summary:', JSON.stringify({

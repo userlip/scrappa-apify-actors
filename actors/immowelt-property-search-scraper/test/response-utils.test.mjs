@@ -7,6 +7,7 @@ import {
     getImmoweltPropertyListings,
     getImmoweltTotalPages,
     getImmoweltTotalResults,
+    limitImmoweltPropertySearchResponse,
 } from '../dist/response-utils.js';
 
 test('returns listings from top-level and wrapped Scrappa responses', () => {
@@ -80,4 +81,48 @@ test('adds table-friendly dataset aliases while preserving the raw listing', () 
         request_page: 1,
         request_limit: 20,
     });
+});
+
+test('limits OUTPUT response listings without mutating the original response', () => {
+    const results = [
+        { online_id: '1', title: 'First listing' },
+        { online_id: '2', title: 'Second listing' },
+    ];
+    const response = {
+        success: true,
+        total_results: 5473,
+        total_pages: 274,
+        results,
+    };
+    const originalResponse = structuredClone(response);
+
+    assert.deepEqual(limitImmoweltPropertySearchResponse(response, 1), {
+        ...response,
+        results: [results[0]],
+    });
+    assert.deepEqual(response, originalResponse);
+});
+
+test('limits wrapped OUTPUT response listings without mutating the original response', () => {
+    const results = [
+        { online_id: '1', title: 'First listing' },
+        { online_id: '2', title: 'Second listing' },
+    ];
+    const response = {
+        success: true,
+        data: {
+            total_results: 2,
+            results,
+        },
+    };
+    const originalResponse = structuredClone(response);
+
+    assert.deepEqual(limitImmoweltPropertySearchResponse(response, 1), {
+        ...response,
+        data: {
+            ...response.data,
+            results: [results[0]],
+        },
+    });
+    assert.deepEqual(response, originalResponse);
 });

@@ -90,6 +90,30 @@ export function buildImmoweltDatasetItem(
     };
 }
 
+export function limitImmoweltPropertySearchResponse(
+    response: ImmoweltPropertySearchResponse,
+    limit: number,
+): ImmoweltPropertySearchResponse {
+    if (Array.isArray(response.results)) {
+        return {
+            ...response,
+            results: response.results.slice(0, limit),
+        };
+    }
+
+    if (Array.isArray(response.data?.results)) {
+        return {
+            ...response,
+            data: {
+                ...response.data,
+                results: response.data.results.slice(0, limit),
+            },
+        };
+    }
+
+    return response;
+}
+
 function getNumber(value: unknown): number | undefined {
     if (typeof value === 'number' && Number.isFinite(value)) {
         return value;
