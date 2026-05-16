@@ -19,7 +19,7 @@ test('extractPosts falls back to aweme_list', () => {
 });
 
 test('extractPosts reads live Scrappa videos arrays', () => {
-    const posts = [{ aweme_id: '4', video_id: '4' }];
+    const posts = [{ aweme_id: '4' }];
     assert.deepEqual(extractPosts({ videos: posts }), posts);
 });
 
