@@ -28,6 +28,20 @@ test('trims known string fields and preserves numeric pagination input', () => {
     });
 });
 
+test('preserves blank required string inputs so validation fails instead of defaulting', () => {
+    const normalized = normalizeImmoweltPropertySearchInput({
+        location: '   ',
+        property_type: ' apartment ',
+    });
+
+    assert.deepEqual(normalized, {
+        ...DEFAULT_IMMOWELT_PROPERTY_SEARCH_INPUT,
+        location: '',
+        property_type: 'apartment',
+    });
+    assert.throws(() => buildImmoweltPropertySearchParams(normalized), /location is required/);
+});
+
 test('builds Immowelt search params', () => {
     assert.deepEqual(buildImmoweltPropertySearchParams({
         location: 'Berlin',

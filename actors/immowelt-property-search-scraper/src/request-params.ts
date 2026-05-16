@@ -36,16 +36,13 @@ export function normalizeImmoweltPropertySearchInput(
         }
 
         if (typeof value === 'string') {
-            const trimmed = value.trim();
-            if (trimmed !== '') {
-                normalized[key] = trimmed as never;
-            }
+            normalized[key] = value.trim() as never;
         } else if (value !== undefined && value !== null) {
             normalized[key] = value as never;
         }
     }
 
-    const hasKnownInput = Object.values(normalized).some((value) => value !== undefined && value !== '');
+    const hasKnownInput = Object.keys(normalized).length > 0;
     if (!hasKnownInput) {
         return { ...DEFAULT_IMMOWELT_PROPERTY_SEARCH_INPUT };
     }
