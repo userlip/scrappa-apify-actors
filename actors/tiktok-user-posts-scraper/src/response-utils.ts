@@ -20,6 +20,7 @@ export interface TikTokUserPost {
 
 export interface TikTokUserPostsData {
     posts?: TikTokUserPost[];
+    videos?: TikTokUserPost[];
     aweme_list?: TikTokUserPost[];
     hasMore?: boolean;
     has_more?: boolean;
@@ -48,6 +49,10 @@ export function extractPosts(data: TikTokUserPostsResponse['data']): TikTokUserP
 
     if (Array.isArray(data.posts)) {
         return data.posts;
+    }
+
+    if (Array.isArray(data.videos)) {
+        return data.videos;
     }
 
     if (Array.isArray(data.aweme_list)) {

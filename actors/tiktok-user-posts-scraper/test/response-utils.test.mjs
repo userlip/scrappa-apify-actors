@@ -18,6 +18,11 @@ test('extractPosts falls back to aweme_list', () => {
     assert.deepEqual(extractPosts({ aweme_list: posts }), posts);
 });
 
+test('extractPosts reads live Scrappa videos arrays', () => {
+    const posts = [{ aweme_id: '4', video_id: '4' }];
+    assert.deepEqual(extractPosts({ videos: posts }), posts);
+});
+
 test('extractPagination prefers explicit cursor when present', () => {
     assert.deepEqual(
         extractPagination({ hasMore: true, cursor: '100', max_cursor: '200', min_cursor: '300' }),

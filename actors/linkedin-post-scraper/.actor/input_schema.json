@@ -9,7 +9,7 @@
       "type": "string",
       "description": "URL of the LinkedIn post or article to scrape (e.g., https://linkedin.com/pulse/... or https://linkedin.com/posts/...)",
       "editor": "textfield",
-      "prefill": "https://www.linkedin.com/posts/mattnavarra_how-linkedins-algorithm-works-in-2025-youll-activity-7303106971757346816-V3Z2"
+      "prefill": "https://www.linkedin.com/posts/microsoft_worktrendindex-activity-7457369463198437376-3F4k"
     },
     "use_cache": {
       "title": "Use Cache",
