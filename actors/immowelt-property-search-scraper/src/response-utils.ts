@@ -35,13 +35,13 @@ export interface ImmoweltPropertySearchResponse {
 }
 
 export function getImmoweltPropertyListings(
-    response: ImmoweltPropertySearchResponse,
+    response: ImmoweltPropertySearchResponse | null | undefined,
 ): ImmoweltPropertyListing[] {
-    if (Array.isArray(response.results)) {
+    if (Array.isArray(response?.results)) {
         return response.results;
     }
 
-    if (Array.isArray(response.data?.results)) {
+    if (Array.isArray(response?.data?.results)) {
         return response.data.results;
     }
 
@@ -49,16 +49,16 @@ export function getImmoweltPropertyListings(
     return [];
 }
 
-export function getImmoweltTotalResults(response: ImmoweltPropertySearchResponse): number | null {
-    return getNumber(response.total_results) ?? getNumber(response.data?.total_results) ?? null;
+export function getImmoweltTotalResults(response: ImmoweltPropertySearchResponse | null | undefined): number | null {
+    return getNumber(response?.total_results) ?? getNumber(response?.data?.total_results) ?? null;
 }
 
-export function getImmoweltPage(response: ImmoweltPropertySearchResponse): number | null {
-    return getNumber(response.page) ?? getNumber(response.data?.page) ?? null;
+export function getImmoweltPage(response: ImmoweltPropertySearchResponse | null | undefined): number | null {
+    return getNumber(response?.page) ?? getNumber(response?.data?.page) ?? null;
 }
 
-export function getImmoweltTotalPages(response: ImmoweltPropertySearchResponse): number | null {
-    return getNumber(response.total_pages) ?? getNumber(response.data?.total_pages) ?? null;
+export function getImmoweltTotalPages(response: ImmoweltPropertySearchResponse | null | undefined): number | null {
+    return getNumber(response?.total_pages) ?? getNumber(response?.data?.total_pages) ?? null;
 }
 
 export function buildImmoweltDatasetItem(

@@ -23,11 +23,13 @@ test('returns an empty listing array for unexpected response shape', () => {
 
     try {
         assert.deepEqual(getImmoweltPropertyListings({ success: false }), []);
+        assert.deepEqual(getImmoweltPropertyListings(null), []);
     } finally {
         console.debug = originalDebug;
     }
 
     assert.deepEqual(messages, [
+        'Unexpected Immowelt response shape: expected "results" or "data.results" array.',
         'Unexpected Immowelt response shape: expected "results" or "data.results" array.',
     ]);
 });
@@ -60,14 +62,17 @@ test('adds table-friendly dataset aliases while preserving the raw listing', () 
         is_private: false,
         published: '2026-05-11T19:02:59.797Z',
     };
-
-    assert.deepEqual(buildImmoweltDatasetItem(listing, {
+    const originalListing = structuredClone(listing);
+    const datasetItem = buildImmoweltDatasetItem(listing, {
         location: 'Berlin',
         property_type: 'apartment',
         page: 1,
         limit: 20,
-    }), {
-        ...listing,
+    });
+
+    assert.deepEqual(listing, originalListing);
+    assert.deepEqual(datasetItem, {
+        ...originalListing,
         latitude: 52.511009,
         longitude: 13.402116,
         request_location: 'Berlin',

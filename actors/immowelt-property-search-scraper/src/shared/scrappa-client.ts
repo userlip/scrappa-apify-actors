@@ -87,9 +87,7 @@ export class ScrappaClient {
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== '') {
                 if (typeof value === 'boolean') {
-                    if (value) {
-                        url.searchParams.set(key, '1');
-                    }
+                    url.searchParams.set(key, value ? 'true' : 'false');
                 } else {
                     url.searchParams.set(key, String(value));
                 }
