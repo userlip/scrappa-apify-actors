@@ -8,7 +8,7 @@ Current inventory backstop for every activation audit:
 - 45 local actor manifests in this repo; all 45 are represented by live Apify actors.
 - 12 live actors still missing local source directories here.
 
-This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation in May 2026. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
+This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation in May 2026, amended with newly published actors that now have scheduled May 2026 pricing. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
 Listing copy such as "$0.20/1k results" is not evidence of active paid pricing.
 
 Actors can be included here even when their source files are missing locally; the audit scope is the live Apify actor, not local repository coverage.

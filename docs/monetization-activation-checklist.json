@@ -3,7 +3,7 @@
   "lastCheckedAt": "2026-05-16",
   "source": "Apify Actor list/detail API for TheScrappa organization and local .actor/actor.json manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
-  "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled in May 2026 that require exact-date activation verification.",
+  "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled in May 2026, amended with newly published actors that require exact-date activation verification.",
   "inventoryBackstop": {
     "checkedAt": "2026-05-16",
     "liveActorCount": 57,
