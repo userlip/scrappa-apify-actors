@@ -15,7 +15,7 @@ import {
 import type { ImmoweltPropertySearchResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
 const PROPERTY_RESULT_CHARGE_EVENT = 'property-result';
 
@@ -37,8 +37,9 @@ async function main(): Promise<void> {
             attempts: SCRAPPA_MAX_ATTEMPTS,
         });
         const rawListings = getImmoweltPropertyListings(response);
+        const requestedLimit = params.limit as number;
         const listings = rawListings
-            .slice(0, Number(params.limit))
+            .slice(0, requestedLimit)
             .map((listing) => buildImmoweltDatasetItem(listing, params));
 
         if (listings.length > 0) {

@@ -1,10 +1,14 @@
 # Immowelt Property Search Scraper
 
-Scrape Immowelt property search results through Scrappa. The actor returns one dataset item per property listing and writes the full Scrappa response to the default key-value store as `OUTPUT`.
+Scrape Immowelt property search results through Scrappa. The actor returns one
+dataset item per property listing and writes the full Scrappa response to the
+default key-value store as `OUTPUT`.
 
 ## Monetization
 
-This actor is built for paid pay-per-event pricing with the `property-result` event. Recommended launch pricing is **$0.30 per 1,000 saved property listings** so users pay only for listing rows written to the dataset.
+This actor is built for paid pay-per-event pricing with the `property-result`
+event. Recommended launch pricing is **$0.30 per 1,000 saved property listings**
+so users pay only for listing rows written to the dataset.
 
 ## What it extracts
 
@@ -26,7 +30,9 @@ This actor is built for paid pay-per-event pricing with the `property-result` ev
 
 ## Pagination
 
-The Scrappa response includes `page`, `total_pages`, and `total_results`. Run the actor again with the same `location` and `property_type` plus the next `page` value to continue through the result set.
+The Scrappa response includes `page`, `total_pages`, and `total_results`. Run
+the actor again with the same `location` and `property_type` plus the next
+`page` value to continue through the result set.
 
 ## Output
 
@@ -55,4 +61,5 @@ Dataset items contain the full property object plus normalized top-level fields 
 }
 ```
 
-For higher-volume Immowelt or real estate market research use cases, use Scrappa directly at `https://scrappa.co`.
+For higher-volume Immowelt or real estate market research use cases, use
+Scrappa directly at `https://scrappa.co`.

@@ -1,8 +1,11 @@
 # Immowelt Property Search Scraper
 
-Scrape Immowelt property listings by location and property type. The actor saves one dataset item per listing and stores the complete Scrappa response in key-value store key `OUTPUT`.
+Scrape Immowelt property listings by location and property type. The actor saves
+one dataset item per listing and stores the complete Scrappa response in
+key-value store key `OUTPUT`.
 
-Recommended paid pricing: **$0.30 per 1,000 saved property listings** using the `property-result` pay-per-event charge.
+Recommended paid pricing: **$0.30 per 1,000 saved property listings** using the
+`property-result` pay-per-event charge.
 
 ## Example input
 
