@@ -1,0 +1,60 @@
+{
+  "actorSpecification": 1,
+  "name": "immowelt-property-search-scraper",
+  "title": "Immowelt Property Search Scraper",
+  "description": "Scrape Immowelt property search listings with prices, rooms, floor area, addresses, coordinates, images, expose URLs, and pagination.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "properties": {
+          "title": "Properties",
+          "transformation": {
+            "fields": ["title", "price", "price_formatted", "rooms", "rooms_max", "size_m2", "size_m2_max", "address", "latitude", "longitude", "url", "online_id", "id", "image_url", "is_private", "published", "request_location", "request_type", "request_page", "request_per_page"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": { "label": "Title", "format": "text" },
+              "price": { "label": "Price", "format": "number" },
+              "price_formatted": { "label": "Price Text", "format": "text" },
+              "rooms": { "label": "Rooms", "format": "number" },
+              "rooms_max": { "label": "Rooms Max", "format": "number" },
+              "size_m2": { "label": "Size m2", "format": "number" },
+              "size_m2_max": { "label": "Size m2 Max", "format": "number" },
+              "address": { "label": "Address", "format": "text" },
+              "latitude": { "label": "Latitude", "format": "number" },
+              "longitude": { "label": "Longitude", "format": "number" },
+              "url": { "label": "Expose URL", "format": "link" },
+              "online_id": { "label": "Online ID", "format": "text" },
+              "id": { "label": "Listing ID", "format": "text" },
+              "image_url": { "label": "Image", "format": "image" },
+              "is_private": { "label": "Private Seller", "format": "boolean" },
+              "published": { "label": "Published", "format": "date" },
+              "request_location": { "label": "Request Location", "format": "text" },
+              "request_type": { "label": "Search Type", "format": "text" },
+              "request_page": { "label": "Page", "format": "number" },
+              "request_per_page": { "label": "Per Page", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
