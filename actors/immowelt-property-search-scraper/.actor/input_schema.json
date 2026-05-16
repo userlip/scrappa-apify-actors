@@ -1,0 +1,45 @@
+{
+  "title": "Immowelt Property Search Scraper",
+  "description": "Search Immowelt property listings by location and property type. Each returned listing is saved as one dataset item.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["location"],
+  "properties": {
+    "location": {
+      "title": "Location",
+      "type": "string",
+      "description": "City, district, postal code, or location query to search on Immowelt.",
+      "editor": "textfield",
+      "prefill": "Berlin",
+      "default": "Berlin",
+      "maxLength": 120
+    },
+    "property_type": {
+      "title": "Property Type",
+      "type": "string",
+      "description": "Immowelt property type to request from Scrappa, such as apartment.",
+      "editor": "select",
+      "enum": ["apartment"],
+      "enumTitles": ["Apartment"],
+      "default": "apartment"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "Results page to fetch.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10000,
+      "default": 1
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer",
+      "description": "Number of listings to request for this page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    }
+  }
+}
