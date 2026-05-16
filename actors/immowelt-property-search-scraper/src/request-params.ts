@@ -17,14 +17,6 @@ export const DEFAULT_IMMOWELT_PROPERTY_SEARCH_INPUT = {
 const MAX_LOCATION_LENGTH = 120;
 const MAX_PER_PAGE = 50;
 const IMMOWELT_PROPERTY_TYPES = ['apartment-rent', 'apartment-buy', 'house-rent', 'house-buy'] as const;
-const KNOWN_INPUT_KEYS = new Set<keyof ImmoweltPropertySearchInput>([
-    'location',
-    'type',
-    'per_page',
-    'property_type',
-    'page',
-    'limit',
-]);
 
 export function normalizeImmoweltPropertySearchInput(
     input?: ImmoweltPropertySearchInput | null,
@@ -35,22 +27,17 @@ export function normalizeImmoweltPropertySearchInput(
 
     const normalized: ImmoweltPropertySearchInput = {};
 
-    for (const [key, value] of Object.entries(input) as [keyof ImmoweltPropertySearchInput, unknown][]) {
-        if (!KNOWN_INPUT_KEYS.has(key)) {
-            continue;
-        }
+    copyKnownInputValue(input, normalized, 'location', 'location');
+    copyKnownInputValue(input, normalized, 'type', 'type');
+    copyKnownInputValue(input, normalized, 'per_page', 'per_page');
+    copyKnownInputValue(input, normalized, 'page', 'page');
 
-        const normalizedKey = key === 'property_type'
-            ? 'type'
-            : key === 'limit'
-                ? 'per_page'
-                : key;
+    if (!Object.hasOwn(input, 'type')) {
+        copyKnownInputValue(input, normalized, 'property_type', 'type');
+    }
 
-        if (typeof value === 'string') {
-            normalized[normalizedKey] = value.trim() as never;
-        } else if (value !== undefined) {
-            normalized[normalizedKey] = value as never;
-        }
+    if (!Object.hasOwn(input, 'per_page')) {
+        copyKnownInputValue(input, normalized, 'limit', 'per_page');
     }
 
     const hasKnownInput = Object.keys(normalized).length > 0;
@@ -94,6 +81,24 @@ function cleanRequiredString(value: unknown, field: string, maxLength: number): 
     }
 
     return trimmed;
+}
+
+function copyKnownInputValue(
+    input: ImmoweltPropertySearchInput,
+    normalized: ImmoweltPropertySearchInput,
+    sourceKey: keyof ImmoweltPropertySearchInput,
+    targetKey: keyof ImmoweltPropertySearchInput,
+): void {
+    if (!Object.hasOwn(input, sourceKey)) {
+        return;
+    }
+
+    const value = input[sourceKey];
+    if (typeof value === 'string') {
+        normalized[targetKey] = value.trim() as never;
+    } else if (value !== undefined) {
+        normalized[targetKey] = value as never;
+    }
 }
 
 function cleanInteger(value: unknown, field: string, min: number, max: number): number {

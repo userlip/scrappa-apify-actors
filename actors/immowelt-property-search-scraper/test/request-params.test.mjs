@@ -45,6 +45,21 @@ test('maps legacy aliases onto Scrappa Immowelt parameter names', () => {
     });
 });
 
+test('prefers canonical Scrappa Immowelt parameter names over legacy aliases', () => {
+    assert.deepEqual(normalizeImmoweltPropertySearchInput({
+        location: 'Berlin',
+        property_type: ' apartment-buy ',
+        type: 'house-rent',
+        limit: 25,
+        per_page: 10,
+    }), {
+        location: 'Berlin',
+        type: 'house-rent',
+        page: 1,
+        per_page: 10,
+    });
+});
+
 test('preserves blank required string inputs so validation fails instead of defaulting', () => {
     const normalized = normalizeImmoweltPropertySearchInput({
         location: '   ',
