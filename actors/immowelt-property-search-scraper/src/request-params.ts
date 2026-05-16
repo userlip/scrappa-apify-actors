@@ -37,7 +37,7 @@ export function normalizeImmoweltPropertySearchInput(
 
         if (typeof value === 'string') {
             normalized[key] = value.trim() as never;
-        } else if (value !== undefined && value !== null) {
+        } else if (value !== undefined) {
             normalized[key] = value as never;
         }
     }

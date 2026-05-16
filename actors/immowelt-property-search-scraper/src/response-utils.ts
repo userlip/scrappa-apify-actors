@@ -37,12 +37,15 @@ export interface ImmoweltPropertySearchResponse {
 export function getImmoweltPropertyListings(
     response: ImmoweltPropertySearchResponse | null | undefined,
 ): ImmoweltPropertyListing[] {
-    if (Array.isArray(response?.results)) {
-        return response.results;
+    const topLevelResults = response?.results;
+    const wrappedResults = response?.data?.results;
+
+    if (Array.isArray(topLevelResults) && (topLevelResults.length > 0 || !Array.isArray(wrappedResults))) {
+        return topLevelResults;
     }
 
-    if (Array.isArray(response?.data?.results)) {
-        return response.data.results;
+    if (Array.isArray(wrappedResults)) {
+        return wrappedResults;
     }
 
     console.debug('Unexpected Immowelt response shape: expected "results" or "data.results" array.');
@@ -94,24 +97,20 @@ export function limitImmoweltPropertySearchResponse(
     response: ImmoweltPropertySearchResponse,
     limit: number,
 ): ImmoweltPropertySearchResponse {
+    const limitedResponse: ImmoweltPropertySearchResponse = { ...response };
+
     if (Array.isArray(response.results)) {
-        return {
-            ...response,
-            results: response.results.slice(0, limit),
-        };
+        limitedResponse.results = response.results.slice(0, limit);
     }
 
     if (Array.isArray(response.data?.results)) {
-        return {
-            ...response,
-            data: {
-                ...response.data,
-                results: response.data.results.slice(0, limit),
-            },
+        limitedResponse.data = {
+            ...response.data,
+            results: response.data.results.slice(0, limit),
         };
     }
 
-    return response;
+    return limitedResponse;
 }
 
 function getNumber(value: unknown): number | undefined {

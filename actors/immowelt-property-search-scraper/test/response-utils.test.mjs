@@ -17,6 +17,15 @@ test('returns listings from top-level and wrapped Scrappa responses', () => {
     assert.deepEqual(getImmoweltPropertyListings({ data: { results } }), results);
 });
 
+test('falls back to wrapped listings when top-level results are empty', () => {
+    const results = [{ title: 'Nested Berlin flat' }];
+
+    assert.deepEqual(getImmoweltPropertyListings({
+        results: [],
+        data: { results },
+    }), results);
+});
+
 test('returns an empty listing array for unexpected response shape', () => {
     const originalDebug = console.debug;
     const messages = [];
@@ -122,6 +131,36 @@ test('limits wrapped OUTPUT response listings without mutating the original resp
         data: {
             ...response.data,
             results: [results[0]],
+        },
+    });
+    assert.deepEqual(response, originalResponse);
+});
+
+test('limits both top-level and wrapped OUTPUT listings when both are present', () => {
+    const topLevelResults = [
+        { online_id: '1', title: 'Top first listing' },
+        { online_id: '2', title: 'Top second listing' },
+    ];
+    const wrappedResults = [
+        { online_id: '3', title: 'Wrapped first listing' },
+        { online_id: '4', title: 'Wrapped second listing' },
+    ];
+    const response = {
+        success: true,
+        results: topLevelResults,
+        data: {
+            total_results: 4,
+            results: wrappedResults,
+        },
+    };
+    const originalResponse = structuredClone(response);
+
+    assert.deepEqual(limitImmoweltPropertySearchResponse(response, 1), {
+        ...response,
+        results: [topLevelResults[0]],
+        data: {
+            ...response.data,
+            results: [wrappedResults[0]],
         },
     });
     assert.deepEqual(response, originalResponse);

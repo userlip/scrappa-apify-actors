@@ -42,6 +42,20 @@ test('preserves blank required string inputs so validation fails instead of defa
     assert.throws(() => buildImmoweltPropertySearchParams(normalized), /location is required/);
 });
 
+test('preserves null known inputs so validation fails instead of defaulting', () => {
+    const normalized = normalizeImmoweltPropertySearchInput({
+        location: null,
+        property_type: ' apartment ',
+    });
+
+    assert.deepEqual(normalized, {
+        ...DEFAULT_IMMOWELT_PROPERTY_SEARCH_INPUT,
+        location: null,
+        property_type: 'apartment',
+    });
+    assert.throws(() => buildImmoweltPropertySearchParams(normalized), /location must be a string/);
+});
+
 test('builds Immowelt search params', () => {
     assert.deepEqual(buildImmoweltPropertySearchParams({
         location: 'Berlin',
