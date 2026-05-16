@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-15",
-  "source": "Apify Actor list API for TheScrappa organization and local .actor/actor.json manifest count",
+  "lastCheckedAt": "2026-05-16",
+  "source": "Apify Actor list/detail API for TheScrappa organization and local .actor/actor.json manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
-  "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled in May 2026 that require exact-date activation verification.",
+  "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled in May 2026, amended with newly published actors that require exact-date activation verification.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-15",
-    "liveActorCount": 56,
-    "localActorManifestCount": 44,
+    "checkedAt": "2026-05-16",
+    "liveActorCount": 57,
+    "localActorManifestCount": 45,
     "missingLocalSourceCount": 12,
-    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale 55/43/12 coverage numbers."
+    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale 56/44/12 coverage numbers."
   },
   "verificationRules": [
     "Fetch GET /v2/acts/{actorId} on or after scheduledActivationAt.",
@@ -43,7 +43,8 @@
     { "actorId": "nBSazp2iBmBm1FQvz", "slug": "trustpilot-company-reviews-scraper", "scheduledActivationAt": "2026-05-23T22:55:39.839Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "H2dZTreGZ7s3XJsQ7", "slug": "tiktok-hashtag-posts-scraper", "scheduledActivationAt": "2026-05-24T00:00:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "MrbqFgdpNTQcRW0Vt", "slug": "google-images-scraper", "scheduledActivationAt": "2026-05-24T07:16:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
-    { "actorId": "WvbWRqj67ve6fwwWZ", "slug": "google-finance-markets-scraper", "scheduledActivationAt": "2026-05-29T08:13:17.000Z", "expectedPricingModel": "PAY_PER_EVENT" }
+    { "actorId": "WvbWRqj67ve6fwwWZ", "slug": "google-finance-markets-scraper", "scheduledActivationAt": "2026-05-29T08:13:17.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
+    { "actorId": "DUUlFa5LGId75vOI0", "slug": "stepstone-jobs-scraper", "scheduledActivationAt": "2026-05-29T11:31:58.000Z", "expectedPricingModel": "PAY_PER_EVENT" }
   ],
   "privateScheduledActorsExcludedUntilPublic": [
     { "actorId": "Y3mKYlGNhsrBE7aZO", "slug": "youtube-api-channel-podcasts", "scheduledActivationAt": "2026-05-17T14:44:02.772Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
