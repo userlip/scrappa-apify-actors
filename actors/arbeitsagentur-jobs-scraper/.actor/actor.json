@@ -1,0 +1,58 @@
+{
+  "actorSpecification": 1,
+  "name": "arbeitsagentur-jobs-scraper",
+  "title": "Arbeitsagentur Jobs Scraper ($0.30/1k results)",
+  "description": "Search official German Federal Employment Agency job listings with Scrappa. Extract job titles, employers, occupations, locations, publication dates, start dates, reference numbers, job URLs, facets, and pagination.",
+  "categories": [
+    "LEAD_GENERATION",
+    "MARKETING",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "jobs": {
+          "title": "Arbeitsagentur Jobs",
+          "transformation": {
+            "fields": ["title", "occupation", "company_name", "location_formatted", "location_city", "postal_code", "region", "country", "published_date", "start_date", "job_url", "reference_number", "distance_km"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": { "label": "Title", "format": "text" },
+              "occupation": { "label": "Occupation", "format": "text" },
+              "company_name": { "label": "Employer", "format": "text" },
+              "location_formatted": { "label": "Location", "format": "text" },
+              "location_city": { "label": "City", "format": "text" },
+              "postal_code": { "label": "Postal Code", "format": "text" },
+              "region": { "label": "Region", "format": "text" },
+              "country": { "label": "Country", "format": "text" },
+              "published_date": { "label": "Published", "format": "text" },
+              "start_date": { "label": "Start Date", "format": "text" },
+              "job_url": { "label": "Job URL", "format": "link" },
+              "reference_number": { "label": "Reference", "format": "text" },
+              "distance_km": { "label": "Distance", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
