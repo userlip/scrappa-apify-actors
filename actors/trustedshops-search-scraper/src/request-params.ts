@@ -98,7 +98,7 @@ function cleanMarket(value: unknown): string | undefined {
 
 export function buildTrustedShopsSearchPlan(input: TrustedShopsSearchInput): TrustedShopsSearchPlan {
     const baseParams: Record<string, unknown> = {
-        q: cleanRequiredString(input.q, 'q', 2, 200).replace(/\s*&\s*/g, ' '),
+        q: cleanRequiredString(input.q, 'q', 2, 200),
         market: cleanMarket(input.market) ?? 'DEU',
     };
 

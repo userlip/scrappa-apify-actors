@@ -29,7 +29,7 @@ test('builds a default Trusted Shops search plan', () => {
     });
 });
 
-test('normalizes market, numeric strings, encoded query, and ampersands', () => {
+test('normalizes market, numeric strings, and encoded query', () => {
     const plan = buildTrustedShopsSearchPlan({
         q: 'm%C3%BCller & partner',
         market: 'fra',
@@ -39,13 +39,25 @@ test('normalizes market, numeric strings, encoded query, and ampersands', () => 
 
     assert.deepEqual(plan, {
         baseParams: {
-            q: 'müller partner',
+            q: 'müller & partner',
             market: 'FRA',
         },
         startPage: 2,
         maxPages: 3,
     });
-    assert.equal(describeTrustedShopsSearchRequest(plan), '"müller partner" in FRA (pages 2-4)');
+    assert.equal(describeTrustedShopsSearchRequest(plan), '"müller & partner" in FRA (pages 2-4)');
+});
+
+test('preserves ampersands in merchant query text', () => {
+    const plan = buildTrustedShopsSearchPlan({
+        q: ' H&M ',
+        market: 'DEU',
+    });
+
+    assert.deepEqual(plan.baseParams, {
+        q: 'H&M',
+        market: 'DEU',
+    });
 });
 
 test('keeps valid percent characters that are not URL encoding', () => {
