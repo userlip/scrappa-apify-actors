@@ -34,16 +34,18 @@ async function pushChargedItems(items: Record<string, unknown>[]): Promise<PushC
 
     const chargeResult = await Actor.pushData(items, SHOP_RESULT_CHARGE_EVENT);
     if (chargeResult.eventChargeLimitReached) {
-        const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${items.length} Trusted Shops results on the current page.`;
+        const savedCount = Math.min(chargeResult.chargedCount, items.length);
+        const statusMessage = `Charge limit reached after saving ${savedCount} of ${items.length} Trusted Shops results on the current page.`;
         console.log(statusMessage, JSON.stringify({
             event: SHOP_RESULT_CHARGE_EVENT,
             charged_count: chargeResult.chargedCount,
             requested_count: items.length,
+            saved_count: savedCount,
         }));
-        return { savedCount: chargeResult.chargedCount, statusMessage };
+        return { savedCount, statusMessage };
     }
 
-    return { savedCount: chargeResult.chargedCount, statusMessage: null };
+    return { savedCount: items.length, statusMessage: null };
 }
 
 async function main(): Promise<void> {
