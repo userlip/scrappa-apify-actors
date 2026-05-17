@@ -4,9 +4,9 @@ Last live metadata check: 2026-05-17 via Apify Actor list/detail API for the `Th
 
 Current inventory backstop for every activation audit:
 
-- 59 live `thescrappa` actors in Apify.
-- 48 public `thescrappa` actors in Apify.
-- 47 local actor manifests in this repo; all 47 are represented by live Apify actors.
+- 60 live `thescrappa` actors in Apify.
+- 49 public `thescrappa` actors in Apify.
+- 48 local actor manifests in this repo; all 48 are represented by live Apify actors.
 - 12 live actors still missing local source directories here.
 
 This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation in May 2026, amended with newly published actors that now have scheduled May 2026 pricing. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
