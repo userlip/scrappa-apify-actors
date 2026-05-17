@@ -16,6 +16,18 @@ const MAX_PAGE = 100;
 const DEFAULT_MAX_PAGES = 1;
 const MAX_PAGES_PER_RUN = 10;
 
+function decodeInputString(value: string): string {
+    if (!value.includes('%')) {
+        return value;
+    }
+
+    try {
+        return decodeURIComponent(value);
+    } catch {
+        return value;
+    }
+}
+
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null || value === '') {
         return undefined;
@@ -25,7 +37,7 @@ function cleanString(value: unknown, field: string, maxLength: number): string |
         throw new Error(`${field} must be a string`);
     }
 
-    const trimmed = decodeURIComponent(value).trim();
+    const trimmed = decodeInputString(value).trim();
     if (trimmed === '') {
         return undefined;
     }

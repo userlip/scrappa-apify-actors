@@ -99,7 +99,7 @@ export class ScrappaClient {
         const headers: Record<string, string> = {
             'X-API-Key': this.apiKey,
             'Accept': 'application/json',
-            'User-Agent': 'thescrappa-google-hotels-search-scraper/1.0',
+            'User-Agent': 'thescrappa-trustedshops-search-scraper/1.0',
         };
 
         if (this.debug) {

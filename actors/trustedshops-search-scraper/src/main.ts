@@ -16,30 +16,34 @@ const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
 const SHOP_RESULT_CHARGE_EVENT = 'shop-result';
 
-async function pushChargedItems(items: Record<string, unknown>[]): Promise<boolean> {
+interface PushChargedItemsResult {
+    savedCount: number;
+    statusMessage: string | null;
+}
+
+async function pushChargedItems(items: Record<string, unknown>[]): Promise<PushChargedItemsResult> {
     if (items.length === 0) {
-        return true;
+        return { savedCount: 0, statusMessage: null };
     }
 
     const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
     if (!isPayPerEvent) {
         await Actor.pushData(items);
-        return true;
+        return { savedCount: items.length, statusMessage: null };
     }
 
     const chargeResult = await Actor.pushData(items, SHOP_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < items.length) {
-        const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${items.length} Trusted Shops results on the current page; OUTPUT was not written.`;
+    if (chargeResult.eventChargeLimitReached) {
+        const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${items.length} Trusted Shops results on the current page.`;
         console.log(statusMessage, JSON.stringify({
             event: SHOP_RESULT_CHARGE_EVENT,
             charged_count: chargeResult.chargedCount,
             requested_count: items.length,
         }));
-        await Actor.exit({ statusMessage });
-        return false;
+        return { savedCount: chargeResult.chargedCount, statusMessage };
     }
 
-    return true;
+    return { savedCount: chargeResult.chargedCount, statusMessage: null };
 }
 
 async function main(): Promise<void> {
@@ -62,6 +66,7 @@ async function main(): Promise<void> {
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
         const responses: TrustedShopsSearchResponse[] = [];
         let savedShops = 0;
+        let statusMessage: string | null = null;
 
         for (let offset = 0; offset < plan.maxPages; offset += 1) {
             const page = plan.startPage + offset;
@@ -75,13 +80,13 @@ async function main(): Promise<void> {
 
             const shops = getTrustedShops(response).map((shop) => buildTrustedShopsDatasetItem(shop, params, response));
             if (shops.length > 0) {
-                const saved = await pushChargedItems(shops);
-                if (!saved) {
-                    return;
+                const result = await pushChargedItems(shops);
+                savedShops += result.savedCount;
+                console.log(`Found ${shops.length} shop result(s) on page ${page}; saved ${result.savedCount}`);
+                if (result.statusMessage) {
+                    statusMessage = result.statusMessage;
+                    break;
                 }
-
-                savedShops += shops.length;
-                console.log(`Found ${shops.length} shop result(s) on page ${page}`);
             } else {
                 console.log(`No Trusted Shops results found on page ${page}`);
                 break;
@@ -103,6 +108,7 @@ async function main(): Promise<void> {
             },
             pages_fetched: responses.length,
             shops_extracted: savedShops,
+            status_message: statusMessage,
             total_shop_count: lastResponse?.metaData?.totalShopCount ?? null,
             total_page_count: lastResponse?.metaData?.totalPageCount ?? null,
             responses,
@@ -118,6 +124,11 @@ async function main(): Promise<void> {
             total_shop_count: output.total_shop_count,
             total_page_count: output.total_page_count,
         }));
+
+        if (statusMessage) {
+            await Actor.exit({ statusMessage });
+            return;
+        }
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
         const message = error instanceof ScrappaTimeoutError

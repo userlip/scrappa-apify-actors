@@ -48,6 +48,18 @@ test('normalizes market, numeric strings, encoded query, and ampersands', () => 
     assert.equal(describeTrustedShopsSearchRequest(plan), '"müller partner" in FRA (pages 2-4)');
 });
 
+test('keeps valid percent characters that are not URL encoding', () => {
+    const plan = buildTrustedShopsSearchPlan({
+        q: '100% organic',
+        market: 'DEU',
+    });
+
+    assert.deepEqual(plan.baseParams, {
+        q: '100% organic',
+        market: 'DEU',
+    });
+});
+
 test('validates required query, market, and pagination bounds', () => {
     assert.throws(
         () => buildTrustedShopsSearchPlan({ q: 'a' }),
