@@ -40,15 +40,16 @@ export interface TrustedShopsShop {
 }
 
 export function getTrustedShops(response: TrustedShopsSearchResponse): TrustedShopsShop[] {
-    if (Array.isArray(response.shops)) {
-        return response.shops;
+    const shops = Array.isArray(response.shops) ? response.shops : null;
+    if (shops && shops.length > 0) {
+        return shops;
     }
 
     if (Array.isArray(response.data?.shops)) {
         return response.data.shops;
     }
 
-    return [];
+    return shops ?? [];
 }
 
 function withProtocol(url: string | undefined): string | null {

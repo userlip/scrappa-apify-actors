@@ -15,6 +15,18 @@ test('extracts shops from primary and wrapped response shapes', () => {
     assert.deepEqual(getTrustedShops({}), []);
 });
 
+test('falls back to wrapped shops when primary shops are empty', () => {
+    assert.deepEqual(
+        getTrustedShops({
+            shops: [],
+            data: {
+                shops: [{ shopName: 'wrapped-shop.de' }],
+            },
+        }),
+        [{ shopName: 'wrapped-shop.de' }],
+    );
+});
+
 test('builds normalized Trusted Shops dataset item', () => {
     const item = buildTrustedShopsDatasetItem(
         {
