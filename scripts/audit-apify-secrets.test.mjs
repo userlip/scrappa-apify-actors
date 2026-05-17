@@ -73,6 +73,19 @@ test('resolveDefaultVersionNumber maps numeric build identifiers to versions', (
   assert.equal(versionNumber, '1.0');
 });
 
+test('resolveDefaultVersionNumber preserves zero numeric build identifiers', () => {
+  const versionNumber = resolveDefaultVersionNumber({
+    id: 'zero-build-actor',
+    defaultRunOptions: { build: 0 },
+    versions: [
+      { versionNumber: '0.0', buildTag: 'latest' },
+      { versionNumber: '1.0', buildTag: 'beta' },
+    ],
+  });
+
+  assert.equal(versionNumber, '0.0');
+});
+
 test('resolveDefaultVersionNumber maps taggedBuild build numbers to versions', () => {
   const versionNumber = resolveDefaultVersionNumber({
     id: 'tagged-build-actor',
@@ -194,6 +207,55 @@ test('auditActorSecretSafely fetches the resolved version instead of hardcoding 
     assert.equal(report.status, 'SECRET_PRESENT');
     assert.equal(report.versionNumber, '0.0');
     assert.deepEqual(requestedPaths, ['/v2/acts/actor-id', '/v2/acts/actor-id/versions/0.0']);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('auditActorSecretSafely reports fetch errors when actor visibility is unknown', async () => {
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = async () => {
+    return {
+      ok: false,
+      status: 400,
+      text: async () => 'temporary failure',
+    };
+  };
+
+  try {
+    const report = await auditActorSecretSafely({
+      id: 'unknown-visibility-id',
+      name: 'unknown-visibility-actor',
+    }, 'token');
+
+    assert.equal(report.status, 'ERROR');
+    assert.equal(report.actorId, 'unknown-visibility-id');
+    assert.match(report.reason, /Apify API request failed \(400\)/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('auditActorSecretSafely skips fetch errors for known private actors', async () => {
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = async () => {
+    return {
+      ok: false,
+      status: 400,
+      text: async () => 'temporary failure',
+    };
+  };
+
+  try {
+    const report = await auditActorSecretSafely({
+      id: 'private-id',
+      name: 'private-actor',
+      isPublic: false,
+    }, 'token');
+
+    assert.equal(report, null);
   } finally {
     globalThis.fetch = originalFetch;
   }

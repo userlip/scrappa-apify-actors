@@ -70,8 +70,10 @@ export async function auditActorSecrets(actors, token) {
 }
 
 export async function auditActorSecretSafely(actor, token) {
+  let detail = null;
+
   try {
-    const detail = actor.versions ? actor : await fetchActorDetail(actor.id, token);
+    detail = actor.versions ? actor : await fetchActorDetail(actor.id, token);
     if (detail.isPublic !== true) {
       return null;
     }
@@ -81,15 +83,16 @@ export async function auditActorSecretSafely(actor, token) {
 
     return auditActorVersionSecret(detail, version);
   } catch (error) {
-    if (actor.isPublic !== true) {
+    const actorForReport = detail || actor;
+    if (actorForReport.isPublic === false) {
       return null;
     }
 
     return {
-      actorId: actor.id,
-      slug: actor.name,
-      title: actor.title || null,
-      isPublic: actor.isPublic === true,
+      actorId: actorForReport.id,
+      slug: actorForReport.name,
+      title: actorForReport.title || null,
+      isPublic: actorForReport.isPublic === true,
       status: 'ERROR',
       reason: error instanceof Error ? error.message : String(error),
     };
@@ -139,7 +142,7 @@ export function resolveDefaultVersionNumber(actor) {
   }
 
   const defaultBuild = actor?.defaultRunOptions?.build;
-  if (defaultBuild) {
+  if (defaultBuild !== undefined && defaultBuild !== null && defaultBuild !== '') {
     const versionNumber = resolveVersionNumberFromBuild(actor, defaultBuild);
     if (versionNumber) {
       return versionNumber;
@@ -197,7 +200,7 @@ function matchesBuildNumber(taggedBuild, buildString) {
 }
 
 function getVersionNumberFromBuildNumber(buildNumber, versions) {
-  const buildString = String(buildNumber || '');
+  const buildString = String(buildNumber ?? '');
   if (!buildString) {
     return null;
   }
