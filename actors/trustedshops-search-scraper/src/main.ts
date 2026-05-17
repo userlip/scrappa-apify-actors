@@ -67,6 +67,7 @@ async function main(): Promise<void> {
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
         const responses: TrustedShopsSearchResponse[] = [];
+        let pagesFetched = 0;
         let savedShops = 0;
         let statusMessage: string | null = null;
 
@@ -78,7 +79,7 @@ async function main(): Promise<void> {
             const response = await client.get<TrustedShopsSearchResponse>('/trustedshops/search', params, {
                 attempts: SCRAPPA_MAX_ATTEMPTS,
             });
-            responses.push(response);
+            pagesFetched += 1;
 
             const shops = getTrustedShops(response).map((shop) => buildTrustedShopsDatasetItem(shop, params, response));
             if (shops.length > 0) {
@@ -89,7 +90,9 @@ async function main(): Promise<void> {
                     statusMessage = result.statusMessage;
                     break;
                 }
+                responses.push(response);
             } else {
+                responses.push(response);
                 console.log(`No Trusted Shops results found on page ${page}`);
                 break;
             }
@@ -108,7 +111,8 @@ async function main(): Promise<void> {
                 start_page: plan.startPage,
                 max_pages: plan.maxPages,
             },
-            pages_fetched: responses.length,
+            pages_fetched: pagesFetched,
+            responses_saved: responses.length,
             shops_extracted: savedShops,
             status_message: statusMessage,
             total_shop_count: lastResponse?.metaData?.totalShopCount ?? null,
@@ -121,7 +125,8 @@ async function main(): Promise<void> {
 
         console.log('Trusted Shops search completed successfully');
         console.log('Results summary:', JSON.stringify({
-            pages_fetched: responses.length,
+            pages_fetched: pagesFetched,
+            responses_saved: responses.length,
             shops_extracted: savedShops,
             total_shop_count: output.total_shop_count,
             total_page_count: output.total_page_count,
