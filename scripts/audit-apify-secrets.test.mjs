@@ -124,6 +124,24 @@ test('resolveDefaultVersionNumber prefers taggedBuilds over duplicate version bu
   assert.equal(versionNumber, '1.0');
 });
 
+test('resolveDefaultVersionNumber parses taggedBuild build numbers with suffixes', () => {
+  const versionNumber = resolveDefaultVersionNumber({
+    id: 'suffixed-build-actor',
+    defaultRunOptions: { build: 'latest' },
+    taggedBuilds: {
+      latest: {
+        buildNumber: '1.0.0-beta',
+      },
+    },
+    versions: [
+      { versionNumber: '0.0', buildTag: 'latest' },
+      { versionNumber: '1.0', buildTag: 'latest' },
+    ],
+  });
+
+  assert.equal(versionNumber, '1.0');
+});
+
 test('resolveDefaultVersionNumber rejects unresolvable default builds when multiple versions exist', () => {
   assert.throws(() => resolveDefaultVersionNumber({
     id: 'ambiguous-build-actor',

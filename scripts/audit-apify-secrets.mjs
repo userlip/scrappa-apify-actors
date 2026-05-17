@@ -217,7 +217,7 @@ function getVersionNumberFromBuildNumber(buildNumber, versions) {
     return null;
   }
 
-  const buildVersion = buildString.match(/^(\d+\.\d+)\.\d+$/)?.[1];
+  const buildVersion = buildString.match(/^(\d+\.\d+)(?:\.\d+)?(?:[-+].*)?$/)?.[1];
   if (buildVersion && versions.some((version) => version.versionNumber === buildVersion)) {
     return buildVersion;
   }
