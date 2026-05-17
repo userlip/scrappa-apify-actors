@@ -1,0 +1,45 @@
+{
+  "title": "Trusted Shops Search Scraper",
+  "description": "Search Trusted Shops shop profiles by keyword and market.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["q"],
+  "properties": {
+    "q": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Shop, brand, or domain query to search on Trusted Shops.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 200,
+      "prefill": "zalando"
+    },
+    "market": {
+      "title": "Market",
+      "type": "string",
+      "description": "Trusted Shops target market.",
+      "editor": "select",
+      "enum": ["DEU", "GBR", "AUT", "CHE", "NLD", "ESP", "ITA", "FRA", "BEL", "POL", "PRT"],
+      "enumTitles": ["Germany", "United Kingdom", "Austria", "Switzerland", "Netherlands", "Spain", "Italy", "France", "Belgium", "Poland", "Portugal"],
+      "default": "DEU"
+    },
+    "page": {
+      "title": "Start Page",
+      "type": "integer",
+      "description": "Zero-based Trusted Shops search results page.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
+    "max_pages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Number of result pages to fetch, starting from Start Page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 1
+    }
+  }
+}

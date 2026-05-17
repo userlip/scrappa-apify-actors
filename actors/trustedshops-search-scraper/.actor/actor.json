@@ -1,0 +1,58 @@
+{
+  "actorSpecification": 1,
+  "name": "trustedshops-search-scraper",
+  "title": "Trusted Shops Search Scraper",
+  "description": "Search Trusted Shops shop profiles by keyword and market, including TSID, ratings, review counts, certification status, categories, and profile URLs.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "shops": {
+          "title": "Shops",
+          "transformation": {
+            "fields": ["accountName", "shopName", "tsID", "averageRating", "reviewCount", "certificationState", "profile_url", "shop_url", "profileType", "category_names", "shopDescription", "shopLogoUrl", "contractStartDate", "request_q", "request_market", "request_page", "total_shop_count", "total_page_count"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "accountName": { "label": "Account Name", "format": "text" },
+              "shopName": { "label": "Shop Name", "format": "text" },
+              "tsID": { "label": "TSID", "format": "text" },
+              "averageRating": { "label": "Rating", "format": "number" },
+              "reviewCount": { "label": "Reviews", "format": "number" },
+              "certificationState": { "label": "Certified", "format": "boolean" },
+              "profile_url": { "label": "Trusted Shops Profile", "format": "link" },
+              "shop_url": { "label": "Shop URL", "format": "link" },
+              "profileType": { "label": "Profile Type", "format": "text" },
+              "category_names": { "label": "Categories", "format": "text" },
+              "shopDescription": { "label": "Description", "format": "text" },
+              "shopLogoUrl": { "label": "Logo", "format": "image" },
+              "contractStartDate": { "label": "Contract Start", "format": "number" },
+              "request_q": { "label": "Request Query", "format": "text" },
+              "request_market": { "label": "Market", "format": "text" },
+              "request_page": { "label": "Page", "format": "number" },
+              "total_shop_count": { "label": "Total Shops", "format": "number" },
+              "total_page_count": { "label": "Total Pages", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
