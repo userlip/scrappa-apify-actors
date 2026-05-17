@@ -17,8 +17,7 @@
       "type": "integer",
       "description": "Page number for pagination. Cannot be used together with start.",
       "editor": "number",
-      "minimum": 1,
-      "default": 1
+      "minimum": 1
     },
     "start": {
       "title": "Start Offset",
