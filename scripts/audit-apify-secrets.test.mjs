@@ -105,6 +105,25 @@ test('resolveDefaultVersionNumber maps taggedBuild build numbers to versions', (
   assert.equal(versionNumber, '1.0');
 });
 
+test('resolveDefaultVersionNumber prefers taggedBuilds over duplicate version build tags', () => {
+  const versionNumber = resolveDefaultVersionNumber({
+    id: 'duplicate-tag-actor',
+    defaultRunOptions: { build: 'latest' },
+    taggedBuilds: {
+      latest: {
+        buildNumber: '1.0.15',
+        buildNumberInt: 10000015,
+      },
+    },
+    versions: [
+      { versionNumber: '0.0', buildTag: 'latest' },
+      { versionNumber: '1.0', buildTag: 'latest' },
+    ],
+  });
+
+  assert.equal(versionNumber, '1.0');
+});
+
 test('resolveDefaultVersionNumber rejects unresolvable default builds when multiple versions exist', () => {
   assert.throws(() => resolveDefaultVersionNumber({
     id: 'ambiguous-build-actor',

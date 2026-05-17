@@ -176,23 +176,31 @@ function resolveVersionNumberFromBuild(actor, build) {
   const versions = Array.isArray(actor?.versions) ? actor.versions : [];
   const buildString = String(build);
 
-  const directVersion = versions.find((version) => {
-    return version.buildTag === buildString || version.versionNumber === buildString;
-  });
-  if (directVersion?.versionNumber) {
-    return directVersion.versionNumber;
+  const directVersionNumber = versions.find((version) => version.versionNumber === buildString)?.versionNumber;
+  if (directVersionNumber) {
+    return directVersionNumber;
   }
 
   const taggedBuilds = actor?.taggedBuilds && typeof actor.taggedBuilds === 'object' ? actor.taggedBuilds : {};
-  for (const [tag, taggedBuild] of Object.entries(taggedBuilds)) {
-    if (tag !== buildString && !matchesBuildNumber(taggedBuild, buildString)) {
+  const taggedBuild = taggedBuilds[buildString];
+  const versionNumberFromTag = getVersionNumberFromBuildNumber(taggedBuild?.buildNumber, versions);
+  if (versionNumberFromTag) {
+    return versionNumberFromTag;
+  }
+
+  for (const taggedBuild of Object.values(taggedBuilds)) {
+    if (!matchesBuildNumber(taggedBuild, buildString)) {
       continue;
     }
-
     const versionNumber = getVersionNumberFromBuildNumber(taggedBuild?.buildNumber, versions);
     if (versionNumber) {
       return versionNumber;
     }
+  }
+
+  const taggedVersionNumber = versions.find((version) => version.buildTag === buildString)?.versionNumber;
+  if (taggedVersionNumber) {
+    return taggedVersionNumber;
   }
 
   return getVersionNumberFromBuildNumber(buildString, versions);
