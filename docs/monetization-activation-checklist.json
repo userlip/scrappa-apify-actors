@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-16",
+  "lastCheckedAt": "2026-05-17",
   "source": "Apify Actor list/detail API for TheScrappa organization and local .actor/actor.json manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
   "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled in May 2026, amended with newly published actors that require exact-date activation verification.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-16",
-    "liveActorCount": 57,
-    "localActorManifestCount": 45,
+    "checkedAt": "2026-05-17",
+    "liveActorCount": 58,
+    "localActorManifestCount": 46,
     "missingLocalSourceCount": 12,
-    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale 56/44/12 coverage numbers."
+    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale 57/45/12 coverage numbers or miss Immowelt."
   },
   "verificationRules": [
     "Fetch GET /v2/acts/{actorId} on or after scheduledActivationAt.",
