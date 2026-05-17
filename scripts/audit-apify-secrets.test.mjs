@@ -212,6 +212,63 @@ test('auditActorSecretSafely fetches the resolved version instead of hardcoding 
   }
 });
 
+test('auditActorSecretSafely fetches detail when list actor has empty versions metadata', async () => {
+  const originalFetch = globalThis.fetch;
+  const requestedPaths = [];
+
+  globalThis.fetch = async (url) => {
+    const path = new URL(url).pathname;
+    requestedPaths.push(path);
+
+    if (path === '/v2/acts/actor-id') {
+      return {
+        ok: true,
+        json: async () => ({
+          data: {
+            id: 'actor-id',
+            name: 'actor-with-empty-list-versions',
+            isPublic: true,
+            defaultRunOptions: { build: 'latest' },
+            versions: [{ versionNumber: '1.0', buildTag: 'latest' }],
+          },
+        }),
+      };
+    }
+
+    if (path === '/v2/acts/actor-id/versions/1.0') {
+      return {
+        ok: true,
+        json: async () => ({
+          data: {
+            versionNumber: '1.0',
+            envVars: [{ name: 'SCRAPPA_API_KEY', isSecret: true }],
+          },
+        }),
+      };
+    }
+
+    return {
+      ok: false,
+      status: 404,
+      text: async () => 'not found',
+    };
+  };
+
+  try {
+    const report = await auditActorSecretSafely({
+      id: 'actor-id',
+      name: 'actor-with-empty-list-versions',
+      isPublic: true,
+      versions: [],
+    }, 'token');
+
+    assert.equal(report.status, 'SECRET_PRESENT');
+    assert.deepEqual(requestedPaths, ['/v2/acts/actor-id', '/v2/acts/actor-id/versions/1.0']);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('auditActorSecretSafely reports fetch errors when actor visibility is unknown', async () => {
   const originalFetch = globalThis.fetch;
 

@@ -73,7 +73,7 @@ export async function auditActorSecretSafely(actor, token) {
   let detail = null;
 
   try {
-    detail = actor.versions ? actor : await fetchActorDetail(actor.id, token);
+    detail = hasVersionMetadata(actor) ? actor : await fetchActorDetail(actor.id, token);
     if (detail.isPublic !== true) {
       return null;
     }
@@ -97,6 +97,10 @@ export async function auditActorSecretSafely(actor, token) {
       reason: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+function hasVersionMetadata(actor) {
+  return Array.isArray(actor?.versions) && actor.versions.length > 0;
 }
 
 export function auditActorVersionSecret(actor, version) {
