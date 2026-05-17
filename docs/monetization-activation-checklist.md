@@ -89,6 +89,7 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 ### 2026-05-31
 
 - [ ] `EiUCYz2MjYUuGT6Xu` - `arbeitsagentur-jobs-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-31T08:10:00.000Z` with `apify-default-dataset-item` priced at `$0.0003/result`.
+- [ ] `kAdTwn5fkBCGKOQUq` - `google-videos-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-31T15:11:49.000Z` with `apify-default-dataset-item` priced at `$0.0002-$0.0003/result` by tier.
 
 ## Portfolio Backstop
 

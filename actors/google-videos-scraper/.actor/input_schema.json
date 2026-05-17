@@ -1,0 +1,112 @@
+{
+  "title": "Google Videos Scraper",
+  "description": "Search Google Videos with query, localization, pagination, safe search, and advanced Google SERP filters.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["q"],
+  "properties": {
+    "q": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Keyword or phrase to search in Google Videos.",
+      "editor": "textfield",
+      "prefill": "coffee brewing tutorial"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "Page number for pagination. Cannot be used together with start.",
+      "editor": "number",
+      "minimum": 1,
+      "default": 1
+    },
+    "start": {
+      "title": "Start Offset",
+      "type": "integer",
+      "description": "Zero-based Google result offset. Cannot be used together with page.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter interface language code, such as en, de, es, or fr.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
+      "default": "en"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code for localized Google Videos results, such as us, gb, de, or jp.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
+      "default": "us"
+    },
+    "google_domain": {
+      "title": "Google Domain",
+      "type": "string",
+      "description": "Google domain to query, such as google.com, google.de, or google.co.uk.",
+      "editor": "textfield",
+      "maxLength": 50,
+      "default": "google.com"
+    },
+    "location": {
+      "title": "Location",
+      "type": "string",
+      "description": "Location string for localized results. Cannot be used together with uule.",
+      "editor": "textfield",
+      "maxLength": 500
+    },
+    "uule": {
+      "title": "Encoded Location",
+      "type": "string",
+      "description": "Google UULE encoded location parameter. Cannot be used together with location.",
+      "editor": "textfield",
+      "maxLength": 500
+    },
+    "tbs": {
+      "title": "Advanced Filters",
+      "type": "string",
+      "description": "Google tbs filter syntax, such as qdr:d for past day, qdr:w for past week, qdr:m for past month, or qdr:y for past year.",
+      "editor": "textfield",
+      "maxLength": 500
+    },
+    "safe": {
+      "title": "Safe Search",
+      "type": "string",
+      "description": "Safe search filtering.",
+      "editor": "select",
+      "enum": ["active", "off"],
+      "enumTitles": ["Active", "Off"],
+      "default": "off"
+    },
+    "filter": {
+      "title": "Filter Similar Results",
+      "type": "integer",
+      "description": "Enable or disable Google's duplicate/similar-result filtering.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "nfpr": {
+      "title": "Exclude Auto-Correction",
+      "type": "integer",
+      "description": "Set to 1 to exclude auto-corrected query results.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "lr": {
+      "title": "Language Restriction",
+      "type": "string",
+      "description": "Restrict results to a language, such as lang_en.",
+      "editor": "textfield",
+      "maxLength": 200
+    }
+  }
+}
