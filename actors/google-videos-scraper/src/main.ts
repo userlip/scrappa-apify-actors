@@ -6,6 +6,7 @@ import type { GoogleVideosResponse } from './response-utils.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+const VIDEO_RESULT_CHARGE_EVENT = 'apify-default-dataset-item';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -27,9 +28,26 @@ async function main(): Promise<void> {
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
         const response = await client.get<GoogleVideosResponse>('/google/videos', params);
         const videoResults = extractVideoResults(response);
+        const datasetItems = videoResults.map((result) => enrichResult(result, params));
 
-        if (videoResults.length > 0) {
-            await Actor.pushData(videoResults.map((result) => enrichResult(result, params)));
+        if (datasetItems.length > 0) {
+            const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
+            if (isPayPerEvent) {
+                const chargeResult = await Actor.pushData(datasetItems, VIDEO_RESULT_CHARGE_EVENT);
+                if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
+                    const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${datasetItems.length} Google Videos results; OUTPUT was not written.`;
+                    console.log(statusMessage, JSON.stringify({
+                        event: VIDEO_RESULT_CHARGE_EVENT,
+                        charged_count: chargeResult.chargedCount,
+                        requested_count: datasetItems.length,
+                    }));
+                    await Actor.exit({ statusMessage });
+                    return;
+                }
+            } else {
+                await Actor.pushData(datasetItems);
+            }
+
             console.log(`Found ${videoResults.length} video results`);
         } else {
             console.log('No Google Videos results found for this request');
