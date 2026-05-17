@@ -3,11 +3,11 @@ export interface ArbeitsagenturJobsInput {
     wo?: string;
     berufsfeld?: string;
     arbeitgeber?: string;
-    angebotsart?: 1 | 2 | 4 | 34 | number;
+    angebotsart?: number;
     arbeitszeit?: string;
-    befristung?: 1 | 2 | number;
+    befristung?: number;
     veroeffentlichtseit?: number;
-    umkreis?: 10 | 25 | 50 | 100 | 150 | 200 | number;
+    umkreis?: number;
     zeitarbeit?: boolean;
     pav?: boolean;
     page?: number;

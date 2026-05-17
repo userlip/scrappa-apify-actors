@@ -34,8 +34,8 @@ export interface ArbeitsagenturDatasetJob extends ArbeitsagenturJob {
     job_url: string | null;
     reference_number: string | null;
     distance_km: string | number | null;
-    latitude: unknown;
-    longitude: unknown;
+    latitude: number | null;
+    longitude: number | null;
 }
 
 export interface ArbeitsagenturJobsData {
@@ -94,8 +94,8 @@ export function toArbeitsagenturDatasetJob(job: ArbeitsagenturJob): Arbeitsagent
         job_url: job.externeUrl ?? null,
         reference_number: job.refnr ?? null,
         distance_km: location.entfernung ?? null,
-        latitude: coordinates.lat ?? null,
-        longitude: coordinates.lon ?? null,
+        latitude: getNumber(coordinates.lat),
+        longitude: getNumber(coordinates.lon),
     };
 }
 
@@ -120,4 +120,8 @@ function getLocationParts(location: ArbeitsagenturJob['arbeitsort']): Arbeitsage
     }
 
     return location;
+}
+
+function getNumber(value: unknown): number | null {
+    return typeof value === 'number' ? value : null;
 }

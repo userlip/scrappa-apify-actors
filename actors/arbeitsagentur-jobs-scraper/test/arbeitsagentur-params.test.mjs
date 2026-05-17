@@ -47,6 +47,13 @@ test('filters undefined values from Arbeitsagentur jobs parameters', () => {
     assert.deepEqual(buildArbeitsagenturJobsParams({ was: undefined, wo: undefined, size: undefined }), {});
 });
 
+test('preserves false boolean filters in Arbeitsagentur jobs parameters', () => {
+    assert.deepEqual(buildArbeitsagenturJobsParams({ zeitarbeit: false, pav: false }), {
+        zeitarbeit: false,
+        pav: false,
+    });
+});
+
 test('uses the default search when input is empty', () => {
     assert.deepEqual(normalizeArbeitsagenturJobsInput({}), DEFAULT_ARBEITSAGENTUR_JOBS_INPUT);
 });

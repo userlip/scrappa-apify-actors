@@ -31,7 +31,7 @@
         "jobs": {
           "title": "Arbeitsagentur Jobs",
           "transformation": {
-            "fields": ["title", "occupation", "company_name", "location_formatted", "location_city", "postal_code", "region", "country", "published_date", "start_date", "job_url", "reference_number", "distance_km"]
+            "fields": ["title", "occupation", "company_name", "location_formatted", "location_city", "postal_code", "region", "country", "latitude", "longitude", "published_date", "start_date", "job_url", "reference_number", "distance_km"]
           },
           "display": {
             "component": "table",
@@ -44,6 +44,8 @@
               "postal_code": { "label": "Postal Code", "format": "text" },
               "region": { "label": "Region", "format": "text" },
               "country": { "label": "Country", "format": "text" },
+              "latitude": { "label": "Latitude", "format": "number" },
+              "longitude": { "label": "Longitude", "format": "number" },
               "published_date": { "label": "Published", "format": "text" },
               "start_date": { "label": "Start Date", "format": "text" },
               "job_url": { "label": "Job URL", "format": "link" },
