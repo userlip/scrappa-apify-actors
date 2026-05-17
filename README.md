@@ -52,6 +52,20 @@ APIFY_TOKEN=... pnpm audit:pricing --now 2026-05-17T15:00:00.000Z
 
 The audit exits with code `1` when a public actor has due paid `pricingInfos` but no active paid evidence in `pricingInfo` or `currentPricingInfo`, or when a public actor has no paid `pricingInfos`.
 
+### Auditing actor secrets
+
+Public actors that call Scrappa APIs must have `SCRAPPA_API_KEY` configured as a secret on their default Actor version. The secret audit resolves the default version from Apify `defaultRunOptions.build` and the available version `buildTag` values before checking env vars, so legacy `0.0` Actors and newer `1.0` Actors are both checked correctly:
+
+```bash
+APIFY_TOKEN=... pnpm audit:secrets
+```
+
+For machine-readable evidence, use:
+
+```bash
+APIFY_TOKEN=... pnpm audit:secrets --json --include-present
+```
+
 ### Creating a new actor
 
 1. Copy an existing actor as a template:

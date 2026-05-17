@@ -8,8 +8,10 @@
   },
   "scripts": {
     "audit:pricing": "node scripts/audit-apify-pricing.mjs",
+    "audit:secrets": "node scripts/audit-apify-secrets.mjs",
     "build": "pnpm -r build",
     "lint": "eslint . --ext .ts",
+    "test:audit-secrets": "node --test scripts/audit-apify-secrets.test.mjs",
     "test:audit-pricing": "node --test scripts/audit-apify-pricing.test.mjs",
     "typecheck": "pnpm -r typecheck"
   },
