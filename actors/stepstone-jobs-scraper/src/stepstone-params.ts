@@ -64,7 +64,7 @@ export function buildStepstoneJobsParams(input: StepstoneJobsInput): Record<stri
         ['radius', input.radius],
         ['sort', input.sort],
         ['job_type', input.job_type],
-        ['work_from_home', input.work_from_home],
+        ['work_from_home', input.work_from_home ?? false],
         ['date_posted', input.date_posted],
         ['page', input.page],
         ['limit', input.limit],
