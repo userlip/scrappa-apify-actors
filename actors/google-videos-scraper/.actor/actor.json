@@ -1,0 +1,57 @@
+{
+  "actorSpecification": 1,
+  "name": "google-videos-scraper",
+  "title": "Google Videos Scraper",
+  "description": "Search Google Videos with Scrappa. Extract video titles, source URLs, thumbnails, snippets, durations, dates, key moments, localization metadata, and pagination data.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "videos": {
+          "title": "Video Results",
+          "transformation": {
+            "fields": ["position", "title", "video_url", "displayed_link", "thumbnail_url", "snippet", "duration", "date", "key_moments_count", "request_q", "request_page", "request_start", "request_gl", "request_hl", "request_google_domain", "request_tbs", "request_safe"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "#", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "video_url": { "label": "Video URL", "format": "link" },
+              "displayed_link": { "label": "Displayed Link", "format": "text" },
+              "thumbnail_url": { "label": "Thumbnail", "format": "image" },
+              "snippet": { "label": "Snippet", "format": "text" },
+              "duration": { "label": "Duration", "format": "text" },
+              "date": { "label": "Date", "format": "text" },
+              "key_moments_count": { "label": "Key Moments", "format": "number" },
+              "request_q": { "label": "Query", "format": "text" },
+              "request_page": { "label": "Page", "format": "number" },
+              "request_start": { "label": "Start", "format": "number" },
+              "request_gl": { "label": "Country", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" },
+              "request_google_domain": { "label": "Google Domain", "format": "text" },
+              "request_tbs": { "label": "TBS", "format": "text" },
+              "request_safe": { "label": "Safe Search", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

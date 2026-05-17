@@ -101,12 +101,12 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-17. It lists all 59 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-17. It lists all 60 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 59 live `thescrappa` actors in Apify
-- 48 public `thescrappa` actors in Apify
-- 47 local actor manifests in this repo; all 47 are represented by live Apify actors
+- 60 live `thescrappa` actors in Apify
+- 49 public `thescrappa` actors in Apify
+- 48 local actor manifests in this repo; all 48 are represented by live Apify actors
 - 12 live actors missing a local source directory here
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
@@ -121,6 +121,7 @@ Current coverage in this repository:
 | `actors/google-hotels-search-scraper` | `google-hotels-search-scraper` | `Kc3rfsV2Hif23mctw` | Google Hotels Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-26 (`PAY_PER_EVENT`, default dataset hotel result at $0.0002/result); verify activation |
 | `actors/google-images-scraper` | `google-images-scraper` | `MrbqFgdpNTQcRW0Vt` | Google Images Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-24 (`PAY_PER_EVENT`); verify activation |
 | `actors/google-jobs-scraper` | `google-jobs-scraper` | `4DwyH8vZcinXWrHBA` | Google Jobs Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
+| `actors/google-videos-scraper` | `google-videos-scraper` | `kAdTwn5fkBCGKOQUq` | Google Videos Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `Ca8I8MvC2mh6a5bxo` succeeded with 11 dataset items | Scheduled 2026-05-31 (`PAY_PER_EVENT`, default dataset video result at $0.0002-$0.0003/result by tier); Apify blocked immediate pricing with two-week lead time |
 | `actors/google-maps-advanced-search-scraper` | `google-maps-advanced-search-scraper` | `DT8bUdm2Vn4HjlyDo` | Google Maps Advanced Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-21 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/google-maps-autocomplete-scraper` | `google-maps-autocomplete-scraper` | `hhS8GkceJHFiexWe6` | Google Maps Autocomplete Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-22 (`PAY_PER_EVENT`); verify `currentPricingInfo` |
 | `actors/google-maps-business-details-scraper` | `google-maps-business-details-scraper` | `JCqaAyY3Vy7K5UoRd` | Google Maps Business Details Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-22 (`PAY_PER_EVENT`); verify `currentPricingInfo` |
