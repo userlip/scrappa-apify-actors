@@ -96,7 +96,7 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-17 baseline is 59 live actors, 48 public actors, 47 local actor manifests, and 12 missing local source directories.
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-17 baseline is 60 live actors, 49 public actors, 48 local actor manifests, and 12 missing local source directories.
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.
