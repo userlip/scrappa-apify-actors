@@ -1,0 +1,20 @@
+# configurations
+.idea
+.vscode
+.zed
+
+# crawlee and apify storage folders
+apify_storage
+crawlee_storage
+storage
+
+# generated and installed files
+dist
+node_modules
+
+# local environment files
+.env
+.env.*
+
+# git folder
+.git

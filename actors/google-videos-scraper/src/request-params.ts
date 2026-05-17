@@ -17,7 +17,7 @@ export interface GoogleVideosInput {
 const SAFE_VALUES = ['active', 'off'] as const;
 
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
-    if (value === undefined || value === null || value === '') {
+    if (value === undefined || value === null) {
         return undefined;
     }
 
