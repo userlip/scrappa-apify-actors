@@ -70,6 +70,7 @@ async function main(): Promise<void> {
         let pagesFetched = 0;
         let savedShops = 0;
         let statusMessage: string | null = null;
+        let latestMetaData: TrustedShopsSearchResponse['metaData'] | undefined;
 
         for (let offset = 0; offset < plan.maxPages; offset += 1) {
             const page = plan.startPage + offset;
@@ -80,6 +81,7 @@ async function main(): Promise<void> {
                 attempts: SCRAPPA_MAX_ATTEMPTS,
             });
             pagesFetched += 1;
+            latestMetaData = response.metaData;
 
             const shops = getTrustedShops(response).map((shop) => buildTrustedShopsDatasetItem(shop, params, response));
             if (shops.length > 0) {
@@ -104,7 +106,6 @@ async function main(): Promise<void> {
             }
         }
 
-        const lastResponse = responses[responses.length - 1];
         const output = {
             request: {
                 ...plan.baseParams,
@@ -115,8 +116,8 @@ async function main(): Promise<void> {
             responses_saved: responses.length,
             shops_extracted: savedShops,
             status_message: statusMessage,
-            total_shop_count: lastResponse?.metaData?.totalShopCount ?? null,
-            total_page_count: lastResponse?.metaData?.totalPageCount ?? null,
+            total_shop_count: latestMetaData?.totalShopCount ?? null,
+            total_page_count: latestMetaData?.totalPageCount ?? null,
             responses,
         };
 

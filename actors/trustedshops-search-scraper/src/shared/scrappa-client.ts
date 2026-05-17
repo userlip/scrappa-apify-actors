@@ -38,7 +38,20 @@ export function isRetryableScrappaError(error: unknown): boolean {
         return false;
     }
 
-    return /Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message);
+    if (/Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message)) {
+        return true;
+    }
+
+    if (error instanceof TypeError && /fetch failed/i.test(error.message)) {
+        return true;
+    }
+
+    const cause = error.cause;
+    if (cause instanceof Error) {
+        return /\b(?:ECONNRESET|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|EAI_AGAIN)\b/i.test(cause.message);
+    }
+
+    return false;
 }
 
 export class ScrappaClient {
