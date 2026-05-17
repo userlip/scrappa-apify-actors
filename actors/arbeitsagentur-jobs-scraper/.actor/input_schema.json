@@ -1,0 +1,105 @@
+{
+  "title": "Arbeitsagentur Jobs Scraper ($0.30/1k results)",
+  "description": "Search official German Federal Employment Agency job listings.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "was": {
+      "title": "What",
+      "type": "string",
+      "description": "Job title, keyword, or occupation, for example Software Entwickler, Pflegefachkraft, Ausbildung, or Elektriker.",
+      "editor": "textfield",
+      "prefill": "Software Entwickler"
+    },
+    "wo": {
+      "title": "Where",
+      "type": "string",
+      "description": "City, postal code, or region, for example Berlin, Hamburg, Munich, or 10115.",
+      "editor": "textfield",
+      "prefill": "Berlin"
+    },
+    "umkreis": {
+      "title": "Search Radius",
+      "type": "integer",
+      "description": "Search radius in kilometers around the selected location.",
+      "editor": "number",
+      "minimum": 10,
+      "maximum": 200,
+      "default": 25
+    },
+    "angebotsart": {
+      "title": "Offer Type",
+      "type": "integer",
+      "description": "Arbeitsagentur offer type.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 34
+    },
+    "arbeitszeit": {
+      "title": "Working Hours",
+      "type": "string",
+      "description": "Working-hours filters. Use one or semicolon-separated values: vz full-time, tz part-time, snw shift/night/weekend, ho home office, mj mini-job.",
+      "editor": "textfield",
+      "prefill": "vz;ho"
+    },
+    "veroeffentlichtseit": {
+      "title": "Published Since",
+      "type": "integer",
+      "description": "Only return jobs published in the selected number of days.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "berufsfeld": {
+      "title": "Occupational Field",
+      "type": "string",
+      "description": "Optional Arbeitsagentur occupational field code.",
+      "editor": "textfield"
+    },
+    "arbeitgeber": {
+      "title": "Employer",
+      "type": "string",
+      "description": "Filter by employer or company name.",
+      "editor": "textfield"
+    },
+    "befristung": {
+      "title": "Contract Type",
+      "type": "integer",
+      "description": "Contract duration filter.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 2
+    },
+    "zeitarbeit": {
+      "title": "Temporary Work",
+      "type": "boolean",
+      "description": "Include temporary agency jobs.",
+      "editor": "checkbox"
+    },
+    "pav": {
+      "title": "Private Agencies",
+      "type": "boolean",
+      "description": "Include listings from private employment agencies.",
+      "editor": "checkbox"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "Arbeitsagentur result page to fetch. Pagination starts at 1.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 1
+    },
+    "size": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "description": "Number of jobs to return in one request. Scrappa accepts 1 to 100.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    }
+  },
+  "required": []
+}
