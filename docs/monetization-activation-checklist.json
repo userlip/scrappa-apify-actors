@@ -6,10 +6,11 @@
   "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled in May 2026, amended with newly published actors that require exact-date activation verification.",
   "inventoryBackstop": {
     "checkedAt": "2026-05-17",
-    "liveActorCount": 58,
-    "localActorManifestCount": 46,
+    "liveActorCount": 59,
+    "publicActorCount": 48,
+    "localActorManifestCount": 47,
     "missingLocalSourceCount": 12,
-    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale 57/45/12 coverage numbers or miss Immowelt."
+    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale 58/46/12 coverage numbers or miss Arbeitsagentur."
   },
   "verificationRules": [
     "Fetch GET /v2/acts/{actorId} on or after scheduledActivationAt.",
@@ -32,6 +33,7 @@
     { "actorId": "O1ltDU9qk4adR2x86", "slug": "youtube-api-search-by-category", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "ziD2fUoLsdzKlc6zR", "slug": "youtube-api-search-data", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "oecJ81oeff1KozCtd", "slug": "youtube-api-search-suggestions", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT" },
+    { "actorId": "T7ddx0tgVCwMHi9ET", "slug": "youtube-api-trending-videos", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "ZT2Z352FLhgqgtMrg", "slug": "youtube-api-video-comments", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "ElkkSkWZ7xAaOqsr4", "slug": "tiktok-profile-scraper", "scheduledActivationAt": "2026-05-19T10:40:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "iSnxQQAvqnI0ZKL9F", "slug": "tiktok-user-posts-scraper", "scheduledActivationAt": "2026-05-19T10:40:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
@@ -44,7 +46,8 @@
     { "actorId": "H2dZTreGZ7s3XJsQ7", "slug": "tiktok-hashtag-posts-scraper", "scheduledActivationAt": "2026-05-24T00:00:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "MrbqFgdpNTQcRW0Vt", "slug": "google-images-scraper", "scheduledActivationAt": "2026-05-24T07:16:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "WvbWRqj67ve6fwwWZ", "slug": "google-finance-markets-scraper", "scheduledActivationAt": "2026-05-29T08:13:17.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
-    { "actorId": "DUUlFa5LGId75vOI0", "slug": "stepstone-jobs-scraper", "scheduledActivationAt": "2026-05-29T11:31:58.000Z", "expectedPricingModel": "PAY_PER_EVENT" }
+    { "actorId": "DUUlFa5LGId75vOI0", "slug": "stepstone-jobs-scraper", "scheduledActivationAt": "2026-05-29T11:31:58.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
+    { "actorId": "EiUCYz2MjYUuGT6Xu", "slug": "arbeitsagentur-jobs-scraper", "scheduledActivationAt": "2026-05-31T08:10:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" }
   ],
   "privateScheduledActorsExcludedUntilPublic": [
     { "actorId": "Y3mKYlGNhsrBE7aZO", "slug": "youtube-api-channel-podcasts", "scheduledActivationAt": "2026-05-17T14:44:02.772Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
@@ -57,7 +60,6 @@
     { "actorId": "N5ol78TtqiMj4MtM6", "slug": "youtube-api-hashtags", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
     { "actorId": "hueJrwkrbo20Ufrna", "slug": "youtube-api-playlists", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
     { "actorId": "eKzA6GhEOJACIiCUW", "slug": "youtube-api-related-videos", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
-    { "actorId": "T7ddx0tgVCwMHi9ET", "slug": "youtube-api-trending-videos", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
     { "actorId": "fq5Kq9OfBRWYu9go1", "slug": "youtube-api-video-chapters", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false }
   ]
 }

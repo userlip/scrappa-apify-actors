@@ -4,8 +4,9 @@ Last live metadata check: 2026-05-17 via Apify Actor list/detail API for the `Th
 
 Current inventory backstop for every activation audit:
 
-- 58 live `thescrappa` actors in Apify.
-- 46 local actor manifests in this repo; all 46 are represented by live Apify actors.
+- 59 live `thescrappa` actors in Apify.
+- 48 public `thescrappa` actors in Apify.
+- 47 local actor manifests in this repo; all 47 are represented by live Apify actors.
 - 12 live actors still missing local source directories here.
 
 This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation in May 2026, amended with newly published actors that now have scheduled May 2026 pricing. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
@@ -52,6 +53,7 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 - [ ] `O1ltDU9qk4adR2x86` - `youtube-api-search-by-category` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:43:29.941Z`.
 - [ ] `ziD2fUoLsdzKlc6zR` - `youtube-api-search-data` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:43:29.941Z`.
 - [ ] `oecJ81oeff1KozCtd` - `youtube-api-search-suggestions` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:44:29.173Z`.
+- [ ] `T7ddx0tgVCwMHi9ET` - `youtube-api-trending-videos` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:44:29.173Z`.
 - [ ] `ZT2Z352FLhgqgtMrg` - `youtube-api-video-comments` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:44:29.173Z`.
 
 ### 2026-05-19
@@ -84,12 +86,16 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 - [ ] `DUUlFa5LGId75vOI0` - `stepstone-jobs-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-29T11:31:58.000Z` with `apify-default-dataset-item` priced at `$0.0003/result`.
 - [ ] `WvbWRqj67ve6fwwWZ` - `google-finance-markets-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-29T08:13:17.000Z`.
 
+### 2026-05-31
+
+- [ ] `EiUCYz2MjYUuGT6Xu` - `arbeitsagentur-jobs-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-31T08:10:00.000Z` with `apify-default-dataset-item` priced at `$0.0003/result`.
+
 ## Portfolio Backstop
 
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-17 baseline is 58 live actors, 46 local actor manifests, and 12 missing local source directories.
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-17 baseline is 59 live actors, 48 public actors, 47 local actor manifests, and 12 missing local source directories.
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.
@@ -112,5 +118,4 @@ They are intentionally excluded from the public activation queue above and must 
 - `N5ol78TtqiMj4MtM6` - `youtube-api-hashtags`
 - `hueJrwkrbo20Ufrna` - `youtube-api-playlists`
 - `eKzA6GhEOJACIiCUW` - `youtube-api-related-videos`
-- `T7ddx0tgVCwMHi9ET` - `youtube-api-trending-videos`
 - `fq5Kq9OfBRWYu9go1` - `youtube-api-video-chapters`

@@ -87,17 +87,19 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-17. It lists all 58 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-17. It lists all 59 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 58 live `thescrappa` actors in Apify
-- 46 local actor manifests in this repo; all 46 are represented by live Apify actors
+- 59 live `thescrappa` actors in Apify
+- 48 public `thescrappa` actors in Apify
+- 47 local actor manifests in this repo; all 47 are represented by live Apify actors
 - 12 live actors missing a local source directory here
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage | Pricing follow-up |
 |---|---|---|---|---|---|
+| `actors/arbeitsagentur-jobs-scraper` | `arbeitsagentur-jobs-scraper` | `EiUCYz2MjYUuGT6Xu` | Arbeitsagentur Jobs Scraper ($0.30/1k results) | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-31 (`PAY_PER_EVENT`, default dataset job result at $0.0003/result); verify activation |
 | `actors/google-finance-quote-scraper` | `google-finance-quote-scraper` | `aE7VcbT6CIWBxob7U` | Google Finance Quote Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-23 (`PAY_PER_EVENT`); verify activation |
 | `actors/google-finance-historical-prices-scraper` | `google-finance-historical-prices-scraper` | `zqckCpYtvPvxb2oxl` | Google Finance Historical Prices Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Public with `pricingInfos` active from 2026-05-13 (`PAY_PER_EVENT`, `price-point` at $0.0002/result); verify `currentPricingInfo` if Apify API begins populating it |
 | `actors/google-finance-markets-scraper` | `google-finance-markets-scraper` | `WvbWRqj67ve6fwwWZ` | Google Finance Markets Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `DzKsppuCjSGCv6vMb` succeeded | Scheduled 2026-05-29 (`PAY_PER_EVENT`, `market-item` at $0.0002/result); Apify blocks immediate pricing with two-week lead time |
