@@ -47,6 +47,62 @@ test('resolveDefaultVersionNumber falls back to the only available version', () 
   assert.equal(versionNumber, '0.0');
 });
 
+test('resolveDefaultVersionNumber maps concrete build number strings to versions', () => {
+  const versionNumber = resolveDefaultVersionNumber({
+    id: 'concrete-build-actor',
+    defaultRunOptions: { build: '1.0.15' },
+    versions: [
+      { versionNumber: '0.0', buildTag: 'legacy' },
+      { versionNumber: '1.0', buildTag: 'latest' },
+    ],
+  });
+
+  assert.equal(versionNumber, '1.0');
+});
+
+test('resolveDefaultVersionNumber maps numeric build identifiers to versions', () => {
+  const versionNumber = resolveDefaultVersionNumber({
+    id: 'numeric-build-actor',
+    defaultRunOptions: { build: 10000015 },
+    versions: [
+      { versionNumber: '0.0', buildTag: 'legacy' },
+      { versionNumber: '1.0', buildTag: 'latest' },
+    ],
+  });
+
+  assert.equal(versionNumber, '1.0');
+});
+
+test('resolveDefaultVersionNumber maps taggedBuild build numbers to versions', () => {
+  const versionNumber = resolveDefaultVersionNumber({
+    id: 'tagged-build-actor',
+    defaultRunOptions: { build: '10000015' },
+    taggedBuilds: {
+      latest: {
+        buildNumber: '1.0.15',
+        buildNumberInt: 10000015,
+      },
+    },
+    versions: [
+      { versionNumber: '0.0', buildTag: 'legacy' },
+      { versionNumber: '1.0', buildTag: 'latest' },
+    ],
+  });
+
+  assert.equal(versionNumber, '1.0');
+});
+
+test('resolveDefaultVersionNumber rejects unresolvable default builds when multiple versions exist', () => {
+  assert.throws(() => resolveDefaultVersionNumber({
+    id: 'ambiguous-build-actor',
+    defaultRunOptions: { build: 'missing-tag' },
+    versions: [
+      { versionNumber: '0.0', buildTag: 'legacy' },
+      { versionNumber: '1.0', buildTag: 'latest' },
+    ],
+  }), /default build missing-tag does not match/);
+});
+
 test('resolveDefaultVersionNumber rejects versions without version numbers', () => {
   assert.throws(() => resolveDefaultVersionNumber({
     id: 'invalid-version-actor',

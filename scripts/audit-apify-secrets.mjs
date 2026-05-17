@@ -140,14 +140,16 @@ export function resolveDefaultVersionNumber(actor) {
 
   const defaultBuild = actor?.defaultRunOptions?.build;
   if (defaultBuild) {
-    const matchingVersion = versions.find((version) => version.buildTag === defaultBuild);
-    if (matchingVersion?.versionNumber) {
-      return matchingVersion.versionNumber;
+    const versionNumber = resolveVersionNumberFromBuild(actor, defaultBuild);
+    if (versionNumber) {
+      return versionNumber;
     }
-  }
 
-  if (versions.length === 1 && versions[0]?.versionNumber) {
-    return versions[0].versionNumber;
+    if (versions.length === 1 && versions[0]?.versionNumber) {
+      return versions[0].versionNumber;
+    }
+
+    throw new Error(`Actor ${actor?.id || actor?.name || 'unknown'} default build ${defaultBuild} does not match any available version.`);
   }
 
   const latestVersion = versions.find((version) => version.buildTag === 'latest');
@@ -161,6 +163,61 @@ export function resolveDefaultVersionNumber(actor) {
   }
 
   throw new Error(`Actor ${actor?.id || actor?.name || 'unknown'} has no versions with versionNumber.`);
+}
+
+function resolveVersionNumberFromBuild(actor, build) {
+  const versions = Array.isArray(actor?.versions) ? actor.versions : [];
+  const buildString = String(build);
+
+  const directVersion = versions.find((version) => {
+    return version.buildTag === buildString || version.versionNumber === buildString;
+  });
+  if (directVersion?.versionNumber) {
+    return directVersion.versionNumber;
+  }
+
+  const taggedBuilds = actor?.taggedBuilds && typeof actor.taggedBuilds === 'object' ? actor.taggedBuilds : {};
+  for (const [tag, taggedBuild] of Object.entries(taggedBuilds)) {
+    if (tag !== buildString && !matchesBuildNumber(taggedBuild, buildString)) {
+      continue;
+    }
+
+    const versionNumber = getVersionNumberFromBuildNumber(taggedBuild?.buildNumber, versions);
+    if (versionNumber) {
+      return versionNumber;
+    }
+  }
+
+  return getVersionNumberFromBuildNumber(buildString, versions);
+}
+
+function matchesBuildNumber(taggedBuild, buildString) {
+  return taggedBuild?.buildNumber === buildString ||
+    String(taggedBuild?.buildNumberInt ?? '') === buildString;
+}
+
+function getVersionNumberFromBuildNumber(buildNumber, versions) {
+  const buildString = String(buildNumber || '');
+  if (!buildString) {
+    return null;
+  }
+
+  const buildVersion = buildString.match(/^(\d+\.\d+)\.\d+$/)?.[1];
+  if (buildVersion && versions.some((version) => version.versionNumber === buildVersion)) {
+    return buildVersion;
+  }
+
+  const buildNumberInt = Number(buildString);
+  if (Number.isSafeInteger(buildNumberInt) && buildNumberInt >= 0) {
+    const major = Math.floor(buildNumberInt / 10000000);
+    const minor = Math.floor((buildNumberInt % 10000000) / 100000);
+    const versionNumber = `${major}.${minor}`;
+    if (versions.some((version) => version.versionNumber === versionNumber)) {
+      return versionNumber;
+    }
+  }
+
+  return null;
 }
 
 function compareVersionNumbers(left, right) {
