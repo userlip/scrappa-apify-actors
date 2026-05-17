@@ -48,6 +48,7 @@ export function extractVideoResults(response: unknown): GoogleVideoResult[] {
 }
 
 export function enrichResult(result: GoogleVideoResult, params: Record<string, unknown>): Record<string, unknown> {
+    // Scrappa's Google Videos payload uses link for the destination URL and video_link for Google's redirect URL.
     return {
         ...result,
         position: result.position ?? null,
