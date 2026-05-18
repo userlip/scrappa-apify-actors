@@ -56,7 +56,7 @@ Each doctor profile is saved as one dataset item:
 }
 ```
 
-The `OUTPUT` record includes the request summary, pages fetched, doctor count, reported Jameda totals, and raw Scrappa responses for the fetched pages.
+The `OUTPUT` record includes the request summary, pages fetched, doctor count, reported Jameda totals, and raw Scrappa responses for the fetched pages. Runs that fetch many pages can create a larger `OUTPUT` record because each raw Scrappa page response is retained there for debugging and auditability.
 
 ## Notes
 
