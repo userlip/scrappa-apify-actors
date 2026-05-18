@@ -21,7 +21,7 @@ interface PushChargedItemsResult {
     statusMessage: string | null;
 }
 
-async function pushChargedItems(items: Record<string, unknown>[]): Promise<PushChargedItemsResult> {
+async function pushChargedItems(items: Record<string, unknown>[], page: number): Promise<PushChargedItemsResult> {
     if (items.length === 0) {
         return { savedCount: 0, statusMessage: null };
     }
@@ -35,7 +35,7 @@ async function pushChargedItems(items: Record<string, unknown>[]): Promise<PushC
     const chargeResult = await Actor.pushData(items, DOCTOR_RESULT_CHARGE_EVENT);
     if (chargeResult.eventChargeLimitReached) {
         const savedCount = Math.min(chargeResult.chargedCount, items.length);
-        const statusMessage = `Charge limit reached after saving ${savedCount} of ${items.length} Jameda doctor results on the current page.`;
+        const statusMessage = `Charge limit reached after saving ${savedCount} of ${items.length} Jameda doctor results on page ${page}.`;
         console.log(statusMessage, JSON.stringify({
             event: DOCTOR_RESULT_CHARGE_EVENT,
             charged_count: chargeResult.chargedCount,
@@ -87,7 +87,7 @@ async function main(): Promise<void> {
             responses.push(response);
 
             if (doctors.length > 0) {
-                const result = await pushChargedItems(doctors);
+                const result = await pushChargedItems(doctors, page);
                 savedDoctors += result.savedCount;
                 console.log(`Found ${doctors.length} doctor result(s) on page ${page}; saved ${result.savedCount}`);
                 if (result.statusMessage) {
