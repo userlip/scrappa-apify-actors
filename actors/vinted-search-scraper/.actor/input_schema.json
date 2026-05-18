@@ -1,0 +1,111 @@
+{
+  "title": "Vinted Search Scraper",
+  "description": "Search Vinted marketplace listings by keyword, country, category, brand, size, price range, and sort order.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Vinted search text, for example nike shoes, zara dress, or vintage jacket. Leave empty to browse listings by filters.",
+      "editor": "textfield",
+      "maxLength": 500,
+      "prefill": "nike shoes"
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Vinted country market.",
+      "editor": "select",
+      "enum": ["FR", "DE", "ES", "IT", "NL", "BE", "AT", "PL", "CZ", "LT", "LU", "SK", "HU", "RO", "PT", "SE", "DK", "FI", "US"],
+      "enumTitles": ["France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Austria", "Poland", "Czech Republic", "Lithuania", "Luxembourg", "Slovakia", "Hungary", "Romania", "Portugal", "Sweden", "Denmark", "Finland", "United States"],
+      "default": "FR"
+    },
+    "page": {
+      "title": "Start Page",
+      "type": "integer",
+      "description": "One-based Vinted search results page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 999,
+      "default": 1
+    },
+    "per_page": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "description": "Number of listings to request per page. Scrappa allows up to 100.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 24
+    },
+    "max_pages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Number of result pages to fetch, starting from Start Page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 1
+    },
+    "order": {
+      "title": "Sort Order",
+      "type": "string",
+      "description": "Vinted result sort order.",
+      "editor": "select",
+      "enum": ["relevance", "newest_first", "price_low_to_high", "price_high_to_low"],
+      "enumTitles": ["Relevance", "Newest First", "Price Low to High", "Price High to Low"],
+      "default": "relevance"
+    },
+    "catalog_ids": {
+      "title": "Catalog IDs",
+      "type": "string",
+      "description": "Comma-separated Vinted category IDs.",
+      "editor": "textfield"
+    },
+    "brand_ids": {
+      "title": "Brand IDs",
+      "type": "string",
+      "description": "Comma-separated Vinted brand IDs.",
+      "editor": "textfield"
+    },
+    "size_ids": {
+      "title": "Size IDs",
+      "type": "string",
+      "description": "Comma-separated Vinted size IDs.",
+      "editor": "textfield"
+    },
+    "color_ids": {
+      "title": "Color IDs",
+      "type": "string",
+      "description": "Comma-separated Vinted color IDs.",
+      "editor": "textfield"
+    },
+    "material_ids": {
+      "title": "Material IDs",
+      "type": "string",
+      "description": "Comma-separated Vinted material IDs.",
+      "editor": "textfield"
+    },
+    "status_ids": {
+      "title": "Condition IDs",
+      "type": "string",
+      "description": "Comma-separated Vinted item condition/status IDs.",
+      "editor": "textfield"
+    },
+    "price_from": {
+      "title": "Minimum Price",
+      "type": "number",
+      "description": "Minimum listing price.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "price_to": {
+      "title": "Maximum Price",
+      "type": "number",
+      "description": "Maximum listing price.",
+      "editor": "number",
+      "minimum": 0
+    }
+  }
+}
