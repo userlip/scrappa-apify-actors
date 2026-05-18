@@ -59,10 +59,7 @@ async function main(): Promise<void> {
             throw new Error('SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings.');
         }
 
-        const input = await Actor.getInput<VintedSearchInput>();
-        if (!input) {
-            throw new Error('Input is required');
-        }
+        const input = await Actor.getInput<VintedSearchInput>() ?? {};
 
         const plan = buildVintedSearchPlan(input);
         console.log(`Searching Vinted for ${describeVintedSearchRequest(plan)}`);

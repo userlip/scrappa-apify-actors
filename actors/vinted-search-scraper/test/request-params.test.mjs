@@ -32,6 +32,21 @@ test('builds a default Vinted search plan', () => {
     });
 });
 
+test('builds default plan from empty input', () => {
+    const plan = buildVintedSearchPlan({});
+
+    assert.deepEqual(plan, {
+        baseParams: {
+            country: 'FR',
+            per_page: 24,
+        },
+        startPage: 1,
+        perPage: 24,
+        maxPages: 1,
+    });
+    assert.equal(describeVintedSearchRequest(plan), 'all listings in FR (page 1, 24/page)');
+});
+
 test('normalizes country, numeric strings, filters, and encoded query', () => {
     const plan = buildVintedSearchPlan({
         query: 'zara%20dress',
