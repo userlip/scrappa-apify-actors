@@ -1,0 +1,55 @@
+{
+  "actorSpecification": 1,
+  "name": "jameda-search-scraper",
+  "title": "Jameda Search Scraper",
+  "description": "Search Jameda doctor profiles by specialty, doctor name, and German location, including ratings, review counts, addresses, profile URLs, and images.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "doctors": {
+          "title": "Doctors",
+          "transformation": {
+            "fields": ["name", "specialty", "rating", "review_count", "review_count_number", "address", "profile_url", "image_url", "request_q", "request_loc", "request_page", "request_per_page", "total_results", "total_pages", "has_next_page"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": { "label": "Name", "format": "text" },
+              "specialty": { "label": "Specialty", "format": "text" },
+              "rating": { "label": "Rating", "format": "text" },
+              "review_count": { "label": "Reviews", "format": "text" },
+              "review_count_number": { "label": "Review Count", "format": "number" },
+              "address": { "label": "Address", "format": "text" },
+              "profile_url": { "label": "Jameda Profile", "format": "link" },
+              "image_url": { "label": "Image", "format": "image" },
+              "request_q": { "label": "Request Query", "format": "text" },
+              "request_loc": { "label": "Location", "format": "text" },
+              "request_page": { "label": "Page", "format": "number" },
+              "request_per_page": { "label": "Per Page", "format": "number" },
+              "total_results": { "label": "Total Results", "format": "number" },
+              "total_pages": { "label": "Total Pages", "format": "number" },
+              "has_next_page": { "label": "Has Next Page", "format": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "title": "Jameda Search Scraper",
+  "description": "Search Jameda doctor profiles by specialty, doctor name, and optional German location.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["q"],
+  "properties": {
+    "q": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Doctor name, specialty, symptom, or medical service to search on Jameda.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 255,
+      "prefill": "Zahnarzt"
+    },
+    "loc": {
+      "title": "Location",
+      "type": "string",
+      "description": "Optional German city or location.",
+      "editor": "textfield",
+      "maxLength": 100,
+      "prefill": "Berlin"
+    },
+    "page": {
+      "title": "Start Page",
+      "type": "integer",
+      "description": "One-based Jameda search results page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 1
+    },
+    "per_page": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "description": "Maximum doctor results to save per page. Jameda returns up to 28 results per page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 28,
+      "default": 28
+    },
+    "max_pages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Number of result pages to fetch, starting from Start Page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 1
+    }
+  }
+}
