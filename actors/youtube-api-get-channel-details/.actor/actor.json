@@ -1,0 +1,12 @@
+{
+    "actorSpecification": 1,
+    "name": "youtube-api-get-channel-details",
+    "title": "YouTube API Get Channel Details",
+    "description": "Fetch YouTube channel details by channel ID.",
+    "version": "0.0",
+    "meta": {
+        "templateId": "js-start"
+    },
+    "input": "./input_schema.json",
+    "dockerfile": "../Dockerfile"
+}
