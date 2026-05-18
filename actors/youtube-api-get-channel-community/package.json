@@ -1,0 +1,19 @@
+{
+    "name": "youtube-api-get-channel-community",
+    "version": "0.0.1",
+    "type": "module",
+    "description": "Fetch YouTube channel community posts by channel ID.",
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "dependencies": {
+        "apify": "^3.4.2",
+        "axios": "^1.5.0"
+    },
+    "scripts": {
+        "start": "node ./src/main.js",
+        "test": "node --check ./src/main.js"
+    },
+    "author": "Scrappa",
+    "license": "ISC"
+}

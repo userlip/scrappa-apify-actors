@@ -1,0 +1,13 @@
+{
+    "actorSpecification": 1,
+    "name": "youtube-api-get-channel-community",
+    "title": "YouTube Channel Community Scraper",
+    "description": "Fetch community posts for a YouTube channel by channel ID and continuation token.",
+    "version": "0.0",
+    "buildTag": "latest",
+    "input": "./input_schema.json",
+    "dockerfile": "./Dockerfile",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}
