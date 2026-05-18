@@ -1,0 +1,83 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": ["string", "null"],
+        "title": "ID",
+        "description": "The YouTube community post ID."
+      },
+      "text": {
+        "type": ["string", "null"],
+        "title": "Text",
+        "description": "The community post text."
+      },
+      "publishedTime": {
+        "type": ["string", "null"],
+        "title": "Published",
+        "description": "The human-readable publish time."
+      },
+      "likeCount": {
+        "type": ["integer", "number", "string", "null"],
+        "title": "Like count",
+        "description": "The post like count."
+      },
+      "commentCount": {
+        "type": ["integer", "number", "string", "null"],
+        "title": "Comment count",
+        "description": "The post comment count."
+      },
+      "attachments": {
+        "type": ["object", "null"],
+        "title": "Attachments",
+        "description": "Images, videos, polls, quizzes, or other attachments returned with the post."
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "YouTube Channel Community Posts",
+      "transformation": {
+        "fields": [
+          "id",
+          "text",
+          "publishedTime",
+          "likeCount",
+          "commentCount",
+          "attachments"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "id": {
+            "label": "ID",
+            "format": "text"
+          },
+          "text": {
+            "label": "Text",
+            "format": "text"
+          },
+          "publishedTime": {
+            "label": "Published",
+            "format": "text"
+          },
+          "likeCount": {
+            "label": "Likes",
+            "format": "number"
+          },
+          "commentCount": {
+            "label": "Comments",
+            "format": "number"
+          },
+          "attachments": {
+            "label": "Attachments",
+            "format": "object"
+          }
+        }
+      }
+    }
+  }
+}

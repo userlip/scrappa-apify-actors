@@ -1,50 +1,51 @@
 import { Actor } from 'apify';
 import axios from 'axios';
 
-async function getChannelCommunity(id, continuation = '') {
-    // Validate that the required query parameter is present.
+const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+
+function errorMessage(error) {
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    if (rawMessage.includes('timeout') || rawMessage.includes('aborted')) {
+        return `Scrappa API request timed out after ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s`;
+    }
+
+    return rawMessage;
+}
+
+async function getChannelCommunity(input) {
+    const { id, continuation = '' } = input;
+
     if (!id) {
         throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');
     }
-    
-    // Construct the base API URL with required parameters
+
     let apiUrl = `https://ytapi.scrappa.co/channels/community?id=${encodeURIComponent(id)}`;
 
     if (continuation && typeof continuation === 'string' && continuation.trim() !== '') {
         apiUrl += `&continuation=${encodeURIComponent(continuation)}`;
     }
 
-    try {
-        console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl);
-        const data = response.data.posts;
-        
-        // Save the fetched data to the default dataset.
-        await Actor.pushData(data);
-        console.log(`Successfully fetched ${data.length} videos for query: ${id}`);
-        
-        // Log if there's a continuation token for next page
-        if (response.data.continuation) {
-            console.log(`Continuation token available for next page: ${response.data.continuation}`);
-        }
-    } catch (error) {
-        console.log()
-        console.error(`Failed to fetch videos for query: ${id}`, error.message);
-        throw error;
+    console.log(`Fetching from: ${apiUrl}`);
+    const response = await axios.get(apiUrl, {
+        timeout: SCRAPPA_REQUEST_TIMEOUT_MS,
+    });
+    const posts = response.data?.posts ?? [];
+
+    await Actor.pushData(posts);
+    console.log(`Successfully fetched ${posts.length} community post(s) for channel id: ${id}`);
+
+    if (response.data?.continuation) {
+        console.log(`Continuation token available for next page: ${response.data.continuation}`);
     }
 }
 
-// Main Actor logic
 Actor.main(async () => {
-    // The init() call configures the Actor for its environment.
-    await Actor.init();
-
-    const input = await Actor.getInput();
-    const { id, continuation } = input;
-
-    // Directly call the function with the input, as there is only one possible task.
-    await getChannelCommunity(id, continuation);
-
-    // Gracefully exit the Actor process.
-    await Actor.exit();
+    try {
+        const input = (await Actor.getInput()) ?? {};
+        await getChannelCommunity(input);
+    } catch (error) {
+        const message = errorMessage(error);
+        console.error(`Failed to fetch YouTube channel community posts: ${message}`);
+        await Actor.fail(message);
+    }
 });

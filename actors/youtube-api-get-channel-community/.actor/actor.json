@@ -1,12 +1,13 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-community",
-    "title": "Scrape single page in JavaScript",
-    "description": "Scrape data from single page with provided URL.",
+    "title": "YouTube Channel Community Scraper",
+    "description": "Fetch community posts for a YouTube channel by channel ID and continuation token.",
     "version": "0.0",
-    "meta": {
-        "templateId": "js-start"
-    },
+    "buildTag": "latest",
     "input": "./input_schema.json",
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "./Dockerfile",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
 }
