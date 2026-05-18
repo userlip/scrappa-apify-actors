@@ -1,0 +1,62 @@
+{
+  "actorSpecification": 1,
+  "name": "vinted-search-scraper",
+  "title": "Vinted Search Scraper",
+  "description": "Search Vinted secondhand fashion listings by keyword, country, brand, category, size, condition, price range, and sort order. Built for resale research, price monitoring, and marketplace analytics.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 420
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "items": {
+          "title": "Vinted Listings",
+          "transformation": {
+            "fields": ["id", "title", "price_amount", "price_currency", "total_item_price", "shipping_price", "brand_name", "category_name", "size_name", "condition", "url", "image_url", "seller_login", "seller_feedback_reputation", "favourite_count", "view_count", "request_query", "request_country", "request_page", "request_order", "total_entries", "total_pages"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": { "label": "Item ID", "format": "text" },
+              "title": { "label": "Title", "format": "text" },
+              "price_amount": { "label": "Price", "format": "text" },
+              "price_currency": { "label": "Currency", "format": "text" },
+              "total_item_price": { "label": "Total Price", "format": "text" },
+              "shipping_price": { "label": "Shipping", "format": "text" },
+              "brand_name": { "label": "Brand", "format": "text" },
+              "category_name": { "label": "Category", "format": "text" },
+              "size_name": { "label": "Size", "format": "text" },
+              "condition": { "label": "Condition", "format": "text" },
+              "url": { "label": "Listing URL", "format": "link" },
+              "image_url": { "label": "Image", "format": "image" },
+              "seller_login": { "label": "Seller", "format": "text" },
+              "seller_feedback_reputation": { "label": "Seller Rating", "format": "number" },
+              "favourite_count": { "label": "Favorites", "format": "number" },
+              "view_count": { "label": "Views", "format": "number" },
+              "request_query": { "label": "Search", "format": "text" },
+              "request_country": { "label": "Country", "format": "text" },
+              "request_page": { "label": "Page", "format": "number" },
+              "request_order": { "label": "Sort", "format": "text" },
+              "total_entries": { "label": "Total Listings", "format": "number" },
+              "total_pages": { "label": "Total Pages", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
