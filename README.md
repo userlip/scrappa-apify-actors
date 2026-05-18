@@ -101,13 +101,13 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-18. It lists all 61 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-18. It lists all 62 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 61 live `thescrappa` actors in Apify
-- 50 public `thescrappa` actors in Apify
-- 49 local actor manifests in this repo; all 49 are represented by live Apify actors
-- 12 live actors missing a local source directory here
+- 62 live `thescrappa` actors in Apify
+- 51 public `thescrappa` actors in Apify
+- 51 local actor manifests in this repo; all 51 are represented by live Apify actors
+- 11 live actors missing a local source directory here
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
@@ -157,7 +157,7 @@ Current coverage in this repository:
 | `Missing locally` | `youtube-api-channel-podcasts` | `Y3mKYlGNhsrBE7aZO` | YouTube API Channel Podcasts | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-channel-videos` | `youtube-api-channel-videos` | `w464EbPGGZqcmrC8j` | YouTube API Channel Videos | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-get-channel-about-details` | `vKqlzEXa47Ubpuix5` | YouTube API Get Channel "About" Details | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
-| `Missing locally` | `youtube-api-get-channel-community` | `S9Gf6PSqzz6hxvMNA` | YouTube API Get Channel Community | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
+| `actors/youtube-api-get-channel-community` | `youtube-api-get-channel-community` | `S9Gf6PSqzz6hxvMNA` | YouTube API Get Channel Community | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-get-channel-details` | `svtEvWGEssObsU72e` | YouTube API Get Channel Details | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-get-channel-livestreams` | `WT3XhaJ0lUYmp0eFu` | YouTube API Get Channel Livestreams | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-get-channel-playlists` | `3ERhmU2MUBjdR4AOq` | YouTube API Get Channel Playlists | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
