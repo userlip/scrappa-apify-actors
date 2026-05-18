@@ -66,6 +66,7 @@ test('supports filter-only searches without query', () => {
     const plan = buildVintedSearchPlan({
         country: 'FR',
         catalog_ids: '5',
+        brand_ids: ' ',
         price_to: 25,
     });
 
@@ -75,6 +76,20 @@ test('supports filter-only searches without query', () => {
         per_page: 24,
         catalog_ids: '5',
         price_to: 25,
+    });
+});
+
+test('accepts empty query and decimal price strings for filter-only searches', () => {
+    const plan = buildVintedSearchPlan({
+        query: '',
+        country: 'DE',
+        price_from: '10.50',
+    });
+
+    assert.deepEqual(plan.baseParams, {
+        country: 'DE',
+        per_page: 24,
+        price_from: 10.5,
     });
 });
 
@@ -122,6 +137,7 @@ test('input schema matches the Vinted search contract', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
 
     assert.equal(schema.required, undefined);
+    assert.equal(schema.properties.query.minLength, undefined);
     assert.deepEqual(schema.properties.country.enum, ['FR', 'DE', 'ES', 'IT', 'NL', 'BE', 'AT', 'PL', 'CZ', 'LT', 'LU', 'SK', 'HU', 'RO', 'PT', 'SE', 'DK', 'FI', 'US']);
     assert.deepEqual(schema.properties.order.enum, ['relevance', 'newest_first', 'price_low_to_high', 'price_high_to_low']);
     assert.equal(schema.properties.page.minimum, 1);

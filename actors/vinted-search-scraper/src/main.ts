@@ -77,7 +77,7 @@ async function main(): Promise<void> {
         for (let offset = 0; offset < plan.maxPages; offset += 1) {
             const page = plan.startPage + offset;
             const params = buildPageParams(plan, page);
-            console.log(`Fetching Vinted page ${page} in ${String(params.country)}`);
+            console.log(`Fetching Vinted page ${page} in ${String(params.country)} for query ${String(params.query ?? 'none')}`);
 
             const response = await client.get<VintedSearchResponse>('/vinted/search', params, {
                 attempts: SCRAPPA_MAX_ATTEMPTS,

@@ -9,7 +9,6 @@
       "type": "string",
       "description": "Vinted search text, for example nike shoes, zara dress, or vintage jacket. Leave empty to browse listings by filters.",
       "editor": "textfield",
-      "minLength": 1,
       "maxLength": 500,
       "prefill": "nike shoes"
     },
