@@ -1,12 +1,12 @@
 {
-    "title": "Youtube API Video Chapters",
+    "title": "YouTube API Channel Details",
     "type": "object",
     "schemaVersion": 1,
     "properties": {
         "id": {
-            "title": "YouTube video ID",
+            "title": "YouTube channel ID",
             "type": "string",
-            "description": "YouTube video ID",
+            "description": "YouTube channel ID, for example UCJZv4d5rbIKd4QHMPkcABCw.",
             "editor": "textfield",
             "prefill": "UCJZv4d5rbIKd4QHMPkcABCw"
         }

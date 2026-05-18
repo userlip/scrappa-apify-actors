@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-details",
-    "title": "Scrape single page in JavaScript",
-    "description": "Scrape data from single page with provided URL.",
+    "title": "YouTube API Get Channel Details",
+    "description": "Fetch YouTube channel details by channel ID.",
     "version": "0.0",
     "meta": {
         "templateId": "js-start"

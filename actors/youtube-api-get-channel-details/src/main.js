@@ -4,11 +4,11 @@ import axios from 'axios';
 async function getChannelDetails(id) {
     // Validate that the required query parameter is present.
     if (!id) {
-        throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');
+        throw new Error('Channel "id" not provided in input.');
     }
 
     // Construct the base API URL with required parameters
-    let apiUrl = `https://ytapi.scrappa.co/channels?id=${encodeURIComponent(id)}`;
+    const apiUrl = `https://ytapi.scrappa.co/channels?id=${encodeURIComponent(id)}`;
 
     try {
         console.log(`Fetching from: ${apiUrl}`);
@@ -28,7 +28,7 @@ Actor.main(async () => {
     // The init() call configures the Actor for its environment.
     await Actor.init();
 
-    const input = await Actor.getInput();
+    const input = (await Actor.getInput()) ?? {};
     const { id } = input;
 
     // Directly call the function with the input, as there is only one possible task.
