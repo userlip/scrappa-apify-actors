@@ -11,7 +11,7 @@
       "editor": "textfield",
       "minLength": 1,
       "prefill": "https://www.linkedin.com/in/williamhgates",
-      "pattern": "^https://([a-z]{2,3}\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
+      "pattern": "^(https?://)?((www|m|[a-z]{2,3})\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
     },
     "urls": {
       "title": "LinkedIn Profile URLs",
@@ -22,7 +22,7 @@
       "items": {
         "type": "string",
         "minLength": 1,
-        "pattern": "^https://([a-z]{2,3}\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
+        "pattern": "^(https?://)?((www|m|[a-z]{2,3})\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
       },
       "prefill": [
         "https://www.linkedin.com/in/williamhgates",
