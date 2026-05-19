@@ -1,9 +1,11 @@
 import { Actor } from 'apify';
-import { ScrappaClient } from './shared/index.js';
+import { ScrappaApiError, ScrappaClient } from './shared/index.js';
 import { buildLinkedInProfileParams } from './request-params.js';
+import { normalizeLinkedInProfileUrl } from './url.js';
 
 interface LinkedInProfileInput {
-    url: string;
+    url?: string;
+    urls?: string[];
     use_cache?: boolean;
     maximum_cache_age?: number;
 }
@@ -15,6 +17,8 @@ interface Experience {
     end_date?: string;
     [key: string]: unknown;
 }
+
+type LinkedInProfileResult = LinkedInProfileResponse & { url?: string };
 
 interface Education {
     school?: string;
@@ -86,37 +90,26 @@ interface LinkedInProfileResponse {
     similar_profiles?: SimilarProfile[];
     cached?: boolean;
     cached_at?: string;
+    message?: string;
+    status_code?: number;
     [key: string]: unknown;
 }
 
-/**
- * Normalize a LinkedIn profile URL:
- * - Replace country subdomains (de., uk., fr., etc.) with www.
- * - Strip query parameters
- * - Ensure trailing slash consistency
- */
-function normalizeLinkedInUrl(rawUrl: string): string {
-    const parsed = new URL(rawUrl);
+function getInputUrls(input: LinkedInProfileInput | null): string[] {
+    const inputUrls = Array.isArray(input?.urls) && input.urls.length > 0
+        ? input.urls
+        : input?.url ? [input.url] : [];
 
-    // Replace country subdomains with www
-    parsed.hostname = parsed.hostname.replace(/^[a-z]{2,3}\.linkedin\.com$/, 'www.linkedin.com');
+    const urls = inputUrls
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0)
+        .map(normalizeLinkedInProfileUrl);
 
-    // Strip query parameters
-    parsed.search = '';
-
-    // Strip hash
-    parsed.hash = '';
-
-    // Ensure the path does not have a trailing slash for consistency
-    parsed.pathname = parsed.pathname.replace(/\/+$/, '');
-
-    return parsed.toString();
+    return [...new Set(urls)];
 }
 
 async function main(): Promise<void> {
     await Actor.init();
-
-    let shouldExit = true;
 
     try {
         // Get API key from environment variable (set as Apify secret)
@@ -126,88 +119,93 @@ async function main(): Promise<void> {
         }
 
         const input = await Actor.getInput<LinkedInProfileInput>();
-        if (!input?.url) {
-            throw new Error('LinkedIn profile URL is required');
-        }
-
-        // Normalize the URL before sending to the API
-        const normalizedUrl = normalizeLinkedInUrl(input.url);
-        console.log(`Fetching LinkedIn profile: ${normalizedUrl}`);
-        if (normalizedUrl !== input.url) {
-            console.log(`(normalized from: ${input.url})`);
+        const urls = getInputUrls(input);
+        if (urls.length === 0) {
+            throw new Error('At least one LinkedIn profile URL is required. Provide url or urls.');
         }
 
         const client = new ScrappaClient({ apiKey });
+        let firstResult: LinkedInProfileResult | undefined;
+        let succeeded = 0;
+        let failed = 0;
 
-        const params = buildLinkedInProfileParams({
-            url: normalizedUrl,
-            use_cache: input.use_cache,
-            maximum_cache_age: input.maximum_cache_age,
-        });
+        console.log(`Scraping ${urls.length} LinkedIn profile URL${urls.length === 1 ? '' : 's'}`);
 
-        const response = await client.get<LinkedInProfileResponse>('/linkedin/profile', params);
+        for (const normalizedUrl of urls) {
+            console.log(`Fetching LinkedIn profile: ${normalizedUrl}`);
 
-        // Push the entire profile as a single dataset item
-        if (response.success) {
-            await Actor.pushData(response);
-            console.log(`Successfully scraped profile: ${response.name || 'Unknown'}`);
-        } else {
-            console.warn('Profile scraping returned success: false');
-            await Actor.pushData(response);
+            const params = buildLinkedInProfileParams({
+                url: normalizedUrl,
+                use_cache: input?.use_cache,
+                maximum_cache_age: input?.maximum_cache_age,
+            });
+
+            let result: LinkedInProfileResult;
+
+            try {
+                const response = await client.get<LinkedInProfileResponse>('/linkedin/profile', params);
+                result = {
+                    url: normalizedUrl,
+                    ...response,
+                };
+            } catch (error) {
+                // Handle 404s gracefully per URL so one missing profile does not stop the batch.
+                if (error instanceof ScrappaApiError && error.status === 404) {
+                    console.warn(`Profile not found (404): ${normalizedUrl}`);
+                    result = {
+                        success: false,
+                        url: normalizedUrl,
+                        message: 'Profile not found',
+                        status_code: 404,
+                    };
+                } else {
+                    throw error;
+                }
+            }
+
+            // Push the entire profile as a single dataset item
+            if (result.success) {
+                console.log(`Successfully scraped profile: ${result.name || 'Unknown'}`);
+            } else if (result.status_code !== 404) {
+                console.warn('Profile scraping returned success: false' + (result.message ? ` (${result.message})` : ''));
+            }
+
+            await Actor.pushData(result);
+            firstResult ??= result;
+
+            if (result.success) {
+                succeeded += 1;
+            } else {
+                failed += 1;
+            }
         }
 
-        // Store full response in key-value store for complete data access
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
+        if (urls.length === 1 && firstResult) {
+            const store = await Actor.openKeyValueStore();
+            const singleOutput = { ...firstResult };
+            delete singleOutput.url;
+            await store.setValue('OUTPUT', singleOutput);
+        }
 
         // Log summary
         console.log('LinkedIn profile scraping completed');
 
         const summary = {
-            success: response.success,
-            name: response.name,
-            location: response.location,
-            followers: response.followers ?? 0,
-            connections: response.connections ?? 0,
-            experience_count: response.experience?.length ?? 0,
-            education_count: response.education?.length ?? 0,
-            skills_count: response.skills?.length ?? 0,
-            articles_count: response.articles?.length ?? 0,
-            activity_count: response.activity?.length ?? 0,
-            publications_count: response.publications?.length ?? 0,
-            projects_count: response.projects?.length ?? 0,
-            recommendations_count: response.recommendations?.length ?? 0,
-            similar_profiles_count: response.similar_profiles?.length ?? 0,
-            is_cached: response.cached ?? false,
+            requested: urls.length,
+            succeeded,
+            failed,
         };
 
         console.log('Profile summary:', JSON.stringify(summary, null, 2));
 
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-
-        // Handle 404s gracefully - push a failed result instead of failing the actor
-        if (message.includes('(404)')) {
-            console.warn(`Profile not found (404): ${message}`);
-            const failedResult = {
-                success: false,
-                error: 'Profile not found',
-                message,
-            };
-            await Actor.pushData(failedResult);
-            const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', failedResult);
-        } else {
-            console.error('Actor failed: ' + message);
-            await Actor.fail(message);
-            shouldExit = false;
-            return;
-        }
+        console.error(`Actor failed: ${message}`);
+        await Actor.fail(message);
+        return;
     }
 
-    if (shouldExit) {
-        await Actor.exit();
-    }
+    await Actor.exit();
 }
 
 main();
