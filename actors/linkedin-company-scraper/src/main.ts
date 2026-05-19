@@ -138,7 +138,7 @@ async function main(): Promise<void> {
             if (!result.success && result.status_code !== 404) {
                 console.warn('Company scraping returned success: false' + (result.message ? ` (${result.message})` : ''));
             } else if (result.success) {
-                console.log(`Successfully scraped company: ${result.name ?? 'Unknown'}`);
+                console.log(`Successfully scraped company: ${result.name || 'Unknown'}`);
             }
 
             await Actor.pushData(result);
