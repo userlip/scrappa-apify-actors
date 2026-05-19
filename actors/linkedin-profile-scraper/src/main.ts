@@ -173,8 +173,12 @@ async function main(): Promise<void> {
             output.push(result);
         }
 
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', output.length === 1 ? output[0] : output);
+        if (output.length === 1) {
+            const store = await Actor.openKeyValueStore();
+            const singleOutput = { ...output[0] };
+            delete singleOutput.url;
+            await store.setValue('OUTPUT', singleOutput);
+        }
 
         // Log summary
         console.log('LinkedIn profile scraping completed');

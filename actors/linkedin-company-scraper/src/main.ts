@@ -84,10 +84,6 @@ function getInputUrls(input: LinkedInCompanyInput | null): string[] {
     return [...new Set(urls)];
 }
 
-async function persistActorResult(result: LinkedInCompanyResult): Promise<void> {
-    await Actor.pushData(result);
-}
-
 async function main(): Promise<void> {
     await Actor.init();
 
@@ -144,12 +140,16 @@ async function main(): Promise<void> {
                 console.log(`Successfully scraped company: ${result.name ?? 'Unknown'}`);
             }
 
-            await persistActorResult(result);
+            await Actor.pushData(result);
             output.push(result);
         }
 
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', output.length === 1 ? output[0] : output);
+        if (output.length === 1) {
+            const store = await Actor.openKeyValueStore();
+            const singleOutput = { ...output[0] };
+            delete singleOutput.url;
+            await store.setValue('OUTPUT', singleOutput);
+        }
 
         // Log summary
         console.log('LinkedIn Company scrape completed successfully');
