@@ -1,6 +1,7 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeLinkedInCompanyUrl } from './url.js';
+import test from 'node:test';
+
+import { normalizeLinkedInCompanyUrl } from '../dist/url.js';
 
 test('normalizeLinkedInCompanyUrl adds a protocol and strips query params', () => {
     assert.equal(

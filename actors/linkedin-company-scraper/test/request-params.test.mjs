@@ -1,6 +1,7 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildLinkedInCompanyParams } from './request-params.js';
+import test from 'node:test';
+
+import { buildLinkedInCompanyParams } from '../dist/request-params.js';
 
 test('buildLinkedInCompanyParams omits cache fields when caching is disabled', () => {
     assert.deepEqual(
