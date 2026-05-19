@@ -102,7 +102,9 @@ async function main(): Promise<void> {
         }
 
         const client = new ScrappaClient({ apiKey });
-        const output: LinkedInCompanyResult[] = [];
+        let firstResult: LinkedInCompanyResult | undefined;
+        let succeeded = 0;
+        let failed = 0;
 
         console.log(`Scraping ${urls.length} LinkedIn company URL${urls.length === 1 ? '' : 's'}`);
 
@@ -140,12 +142,18 @@ async function main(): Promise<void> {
             }
 
             await Actor.pushData(result);
-            output.push(result);
+            firstResult ??= result;
+
+            if (result.success) {
+                succeeded += 1;
+            } else {
+                failed += 1;
+            }
         }
 
-        if (output.length === 1) {
+        if (urls.length === 1 && firstResult) {
             const store = await Actor.openKeyValueStore();
-            const singleOutput = { ...output[0] };
+            const singleOutput = { ...firstResult };
             delete singleOutput.url;
             await store.setValue('OUTPUT', singleOutput);
         }
@@ -155,8 +163,8 @@ async function main(): Promise<void> {
 
         const summary = {
             requested: urls.length,
-            succeeded: output.filter((result) => result.success).length,
-            failed: output.filter((result) => !result.success).length,
+            succeeded,
+            failed,
         };
 
         console.log('Results summary:', JSON.stringify(summary, null, 2));
