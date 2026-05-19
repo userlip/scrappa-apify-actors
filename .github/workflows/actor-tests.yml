@@ -30,6 +30,7 @@ jobs:
           - path: actors/tiktok-profile-scraper
           - path: actors/tiktok-search-scraper
           - path: actors/youtube-api-batch-videos
+          - path: actors/youtube-api-channel-podcasts
           - path: actors/youtube-api-channel-videos
           - path: actors/youtube-api-get-video-details
           - path: actors/youtube-api-search-data
