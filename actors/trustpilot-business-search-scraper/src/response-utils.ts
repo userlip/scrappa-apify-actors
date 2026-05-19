@@ -54,6 +54,7 @@ export interface TrustpilotCategory {
 
 export interface TrustpilotBusinessSearchResponse {
     businessUnits?: TrustpilotBusinessUnit[];
+    businesses?: TrustpilotBusinessUnit[];
     pageProps?: {
         businessUnits?: {
             businesses?: TrustpilotBusinessUnit[];
@@ -95,6 +96,10 @@ export interface TrustpilotBusinessDatasetContext {
 export function getTrustpilotBusinesses(response: TrustpilotBusinessSearchResponse): TrustpilotBusinessUnit[] {
     if (Array.isArray(response.businessUnits)) {
         return response.businessUnits;
+    }
+
+    if (Array.isArray(response.businesses)) {
+        return response.businesses;
     }
 
     const categoryBusinesses = response.pageProps?.businessUnits?.businesses;
@@ -224,7 +229,6 @@ export function buildTrustpilotBusinessDatasetItem(
         country_code: business.countryCode ?? address.countryCode ?? null,
         country: business.location?.country ?? address.country ?? null,
         city: business.location?.city ?? address.city ?? null,
-        address,
         email: business.contact?.email ?? business.email ?? null,
         phone: business.contact?.phone ?? business.phone ?? null,
         category_names: categories.map(categoryName).filter(Boolean).join(', '),

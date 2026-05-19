@@ -31,7 +31,7 @@
         "businesses": {
           "title": "Trustpilot Businesses",
           "transformation": {
-            "fields": ["business_name", "identifying_name", "trust_score", "stars", "review_count", "is_claimed", "is_verified", "website_url", "profile_url", "country", "country_code", "city", "category_names", "category_slugs", "request_search_type", "request_query", "request_category", "request_country", "request_page", "total_results", "total_pages"]
+            "fields": ["business_name", "identifying_name", "trust_score", "stars", "review_count", "is_claimed", "is_verified", "website_url", "email", "phone", "logo_url", "profile_url", "country", "country_code", "city", "category_names", "category_slugs", "request_search_type", "request_query", "request_category", "request_country", "request_page", "total_results", "total_pages"]
           },
           "display": {
             "component": "table",
@@ -44,6 +44,9 @@
               "is_claimed": { "label": "Claimed", "format": "boolean" },
               "is_verified": { "label": "Verified", "format": "boolean" },
               "website_url": { "label": "Website", "format": "link" },
+              "email": { "label": "Email", "format": "text" },
+              "phone": { "label": "Phone", "format": "text" },
+              "logo_url": { "label": "Logo", "format": "image" },
               "profile_url": { "label": "Trustpilot Profile", "format": "link" },
               "country": { "label": "Country", "format": "text" },
               "country_code": { "label": "Country Code", "format": "text" },

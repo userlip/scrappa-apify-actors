@@ -12,6 +12,7 @@ const {
 
 test('extracts businesses from company search and category response shapes', () => {
     assert.deepEqual(getTrustpilotBusinesses({ businessUnits: [{ displayName: 'Company A' }] }), [{ displayName: 'Company A' }]);
+    assert.deepEqual(getTrustpilotBusinesses({ businesses: [{ displayName: 'Company Root' }] }), [{ displayName: 'Company Root' }]);
     assert.deepEqual(
         getTrustpilotBusinesses({
             pageProps: {
