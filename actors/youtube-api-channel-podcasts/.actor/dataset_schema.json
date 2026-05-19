@@ -1,0 +1,113 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": ["string", "null"],
+        "title": "ID",
+        "description": "The YouTube video ID."
+      },
+      "videoId": {
+        "type": ["string", "null"],
+        "title": "Video ID",
+        "description": "The YouTube video ID returned by the API."
+      },
+      "title": {
+        "type": ["string", "null"],
+        "title": "Title",
+        "description": "The video title."
+      },
+      "url": {
+        "type": ["string", "null"],
+        "title": "URL",
+        "description": "The YouTube video URL."
+      },
+      "thumbnail": {
+        "type": ["string", "null"],
+        "title": "Thumbnail",
+        "description": "The video thumbnail URL."
+      },
+      "duration": {
+        "type": ["string", "number", "null"],
+        "title": "Duration",
+        "description": "The video duration."
+      },
+      "viewCount": {
+        "type": ["integer", "number", "string", "null"],
+        "title": "View count",
+        "description": "The video view count."
+      },
+      "publishedTimeText": {
+        "type": ["string", "null"],
+        "title": "Published",
+        "description": "The human-readable publish time."
+      },
+      "publishDate": {
+        "type": ["string", "null"],
+        "title": "Publish date",
+        "description": "The video publish date when returned."
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "YouTube Channel Podcasts",
+      "transformation": {
+        "fields": [
+          "id",
+          "videoId",
+          "title",
+          "url",
+          "duration",
+          "viewCount",
+          "publishedTimeText",
+          "publishDate",
+          "thumbnail"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "id": {
+            "label": "ID",
+            "format": "text"
+          },
+          "videoId": {
+            "label": "Video ID",
+            "format": "text"
+          },
+          "title": {
+            "label": "Title",
+            "format": "text"
+          },
+          "url": {
+            "label": "URL",
+            "format": "link"
+          },
+          "duration": {
+            "label": "Duration",
+            "format": "text"
+          },
+          "viewCount": {
+            "label": "Views",
+            "format": "number"
+          },
+          "publishedTimeText": {
+            "label": "Published",
+            "format": "text"
+          },
+          "publishDate": {
+            "label": "Publish date",
+            "format": "text"
+          },
+          "thumbnail": {
+            "label": "Thumbnail",
+            "format": "image"
+          }
+        }
+      }
+    }
+  }
+}
