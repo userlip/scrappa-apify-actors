@@ -1,4 +1,5 @@
 import { Actor } from 'apify';
+import { pushChargedItems } from './charging.js';
 import {
     buildPageParams,
     buildTrustpilotBusinessSearchPlan,
@@ -15,39 +16,6 @@ import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
-const BUSINESS_RESULT_CHARGE_EVENT = 'business-result';
-
-interface PushChargedItemsResult {
-    savedCount: number;
-    statusMessage: string | null;
-}
-
-async function pushChargedItems(items: Record<string, unknown>[]): Promise<PushChargedItemsResult> {
-    if (items.length === 0) {
-        return { savedCount: 0, statusMessage: null };
-    }
-
-    const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
-    if (!isPayPerEvent) {
-        await Actor.pushData(items);
-        return { savedCount: items.length, statusMessage: null };
-    }
-
-    const chargeResult = await Actor.pushData(items, BUSINESS_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached) {
-        const savedCount = Math.min(chargeResult.chargedCount, items.length);
-        const statusMessage = `Charge limit reached after saving ${savedCount} of ${items.length} Trustpilot business results on the current page.`;
-        console.log(statusMessage, JSON.stringify({
-            event: BUSINESS_RESULT_CHARGE_EVENT,
-            charged_count: chargeResult.chargedCount,
-            requested_count: items.length,
-            saved_count: savedCount,
-        }));
-        return { savedCount, statusMessage };
-    }
-
-    return { savedCount: items.length, statusMessage: null };
-}
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -89,7 +57,12 @@ async function main(): Promise<void> {
                 response,
             }));
             if (businesses.length > 0) {
-                const result = await pushChargedItems(businesses);
+                const result = await pushChargedItems({
+                    isPayPerEvent: () => Actor.getChargingManager().getPricingInfo().isPayPerEvent,
+                    pushData: (items, eventName) => eventName === undefined
+                        ? Actor.pushData(items)
+                        : Actor.pushData(items, eventName),
+                }, businesses);
                 savedBusinesses += result.savedCount;
                 console.log(`Found ${businesses.length} business result(s) on page ${page}; saved ${result.savedCount}`);
                 if (result.statusMessage) {
