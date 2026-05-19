@@ -167,7 +167,7 @@ async function main(): Promise<void> {
             if (result.success) {
                 console.log(`Successfully scraped profile: ${result.name || 'Unknown'}`);
             } else if (result.status_code !== 404) {
-                console.warn('Profile scraping returned success: false');
+                console.warn('Profile scraping returned success: false' + (result.message ? ` (${result.message})` : ''));
             }
 
             await Actor.pushData(result);
