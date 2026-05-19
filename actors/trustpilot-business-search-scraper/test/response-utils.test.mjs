@@ -29,6 +29,10 @@ test('extracts businesses from company search and category response shapes', () 
 test('detects next pages across response shapes', () => {
     assert.equal(hasNextPage({ pagination: { totalPages: 3 } }, 1), true);
     assert.equal(hasNextPage({ pagination: { totalPages: 3 } }, 3), false);
+    assert.equal(hasNextPage({ pagination: { has_next_page: true, total_pages: 3 } }, 1), true);
+    assert.equal(hasNextPage({ pagination: { has_next_page: false, total_pages: 3 } }, 1), false);
+    assert.equal(hasNextPage({ pagination: { total_pages: 3 } }, 1), true);
+    assert.equal(hasNextPage({ pagination: { total_pages: 3 } }, 3), false);
     assert.equal(hasNextPage({ pageProps: { pagination: { has_next_page: true } } }, 1), true);
     assert.equal(hasNextPage({ pageProps: { pagination: { has_next_page: false, total_pages: 10 } } }, 1), false);
     assert.equal(hasNextPage({ pageProps: { pagination: { total_pages: 3 } } }, 1), true);
@@ -66,9 +70,9 @@ test('builds normalized Trustpilot company-search dataset item', () => {
             },
             response: {
                 pagination: {
-                    totalResults: 42,
-                    totalPages: 3,
-                    pageSize: 20,
+                    total_count: 42,
+                    total_pages: 3,
+                    per_page: 20,
                 },
                 searchMode: 'keyword',
                 meta: {

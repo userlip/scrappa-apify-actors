@@ -76,10 +76,15 @@ export interface TrustpilotBusinessSearchResponse {
     };
     pagination?: {
         currentPage?: number;
+        current_page?: number | string;
         totalPages?: number;
+        total_pages?: number;
         totalResults?: number;
+        total_count?: number;
         perPage?: number;
+        per_page?: number;
         pageSize?: number;
+        has_next_page?: boolean;
         [key: string]: unknown;
     };
     searchMode?: string;
@@ -162,6 +167,7 @@ function categorySlug(category: TrustpilotCategory): string | undefined {
 
 function totalPages(context: TrustpilotBusinessDatasetContext): number | null {
     return context.response.pagination?.totalPages
+        ?? context.response.pagination?.total_pages
         ?? context.response.pageProps?.pagination?.total_pages
         ?? context.response.pageProps?.businessUnits?.totalPages
         ?? null;
@@ -169,6 +175,7 @@ function totalPages(context: TrustpilotBusinessDatasetContext): number | null {
 
 function totalResults(context: TrustpilotBusinessDatasetContext): number | null {
     return context.response.pagination?.totalResults
+        ?? context.response.pagination?.total_count
         ?? context.response.pageProps?.pagination?.total_count
         ?? context.response.pageProps?.businessUnits?.totalHits
         ?? null;
@@ -177,11 +184,16 @@ function totalResults(context: TrustpilotBusinessDatasetContext): number | null 
 function perPage(context: TrustpilotBusinessDatasetContext): number | null {
     return context.response.pagination?.perPage
         ?? context.response.pagination?.pageSize
+        ?? context.response.pagination?.per_page
         ?? context.response.pageProps?.pagination?.per_page
         ?? null;
 }
 
 export function hasNextPage(response: TrustpilotBusinessSearchResponse, page: number): boolean {
+    if (typeof response.pagination?.has_next_page === 'boolean') {
+        return response.pagination.has_next_page;
+    }
+
     if (typeof response.pageProps?.pagination?.has_next_page === 'boolean') {
         return response.pageProps.pagination.has_next_page;
     }
@@ -189,6 +201,11 @@ export function hasNextPage(response: TrustpilotBusinessSearchResponse, page: nu
     const companyTotalPages = response.pagination?.totalPages;
     if (typeof companyTotalPages === 'number') {
         return page < companyTotalPages;
+    }
+
+    const rootSnakeCaseTotalPages = response.pagination?.total_pages;
+    if (typeof rootSnakeCaseTotalPages === 'number') {
+        return page < rootSnakeCaseTotalPages;
     }
 
     const pagePropsTotalPages = response.pageProps?.pagination?.total_pages;
