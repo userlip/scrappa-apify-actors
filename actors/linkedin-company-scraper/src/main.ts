@@ -73,10 +73,11 @@ interface LinkedInCompanyResponse {
 type LinkedInCompanyResult = LinkedInCompanyResponse & { url?: string };
 
 function getInputUrls(input: LinkedInCompanyInput | null): string[] {
-    const urls = [
-        ...(input?.url ? [input.url] : []),
-        ...(Array.isArray(input?.urls) ? input.urls : []),
-    ]
+    const inputUrls = Array.isArray(input?.urls) && input.urls.length > 0
+        ? input.urls
+        : input?.url ? [input.url] : [];
+
+    const urls = inputUrls
         .map((url) => url.trim())
         .filter((url) => url.length > 0)
         .map(normalizeLinkedInCompanyUrl);

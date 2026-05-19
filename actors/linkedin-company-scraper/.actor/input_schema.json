@@ -21,11 +21,7 @@
       "items": {
         "type": "string",
         "minLength": 1
-      },
-      "prefill": [
-        "https://www.linkedin.com/company/microsoft",
-        "https://www.linkedin.com/company/apple"
-      ]
+      }
     },
     "use_cache": {
       "title": "Use Cache",
