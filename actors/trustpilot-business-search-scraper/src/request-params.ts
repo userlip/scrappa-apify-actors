@@ -200,7 +200,7 @@ function inferSearchType(input: TrustpilotBusinessSearchInput): TrustpilotSearch
         return explicit;
     }
 
-    if (input.category !== undefined && input.category !== null && input.category !== '') {
+    if (cleanString(input.category, 'category', 120) !== undefined) {
         return 'category';
     }
 
@@ -255,7 +255,7 @@ export function buildTrustpilotBusinessSearchPlan(input: TrustpilotBusinessSearc
     const minRating = cleanNumber(input.min_rating, 'min_rating', 0, 5);
     if (minRating !== undefined) baseParams.min_rating = minRating;
 
-    const minReviewCount = cleanNumber(input.min_review_count, 'min_review_count', 0, 100000000);
+    const minReviewCount = cleanInteger(input.min_review_count, 'min_review_count', 0, 100000000);
     if (minReviewCount !== undefined) baseParams.min_review_count = minReviewCount;
 
     return {

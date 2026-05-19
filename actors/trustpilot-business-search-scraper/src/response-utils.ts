@@ -186,11 +186,17 @@ export function hasNextPage(response: TrustpilotBusinessSearchResponse, page: nu
         return page < companyTotalPages;
     }
 
+    const pagePropsTotalPages = response.pageProps?.pagination?.total_pages;
+    if (typeof pagePropsTotalPages === 'number') {
+        return page < pagePropsTotalPages;
+    }
+
     const categoryTotalPages = response.pageProps?.businessUnits?.totalPages;
     if (typeof categoryTotalPages === 'number') {
         return page < categoryTotalPages;
     }
 
+    console.warn(`No pagination data found in response; stopping after page ${page}`);
     return false;
 }
 

@@ -29,6 +29,9 @@ test('detects next pages across response shapes', () => {
     assert.equal(hasNextPage({ pagination: { totalPages: 3 } }, 1), true);
     assert.equal(hasNextPage({ pagination: { totalPages: 3 } }, 3), false);
     assert.equal(hasNextPage({ pageProps: { pagination: { has_next_page: true } } }, 1), true);
+    assert.equal(hasNextPage({ pageProps: { pagination: { has_next_page: false, total_pages: 10 } } }, 1), false);
+    assert.equal(hasNextPage({ pageProps: { pagination: { total_pages: 3 } } }, 1), true);
+    assert.equal(hasNextPage({ pageProps: { pagination: { total_pages: 3 } } }, 3), false);
     assert.equal(hasNextPage({ pageProps: { businessUnits: { totalPages: 2 } } }, 2), false);
 });
 

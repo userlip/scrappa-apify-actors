@@ -93,6 +93,17 @@ test('infers category search when category is supplied without search_type', () 
     assert.equal(plan.endpoint, '/trustpilot/businesses');
 });
 
+test('ignores blank category when inferring search type', () => {
+    const plan = buildTrustpilotBusinessSearchPlan({
+        query: 'amazon',
+        category: '   ',
+    });
+
+    assert.equal(plan.searchType, 'company_search');
+    assert.equal(plan.endpoint, '/trustpilot/company-search');
+    assert.equal(plan.baseParams.query, 'amazon');
+});
+
 test('validates required fields and bounds', () => {
     assert.throws(
         () => buildTrustpilotBusinessSearchPlan({ query: 'a' }),
@@ -117,6 +128,10 @@ test('validates required fields and bounds', () => {
     assert.throws(
         () => buildTrustpilotBusinessSearchPlan({ query: 'amazon', min_rating: 6 }),
         /min_rating must be between 0 and 5/,
+    );
+    assert.throws(
+        () => buildTrustpilotBusinessSearchPlan({ query: 'amazon', min_review_count: 1.5 }),
+        /min_review_count must be an integer/,
     );
     assert.throws(
         () => buildTrustpilotBusinessSearchPlan({ search_type: 'category', category: 'electronics', sort: 'rating' }),
