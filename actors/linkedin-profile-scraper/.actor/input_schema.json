@@ -7,10 +7,24 @@
     "url": {
       "title": "LinkedIn Profile URL",
       "type": "string",
-      "description": "Full LinkedIn profile URL (e.g., https://www.linkedin.com/in/username)",
+      "description": "Single LinkedIn profile URL. For lower Apify costs, prefer the URLs field when scraping multiple profiles.",
       "editor": "textfield",
       "prefill": "https://www.linkedin.com/in/williamhgates",
       "pattern": "^https://([a-z]{2,3}\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
+    },
+    "urls": {
+      "title": "LinkedIn Profile URLs",
+      "type": "array",
+      "description": "Multiple LinkedIn profile URLs to process in one Apify run. This is the recommended option for batches because it avoids one Apify run per result.",
+      "editor": "stringList",
+      "items": {
+        "type": "string",
+        "pattern": "^https://([a-z]{2,3}\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
+      },
+      "prefill": [
+        "https://www.linkedin.com/in/williamhgates",
+        "https://www.linkedin.com/in/satyanadella"
+      ]
     },
     "use_cache": {
       "title": "Use Cache",
@@ -27,6 +41,5 @@
       "minimum": 1,
       "default": 2592000
     }
-  },
-  "required": ["url"]
+  }
 }

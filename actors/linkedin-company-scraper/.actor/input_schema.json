@@ -7,9 +7,22 @@
     "url": {
       "title": "LinkedIn Company URL",
       "type": "string",
-      "description": "Full LinkedIn company page URL (e.g., https://www.linkedin.com/company/microsoft)",
+      "description": "Single LinkedIn company page URL. For lower Apify costs, prefer the URLs field when scraping multiple companies.",
       "editor": "textfield",
       "prefill": "https://www.linkedin.com/company/microsoft"
+    },
+    "urls": {
+      "title": "LinkedIn Company URLs",
+      "type": "array",
+      "description": "Multiple LinkedIn company page URLs to process in one Apify run. This is the recommended option for batches because it avoids one Apify run per result.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      },
+      "prefill": [
+        "https://www.linkedin.com/company/microsoft",
+        "https://www.linkedin.com/company/apple"
+      ]
     },
     "use_cache": {
       "title": "Use Cache",
@@ -25,6 +38,5 @@
       "editor": "number",
       "minimum": 1
     }
-  },
-  "required": ["url"]
+  }
 }
