@@ -1,0 +1,13 @@
+{
+    "actorSpecification": 1,
+    "name": "youtube-api-channel-podcasts",
+    "title": "YouTube Channel Podcasts Scraper",
+    "description": "Fetch podcast videos for a YouTube channel by channel ID, sort order, and continuation token.",
+    "version": "0.0",
+    "buildTag": "latest",
+    "input": "./input_schema.json",
+    "dockerfile": "./Dockerfile",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}
