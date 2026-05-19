@@ -1,6 +1,7 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/index.js';
 import { buildLinkedInProfileParams } from './request-params.js';
+import { normalizeLinkedInProfileUrl } from './url.js';
 
 interface LinkedInProfileInput {
     url?: string;
@@ -94,45 +95,20 @@ interface LinkedInProfileResponse {
     [key: string]: unknown;
 }
 
-/**
- * Normalize a LinkedIn profile URL:
- * - Replace country subdomains (de., uk., fr., etc.) with www.
- * - Strip query parameters
- * - Ensure trailing slash consistency
- */
-function normalizeLinkedInUrl(rawUrl: string): string {
-    const parsed = new URL(rawUrl);
-
-    // Replace country subdomains with www
-    parsed.hostname = parsed.hostname.replace(/^[a-z]{2,3}\.linkedin\.com$/, 'www.linkedin.com');
-
-    // Strip query parameters
-    parsed.search = '';
-
-    // Strip hash
-    parsed.hash = '';
-
-    // Ensure the path does not have a trailing slash for consistency
-    parsed.pathname = parsed.pathname.replace(/\/+$/, '');
-
-    return parsed.toString();
-}
-
 function getInputUrls(input: LinkedInProfileInput | null): string[] {
     const urls = [
         ...(input?.url ? [input.url] : []),
         ...(Array.isArray(input?.urls) ? input.urls : []),
     ]
         .map((url) => url.trim())
-        .filter((url) => url.length > 0);
+        .filter((url) => url.length > 0)
+        .map(normalizeLinkedInProfileUrl);
 
     return [...new Set(urls)];
 }
 
 async function main(): Promise<void> {
     await Actor.init();
-
-    let shouldExit = true;
 
     try {
         // Get API key from environment variable (set as Apify secret)
@@ -150,15 +126,10 @@ async function main(): Promise<void> {
         const client = new ScrappaClient({ apiKey });
         const output: LinkedInProfileResult[] = [];
 
-        console.log('Scraping ' + urls.length + ' LinkedIn profile URL' + (urls.length === 1 ? '' : 's'));
+        console.log(`Scraping ${urls.length} LinkedIn profile URL${urls.length === 1 ? '' : 's'}`);
 
-        for (const rawUrl of urls) {
-            // Normalize the URL before sending to the API
-            const normalizedUrl = normalizeLinkedInUrl(rawUrl);
+        for (const normalizedUrl of urls) {
             console.log(`Fetching LinkedIn profile: ${normalizedUrl}`);
-            if (normalizedUrl !== rawUrl) {
-                console.log(`(normalized from: ${rawUrl})`);
-            }
 
             const params = buildLinkedInProfileParams({
                 url: normalizedUrl,
@@ -183,8 +154,7 @@ async function main(): Promise<void> {
                     result = {
                         success: false,
                         url: normalizedUrl,
-                        error: 'Profile not found',
-                        message,
+                        message: 'Profile not found',
                         status_code: 404,
                     };
                 } else {
@@ -195,7 +165,7 @@ async function main(): Promise<void> {
             // Push the entire profile as a single dataset item
             if (result.success) {
                 console.log(`Successfully scraped profile: ${result.name || 'Unknown'}`);
-            } else {
+            } else if (result.status_code !== 404) {
                 console.warn('Profile scraping returned success: false');
             }
 
@@ -219,29 +189,12 @@ async function main(): Promise<void> {
 
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-
-        // Handle 404s gracefully - push a failed result instead of failing the actor
-        if (message.includes('(404)')) {
-            console.warn(`Profile not found (404): ${message}`);
-            const failedResult = {
-                success: false,
-                error: 'Profile not found',
-                message,
-            };
-            await Actor.pushData(failedResult);
-            const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', failedResult);
-        } else {
-            console.error('Actor failed: ' + message);
-            await Actor.fail(message);
-            shouldExit = false;
-            return;
-        }
+        console.error(`Actor failed: ${message}`);
+        await Actor.fail(message);
+        return;
     }
 
-    if (shouldExit) {
-        await Actor.exit();
-    }
+    await Actor.exit();
 }
 
 main();

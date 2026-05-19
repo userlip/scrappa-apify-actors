@@ -9,6 +9,7 @@
       "type": "string",
       "description": "Single LinkedIn company page URL. For lower Apify costs, prefer the URLs field when scraping multiple companies.",
       "editor": "textfield",
+      "minLength": 1,
       "prefill": "https://www.linkedin.com/company/microsoft"
     },
     "urls": {
@@ -16,8 +17,10 @@
       "type": "array",
       "description": "Multiple LinkedIn company page URLs to process in one Apify run. This is the recommended option for batches because it avoids one Apify run per result.",
       "editor": "stringList",
+      "minItems": 1,
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       },
       "prefill": [
         "https://www.linkedin.com/company/microsoft",

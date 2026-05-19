@@ -78,7 +78,8 @@ function getInputUrls(input: LinkedInCompanyInput | null): string[] {
         ...(Array.isArray(input?.urls) ? input.urls : []),
     ]
         .map((url) => url.trim())
-        .filter((url) => url.length > 0);
+        .filter((url) => url.length > 0)
+        .map(normalizeLinkedInCompanyUrl);
 
     return [...new Set(urls)];
 }
@@ -106,14 +107,10 @@ async function main(): Promise<void> {
         const client = new ScrappaClient({ apiKey });
         const output: LinkedInCompanyResult[] = [];
 
-        console.log('Scraping ' + urls.length + ' LinkedIn company URL' + (urls.length === 1 ? '' : 's'));
+        console.log(`Scraping ${urls.length} LinkedIn company URL${urls.length === 1 ? '' : 's'}`);
 
-        for (const rawUrl of urls) {
-            const normalizedUrl = normalizeLinkedInCompanyUrl(rawUrl);
-            console.log('Scraping LinkedIn company: "' + normalizedUrl + '"');
-            if (normalizedUrl !== rawUrl) {
-                console.log('(normalized from: ' + rawUrl + ')');
-            }
+        for (const normalizedUrl of urls) {
+            console.log(`Scraping LinkedIn company: "${normalizedUrl}"`);
 
             const params = buildLinkedInCompanyParams({
                 url: normalizedUrl,
@@ -134,22 +131,17 @@ async function main(): Promise<void> {
 
                 // Handle 404s gracefully - push a failure result instead of failing the actor
                 if (message.includes('(404)')) {
-                    console.log('Company not found (404): ' + normalizedUrl);
+                    console.warn(`Company not found (404): ${normalizedUrl}`);
                     result = { success: false, url: normalizedUrl, message: 'Company not found', status_code: 404 };
                 } else {
                     throw error;
                 }
             }
 
-            if (!result.success) {
-                // Keep the run green when Scrappa returns a structured failure payload.
-                if (result.status_code === 404) {
-                    console.log('Company not found: ' + normalizedUrl);
-                }
-
+            if (!result.success && result.status_code !== 404) {
                 console.warn('Company scraping returned success: false' + (result.message ? ` (${result.message})` : ''));
-            } else {
-                console.log('Successfully scraped company: ' + (result.name ?? 'Unknown'));
+            } else if (result.success) {
+                console.log(`Successfully scraped company: ${result.name ?? 'Unknown'}`);
             }
 
             await persistActorResult(result);
@@ -172,7 +164,7 @@ async function main(): Promise<void> {
 
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('Actor failed: ' + message);
+        console.error(`Actor failed: ${message}`);
         await Actor.fail(message);
         return;
     }
