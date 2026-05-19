@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { ScrappaClient } from './shared/index.js';
+import { ScrappaApiError, ScrappaClient } from './shared/index.js';
 import { buildLinkedInCompanyParams } from './request-params.js';
 import { normalizeLinkedInCompanyUrl } from './url.js';
 
@@ -123,10 +123,8 @@ async function main(): Promise<void> {
                     ...response,
                 };
             } catch (error) {
-                const message = error instanceof Error ? error.message : String(error);
-
                 // Handle 404s gracefully - push a failure result instead of failing the actor
-                if (message.includes('(404)')) {
+                if (error instanceof ScrappaApiError && error.status === 404) {
                     console.warn(`Company not found (404): ${normalizedUrl}`);
                     result = { success: false, url: normalizedUrl, message: 'Company not found', status_code: 404 };
                 } else {

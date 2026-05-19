@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { ScrappaClient } from './shared/index.js';
+import { ScrappaApiError, ScrappaClient } from './shared/index.js';
 import { buildLinkedInProfileParams } from './request-params.js';
 import { normalizeLinkedInProfileUrl } from './url.js';
 
@@ -146,10 +146,8 @@ async function main(): Promise<void> {
                     ...response,
                 };
             } catch (error) {
-                const message = error instanceof Error ? error.message : String(error);
-
                 // Handle 404s gracefully per URL so one missing profile does not stop the batch.
-                if (message.includes('(404)')) {
+                if (error instanceof ScrappaApiError && error.status === 404) {
                     console.warn(`Profile not found (404): ${normalizedUrl}`);
                     result = {
                         success: false,

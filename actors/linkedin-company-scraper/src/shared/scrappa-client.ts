@@ -11,6 +11,17 @@ export interface ScrappaError {
     errors?: Record<string, string[]>;
 }
 
+export class ScrappaApiError extends Error {
+    constructor(
+        public readonly status: number,
+        message: string,
+        public readonly errors?: Record<string, string[]>
+    ) {
+        super(`Scrappa API error (${status}): ${message}`);
+        this.name = 'ScrappaApiError';
+    }
+}
+
 export class ScrappaClient {
     private apiKey: string;
     private baseUrl: string;
@@ -97,14 +108,16 @@ export class ScrappaClient {
 
         if (!response.ok) {
             let errorMessage: string;
+            let errors: Record<string, string[]> | undefined;
             // Clone response before reading to allow fallback to text() if json() fails
             const responseClone = response.clone();
             try {
                 const errorData = await response.json() as { message?: string; errors?: Record<string, string[]> };
                 errorMessage = errorData.message ?? `HTTP ${response.status}`;
+                errors = errorData.errors;
 
-                if (errorData.errors) {
-                    const errorDetails = Object.entries(errorData.errors)
+                if (errors) {
+                    const errorDetails = Object.entries(errors)
                         .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
                         .join('; ');
                     errorMessage += ` - ${errorDetails}`;
@@ -113,7 +126,7 @@ export class ScrappaClient {
                 errorMessage = await responseClone.text() || `HTTP ${response.status}`;
             }
 
-            throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
+            throw new ScrappaApiError(response.status, errorMessage, errors);
         }
 
         return response.json() as Promise<T>;
