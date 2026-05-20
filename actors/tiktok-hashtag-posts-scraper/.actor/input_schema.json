@@ -9,7 +9,7 @@
       "type": "string",
       "description": "TikTok hashtag with or without #, full HTTPS TikTok hashtag URL, or numeric challenge ID. Bare numeric values are treated as challenge IDs.",
       "editor": "textfield",
-      "prefill": "fyp",
+      "prefill": "cosplay",
       "pattern": "^(?:(?![0-9]{101,}$)#?[^\\s?#/=:]{1,255}|[0-9]{1,100}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/tag/[^/?#]+/?(?:[?#].*)?)$"
     },
     "region": {
