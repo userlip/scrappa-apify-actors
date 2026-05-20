@@ -21,7 +21,7 @@ Use one Instagram post per run. The recommended input is a full post URL:
 
 ```json
 {
-  "url": "https://www.instagram.com/natgeo/p/DXHKcyvEWfr/"
+  "url": "https://www.instagram.com/p/DUBtwxGEqz2/"
 }
 ```
 
@@ -29,7 +29,7 @@ You can also provide the shortcode directly:
 
 ```json
 {
-  "shortcode": "DXHKcyvEWfr"
+  "shortcode": "DUBtwxGEqz2"
 }
 ```
 
@@ -40,7 +40,7 @@ The legacy `media_id` field is still accepted for compatibility and is treated a
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `url` | String | Yes, unless `shortcode` or `media_id` is provided | Full Instagram post URL. Recommended format: `https://www.instagram.com/username/p/SHORTCODE/`. |
-| `shortcode` | String | Yes, unless `url` or `media_id` is provided | Instagram post shortcode, such as `DXHKcyvEWfr`. |
+| `shortcode` | String | Yes, unless `url` or `media_id` is provided | Instagram post shortcode, such as `DUBtwxGEqz2`. |
 | `media_id` | String | No | Legacy input alias. Treated as the Instagram post shortcode for older integrations. |
 
 ## Tested Input
@@ -49,11 +49,11 @@ This README is based on a successful Apify run tested with:
 
 ```json
 {
-  "url": "https://www.instagram.com/natgeo/p/DXHKcyvEWfr/"
+  "url": "https://www.instagram.com/p/DUBtwxGEqz2/"
 }
 ```
 
-The run returned one dataset item for shortcode `DXHKcyvEWfr` with engagement metrics, caption, hashtags, media URLs, author data, collaborators, and tagged users.
+The run returned one dataset item for shortcode `DUBtwxGEqz2` with caption, media, author, permalink, and post metadata.
 
 ## Output
 
@@ -91,39 +91,36 @@ Example dataset item:
 {
   "success": true,
   "data": {
-    "id": "3875111963462821867",
-    "shortcode": "DXHKcyvEWfr",
+    "id": "3819535222330010870",
+    "shortcode": "DUBtwxGEqz2",
     "media_type": "video",
-    "caption": "One trip to Italy is never enough...",
-    "hashtags": ["TucciinItaly", "TucciInItaly"],
-    "taken_at": "2026-04-14T13:00:04+00:00",
-    "taken_at_timestamp": 1776171604,
-    "like_count": 94087,
-    "comment_count": 1301,
-    "play_count": 1631739,
-    "view_count": 1631739,
+    "caption": "Turning daydreams into art...",
+    "hashtags": [],
+    "taken_at": null,
+    "taken_at_timestamp": null,
+    "like_count": null,
+    "comment_count": null,
+    "play_count": null,
+    "view_count": null,
     "media": [
       {
         "type": "video",
         "thumbnail_url": "https://...",
-        "video_url": "https://..."
+        "width": 640,
+        "height": 1137
       }
     ],
     "author": {
-      "username": "natgeo"
+      "id": 25025320,
+      "username": "instagram",
+      "profile_url": "https://www.instagram.com/instagram"
     },
-    "collaborators": [
-      { "username": "hulu", "full_name": null },
-      { "username": "disneyplus", "full_name": null }
-    ],
-    "tagged_users": [
-      { "username": "natgeotv", "full_name": "National Geographic TV" }
-    ],
+    "collaborators": [],
+    "tagged_users": [],
     "location": null,
     "is_paid_partnership": false,
     "product_type": "clips",
-    "permalink": "https://www.instagram.com/natgeo/p/DXHKcyvEWfr/",
-    "accessibility_caption": null
+    "permalink": "https://www.instagram.com/instagram/p/DUBtwxGEqz2/"
   }
 }
 ```

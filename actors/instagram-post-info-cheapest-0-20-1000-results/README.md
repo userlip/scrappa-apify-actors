@@ -4,7 +4,7 @@ Recommended input:
 
 ```json
 {
-  "url": "https://www.instagram.com/natgeo/p/DXHKcyvEWfr/"
+  "url": "https://www.instagram.com/p/DUBtwxGEqz2/"
 }
 ```
 
