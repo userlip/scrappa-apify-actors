@@ -42,7 +42,7 @@ async function main(): Promise<void> {
                 const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
                 if (isPayPerEvent) {
                     const chargeResult = await Actor.pushData(properties, BOOKING_RESULT_CHARGE_EVENT);
-                    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < properties.length) {
+                    if (chargeResult.eventChargeLimitReached) {
                         const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${properties.length} Booking.com results for search ${request.index + 1}.`;
                         console.log(statusMessage, JSON.stringify({
                             event: BOOKING_RESULT_CHARGE_EVENT,
