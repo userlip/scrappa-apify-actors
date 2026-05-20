@@ -1,13 +1,13 @@
 {
   "title": "Booking.com Search Scraper",
-  "description": "Search Booking.com by destination, dates, guests, rooms, currency, and locale. Provide either one search or multiple searches in a single run.",
+  "description": "Search Booking.com by destination, dates, guests, rooms, currency, and locale. Provide either a top-level destination or multiple searches in a single run.",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
     "ss": {
       "title": "Destination",
       "type": "string",
-      "description": "Booking.com destination search, such as Paris, New York, or Berlin.",
+      "description": "Booking.com destination search, such as Paris, New York, or Berlin. Required for single-search runs; use Batch Searches instead for multi-search runs.",
       "editor": "textfield",
       "prefill": "Paris"
     },

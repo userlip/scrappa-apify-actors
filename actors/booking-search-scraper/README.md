@@ -10,7 +10,7 @@ Scrape Booking.com search results through Scrappa. The actor returns one dataset
 
 ## Example input
 
-Important: replace the date values with real future dates before running the actor. The literal `YYYY-MM-DD` placeholders are not valid input.
+**Important:** replace the date values with real future dates before running the actor. The literal `YYYY-MM-DD` placeholders are not valid input.
 
 ```json
 {
@@ -29,7 +29,7 @@ Important: replace the date values with real future dates before running the act
 
 Use `searches` to run multiple Booking.com searches in one actor run. The actor calls Scrappa once per search and still pushes one dataset item per returned property.
 
-Each batch item also needs real future dates when `checkin` and `checkout` are provided.
+**Important:** each batch item also needs real future dates when `checkin` and `checkout` are provided.
 
 ```json
 {
