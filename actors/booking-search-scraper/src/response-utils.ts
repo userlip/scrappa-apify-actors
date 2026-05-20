@@ -40,8 +40,11 @@ function firstNumber(...values: unknown[]): number | null {
         if (typeof value === 'number' && Number.isFinite(value)) {
             return value;
         }
-        if (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value))) {
-            return Number(value);
+        if (typeof value === 'string' && value.trim() !== '') {
+            const number = Number(value);
+            if (Number.isFinite(number)) {
+                return number;
+            }
         }
     }
 

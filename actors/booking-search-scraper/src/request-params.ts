@@ -177,6 +177,10 @@ export function buildBookingSearchRequests(input: BookingSearchInput): BookingSe
         });
     }
 
+    if (input.searches !== undefined) {
+        throw new Error('searches must be an array of search objects');
+    }
+
     return [{
         params: buildSingleBookingSearchParams(input),
         index: 0,

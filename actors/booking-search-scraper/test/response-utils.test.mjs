@@ -62,3 +62,18 @@ test('builds normalized Booking.com dataset item', () => {
     assert.equal(item.request_lang, 'en-us');
     assert.equal(item.request_currency, 'EUR');
 });
+
+test('ignores non-finite numeric strings in normalized fields', () => {
+    const item = buildBookingDatasetItem(
+        {
+            name: 'Hotel Example',
+            review_score: 'Infinity',
+            review_count: '-Infinity',
+        },
+        { ss: 'Paris' },
+        0,
+    );
+
+    assert.equal(item.review_score, null);
+    assert.equal(item.review_count, null);
+});

@@ -111,6 +111,14 @@ test('requires destination and valid paired dates', () => {
     assert.throws(
         () => buildBookingSearchRequests({
             ss: 'Paris',
+            checkin,
+            checkout: checkin,
+        }),
+        /checkout must be after checkin/,
+    );
+    assert.throws(
+        () => buildBookingSearchRequests({
+            ss: 'Paris',
             checkin: '2026-02-30',
             checkout,
         }),
@@ -157,6 +165,10 @@ test('validates batch constraints', () => {
     assert.throws(
         () => buildBookingSearchRequests({ searches: ['Paris'] }),
         /searches\[0\] must be an object/,
+    );
+    assert.throws(
+        () => buildBookingSearchRequests({ ss: 'Paris', searches: 'Paris' }),
+        /searches must be an array of search objects/,
     );
     assert.throws(
         () => buildBookingSearchRequests({ searches: Array.from({ length: 26 }, () => ({ ss: 'Paris' })) }),

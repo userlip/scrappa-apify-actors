@@ -25,12 +25,19 @@ export class ScrappaTimeoutError extends Error {
     }
 }
 
+export class ScrappaNetworkError extends Error {
+    constructor(options?: ErrorOptions) {
+        super('Scrappa API network request failed', options);
+        this.name = 'ScrappaNetworkError';
+    }
+}
+
 export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
     return Math.min(1000 * Math.pow(2, failedAttempt) + jitterMs, 10000);
 }
 
 export function isRetryableScrappaError(error: unknown): boolean {
-    if (error instanceof ScrappaTimeoutError) {
+    if (error instanceof ScrappaTimeoutError || error instanceof ScrappaNetworkError) {
         return true;
     }
 
@@ -125,6 +132,9 @@ export class ScrappaClient {
         } catch (error) {
             if (error instanceof Error && error.name === 'AbortError') {
                 throw new ScrappaTimeoutError(this.timeoutMs, { cause: error });
+            }
+            if (error instanceof TypeError) {
+                throw new ScrappaNetworkError({ cause: error });
             }
             throw error;
         } finally {
