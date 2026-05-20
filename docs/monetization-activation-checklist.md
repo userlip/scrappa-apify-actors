@@ -1,13 +1,13 @@
 # Monetization Activation Checklist
 
-Last live metadata check: 2026-05-19 via Apify Actor list/detail API for the `TheScrappa` organization and local `.actor/actor.json` manifest count.
+Last live metadata check: 2026-05-20 via Apify Actor list/detail API for the `TheScrappa` organization and local `.actor/actor.json` manifest count.
 
 Current inventory backstop for every activation audit:
 
-- 63 live `thescrappa` actors in Apify.
-- 52 public `thescrappa` actors in Apify.
-- 53 local actor manifests in this repo; all 53 are represented by live Apify actors.
-- 10 live actors still missing local source directories here.
+- 64 live `thescrappa` actors in Apify.
+- 53 public `thescrappa` actors in Apify.
+- 55 local actor manifests in this repo; all 55 are represented by live Apify actors.
+- 9 live actors still missing local source directories here.
 
 This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation in May 2026, amended with newly published actors that now have scheduled May 2026 pricing. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
 Listing copy such as "$0.20/1k results" is not evidence of active paid pricing.
@@ -97,6 +97,7 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 
 ### 2026-06-02
 
+- [ ] `W8yULHo0Mzq7CYRrM` - `trustpilot-business-search-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-02T08:19:17.249Z` with `business-result` priced at `$0.0002/result`.
 - [ ] `8SvzPgdsdg1yZK1t4` - `jameda-search-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-02T12:51:18.290Z` with `doctor-result` priced at `$0.0002/result`.
 
 ## Portfolio Backstop
@@ -104,7 +105,7 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-19 baseline is 63 live actors, 52 public actors, 53 local actor manifests, and 10 missing local source directories.
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-20 baseline is 64 live actors, 53 public actors, 55 local actor manifests, and 9 missing local source directories.
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.

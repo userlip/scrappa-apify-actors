@@ -101,13 +101,13 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-19. It lists all 63 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-20. It lists all 64 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 63 live `thescrappa` actors in Apify
-- 52 public `thescrappa` actors in Apify
-- 53 local actor manifests in this repo; all 53 are represented by live Apify actors
-- 10 live actors missing a local source directory here
+- 64 live `thescrappa` actors in Apify
+- 53 public `thescrappa` actors in Apify
+- 55 local actor manifests in this repo; all 55 are represented by live Apify actors
+- 9 live actors missing a local source directory here
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
@@ -152,10 +152,11 @@ Current coverage in this repository:
 | `actors/tiktok-search-scraper` | `tiktok-search-scraper` | `0h6AKrgNYjn7pM5EO` | TikTok Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Public with `pricingInfos` active from 2026-05-13 (`PAY_PER_EVENT`, default dataset item at $0.0002/result); verify `currentPricingInfo` if Apify API begins populating it |
 | `actors/tiktok-user-posts-scraper` | `tiktok-user-posts-scraper` | `iSnxQQAvqnI0ZKL9F` | TikTok User Posts Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-19 (`PAY_PER_EVENT`); verify activation |
 | `actors/trustedshops-search-scraper` | `trustedshops-search-scraper` | `m7Ss9UWPRN5cQhIAK` | Trusted Shops Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `Aiz8AnjChhjer5rjV` succeeded with 20 results for `zalando` in `DEU` | Public with `pricingInfos` active from 2026-05-17 (`PAY_PER_EVENT`, `shop-result` at $0.0002/result); API still reports `pricingInfo/currentPricingInfo: null` immediately after publication |
+| `actors/trustpilot-business-search-scraper` | `trustpilot-business-search-scraper` | `W8yULHo0Mzq7CYRrM` | Trustpilot Business Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-02 (`PAY_PER_EVENT`, `business-result` at $0.0002/result); verify activation |
 | `actors/trustpilot-company-reviews-scraper` | `trustpilot-company-reviews-scraper` | `nBSazp2iBmBm1FQvz` | Trustpilot Company Reviews Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-23 (`PAY_PER_EVENT`); verify activation |
 | `actors/vinted-search-scraper` | `vinted-search-scraper` | `u8F5YhfXkQIrgLe73` | Vinted Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `SdU2bgbGDHeEilac1` succeeded with 1 result for `zara` in `FR` | Scheduled 2026-06-01 (`PAY_PER_EVENT`, `item-result` at $0.0002/result); Apify blocks immediate pricing with two-week lead time |
 | `actors/youtube-api-batch-videos` | `youtube-api-batch-videos` | `6ZUj6u4SWuJxOQnn9` | YouTube API Batch Videos | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
-| `Missing locally` | `youtube-api-channel-podcasts` | `Y3mKYlGNhsrBE7aZO` | YouTube API Channel Podcasts | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
+| `actors/youtube-api-channel-podcasts` | `youtube-api-channel-podcasts` | `Y3mKYlGNhsrBE7aZO` | YouTube API Channel Podcasts | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-channel-videos` | `youtube-api-channel-videos` | `w464EbPGGZqcmrC8j` | YouTube API Channel Videos | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `Missing locally` | `youtube-api-get-channel-about-details` | `vKqlzEXa47Ubpuix5` | YouTube API Get Channel "About" Details | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-get-channel-community` | `youtube-api-get-channel-community` | `S9Gf6PSqzz6hxvMNA` | YouTube API Get Channel Community | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
