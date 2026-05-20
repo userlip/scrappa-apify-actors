@@ -1,0 +1,58 @@
+{
+  "actorSpecification": 1,
+  "name": "booking-search-scraper",
+  "title": "Booking.com Search Scraper",
+  "description": "Scrape Booking.com search results with property names, URLs, images, review scores, locations, prices, dates, guests, and rooms.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "properties": {
+          "title": "Properties",
+          "transformation": {
+            "fields": ["name", "url", "image", "review_score", "review_score_word", "review_count", "location", "price", "currency", "request_search_index", "request_ss", "request_checkin", "request_checkout", "request_group_adults", "request_group_children", "request_no_rooms", "request_lang", "request_currency"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": { "label": "Name", "format": "text" },
+              "url": { "label": "URL", "format": "link" },
+              "image": { "label": "Image", "format": "image" },
+              "review_score": { "label": "Review Score", "format": "number" },
+              "review_score_word": { "label": "Review Label", "format": "text" },
+              "review_count": { "label": "Review Count", "format": "number" },
+              "location": { "label": "Location", "format": "text" },
+              "price": { "label": "Price", "format": "text" },
+              "currency": { "label": "Currency", "format": "text" },
+              "request_search_index": { "label": "Search Index", "format": "number" },
+              "request_ss": { "label": "Request Destination", "format": "text" },
+              "request_checkin": { "label": "Check-in", "format": "date" },
+              "request_checkout": { "label": "Check-out", "format": "date" },
+              "request_group_adults": { "label": "Adults", "format": "number" },
+              "request_group_children": { "label": "Children", "format": "number" },
+              "request_no_rooms": { "label": "Rooms", "format": "number" },
+              "request_lang": { "label": "Language", "format": "text" },
+              "request_currency": { "label": "Request Currency", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

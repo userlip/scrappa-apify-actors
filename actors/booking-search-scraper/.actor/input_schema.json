@@ -1,0 +1,92 @@
+{
+  "title": "Booking.com Search Scraper",
+  "description": "Search Booking.com by destination, dates, guests, rooms, currency, and locale. Provide either a top-level destination or multiple searches in a single run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "ss": {
+      "title": "Destination",
+      "type": "string",
+      "description": "Booking.com destination search, such as Paris, New York, or Berlin. Required for single-search runs; use Batch Searches instead for multi-search runs.",
+      "editor": "textfield",
+      "prefill": "Paris"
+    },
+    "checkin": {
+      "title": "Check-in Date",
+      "type": "string",
+      "description": "Check-in date in YYYY-MM-DD format. Provide with Check-out Date for property cards.",
+      "editor": "textfield"
+    },
+    "checkout": {
+      "title": "Check-out Date",
+      "type": "string",
+      "description": "Check-out date in YYYY-MM-DD format. Must be after Check-in Date.",
+      "editor": "textfield"
+    },
+    "group_adults": {
+      "title": "Adults",
+      "type": "integer",
+      "description": "Number of adults, from 1 to 30.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 2
+    },
+    "group_children": {
+      "title": "Children",
+      "type": "integer",
+      "description": "Number of children, from 0 to 20.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 20,
+      "default": 0
+    },
+    "no_rooms": {
+      "title": "Rooms",
+      "type": "integer",
+      "description": "Number of rooms, from 1 to 30.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 1
+    },
+    "lang": {
+      "title": "Language",
+      "type": "string",
+      "description": "Booking.com UI language hint, such as en-us, en, de, or fr.",
+      "editor": "textfield",
+      "default": "en-us"
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string",
+      "description": "Three-letter currency code such as USD, EUR, or GBP.",
+      "editor": "textfield",
+      "minLength": 3,
+      "maxLength": 3,
+      "pattern": "^[A-Za-z]{3}$",
+      "default": "USD"
+    },
+    "searches": {
+      "title": "Batch Searches",
+      "type": "array",
+      "description": "Optional list of Booking.com searches to run in one actor run. When provided, these searches are used instead of the single-search fields above.",
+      "editor": "json",
+      "maxItems": 25,
+      "items": {
+        "type": "object",
+        "required": ["ss"],
+        "properties": {
+          "ss": { "title": "Destination", "description": "Booking.com destination search.", "type": "string" },
+          "checkin": { "title": "Check-in Date", "description": "Check-in date in YYYY-MM-DD format.", "type": "string" },
+          "checkout": { "title": "Check-out Date", "description": "Check-out date in YYYY-MM-DD format.", "type": "string" },
+          "group_adults": { "title": "Adults", "description": "Number of adults.", "type": "integer", "minimum": 1, "maximum": 30 },
+          "group_children": { "title": "Children", "description": "Number of children.", "type": "integer", "minimum": 0, "maximum": 20 },
+          "no_rooms": { "title": "Rooms", "description": "Number of rooms.", "type": "integer", "minimum": 1, "maximum": 30 },
+          "lang": { "title": "Language", "description": "Booking.com UI language hint.", "type": "string" },
+          "currency": { "title": "Currency", "description": "Three-letter currency code.", "type": "string", "minLength": 3, "maxLength": 3, "pattern": "^[A-Za-z]{3}$" }
+        }
+      }
+    }
+  }
+}
