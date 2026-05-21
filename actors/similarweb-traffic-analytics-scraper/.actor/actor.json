@@ -1,0 +1,70 @@
+{
+  "actorSpecification": 1,
+  "name": "similarweb-traffic-analytics-scraper",
+  "title": "Similarweb Traffic Analytics Scraper",
+  "description": "Analyze website traffic, rankings, engagement metrics, traffic sources, top countries, monthly visits, and top keywords for one or more domains.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "domains": {
+          "title": "Domains",
+          "transformation": {
+            "fields": ["success", "domain", "site_name", "title", "category", "global_rank_value", "country_rank_value", "country_code", "category_rank_value", "visits", "time_on_site", "page_per_visit", "bounce_rate", "traffic_direct", "traffic_search", "traffic_social", "traffic_referrals", "traffic_mail", "traffic_paid_referrals", "latest_month", "latest_month_visits", "top_countries", "top_keywords", "estimated_monthly_visits", "monthly_visits", "screenshot", "request_domain", "input_domain", "status_code", "error"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": { "label": "Success", "format": "boolean" },
+              "domain": { "label": "Domain", "format": "text" },
+              "site_name": { "label": "Site Name", "format": "text" },
+              "title": { "label": "Title", "format": "text" },
+              "category": { "label": "Category", "format": "text" },
+              "global_rank_value": { "label": "Global Rank", "format": "number" },
+              "country_rank_value": { "label": "Country Rank", "format": "number" },
+              "country_code": { "label": "Country", "format": "text" },
+              "category_rank_value": { "label": "Category Rank", "format": "number" },
+              "visits": { "label": "Visits", "format": "number" },
+              "time_on_site": { "label": "Time On Site", "format": "number" },
+              "page_per_visit": { "label": "Pages / Visit", "format": "number" },
+              "bounce_rate": { "label": "Bounce Rate", "format": "number" },
+              "traffic_direct": { "label": "Direct", "format": "number" },
+              "traffic_search": { "label": "Search", "format": "number" },
+              "traffic_social": { "label": "Social", "format": "number" },
+              "traffic_referrals": { "label": "Referrals", "format": "number" },
+              "traffic_mail": { "label": "Mail", "format": "number" },
+              "traffic_paid_referrals": { "label": "Paid Referrals", "format": "number" },
+              "latest_month": { "label": "Latest Month", "format": "text" },
+              "latest_month_visits": { "label": "Latest Visits", "format": "number" },
+              "top_countries": { "label": "Top Countries", "format": "object" },
+              "top_keywords": { "label": "Top Keywords", "format": "object" },
+              "estimated_monthly_visits": { "label": "Monthly Visits", "format": "object" },
+              "monthly_visits": { "label": "Raw Monthly Visits", "format": "object" },
+              "screenshot": { "label": "Screenshot", "format": "image" },
+              "request_domain": { "label": "Request Domain", "format": "text" },
+              "input_domain": { "label": "Input Domain", "format": "text" },
+              "status_code": { "label": "Status", "format": "number" },
+              "error": { "label": "Error", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

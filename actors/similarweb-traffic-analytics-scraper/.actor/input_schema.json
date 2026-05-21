@@ -1,0 +1,25 @@
+{
+  "title": "Similarweb Traffic Analytics Scraper",
+  "description": "Analyze one or more domains with Similarweb traffic analytics.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "domain": {
+      "title": "Domain",
+      "type": "string",
+      "description": "Single domain to analyze. URLs are accepted and normalized to the hostname.",
+      "editor": "textfield",
+      "prefill": "google.com"
+    },
+    "domains": {
+      "title": "Domains",
+      "type": "array",
+      "description": "Batch of domains to analyze in one run. Each unique domain creates one dataset item.",
+      "editor": "stringList",
+      "prefill": ["google.com", "github.com", "shopify.com"],
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
