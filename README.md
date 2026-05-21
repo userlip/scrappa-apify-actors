@@ -101,12 +101,12 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-20. It lists all 64 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-21. It lists all 65 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 64 live `thescrappa` actors in Apify
-- 53 public `thescrappa` actors in Apify
-- 55 local actor manifests in this repo; all 55 are represented by live Apify actors
+- 65 live `thescrappa` actors in Apify
+- 54 public `thescrappa` actors in Apify
+- 56 local actor manifests in this repo; all 56 are represented by live Apify actors
 - 9 live actors missing a local source directory here
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
@@ -114,6 +114,7 @@ Current coverage in this repository:
 | Local directory | Apify actor | Actor ID | Title | Source coverage | Pricing follow-up |
 |---|---|---|---|---|---|
 | `actors/arbeitsagentur-jobs-scraper` | `arbeitsagentur-jobs-scraper` | `EiUCYz2MjYUuGT6Xu` | Arbeitsagentur Jobs Scraper ($0.30/1k results) | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-31 (`PAY_PER_EVENT`, default dataset job result at $0.0003/result); verify activation |
+| `actors/booking-search-scraper` | `booking-search-scraper` | `BehWN3LEvBxhEiJDF` | Booking.com Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-03 (`PAY_PER_EVENT`, `booking-result` at $0.0002/result); Apify pricing schedule created 2026-05-20 with two-week lead time |
 | `actors/google-finance-quote-scraper` | `google-finance-quote-scraper` | `aE7VcbT6CIWBxob7U` | Google Finance Quote Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-23 (`PAY_PER_EVENT`); verify activation |
 | `actors/google-finance-historical-prices-scraper` | `google-finance-historical-prices-scraper` | `zqckCpYtvPvxb2oxl` | Google Finance Historical Prices Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Public with `pricingInfos` active from 2026-05-13 (`PAY_PER_EVENT`, `price-point` at $0.0002/result); verify `currentPricingInfo` if Apify API begins populating it |
 | `actors/google-finance-markets-scraper` | `google-finance-markets-scraper` | `WvbWRqj67ve6fwwWZ` | Google Finance Markets Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `DzKsppuCjSGCv6vMb` succeeded | Scheduled 2026-05-29 (`PAY_PER_EVENT`, `market-item` at $0.0002/result); Apify blocks immediate pricing with two-week lead time |
