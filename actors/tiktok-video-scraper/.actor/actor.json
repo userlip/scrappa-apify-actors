@@ -1,0 +1,61 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-video-scraper",
+  "title": "TikTok Video Details Scraper",
+  "description": "Extract TikTok video details, author metadata, engagement metrics, covers, music fields, and playback/download URLs from one or more public TikTok video URLs through Scrappa.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 6000
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "videos": {
+          "title": "Videos",
+          "transformation": {
+            "fields": ["title", "author", "play_count", "digg_count", "comment_count", "share_count", "download_count", "collect_count", "duration", "create_time", "aweme_id", "id", "play", "wmplay", "hdplay", "cover", "request_url", "request_index", "request_hd", "result_found", "error_message"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": { "label": "Caption", "format": "text" },
+              "author": { "label": "Author", "format": "object" },
+              "play_count": { "label": "Views", "format": "number" },
+              "digg_count": { "label": "Likes", "format": "number" },
+              "comment_count": { "label": "Comments", "format": "number" },
+              "share_count": { "label": "Shares", "format": "number" },
+              "download_count": { "label": "Downloads", "format": "number" },
+              "collect_count": { "label": "Saves", "format": "number" },
+              "duration": { "label": "Duration", "format": "number" },
+              "create_time": { "label": "Created", "format": "number" },
+              "aweme_id": { "label": "Aweme ID", "format": "text" },
+              "id": { "label": "Video ID", "format": "text" },
+              "play": { "label": "No Watermark URL", "format": "link" },
+              "wmplay": { "label": "Watermark URL", "format": "link" },
+              "hdplay": { "label": "HD URL", "format": "link" },
+              "cover": { "label": "Cover", "format": "link" },
+              "request_url": { "label": "Request URL", "format": "link" },
+              "request_index": { "label": "Request #", "format": "number" },
+              "request_hd": { "label": "HD Requested", "format": "boolean" },
+              "result_found": { "label": "Found", "format": "boolean" },
+              "error_message": { "label": "Error", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

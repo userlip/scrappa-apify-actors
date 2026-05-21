@@ -8,9 +8,9 @@
     "checkedAt": "2026-05-21",
     "liveActorCount": 65,
     "publicActorCount": 54,
-    "localActorManifestCount": 56,
+    "localActorManifestCount": 57,
     "missingLocalSourceCount": 9,
-    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors such as Trustpilot Business Search and Booking.com Search."
+    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors such as Trustpilot Business Search and Booking.com Search. On this branch, actors/tiktok-video-scraper is a local manifest pending PR/deployment and is not yet represented by a live Apify actor."
   },
   "verificationRules": [
     "Fetch GET /v2/acts/{actorId} on or after scheduledActivationAt.",
