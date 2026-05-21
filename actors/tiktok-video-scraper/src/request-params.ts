@@ -32,8 +32,8 @@ export function requireTikTokVideoLookup(value: string): void {
     if (
         /^\/@[^/]+\/video\/\d+\/?$/i.test(parsed.pathname)
         || /^\/@[^/]+\/photo\/\d+\/?$/i.test(parsed.pathname)
-        || /^\/t\/[A-Za-z0-9]+\/?$/i.test(parsed.pathname)
-        || /^\/[A-Za-z0-9]+\/?$/i.test(parsed.pathname)
+        || /^\/t\/[A-Za-z0-9]{6,}\/?$/i.test(parsed.pathname)
+        || /^\/[A-Za-z0-9]{8,}\/?$/i.test(parsed.pathname)
     ) {
         return;
     }
@@ -93,7 +93,7 @@ export function resolveTikTokVideoLookups(
         throw new Error('At least one TikTok video URL is required');
     }
 
-    return [...new Set(lookups)];
+    return lookups;
 }
 
 export function buildTikTokVideoParams(

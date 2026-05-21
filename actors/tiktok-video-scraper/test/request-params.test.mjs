@@ -39,10 +39,10 @@ test('warns and omits non-boolean hd values', () => {
     assert.match(warnings[0], /hd must be a boolean/);
 });
 
-test('resolves batch URL input and deduplicates values', () => {
+test('resolves batch URL input and preserves duplicate requests', () => {
     assert.deepEqual(
         resolveTikTokVideoLookups({ urls: [` ${url} `, url] }),
-        [url],
+        [url, url],
     );
 });
 
@@ -97,6 +97,10 @@ test('rejects non-content TikTok URLs before calling Scrappa', () => {
         () => requireTikTokVideoLookup('https://www.tiktok.com/tag/example'),
         /video URL, short URL, photo URL, or video ID/,
     );
+    assert.throws(
+        () => requireTikTokVideoLookup('https://www.tiktok.com/privacy'),
+        /video URL, short URL, photo URL, or video ID/,
+    );
 });
 
 test('rejects non-TikTok URLs', () => {
@@ -138,4 +142,5 @@ test('input schema supports batch urls and legacy url', () => {
     assert.equal(itemPattern.test('7568510388342443294'), true);
     assert.equal(legacyPattern.test(url), true);
     assert.equal(itemPattern.test('https://example.com/@tiktok/video/7568510388342443294'), false);
+    assert.equal(itemPattern.test('https://www.tiktok.com/privacy'), false);
 });

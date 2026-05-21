@@ -32,13 +32,14 @@ Each requested TikTok URL is saved as one dataset item. Successful rows include 
 ```json
 {
   "request_url": "https://www.tiktok.com/@tiktok/video/7568510388342443294",
+  "request_index": 1,
   "request_hd": true,
   "result_found": true,
   "processed_time": 1.23
 }
 ```
 
-If Scrappa returns no video data for a requested URL, the actor still pushes a row with `result_found: false` so paid usage and batch accounting stay aligned to requested URLs.
+If Scrappa returns no video data or an individual lookup fails, the actor still pushes a row with `result_found: false` so paid usage and batch accounting stay aligned to requested URLs. Failed lookup rows include `error_message`.
 
 ## Publication Pricing Gate
 

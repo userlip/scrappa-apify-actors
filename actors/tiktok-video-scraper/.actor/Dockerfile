@@ -6,4 +6,4 @@ RUN npm install --include=dev \
     && npm run build \
     && npm prune --omit=dev
 
-CMD npm run start
+CMD ["node", "dist/main.js"]

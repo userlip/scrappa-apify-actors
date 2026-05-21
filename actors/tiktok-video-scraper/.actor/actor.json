@@ -26,7 +26,7 @@
         "videos": {
           "title": "Videos",
           "transformation": {
-            "fields": ["title", "author", "play_count", "digg_count", "comment_count", "share_count", "download_count", "collect_count", "duration", "create_time", "aweme_id", "id", "play", "wmplay", "hdplay", "cover", "request_url", "request_hd", "result_found"]
+            "fields": ["title", "author", "play_count", "digg_count", "comment_count", "share_count", "download_count", "collect_count", "duration", "create_time", "aweme_id", "id", "play", "wmplay", "hdplay", "cover", "request_url", "request_index", "request_hd", "result_found", "error_message"]
           },
           "display": {
             "component": "table",
@@ -48,8 +48,10 @@
               "hdplay": { "label": "HD URL", "format": "link" },
               "cover": { "label": "Cover", "format": "link" },
               "request_url": { "label": "Request URL", "format": "link" },
+              "request_index": { "label": "Request #", "format": "number" },
               "request_hd": { "label": "HD Requested", "format": "boolean" },
-              "result_found": { "label": "Found", "format": "boolean" }
+              "result_found": { "label": "Found", "format": "boolean" },
+              "error_message": { "label": "Error", "format": "text" }
             }
           }
         }

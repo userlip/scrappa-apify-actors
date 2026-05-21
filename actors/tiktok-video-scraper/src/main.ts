@@ -52,8 +52,10 @@ interface TikTokVideoResponse {
 interface TikTokVideoDatasetItem extends TikTokVideo {
     request_url: string;
     request_hd: boolean;
+    request_index: number;
     result_found: boolean;
     processed_time: number | null;
+    error_message?: string;
 }
 
 function assertSuccessfulResponse(response: TikTokVideoResponse, url: string): void {
@@ -77,11 +79,18 @@ function extractVideo(data: TikTokVideoResponse['data'], url: string): TikTokVid
     return data;
 }
 
-function toDatasetItem(video: TikTokVideo, url: string, input: TikTokVideoInput, response: TikTokVideoResponse): TikTokVideoDatasetItem {
+function toDatasetItem(
+    video: TikTokVideo,
+    url: string,
+    input: TikTokVideoInput,
+    response: TikTokVideoResponse,
+    requestIndex: number,
+): TikTokVideoDatasetItem {
     return {
         ...video,
         request_url: url,
         request_hd: input.hd === true,
+        request_index: requestIndex,
         result_found: true,
         processed_time: response.processed_time ?? null,
     };
@@ -103,44 +112,62 @@ async function main(): Promise<void> {
 
         const urls = resolveTikTokVideoLookups(input);
         const client = new ScrappaClient({ apiKey });
-        const responses: Array<{ url: string; response: TikTokVideoResponse }> = [];
         const rows: TikTokVideoDatasetItem[] = [];
 
         console.log(`Fetching TikTok video details for ${urls.length} URL${urls.length === 1 ? '' : 's'}`);
 
-        for (const url of urls) {
-            const params = buildTikTokVideoParams(url, input);
-            console.log(`Fetching TikTok video: ${formatTikTokVideoLookupForLog(url)}`);
+        for (const [index, url] of urls.entries()) {
+            const requestIndex = index + 1;
 
-            const response = await client.get<TikTokVideoResponse>('/tiktok/video', params);
-            assertSuccessfulResponse(response, url);
-            responses.push({ url, response });
+            try {
+                const params = buildTikTokVideoParams(url, input);
+                console.log(`Fetching TikTok video ${requestIndex}/${urls.length}: ${formatTikTokVideoLookupForLog(url)}`);
 
-            const video = extractVideo(response.data, url);
-            if (!video) {
-                console.log(`No video details found for: ${formatTikTokVideoLookupForLog(url)}`);
-                rows.push({
+                const response = await client.get<TikTokVideoResponse>('/tiktok/video', params);
+                assertSuccessfulResponse(response, url);
+
+                const video = extractVideo(response.data, url);
+                const row = video
+                    ? toDatasetItem(video, url, input, response, requestIndex)
+                    : {
+                        request_url: url,
+                        request_hd: input.hd === true,
+                        request_index: requestIndex,
+                        result_found: false,
+                        processed_time: response.processed_time ?? null,
+                    };
+
+                await Actor.pushData(row);
+                rows.push(row);
+
+                if (video) {
+                    console.log('Found 1 TikTok video record');
+                } else {
+                    console.log(`No video details found for: ${formatTikTokVideoLookupForLog(url)}`);
+                }
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                console.warn(`TikTok video lookup failed for ${formatTikTokVideoLookupForLog(url)}: ${message}`);
+
+                const row: TikTokVideoDatasetItem = {
                     request_url: url,
                     request_hd: input.hd === true,
+                    request_index: requestIndex,
                     result_found: false,
-                    processed_time: response.processed_time ?? null,
-                });
-                continue;
+                    processed_time: null,
+                    error_message: message,
+                };
+
+                await Actor.pushData(row);
+                rows.push(row);
             }
-
-            rows.push(toDatasetItem(video, url, input, response));
-            console.log('Found 1 TikTok video record');
         }
-
-        await Actor.pushData(rows);
-
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', urls.length === 1 ? responses[0]?.response ?? null : responses);
 
         const summary = {
             urls_requested: urls.length,
             dataset_items: rows.length,
             videos_found: rows.filter((row) => row.result_found).length,
+            lookups_failed: rows.filter((row) => row.error_message).length,
             hd_requested: input.hd === true,
         };
 
