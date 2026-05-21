@@ -1,0 +1,13 @@
+{
+    "actorSpecification": 1,
+    "name": "youtube-api-related-videos",
+    "title": "YouTube API Related Videos",
+    "description": "Fetch related YouTube videos for a given video ID.",
+    "version": "0.0",
+    "buildTag": "latest",
+    "input": "./input_schema.json",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    },
+    "dockerfile": "./Dockerfile"
+}
