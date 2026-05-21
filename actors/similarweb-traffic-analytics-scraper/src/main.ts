@@ -75,7 +75,6 @@ async function main(): Promise<void> {
         console.log(`Fetching Similarweb traffic analytics for ${describeSimilarwebTrafficRequests(requests)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const responses: Record<string, unknown>[] = [];
         let processed = 0;
         let successful = 0;
         let noData = 0;
@@ -117,7 +116,6 @@ async function main(): Promise<void> {
 
                     processed += 1;
                     noData += 1;
-                    responses.push(item);
                     if (result.statusMessage) {
                         statusMessage = result.statusMessage;
                         break;
@@ -133,7 +131,6 @@ async function main(): Promise<void> {
                     break;
                 }
 
-                responses.push(item);
                 processed += 1;
                 successful += 1;
                 if (result.statusMessage) {
@@ -158,7 +155,6 @@ async function main(): Promise<void> {
 
                     processed += 1;
                     noData += 1;
-                    responses.push(item);
                     if (result.statusMessage) {
                         statusMessage = result.statusMessage;
                         break;
@@ -177,7 +173,6 @@ async function main(): Promise<void> {
             successful,
             no_data: noData,
             status_message: statusMessage,
-            results: responses,
         };
 
         const store = await Actor.openKeyValueStore();
@@ -195,6 +190,8 @@ async function main(): Promise<void> {
             await Actor.exit({ statusMessage });
             return;
         }
+
+        await Actor.exit();
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
         const message = error instanceof ScrappaTimeoutError
@@ -203,8 +200,6 @@ async function main(): Promise<void> {
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
     }
-
-    await Actor.exit();
 }
 
 main().catch((error) => {
