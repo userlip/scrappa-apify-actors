@@ -26,7 +26,7 @@
         "domains": {
           "title": "Domains",
           "transformation": {
-            "fields": ["success", "domain", "site_name", "title", "category", "global_rank_value", "country_rank_value", "country_code", "category_rank_value", "visits", "time_on_site", "page_per_visit", "bounce_rate", "traffic_direct", "traffic_search", "traffic_social", "traffic_referrals", "traffic_mail", "traffic_paid_referrals", "latest_month", "latest_month_visits", "top_countries", "top_keywords", "estimated_monthly_visits", "screenshot", "request_domain", "input_domain", "status_code", "error"]
+            "fields": ["success", "domain", "site_name", "title", "category", "global_rank_value", "country_rank_value", "country_code", "category_rank_value", "visits", "time_on_site", "page_per_visit", "bounce_rate", "traffic_direct", "traffic_search", "traffic_social", "traffic_referrals", "traffic_mail", "traffic_paid_referrals", "latest_month", "latest_month_visits", "top_countries", "top_keywords", "estimated_monthly_visits", "monthly_visits", "screenshot", "request_domain", "input_domain", "status_code", "error"]
           },
           "display": {
             "component": "table",
@@ -55,6 +55,7 @@
               "top_countries": { "label": "Top Countries", "format": "object" },
               "top_keywords": { "label": "Top Keywords", "format": "object" },
               "estimated_monthly_visits": { "label": "Monthly Visits", "format": "object" },
+              "monthly_visits": { "label": "Raw Monthly Visits", "format": "object" },
               "screenshot": { "label": "Screenshot", "format": "image" },
               "request_domain": { "label": "Request Domain", "format": "text" },
               "input_domain": { "label": "Input Domain", "format": "text" },
