@@ -70,10 +70,15 @@ function extractVideo(data: TikTokVideoResponse['data'], url: string): TikTokVid
     }
 
     if (Array.isArray(data)) {
+        if (data.length === 0) {
+            return null;
+        }
+
         if (data.length > 1) {
             console.warn(`Scrappa returned ${data.length} video records for ${url}. Saving the first record to keep one dataset item per requested URL.`);
         }
-        return data[0] ?? null;
+
+        return data[0];
     }
 
     return data;
