@@ -71,6 +71,7 @@ function extractVideo(data: TikTokVideoResponse['data'], url: string): TikTokVid
 
     if (Array.isArray(data)) {
         if (data.length === 0) {
+            console.warn(`Scrappa returned an empty video record array for ${url}. Saving a not-found dataset item.`);
             return null;
         }
 
