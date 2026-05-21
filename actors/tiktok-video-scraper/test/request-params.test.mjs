@@ -101,6 +101,14 @@ test('rejects non-content TikTok URLs before calling Scrappa', () => {
         () => requireTikTokVideoLookup('https://www.tiktok.com/privacy'),
         /video URL, short URL, photo URL, or video ID/,
     );
+    assert.throws(
+        () => requireTikTokVideoLookup('https://www.tiktok.com/settings'),
+        /video URL, short URL, photo URL, or video ID/,
+    );
+    assert.throws(
+        () => requireTikTokVideoLookup('https://www.tiktok.com/ZGeqDY4yL'),
+        /video URL, short URL, photo URL, or video ID/,
+    );
 });
 
 test('rejects non-TikTok URLs', () => {
@@ -139,8 +147,10 @@ test('input schema supports batch urls and legacy url', () => {
 
     assert.equal(itemPattern.test(url), true);
     assert.equal(itemPattern.test('https://vm.tiktok.com/ZGeqDY4yL/'), true);
+    assert.equal(itemPattern.test('https://vt.tiktok.com/ZGeqDY4yL/'), true);
     assert.equal(itemPattern.test('7568510388342443294'), true);
     assert.equal(legacyPattern.test(url), true);
     assert.equal(itemPattern.test('https://example.com/@tiktok/video/7568510388342443294'), false);
     assert.equal(itemPattern.test('https://www.tiktok.com/privacy'), false);
+    assert.equal(itemPattern.test('https://www.tiktok.com/ZGeqDY4yL'), false);
 });

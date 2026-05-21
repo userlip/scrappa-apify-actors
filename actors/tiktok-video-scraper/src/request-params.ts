@@ -29,12 +29,14 @@ export function requireTikTokVideoLookup(value: string): void {
         throw new Error('A TikTok URL must use HTTPS');
     }
 
-    if (
-        /^\/@[^/]+\/video\/\d+\/?$/i.test(parsed.pathname)
+    if (/^\/@[^/]+\/video\/\d+\/?$/i.test(parsed.pathname)
         || /^\/@[^/]+\/photo\/\d+\/?$/i.test(parsed.pathname)
-        || /^\/t\/[A-Za-z0-9]{6,}\/?$/i.test(parsed.pathname)
-        || /^\/[A-Za-z0-9]{8,}\/?$/i.test(parsed.pathname)
-    ) {
+        || /^\/t\/[A-Za-z0-9]{6,}\/?$/i.test(parsed.pathname)) {
+        return;
+    }
+
+    if (/^(vm|vt)\.tiktok\.com$/i.test(parsed.hostname)
+        && /^\/[A-Za-z0-9]{8,}\/?$/i.test(parsed.pathname)) {
         return;
     }
 

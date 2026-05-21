@@ -12,7 +12,7 @@
       "prefill": ["https://www.tiktok.com/@tiktok/video/7568510388342443294"],
       "items": {
         "type": "string",
-        "pattern": "^(?:[0-9]{5,30}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/(?:@[^/]+/(?:[Vv][Ii][Dd][Ee][Oo]|[Pp][Hh][Oo][Tt][Oo])/[0-9]+|[Tt]/[A-Za-z0-9]{6,}|[A-Za-z0-9]{8,})/?(?:[?#].*)?)$"
+        "pattern": "^(?:[0-9]{5,30}|[Hh][Tt][Tt][Pp][Ss]://(?:([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/(?:@[^/]+/(?:[Vv][Ii][Dd][Ee][Oo]|[Pp][Hh][Oo][Tt][Oo])/[0-9]+|[Tt]/[A-Za-z0-9]{6,})|(?:[Vv][Mm]|[Vv][Tt])\\.[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/[A-Za-z0-9]{8,})/?(?:[?#].*)?)$"
       },
       "minItems": 1,
       "maxItems": 100
@@ -22,7 +22,7 @@
       "type": "string",
       "description": "Legacy single URL field for API callers. Ignored when TikTok Video URLs is provided.",
       "editor": "textfield",
-      "pattern": "^(?:[0-9]{5,30}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/(?:@[^/]+/(?:[Vv][Ii][Dd][Ee][Oo]|[Pp][Hh][Oo][Tt][Oo])/[0-9]+|[Tt]/[A-Za-z0-9]{6,}|[A-Za-z0-9]{8,})/?(?:[?#].*)?)$"
+      "pattern": "^(?:[0-9]{5,30}|[Hh][Tt][Tt][Pp][Ss]://(?:([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/(?:@[^/]+/(?:[Vv][Ii][Dd][Ee][Oo]|[Pp][Hh][Oo][Tt][Oo])/[0-9]+|[Tt]/[A-Za-z0-9]{6,})|(?:[Vv][Mm]|[Vv][Tt])\\.[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/[A-Za-z0-9]{8,})/?(?:[?#].*)?)$"
     },
     "hd": {
       "title": "Request HD Download URL",
