@@ -106,7 +106,7 @@ This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-20. I
 Current coverage in this repository:
 - 64 live `thescrappa` actors in Apify
 - 53 public `thescrappa` actors in Apify
-- 55 local actor manifests in this repo; all 55 are represented by live Apify actors
+- 56 local actor manifests in this repo; 55 are represented by live Apify actors and `actors/tiktok-video-scraper` is pending PR/deployment
 - 9 live actors missing a local source directory here
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
@@ -150,6 +150,7 @@ Current coverage in this repository:
 | `actors/tiktok-hashtag-posts-scraper` | `tiktok-hashtag-posts-scraper` | `H2dZTreGZ7s3XJsQ7` | TikTok Hashtag Posts Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-24 (`PAY_PER_EVENT`); verify activation |
 | `actors/tiktok-profile-scraper` | `tiktok-profile-scraper` | `ElkkSkWZ7xAaOqsr4` | TikTok Profile Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-19 (`PAY_PER_EVENT`); verify activation |
 | `actors/tiktok-search-scraper` | `tiktok-search-scraper` | `0h6AKrgNYjn7pM5EO` | TikTok Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Public with `pricingInfos` active from 2026-05-13 (`PAY_PER_EVENT`, default dataset item at $0.0002/result); verify `currentPricingInfo` if Apify API begins populating it |
+| `actors/tiktok-video-scraper` | `tiktok-video-scraper` | Pending deployment | TikTok Video Details Scraper | New local source pending PR/deployment | Schedule `PAY_PER_EVENT` before publication at default dataset item $0.0002/result, or earliest Apify-allowed activation date |
 | `actors/tiktok-user-posts-scraper` | `tiktok-user-posts-scraper` | `iSnxQQAvqnI0ZKL9F` | TikTok User Posts Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-19 (`PAY_PER_EVENT`); verify activation |
 | `actors/trustedshops-search-scraper` | `trustedshops-search-scraper` | `m7Ss9UWPRN5cQhIAK` | Trusted Shops Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `Aiz8AnjChhjer5rjV` succeeded with 20 results for `zalando` in `DEU` | Public with `pricingInfos` active from 2026-05-17 (`PAY_PER_EVENT`, `shop-result` at $0.0002/result); API still reports `pricingInfo/currentPricingInfo: null` immediately after publication |
 | `actors/trustpilot-business-search-scraper` | `trustpilot-business-search-scraper` | `W8yULHo0Mzq7CYRrM` | Trustpilot Business Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-02 (`PAY_PER_EVENT`, `business-result` at $0.0002/result); verify activation |
