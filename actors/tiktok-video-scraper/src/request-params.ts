@@ -4,6 +4,11 @@ export interface TikTokVideoInput {
     hd?: unknown;
 }
 
+export interface TikTokVideoLookup {
+    url: string;
+    validationError?: string;
+}
+
 export function requireTikTokVideoLookup(value: string): void {
     const lookup = value.trim();
     if (lookup === '') {
@@ -55,11 +60,11 @@ export function formatTikTokVideoLookupForLog(value: string): string {
     return parsed.toString();
 }
 
-export function resolveTikTokVideoLookups(
+export function resolveTikTokVideoRequests(
     input: TikTokVideoInput,
     warn: (message: string) => void = console.warn,
-): string[] {
-    const lookups: string[] = [];
+): TikTokVideoLookup[] {
+    const lookups: TikTokVideoLookup[] = [];
 
     if (Array.isArray(input.urls)) {
         for (const [index, value] of input.urls.entries()) {
@@ -74,8 +79,14 @@ export function resolveTikTokVideoLookups(
                 continue;
             }
 
-            requireTikTokVideoLookup(lookup);
-            lookups.push(lookup);
+            try {
+                requireTikTokVideoLookup(lookup);
+                lookups.push({ url: lookup });
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                warn(`urls[${index}] is invalid: ${message}`);
+                lookups.push({ url: lookup, validationError: message });
+            }
         }
     } else if (input.urls !== undefined && input.urls !== null) {
         warn(`urls must be an array of strings, got ${typeof input.urls}. Falling back to url.`);
@@ -85,7 +96,7 @@ export function resolveTikTokVideoLookups(
         const lookup = input.url.trim();
         if (lookup !== '') {
             requireTikTokVideoLookup(lookup);
-            lookups.push(lookup);
+            lookups.push({ url: lookup });
         }
     } else if (lookups.length === 0 && input.url !== undefined && input.url !== null && input.url !== '') {
         warn(`url must be a string, got ${typeof input.url}.`);
@@ -96,6 +107,15 @@ export function resolveTikTokVideoLookups(
     }
 
     return lookups;
+}
+
+export function resolveTikTokVideoLookups(
+    input: TikTokVideoInput,
+    warn: (message: string) => void = console.warn,
+): string[] {
+    return resolveTikTokVideoRequests(input, warn)
+        .filter((lookup) => lookup.validationError === undefined)
+        .map((lookup) => lookup.url);
 }
 
 export function buildTikTokVideoParams(

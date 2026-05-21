@@ -7,6 +7,7 @@ import {
     formatTikTokVideoLookupForLog,
     requireTikTokVideoLookup,
     resolveTikTokVideoLookups,
+    resolveTikTokVideoRequests,
 } from '../dist/request-params.js';
 
 const url = 'https://www.tiktok.com/@tiktok/video/7568510388342443294';
@@ -73,6 +74,25 @@ test('warns and skips invalid non-string batch entries', () => {
     assert.equal(warnings.length, 2);
     assert.match(warnings[0], /urls\[1] must be a string/);
     assert.match(warnings[1], /urls\[2] is empty/);
+});
+
+test('keeps invalid string batch entries as failed lookup requests', () => {
+    const warnings = [];
+    const lookups = resolveTikTokVideoRequests(
+        { urls: ['not-a-url', url] },
+        (message) => warnings.push(message),
+    );
+
+    assert.deepEqual(lookups, [
+        {
+            url: 'not-a-url',
+            validationError: 'A valid TikTok video URL, short URL, photo URL, or video ID is required',
+        },
+        { url },
+    ]);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /urls\[0] is invalid/);
+    assert.deepEqual(resolveTikTokVideoLookups({ urls: ['not-a-url', url] }, () => {}), [url]);
 });
 
 test('accepts canonical TikTok video URLs', () => {

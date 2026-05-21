@@ -3,7 +3,7 @@ import { ScrappaClient } from './shared/scrappa-client.js';
 import {
     buildTikTokVideoParams,
     formatTikTokVideoLookupForLog,
-    resolveTikTokVideoLookups,
+    resolveTikTokVideoRequests,
 } from './request-params.js';
 import type { TikTokVideoInput } from './request-params.js';
 
@@ -84,6 +84,14 @@ function extractVideo(data: TikTokVideoResponse['data'], url: string): TikTokVid
     return data;
 }
 
+function formatLookupForLog(value: string): string {
+    try {
+        return formatTikTokVideoLookupForLog(value);
+    } catch {
+        return value.trim();
+    }
+}
+
 function toDatasetItem(
     video: TikTokVideo,
     url: string,
@@ -115,20 +123,25 @@ async function main(): Promise<void> {
             throw new Error('At least one TikTok video URL is required');
         }
 
-        const urls = resolveTikTokVideoLookups(input);
+        const requests = resolveTikTokVideoRequests(input);
         const client = new ScrappaClient({ apiKey });
         let datasetItems = 0;
         let videosFound = 0;
         let lookupsFailed = 0;
 
-        console.log(`Fetching TikTok video details for ${urls.length} URL${urls.length === 1 ? '' : 's'}`);
+        console.log(`Fetching TikTok video details for ${requests.length} URL${requests.length === 1 ? '' : 's'}`);
 
-        for (const [index, url] of urls.entries()) {
+        for (const [index, request] of requests.entries()) {
             const requestIndex = index + 1;
+            const { url } = request;
 
             try {
+                if (request.validationError) {
+                    throw new Error(request.validationError);
+                }
+
                 const params = buildTikTokVideoParams(url, input);
-                console.log(`Fetching TikTok video ${requestIndex}/${urls.length}: ${formatTikTokVideoLookupForLog(url)}`);
+                console.log(`Fetching TikTok video ${requestIndex}/${requests.length}: ${formatLookupForLog(url)}`);
 
                 const response = await client.get<TikTokVideoResponse>('/tiktok/video', params);
                 assertSuccessfulResponse(response, url);
@@ -151,11 +164,11 @@ async function main(): Promise<void> {
                     videosFound += 1;
                     console.log('Found 1 TikTok video record');
                 } else {
-                    console.log(`No video details found for: ${formatTikTokVideoLookupForLog(url)}`);
+                    console.log(`No video details found for: ${formatLookupForLog(url)}`);
                 }
             } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
-                console.warn(`TikTok video lookup failed for ${formatTikTokVideoLookupForLog(url)}: ${message}`);
+                console.warn(`TikTok video lookup failed for ${formatLookupForLog(url)}: ${message}`);
 
                 const row: TikTokVideoDatasetItem = {
                     request_url: url,
@@ -173,7 +186,7 @@ async function main(): Promise<void> {
         }
 
         const summary = {
-            urls_requested: urls.length,
+            urls_requested: requests.length,
             dataset_items: datasetItems,
             videos_found: videosFound,
             lookups_failed: lookupsFailed,
