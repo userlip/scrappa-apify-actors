@@ -117,7 +117,9 @@ async function main(): Promise<void> {
 
         const urls = resolveTikTokVideoLookups(input);
         const client = new ScrappaClient({ apiKey });
-        const rows: TikTokVideoDatasetItem[] = [];
+        let datasetItems = 0;
+        let videosFound = 0;
+        let lookupsFailed = 0;
 
         console.log(`Fetching TikTok video details for ${urls.length} URL${urls.length === 1 ? '' : 's'}`);
 
@@ -143,9 +145,10 @@ async function main(): Promise<void> {
                     };
 
                 await Actor.pushData(row);
-                rows.push(row);
+                datasetItems += 1;
 
                 if (video) {
+                    videosFound += 1;
                     console.log('Found 1 TikTok video record');
                 } else {
                     console.log(`No video details found for: ${formatTikTokVideoLookupForLog(url)}`);
@@ -164,15 +167,16 @@ async function main(): Promise<void> {
                 };
 
                 await Actor.pushData(row);
-                rows.push(row);
+                datasetItems += 1;
+                lookupsFailed += 1;
             }
         }
 
         const summary = {
             urls_requested: urls.length,
-            dataset_items: rows.length,
-            videos_found: rows.filter((row) => row.result_found).length,
-            lookups_failed: rows.filter((row) => row.error_message).length,
+            dataset_items: datasetItems,
+            videos_found: videosFound,
+            lookups_failed: lookupsFailed,
             hd_requested: input.hd === true,
         };
 
