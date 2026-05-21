@@ -20,6 +20,20 @@ interface PushChargedItemResult {
     statusMessage: string | null;
 }
 
+function getChargeLimitStatus(): string | null {
+    const chargingManager = Actor.getChargingManager();
+    const { isPayPerEvent } = chargingManager.getPricingInfo();
+    if (!isPayPerEvent) {
+        return null;
+    }
+
+    if (chargingManager.calculateMaxEventChargeCountWithinLimit(DOMAIN_RESULT_CHARGE_EVENT) > 0) {
+        return null;
+    }
+
+    return `Charge limit reached before fetching the next Similarweb domain result; no more Scrappa requests will be made.`;
+}
+
 async function pushChargedItem(item: Record<string, unknown>): Promise<PushChargedItemResult> {
     const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
     if (!isPayPerEvent) {
@@ -28,13 +42,16 @@ async function pushChargedItem(item: Record<string, unknown>): Promise<PushCharg
     }
 
     const chargeResult = await Actor.pushData(item, DOMAIN_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < 1) {
-        const statusMessage = `Charge limit reached before saving Similarweb result for ${String(item.domain)}.`;
+    if (chargeResult.eventChargeLimitReached) {
+        const saved = chargeResult.chargedCount >= 1;
+        const statusMessage = saved
+            ? `Charge limit reached after saving Similarweb result for ${String(item.domain)}.`
+            : `Charge limit reached before saving Similarweb result for ${String(item.domain)}.`;
         console.log(statusMessage, JSON.stringify({
             event: DOMAIN_RESULT_CHARGE_EVENT,
             charged_count: chargeResult.chargedCount,
         }));
-        return { saved: false, statusMessage };
+        return { saved, statusMessage };
     }
 
     return { saved: true, statusMessage: null };
@@ -59,12 +76,22 @@ async function main(): Promise<void> {
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
         const responses: Record<string, unknown>[] = [];
-        let saved = 0;
-        let failed = 0;
+        let processed = 0;
+        let successful = 0;
         let noData = 0;
         let statusMessage: string | null = null;
 
         for (const request of requests) {
+            statusMessage = getChargeLimitStatus();
+            if (statusMessage) {
+                console.log(statusMessage, JSON.stringify({
+                    event: DOMAIN_RESULT_CHARGE_EVENT,
+                    processed,
+                    requested: requests.length,
+                }));
+                break;
+            }
+
             console.log(`Fetching Similarweb traffic analytics for ${request.domain}`);
 
             try {
@@ -88,9 +115,13 @@ async function main(): Promise<void> {
                         break;
                     }
 
-                    saved += 1;
+                    processed += 1;
                     noData += 1;
                     responses.push(item);
+                    if (result.statusMessage) {
+                        statusMessage = result.statusMessage;
+                        break;
+                    }
                     console.log(`No Similarweb traffic data returned for ${request.domain}`);
                     continue;
                 }
@@ -103,7 +134,12 @@ async function main(): Promise<void> {
                 }
 
                 responses.push(item);
-                saved += 1;
+                processed += 1;
+                successful += 1;
+                if (result.statusMessage) {
+                    statusMessage = result.statusMessage;
+                    break;
+                }
             } catch (error) {
                 if (error instanceof ScrappaHttpError && error.status === 404) {
                     const item = {
@@ -120,23 +156,26 @@ async function main(): Promise<void> {
                         break;
                     }
 
-                    saved += 1;
+                    processed += 1;
                     noData += 1;
                     responses.push(item);
+                    if (result.statusMessage) {
+                        statusMessage = result.statusMessage;
+                        break;
+                    }
                     console.log(`No Similarweb traffic data available for ${request.domain}`);
                     continue;
                 }
 
-                failed += 1;
                 throw error;
             }
         }
 
         const output = {
             requested: requests.length,
-            saved,
+            processed,
+            successful,
             no_data: noData,
-            failed,
             status_message: statusMessage,
             results: responses,
         };
@@ -147,9 +186,9 @@ async function main(): Promise<void> {
         console.log('Similarweb traffic analytics completed successfully');
         console.log('Results summary:', JSON.stringify({
             requested: output.requested,
-            saved: output.saved,
+            processed: output.processed,
+            successful: output.successful,
             no_data: output.no_data,
-            failed: output.failed,
         }));
 
         if (statusMessage) {
