@@ -4,9 +4,9 @@ Last live metadata check: 2026-05-21 via Apify Actor list/detail API for the `Th
 
 Current inventory backstop for every activation audit:
 
-- 65 live `thescrappa` actors in Apify.
-- 54 public `thescrappa` actors in Apify.
-- 57 local actor manifests in this repo; 56 are represented by live Apify actors and `actors/tiktok-video-scraper` is pending PR/deployment.
+- 66 live `thescrappa` actors in Apify.
+- 55 public `thescrappa` actors in Apify.
+- 57 local actor manifests in this repo; all 57 are represented by live Apify actors.
 - 9 live actors still missing local source directories here.
 
 This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation, amended with newly published actors that now have scheduled paid pricing. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
@@ -66,6 +66,7 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 
 - [ ] `1WE6uJzTx1DbS5u39` - `tiktok-followers-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-21T08:15:00.000Z`.
 - [ ] `a3CzWl85xlYKi9UIn` - `tiktok-following-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-21T08:30:00.000Z`.
+- [ ] `4DSOKG4JhcS4lhu60` - `tiktok-video-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-21T08:59:06.000Z` with `apify-default-dataset-item` priced at `$0.0002/result`.
 
 ### 2026-05-22
 
@@ -109,7 +110,7 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-21 baseline on this branch is 65 live actors, 54 public actors, 57 local actor manifests, and 9 missing local source directories, with `actors/tiktok-video-scraper` pending PR/deployment.
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-21 baseline on this branch is 66 live actors, 55 public actors, 57 local actor manifests, and 9 missing local source directories, with `actors/tiktok-video-scraper` live as actor `4DSOKG4JhcS4lhu60`.
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.
