@@ -7,12 +7,14 @@ Fetch related YouTube videos for a single video ID. The Actor calls Scrappa's Yo
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `id` | string | Yes | YouTube video ID. |
+| `continuation` | string | No | Continuation token from a previous response for fetching the next page of related videos. |
 
 Example:
 
 ```json
 {
-  "id": "dQw4w9WgXcQ"
+  "id": "dQw4w9WgXcQ",
+  "continuation": "optional-next-page-token"
 }
 ```
 

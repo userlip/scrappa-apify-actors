@@ -9,6 +9,12 @@
             "description": "YouTube video ID",
             "editor": "textfield",
             "prefill": "dQw4w9WgXcQ"
+        },
+        "continuation": {
+            "title": "Continuation token",
+            "type": "string",
+            "description": "Optional continuation token from a previous related videos response for fetching the next page.",
+            "editor": "textfield"
         }
     },
     "required": ["id"]
