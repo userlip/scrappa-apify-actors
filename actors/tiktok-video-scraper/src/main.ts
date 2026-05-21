@@ -111,9 +111,9 @@ function toDatasetItem(
 }
 
 async function main(): Promise<void> {
-    await Actor.init();
-
     try {
+        await Actor.init();
+
         const apiKey = process.env.SCRAPPA_API_KEY;
         if (!apiKey) {
             throw new Error('SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings.');
@@ -196,14 +196,14 @@ async function main(): Promise<void> {
 
         console.log('TikTok video details extraction completed successfully');
         console.log('Results summary:', JSON.stringify(summary));
+
+        await Actor.exit();
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
         return;
     }
-
-    await Actor.exit();
 }
 
 main().catch((error) => {
