@@ -106,7 +106,7 @@ This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-21. I
 Current coverage in this repository:
 - 65 live `thescrappa` actors in Apify
 - 54 public `thescrappa` actors in Apify
-- 57 local actor manifests in this repo; 56 are represented by live Apify actors and `actors/tiktok-video-scraper` is pending PR/deployment
+- 58 local actor manifests in this repo; 56 are represented by live Apify actors and `actors/tiktok-video-scraper` plus `actors/similarweb-traffic-analytics-scraper` are pending PR/deployment
 - 9 live actors missing a local source directory here
 - Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
@@ -145,6 +145,7 @@ Current coverage in this repository:
 | `actors/linkedin-post-scraper` | `linkedin-post-scraper` | `hVDOXgRoKJbnATxzs` | LinkedIn Post Scraper - $0.30/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-20 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/linkedin-profile-scraper` | `linkedin-profile-scraper` | `87AaxKjjQrK0F0g60` | LinkedIn Profile Scraper - $0.30/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-20 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/scrappa-google-search` | `scrappa-google-search` | `8ejIZ0nfRPShvWBSP` | Scrappa Google Search | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
+| `actors/similarweb-traffic-analytics-scraper` | `similarweb-traffic-analytics-scraper` | Pending deployment | Similarweb Traffic Analytics Scraper | New local source pending PR/deployment | Schedule `PAY_PER_EVENT`, `domain-result` at $0.0002-$0.0003/analyzed domain before publication, or earliest Apify-allowed activation date |
 | `actors/tiktok-comments-scraper` | `tiktok-comments-scraper` | `oaJANlheGg9o3EZjU` | TikTok Comments Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/tiktok-followers-scraper` | `tiktok-followers-scraper` | `1WE6uJzTx1DbS5u39` | TikTok Followers Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-21 (`PAY_PER_EVENT`); verify activation |
 | `actors/tiktok-following-scraper` | `tiktok-following-scraper` | `a3CzWl85xlYKi9UIn` | TikTok Following Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-21 (`PAY_PER_EVENT`); verify activation |
