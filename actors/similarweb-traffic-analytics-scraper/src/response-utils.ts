@@ -12,6 +12,7 @@ export interface SimilarwebTrafficResponse {
     traffic_sources?: Record<string, unknown>;
     top_countries?: unknown[];
     estimated_monthly_visits?: Record<string, unknown>;
+    monthly_visits?: Record<string, unknown>;
     top_keywords?: unknown[];
     screenshot?: string | null;
     [key: string]: unknown;
@@ -81,8 +82,15 @@ function latestEstimatedVisitMonth(visits: Record<string, unknown>): string | nu
     return months.length > 0 ? months[months.length - 1] : null;
 }
 
+function hasVisitValues(visits: Record<string, unknown>): boolean {
+    return Object.values(visits).some((value) => firstNumber(value) !== undefined);
+}
+
 export function hasSimilarwebTrafficData(response: SimilarwebTrafficResponse): boolean {
-    return rankValue(response.global_rank) !== null || firstNumber(asRecord(response.engagement).visits) !== undefined;
+    return rankValue(response.global_rank) !== null
+        || firstNumber(asRecord(response.engagement).visits) !== undefined
+        || hasVisitValues(asRecord(response.estimated_monthly_visits))
+        || hasVisitValues(asRecord(response.monthly_visits));
 }
 
 export function buildSimilarwebDatasetItem(
@@ -91,7 +99,11 @@ export function buildSimilarwebDatasetItem(
 ): Record<string, unknown> {
     const engagement = asRecord(response.engagement);
     const trafficSources = asRecord(response.traffic_sources);
-    const estimatedMonthlyVisits = asRecord(response.estimated_monthly_visits);
+    const monthlyVisits = asRecord(response.monthly_visits);
+    const estimatedMonthlyVisits = {
+        ...monthlyVisits,
+        ...asRecord(response.estimated_monthly_visits),
+    };
     const latestMonth = latestEstimatedVisitMonth(estimatedMonthlyVisits);
 
     return {
@@ -122,6 +134,7 @@ export function buildSimilarwebDatasetItem(
         traffic_paid_referrals: firstNumber(trafficSources.paid_referrals) ?? null,
         top_countries: asArray(response.top_countries),
         top_keywords: asArray(response.top_keywords),
+        monthly_visits: monthlyVisits,
         estimated_monthly_visits: estimatedMonthlyVisits,
         latest_month: latestMonth,
         latest_month_visits: latestMonth === null ? null : firstNumber(estimatedMonthlyVisits[latestMonth]) ?? null,
@@ -131,6 +144,7 @@ export function buildSimilarwebDatasetItem(
         result_counts: {
             top_countries: asArray(response.top_countries).length,
             top_keywords: asArray(response.top_keywords).length,
+            monthly_visit_months: Object.keys(monthlyVisits).length,
             estimated_monthly_visit_months: Object.keys(estimatedMonthlyVisits).length,
         },
     };
