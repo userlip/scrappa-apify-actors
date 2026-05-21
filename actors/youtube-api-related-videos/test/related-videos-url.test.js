@@ -20,6 +20,6 @@ test('encodes the video id', () => {
 test('requires an id', () => {
     assert.throws(
         () => buildRelatedVideosUrl({}),
-        /Search query "id" not provided/,
+        /YouTube video ID "id" not provided/,
     );
 });
