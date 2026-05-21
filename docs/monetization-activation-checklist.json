@@ -6,11 +6,11 @@
   "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled, amended with newly published actors that require exact-date activation verification.",
   "inventoryBackstop": {
     "checkedAt": "2026-05-21",
-    "liveActorCount": 65,
-    "publicActorCount": 54,
+    "liveActorCount": 66,
+    "publicActorCount": 55,
     "localActorManifestCount": 57,
     "missingLocalSourceCount": 9,
-    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors such as Trustpilot Business Search and Booking.com Search. On this branch, actors/tiktok-video-scraper is a local manifest pending PR/deployment and is not yet represented by a live Apify actor."
+    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors such as Trustpilot Business Search, Booking.com Search, and TikTok Video Details. actors/tiktok-video-scraper is live in Apify as 4DSOKG4JhcS4lhu60."
   },
   "verificationRules": [
     "Fetch GET /v2/acts/{actorId} on or after scheduledActivationAt.",
@@ -40,6 +40,7 @@
     { "actorId": "ztc698cHC09lkCDYE", "slug": "youtube-transcript-scraper", "scheduledActivationAt": "2026-05-19T11:18:38.521Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "1WE6uJzTx1DbS5u39", "slug": "tiktok-followers-scraper", "scheduledActivationAt": "2026-05-21T08:15:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "a3CzWl85xlYKi9UIn", "slug": "tiktok-following-scraper", "scheduledActivationAt": "2026-05-21T08:30:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
+    { "actorId": "4DSOKG4JhcS4lhu60", "slug": "tiktok-video-scraper", "scheduledActivationAt": "2026-05-21T08:59:06.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "apify-default-dataset-item", "expectedEventPriceUsd": 0.0002 },
     { "actorId": "GAAKVpkPvj3lMbO6G", "slug": "linkedin-jobs-search-scraper", "scheduledActivationAt": "2026-05-22T10:35:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "aE7VcbT6CIWBxob7U", "slug": "google-finance-quote-scraper", "scheduledActivationAt": "2026-05-23T12:40:05.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "nBSazp2iBmBm1FQvz", "slug": "trustpilot-company-reviews-scraper", "scheduledActivationAt": "2026-05-23T22:55:39.839Z", "expectedPricingModel": "PAY_PER_EVENT" },
