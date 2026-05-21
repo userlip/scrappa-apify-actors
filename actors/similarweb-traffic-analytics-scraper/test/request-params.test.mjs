@@ -20,6 +20,21 @@ test('builds normalized unique requests from single and batch inputs', () => {
     );
 });
 
+test('normalizes URL ports and internationalized domains', () => {
+    assert.deepEqual(
+        buildSimilarwebTrafficRequests({
+            domains: [
+                'https://example.com:8443/path?utm_source=test',
+                'https://www.bücher.example/katalog',
+            ],
+        }),
+        [
+            { domain: 'example.com', inputDomain: 'https://example.com:8443/path?utm_source=test' },
+            { domain: 'xn--bcher-kva.example', inputDomain: 'https://www.bücher.example/katalog' },
+        ],
+    );
+});
+
 test('rejects missing or malformed domains', () => {
     assert.throws(
         () => buildSimilarwebTrafficRequests({}),
@@ -32,6 +47,10 @@ test('rejects missing or malformed domains', () => {
     assert.throws(
         () => buildSimilarwebTrafficRequests({ domain: 'not-a-valid-domain!!!' }),
         /must be a valid domain name/,
+    );
+    assert.throws(
+        () => buildSimilarwebTrafficRequests({ domain: '93.184.216.34' }),
+        /not an IP address/,
     );
 });
 

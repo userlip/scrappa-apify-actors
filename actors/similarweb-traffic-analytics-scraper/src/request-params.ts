@@ -35,6 +35,10 @@ function normalizeDomain(value: string): string {
 
     domain = domain.replace(/^www\./, '').replace(/\.$/, '');
 
+    if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(domain)) {
+        throw new Error(`domain "${value}" must be a domain name, not an IP address`);
+    }
+
     if (domain.length < 3) {
         throw new Error(`domain "${value}" must be at least 3 characters after normalization`);
     }
