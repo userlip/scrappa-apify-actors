@@ -12,7 +12,7 @@ import type { SimilarwebTrafficResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
-const SCRAPPA_MAX_ATTEMPTS = 3;
+const SCRAPPA_MAX_ATTEMPTS = 2;
 const DOMAIN_RESULT_CHARGE_EVENT = 'domain-result';
 
 interface PushChargedItemResult {
@@ -202,7 +202,6 @@ async function main(): Promise<void> {
             : rawMessage;
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
-        return;
     }
 
     await Actor.exit();
