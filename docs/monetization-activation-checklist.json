@@ -30,7 +30,7 @@
     { "actorId": "S9Gf6PSqzz6hxvMNA", "slug": "youtube-api-get-channel-community", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "Xhwtx7clQKnPRez1H", "slug": "youtube-api-get-playlists-details", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "P1Jv1QuMoId4XUPlC", "slug": "youtube-api-get-video-details", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT" },
-    { "actorId": "eKzA6GhEOJACIiCUW", "slug": "youtube-api-related-videos", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "apify-default-dataset-item", "expectedEventPriceUsd": "0.0002-0.0003" },
+    { "actorId": "eKzA6GhEOJACIiCUW", "slug": "youtube-api-related-videos", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "apify-default-dataset-item", "expectedEventPriceUsdMin": 0.0002, "expectedEventPriceUsdMax": 0.0003 },
     { "actorId": "O1ltDU9qk4adR2x86", "slug": "youtube-api-search-by-category", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "ziD2fUoLsdzKlc6zR", "slug": "youtube-api-search-data", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "oecJ81oeff1KozCtd", "slug": "youtube-api-search-suggestions", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT" },
