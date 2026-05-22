@@ -161,6 +161,8 @@ test('builds normalized Kleinanzeigen dataset item', () => {
 });
 
 test('limits response arrays to saved listing count', () => {
+    assert.deepEqual(limitKleinanzeigenSearchResponse(null, 1), {});
+    assert.deepEqual(limitKleinanzeigenSearchResponse(undefined, 1), {});
     assert.deepEqual(
         limitKleinanzeigenSearchResponse({ data: [{ id: 1 }, { id: 2 }] }, 1),
         { data: [{ id: 1 }] },

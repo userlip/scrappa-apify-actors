@@ -141,51 +141,58 @@ export function buildKleinanzeigenDatasetItem(
 }
 
 export function limitKleinanzeigenSearchResponse(
-    response: KleinanzeigenSearchResponse,
+    response: KleinanzeigenSearchResponse | null | undefined,
     limit: number,
-    selectedSource: KleinanzeigenListingsSource | null = selectKleinanzeigenListings(response).source,
+    selectedSource?: KleinanzeigenListingsSource | null,
 ): KleinanzeigenSearchResponse {
+    if (!response) {
+        return {};
+    }
+
+    const source = selectedSource === undefined
+        ? selectKleinanzeigenListings(response).source
+        : selectedSource;
     const limitedResponse: KleinanzeigenSearchResponse = { ...response };
 
-    if (Array.isArray(response.data) && selectedSource === 'data') {
+    if (Array.isArray(response.data) && source === 'data') {
         limitedResponse.data = response.data.slice(0, limit);
     } else if (Array.isArray(response.data)) {
         delete limitedResponse.data;
     } else if (response.data && typeof response.data === 'object') {
         limitedResponse.data = { ...response.data };
 
-        if (Array.isArray(response.data.listings) && selectedSource === 'data.listings') {
+        if (Array.isArray(response.data.listings) && source === 'data.listings') {
             limitedResponse.data.listings = response.data.listings.slice(0, limit);
         } else {
             delete limitedResponse.data.listings;
         }
 
-        if (Array.isArray(response.data.results) && selectedSource === 'data.results') {
+        if (Array.isArray(response.data.results) && source === 'data.results') {
             limitedResponse.data.results = response.data.results.slice(0, limit);
         } else {
             delete limitedResponse.data.results;
         }
 
-        if (Array.isArray(response.data.items) && selectedSource === 'data.items') {
+        if (Array.isArray(response.data.items) && source === 'data.items') {
             limitedResponse.data.items = response.data.items.slice(0, limit);
         } else {
             delete limitedResponse.data.items;
         }
     }
 
-    if (Array.isArray(response.listings) && selectedSource === 'listings') {
+    if (Array.isArray(response.listings) && source === 'listings') {
         limitedResponse.listings = response.listings.slice(0, limit);
     } else {
         delete limitedResponse.listings;
     }
 
-    if (Array.isArray(response.results) && selectedSource === 'results') {
+    if (Array.isArray(response.results) && source === 'results') {
         limitedResponse.results = response.results.slice(0, limit);
     } else {
         delete limitedResponse.results;
     }
 
-    if (Array.isArray(response.items) && selectedSource === 'items') {
+    if (Array.isArray(response.items) && source === 'items') {
         limitedResponse.items = response.items.slice(0, limit);
     } else {
         delete limitedResponse.items;
