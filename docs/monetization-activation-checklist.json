@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-21",
-  "source": "Apify Actor list/detail API for TheScrappa organization and local .actor/actor.json manifest count",
+  "lastCheckedAt": "2026-05-22",
+  "source": "Apify Actor list/detail API for TheScrappa organization and local actor package.json manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
   "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled, amended with newly published actors that require exact-date activation verification.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-21",
-    "liveActorCount": 66,
-    "publicActorCount": 55,
-    "localActorManifestCount": 57,
-    "missingLocalSourceCount": 9,
-    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors such as Trustpilot Business Search, Booking.com Search, and TikTok Video Details. actors/tiktok-video-scraper is live in Apify as 4DSOKG4JhcS4lhu60."
+    "checkedAt": "2026-05-22",
+    "liveActorCount": 67,
+    "publicActorCount": 57,
+    "localActorManifestCount": 59,
+    "missingLocalSourceCount": 8,
+    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors such as Similarweb Traffic Analytics. actors/similarweb-traffic-analytics-scraper is live in Apify as MDgsOkRoh1bAfC28g."
   },
   "verificationRules": [
     "Fetch GET /v2/acts/{actorId} on or after scheduledActivationAt.",
@@ -30,6 +30,7 @@
     { "actorId": "S9Gf6PSqzz6hxvMNA", "slug": "youtube-api-get-channel-community", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "Xhwtx7clQKnPRez1H", "slug": "youtube-api-get-playlists-details", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "P1Jv1QuMoId4XUPlC", "slug": "youtube-api-get-video-details", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT" },
+    { "actorId": "eKzA6GhEOJACIiCUW", "slug": "youtube-api-related-videos", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "apify-default-dataset-item", "expectedEventPriceUsdMin": 0.0002, "expectedEventPriceUsdMax": 0.0003 },
     { "actorId": "O1ltDU9qk4adR2x86", "slug": "youtube-api-search-by-category", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "ziD2fUoLsdzKlc6zR", "slug": "youtube-api-search-data", "scheduledActivationAt": "2026-05-17T14:43:29.941Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "oecJ81oeff1KozCtd", "slug": "youtube-api-search-suggestions", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT" },
@@ -53,7 +54,8 @@
     { "actorId": "u8F5YhfXkQIrgLe73", "slug": "vinted-search-scraper", "scheduledActivationAt": "2026-06-01T07:00:00.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "item-result", "expectedEventPriceUsd": 0.0002 },
     { "actorId": "W8yULHo0Mzq7CYRrM", "slug": "trustpilot-business-search-scraper", "scheduledActivationAt": "2026-06-02T08:19:17.249Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "business-result", "expectedEventPriceUsd": 0.0002 },
     { "actorId": "8SvzPgdsdg1yZK1t4", "slug": "jameda-search-scraper", "scheduledActivationAt": "2026-06-02T12:51:18.290Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "doctor-result", "expectedEventPriceUsd": 0.0002 },
-    { "actorId": "BehWN3LEvBxhEiJDF", "slug": "booking-search-scraper", "scheduledActivationAt": "2026-06-03T10:06:39.118Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "booking-result", "expectedEventPriceUsd": 0.0002 }
+    { "actorId": "BehWN3LEvBxhEiJDF", "slug": "booking-search-scraper", "scheduledActivationAt": "2026-06-03T10:06:39.118Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "booking-result", "expectedEventPriceUsd": 0.0002 },
+    { "actorId": "MDgsOkRoh1bAfC28g", "slug": "similarweb-traffic-analytics-scraper", "scheduledActivationAt": "2026-06-04T11:52:30.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "domain-result", "expectedEventPriceUsd": 0.0002 }
   ],
   "privateScheduledActorsExcludedUntilPublic": [
     { "actorId": "Y3mKYlGNhsrBE7aZO", "slug": "youtube-api-channel-podcasts", "scheduledActivationAt": "2026-05-17T14:44:02.772Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
@@ -65,7 +67,6 @@
     { "actorId": "yJiDippxXaK5hWQRC", "slug": "youtube-api-get-channel-statistics", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
     { "actorId": "N5ol78TtqiMj4MtM6", "slug": "youtube-api-hashtags", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
     { "actorId": "hueJrwkrbo20Ufrna", "slug": "youtube-api-playlists", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
-    { "actorId": "eKzA6GhEOJACIiCUW", "slug": "youtube-api-related-videos", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
     { "actorId": "fq5Kq9OfBRWYu9go1", "slug": "youtube-api-video-chapters", "scheduledActivationAt": "2026-05-17T14:44:29.173Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false }
   ]
 }
