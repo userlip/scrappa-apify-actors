@@ -54,6 +54,39 @@ test('falls back to later non-empty listing arrays when earlier response shapes 
     );
 });
 
+test('prefers populated listing arrays in documented response priority order', () => {
+    assert.deepEqual(
+        getKleinanzeigenListings({
+            data: [{ title: 'Direct Data Listing' }],
+            listings: [{ title: 'Top Listing' }],
+            results: [{ title: 'Top Result' }],
+            items: [{ title: 'Top Item' }],
+            data_extra: [{ title: 'Ignored Listing' }],
+        }),
+        [{ title: 'Direct Data Listing' }],
+    );
+    assert.deepEqual(
+        getKleinanzeigenListings({
+            listings: [{ title: 'Top Listing' }],
+            results: [{ title: 'Top Result' }],
+            items: [{ title: 'Top Item' }],
+            data: {
+                listings: [{ title: 'Nested Listing' }],
+            },
+        }),
+        [{ title: 'Top Listing' }],
+    );
+    assert.deepEqual(
+        getKleinanzeigenListings({
+            data: {
+                results: [{ title: 'Nested Result' }],
+                items: [{ title: 'Nested Item' }],
+            },
+        }),
+        [{ title: 'Nested Result' }],
+    );
+});
+
 test('builds normalized Kleinanzeigen dataset item', () => {
     const item = buildKleinanzeigenDatasetItem(
         {
