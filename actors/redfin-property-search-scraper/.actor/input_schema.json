@@ -1,0 +1,130 @@
+{
+  "title": "Redfin Property Search Scraper",
+  "description": "Search Redfin property listings by region ID, region type, market, and filters. Use searches[] to run multiple Redfin searches in one Apify run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["region_id", "region_type", "market"],
+  "properties": {
+    "region_id": {
+      "title": "Region ID",
+      "type": "integer",
+      "description": "Redfin region identifier from Scrappa's /api/redfin/locations endpoint. Example: 16163 for Seattle.",
+      "editor": "number",
+      "minimum": 1,
+      "default": 16163
+    },
+    "region_type": {
+      "title": "Region Type",
+      "type": "integer",
+      "description": "Redfin region type: 1=neighborhood, 2=ZIP, 4=postal code, 5=county, 6=city.",
+      "editor": "select",
+      "enum": [1, 2, 4, 5, 6],
+      "enumTitles": ["Neighborhood", "ZIP", "Postal code", "County", "City"],
+      "default": 6
+    },
+    "market": {
+      "title": "Market",
+      "type": "string",
+      "description": "Redfin market identifier from the locations endpoint, such as seattle, socal, dc, or nyc.",
+      "editor": "textfield",
+      "default": "seattle",
+      "maxLength": 30
+    },
+    "min_price": {
+      "title": "Minimum Price",
+      "type": "integer",
+      "description": "Minimum listing price.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "max_price": {
+      "title": "Maximum Price",
+      "type": "integer",
+      "description": "Maximum listing price.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "num_beds": {
+      "title": "Minimum Bedrooms",
+      "type": "integer",
+      "description": "Minimum number of bedrooms.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 10
+    },
+    "num_baths": {
+      "title": "Minimum Bathrooms",
+      "type": "number",
+      "description": "Minimum number of bathrooms.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 10
+    },
+    "property_types": {
+      "title": "Property Types",
+      "type": "string",
+      "description": "Comma-separated Redfin property type IDs from 1-8. Leave blank for all types.",
+      "editor": "textfield",
+      "prefill": "1,2,3"
+    },
+    "status": {
+      "title": "Listing Status",
+      "type": "integer",
+      "description": "Listing status: 1=active, 9=all, 130=pending, 131=active plus pending.",
+      "editor": "select",
+      "enum": [1, 9, 130, 131],
+      "enumTitles": ["Active", "All", "Pending", "Active and pending"],
+      "default": 9
+    },
+    "sold_within_days": {
+      "title": "Sold Within Days",
+      "type": "integer",
+      "description": "Include properties sold within this many days. Required for some sold-listing workflows.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 365
+    },
+    "num_homes": {
+      "title": "Results Per Search",
+      "type": "integer",
+      "description": "Number of listings to return for each search.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 450,
+      "default": 50
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "Results page to fetch.",
+      "editor": "number",
+      "minimum": 1,
+      "default": 1
+    },
+    "searches": {
+      "title": "Batch Searches",
+      "type": "array",
+      "description": "Run multiple Redfin region searches in one Apify run. When provided, top-level search fields are ignored.",
+      "editor": "json",
+      "maxItems": 25,
+      "items": {
+        "type": "object",
+        "required": ["region_id", "region_type", "market"],
+        "properties": {
+          "region_id": { "type": "integer", "minimum": 1 },
+          "region_type": { "type": "integer", "enum": [1, 2, 4, 5, 6] },
+          "market": { "type": "string", "maxLength": 30 },
+          "min_price": { "type": "integer", "minimum": 0 },
+          "max_price": { "type": "integer", "minimum": 0 },
+          "num_beds": { "type": "integer", "minimum": 0, "maximum": 10 },
+          "num_baths": { "type": "number", "minimum": 0, "maximum": 10 },
+          "property_types": { "type": "string" },
+          "status": { "type": "integer", "enum": [1, 9, 130, 131] },
+          "sold_within_days": { "type": "integer", "minimum": 1, "maximum": 365 },
+          "num_homes": { "type": "integer", "minimum": 1, "maximum": 450 },
+          "page": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}
