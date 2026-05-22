@@ -181,6 +181,16 @@ test('limits response arrays to saved listing count', () => {
 test('limits only the selected response array when multiple shapes are present', () => {
     assert.deepEqual(
         limitKleinanzeigenSearchResponse({
+            data: [{ id: 'data-1' }, { id: 'data-2' }],
+            listings: [{ id: 'listing-1' }, { id: 'listing-2' }],
+        }, 1, 'listings'),
+        {
+            listings: [{ id: 'listing-1' }],
+        },
+    );
+
+    assert.deepEqual(
+        limitKleinanzeigenSearchResponse({
             data: {
                 cursor: 'next-page',
                 listings: [{ id: 'data-listing-1' }, { id: 'data-listing-2' }],
