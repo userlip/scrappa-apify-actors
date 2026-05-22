@@ -69,4 +69,4 @@ All six actors have a `SCRAPPA_API_KEY` env var configured as an Apify secret on
 
 ## Recommendation
 
-Hold listing promotion for `booking-search-scraper` until the Scrappa Booking endpoint stops returning `502` for the previously successful Paris input. Re-run the Paris smoke weekly, or sooner after a Scrappa Booking endpoint fix; promote after three consecutive successful smoke runs with non-empty datasets. The other five actors have fresh successful cloud-run evidence with dataset rows and scheduled paid per-event pricing.
+Hold listing promotion for `booking-search-scraper` until the Scrappa Booking endpoint stops returning `502` for the previously successful Paris input. Re-run the Paris smoke weekly, or sooner after a Scrappa Booking endpoint fix; promote after three consecutive successful smoke runs with non-empty datasets. Link the relevant Scrappa incident or status record here if one is created; no repository status-page reference was found during this review. The other five actors have fresh successful cloud-run evidence with dataset rows and scheduled paid per-event pricing.

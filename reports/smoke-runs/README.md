@@ -1,6 +1,6 @@
 # Smoke Run Reports
 
-Chronological evidence reports for Apify actor smoke runs.
+Chronological evidence reports for Apify actor smoke runs. Append new reports to the table in date order.
 
 | Date | Report | Scope |
 | --- | --- | --- |
