@@ -1,13 +1,13 @@
 # Monetization Activation Checklist
 
-Last live metadata check: 2026-05-21 via Apify Actor list/detail API for the `TheScrappa` organization and local `.actor/actor.json` manifest count.
+Last live metadata check: 2026-05-22 via Apify Actor list/detail API for the `TheScrappa` organization and local actor `package.json` manifest count.
 
 Current inventory backstop for every activation audit:
 
-- 66 live `thescrappa` actors in Apify.
-- 55 public `thescrappa` actors in Apify.
-- 57 local actor manifests in this repo; all 57 are represented by live Apify actors.
-- 9 live actors still missing local source directories here.
+- 67 live `thescrappa` actors in Apify.
+- 57 public `thescrappa` actors in Apify.
+- 59 local actor manifests in this repo; all 59 are represented by live Apify actors.
+- 8 live actors still missing local source directories here.
 
 This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation, amended with newly published actors that now have scheduled paid pricing. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
 Listing copy such as "$0.20/1k results" is not evidence of active paid pricing.
@@ -50,6 +50,7 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 - [ ] `S9Gf6PSqzz6hxvMNA` - `youtube-api-get-channel-community` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:43:29.941Z`.
 - [ ] `Xhwtx7clQKnPRez1H` - `youtube-api-get-playlists-details` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:43:29.941Z`.
 - [ ] `P1Jv1QuMoId4XUPlC` - `youtube-api-get-video-details` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:44:29.173Z`.
+- [ ] `eKzA6GhEOJACIiCUW` - `youtube-api-related-videos` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:44:29.173Z` with `apify-default-dataset-item` priced at `$0.0002-$0.0003/result` by tier.
 - [ ] `O1ltDU9qk4adR2x86` - `youtube-api-search-by-category` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:43:29.941Z`.
 - [ ] `ziD2fUoLsdzKlc6zR` - `youtube-api-search-data` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:43:29.941Z`.
 - [ ] `oecJ81oeff1KozCtd` - `youtube-api-search-suggestions` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:44:29.173Z`.
@@ -105,12 +106,16 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 
 - [ ] `BehWN3LEvBxhEiJDF` - `booking-search-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-03T10:06:39.118Z` with `booking-result` priced at `$0.0002/result`.
 
+### 2026-06-04
+
+- [ ] `MDgsOkRoh1bAfC28g` - `similarweb-traffic-analytics-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-04T11:52:30.000Z` with `domain-result` priced at `$0.0002/result`.
+
 ## Portfolio Backstop
 
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-21 baseline on this branch is 66 live actors, 55 public actors, 57 local actor manifests, and 9 missing local source directories, with `actors/tiktok-video-scraper` live as actor `4DSOKG4JhcS4lhu60`.
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-22 baseline on this branch is 67 live actors, 57 public actors, 59 local actor manifests, and 8 missing local source directories, with `actors/similarweb-traffic-analytics-scraper` live as actor `MDgsOkRoh1bAfC28g`.
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.
@@ -132,5 +137,4 @@ They are intentionally excluded from the public activation queue above and must 
 - `yJiDippxXaK5hWQRC` - `youtube-api-get-channel-statistics`
 - `N5ol78TtqiMj4MtM6` - `youtube-api-hashtags`
 - `hueJrwkrbo20Ufrna` - `youtube-api-playlists`
-- `eKzA6GhEOJACIiCUW` - `youtube-api-related-videos`
 - `fq5Kq9OfBRWYu9go1` - `youtube-api-video-chapters`
