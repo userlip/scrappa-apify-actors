@@ -4,6 +4,8 @@ Task: smoke-run the six public TheScrappa actors flagged as having successful bu
 
 Live Apify stats checked on 2026-05-22 showed no remaining public TheScrappa actor with `totalRuns=0`; the six newest/lowest-history public wrappers from the sweep were smoke-run anyway.
 
+The `Actor ID` values below are the canonical Apify actor IDs returned by `GET /v2/acts/{actorId}` for the public `thescrappa/{slug}` actors.
+
 ## Actors Smoke-Run
 
 | Actor ID | Slug | Build ID | Pricing status | Memory / timeout | Smoke run | Status | Dataset evidence | Log evidence |
@@ -63,7 +65,8 @@ All six actors have a `SCRAPPA_API_KEY` env var configured as an Apify secret on
 - Apify run logs: `GET /v2/actor-runs/{runId}/log`.
 - Apify datasets: `GET /v2/datasets/{datasetId}/items?clean=true&limit=3`.
 - Local schemas read from `actors/*/.actor/input_schema.json`.
+- Auth context: TheScrappa organization Apify API token, with secret values redacted by Apify.
 
 ## Recommendation
 
-Hold listing promotion for `booking-search-scraper` until the Scrappa Booking endpoint stops returning `502` for the previously successful Paris input. The other five actors have fresh successful cloud-run evidence with dataset rows and scheduled paid per-event pricing.
+Hold listing promotion for `booking-search-scraper` until the Scrappa Booking endpoint stops returning `502` for the previously successful Paris input. Re-run the Paris smoke weekly, or sooner after a Scrappa Booking endpoint fix; promote after three consecutive successful smoke runs with non-empty datasets. The other five actors have fresh successful cloud-run evidence with dataset rows and scheduled paid per-event pricing.
