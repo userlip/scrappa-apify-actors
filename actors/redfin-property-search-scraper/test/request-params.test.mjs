@@ -76,6 +76,7 @@ test('builds batch Redfin property search requests', () => {
 
 test('input schema exposes batch searches', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
+    assert.equal(schema.required, undefined);
     assert.equal(schema.properties.searches.type, 'array');
     assert.equal(schema.properties.searches.maxItems, 25);
     assert.deepEqual(schema.properties.searches.items.required, ['region_id', 'region_type', 'market']);

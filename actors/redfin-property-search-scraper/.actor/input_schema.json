@@ -3,7 +3,6 @@
   "description": "Search Redfin property listings by region ID, region type, market, and filters. Use searches[] to run multiple Redfin searches in one Apify run.",
   "type": "object",
   "schemaVersion": 1,
-  "required": ["region_id", "region_type", "market"],
   "properties": {
     "region_id": {
       "title": "Region ID",

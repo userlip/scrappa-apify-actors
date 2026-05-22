@@ -58,5 +58,12 @@ Common top-level fields include:
 - `request_region_id`
 - `request_region_type`
 - `request_market`
+- `request_min_price`
+- `request_max_price`
+- `request_num_beds`
+- `request_num_baths`
+- `request_property_types`
+- `request_status`
+- `request_sold_within_days`
 - `request_num_homes`
 - `request_page`
