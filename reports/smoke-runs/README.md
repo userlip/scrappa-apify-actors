@@ -1,6 +1,6 @@
 # Smoke Run Reports
 
-Chronological evidence reports for Apify actor smoke runs. Append new reports to the table in date order.
+Chronological evidence reports for Apify actor smoke runs. Run smoke checks before listing promotions, after Scrappa API changes, and during scheduled reliability sweeps; append new reports to the table in date order.
 
 | Date | Report | Scope |
 | --- | --- | --- |
