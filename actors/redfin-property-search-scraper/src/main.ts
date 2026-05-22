@@ -129,7 +129,9 @@ async function main(): Promise<void> {
             }));
         }
 
-        console.log('Redfin property search completed successfully');
+        console.log(statusMessage
+            ? `Redfin property search completed: ${statusMessage}`
+            : 'Redfin property search completed successfully');
         console.log('Results summary:', JSON.stringify({
             searches: requests.length,
             results: totalResults,
