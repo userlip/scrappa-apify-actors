@@ -79,3 +79,28 @@ test('limits response arrays to saved listing count', () => {
         { results: [{ id: 1 }] },
     );
 });
+
+test('limits all recognized response arrays when multiple shapes are present', () => {
+    assert.deepEqual(
+        limitKleinanzeigenSearchResponse({
+            data: {
+                listings: [{ id: 'data-listing-1' }, { id: 'data-listing-2' }],
+                results: [{ id: 'data-result-1' }, { id: 'data-result-2' }],
+                items: [{ id: 'data-item-1' }, { id: 'data-item-2' }],
+            },
+            listings: [{ id: 'listing-1' }, { id: 'listing-2' }],
+            results: [{ id: 'result-1' }, { id: 'result-2' }],
+            items: [{ id: 'item-1' }, { id: 'item-2' }],
+        }, 1),
+        {
+            data: {
+                listings: [{ id: 'data-listing-1' }],
+                results: [{ id: 'data-result-1' }],
+                items: [{ id: 'data-item-1' }],
+            },
+            listings: [{ id: 'listing-1' }],
+            results: [{ id: 'result-1' }],
+            items: [{ id: 'item-1' }],
+        },
+    );
+});

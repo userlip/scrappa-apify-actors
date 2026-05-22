@@ -68,7 +68,7 @@ export function getKleinanzeigenListings(
         }
     }
 
-    console.debug('Unexpected Kleinanzeigen response shape: expected "data", "listings", "results", or "items" array.');
+    console.warn('Unexpected Kleinanzeigen response shape: expected "data", "listings", "results", or "items" array.');
     return [];
 }
 
