@@ -21,6 +21,17 @@ interface PushChargedListingsResult {
     statusMessage: string | null;
 }
 
+function getChargeableListingCapacity(): number {
+    const chargingManager = Actor.getChargingManager();
+    const { isPayPerEvent } = chargingManager.getPricingInfo();
+
+    if (!isPayPerEvent) {
+        return Infinity;
+    }
+
+    return chargingManager.calculateMaxEventChargeCountWithinLimit(LISTING_RESULT_CHARGE_EVENT);
+}
+
 async function pushChargedListings(
     listings: Record<string, unknown>[],
     params: Record<string, unknown>,
@@ -78,6 +89,17 @@ async function main(): Promise<void> {
 
         for (const search of plan.searches) {
             const params = search.params;
+            const chargeableListingCapacity = getChargeableListingCapacity();
+            if (chargeableListingCapacity <= 0) {
+                statusMessage = `Charge limit reached before fetching Kleinanzeigen query ${String(params.query)} on page ${String(params.page)}.`;
+                console.log(statusMessage, JSON.stringify({
+                    event: LISTING_RESULT_CHARGE_EVENT,
+                    query: params.query,
+                    page: params.page,
+                }));
+                break;
+            }
+
             console.log(`Fetching Kleinanzeigen query ${String(params.query)} on page ${String(params.page)}`);
 
             const response = await client.get<KleinanzeigenSearchResponse>('/kleinanzeigen/search', params, {
