@@ -82,6 +82,26 @@ test('input schema exposes batch searches', async () => {
     assert.deepEqual(schema.properties.searches.items.required, ['region_id', 'region_type', 'market']);
 });
 
+test('input schema uses Apify-compatible select fields', async () => {
+    const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
+    assert.equal(schema.properties.region_type.type, 'string');
+    assert.deepEqual(schema.properties.region_type.enum, ['1', '2', '4', '5', '6']);
+    assert.equal(schema.properties.region_type.default, '6');
+    assert.equal(schema.properties.status.type, 'string');
+    assert.deepEqual(schema.properties.status.enum, ['1', '9', '130', '131']);
+    assert.equal(schema.properties.status.default, '9');
+});
+
+test('input schema describes batch search fields for Apify validation', async () => {
+    const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
+    for (const [field, property] of Object.entries(schema.properties.searches.items.properties)) {
+        assert.equal(typeof property.title, 'string', `${field} title`);
+        assert.notEqual(property.title.trim(), '', `${field} title`);
+        assert.equal(typeof property.description, 'string', `${field} description`);
+        assert.notEqual(property.description.trim(), '', `${field} description`);
+    }
+});
+
 test('requires Redfin region fields', () => {
     assert.throws(
         () => buildRedfinPropertySearchRequests({ region_type: 6, market: 'seattle' }),
