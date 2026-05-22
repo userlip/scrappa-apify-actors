@@ -85,6 +85,19 @@ test('prefers populated listing arrays in documented response priority order', (
         }),
         [{ title: 'Nested Result' }],
     );
+    assert.deepEqual(
+        getKleinanzeigenListings({
+            listings: [{ title: 'Top Listing' }],
+            results: [{ title: 'Top Result' }],
+            items: [{ title: 'Top Item' }],
+            data: {
+                listings: [{ title: 'Nested Listing' }],
+                results: [{ title: 'Nested Result' }],
+                items: [{ title: 'Nested Item' }],
+            },
+        }),
+        [{ title: 'Top Listing' }],
+    );
 });
 
 test('builds normalized Kleinanzeigen dataset item', () => {
