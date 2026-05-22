@@ -38,34 +38,47 @@ export interface KleinanzeigenSearchResponse {
 export function getKleinanzeigenListings(
     response: KleinanzeigenSearchResponse | null | undefined,
 ): KleinanzeigenListing[] {
-    if (Array.isArray(response?.data)) {
-        return response.data;
+    const candidates: KleinanzeigenListing[][] = [];
+
+    const data = response?.data;
+
+    if (Array.isArray(data)) {
+        candidates.push(data);
     }
 
     if (Array.isArray(response?.listings)) {
-        return response.listings;
+        candidates.push(response.listings);
     }
 
     if (Array.isArray(response?.results)) {
-        return response.results;
+        candidates.push(response.results);
     }
 
     if (Array.isArray(response?.items)) {
-        return response.items;
+        candidates.push(response.items);
     }
 
-    if (response?.data && typeof response.data === 'object') {
-        if (Array.isArray(response.data.listings)) {
-            return response.data.listings;
+    if (data && !Array.isArray(data) && typeof data === 'object') {
+        if (Array.isArray(data.listings)) {
+            candidates.push(data.listings);
         }
 
-        if (Array.isArray(response.data.results)) {
-            return response.data.results;
+        if (Array.isArray(data.results)) {
+            candidates.push(data.results);
         }
 
-        if (Array.isArray(response.data.items)) {
-            return response.data.items;
+        if (Array.isArray(data.items)) {
+            candidates.push(data.items);
         }
+    }
+
+    const populatedCandidate = candidates.find((candidate) => candidate.length > 0);
+    if (populatedCandidate) {
+        return populatedCandidate;
+    }
+
+    if (candidates.length > 0) {
+        return [];
     }
 
     console.warn('Unexpected Kleinanzeigen response shape: expected "data", "listings", "results", or "items" array.');

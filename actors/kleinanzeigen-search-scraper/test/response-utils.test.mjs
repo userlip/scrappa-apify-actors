@@ -21,6 +21,39 @@ test('extracts listings from primary and wrapped response shapes', () => {
     assert.deepEqual(getKleinanzeigenListings({}), []);
 });
 
+test('falls back to later non-empty listing arrays when earlier response shapes are empty', () => {
+    assert.deepEqual(
+        getKleinanzeigenListings({
+            listings: [],
+            data: {
+                listings: [{ title: 'Nested Listing' }],
+            },
+        }),
+        [{ title: 'Nested Listing' }],
+    );
+    assert.deepEqual(
+        getKleinanzeigenListings({
+            data: [],
+            listings: [],
+            results: [{ title: 'Result Listing' }],
+        }),
+        [{ title: 'Result Listing' }],
+    );
+    assert.deepEqual(
+        getKleinanzeigenListings({
+            data: {
+                listings: [],
+                results: [],
+                items: [],
+            },
+            listings: [],
+            results: [],
+            items: [],
+        }),
+        [],
+    );
+});
+
 test('builds normalized Kleinanzeigen dataset item', () => {
     const item = buildKleinanzeigenDatasetItem(
         {
