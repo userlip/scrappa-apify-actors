@@ -90,6 +90,7 @@ async function main(): Promise<void> {
             : rawMessage;
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
+        return;
     }
 
     await Actor.exit();
