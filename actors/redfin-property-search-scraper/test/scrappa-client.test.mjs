@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
     ScrappaClient,
+    ScrappaHttpError,
     ScrappaNetworkError,
     ScrappaTimeoutError,
     getRetryDelayMs,
@@ -70,7 +71,13 @@ test('parses Scrappa JSON error messages and validation details', async () => {
 
         await assert.rejects(
             () => client.get('/redfin/search'),
-            /Scrappa API error \(422\): Invalid request - region_id: The region ID is required\./,
+            (error) => {
+                assert.equal(error instanceof ScrappaHttpError, true);
+                assert.equal(error.status, 422);
+                assert.equal(error.details, 'Invalid request - region_id: The region ID is required.');
+                assert.equal(error.message, 'Scrappa API error (422): Invalid request - region_id: The region ID is required.');
+                return true;
+            },
         );
     } finally {
         globalThis.fetch = originalFetch;
@@ -110,6 +117,9 @@ test('preserves timeout classification when reading an error response aborts', a
 test('classifies retryable Scrappa errors, timeout errors, and network errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);
     assert.equal(isRetryableScrappaError(new ScrappaNetworkError()), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError(429, 'Rate limited')), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError(503, 'Service unavailable')), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError(422, 'Invalid request')), false);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (429): Rate limited')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (503): Service unavailable')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (422): Invalid request')), false);

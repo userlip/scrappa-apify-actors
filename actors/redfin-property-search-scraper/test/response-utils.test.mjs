@@ -76,6 +76,7 @@ test('builds normalized Redfin dataset item', () => {
     assert.equal(item.lot_size, 5000);
     assert.equal(item.year_built, 1925);
     assert.equal(item.property_type, 1);
+    assert.equal(item.property_type_label, 'House');
     assert.equal(item.status, 'Active');
     assert.equal(item.latitude, 47.6097);
     assert.equal(item.longitude, -122.3331);
@@ -85,6 +86,8 @@ test('builds normalized Redfin dataset item', () => {
     assert.equal(item.request_region_id, 16163);
     assert.equal(item.request_region_type, 6);
     assert.equal(item.request_market, 'seattle');
+    assert.equal(item.request_status, 9);
+    assert.equal(item.request_status_label, 'All');
     assert.equal(item.request_num_homes, 50);
 });
 

@@ -49,6 +49,7 @@ Common top-level fields include:
 - `lot_size`
 - `year_built`
 - `property_type`
+- `property_type_label`
 - `status`
 - `latitude`
 - `longitude`
@@ -64,6 +65,7 @@ Common top-level fields include:
 - `request_num_baths`
 - `request_property_types`
 - `request_status`
+- `request_status_label`
 - `request_sold_within_days`
 - `request_num_homes`
 - `request_page`

@@ -35,6 +35,24 @@ export interface RedfinPropertySearchResponse {
     [key: string]: unknown;
 }
 
+const REDFIN_PROPERTY_TYPE_LABELS: Record<number, string> = {
+    1: 'House',
+    2: 'Townhouse',
+    3: 'Condo / Co-op',
+    4: 'Multi-family',
+    5: 'Land',
+    6: 'Other',
+    7: 'Manufactured',
+    8: 'Parking',
+};
+
+const REDFIN_STATUS_LABELS: Record<number, string> = {
+    1: 'Active',
+    9: 'All',
+    130: 'Pending',
+    131: 'Active and pending',
+};
+
 function firstString(...values: unknown[]): string | null {
     for (const value of values) {
         if (typeof value === 'string' && value.trim() !== '') {
@@ -64,6 +82,14 @@ function firstNumber(...values: unknown[]): number | null {
     return null;
 }
 
+function numberLabel(value: number | null, labels: Record<number, string>): string | null {
+    if (value === null) {
+        return null;
+    }
+
+    return labels[value] ?? `Unknown (${value})`;
+}
+
 export function getRedfinPropertyListings(response: RedfinPropertySearchResponse): RedfinPropertyListing[] {
     if (Array.isArray(response.data?.properties)) {
         return response.data.properties;
@@ -85,6 +111,9 @@ export function buildRedfinDatasetItem(
     params: Record<string, unknown>,
     searchIndex: number,
 ): Record<string, unknown> {
+    const propertyType = firstNumber(property.property_type);
+    const requestStatus = firstNumber(params.status);
+
     return {
         ...property,
         property_id: firstNumber(property.property_id),
@@ -99,7 +128,8 @@ export function buildRedfinDatasetItem(
         sqft: firstNumber(property.sqft),
         lot_size: firstNumber(property.lot_size),
         year_built: firstNumber(property.year_built),
-        property_type: firstNumber(property.property_type),
+        property_type: propertyType,
+        property_type_label: numberLabel(propertyType, REDFIN_PROPERTY_TYPE_LABELS),
         status: firstString(property.status),
         latitude: firstNumber(property.latitude),
         longitude: firstNumber(property.longitude),
@@ -115,6 +145,7 @@ export function buildRedfinDatasetItem(
         request_num_baths: params.num_baths ?? null,
         request_property_types: params.property_types ?? null,
         request_status: params.status ?? null,
+        request_status_label: numberLabel(requestStatus, REDFIN_STATUS_LABELS),
         request_sold_within_days: params.sold_within_days ?? null,
         request_num_homes: params.num_homes ?? null,
         request_page: params.page ?? null,
