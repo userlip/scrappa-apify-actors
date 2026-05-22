@@ -1,4 +1,5 @@
 import { Actor } from 'apify';
+import { actorChargingApi, getChargeLimitStatus, pushChargedProperties, REDFIN_PROPERTY_RESULT_CHARGE_EVENT } from './charging.js';
 import { buildRedfinPropertySearchRequests, describeRedfinPropertySearchRequest } from './request-params.js';
 import type { RedfinPropertySearchInput } from './request-params.js';
 import { buildRedfinDatasetItem, getRedfinPropertyListings, getRedfinSearchCount } from './response-utils.js';
@@ -7,61 +8,6 @@ import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
-const REDFIN_PROPERTY_RESULT_CHARGE_EVENT = 'property-result';
-
-interface PushChargedPropertiesResult {
-    savedCount: number;
-    statusMessage: string | null;
-}
-
-function getChargeLimitStatus(totalResults: number, searchIndex: number): string | null {
-    const chargingManager = Actor.getChargingManager();
-    const { isPayPerEvent } = chargingManager.getPricingInfo();
-    if (!isPayPerEvent) {
-        return null;
-    }
-
-    if (chargingManager.calculateMaxEventChargeCountWithinLimit(REDFIN_PROPERTY_RESULT_CHARGE_EVENT) > 0) {
-        return null;
-    }
-
-    return `Charge limit reached before fetching Redfin search ${searchIndex + 1}; ${totalResults} property result(s) were saved.`;
-}
-
-async function pushChargedProperties(
-    properties: Record<string, unknown>[],
-    searchIndex: number,
-): Promise<PushChargedPropertiesResult> {
-    const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
-    if (!isPayPerEvent) {
-        await Actor.pushData(properties);
-        return { savedCount: properties.length, statusMessage: null };
-    }
-
-    let savedCount = 0;
-    for (const property of properties) {
-        const chargeResult = await Actor.pushData(property, REDFIN_PROPERTY_RESULT_CHARGE_EVENT);
-        if (chargeResult.chargedCount >= 1) {
-            savedCount += 1;
-        }
-
-        if (chargeResult.eventChargeLimitReached) {
-            const statusMessage = chargeResult.chargedCount >= 1
-                ? `Charge limit reached after saving ${savedCount} of ${properties.length} Redfin property result(s) for search ${searchIndex + 1}.`
-                : `Charge limit reached before saving the next Redfin property result for search ${searchIndex + 1}.`;
-            console.log(statusMessage, JSON.stringify({
-                event: REDFIN_PROPERTY_RESULT_CHARGE_EVENT,
-                charged_count: chargeResult.chargedCount,
-                saved_count: savedCount,
-                requested_count: properties.length,
-                search_index: searchIndex,
-            }));
-            return { savedCount, statusMessage };
-        }
-    }
-
-    return { savedCount, statusMessage: null };
-}
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -85,7 +31,7 @@ async function main(): Promise<void> {
         let statusMessage: string | null = null;
 
         for (const request of requests) {
-            statusMessage = getChargeLimitStatus(totalResults, request.index);
+            statusMessage = getChargeLimitStatus(actorChargingApi, totalResults, request.index);
             if (statusMessage) {
                 console.log(statusMessage, JSON.stringify({
                     event: REDFIN_PROPERTY_RESULT_CHARGE_EVENT,
@@ -105,7 +51,7 @@ async function main(): Promise<void> {
                 .map((property) => buildRedfinDatasetItem(property, request.params, request.index));
 
             if (properties.length > 0) {
-                const pushResult = await pushChargedProperties(properties, request.index);
+                const pushResult = await pushChargedProperties(actorChargingApi, properties, request.index);
                 totalResults += pushResult.savedCount;
                 if (pushResult.statusMessage) {
                     statusMessage = pushResult.statusMessage;
@@ -144,7 +90,6 @@ async function main(): Promise<void> {
             : rawMessage;
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
-        return;
     }
 
     await Actor.exit();
