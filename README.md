@@ -101,14 +101,16 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-22. It lists all 67 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-22T11:37Z. It lists all 70 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 67 live `thescrappa` actors in Apify
-- 57 public `thescrappa` actors in Apify
-- 59 local actor manifests in this repo; all 59 are represented by live Apify actors
-- 8 live actors missing a local source directory here
-- Pricing follow-up: every live actor currently has `pricingInfos`, but the detailed Actor API still returns `pricingInfo: null` and `currentPricingInfo: null`; verify activation in Apify Console/API on the noted dates.
+- 70 live `thescrappa` actors in Apify
+- 60 public `thescrappa` actors in Apify according to the pricing and secret audits
+- 61 local actor manifests in this repo; all 61 are represented by live Apify actors
+- 9 live actors missing a local source directory here
+- Pricing follow-up: the 2026-05-22T11:37Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 44 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
+- Secret follow-up: the 2026-05-22T11:37Z secret audit found all 60 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- Run-health notes from the same audit pass: `google-patents-search-scraper` (`bSdKk0P65oTGDXLIh`) has no recorded Apify runs; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) has latest run `N3nanH7zuJ8K9eyrf` failed and should be retested before its 2026-06-03 pricing activation check.
   Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage | Pricing follow-up |
@@ -134,8 +136,10 @@ Current coverage in this repository:
 | `actors/google-search` | `google-search-scraper` | `2pU7EbKhShUz8BAnN` | Google Search Scraper | Local source present under legacy directory name; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-01-03 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/google-trends-interest-scraper` | `google-trends-interest-scraper` | `1D1neAFKb8LnbKvHG` | Google Trends Interest Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-05-09 (`PAY_PER_EVENT`); verify `currentPricingInfo` |
 | `actors/indeed-jobs-scraper` | `indeed-jobs-scraper` | `OVlDREBAcO4iPyW64` | Indeed Jobs Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-05-10 (`PAY_PER_EVENT`); verify `currentPricingInfo` |
+| `actors/immobilienscout24-search-scraper` | `immobilienscout24-search-scraper` | `601ilBYtO52NNsMrT` | ImmobilienScout24 Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-05 (`PAY_PER_EVENT`, `property-result` at $0.0003/result); Apify pricing schedule created with two-week lead time |
 | `actors/immowelt-property-search-scraper` | `immowelt-property-search-scraper` | `RtBugF27PKeDYceRA` | Immowelt Property Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` active from 2026-05-16 (`PAY_PER_EVENT`, `property-result` at $0.0003/result); verify `currentPricingInfo` if Apify API begins populating it |
 | `actors/jameda-search-scraper` | `jameda-search-scraper` | `8SvzPgdsdg1yZK1t4` | Jameda Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-02 (`PAY_PER_EVENT`, `doctor-result` at $0.0002/result); verify activation |
+| `Missing locally` | `kleinanzeigen-search-scraper` | `OTzcE9BHg83MpDprO` | Kleinanzeigen Search Scraper | Live Apify version uses `SOURCE_FILES`; source directory not in this repo | Public with `pricingInfos` active from 2026-05-22 (`PAY_PER_EVENT`, `listing-result` at $0.00025/result); add local source directory before the next source coverage audit |
 | `actors/stepstone-jobs-scraper` | `stepstone-jobs-scraper` | `DUUlFa5LGId75vOI0` | Stepstone Jobs Scraper ($0.30/1k results) | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-29 (`PAY_PER_EVENT`, default dataset job result at $0.0003/result); Apify pricing schedule created 2026-05-15 with two-week lead time |
 | `actors/instagram-post-info-cheapest-0-20-1000-results` | `instagram-post-info-cheapest-0-20-1000-results` | `nfdzs1z0cRIU1Bfhw` | Instagram Post Info &#124; Cheapest $0.20/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-02-01 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/instagram-user-info-cheapest-0-20-1000-results` | `instagram-user-info-cheapest-0-20-1000-results` | `VZrsJ6bO3h92y0duj` | Instagram User Info &#124; Cheapest $0.20/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-01-31 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
@@ -144,6 +148,7 @@ Current coverage in this repository:
 | `actors/linkedin-jobs-search-scraper` | `linkedin-jobs-search-scraper` | `GAAKVpkPvj3lMbO6G` | LinkedIn Jobs Search Scraper ($0.30/1k results) | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-22 (`PAY_PER_EVENT`); verify activation |
 | `actors/linkedin-post-scraper` | `linkedin-post-scraper` | `hVDOXgRoKJbnATxzs` | LinkedIn Post Scraper - $0.30/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-20 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/linkedin-profile-scraper` | `linkedin-profile-scraper` | `87AaxKjjQrK0F0g60` | LinkedIn Profile Scraper - $0.30/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-20 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
+| `actors/redfin-property-search-scraper` | `redfin-property-search-scraper` | `Xa9ClmgD4tI9lHT91` | Redfin Property Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-05 (`PAY_PER_EVENT`, `property-result` at $0.0003/result); Apify pricing schedule created with two-week lead time |
 | `actors/scrappa-google-search` | `scrappa-google-search` | `8ejIZ0nfRPShvWBSP` | Scrappa Google Search | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/similarweb-traffic-analytics-scraper` | `similarweb-traffic-analytics-scraper` | `MDgsOkRoh1bAfC28g` | Similarweb Traffic Analytics Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-04 (`PAY_PER_EVENT`, `domain-result` at $0.0002/analyzed domain); Apify pricing schedule created 2026-05-21 with two-week lead time |
 | `actors/tiktok-comments-scraper` | `tiktok-comments-scraper` | `oaJANlheGg9o3EZjU` | TikTok Comments Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
