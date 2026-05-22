@@ -1,0 +1,73 @@
+{
+  "actorSpecification": 1,
+  "name": "redfin-property-search-scraper",
+  "title": "Redfin Property Search Scraper",
+  "description": "Scrape Redfin property search listings with prices, beds, baths, square footage, addresses, coordinates, URLs, MLS numbers, and listing IDs.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "properties": {
+          "title": "Properties",
+          "transformation": {
+            "fields": ["property_id", "listing_id", "address", "city", "state", "zip", "price", "beds", "baths", "sqft", "lot_size", "year_built", "property_type", "property_type_label", "status", "latitude", "longitude", "url", "mls_number", "request_search_index", "request_region_id", "request_region_type", "request_market", "request_min_price", "request_max_price", "request_num_beds", "request_num_baths", "request_property_types", "request_status", "request_status_label", "request_sold_within_days", "request_num_homes", "request_page"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "property_id": { "label": "Property ID", "format": "number" },
+              "listing_id": { "label": "Listing ID", "format": "number" },
+              "address": { "label": "Address", "format": "text" },
+              "city": { "label": "City", "format": "text" },
+              "state": { "label": "State", "format": "text" },
+              "zip": { "label": "ZIP", "format": "text" },
+              "price": { "label": "Price", "format": "number" },
+              "beds": { "label": "Beds", "format": "number" },
+              "baths": { "label": "Baths", "format": "number" },
+              "sqft": { "label": "Square Feet", "format": "number" },
+              "lot_size": { "label": "Lot Size", "format": "number" },
+              "year_built": { "label": "Year Built", "format": "number" },
+              "property_type": { "label": "Property Type ID", "format": "number" },
+              "property_type_label": { "label": "Property Type", "format": "text" },
+              "status": { "label": "Status", "format": "text" },
+              "latitude": { "label": "Latitude", "format": "number" },
+              "longitude": { "label": "Longitude", "format": "number" },
+              "url": { "label": "Redfin URL", "format": "link" },
+              "mls_number": { "label": "MLS Number", "format": "text" },
+              "request_search_index": { "label": "Search Index", "format": "number" },
+              "request_region_id": { "label": "Request Region ID", "format": "number" },
+              "request_region_type": { "label": "Request Region Type", "format": "number" },
+              "request_market": { "label": "Request Market", "format": "text" },
+              "request_min_price": { "label": "Min Price", "format": "number" },
+              "request_max_price": { "label": "Max Price", "format": "number" },
+              "request_num_beds": { "label": "Min Beds", "format": "number" },
+              "request_num_baths": { "label": "Min Baths", "format": "number" },
+              "request_property_types": { "label": "Property Types", "format": "text" },
+              "request_status": { "label": "Request Status ID", "format": "number" },
+              "request_status_label": { "label": "Request Status", "format": "text" },
+              "request_sold_within_days": { "label": "Sold Within Days", "format": "number" },
+              "request_num_homes": { "label": "Requested Homes", "format": "number" },
+              "request_page": { "label": "Page", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
