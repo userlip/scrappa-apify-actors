@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import { Actor } from 'apify';
 import {
     buildImmobilienscout24SearchParams,
@@ -119,7 +120,7 @@ async function searchImmobilienscout24(
         return {
             success: false,
             total_results: 0,
-            page: params.page as number,
+            page: getSearchPage(params),
             total_pages: 0,
             results: [],
             error: {
@@ -130,20 +131,26 @@ async function searchImmobilienscout24(
     }
 }
 
-function isHandledEmptySearchError(error: unknown): boolean {
+export function isHandledEmptySearchError(error: unknown): boolean {
     if (!(error instanceof ScrappaApiError)) {
         return false;
     }
 
-    if (error.status === 400 && /invalid_location|location .*not found|bad request/i.test(error.responseMessage)) {
+    if (error.status === 400 && /invalid_location|location .*not found/i.test(error.responseMessage)) {
         return true;
     }
 
     return error.status === 502;
 }
 
-main().catch((error) => {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('Actor failed: ' + message);
-    process.exitCode = 1;
-});
+function getSearchPage(params: Record<string, unknown>): number {
+    return typeof params.page === 'number' ? params.page : 1;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    main().catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('Actor failed: ' + message);
+        process.exitCode = 1;
+    });
+}
