@@ -24,6 +24,10 @@ export interface Immobilienscout24SearchResponse {
     page?: number;
     total_pages?: number;
     results?: Immobilienscout24Listing[];
+    error?: {
+        message: string | null;
+        status: number | null;
+    };
     data?: {
         results?: Immobilienscout24Listing[];
         total_results?: number;

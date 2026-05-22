@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import { Actor } from 'apify';
 import {
     buildImmobilienscout24SearchParams,
@@ -14,7 +15,7 @@ import {
     limitImmobilienscout24SearchResponse,
 } from './response-utils.js';
 import type { Immobilienscout24SearchResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaApiError, ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
@@ -34,9 +35,7 @@ async function main(): Promise<void> {
         console.log(`Searching ImmobilienScout24 for ${describeImmobilienscout24SearchRequest(params)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<Immobilienscout24SearchResponse>('/immobilienscout24/search', params, {
-            attempts: SCRAPPA_MAX_ATTEMPTS,
-        });
+        const response = await searchImmobilienscout24(client, params);
         const rawListings = getImmobilienscout24Listings(response);
         const requestedLimit = params.per_page as number;
         const listings = rawListings
@@ -94,8 +93,64 @@ async function main(): Promise<void> {
     await Actor.exit();
 }
 
-main().catch((error) => {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('Actor failed: ' + message);
-    process.exitCode = 1;
-});
+async function searchImmobilienscout24(
+    client: ScrappaClient,
+    params: Record<string, unknown>,
+): Promise<Immobilienscout24SearchResponse> {
+    try {
+        return await client.get<Immobilienscout24SearchResponse>('/immobilienscout24/search', params, {
+            attempts: SCRAPPA_MAX_ATTEMPTS,
+        });
+    } catch (error) {
+        if (!isHandledEmptySearchError(error)) {
+            throw error;
+        }
+
+        const message = error instanceof ScrappaApiError
+            ? error.responseMessage
+            : error instanceof Error ? error.message : String(error);
+
+        console.warn('Scrappa ImmobilienScout24 search returned no usable result; saving a clean zero-result output.', JSON.stringify({
+            status: error instanceof ScrappaApiError ? error.status : null,
+            message,
+            request_location: params.location,
+            request_type: params.type,
+        }));
+
+        return {
+            success: false,
+            total_results: 0,
+            page: getSearchPage(params),
+            total_pages: 0,
+            results: [],
+            error: {
+                message,
+                status: error instanceof ScrappaApiError ? error.status : null,
+            },
+        };
+    }
+}
+
+export function isHandledEmptySearchError(error: unknown): boolean {
+    if (!(error instanceof ScrappaApiError)) {
+        return false;
+    }
+
+    if (error.status === 400 && /invalid_location|location .*not found/i.test(error.responseMessage)) {
+        return true;
+    }
+
+    return error.status === 502;
+}
+
+function getSearchPage(params: Record<string, unknown>): number {
+    return typeof params.page === 'number' ? params.page : 1;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    main().catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('Actor failed: ' + message);
+        process.exitCode = 1;
+    });
+}

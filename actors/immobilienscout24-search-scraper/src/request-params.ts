@@ -14,7 +14,7 @@ export interface Immobilienscout24SearchInput {
 }
 
 export const DEFAULT_IMMOBILIENSCOUT24_SEARCH_INPUT = {
-    location: 'Berlin',
+    location: '1276003001',
     type: 'apartment-rent',
     page: 1,
     per_page: 20,
