@@ -49,12 +49,6 @@ export interface KleinanzeigenListingsSelection {
     source: KleinanzeigenListingsSource | null;
 }
 
-export function getKleinanzeigenListings(
-    response: KleinanzeigenSearchResponse | null | undefined,
-): KleinanzeigenListing[] {
-    return selectKleinanzeigenListings(response).listings;
-}
-
 export function selectKleinanzeigenListings(
     response: KleinanzeigenSearchResponse | null | undefined,
 ): KleinanzeigenListingsSelection {

@@ -6,25 +6,26 @@ const responseUtilsModule = process.env.TEST_SOURCE === 'src'
     : '../dist/response-utils.js';
 const {
     buildKleinanzeigenDatasetItem,
-    getKleinanzeigenListings,
     limitKleinanzeigenSearchResponse,
     selectKleinanzeigenListings,
 } = await import(responseUtilsModule);
 
+const getSelectedListings = (response) => selectKleinanzeigenListings(response).listings;
+
 test('extracts listings from primary and wrapped response shapes', () => {
-    assert.deepEqual(getKleinanzeigenListings({ data: [{ title: 'Listing A' }] }), [{ title: 'Listing A' }]);
-    assert.deepEqual(getKleinanzeigenListings({ listings: [{ title: 'Listing B' }] }), [{ title: 'Listing B' }]);
-    assert.deepEqual(getKleinanzeigenListings({ results: [{ title: 'Listing C' }] }), [{ title: 'Listing C' }]);
-    assert.deepEqual(getKleinanzeigenListings({ items: [{ title: 'Listing D' }] }), [{ title: 'Listing D' }]);
-    assert.deepEqual(getKleinanzeigenListings({ data: { listings: [{ title: 'Listing E' }] } }), [{ title: 'Listing E' }]);
-    assert.deepEqual(getKleinanzeigenListings({ data: { results: [{ title: 'Listing F' }] } }), [{ title: 'Listing F' }]);
-    assert.deepEqual(getKleinanzeigenListings({ data: { items: [{ title: 'Listing G' }] } }), [{ title: 'Listing G' }]);
-    assert.deepEqual(getKleinanzeigenListings({}), []);
+    assert.deepEqual(getSelectedListings({ data: [{ title: 'Listing A' }] }), [{ title: 'Listing A' }]);
+    assert.deepEqual(getSelectedListings({ listings: [{ title: 'Listing B' }] }), [{ title: 'Listing B' }]);
+    assert.deepEqual(getSelectedListings({ results: [{ title: 'Listing C' }] }), [{ title: 'Listing C' }]);
+    assert.deepEqual(getSelectedListings({ items: [{ title: 'Listing D' }] }), [{ title: 'Listing D' }]);
+    assert.deepEqual(getSelectedListings({ data: { listings: [{ title: 'Listing E' }] } }), [{ title: 'Listing E' }]);
+    assert.deepEqual(getSelectedListings({ data: { results: [{ title: 'Listing F' }] } }), [{ title: 'Listing F' }]);
+    assert.deepEqual(getSelectedListings({ data: { items: [{ title: 'Listing G' }] } }), [{ title: 'Listing G' }]);
+    assert.deepEqual(getSelectedListings({}), []);
 });
 
 test('falls back to later non-empty listing arrays when earlier response shapes are empty', () => {
     assert.deepEqual(
-        getKleinanzeigenListings({
+        getSelectedListings({
             listings: [],
             data: {
                 listings: [{ title: 'Nested Listing' }],
@@ -33,7 +34,7 @@ test('falls back to later non-empty listing arrays when earlier response shapes 
         [{ title: 'Nested Listing' }],
     );
     assert.deepEqual(
-        getKleinanzeigenListings({
+        getSelectedListings({
             data: [],
             listings: [],
             results: [{ title: 'Result Listing' }],
@@ -41,7 +42,7 @@ test('falls back to later non-empty listing arrays when earlier response shapes 
         [{ title: 'Result Listing' }],
     );
     assert.deepEqual(
-        getKleinanzeigenListings({
+        getSelectedListings({
             data: {
                 listings: [],
                 results: [],
@@ -57,7 +58,7 @@ test('falls back to later non-empty listing arrays when earlier response shapes 
 
 test('prefers populated listing arrays in documented response priority order', () => {
     assert.deepEqual(
-        getKleinanzeigenListings({
+        getSelectedListings({
             data: [{ title: 'Direct Data Listing' }],
             listings: [{ title: 'Top Listing' }],
             results: [{ title: 'Top Result' }],
@@ -67,7 +68,7 @@ test('prefers populated listing arrays in documented response priority order', (
         [{ title: 'Direct Data Listing' }],
     );
     assert.deepEqual(
-        getKleinanzeigenListings({
+        getSelectedListings({
             listings: [{ title: 'Top Listing' }],
             results: [{ title: 'Top Result' }],
             items: [{ title: 'Top Item' }],
@@ -78,7 +79,7 @@ test('prefers populated listing arrays in documented response priority order', (
         [{ title: 'Top Listing' }],
     );
     assert.deepEqual(
-        getKleinanzeigenListings({
+        getSelectedListings({
             data: {
                 results: [{ title: 'Nested Result' }],
                 items: [{ title: 'Nested Item' }],
@@ -87,7 +88,7 @@ test('prefers populated listing arrays in documented response priority order', (
         [{ title: 'Nested Result' }],
     );
     assert.deepEqual(
-        getKleinanzeigenListings({
+        getSelectedListings({
             listings: [{ title: 'Top Listing' }],
             results: [{ title: 'Top Result' }],
             items: [{ title: 'Top Item' }],
