@@ -11,10 +11,20 @@ const {
     normalizeImmobilienscout24SearchInput,
 } = await import(requestParamsModule);
 
-test('uses the default Berlin apartment search when input is missing or empty', () => {
+test('uses the default Berlin geocode apartment search when input is missing or empty', () => {
     assert.deepEqual(normalizeImmobilienscout24SearchInput(), DEFAULT_IMMOBILIENSCOUT24_SEARCH_INPUT);
     assert.deepEqual(normalizeImmobilienscout24SearchInput({}), DEFAULT_IMMOBILIENSCOUT24_SEARCH_INPUT);
     assert.deepEqual(normalizeImmobilienscout24SearchInput({ hello: 'world' }), DEFAULT_IMMOBILIENSCOUT24_SEARCH_INPUT);
+});
+
+test('uses a schema-valid ImmobilienScout24 geocode in the default search params', () => {
+    assert.equal(DEFAULT_IMMOBILIENSCOUT24_SEARCH_INPUT.location, '1276003001');
+    assert.deepEqual(buildImmobilienscout24SearchParams(DEFAULT_IMMOBILIENSCOUT24_SEARCH_INPUT), {
+        location: '1276003001',
+        type: 'apartment-rent',
+        page: 1,
+        per_page: 20,
+    });
 });
 
 test('trims known string fields and preserves numeric filter input', () => {

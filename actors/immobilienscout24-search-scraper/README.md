@@ -8,7 +8,7 @@ item per returned property listing for usage-aligned monetization.
 
 ```json
 {
-  "location": "Berlin",
+  "location": "1276003001",
   "type": "apartment-rent",
   "price_max": 1500,
   "rooms_min": 2,

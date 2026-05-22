@@ -11,7 +11,7 @@ Recommended paid pricing: **$0.30 per 1,000 saved property listings** using the
 
 ```json
 {
-  "location": "Berlin",
+  "location": "1276003001",
   "type": "apartment-rent",
   "price_max": 1500,
   "rooms_min": 2,

@@ -25,6 +25,16 @@ export class ScrappaTimeoutError extends Error {
     }
 }
 
+export class ScrappaApiError extends Error {
+    constructor(
+        public readonly status: number,
+        public readonly responseMessage: string,
+    ) {
+        super(`Scrappa API error (${status}): ${responseMessage}`);
+        this.name = 'ScrappaApiError';
+    }
+}
+
 export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
     return Math.min(1000 * Math.pow(2, failedAttempt) + jitterMs, 10000);
 }
@@ -116,7 +126,7 @@ export class ScrappaClient {
 
             if (!response.ok) {
                 const errorMessage = await this.readErrorMessage(response);
-                throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
+                throw new ScrappaApiError(response.status, errorMessage);
             }
 
             return await response.json() as T;

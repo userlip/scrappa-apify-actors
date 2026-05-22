@@ -10,8 +10,8 @@
       "type": "string",
       "description": "City name, district, postal code, or ImmobilienScout24 geocode.",
       "editor": "textfield",
-      "prefill": "Berlin",
-      "default": "Berlin",
+      "prefill": "1276003001",
+      "default": "1276003001",
       "maxLength": 120
     },
     "type": {
