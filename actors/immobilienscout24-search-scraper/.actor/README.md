@@ -2,7 +2,7 @@
 
 Scrape ImmobilienScout24 property search listings by location, search type,
 price, rooms, and floor area. The actor saves one dataset item per listing and
-stores the complete Scrappa response in key-value store key `OUTPUT`.
+stores the trimmed Scrappa response in key-value store key `OUTPUT`.
 
 Recommended paid pricing: **$0.30 per 1,000 saved property listings** using the
 `property-result` pay-per-event charge.
