@@ -1,0 +1,118 @@
+{
+  "title": "Kleinanzeigen Search Scraper",
+  "description": "Search Kleinanzeigen listings by query, location, category, page, and price range. Provide one search at the top level or multiple searches in the batch field.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Kleinanzeigen search text, for example iphone, fahrrad, sofa, or wohnung.",
+      "editor": "textfield",
+      "maxLength": 500,
+      "prefill": "iphone"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "One-based Kleinanzeigen search results page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "location": {
+      "title": "Location",
+      "type": "string",
+      "description": "Optional city, district, or location filter, for example Berlin.",
+      "editor": "textfield",
+      "maxLength": 100,
+      "prefill": "Berlin"
+    },
+    "category": {
+      "title": "Category",
+      "type": "string",
+      "description": "Optional category slug or keyword, for example elektronik, auto, or moebel.",
+      "editor": "textfield",
+      "maxLength": 100
+    },
+    "price_min": {
+      "title": "Minimum Price",
+      "type": "integer",
+      "description": "Minimum listing price in EUR.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "price_max": {
+      "title": "Maximum Price",
+      "type": "integer",
+      "description": "Maximum listing price in EUR.",
+      "editor": "number",
+      "minimum": 0
+    },
+    "searches": {
+      "title": "Batch Searches",
+      "type": "array",
+      "description": "Optional batch of up to 25 Kleinanzeigen searches to run in a single Actor run. When provided, top-level search fields are ignored.",
+      "editor": "json",
+      "maxItems": 25,
+      "items": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": {
+            "title": "Search Query",
+            "type": "string",
+            "description": "Kleinanzeigen search text.",
+            "maxLength": 500
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "description": "One-based Kleinanzeigen search results page.",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 1
+          },
+          "location": {
+            "title": "Location",
+            "type": "string",
+            "description": "Optional city, district, or location filter.",
+            "maxLength": 100
+          },
+          "category": {
+            "title": "Category",
+            "type": "string",
+            "description": "Optional category slug or keyword.",
+            "maxLength": 100
+          },
+          "price_min": {
+            "title": "Minimum Price",
+            "type": "integer",
+            "description": "Minimum listing price in EUR.",
+            "minimum": 0
+          },
+          "price_max": {
+            "title": "Maximum Price",
+            "type": "integer",
+            "description": "Maximum listing price in EUR.",
+            "minimum": 0
+          }
+        }
+      },
+      "prefill": [
+        {
+          "query": "iphone",
+          "location": "Berlin",
+          "page": 1
+        },
+        {
+          "query": "fahrrad",
+          "location": "Hamburg",
+          "page": 1,
+          "price_max": 500
+        }
+      ]
+    }
+  }
+}

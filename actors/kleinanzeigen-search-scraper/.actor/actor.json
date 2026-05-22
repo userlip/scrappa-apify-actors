@@ -1,0 +1,56 @@
+{
+  "actorSpecification": 1,
+  "name": "kleinanzeigen-search-scraper",
+  "title": "Kleinanzeigen Search Scraper",
+  "description": "Search Kleinanzeigen listings by query, location, category, page, and EUR price range. Supports batch searches in one run and saves each listing as one charged dataset item.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "listings": {
+          "title": "Kleinanzeigen Listings",
+          "transformation": {
+            "fields": ["id", "title", "price", "price_numeric", "location", "url", "image_url", "description", "has_shipping", "request_query", "request_location", "request_category", "request_page", "request_price_min", "request_price_max", "results_count"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": { "label": "Listing ID", "format": "text" },
+              "title": { "label": "Title", "format": "text" },
+              "price": { "label": "Price", "format": "text" },
+              "price_numeric": { "label": "Price Numeric", "format": "number" },
+              "location": { "label": "Location", "format": "text" },
+              "url": { "label": "Listing URL", "format": "link" },
+              "image_url": { "label": "Image", "format": "image" },
+              "description": { "label": "Description", "format": "text" },
+              "has_shipping": { "label": "Shipping", "format": "boolean" },
+              "request_query": { "label": "Search", "format": "text" },
+              "request_location": { "label": "Request Location", "format": "text" },
+              "request_category": { "label": "Category", "format": "text" },
+              "request_page": { "label": "Page", "format": "number" },
+              "request_price_min": { "label": "Min Price", "format": "number" },
+              "request_price_max": { "label": "Max Price", "format": "number" },
+              "results_count": { "label": "Results Count", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
