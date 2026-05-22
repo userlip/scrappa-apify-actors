@@ -1,16 +1,40 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-22",
-  "source": "Apify Actor list/detail API for TheScrappa organization and local actor package.json manifest count",
+  "lastCheckedAt": "2026-05-22T11:37:40.828Z",
+  "source": "Apify Actor list/detail API for TheScrappa organization, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, and local actor manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
-  "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled, amended with newly published actors that require exact-date activation verification.",
+  "purpose": "Living snapshot of public actors with future paid pricing scheduled, amended as new actors are published and audit baselines change.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-22",
-    "liveActorCount": 67,
-    "publicActorCount": 57,
-    "localActorManifestCount": 59,
-    "missingLocalSourceCount": 8,
-    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors such as Similarweb Traffic Analytics. actors/similarweb-traffic-analytics-scraper is live in Apify as MDgsOkRoh1bAfC28g."
+    "checkedAt": "2026-05-22T11:37:40.828Z",
+    "liveActorCount": 70,
+    "publicActorCount": 60,
+    "localActorManifestCount": 61,
+    "missingLocalSourceCount": 9,
+    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors. Newly added public actors in this baseline include immobilienscout24-search-scraper (601ilBYtO52NNsMrT), redfin-property-search-scraper (Xa9ClmgD4tI9lHT91), and kleinanzeigen-search-scraper (OTzcE9BHg83MpDprO)."
+  },
+  "auditSummary": {
+    "pricingCheckedAt": "2026-05-22T11:37:21.946Z",
+    "secretCheckedAt": "2026-05-22T11:37:29.023Z",
+    "activePaidEvidenceCount": 44,
+    "futureOnlyPaidPricingCount": 16,
+    "missingPaidPricingCount": 0,
+    "overdueActivePricingGapCount": 0,
+    "publicActorsWithScrappaApiKeySecret": 60,
+    "missingScrappaApiKeySecretCount": 0,
+    "notSecretScrappaApiKeyCount": 0,
+    "healthNotes": [
+      {
+        "actorId": "bSdKk0P65oTGDXLIh",
+        "slug": "google-patents-search-scraper",
+        "status": "NO_RECORDED_RUNS"
+      },
+      {
+        "actorId": "BehWN3LEvBxhEiJDF",
+        "slug": "booking-search-scraper",
+        "status": "LATEST_RUN_FAILED",
+        "latestRunId": "N3nanH7zuJ8K9eyrf"
+      }
+    ]
   },
   "verificationRules": [
     "Fetch GET /v2/acts/{actorId} on or after scheduledActivationAt.",
@@ -55,7 +79,12 @@
     { "actorId": "W8yULHo0Mzq7CYRrM", "slug": "trustpilot-business-search-scraper", "scheduledActivationAt": "2026-06-02T08:19:17.249Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "business-result", "expectedEventPriceUsd": 0.0002 },
     { "actorId": "8SvzPgdsdg1yZK1t4", "slug": "jameda-search-scraper", "scheduledActivationAt": "2026-06-02T12:51:18.290Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "doctor-result", "expectedEventPriceUsd": 0.0002 },
     { "actorId": "BehWN3LEvBxhEiJDF", "slug": "booking-search-scraper", "scheduledActivationAt": "2026-06-03T10:06:39.118Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "booking-result", "expectedEventPriceUsd": 0.0002 },
-    { "actorId": "MDgsOkRoh1bAfC28g", "slug": "similarweb-traffic-analytics-scraper", "scheduledActivationAt": "2026-06-04T11:52:30.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "domain-result", "expectedEventPriceUsd": 0.0002 }
+    { "actorId": "MDgsOkRoh1bAfC28g", "slug": "similarweb-traffic-analytics-scraper", "scheduledActivationAt": "2026-06-04T11:52:30.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "domain-result", "expectedEventPriceUsd": 0.0002 },
+    { "actorId": "601ilBYtO52NNsMrT", "slug": "immobilienscout24-search-scraper", "scheduledActivationAt": "2026-06-05T06:59:39.484Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "property-result", "expectedEventPriceUsd": 0.0003 },
+    { "actorId": "Xa9ClmgD4tI9lHT91", "slug": "redfin-property-search-scraper", "scheduledActivationAt": "2026-06-05T07:59:30.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "property-result", "expectedEventPriceUsd": 0.0003 }
+  ],
+  "newPublicActorsWithActivePaidPricing": [
+    { "actorId": "OTzcE9BHg83MpDprO", "slug": "kleinanzeigen-search-scraper", "activePricingAt": "2026-05-22T11:10:59.287Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "listing-result", "expectedEventPriceUsd": 0.00025, "localSourceStatus": "MISSING_LOCALLY" }
   ],
   "privateScheduledActorsExcludedUntilPublic": [
     { "actorId": "Y3mKYlGNhsrBE7aZO", "slug": "youtube-api-channel-podcasts", "scheduledActivationAt": "2026-05-17T14:44:02.772Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },
