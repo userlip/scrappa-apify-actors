@@ -6,8 +6,8 @@ import {
 import type { KleinanzeigenSearchInput } from './request-params.js';
 import {
     buildKleinanzeigenDatasetItem,
-    getKleinanzeigenListings,
     limitKleinanzeigenSearchResponse,
+    selectKleinanzeigenListings,
 } from './response-utils.js';
 import type { KleinanzeigenSearchResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
@@ -106,7 +106,8 @@ async function main(): Promise<void> {
                 attempts: SCRAPPA_MAX_ATTEMPTS,
             });
 
-            const listings = getKleinanzeigenListings(response).map((listing) => (
+            const selection = selectKleinanzeigenListings(response);
+            const listings = selection.listings.map((listing) => (
                 buildKleinanzeigenDatasetItem(listing, params, response)
             ));
 
@@ -116,7 +117,7 @@ async function main(): Promise<void> {
                 index: search.index,
                 request: params,
                 listings_saved: result.savedCount,
-                response: limitKleinanzeigenSearchResponse(response, result.savedCount),
+                response: limitKleinanzeigenSearchResponse(response, result.savedCount, selection.source),
             });
 
             console.log(`Found ${listings.length} listing(s); saved ${result.savedCount}`);

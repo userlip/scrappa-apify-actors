@@ -35,54 +35,83 @@ export interface KleinanzeigenSearchResponse {
     [key: string]: unknown;
 }
 
+export type KleinanzeigenListingsSource =
+    | 'data'
+    | 'listings'
+    | 'results'
+    | 'items'
+    | 'data.listings'
+    | 'data.results'
+    | 'data.items';
+
+export interface KleinanzeigenListingsSelection {
+    listings: KleinanzeigenListing[];
+    source: KleinanzeigenListingsSource | null;
+}
+
 export function getKleinanzeigenListings(
     response: KleinanzeigenSearchResponse | null | undefined,
 ): KleinanzeigenListing[] {
-    const candidates: KleinanzeigenListing[][] = [];
+    return selectKleinanzeigenListings(response).listings;
+}
+
+export function selectKleinanzeigenListings(
+    response: KleinanzeigenSearchResponse | null | undefined,
+): KleinanzeigenListingsSelection {
+    const candidates: Array<{
+        source: KleinanzeigenListingsSource;
+        listings: KleinanzeigenListing[];
+    }> = [];
 
     const data = response?.data;
 
     if (Array.isArray(data)) {
-        candidates.push(data);
+        candidates.push({ source: 'data', listings: data });
     }
 
     if (Array.isArray(response?.listings)) {
-        candidates.push(response.listings);
+        candidates.push({ source: 'listings', listings: response.listings });
     }
 
     if (Array.isArray(response?.results)) {
-        candidates.push(response.results);
+        candidates.push({ source: 'results', listings: response.results });
     }
 
     if (Array.isArray(response?.items)) {
-        candidates.push(response.items);
+        candidates.push({ source: 'items', listings: response.items });
     }
 
     if (data && !Array.isArray(data) && typeof data === 'object') {
         if (Array.isArray(data.listings)) {
-            candidates.push(data.listings);
+            candidates.push({ source: 'data.listings', listings: data.listings });
         }
 
         if (Array.isArray(data.results)) {
-            candidates.push(data.results);
+            candidates.push({ source: 'data.results', listings: data.results });
         }
 
         if (Array.isArray(data.items)) {
-            candidates.push(data.items);
+            candidates.push({ source: 'data.items', listings: data.items });
         }
     }
 
-    const populatedCandidate = candidates.find((candidate) => candidate.length > 0);
+    const populatedCandidate = candidates.find((candidate) => candidate.listings.length > 0);
     if (populatedCandidate) {
         return populatedCandidate;
     }
 
     if (candidates.length > 0) {
-        return [];
+        return {
+            source: candidates[0].source,
+            listings: [],
+        };
     }
 
     console.warn('Unexpected Kleinanzeigen response shape: expected "data", "listings", "results", or "items" array.');
-    return [];
+    return {
+        source: null,
+        listings: [],
+    };
 }
 
 export function buildKleinanzeigenDatasetItem(
@@ -114,37 +143,52 @@ export function buildKleinanzeigenDatasetItem(
 export function limitKleinanzeigenSearchResponse(
     response: KleinanzeigenSearchResponse,
     limit: number,
+    selectedSource: KleinanzeigenListingsSource | null = selectKleinanzeigenListings(response).source,
 ): KleinanzeigenSearchResponse {
     const limitedResponse: KleinanzeigenSearchResponse = { ...response };
 
-    if (Array.isArray(response.data)) {
+    if (Array.isArray(response.data) && selectedSource === 'data') {
         limitedResponse.data = response.data.slice(0, limit);
+    } else if (Array.isArray(response.data)) {
+        delete limitedResponse.data;
     } else if (response.data && typeof response.data === 'object') {
         limitedResponse.data = { ...response.data };
 
-        if (Array.isArray(response.data.listings)) {
+        if (Array.isArray(response.data.listings) && selectedSource === 'data.listings') {
             limitedResponse.data.listings = response.data.listings.slice(0, limit);
+        } else {
+            delete limitedResponse.data.listings;
         }
 
-        if (Array.isArray(response.data.results)) {
+        if (Array.isArray(response.data.results) && selectedSource === 'data.results') {
             limitedResponse.data.results = response.data.results.slice(0, limit);
+        } else {
+            delete limitedResponse.data.results;
         }
 
-        if (Array.isArray(response.data.items)) {
+        if (Array.isArray(response.data.items) && selectedSource === 'data.items') {
             limitedResponse.data.items = response.data.items.slice(0, limit);
+        } else {
+            delete limitedResponse.data.items;
         }
     }
 
-    if (Array.isArray(response.listings)) {
+    if (Array.isArray(response.listings) && selectedSource === 'listings') {
         limitedResponse.listings = response.listings.slice(0, limit);
+    } else {
+        delete limitedResponse.listings;
     }
 
-    if (Array.isArray(response.results)) {
+    if (Array.isArray(response.results) && selectedSource === 'results') {
         limitedResponse.results = response.results.slice(0, limit);
+    } else {
+        delete limitedResponse.results;
     }
 
-    if (Array.isArray(response.items)) {
+    if (Array.isArray(response.items) && selectedSource === 'items') {
         limitedResponse.items = response.items.slice(0, limit);
+    } else {
+        delete limitedResponse.items;
     }
 
     return limitedResponse;

@@ -8,6 +8,7 @@ const {
     buildKleinanzeigenDatasetItem,
     getKleinanzeigenListings,
     limitKleinanzeigenSearchResponse,
+    selectKleinanzeigenListings,
 } = await import(responseUtilsModule);
 
 test('extracts listings from primary and wrapped response shapes', () => {
@@ -100,6 +101,21 @@ test('prefers populated listing arrays in documented response priority order', (
     );
 });
 
+test('returns the selected listing response source', () => {
+    assert.deepEqual(
+        selectKleinanzeigenListings({
+            listings: [],
+            data: {
+                listings: [{ title: 'Nested Listing' }],
+            },
+        }),
+        {
+            source: 'data.listings',
+            listings: [{ title: 'Nested Listing' }],
+        },
+    );
+});
+
 test('builds normalized Kleinanzeigen dataset item', () => {
     const item = buildKleinanzeigenDatasetItem(
         {
@@ -159,10 +175,11 @@ test('limits response arrays to saved listing count', () => {
     );
 });
 
-test('limits all recognized response arrays when multiple shapes are present', () => {
+test('limits only the selected response array when multiple shapes are present', () => {
     assert.deepEqual(
         limitKleinanzeigenSearchResponse({
             data: {
+                cursor: 'next-page',
                 listings: [{ id: 'data-listing-1' }, { id: 'data-listing-2' }],
                 results: [{ id: 'data-result-1' }, { id: 'data-result-2' }],
                 items: [{ id: 'data-item-1' }, { id: 'data-item-2' }],
@@ -170,16 +187,12 @@ test('limits all recognized response arrays when multiple shapes are present', (
             listings: [{ id: 'listing-1' }, { id: 'listing-2' }],
             results: [{ id: 'result-1' }, { id: 'result-2' }],
             items: [{ id: 'item-1' }, { id: 'item-2' }],
-        }, 1),
+        }, 1, 'listings'),
         {
             data: {
-                listings: [{ id: 'data-listing-1' }],
-                results: [{ id: 'data-result-1' }],
-                items: [{ id: 'data-item-1' }],
+                cursor: 'next-page',
             },
             listings: [{ id: 'listing-1' }],
-            results: [{ id: 'result-1' }],
-            items: [{ id: 'item-1' }],
         },
     );
 });
