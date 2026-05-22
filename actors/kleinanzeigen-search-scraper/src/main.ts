@@ -47,8 +47,8 @@ async function pushChargedListings(
     }
 
     const chargeResult = await Actor.pushData(listings, LISTING_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached) {
-        const savedCount = Math.min(chargeResult.chargedCount, listings.length);
+    const savedCount = Math.min(chargeResult.chargedCount, listings.length);
+    if (chargeResult.eventChargeLimitReached || savedCount < listings.length) {
         const statusMessage = `Charge limit reached after saving ${savedCount} of ${listings.length} Kleinanzeigen listing result(s) for query ${String(params.query)}.`;
         console.log(statusMessage, JSON.stringify({
             event: LISTING_RESULT_CHARGE_EVENT,
@@ -61,7 +61,7 @@ async function pushChargedListings(
         return { savedCount, statusMessage };
     }
 
-    return { savedCount: listings.length, statusMessage: null };
+    return { savedCount, statusMessage: null };
 }
 
 async function main(): Promise<void> {
