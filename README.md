@@ -111,7 +111,8 @@ Current coverage in this repository:
 - Pricing follow-up: the 2026-05-22T11:37Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 44 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
 - Secret follow-up: the 2026-05-22T11:37Z secret audit found all 60 public actors have `SCRAPPA_API_KEY` configured as a secret.
 - Run-health notes from the same audit pass: `google-patents-search-scraper` (`bSdKk0P65oTGDXLIh`) has no recorded Apify runs; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) has latest run `N3nanH7zuJ8K9eyrf` failed and should be retested before its 2026-06-03 pricing activation check.
-  Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
+
+Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
 | Local directory | Apify actor | Actor ID | Title | Source coverage | Pricing follow-up |
 |---|---|---|---|---|---|
@@ -132,7 +133,7 @@ Current coverage in this repository:
 | `actors/google-maps-reviews-scraper` | `google-maps-reviews-scraper` | `QvxzSeJiQrMggt1Vn` | Google Maps Reviews Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-21 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/google-maps-search-scraper` | `google-maps-search-scraper` | `3fXhf8bJruXVWgDKy` | Google Maps Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-21 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/google-news-scraper` | `google-news-scraper` | `HYG9AqNEDSHMHgH4O` | Google News Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
-| `actors/google-patents-search-scraper` | `google-patents-search-scraper` | `bSdKk0P65oTGDXLIh` | Google Patents Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` active from 2026-05-14 (`PAY_PER_EVENT`, default dataset patent result at $0.0002/result); cloud run verified; API still reports `pricingInfo/currentPricingInfo: null` immediately after publication |
+| `actors/google-patents-search-scraper` | `google-patents-search-scraper` | `bSdKk0P65oTGDXLIh` | Google Patents Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` active from 2026-05-14 (`PAY_PER_EVENT`, default dataset patent result at $0.0002/result); no recorded Apify runs in the 2026-05-22T11:37Z run-health check; retest before relying on run evidence |
 | `actors/google-search` | `google-search-scraper` | `2pU7EbKhShUz8BAnN` | Google Search Scraper | Local source present under legacy directory name; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-01-03 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/google-trends-interest-scraper` | `google-trends-interest-scraper` | `1D1neAFKb8LnbKvHG` | Google Trends Interest Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-05-09 (`PAY_PER_EVENT`); verify `currentPricingInfo` |
 | `actors/indeed-jobs-scraper` | `indeed-jobs-scraper` | `OVlDREBAcO4iPyW64` | Indeed Jobs Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2026-05-10 (`PAY_PER_EVENT`); verify `currentPricingInfo` |

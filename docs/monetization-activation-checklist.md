@@ -43,6 +43,8 @@ curl -s -H "Authorization: Bearer $APIFY_TOKEN" \
 
 ### 2026-05-17
 
+Past-due items in this section should be rechecked against the latest pricing audit before changing checkbox state; some may already have active paid evidence in the README inventory table.
+
 - [ ] `4DwyH8vZcinXWrHBA` - `google-jobs-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:39:48.217Z`.
 - [ ] `HYG9AqNEDSHMHgH4O` - `google-news-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:43:29.941Z`.
 - [ ] `mp03zGSA2pR31azfU` - `instagram-user-posts-cheapest-0-20-1000-results` - verify `PAY_PER_EVENT` activation at `2026-05-17T14:43:29.941Z`.

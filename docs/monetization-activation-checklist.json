@@ -3,7 +3,7 @@
   "lastCheckedAt": "2026-05-22T11:37:40.828Z",
   "source": "Apify Actor list/detail API for TheScrappa organization, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, and local actor manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
-  "purpose": "Initial 2026-05-11 snapshot of public actors with future paid pricing scheduled, amended with newly published actors that require exact-date activation verification.",
+  "purpose": "Living snapshot of public actors with future paid pricing scheduled, amended as new actors are published and audit baselines change.",
   "inventoryBackstop": {
     "checkedAt": "2026-05-22T11:37:40.828Z",
     "liveActorCount": 70,
