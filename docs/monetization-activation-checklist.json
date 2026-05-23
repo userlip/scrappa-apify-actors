@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-23T10:02:00.000Z",
+  "lastCheckedAt": "2026-05-23T11:15:15.830Z",
   "source": "Apify Actor list/detail API for TheScrappa organization, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, and local actor manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
   "purpose": "Living snapshot of public actors with future paid pricing scheduled, amended as new actors are published and audit baselines change.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-23T10:02:00.000Z",
-    "liveActorCount": 71,
-    "publicActorCount": 61,
-    "localActorManifestCount": 63,
+    "checkedAt": "2026-05-23T11:15:15.830Z",
+    "liveActorCount": 72,
+    "publicActorCount": 62,
+    "localActorManifestCount": 64,
     "missingLocalSourceCount": 8,
     "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss public actor coverage as of the checked timestamp."
   },
   "auditSummary": {
-    "pricingCheckedAt": "2026-05-23T10:01:00.000Z",
-    "secretCheckedAt": "2026-05-23T10:01:00.000Z",
-    "activePaidEvidenceCount": 45,
+    "pricingCheckedAt": "2026-05-23T11:15:08.135Z",
+    "secretCheckedAt": "2026-05-23T11:15:15.830Z",
+    "activePaidEvidenceCount": 46,
     "futureOnlyPaidPricingCount": 16,
     "missingPaidPricingCount": 0,
     "overdueActivePricingGapCount": 0,
-    "publicActorsWithScrappaApiKeySecret": 61,
+    "publicActorsWithScrappaApiKeySecret": 62,
     "missingScrappaApiKeySecretCount": 0,
     "notSecretScrappaApiKeyCount": 0,
     "healthNotes": [
@@ -102,7 +102,8 @@
     { "actorId": "Xa9ClmgD4tI9lHT91", "slug": "redfin-property-search-scraper", "scheduledActivationAt": "2026-06-05T07:59:30.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "property-result", "expectedEventPriceUsd": 0.0003 }
   ],
   "newPublicActorsWithActivePaidPricing": [
-    { "actorId": "OTzcE9BHg83MpDprO", "slug": "kleinanzeigen-search-scraper", "activePricingAt": "2026-05-22T11:10:59.287Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "listing-result", "expectedEventPriceUsd": 0.00025, "localSourceStatus": "LOCAL_SOURCE_PRESENT", "localSourceDirectory": "actors/kleinanzeigen-search-scraper", "successfulRunId": "UphOLJdyQU5jTx47Q", "successfulBuildId": "4oPbUr5dbd0tcpD1l" }
+    { "actorId": "OTzcE9BHg83MpDprO", "slug": "kleinanzeigen-search-scraper", "activePricingAt": "2026-05-22T11:10:59.287Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "listing-result", "expectedEventPriceUsd": 0.00025, "localSourceStatus": "LOCAL_SOURCE_PRESENT", "localSourceDirectory": "actors/kleinanzeigen-search-scraper", "successfulRunId": "UphOLJdyQU5jTx47Q", "successfulBuildId": "4oPbUr5dbd0tcpD1l" },
+    { "actorId": "LXBYlqViHcR0tnt5i", "slug": "pinterest-search-scraper", "activePricingAt": "2026-05-23T11:13:51.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "pin-result", "expectedEventPriceUsd": 0.0002, "localSourceStatus": "LOCAL_SOURCE_PRESENT", "localSourceDirectory": "actors/pinterest-search-scraper", "successfulRunId": "Z6Jn8k0enEuldZMzT", "successfulBuildId": "LMfYWckarkOkzTe0d", "datasetId": "Lssox0TKprm4VeqAe", "previousChargedSmokeRunId": "snXnWc1SsMyIcy8al" }
   ],
   "privateScheduledActorsExcludedUntilPublic": [
     { "actorId": "Y3mKYlGNhsrBE7aZO", "slug": "youtube-api-channel-podcasts", "scheduledActivationAt": "2026-05-17T14:44:02.772Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },

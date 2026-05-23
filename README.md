@@ -101,15 +101,15 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-23T10:02Z. It lists all 71 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-23T11:15Z. It lists all 72 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 71 live `thescrappa` actors in Apify
-- 61 public `thescrappa` actors in Apify according to the pricing and secret audits
-- 63 local actor manifests in this repo; all 63 are represented by live Apify actors
+- 72 live `thescrappa` actors in Apify
+- 62 public `thescrappa` actors in Apify according to the pricing and secret audits
+- 64 local actor manifests in this repo; all 64 are represented by live Apify actors
 - 8 live actors missing a local source directory here
-- Pricing follow-up: the 2026-05-23T10:01Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 45 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
-- Secret follow-up: the 2026-05-23T10:01Z secret audit found all 61 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- Pricing follow-up: the 2026-05-23T11:15Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 46 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
+- Secret follow-up: the 2026-05-23T11:15Z secret audit found all 62 public actors have `SCRAPPA_API_KEY` configured as a secret.
 - Run-health notes from the current audit pass: `stepstone-jobs-scraper` (`DUUlFa5LGId75vOI0`) latest run `wr3oYXhiE25DmrsUH` failed with Scrappa API `422` validation for `work_from_home`; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `hRCogd7KpVQU9oRJ5` succeeding; `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `bfhYjZNMzgn8wEaR4` succeeding; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) latest run `fGubXwuYYNmoMyakt` succeeded.
 
 Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
@@ -150,6 +150,7 @@ Use [docs/monetization-activation-checklist.md](docs/monetization-activation-che
 | `actors/linkedin-jobs-search-scraper` | `linkedin-jobs-search-scraper` | `GAAKVpkPvj3lMbO6G` | LinkedIn Jobs Search Scraper ($0.30/1k results) | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-22 (`PAY_PER_EVENT`); verify activation |
 | `actors/linkedin-post-scraper` | `linkedin-post-scraper` | `hVDOXgRoKJbnATxzs` | LinkedIn Post Scraper - $0.30/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-20 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/linkedin-profile-scraper` | `linkedin-profile-scraper` | `87AaxKjjQrK0F0g60` | LinkedIn Profile Scraper - $0.30/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-20 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
+| `actors/pinterest-search-scraper` | `pinterest-search-scraper` | `LXBYlqViHcR0tnt5i` | Pinterest Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; build `LMfYWckarkOkzTe0d` succeeded; public smoke run `Z6Jn8k0enEuldZMzT` succeeded with 1 dataset item for `home decor`, dataset `Lssox0TKprm4VeqAe`, `OUTPUT.pins_extracted = 1`, `OUTPUT.pins_saved = 1`, `OUTPUT.responses[0].pins.length = 1`, and `OUTPUT.query_summaries[0].fetch_limit = 3`; earlier paid smoke run `snXnWc1SsMyIcy8al` charged `pin-result = 3` | Public with `pricingInfos` active from 2026-05-23T11:13:51Z (`PAY_PER_EVENT`, `pin-result` at $0.0002/result); latest smoke run returned run-level `pricingInfo` with the same paid event |
 | `actors/redfin-property-search-scraper` | `redfin-property-search-scraper` | `Xa9ClmgD4tI9lHT91` | Redfin Property Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-05 (`PAY_PER_EVENT`, `property-result` at $0.0003/result); Apify pricing schedule created with two-week lead time |
 | `actors/scrappa-google-search` | `scrappa-google-search` | `8ejIZ0nfRPShvWBSP` | Scrappa Google Search | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/similarweb-traffic-analytics-scraper` | `similarweb-traffic-analytics-scraper` | `MDgsOkRoh1bAfC28g` | Similarweb Traffic Analytics Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-04 (`PAY_PER_EVENT`, `domain-result` at $0.0002/analyzed domain); Apify pricing schedule created 2026-05-21 with two-week lead time |

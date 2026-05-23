@@ -1,0 +1,57 @@
+{
+  "actorSpecification": 1,
+  "name": "pinterest-search-scraper",
+  "title": "Pinterest Search Scraper",
+  "description": "Search Pinterest pins by keyword through Scrappa, with batch query input, pagination bookmark support, and one dataset item per pin.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 256,
+  "defaultRunOptions": {
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "pins": {
+          "title": "Pinterest Pins",
+          "transformation": {
+            "fields": ["id", "title", "description", "image_url", "link", "domain", "pinner_username", "board_name", "has_video", "repin_count", "comment_count", "like_count", "save_count", "request_query", "request_limit", "request_bookmark", "count", "results_count", "nextBookmark"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": { "label": "Pin ID", "format": "text" },
+              "title": { "label": "Title", "format": "text" },
+              "description": { "label": "Description", "format": "text" },
+              "image_url": { "label": "Image", "format": "image" },
+              "link": { "label": "Link", "format": "link" },
+              "domain": { "label": "Domain", "format": "text" },
+              "pinner_username": { "label": "Pinner", "format": "text" },
+              "board_name": { "label": "Board", "format": "text" },
+              "has_video": { "label": "Video", "format": "boolean" },
+              "repin_count": { "label": "Repins", "format": "number" },
+              "comment_count": { "label": "Comments", "format": "number" },
+              "like_count": { "label": "Likes", "format": "number" },
+              "save_count": { "label": "Saves", "format": "number" },
+              "request_query": { "label": "Request Query", "format": "text" },
+              "request_limit": { "label": "Limit", "format": "number" },
+              "request_bookmark": { "label": "Bookmark", "format": "text" },
+              "count": { "label": "Count", "format": "number" },
+              "results_count": { "label": "Results Count", "format": "number" },
+              "nextBookmark": { "label": "Next Bookmark", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
