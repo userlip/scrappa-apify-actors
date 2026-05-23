@@ -10,12 +10,12 @@ import { buildTransientFailureStatusMessage } from './status-messages.js';
 const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
 
-function isScrappaUpstreamFailure(error: unknown): error is ScrappaHttpError {
-    return error instanceof ScrappaHttpError && error.status >= 500 && error.status <= 599;
+function isScrappaHttpFailure(error: unknown): error is ScrappaHttpError {
+    return error instanceof ScrappaHttpError;
 }
 
 function describeTransientFailure(error: unknown): string {
-    if (isScrappaUpstreamFailure(error)) {
+    if (isScrappaHttpFailure(error)) {
         return `Scrappa upstream returned ${error.status} after retries`;
     }
 
