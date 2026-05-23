@@ -1,4 +1,5 @@
 import { Actor } from 'apify';
+import { getPinterestChargedSaveResult } from './charging-utils.js';
 import {
     buildPinterestSearchPlan,
     capPinterestSearchParamsToChargeCapacity,
@@ -46,8 +47,8 @@ async function pushChargedPins(items: Record<string, unknown>[], query: string):
     }
 
     const chargeResult = await Actor.pushData(items, PIN_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached) {
-        const savedCount = Math.min(chargeResult.chargedCount, items.length);
+    const { savedCount, chargeLimitReached } = getPinterestChargedSaveResult(chargeResult, items.length);
+    if (chargeLimitReached) {
         const statusMessage = `Charge limit reached after saving ${savedCount} of ${items.length} Pinterest pin result(s) for "${query}".`;
         console.log(statusMessage, JSON.stringify({
             event: PIN_RESULT_CHARGE_EVENT,
@@ -59,7 +60,7 @@ async function pushChargedPins(items: Record<string, unknown>[], query: string):
         return { savedCount, statusMessage };
     }
 
-    return { savedCount: items.length, statusMessage: null };
+    return { savedCount, statusMessage: null };
 }
 
 async function main(): Promise<void> {
