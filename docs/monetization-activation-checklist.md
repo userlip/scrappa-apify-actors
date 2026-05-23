@@ -125,7 +125,7 @@ Past-due items in this section should be rechecked against the latest pricing au
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-23T05:01Z baseline on this branch is 70 live actors, 60 public actors, 62 local actor manifests, and 8 missing local source directories. Public actor coverage in this baseline includes `immobilienscout24-search-scraper` (`601ilBYtO52NNsMrT`), `redfin-property-search-scraper` (`Xa9ClmgD4tI9lHT91`), and `kleinanzeigen-search-scraper` (`OTzcE9BHg83MpDprO`).
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-23T05:01Z baseline on this branch is 70 live actors, 60 public actors, 62 local actor manifests, and 8 missing local source directories.
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.
