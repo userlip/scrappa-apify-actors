@@ -50,16 +50,21 @@ async function pushSearchItems(items: Record<string, unknown>[]): Promise<boolea
     const chargeResult = await Actor.pushData(items, FINANCE_SEARCH_RESULT_CHARGE_EVENT);
     if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < items.length) {
         const statusMessage = 'Charge limit reached before saving all Google Finance search results.';
-        console.log(statusMessage, JSON.stringify({
-            event: FINANCE_SEARCH_RESULT_CHARGE_EVENT,
-            charged_count: chargeResult.chargedCount,
-            requested_count: items.length,
-        }));
         await Actor.exit({ statusMessage });
         return false;
     }
 
     return true;
+}
+
+async function exitOrFailTransientFailure(statusMessage: string, totalResults: number): Promise<void> {
+    console.warn(statusMessage);
+    if (totalResults > 0) {
+        await Actor.fail(statusMessage);
+        return;
+    }
+
+    await Actor.exit({ statusMessage });
 }
 
 async function main(): Promise<void> {
@@ -117,15 +122,13 @@ async function main(): Promise<void> {
                 `Scrappa upstream returned ${error.status} after retries`,
                 totalResults,
             );
-            console.warn(statusMessage);
-            await Actor.exit({ statusMessage });
+            await exitOrFailTransientFailure(statusMessage, totalResults);
             return;
         }
 
         if (error instanceof ScrappaTimeoutError) {
             const statusMessage = buildTransientFailureStatusMessage(error.message, totalResults);
-            console.warn(statusMessage);
-            await Actor.exit({ statusMessage });
+            await exitOrFailTransientFailure(statusMessage, totalResults);
             return;
         }
 

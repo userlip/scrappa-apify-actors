@@ -1,8 +1,4 @@
-export interface GoogleFinanceSearchResponse {
-    results?: unknown[];
-    search_results?: unknown[];
-    [key: string]: unknown;
-}
+export type GoogleFinanceSearchResponse = Record<string, unknown>;
 
 function asRecord(value: unknown): Record<string, unknown> {
     return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
