@@ -106,3 +106,11 @@ test('input schema matches the Pinterest search contract', async () => {
     assert.equal(schema.properties.bookmark.type, 'string');
     assert.equal(schema.properties.use_cache, undefined);
 });
+
+test('actor manifest keeps wrapper resources minimal', async () => {
+    const actor = JSON.parse(await readFile(new URL('../.actor/actor.json', import.meta.url), 'utf8'));
+
+    assert.equal(actor.defaultMemoryMbytes, 256);
+    assert.equal(actor.resources, undefined);
+    assert.equal(actor.defaultRunOptions.timeoutSecs, 360);
+});

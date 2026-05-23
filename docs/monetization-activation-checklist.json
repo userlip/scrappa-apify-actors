@@ -85,7 +85,7 @@
   ],
   "newPublicActorsWithActivePaidPricing": [
     { "actorId": "OTzcE9BHg83MpDprO", "slug": "kleinanzeigen-search-scraper", "activePricingAt": "2026-05-22T11:10:59.287Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "listing-result", "expectedEventPriceUsd": 0.00025, "localSourceStatus": "LOCAL_SOURCE_PRESENT", "localSourceDirectory": "actors/kleinanzeigen-search-scraper", "successfulRunId": "UphOLJdyQU5jTx47Q", "successfulBuildId": "4oPbUr5dbd0tcpD1l" },
-    { "actorId": "LXBYlqViHcR0tnt5i", "slug": "pinterest-search-scraper", "activePricingAt": "2026-05-23T11:13:51.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "pin-result", "expectedEventPriceUsd": 0.0002, "localSourceStatus": "LOCAL_SOURCE_PRESENT", "localSourceDirectory": "actors/pinterest-search-scraper", "successfulRunId": "uJXcfFhYqidyqBn93", "successfulBuildId": "NFZWmzUBkx82SJc7V", "datasetId": "CuFNYuEzw86YPm5dE" }
+    { "actorId": "LXBYlqViHcR0tnt5i", "slug": "pinterest-search-scraper", "activePricingAt": "2026-05-23T11:13:51.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "pin-result", "expectedEventPriceUsd": 0.0002, "localSourceStatus": "LOCAL_SOURCE_PRESENT", "localSourceDirectory": "actors/pinterest-search-scraper", "successfulRunId": "f70L452g5aKfKaX7E", "successfulBuildId": "7U1xVztSnTEBKY3PR", "datasetId": "Ydkec3aEupQHNk36y" }
   ],
   "privateScheduledActorsExcludedUntilPublic": [
     { "actorId": "Y3mKYlGNhsrBE7aZO", "slug": "youtube-api-channel-podcasts", "scheduledActivationAt": "2026-05-17T14:44:02.772Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },

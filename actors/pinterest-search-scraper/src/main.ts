@@ -65,6 +65,7 @@ async function main(): Promise<void> {
         const responses: PinterestSearchResponse[] = [];
         const querySummaries: Record<string, unknown>[] = [];
         let searchesFetched = 0;
+        let extractedPins = 0;
         let savedPins = 0;
         let statusMessage: string | null = null;
 
@@ -78,6 +79,7 @@ async function main(): Promise<void> {
             responses.push(response);
 
             const pins = getPinterestPins(response);
+            extractedPins += pins.length;
             const items = pins.map((pin) => buildPinterestDatasetItem(pin, request.params, response));
             const result = await pushChargedPins(items, request.query);
             savedPins += result.savedCount;
@@ -108,7 +110,8 @@ async function main(): Promise<void> {
             },
             searches_fetched: searchesFetched,
             responses_saved: responses.length,
-            pins_extracted: savedPins,
+            pins_extracted: extractedPins,
+            pins_saved: savedPins,
             status_message: statusMessage,
             query_summaries: querySummaries,
             responses,
@@ -121,7 +124,8 @@ async function main(): Promise<void> {
         console.log('Results summary:', JSON.stringify({
             searches_fetched: searchesFetched,
             responses_saved: responses.length,
-            pins_extracted: savedPins,
+            pins_extracted: extractedPins,
+            pins_saved: savedPins,
             queries: plan.requests.length,
         }));
 
