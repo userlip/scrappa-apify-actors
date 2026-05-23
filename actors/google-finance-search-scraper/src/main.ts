@@ -4,6 +4,7 @@ import type { GoogleFinanceSearchInput } from './request-params.js';
 import { buildSearchDatasetItems, countSearchResults } from './response-utils.js';
 import type { GoogleFinanceSearchResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
+import { buildTransientFailureStatusMessage } from './status-messages.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
@@ -63,6 +64,7 @@ async function pushSearchItems(items: Record<string, unknown>[]): Promise<boolea
 
 async function main(): Promise<void> {
     await Actor.init();
+    let totalResults = 0;
 
     try {
         const apiKey = process.env.SCRAPPA_API_KEY;
@@ -77,7 +79,6 @@ async function main(): Promise<void> {
 
         const requests = buildGoogleFinanceSearchRequests(input);
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        let totalResults = 0;
         let zeroResultQueries = 0;
 
         for (const params of requests) {
@@ -112,14 +113,17 @@ async function main(): Promise<void> {
         }));
     } catch (error) {
         if (isScrappaUpstreamFailure(error)) {
-            const statusMessage = `Scrappa upstream returned ${error.status} after retries; no Google Finance search results were written or charged. Try the run again later.`;
+            const statusMessage = buildTransientFailureStatusMessage(
+                `Scrappa upstream returned ${error.status} after retries`,
+                totalResults,
+            );
             console.warn(statusMessage);
             await Actor.exit({ statusMessage });
             return;
         }
 
         if (error instanceof ScrappaTimeoutError) {
-            const statusMessage = `${error.message}. No Google Finance search results were written or charged. Try the run again later.`;
+            const statusMessage = buildTransientFailureStatusMessage(error.message, totalResults);
             console.warn(statusMessage);
             await Actor.exit({ statusMessage });
             return;
