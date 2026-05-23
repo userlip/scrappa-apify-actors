@@ -1,0 +1,149 @@
+import { Actor } from 'apify';
+import {
+    buildPinterestSearchPlan,
+    describePinterestSearchRequest,
+} from './request-params.js';
+import type { PinterestSearchInput } from './request-params.js';
+import {
+    buildPinterestDatasetItem,
+    getPinterestPins,
+} from './response-utils.js';
+import type { PinterestSearchResponse } from './response-utils.js';
+import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+
+const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
+const SCRAPPA_MAX_ATTEMPTS = 3;
+const PIN_RESULT_CHARGE_EVENT = 'pin-result';
+
+interface PushChargedItemsResult {
+    savedCount: number;
+    statusMessage: string | null;
+}
+
+async function pushChargedPins(items: Record<string, unknown>[], query: string): Promise<PushChargedItemsResult> {
+    if (items.length === 0) {
+        return { savedCount: 0, statusMessage: null };
+    }
+
+    const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
+    if (!isPayPerEvent) {
+        await Actor.pushData(items);
+        return { savedCount: items.length, statusMessage: null };
+    }
+
+    const chargeResult = await Actor.pushData(items, PIN_RESULT_CHARGE_EVENT);
+    if (chargeResult.eventChargeLimitReached) {
+        const savedCount = Math.min(chargeResult.chargedCount, items.length);
+        const statusMessage = `Charge limit reached after saving ${savedCount} of ${items.length} Pinterest pin result(s) for "${query}".`;
+        console.log(statusMessage, JSON.stringify({
+            event: PIN_RESULT_CHARGE_EVENT,
+            charged_count: chargeResult.chargedCount,
+            requested_count: items.length,
+            saved_count: savedCount,
+            query,
+        }));
+        return { savedCount, statusMessage };
+    }
+
+    return { savedCount: items.length, statusMessage: null };
+}
+
+async function main(): Promise<void> {
+    await Actor.init();
+
+    try {
+        const apiKey = process.env.SCRAPPA_API_KEY;
+        if (!apiKey) {
+            throw new Error('SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings.');
+        }
+
+        const input = await Actor.getInput<PinterestSearchInput>() ?? {};
+        const plan = buildPinterestSearchPlan(input);
+        console.log(`Searching Pinterest for ${describePinterestSearchRequest(plan)}`);
+
+        const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
+        const responses: PinterestSearchResponse[] = [];
+        const querySummaries: Record<string, unknown>[] = [];
+        let searchesFetched = 0;
+        let savedPins = 0;
+        let statusMessage: string | null = null;
+
+        for (const request of plan.requests) {
+            console.log(`Fetching Pinterest pins for "${request.query}" with limit ${String(request.params.limit)}`);
+
+            const response = await client.get<PinterestSearchResponse>('/pinterest/search', request.params, {
+                attempts: SCRAPPA_MAX_ATTEMPTS,
+            });
+            searchesFetched += 1;
+            responses.push(response);
+
+            const pins = getPinterestPins(response);
+            const items = pins.map((pin) => buildPinterestDatasetItem(pin, request.params, response));
+            const result = await pushChargedPins(items, request.query);
+            savedPins += result.savedCount;
+
+            querySummaries.push({
+                query: request.query,
+                requested_limit: request.params.limit,
+                request_bookmark: request.params.bookmark ?? null,
+                count: response.count ?? null,
+                results_count: response.results_count ?? pins.length,
+                pins_extracted: pins.length,
+                pins_saved: result.savedCount,
+                nextBookmark: response.nextBookmark ?? null,
+            });
+
+            console.log(`Found ${pins.length} Pinterest pin result(s) for "${request.query}"; saved ${result.savedCount}`);
+            if (result.statusMessage) {
+                statusMessage = result.statusMessage;
+                break;
+            }
+        }
+
+        const output = {
+            request: {
+                queries: plan.requests.map((request) => request.query),
+                limit: plan.limit,
+                bookmark: plan.bookmark ?? null,
+            },
+            searches_fetched: searchesFetched,
+            responses_saved: responses.length,
+            pins_extracted: savedPins,
+            status_message: statusMessage,
+            query_summaries: querySummaries,
+            responses,
+        };
+
+        const store = await Actor.openKeyValueStore();
+        await store.setValue('OUTPUT', output);
+
+        console.log('Pinterest search completed successfully');
+        console.log('Results summary:', JSON.stringify({
+            searches_fetched: searchesFetched,
+            responses_saved: responses.length,
+            pins_extracted: savedPins,
+            queries: plan.requests.length,
+        }));
+
+        if (statusMessage) {
+            await Actor.exit({ statusMessage });
+            return;
+        }
+    } catch (error) {
+        const rawMessage = error instanceof Error ? error.message : String(error);
+        const message = error instanceof ScrappaTimeoutError
+            ? `${rawMessage}. The Pinterest search request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try fewer queries, a lower limit, or run the request again.`
+            : rawMessage;
+        console.error('Actor failed: ' + message);
+        await Actor.fail(message);
+        return;
+    }
+
+    await Actor.exit();
+}
+
+main().catch((error) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Actor failed: ' + message);
+    process.exitCode = 1;
+});

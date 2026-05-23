@@ -104,12 +104,12 @@ apify push
 This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-23T05:01Z. It lists all 70 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 70 live `thescrappa` actors in Apify
-- 60 public `thescrappa` actors in Apify according to the pricing and secret audits
-- 62 local actor manifests in this repo; all 62 are represented by live Apify actors
+- 72 live `thescrappa` actors in Apify
+- 62 public `thescrappa` actors in Apify according to the pricing and secret audits
+- 64 local actor manifests in this repo; all 64 are represented by live Apify actors
 - 8 live actors missing a local source directory here
-- Pricing follow-up: the 2026-05-23T05:01Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 44 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
-- Secret follow-up: the 2026-05-23T05:01Z secret audit found all 60 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- Pricing follow-up: the 2026-05-23T11:15Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 46 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
+- Secret follow-up: the 2026-05-23T11:15Z secret audit found all 62 public actors have `SCRAPPA_API_KEY` configured as a secret.
 - Run-health notes from the same audit pass: `google-patents-search-scraper` (`bSdKk0P65oTGDXLIh`) has no recorded Apify runs; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) has latest run `N3nanH7zuJ8K9eyrf` failed and should be retested before its 2026-06-03 pricing activation check.
 
 Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
@@ -150,6 +150,7 @@ Use [docs/monetization-activation-checklist.md](docs/monetization-activation-che
 | `actors/linkedin-jobs-search-scraper` | `linkedin-jobs-search-scraper` | `GAAKVpkPvj3lMbO6G` | LinkedIn Jobs Search Scraper ($0.30/1k results) | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-22 (`PAY_PER_EVENT`); verify activation |
 | `actors/linkedin-post-scraper` | `linkedin-post-scraper` | `hVDOXgRoKJbnATxzs` | LinkedIn Post Scraper - $0.30/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-20 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/linkedin-profile-scraper` | `linkedin-profile-scraper` | `87AaxKjjQrK0F0g60` | LinkedIn Profile Scraper - $0.30/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-12-20 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
+| `actors/pinterest-search-scraper` | `pinterest-search-scraper` | `LXBYlqViHcR0tnt5i` | Pinterest Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; build `NFZWmzUBkx82SJc7V` succeeded; public smoke run `uJXcfFhYqidyqBn93` succeeded with 3 dataset items for `home decor`, dataset `CuFNYuEzw86YPm5dE`, and `chargedEventCounts.pin-result = 3` | Public with `pricingInfos` active from 2026-05-23T11:13:51Z (`PAY_PER_EVENT`, `pin-result` at $0.0002/result); API still reports `pricingInfo/currentPricingInfo: null` immediately after publication |
 | `actors/redfin-property-search-scraper` | `redfin-property-search-scraper` | `Xa9ClmgD4tI9lHT91` | Redfin Property Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-05 (`PAY_PER_EVENT`, `property-result` at $0.0003/result); Apify pricing schedule created with two-week lead time |
 | `actors/scrappa-google-search` | `scrappa-google-search` | `8ejIZ0nfRPShvWBSP` | Scrappa Google Search | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/similarweb-traffic-analytics-scraper` | `similarweb-traffic-analytics-scraper` | `MDgsOkRoh1bAfC28g` | Similarweb Traffic Analytics Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-04 (`PAY_PER_EVENT`, `domain-result` at $0.0002/analyzed domain); Apify pricing schedule created 2026-05-21 with two-week lead time |

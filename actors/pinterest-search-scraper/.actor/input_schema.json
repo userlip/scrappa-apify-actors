@@ -1,0 +1,45 @@
+{
+  "title": "Pinterest Search Scraper",
+  "description": "Search Pinterest pins by keyword. Batch multiple queries in one run and get one dataset item per pin.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "queries": {
+      "title": "Search Queries",
+      "type": "array",
+      "description": "Pinterest keyword searches to run in one Apify Actor execution.",
+      "editor": "stringList",
+      "prefill": ["home decor", "kitchen ideas"],
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "query": {
+      "title": "Single Search Query",
+      "type": "string",
+      "description": "Compatibility field for one Pinterest keyword search. Prefer Search Queries for batching.",
+      "editor": "textfield",
+      "minLength": 1,
+      "maxLength": 200,
+      "prefill": "home decor"
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer",
+      "description": "Maximum Pinterest pins to request from Scrappa for each query. Pinterest may return fewer pins than requested.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 250,
+      "default": 50
+    },
+    "bookmark": {
+      "title": "Pagination Bookmark",
+      "type": "string",
+      "description": "Optional Pinterest pagination bookmark returned as nextBookmark by a previous run. The same bookmark is applied to each query in this run.",
+      "editor": "textfield",
+      "maxLength": 2000
+    }
+  }
+}
