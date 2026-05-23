@@ -10,7 +10,7 @@ Current inventory backstop for every activation audit:
 - 8 live actors still missing local source directories here.
 - Pricing audit: 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 46 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
 - Secret audit: all 62 public actors have `SCRAPPA_API_KEY` configured as a secret.
-- Run-health notes: `google-patents-search-scraper` (`bSdKk0P65oTGDXLIh`) has no recorded Apify runs; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) latest run `N3nanH7zuJ8K9eyrf` failed and should be retested before its 2026-06-03 activation check.
+- Run-health notes: `stepstone-jobs-scraper` (`DUUlFa5LGId75vOI0`) latest run `wr3oYXhiE25DmrsUH` failed with Scrappa API `422` validation for `work_from_home`; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `hRCogd7KpVQU9oRJ5` succeeding; `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `bfhYjZNMzgn8wEaR4` succeeding; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) latest run `fGubXwuYYNmoMyakt` succeeded.
 
 This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation, amended with newly published actors that now have scheduled paid pricing. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
 Listing copy such as "$0.20/1k results" is not evidence of active paid pricing.

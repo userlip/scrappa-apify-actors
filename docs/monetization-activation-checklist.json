@@ -24,15 +24,33 @@
     "notSecretScrappaApiKeyCount": 0,
     "healthNotes": [
       {
-        "actorId": "bSdKk0P65oTGDXLIh",
-        "slug": "google-patents-search-scraper",
-        "status": "NO_RECORDED_RUNS"
+        "actorId": "DUUlFa5LGId75vOI0",
+        "slug": "stepstone-jobs-scraper",
+        "status": "LATEST_RUN_FAILED",
+        "latestRunId": "wr3oYXhiE25DmrsUH",
+        "statusMessage": "Scrappa API error (422): The request validation failed - work_from_home: The work from home field must be true or false."
+      },
+      {
+        "actorId": "ztc698cHC09lkCDYE",
+        "slug": "youtube-transcript-scraper",
+        "status": "STALE_MAINTENANCE_NOTICE",
+        "notice": "UNDER_MAINTENANCE",
+        "latestRunId": "hRCogd7KpVQU9oRJ5",
+        "latestRunStatus": "SUCCEEDED"
+      },
+      {
+        "actorId": "Kc3rfsV2Hif23mctw",
+        "slug": "google-hotels-search-scraper",
+        "status": "STALE_MAINTENANCE_NOTICE",
+        "notice": "UNDER_MAINTENANCE",
+        "latestRunId": "bfhYjZNMzgn8wEaR4",
+        "latestRunStatus": "SUCCEEDED"
       },
       {
         "actorId": "BehWN3LEvBxhEiJDF",
         "slug": "booking-search-scraper",
-        "status": "LATEST_RUN_FAILED",
-        "latestRunId": "N3nanH7zuJ8K9eyrf"
+        "status": "LATEST_RUN_SUCCEEDED",
+        "latestRunId": "fGubXwuYYNmoMyakt"
       }
     ]
   },
