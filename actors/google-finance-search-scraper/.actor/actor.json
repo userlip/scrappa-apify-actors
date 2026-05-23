@@ -1,0 +1,57 @@
+{
+  "actorSpecification": 1,
+  "name": "google-finance-search-scraper",
+  "title": "Google Finance Search Scraper",
+  "description": "Search Google Finance for stocks, ETFs, indices, funds, currencies, and other finance instruments by ticker or company name.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 200
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "searchResults": {
+          "title": "Search Results",
+          "transformation": {
+            "fields": ["query", "position", "name", "symbol", "exchange", "stock", "type", "currency", "price", "price_change", "percent_change", "link", "google_finance_url", "market", "request_hl", "request_gl", "raw_result"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "query": { "label": "Query", "format": "text" },
+              "position": { "label": "Position", "format": "number" },
+              "name": { "label": "Name", "format": "text" },
+              "symbol": { "label": "Symbol", "format": "text" },
+              "exchange": { "label": "Exchange", "format": "text" },
+              "stock": { "label": "Stock", "format": "text" },
+              "type": { "label": "Type", "format": "text" },
+              "currency": { "label": "Currency", "format": "text" },
+              "price": { "label": "Price", "format": "number" },
+              "price_change": { "label": "Change", "format": "number" },
+              "percent_change": { "label": "% Change", "format": "number" },
+              "link": { "label": "Link", "format": "link" },
+              "google_finance_url": { "label": "Google Finance URL", "format": "link" },
+              "market": { "label": "Market", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" },
+              "request_gl": { "label": "Country", "format": "text" },
+              "raw_result": { "label": "Raw Result", "format": "object" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
