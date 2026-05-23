@@ -3,12 +3,12 @@ import { buildGoogleFinanceSearchRequests, describeGoogleFinanceSearchRequest } 
 import type { GoogleFinanceSearchInput } from './request-params.js';
 import { buildSearchDatasetItems, countSearchResults } from './response-utils.js';
 import type { GoogleFinanceSearchResponse } from './response-utils.js';
+import { actorChargingApi, pushSearchItems } from './charging.js';
 import { ScrappaClient, ScrappaHttpError, isRetryableScrappaError } from './shared/index.js';
 import { buildTransientFailureStatusMessage } from './status-messages.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
-const FINANCE_SEARCH_RESULT_CHARGE_EVENT = 'finance-search-result';
 
 function isScrappaUpstreamFailure(error: unknown): error is ScrappaHttpError {
     return error instanceof ScrappaHttpError && error.status >= 500 && error.status <= 599;
@@ -44,27 +44,6 @@ function describeUnknownError(error: unknown): string {
     return `Non-Error thrown (${typeof error}): ${String(error)}`;
 }
 
-async function pushSearchItems(items: Record<string, unknown>[]): Promise<boolean> {
-    if (items.length === 0) {
-        return true;
-    }
-
-    const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
-    if (!isPayPerEvent) {
-        await Actor.pushData(items);
-        return true;
-    }
-
-    const chargeResult = await Actor.pushData(items, FINANCE_SEARCH_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < items.length) {
-        const statusMessage = 'Charge limit reached before saving all Google Finance search results.';
-        await Actor.exit({ statusMessage });
-        return false;
-    }
-
-    return true;
-}
-
 async function exitOrFailTransientFailure(
     statusMessage: string,
     totalResults: number,
@@ -73,10 +52,9 @@ async function exitOrFailTransientFailure(
     console.warn(statusMessage);
     if (totalResults > 0 || totalQueries > 1) {
         await Actor.fail(statusMessage);
-        return;
+    } else {
+        await Actor.exit({ statusMessage });
     }
-
-    await Actor.exit({ statusMessage });
 }
 
 async function main(): Promise<void> {
@@ -115,8 +93,9 @@ async function main(): Promise<void> {
                 continue;
             }
 
-            const pushed = await pushSearchItems(datasetItems);
-            if (!pushed) {
+            const pushResult = await pushSearchItems(actorChargingApi, datasetItems);
+            if (!pushResult.pushed) {
+                await Actor.exit({ statusMessage: pushResult.statusMessage ?? undefined });
                 return;
             }
 
