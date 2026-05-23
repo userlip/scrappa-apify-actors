@@ -1,0 +1,47 @@
+{
+  "title": "Google Finance Search Scraper",
+  "description": "Search Google Finance for ticker and finance instrument discovery. Use queries for batch mode, or q for single-query compatibility.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "q": {
+      "title": "Query",
+      "type": "string",
+      "description": "Single ticker, company, ETF, index, fund, or finance instrument search query. Ignored when queries is provided.",
+      "editor": "textfield",
+      "prefill": "AAPL",
+      "maxLength": 255
+    },
+    "queries": {
+      "title": "Queries",
+      "type": "array",
+      "description": "Batch of up to 25 Google Finance search queries processed in one Actor run. One dataset item is written per matched result.",
+      "editor": "stringList",
+      "maxItems": 25,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "prefill": ["AAPL", "Tesla"]
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Google Finance language code, such as en, de, es, or zh-cn.",
+      "editor": "textfield",
+      "default": "en",
+      "maxLength": 5,
+      "pattern": "^[A-Za-z]{2}(-[A-Za-z]{2})?$"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Country code, such as us, gb, de, or ca.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
+      "default": "us"
+    }
+  }
+}
