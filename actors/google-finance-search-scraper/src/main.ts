@@ -3,7 +3,7 @@ import { buildGoogleFinanceSearchRequests, describeGoogleFinanceSearchRequest } 
 import type { GoogleFinanceSearchInput } from './request-params.js';
 import { buildSearchDatasetItems, countSearchResults } from './response-utils.js';
 import type { GoogleFinanceSearchResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient, ScrappaHttpError, isRetryableScrappaError } from './shared/index.js';
 import { buildTransientFailureStatusMessage } from './status-messages.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
@@ -12,6 +12,14 @@ const FINANCE_SEARCH_RESULT_CHARGE_EVENT = 'finance-search-result';
 
 function isScrappaUpstreamFailure(error: unknown): error is ScrappaHttpError {
     return error instanceof ScrappaHttpError && error.status >= 500 && error.status <= 599;
+}
+
+function describeTransientFailure(error: unknown): string {
+    if (isScrappaUpstreamFailure(error)) {
+        return `Scrappa upstream returned ${error.status} after retries`;
+    }
+
+    return describeUnknownError(error);
 }
 
 function describeUnknownError(error: unknown): string {
@@ -123,18 +131,12 @@ async function main(): Promise<void> {
             zero_result_queries: zeroResultQueries,
         }));
     } catch (error) {
-        if (isScrappaUpstreamFailure(error)) {
+        if (isRetryableScrappaError(error)) {
             const statusMessage = buildTransientFailureStatusMessage(
-                `Scrappa upstream returned ${error.status} after retries`,
+                describeTransientFailure(error),
                 totalResults,
                 totalQueries,
             );
-            await exitOrFailTransientFailure(statusMessage, totalResults, totalQueries);
-            return;
-        }
-
-        if (error instanceof ScrappaTimeoutError) {
-            const statusMessage = buildTransientFailureStatusMessage(error.message, totalResults, totalQueries);
             await exitOrFailTransientFailure(statusMessage, totalResults, totalQueries);
             return;
         }
