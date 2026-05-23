@@ -109,7 +109,7 @@ Past-due items in this section should be rechecked against the latest pricing au
 
 ### 2026-06-03
 
-- [ ] `BehWN3LEvBxhEiJDF` - `booking-search-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-03T10:06:39.118Z` with `booking-result` priced at `$0.0002/result`.
+- [ ] `BehWN3LEvBxhEiJDF` - `booking-search-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-03T10:06:39.118Z` with `booking-result` priced at `$0.0002/result`; also confirm the dated input-schema prefills and README examples are still future dates before marketplace promotion.
 
 ### 2026-06-04
 
