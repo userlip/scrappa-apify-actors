@@ -45,7 +45,15 @@ function cleanRequiredString(value: unknown, field: string, maxLength: number): 
 
 function cleanLanguageCode(value: unknown): string | undefined {
     const hl = cleanString(value, 'hl', 10);
-    return hl === undefined ? undefined : hl.toLowerCase();
+    if (hl === undefined) {
+        return undefined;
+    }
+
+    if (!/^[a-z]{2}(?:-[a-z]{2})?$/i.test(hl)) {
+        throw new Error('hl must be a two-letter language code with an optional two-letter region');
+    }
+
+    return hl.toLowerCase();
 }
 
 function cleanCountryCode(value: unknown): string | undefined {

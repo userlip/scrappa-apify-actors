@@ -31,7 +31,8 @@
       "description": "Google Finance language code, such as en, de, es, or zh-cn.",
       "editor": "textfield",
       "default": "en",
-      "maxLength": 10
+      "maxLength": 5,
+      "pattern": "^[A-Za-z]{2}(-[A-Za-z]{2})?$"
     },
     "gl": {
       "title": "Country",

@@ -56,6 +56,10 @@ test('rejects missing, invalid, and oversized query input', () => {
         /q must be 255 characters or fewer/,
     );
     assert.throws(
+        () => buildGoogleFinanceSearchRequests({ q: 'AAPL', hl: 'english' }),
+        /hl must be a two-letter language code with an optional two-letter region/,
+    );
+    assert.throws(
         () => buildGoogleFinanceSearchRequests({ q: 'AAPL', gl: 'usa' }),
         /gl must be a two-letter country code/,
     );
