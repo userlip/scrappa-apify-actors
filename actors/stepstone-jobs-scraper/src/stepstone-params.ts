@@ -64,7 +64,6 @@ export function buildStepstoneJobsParams(input: StepstoneJobsInput): Record<stri
         ['radius', input.radius],
         ['sort', input.sort],
         ['job_type', input.job_type],
-        ['work_from_home', input.work_from_home ?? false],
         ['date_posted', input.date_posted],
         ['page', input.page],
         ['limit', input.limit],
@@ -74,6 +73,11 @@ export function buildStepstoneJobsParams(input: StepstoneJobsInput): Record<stri
         if (value !== undefined) {
             params[key] = value;
         }
+    }
+
+    // Laravel validation rejects query-string booleans; send integer 1 for true and omit false.
+    if (input.work_from_home === true) {
+        params.work_from_home = 1;
     }
 
     return params;
