@@ -82,6 +82,8 @@ test('input schema exposes batch searches', async () => {
     assert.equal(schema.properties.searches.type, 'array');
     assert.equal(schema.properties.searches.maxItems, 25);
     assert.deepEqual(schema.properties.searches.items.required, ['ss']);
+    assert.equal(schema.properties.checkin.prefill, '2026-07-01');
+    assert.equal(schema.properties.checkout.prefill, '2026-07-03');
 });
 
 test('requires destination and valid paired dates', () => {

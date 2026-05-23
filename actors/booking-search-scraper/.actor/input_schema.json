@@ -15,13 +15,15 @@
       "title": "Check-in Date",
       "type": "string",
       "description": "Check-in date in YYYY-MM-DD format. Provide with Check-out Date for property cards.",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "2026-07-01"
     },
     "checkout": {
       "title": "Check-out Date",
       "type": "string",
       "description": "Check-out date in YYYY-MM-DD format. Must be after Check-in Date.",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "2026-07-03"
     },
     "group_adults": {
       "title": "Adults",
