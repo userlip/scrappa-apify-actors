@@ -10,7 +10,7 @@
     "publicActorCount": 60,
     "localActorManifestCount": 62,
     "missingLocalSourceCount": 8,
-    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors. Newly added public actors in this baseline include immobilienscout24-search-scraper (601ilBYtO52NNsMrT), redfin-property-search-scraper (Xa9ClmgD4tI9lHT91), and kleinanzeigen-search-scraper (OTzcE9BHg83MpDprO)."
+    "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss recently published actors. Recent public actor coverage in this baseline includes immobilienscout24-search-scraper (601ilBYtO52NNsMrT), redfin-property-search-scraper (Xa9ClmgD4tI9lHT91), and kleinanzeigen-search-scraper (OTzcE9BHg83MpDprO)."
   },
   "auditSummary": {
     "pricingCheckedAt": "2026-05-23T05:01:00.000Z",
