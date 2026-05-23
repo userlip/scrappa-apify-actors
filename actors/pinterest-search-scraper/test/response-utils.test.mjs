@@ -7,6 +7,8 @@ const responseUtilsModule = process.env.TEST_SOURCE === 'src'
 const {
     buildPinterestDatasetItem,
     getPinterestPins,
+    limitPinterestSearchResponse,
+    selectPinterestPins,
 } = await import(responseUtilsModule);
 
 test('extracts pins from supported response shapes', () => {
@@ -15,6 +17,21 @@ test('extracts pins from supported response shapes', () => {
     assert.deepEqual(getPinterestPins({ results: [{ id: 'pin-3' }] }), [{ id: 'pin-3' }]);
     assert.deepEqual(getPinterestPins({ data: { results: [{ id: 'pin-4' }] } }), [{ id: 'pin-4' }]);
     assert.deepEqual(getPinterestPins({}), []);
+});
+
+test('selects pins with source metadata for response limiting', () => {
+    assert.deepEqual(selectPinterestPins({ pins: [{ id: 'pin-1' }] }), {
+        pins: [{ id: 'pin-1' }],
+        source: 'pins',
+    });
+    assert.deepEqual(selectPinterestPins({ data: { results: [{ id: 'pin-2' }] } }), {
+        pins: [{ id: 'pin-2' }],
+        source: 'data.results',
+    });
+    assert.deepEqual(selectPinterestPins({}), {
+        pins: [],
+        source: null,
+    });
 });
 
 test('preserves empty primary pins instead of inventing fallback data', () => {
@@ -83,4 +100,30 @@ test('uses returned pin length when results_count is absent', () => {
 
     assert.equal(item.image_url, 'https://example.com/image.jpg');
     assert.equal(item.results_count, 2);
+});
+
+test('limits Pinterest response payloads to saved pins only', () => {
+    assert.deepEqual(limitPinterestSearchResponse(null, 1), {});
+    assert.deepEqual(
+        limitPinterestSearchResponse({
+            pins: [{ id: 1 }, { id: 2 }],
+            results: [{ id: 3 }],
+        }, 1, 'pins'),
+        { pins: [{ id: 1 }] },
+    );
+    assert.deepEqual(
+        limitPinterestSearchResponse({
+            data: {
+                pins: [{ id: 1 }],
+                results: [{ id: 2 }, { id: 3 }],
+                keep: true,
+            },
+        }, 1, 'data.results'),
+        {
+            data: {
+                results: [{ id: 2 }],
+                keep: true,
+            },
+        },
+    );
 });

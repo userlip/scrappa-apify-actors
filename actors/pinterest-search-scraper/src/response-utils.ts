@@ -34,24 +34,80 @@ export interface PinterestPin {
     [key: string]: unknown;
 }
 
-export function getPinterestPins(response: PinterestSearchResponse): PinterestPin[] {
+export type PinterestPinsSource = 'pins' | 'data.pins' | 'results' | 'data.results';
+
+export interface PinterestPinsSelection {
+    pins: PinterestPin[];
+    source: PinterestPinsSource | null;
+}
+
+export function selectPinterestPins(response: PinterestSearchResponse): PinterestPinsSelection {
     if (Array.isArray(response.pins)) {
-        return response.pins;
+        return { pins: response.pins, source: 'pins' };
     }
 
     if (Array.isArray(response.data?.pins)) {
-        return response.data.pins;
+        return { pins: response.data.pins, source: 'data.pins' };
     }
 
     if (Array.isArray(response.results)) {
-        return response.results;
+        return { pins: response.results, source: 'results' };
     }
 
     if (Array.isArray(response.data?.results)) {
-        return response.data.results;
+        return { pins: response.data.results, source: 'data.results' };
     }
 
-    return [];
+    return { pins: [], source: null };
+}
+
+export function getPinterestPins(response: PinterestSearchResponse): PinterestPin[] {
+    return selectPinterestPins(response).pins;
+}
+
+export function limitPinterestSearchResponse(
+    response: PinterestSearchResponse | null | undefined,
+    limit: number,
+    selectedSource?: PinterestPinsSource | null,
+): PinterestSearchResponse {
+    if (!response) {
+        return {};
+    }
+
+    const source = selectedSource === undefined
+        ? selectPinterestPins(response).source
+        : selectedSource;
+    const limitedResponse: PinterestSearchResponse = { ...response };
+
+    if (Array.isArray(response.pins) && source === 'pins') {
+        limitedResponse.pins = response.pins.slice(0, limit);
+    } else {
+        delete limitedResponse.pins;
+    }
+
+    if (Array.isArray(response.results) && source === 'results') {
+        limitedResponse.results = response.results.slice(0, limit);
+    } else {
+        delete limitedResponse.results;
+    }
+
+    if (response.data && typeof response.data === 'object') {
+        limitedResponse.data = { ...response.data };
+
+        if (Array.isArray(response.data.pins) && source === 'data.pins') {
+            limitedResponse.data.pins = response.data.pins.slice(0, limit);
+        } else {
+            delete limitedResponse.data.pins;
+        }
+
+        if (Array.isArray(response.data.results) && source === 'data.results') {
+            limitedResponse.data.results = response.data.results.slice(0, limit);
+        } else {
+            delete limitedResponse.data.results;
+        }
+    }
+
+    return limitedResponse;
 }
 
 function firstImageUrl(pin: PinterestPin): string | null {

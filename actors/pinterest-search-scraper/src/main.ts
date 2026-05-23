@@ -6,7 +6,8 @@ import {
 import type { PinterestSearchInput } from './request-params.js';
 import {
     buildPinterestDatasetItem,
-    getPinterestPins,
+    limitPinterestSearchResponse,
+    selectPinterestPins,
 } from './response-utils.js';
 import type { PinterestSearchResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
@@ -18,6 +19,17 @@ const PIN_RESULT_CHARGE_EVENT = 'pin-result';
 interface PushChargedItemsResult {
     savedCount: number;
     statusMessage: string | null;
+}
+
+function getChargeablePinCapacity(): number {
+    const chargingManager = Actor.getChargingManager();
+    const { isPayPerEvent } = chargingManager.getPricingInfo();
+
+    if (!isPayPerEvent) {
+        return Infinity;
+    }
+
+    return chargingManager.calculateMaxEventChargeCountWithinLimit(PIN_RESULT_CHARGE_EVENT);
 }
 
 async function pushChargedPins(items: Record<string, unknown>[], query: string): Promise<PushChargedItemsResult> {
@@ -70,19 +82,30 @@ async function main(): Promise<void> {
         let statusMessage: string | null = null;
 
         for (const request of plan.requests) {
+            const chargeablePinCapacity = getChargeablePinCapacity();
+            if (chargeablePinCapacity <= 0) {
+                statusMessage = `Charge limit reached before fetching Pinterest pins for "${request.query}".`;
+                console.log(statusMessage, JSON.stringify({
+                    event: PIN_RESULT_CHARGE_EVENT,
+                    query: request.query,
+                }));
+                break;
+            }
+
             console.log(`Fetching Pinterest pins for "${request.query}" with limit ${String(request.params.limit)}`);
 
             const response = await client.get<PinterestSearchResponse>('/pinterest/search', request.params, {
                 attempts: SCRAPPA_MAX_ATTEMPTS,
             });
             searchesFetched += 1;
-            responses.push(response);
 
-            const pins = getPinterestPins(response);
+            const selection = selectPinterestPins(response);
+            const pins = selection.pins;
             extractedPins += pins.length;
             const items = pins.map((pin) => buildPinterestDatasetItem(pin, request.params, response));
             const result = await pushChargedPins(items, request.query);
             savedPins += result.savedCount;
+            responses.push(limitPinterestSearchResponse(response, result.savedCount, selection.source));
 
             querySummaries.push({
                 query: request.query,
