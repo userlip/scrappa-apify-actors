@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-22T11:37:40.828Z",
+  "lastCheckedAt": "2026-05-23T05:01:00.000Z",
   "source": "Apify Actor list/detail API for TheScrappa organization, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, and local actor manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
   "purpose": "Living snapshot of public actors with future paid pricing scheduled, amended as new actors are published and audit baselines change.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-22T11:37:40.828Z",
+    "checkedAt": "2026-05-23T05:01:00.000Z",
     "liveActorCount": 70,
     "publicActorCount": 60,
-    "localActorManifestCount": 61,
-    "missingLocalSourceCount": 9,
+    "localActorManifestCount": 62,
+    "missingLocalSourceCount": 8,
     "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss newly published actors. Newly added public actors in this baseline include immobilienscout24-search-scraper (601ilBYtO52NNsMrT), redfin-property-search-scraper (Xa9ClmgD4tI9lHT91), and kleinanzeigen-search-scraper (OTzcE9BHg83MpDprO)."
   },
   "auditSummary": {
-    "pricingCheckedAt": "2026-05-22T11:37:21.946Z",
-    "secretCheckedAt": "2026-05-22T11:37:29.023Z",
+    "pricingCheckedAt": "2026-05-23T05:01:00.000Z",
+    "secretCheckedAt": "2026-05-23T05:01:00.000Z",
     "activePaidEvidenceCount": 44,
     "futureOnlyPaidPricingCount": 16,
     "missingPaidPricingCount": 0,
@@ -84,7 +84,7 @@
     { "actorId": "Xa9ClmgD4tI9lHT91", "slug": "redfin-property-search-scraper", "scheduledActivationAt": "2026-06-05T07:59:30.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "property-result", "expectedEventPriceUsd": 0.0003 }
   ],
   "newPublicActorsWithActivePaidPricing": [
-    { "actorId": "OTzcE9BHg83MpDprO", "slug": "kleinanzeigen-search-scraper", "activePricingAt": "2026-05-22T11:10:59.287Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "listing-result", "expectedEventPriceUsd": 0.00025, "localSourceStatus": "MISSING_LOCALLY" }
+    { "actorId": "OTzcE9BHg83MpDprO", "slug": "kleinanzeigen-search-scraper", "activePricingAt": "2026-05-22T11:10:59.287Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "listing-result", "expectedEventPriceUsd": 0.00025, "localSourceStatus": "LOCAL_SOURCE_PRESENT", "localSourceDirectory": "actors/kleinanzeigen-search-scraper", "successfulRunId": "UphOLJdyQU5jTx47Q", "successfulBuildId": "4oPbUr5dbd0tcpD1l" }
   ],
   "privateScheduledActorsExcludedUntilPublic": [
     { "actorId": "Y3mKYlGNhsrBE7aZO", "slug": "youtube-api-channel-podcasts", "scheduledActivationAt": "2026-05-17T14:44:02.772Z", "expectedPricingModel": "PAY_PER_EVENT", "isPublicAtLastCheck": false },

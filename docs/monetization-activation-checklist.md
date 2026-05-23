@@ -1,13 +1,13 @@
 # Monetization Activation Checklist
 
-Last live metadata check: 2026-05-22T11:37Z via Apify Actor list/detail API for the `TheScrappa` organization, `scripts/audit-apify-pricing.mjs --json --include-active`, `scripts/audit-apify-secrets.mjs --json --include-present`, and local actor manifest count.
+Last live metadata check: 2026-05-23T05:01Z via Apify Actor list/detail API for the `TheScrappa` organization, `scripts/audit-apify-pricing.mjs --json --include-active`, `scripts/audit-apify-secrets.mjs --json --include-present`, and local actor manifest count.
 
 Current inventory backstop for every activation audit:
 
 - 70 live `thescrappa` actors in Apify.
 - 60 public `thescrappa` actors in Apify according to the pricing and secret audits.
-- 61 local actor manifests in this repo; all 61 are represented by live Apify actors.
-- 9 live actors still missing local source directories here.
+- 62 local actor manifests in this repo; all 62 are represented by live Apify actors.
+- 8 live actors still missing local source directories here.
 - Pricing audit: 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 44 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
 - Secret audit: all 60 public actors have `SCRAPPA_API_KEY` configured as a secret.
 - Run-health notes: `google-patents-search-scraper` (`bSdKk0P65oTGDXLIh`) has no recorded Apify runs; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) latest run `N3nanH7zuJ8K9eyrf` failed and should be retested before its 2026-06-03 activation check.
@@ -125,7 +125,7 @@ Past-due items in this section should be rechecked against the latest pricing au
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-22T11:37Z baseline on this branch is 70 live actors, 60 public actors, 61 local actor manifests, and 9 missing local source directories. Newly added public actors in this baseline include `immobilienscout24-search-scraper` (`601ilBYtO52NNsMrT`), `redfin-property-search-scraper` (`Xa9ClmgD4tI9lHT91`), and `kleinanzeigen-search-scraper` (`OTzcE9BHg83MpDprO`).
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-23T05:01Z baseline on this branch is 70 live actors, 60 public actors, 62 local actor manifests, and 8 missing local source directories. Newly added public actors in this baseline include `immobilienscout24-search-scraper` (`601ilBYtO52NNsMrT`), `redfin-property-search-scraper` (`Xa9ClmgD4tI9lHT91`), and `kleinanzeigen-search-scraper` (`OTzcE9BHg83MpDprO`).
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.
