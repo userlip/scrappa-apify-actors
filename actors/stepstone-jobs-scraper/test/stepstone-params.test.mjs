@@ -29,7 +29,7 @@ test('forwards Stepstone jobs search parameters', () => {
             radius: 50,
             sort: 'date',
             job_type: 'full_time',
-            work_from_home: true,
+            work_from_home: 1,
             date_posted: 7,
             page: 2,
             limit: 25,
@@ -37,10 +37,8 @@ test('forwards Stepstone jobs search parameters', () => {
     );
 });
 
-test('filters undefined values from Stepstone jobs parameters except required work-from-home flag', () => {
-    assert.deepEqual(buildStepstoneJobsParams({ query: undefined, location: undefined, limit: undefined }), {
-        work_from_home: false,
-    });
+test('filters undefined values from Stepstone jobs parameters', () => {
+    assert.deepEqual(buildStepstoneJobsParams({ query: undefined, location: undefined, limit: undefined }), {});
 });
 
 test('keeps omitted work-from-home input unset after normalization', () => {
@@ -50,14 +48,25 @@ test('keeps omitted work-from-home input unset after normalization', () => {
     });
 });
 
-test('defaults omitted work-from-home request parameter to false after normalization', () => {
+test('omits work-from-home request parameter after normalization when unset', () => {
     const input = normalizeStepstoneJobsInput({ query: 'komissionierer' });
 
     assert.deepEqual(buildStepstoneJobsParams(input), {
         query: 'komissionierer',
         location: 'Berlin',
         country: 'de',
-        work_from_home: false,
+        page: 1,
+        limit: 25,
+    });
+});
+
+test('omits false work-from-home request parameter after normalization', () => {
+    const input = normalizeStepstoneJobsInput({ query: 'komissionierer', work_from_home: false });
+
+    assert.deepEqual(buildStepstoneJobsParams(input), {
+        query: 'komissionierer',
+        location: 'Berlin',
+        country: 'de',
         page: 1,
         limit: 25,
     });
