@@ -38,7 +38,8 @@
       "type": "string",
       "description": "Country code, such as us, gb, de, or ca.",
       "editor": "textfield",
-      "maxLength": 10,
+      "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
       "default": "us"
     }
   }

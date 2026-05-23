@@ -55,6 +55,10 @@ test('rejects missing, invalid, and oversized query input', () => {
         () => buildGoogleFinanceSearchRequests({ q: 'a'.repeat(256) }),
         /q must be 255 characters or fewer/,
     );
+    assert.throws(
+        () => buildGoogleFinanceSearchRequests({ q: 'AAPL', gl: 'usa' }),
+        /gl must be a two-letter country code/,
+    );
 });
 
 test('caps batch size conservatively', () => {

@@ -50,7 +50,15 @@ function cleanLanguageCode(value: unknown): string | undefined {
 
 function cleanCountryCode(value: unknown): string | undefined {
     const gl = cleanString(value, 'gl', 10);
-    return gl === undefined ? undefined : gl.toLowerCase();
+    if (gl === undefined) {
+        return undefined;
+    }
+
+    if (!/^[a-z]{2}$/i.test(gl)) {
+        throw new Error('gl must be a two-letter country code');
+    }
+
+    return gl.toLowerCase();
 }
 
 function cleanQueries(input: GoogleFinanceSearchInput): string[] {
