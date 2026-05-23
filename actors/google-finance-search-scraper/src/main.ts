@@ -57,9 +57,13 @@ async function pushSearchItems(items: Record<string, unknown>[]): Promise<boolea
     return true;
 }
 
-async function exitOrFailTransientFailure(statusMessage: string, totalResults: number): Promise<void> {
+async function exitOrFailTransientFailure(
+    statusMessage: string,
+    totalResults: number,
+    totalQueries: number,
+): Promise<void> {
     console.warn(statusMessage);
-    if (totalResults > 0) {
+    if (totalResults > 0 || totalQueries > 1) {
         await Actor.fail(statusMessage);
         return;
     }
@@ -70,6 +74,7 @@ async function exitOrFailTransientFailure(statusMessage: string, totalResults: n
 async function main(): Promise<void> {
     await Actor.init();
     let totalResults = 0;
+    let totalQueries = 0;
 
     try {
         const apiKey = process.env.SCRAPPA_API_KEY;
@@ -83,6 +88,7 @@ async function main(): Promise<void> {
         }
 
         const requests = buildGoogleFinanceSearchRequests(input);
+        totalQueries = requests.length;
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
         let zeroResultQueries = 0;
 
@@ -121,14 +127,15 @@ async function main(): Promise<void> {
             const statusMessage = buildTransientFailureStatusMessage(
                 `Scrappa upstream returned ${error.status} after retries`,
                 totalResults,
+                totalQueries,
             );
-            await exitOrFailTransientFailure(statusMessage, totalResults);
+            await exitOrFailTransientFailure(statusMessage, totalResults, totalQueries);
             return;
         }
 
         if (error instanceof ScrappaTimeoutError) {
-            const statusMessage = buildTransientFailureStatusMessage(error.message, totalResults);
-            await exitOrFailTransientFailure(statusMessage, totalResults);
+            const statusMessage = buildTransientFailureStatusMessage(error.message, totalResults, totalQueries);
+            await exitOrFailTransientFailure(statusMessage, totalResults, totalQueries);
             return;
         }
 
