@@ -7,6 +7,7 @@ const requestParamsModule = process.env.TEST_SOURCE === 'src'
     : '../dist/request-params.js';
 const {
     buildPinterestSearchPlan,
+    capPinterestSearchParamsToChargeCapacity,
     describePinterestSearchRequest,
 } = await import(requestParamsModule);
 
@@ -94,6 +95,25 @@ test('validates required batch input and limit bounds', () => {
     assert.throws(
         () => buildPinterestSearchPlan({ query: 'home decor', limit: 0 }),
         /limit must be between 1 and 250/,
+    );
+});
+
+test('caps Scrappa fetch params to remaining charge capacity', () => {
+    assert.deepEqual(
+        capPinterestSearchParamsToChargeCapacity({ query: 'home decor', limit: 250 }, 50, 3),
+        {
+            params: { query: 'home decor', limit: 3 },
+            requestedLimit: 250,
+            fetchLimit: 3,
+        },
+    );
+    assert.deepEqual(
+        capPinterestSearchParamsToChargeCapacity({ query: 'home decor' }, 50, Infinity),
+        {
+            params: { query: 'home decor', limit: 50 },
+            requestedLimit: 50,
+            fetchLimit: 50,
+        },
     );
 });
 

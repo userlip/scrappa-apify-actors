@@ -65,6 +65,10 @@ export function getPinterestPins(response: PinterestSearchResponse): PinterestPi
     return selectPinterestPins(response).pins;
 }
 
+export function getPinterestNextBookmark(response: PinterestSearchResponse): string | null {
+    return response.nextBookmark ?? response.bookmark ?? null;
+}
+
 export function limitPinterestSearchResponse(
     response: PinterestSearchResponse | null | undefined,
     limit: number,
@@ -193,6 +197,6 @@ export function buildPinterestDatasetItem(
         request_bookmark: params.bookmark ?? null,
         count: response.count ?? null,
         results_count: response.results_count ?? getPinterestPins(response).length,
-        nextBookmark: response.nextBookmark ?? null,
+        nextBookmark: getPinterestNextBookmark(response),
     };
 }

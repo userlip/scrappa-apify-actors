@@ -16,6 +16,12 @@ export interface PinterestSearchPlan {
     bookmark?: string;
 }
 
+export interface PinterestSearchFetchParams {
+    params: Record<string, unknown>;
+    requestedLimit: number;
+    fetchLimit: number;
+}
+
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 250;
 const MAX_QUERIES_PER_RUN = 100;
@@ -134,4 +140,22 @@ export function describePinterestSearchRequest(plan: PinterestSearchPlan): strin
     const bookmarkLabel = plan.bookmark ? ', with bookmark' : '';
 
     return `${queryLabel} (${plan.limit} pins/query${bookmarkLabel})`;
+}
+
+export function capPinterestSearchParamsToChargeCapacity(
+    params: Record<string, unknown>,
+    fallbackLimit: number,
+    chargeablePinCapacity: number,
+): PinterestSearchFetchParams {
+    const requestedLimit = typeof params.limit === 'number' ? params.limit : fallbackLimit;
+    const fetchLimit = Math.min(requestedLimit, chargeablePinCapacity);
+
+    return {
+        params: {
+            ...params,
+            limit: fetchLimit,
+        },
+        requestedLimit,
+        fetchLimit,
+    };
 }

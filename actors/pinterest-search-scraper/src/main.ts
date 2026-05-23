@@ -1,11 +1,13 @@
 import { Actor } from 'apify';
 import {
     buildPinterestSearchPlan,
+    capPinterestSearchParamsToChargeCapacity,
     describePinterestSearchRequest,
 } from './request-params.js';
 import type { PinterestSearchInput } from './request-params.js';
 import {
     buildPinterestDatasetItem,
+    getPinterestNextBookmark,
     limitPinterestSearchResponse,
     selectPinterestPins,
 } from './response-utils.js';
@@ -92,9 +94,17 @@ async function main(): Promise<void> {
                 break;
             }
 
-            console.log(`Fetching Pinterest pins for "${request.query}" with limit ${String(request.params.limit)}`);
+            const fetchParams = capPinterestSearchParamsToChargeCapacity(
+                request.params,
+                plan.limit,
+                chargeablePinCapacity,
+            );
+            const { fetchLimit, requestedLimit } = fetchParams;
+            const upstreamParams = fetchParams.params;
 
-            const response = await client.get<PinterestSearchResponse>('/pinterest/search', request.params, {
+            console.log(`Fetching Pinterest pins for "${request.query}" with limit ${String(fetchLimit)}`);
+
+            const response = await client.get<PinterestSearchResponse>('/pinterest/search', upstreamParams, {
                 attempts: SCRAPPA_MAX_ATTEMPTS,
             });
             searchesFetched += 1;
@@ -102,20 +112,21 @@ async function main(): Promise<void> {
             const selection = selectPinterestPins(response);
             const pins = selection.pins;
             extractedPins += pins.length;
-            const items = pins.map((pin) => buildPinterestDatasetItem(pin, request.params, response));
+            const items = pins.map((pin) => buildPinterestDatasetItem(pin, upstreamParams, response));
             const result = await pushChargedPins(items, request.query);
             savedPins += result.savedCount;
             responses.push(limitPinterestSearchResponse(response, result.savedCount, selection.source));
 
             querySummaries.push({
                 query: request.query,
-                requested_limit: request.params.limit,
-                request_bookmark: request.params.bookmark ?? null,
+                requested_limit: requestedLimit,
+                fetch_limit: fetchLimit,
+                request_bookmark: upstreamParams.bookmark ?? null,
                 count: response.count ?? null,
                 results_count: response.results_count ?? pins.length,
                 pins_extracted: pins.length,
                 pins_saved: result.savedCount,
-                nextBookmark: response.nextBookmark ?? null,
+                nextBookmark: getPinterestNextBookmark(response),
             });
 
             console.log(`Found ${pins.length} Pinterest pin result(s) for "${request.query}"; saved ${result.savedCount}`);

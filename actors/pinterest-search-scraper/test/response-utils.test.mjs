@@ -6,6 +6,7 @@ const responseUtilsModule = process.env.TEST_SOURCE === 'src'
     : '../dist/response-utils.js';
 const {
     buildPinterestDatasetItem,
+    getPinterestNextBookmark,
     getPinterestPins,
     limitPinterestSearchResponse,
     selectPinterestPins,
@@ -100,6 +101,20 @@ test('uses returned pin length when results_count is absent', () => {
 
     assert.equal(item.image_url, 'https://example.com/image.jpg');
     assert.equal(item.results_count, 2);
+});
+
+test('falls back to bookmark when nextBookmark is absent', () => {
+    assert.equal(getPinterestNextBookmark({ nextBookmark: 'next-token', bookmark: 'fallback-token' }), 'next-token');
+    assert.equal(getPinterestNextBookmark({ bookmark: 'fallback-token' }), 'fallback-token');
+    assert.equal(getPinterestNextBookmark({}), null);
+
+    const item = buildPinterestDatasetItem(
+        { id: '123' },
+        { query: 'home decor', limit: 1 },
+        { bookmark: 'fallback-token', pins: [{ id: '123' }] },
+    );
+
+    assert.equal(item.nextBookmark, 'fallback-token');
 });
 
 test('limits Pinterest response payloads to saved pins only', () => {
