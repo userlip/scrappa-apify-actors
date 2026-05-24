@@ -1,0 +1,28 @@
+{
+  "title": "TikTok Ads Scraper",
+  "description": "Extract ad metadata from one or more TikTok Creative Center ad URLs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "urls": {
+      "title": "TikTok Creative Center Ad URLs",
+      "type": "array",
+      "description": "One or more TikTok Creative Center ad URLs. The actor pushes one dataset item for each requested ad URL.",
+      "editor": "stringList",
+      "prefill": ["https://ads.tiktok.com/business/creativecenter/topads/7213160569871581185/pc/en?countryCode=US&period=30"],
+      "items": {
+        "type": "string",
+        "pattern": "^[Hh][Tt][Tt][Pp][Ss]://ads\\.[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/business/creativecenter/topads/[0-9]+(?:/[Pp][Cc]/[Ee][Nn])?/?(?:[?#].*)?$"
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "url": {
+      "title": "Single TikTok Creative Center Ad URL",
+      "type": "string",
+      "description": "Legacy single URL field for API callers. Ignored when TikTok Creative Center Ad URLs is provided.",
+      "editor": "textfield",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]://ads\\.[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/business/creativecenter/topads/[0-9]+(?:/[Pp][Cc]/[Ee][Nn])?/?(?:[?#].*)?$"
+    }
+  }
+}
