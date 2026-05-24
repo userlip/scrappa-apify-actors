@@ -1,35 +1,28 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-24T07:23:43.706Z",
+  "lastCheckedAt": "2026-05-24T07:50:47.636Z",
   "source": "Apify Actor list/detail API for TheScrappa organization, direct GET /v2/acts/{actorId}, recent runs/builds API, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, and local actor manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
   "purpose": "Living snapshot of public actors with future paid pricing scheduled, amended as new actors are published and audit baselines change.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-24T07:23:43.706Z",
+    "checkedAt": "2026-05-24T07:50:47.636Z",
     "liveActorCount": 74,
-    "publicActorCount": 63,
+    "publicActorCount": 64,
     "localActorManifestCount": 64,
     "missingLocalSourceCount": 10,
     "notes": "Use this as the baseline count before every activation audit. The live actor count includes google-search-scraper, which is represented locally by actors/google-search, plus 10 live actors without matching local source directories as of this check."
   },
   "auditSummary": {
-    "pricingCheckedAt": "2026-05-24T07:23:16.998Z",
-    "secretCheckedAt": "2026-05-24T07:23:23.727Z",
-    "activePaidEvidenceCount": 50,
+    "pricingCheckedAt": "2026-05-24T07:50:40.247Z",
+    "secretCheckedAt": "2026-05-24T07:50:47.636Z",
+    "activePaidEvidenceCount": 51,
     "futureOnlyPaidPricingCount": 13,
     "missingPaidPricingCount": 0,
     "overdueActivePricingGapCount": 0,
-    "publicActorsWithScrappaApiKeySecret": 63,
+    "publicActorsWithScrappaApiKeySecret": 64,
     "missingScrappaApiKeySecretCount": 0,
     "notSecretScrappaApiKeyCount": 0,
     "healthNotes": [
-      {
-        "actorId": "DUUlFa5LGId75vOI0",
-        "slug": "stepstone-jobs-scraper",
-        "status": "LATEST_RUN_FAILED",
-        "latestRunId": "wr3oYXhiE25DmrsUH",
-        "statusMessage": "Scrappa API error (422): The request validation failed - work_from_home: The work from home field must be true or false."
-      },
       {
         "actorId": "ztc698cHC09lkCDYE",
         "slug": "youtube-transcript-scraper",
@@ -45,12 +38,6 @@
         "notice": "UNDER_MAINTENANCE",
         "latestRunId": "bfhYjZNMzgn8wEaR4",
         "latestRunStatus": "SUCCEEDED"
-      },
-      {
-        "actorId": "BehWN3LEvBxhEiJDF",
-        "slug": "booking-search-scraper",
-        "status": "LATEST_RUN_SUCCEEDED",
-        "latestRunId": "fGubXwuYYNmoMyakt"
       }
     ]
   },
@@ -247,6 +234,14 @@
       "expectedEventName": "apify-default-dataset-item",
       "expectedEventPriceUsdMin": 0.0002,
       "expectedEventPriceUsdMax": 0.0003
+    },
+    {
+      "actorId": "Kc3rfsV2Hif23mctw",
+      "slug": "google-hotels-search-scraper",
+      "scheduledActivationAt": "2026-05-26T08:23:20.330Z",
+      "expectedPricingModel": "PAY_PER_EVENT",
+      "expectedEventName": "apify-default-dataset-item",
+      "expectedEventPriceUsd": 0.0002
     },
     {
       "actorId": "WvbWRqj67ve6fwwWZ",
