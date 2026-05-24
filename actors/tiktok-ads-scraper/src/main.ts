@@ -1,4 +1,5 @@
 import { Actor } from 'apify';
+import { extractSingleTikTokAdRecord } from './extract-ad.js';
 import { normalizeTikTokAdRecord } from './normalize-ad.js';
 import type { TikTokAdRecord } from './normalize-ad.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
@@ -35,28 +36,7 @@ function assertSuccessfulResponse(response: TikTokAdResponse, url: string): void
     }
 }
 
-function extractAd(data: TikTokAdResponse['data'], url: string): TikTokAdRecord | null {
-    if (!data) {
-        return null;
-    }
-
-    if (Array.isArray(data)) {
-        if (data.length === 0) {
-            console.warn(`Scrappa returned an empty ad record array for ${url}. Saving a not-found dataset item.`);
-            return null;
-        }
-
-        if (data.length > 1) {
-            console.warn(`Scrappa returned ${data.length} ad records for ${url}. Saving the first record to keep one dataset item per requested URL.`);
-        }
-
-        return data[0];
-    }
-
-    return data;
-}
-
-function formatLookupForLog(value: string): string {
+function safeFormatLookupForLog(value: string): string {
     try {
         return formatTikTokAdLookupForLog(value);
     } catch {
@@ -113,12 +93,12 @@ async function main(): Promise<void> {
                 }
 
                 const params = buildTikTokAdParams(url);
-                console.log(`Fetching TikTok ad ${requestIndex}/${requests.length}: ${formatLookupForLog(url)}`);
+                console.log(`Fetching TikTok ad ${requestIndex}/${requests.length}: ${safeFormatLookupForLog(url)}`);
 
                 const response = await client.get<TikTokAdResponse>('/tiktok/ads/details', params);
                 assertSuccessfulResponse(response, url);
 
-                const ad = extractAd(response.data, url);
+                const ad = extractSingleTikTokAdRecord(response.data, url);
                 const row = ad
                     ? toDatasetItem(ad, url, response, requestIndex)
                     : {
@@ -137,11 +117,11 @@ async function main(): Promise<void> {
                     adsFound += 1;
                     console.log('Found 1 TikTok ad record');
                 } else {
-                    console.log(`No ad details found for: ${formatLookupForLog(url)}`);
+                    console.log(`No ad details found for: ${safeFormatLookupForLog(url)}`);
                 }
             } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
-                console.warn(`TikTok ad lookup failed for ${formatLookupForLog(url)}: ${message}`);
+                console.warn(`TikTok ad lookup failed for ${safeFormatLookupForLog(url)}: ${message}`);
 
                 const row: TikTokAdDatasetItem = {
                     request_url: url,

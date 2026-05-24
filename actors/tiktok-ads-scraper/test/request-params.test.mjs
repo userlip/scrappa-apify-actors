@@ -87,6 +87,7 @@ test('keeps invalid string batch entries as failed lookup requests', () => {
 test('accepts TikTok Creative Center top ads URLs', () => {
     assert.doesNotThrow(() => requireTikTokAdUrl(url));
     assert.doesNotThrow(() => requireTikTokAdUrl(shortUrl));
+    assert.doesNotThrow(() => requireTikTokAdUrl('HTTPS://ads.tiktok.com/business/creativecenter/topads/7543186103350427655/PC/EN'));
     assert.doesNotThrow(() => requireTikTokAdUrl(`${url}?region=US&period=30`));
 });
 
@@ -126,6 +127,7 @@ test('input schema supports batch urls and legacy url', () => {
 
     assert.equal(itemPattern.test(url), true);
     assert.equal(itemPattern.test(shortUrl), true);
+    assert.equal(itemPattern.test('HTTPS://ads.tiktok.com/business/creativecenter/topads/7543186103350427655/PC/EN'), true);
     assert.equal(itemPattern.test(`${url}?region=US`), true);
     assert.equal(legacyPattern.test(url), true);
     assert.equal(itemPattern.test('https://www.tiktok.com/@tiktok/video/7568510388342443294'), false);
