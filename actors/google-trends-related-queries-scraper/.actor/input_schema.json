@@ -3,14 +3,22 @@
   "description": "Find top and rising Google Trends related queries for one keyword.",
   "type": "object",
   "schemaVersion": 1,
-  "required": ["query"],
+  "required": [],
   "properties": {
     "query": {
       "title": "Search Query",
       "type": "string",
       "description": "Keyword or phrase to expand with Google Trends related queries.",
       "editor": "textfield",
+      "maxLength": 100,
       "prefill": "coffee"
+    },
+    "q": {
+      "title": "Search Query Alias",
+      "type": "string",
+      "description": "Alias for query, useful when reusing direct Scrappa API inputs.",
+      "editor": "textfield",
+      "maxLength": 100
     },
     "geo": {
       "title": "Location",

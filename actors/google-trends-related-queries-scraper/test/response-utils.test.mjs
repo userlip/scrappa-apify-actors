@@ -47,6 +47,7 @@ test('flattens top and rising related query arrays', () => {
     });
     assert.equal(items[1].type, 'rising');
     assert.equal(items[1].query, 'mushroom coffee');
+    assert.equal(items[1].position, 1);
 });
 
 test('flattens flat related query arrays from the current Scrappa response shape', () => {
@@ -83,10 +84,50 @@ test('flattens related topics and preserves the topic category separately', () =
     assert.equal(items.length, 2);
     assert.equal(items[0].result_kind, 'topic');
     assert.equal(items[0].type, 'top');
+    assert.equal(items[0].position, 1);
     assert.equal(items[0].topic, 'Coffee');
     assert.equal(items[0].topic_type, 'Drink');
     assert.equal(items[1].type, 'rising');
+    assert.equal(items[1].position, 1);
     assert.equal(items[1].topic, 'Cold brew');
+});
+
+test('keeps position scoped to each result kind and related group', () => {
+    const items = buildRelatedDatasetItems(
+        {
+            related_queries: {
+                top: [
+                    { query: 'coffee near me' },
+                    { query: 'coffee shops' },
+                ],
+                rising: [
+                    { query: 'mushroom coffee' },
+                    { query: 'protein coffee' },
+                ],
+            },
+            related_topics: {
+                top: [
+                    { topic: 'Coffee' },
+                ],
+                rising: [
+                    { topic: 'Cold brew' },
+                ],
+            },
+        },
+        { q: 'coffee' },
+    );
+
+    assert.deepEqual(
+        items.map((item) => [item.result_kind, item.type, item.position]),
+        [
+            ['query', 'top', 1],
+            ['query', 'top', 2],
+            ['query', 'rising', 1],
+            ['query', 'rising', 2],
+            ['topic', 'top', 1],
+            ['topic', 'rising', 1],
+        ],
+    );
 });
 
 test('returns no items when response has no related arrays', () => {
