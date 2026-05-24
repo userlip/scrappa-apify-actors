@@ -1,15 +1,15 @@
 # Monetization Activation Checklist
 
-Last live metadata check: 2026-05-23T11:15Z via Apify Actor list/detail API for the `TheScrappa` organization, `scripts/audit-apify-pricing.mjs --json --include-active`, `scripts/audit-apify-secrets.mjs --json --include-present`, and local actor manifest count.
+Last live metadata check: 2026-05-24T07:25Z via Apify Actor list/detail API for the `TheScrappa` organization, `scripts/audit-apify-pricing.mjs --json --include-active`, `scripts/audit-apify-secrets.mjs --json --include-present`, and local actor manifest count.
 
 Current inventory backstop for every activation audit:
 
-- 72 live `thescrappa` actors in Apify.
-- 62 public `thescrappa` actors in Apify according to the pricing and secret audits.
-- 64 local actor manifests in this repo; all 64 are represented by live Apify actors.
-- 8 live actors still missing local source directories here.
-- Pricing audit: 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 46 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
-- Secret audit: all 62 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- 74 live `thescrappa` actors in Apify.
+- 63 public `thescrappa` actors in Apify according to the pricing and secret audits.
+- 65 local actor manifests in this repo.
+- 9 live actors still missing local source directories here.
+- Pricing audit: 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 50 public actors with active paid evidence, and 13 public actors with future-only paid pricing.
+- Secret audit: all 63 public actors have `SCRAPPA_API_KEY` configured as a secret.
 - Run-health notes: `stepstone-jobs-scraper` (`DUUlFa5LGId75vOI0`) latest run `wr3oYXhiE25DmrsUH` failed with Scrappa API `422` validation for `work_from_home`; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `hRCogd7KpVQU9oRJ5` succeeding; `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `bfhYjZNMzgn8wEaR4` succeeding; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) latest run `fGubXwuYYNmoMyakt` succeeded.
 
 This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation, amended with newly published actors that now have scheduled paid pricing. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
@@ -119,6 +119,10 @@ Past-due items in this section should be rechecked against the latest pricing au
 
 - [ ] `601ilBYtO52NNsMrT` - `immobilienscout24-search-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-05T06:59:39.484Z` with `property-result` priced at `$0.0003/result`.
 - [ ] `Xa9ClmgD4tI9lHT91` - `redfin-property-search-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-05T07:59:30.000Z` with `property-result` priced at `$0.0003/result`.
+
+### 2026-06-07
+
+- [ ] `hoF0Qgm3S0wAfpY8y` - `google-trends-related-queries-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-07T08:00:00.000Z` with `related-result` priced at `$0.0002/result`; Apify blocked immediate pricing on 2026-05-24 with `cannot-modify-actor-pricing-with-immediate-effect`.
 
 ## Portfolio Backstop
 

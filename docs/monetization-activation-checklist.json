@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-23T11:15:15.830Z",
+  "lastCheckedAt": "2026-05-24T07:25:12.403Z",
   "source": "Apify Actor list/detail API for TheScrappa organization, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, and local actor manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
   "purpose": "Living snapshot of public actors with future paid pricing scheduled, amended as new actors are published and audit baselines change.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-23T11:15:15.830Z",
-    "liveActorCount": 72,
-    "publicActorCount": 62,
-    "localActorManifestCount": 64,
-    "missingLocalSourceCount": 8,
+    "checkedAt": "2026-05-24T07:25:12.403Z",
+    "liveActorCount": 74,
+    "publicActorCount": 63,
+    "localActorManifestCount": 65,
+    "missingLocalSourceCount": 9,
     "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss public actor coverage as of the checked timestamp."
   },
   "auditSummary": {
-    "pricingCheckedAt": "2026-05-23T11:15:08.135Z",
-    "secretCheckedAt": "2026-05-23T11:15:15.830Z",
-    "activePaidEvidenceCount": 46,
-    "futureOnlyPaidPricingCount": 16,
+    "pricingCheckedAt": "2026-05-24T07:24:37.434Z",
+    "secretCheckedAt": "2026-05-24T07:25:12.403Z",
+    "activePaidEvidenceCount": 50,
+    "futureOnlyPaidPricingCount": 13,
     "missingPaidPricingCount": 0,
     "overdueActivePricingGapCount": 0,
-    "publicActorsWithScrappaApiKeySecret": 62,
+    "publicActorsWithScrappaApiKeySecret": 63,
     "missingScrappaApiKeySecretCount": 0,
     "notSecretScrappaApiKeyCount": 0,
     "healthNotes": [
@@ -99,7 +99,8 @@
     { "actorId": "BehWN3LEvBxhEiJDF", "slug": "booking-search-scraper", "scheduledActivationAt": "2026-06-03T10:06:39.118Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "booking-result", "expectedEventPriceUsd": 0.0002 },
     { "actorId": "MDgsOkRoh1bAfC28g", "slug": "similarweb-traffic-analytics-scraper", "scheduledActivationAt": "2026-06-04T11:52:30.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "domain-result", "expectedEventPriceUsd": 0.0002 },
     { "actorId": "601ilBYtO52NNsMrT", "slug": "immobilienscout24-search-scraper", "scheduledActivationAt": "2026-06-05T06:59:39.484Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "property-result", "expectedEventPriceUsd": 0.0003 },
-    { "actorId": "Xa9ClmgD4tI9lHT91", "slug": "redfin-property-search-scraper", "scheduledActivationAt": "2026-06-05T07:59:30.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "property-result", "expectedEventPriceUsd": 0.0003 }
+    { "actorId": "Xa9ClmgD4tI9lHT91", "slug": "redfin-property-search-scraper", "scheduledActivationAt": "2026-06-05T07:59:30.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "property-result", "expectedEventPriceUsd": 0.0003 },
+    { "actorId": "hoF0Qgm3S0wAfpY8y", "slug": "google-trends-related-queries-scraper", "scheduledActivationAt": "2026-06-07T08:00:00.000Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "related-result", "expectedEventPriceUsd": 0.0002, "blocker": "Apify blocked immediate pricing on 2026-05-24 with cannot-modify-actor-pricing-with-immediate-effect." }
   ],
   "newPublicActorsWithActivePaidPricing": [
     { "actorId": "OTzcE9BHg83MpDprO", "slug": "kleinanzeigen-search-scraper", "activePricingAt": "2026-05-22T11:10:59.287Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "listing-result", "expectedEventPriceUsd": 0.00025, "localSourceStatus": "LOCAL_SOURCE_PRESENT", "localSourceDirectory": "actors/kleinanzeigen-search-scraper", "successfulRunId": "UphOLJdyQU5jTx47Q", "successfulBuildId": "4oPbUr5dbd0tcpD1l" },
