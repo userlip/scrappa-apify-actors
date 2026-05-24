@@ -76,6 +76,7 @@
     { "actorId": "nBSazp2iBmBm1FQvz", "slug": "trustpilot-company-reviews-scraper", "scheduledActivationAt": "2026-05-23T22:55:39.839Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "H2dZTreGZ7s3XJsQ7", "slug": "tiktok-hashtag-posts-scraper", "scheduledActivationAt": "2026-05-24T00:00:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "MrbqFgdpNTQcRW0Vt", "slug": "google-images-scraper", "scheduledActivationAt": "2026-05-24T07:16:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
+    { "actorId": "Kc3rfsV2Hif23mctw", "slug": "google-hotels-search-scraper", "scheduledActivationAt": "2026-05-26T08:23:20.330Z", "expectedPricingModel": "PAY_PER_EVENT", "expectedEventName": "apify-default-dataset-item", "expectedEventPriceUsd": 0.0002 },
     { "actorId": "WvbWRqj67ve6fwwWZ", "slug": "google-finance-markets-scraper", "scheduledActivationAt": "2026-05-29T08:13:17.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "DUUlFa5LGId75vOI0", "slug": "stepstone-jobs-scraper", "scheduledActivationAt": "2026-05-29T11:31:58.000Z", "expectedPricingModel": "PAY_PER_EVENT" },
     { "actorId": "EiUCYz2MjYUuGT6Xu", "slug": "arbeitsagentur-jobs-scraper", "scheduledActivationAt": "2026-05-31T08:10:00.000Z", "expectedPricingModel": "PAY_PER_EVENT" },

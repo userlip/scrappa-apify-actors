@@ -109,6 +109,10 @@ Past-due items in this section should be rechecked against the latest pricing au
 - [x] `H2dZTreGZ7s3XJsQ7` - `tiktok-hashtag-posts-scraper` - verified active `PAY_PER_EVENT` pricing in `pricingInfos` on 2026-05-24.
 - [x] `MrbqFgdpNTQcRW0Vt` - `google-images-scraper` - verified active `PAY_PER_EVENT` pricing in `pricingInfos` on 2026-05-24.
 
+### 2026-05-26
+
+- [ ] `Kc3rfsV2Hif23mctw` - `google-hotels-search-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-26T08:23:20.330Z` with `apify-default-dataset-item` priced at `$0.0002/result`.
+
 ### 2026-05-29
 
 - [ ] `DUUlFa5LGId75vOI0` - `stepstone-jobs-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-29T11:31:58.000Z` with `apify-default-dataset-item` priced at `$0.0003/result`.
