@@ -105,12 +105,12 @@ This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-24T07
 
 Current coverage in this repository:
 - 74 live `thescrappa` actors in Apify
-- 63 public `thescrappa` actors in Apify according to the pricing and secret audits
-- 65 local actor manifests in this repo
+- 64 public `thescrappa` actors in Apify according to the pricing and secret audits
+- 65 local actor manifests in this repo; all 65 are represented by live Apify actors
 - 9 live actors missing a local source directory here; `google-search-scraper` is represented by the legacy `actors/google-search` directory
-- Pricing follow-up: the 2026-05-24T07:23:16.998Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 50 public actors with active paid evidence, and 13 public actors with future-only paid pricing.
-- Secret follow-up: the 2026-05-24T07:23:23.727Z secret audit found all 63 public actors have `SCRAPPA_API_KEY` configured as a secret.
-- Run-health notes from the current audit pass: `stepstone-jobs-scraper` (`DUUlFa5LGId75vOI0`) latest run `wr3oYXhiE25DmrsUH` failed with Scrappa API `422` validation for `work_from_home`; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `hRCogd7KpVQU9oRJ5` succeeding; `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `bfhYjZNMzgn8wEaR4` succeeding; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) latest run `fGubXwuYYNmoMyakt` succeeded.
+- Pricing follow-up: the 2026-05-24T07:50:40.247Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 51 public actors with active paid evidence, and 13 public actors with future-only paid pricing.
+- Secret follow-up: the 2026-05-24T07:50:47.636Z secret audit found all 64 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- Run-health notes from the current audit pass: no latest run failures were returned by the all-actor run sweep; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) and `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still have Apify notice `UNDER_MAINTENANCE` while their monetization remains configured.
 
 Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
@@ -143,7 +143,7 @@ Use [docs/monetization-activation-checklist.md](docs/monetization-activation-che
 | `actors/immowelt-property-search-scraper` | `immowelt-property-search-scraper` | `RtBugF27PKeDYceRA` | Immowelt Property Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` active from 2026-05-16 (`PAY_PER_EVENT`, `property-result` at $0.0003/result); verify `currentPricingInfo` if Apify API begins populating it |
 | `actors/jameda-search-scraper` | `jameda-search-scraper` | `8SvzPgdsdg1yZK1t4` | Jameda Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-02 (`PAY_PER_EVENT`, `doctor-result` at $0.0002/result); verify activation |
 | `actors/kleinanzeigen-search-scraper` | `kleinanzeigen-search-scraper` | `OTzcE9BHg83MpDprO` | Kleinanzeigen Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `UphOLJdyQU5jTx47Q` succeeded; build `4oPbUr5dbd0tcpD1l` succeeded | Public with `pricingInfos` active from 2026-05-22 (`PAY_PER_EVENT`, `listing-result` at $0.00025/result) |
-| `actors/stepstone-jobs-scraper` | `stepstone-jobs-scraper` | `DUUlFa5LGId75vOI0` | Stepstone Jobs Scraper ($0.30/1k results) | Local source present; live Apify version uses `SOURCE_FILES`; latest run `wr3oYXhiE25DmrsUH` failed with Scrappa API `422` validation for `work_from_home` | Scheduled 2026-05-29 (`PAY_PER_EVENT`, default dataset job result at $0.0003/result); Apify pricing schedule created 2026-05-15 with two-week lead time |
+| `actors/stepstone-jobs-scraper` | `stepstone-jobs-scraper` | `DUUlFa5LGId75vOI0` | Stepstone Jobs Scraper ($0.30/1k results) | Local source present; live Apify version uses `SOURCE_FILES`; latest run `D9kHnhyxxBsHeFf8G` succeeded | Scheduled 2026-05-29 (`PAY_PER_EVENT`, default dataset job result at $0.0003/result); Apify pricing schedule created 2026-05-15 with two-week lead time |
 | `actors/instagram-post-info-cheapest-0-20-1000-results` | `instagram-post-info-cheapest-0-20-1000-results` | `nfdzs1z0cRIU1Bfhw` | Instagram Post Info &#124; Cheapest $0.20/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-02-01 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/instagram-user-info-cheapest-0-20-1000-results` | `instagram-user-info-cheapest-0-20-1000-results` | `VZrsJ6bO3h92y0duj` | Instagram User Info &#124; Cheapest $0.20/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-01-31 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
 | `actors/instagram-user-posts-cheapest-0-20-1000-results` | `instagram-user-posts-cheapest-0-20-1000-results` | `mp03zGSA2pR31azfU` | Instagram User Posts Cheapest 0 20 1000 Results | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |

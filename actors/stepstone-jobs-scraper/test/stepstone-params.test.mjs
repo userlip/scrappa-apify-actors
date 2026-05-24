@@ -29,7 +29,7 @@ test('forwards Stepstone jobs search parameters', () => {
             radius: 50,
             sort: 'date',
             job_type: 'full_time',
-            work_from_home: 1,
+            work_from_home: '1',
             date_posted: 7,
             page: 2,
             limit: 25,
@@ -55,6 +55,19 @@ test('omits work-from-home request parameter after normalization when unset', ()
         query: 'komissionierer',
         location: 'Berlin',
         country: 'de',
+        page: 1,
+        limit: 25,
+    });
+});
+
+test('forwards true work-from-home request parameter after normalization', () => {
+    const input = normalizeStepstoneJobsInput({ query: 'komissionierer', work_from_home: true });
+
+    assert.deepEqual(buildStepstoneJobsParams(input), {
+        query: 'komissionierer',
+        location: 'Berlin',
+        country: 'de',
+        work_from_home: '1',
         page: 1,
         limit: 25,
     });
