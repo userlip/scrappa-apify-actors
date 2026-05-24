@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-23T11:15:15.830Z",
+  "lastCheckedAt": "2026-05-24T07:16:24.476Z",
   "source": "Apify Actor list/detail API for TheScrappa organization, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, and local actor manifest count",
   "relatedDocument": "docs/monetization-activation-checklist.md",
   "purpose": "Living snapshot of public actors with future paid pricing scheduled, amended as new actors are published and audit baselines change.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-23T11:15:15.830Z",
+    "checkedAt": "2026-05-24T07:16:24.476Z",
     "liveActorCount": 72,
     "publicActorCount": 62,
     "localActorManifestCount": 64,
@@ -13,23 +13,18 @@
     "notes": "Use this as the baseline count before every activation audit so future checks do not start from stale coverage numbers or miss public actor coverage as of the checked timestamp."
   },
   "auditSummary": {
-    "pricingCheckedAt": "2026-05-23T11:15:08.135Z",
-    "secretCheckedAt": "2026-05-23T11:15:15.830Z",
-    "activePaidEvidenceCount": 46,
-    "futureOnlyPaidPricingCount": 16,
+    "pricingCheckedAt": "2026-05-24T07:16:24.476Z",
+    "secretCheckedAt": "2026-05-24T07:12:02.064Z",
+    "activePaidEvidenceCount": 50,
+    "futureOnlyPaidPricingCount": 12,
     "missingPaidPricingCount": 0,
     "overdueActivePricingGapCount": 0,
     "publicActorsWithScrappaApiKeySecret": 62,
     "missingScrappaApiKeySecretCount": 0,
     "notSecretScrappaApiKeyCount": 0,
+    "verifiedActivationQueueThrough": "2026-05-24T07:16:00.000Z",
+    "remainingScheduledPublicActorCount": 12,
     "healthNotes": [
-      {
-        "actorId": "DUUlFa5LGId75vOI0",
-        "slug": "stepstone-jobs-scraper",
-        "status": "LATEST_RUN_FAILED",
-        "latestRunId": "wr3oYXhiE25DmrsUH",
-        "statusMessage": "Scrappa API error (422): The request validation failed - work_from_home: The work from home field must be true or false."
-      },
       {
         "actorId": "ztc698cHC09lkCDYE",
         "slug": "youtube-transcript-scraper",
@@ -42,15 +37,7 @@
         "actorId": "Kc3rfsV2Hif23mctw",
         "slug": "google-hotels-search-scraper",
         "status": "STALE_MAINTENANCE_NOTICE",
-        "notice": "UNDER_MAINTENANCE",
-        "latestRunId": "bfhYjZNMzgn8wEaR4",
-        "latestRunStatus": "SUCCEEDED"
-      },
-      {
-        "actorId": "BehWN3LEvBxhEiJDF",
-        "slug": "booking-search-scraper",
-        "status": "LATEST_RUN_SUCCEEDED",
-        "latestRunId": "fGubXwuYYNmoMyakt"
+        "notice": "UNDER_MAINTENANCE"
       }
     ]
   },

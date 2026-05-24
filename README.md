@@ -101,16 +101,16 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-23T11:15Z. It lists all 72 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-24T07:16Z. It lists all 72 live `thescrappa` actors, including actors that are currently missing a matching local source directory in this repo. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
 - 72 live `thescrappa` actors in Apify
 - 62 public `thescrappa` actors in Apify according to the pricing and secret audits
 - 64 local actor manifests in this repo; all 64 are represented by live Apify actors
 - 8 live actors missing a local source directory here
-- Pricing follow-up: the 2026-05-23T11:15Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 46 public actors with active paid evidence, and 16 public actors with future-only paid pricing.
-- Secret follow-up: the 2026-05-23T11:15Z secret audit found all 62 public actors have `SCRAPPA_API_KEY` configured as a secret.
-- Run-health notes from the current audit pass: `stepstone-jobs-scraper` (`DUUlFa5LGId75vOI0`) latest run `wr3oYXhiE25DmrsUH` failed with Scrappa API `422` validation for `work_from_home`; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `hRCogd7KpVQU9oRJ5` succeeding; `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `bfhYjZNMzgn8wEaR4` succeeding; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) latest run `fGubXwuYYNmoMyakt` succeeded.
+- Pricing follow-up: the 2026-05-24T07:16Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 50 public actors with active paid evidence, and 12 public actors with future-only paid pricing. No Apify billing changes were needed because every public actor is already active paid or scheduled at the earliest recorded paid activation date.
+- Secret follow-up: the 2026-05-24T07:12Z secret audit found all 62 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- Run-health notes from the current audit pass: no latest run failures were returned by the all-actor run sweep; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) and `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still have Apify notice `UNDER_MAINTENANCE` while their monetization remains configured.
 
 Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
