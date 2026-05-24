@@ -1,6 +1,6 @@
 import { Actor } from 'apify';
+import { fetchAutocompleteSummary } from './autocomplete.js';
 import {
-    buildGoogleTrendsAutocompleteParams,
     buildGoogleTrendsRelatedQueriesParams,
     describeGoogleTrendsRelatedQueriesRequest,
     shouldIncludeAutocomplete,
@@ -38,12 +38,6 @@ async function main(): Promise<void> {
         });
         const datasetItems = buildRelatedDatasetItems(response, params);
 
-        const autocompleteResponse = includeAutocomplete
-            ? await client.get<Record<string, unknown>>('/google-trends/autocomplete', buildGoogleTrendsAutocompleteParams(params), {
-                attempts: SCRAPPA_MAX_ATTEMPTS,
-            })
-            : null;
-
         if (datasetItems.length > 0) {
             const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
             if (isPayPerEvent) {
@@ -65,13 +59,18 @@ async function main(): Promise<void> {
             console.log('No Google Trends related queries or topics found for this request');
         }
 
+        const autocompleteSummary = includeAutocomplete
+            ? await fetchAutocompleteSummary(client, params, SCRAPPA_MAX_ATTEMPTS)
+            : { response: null, error: null };
+
         const store = await Actor.openKeyValueStore();
         await store.setValue('OUTPUT', {
             search_parameters: response.search_parameters ?? null,
             related_query_count: datasetItems.filter((item) => item.result_kind === 'query').length,
             related_topic_count: datasetItems.filter((item) => item.result_kind === 'topic').length,
             response_time_ms: response.response_time_ms ?? null,
-            autocomplete: autocompleteResponse,
+            autocomplete: autocompleteSummary.response,
+            autocomplete_error: autocompleteSummary.error,
             raw_response: response,
         });
 
@@ -79,6 +78,7 @@ async function main(): Promise<void> {
         console.log('Results summary:', JSON.stringify({
             related_results: datasetItems.length,
             autocomplete_included: includeAutocomplete,
+            autocomplete_succeeded: includeAutocomplete ? autocompleteSummary.error === null : null,
             response_time_ms: response.response_time_ms ?? null,
         }));
     } catch (error) {

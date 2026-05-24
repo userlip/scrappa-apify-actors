@@ -40,6 +40,20 @@ test('keeps q as a backwards-compatible alias for query', () => {
     );
 });
 
+test('falls back to q when query is empty', () => {
+    assert.deepEqual(
+        buildGoogleTrendsRelatedQueriesParams({
+            query: '   ',
+            q: 'coffee',
+            geo: 'US',
+        }),
+        {
+            q: 'coffee',
+            geo: 'US',
+        },
+    );
+});
+
 test('requires a non-empty query', () => {
     assert.throws(
         () => buildGoogleTrendsRelatedQueriesParams({ query: '   ' }),

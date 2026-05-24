@@ -107,8 +107,8 @@ export function buildRelatedDatasetItems(
         const groups = getRelatedGroups(value);
 
         for (const group of groups) {
-            for (const entry of group.entries) {
-                items.push(buildDatasetItem(entry, params, response, kind, group.type, items.length + 1));
+            for (const [index, entry] of group.entries.entries()) {
+                items.push(buildDatasetItem(entry, params, response, kind, group.type, index + 1));
             }
         }
     }
