@@ -2,7 +2,7 @@ import { Actor } from 'apify';
 import { extractSingleTikTokAdRecord } from './extract-ad.js';
 import { normalizeTikTokAdRecord } from './normalize-ad.js';
 import type { TikTokAdRecord } from './normalize-ad.js';
-import { ScrappaClient } from './shared/scrappa-client.js';
+import { ScrappaClient } from './shared/index.js';
 import {
     buildTikTokAdParams,
     extractTikTokAdId,
