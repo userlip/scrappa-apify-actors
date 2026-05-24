@@ -7,7 +7,10 @@ const schema = JSON.parse(
 );
 
 test('input schema accepts the q alias without requiring query', () => {
-    assert.deepEqual(schema.required, []);
+    assert.deepEqual(schema.anyOf, [
+        { required: ['query'] },
+        { required: ['q'] },
+    ]);
     assert.equal(schema.properties.query.maxLength, 100);
     assert.equal(schema.properties.q.type, 'string');
     assert.equal(schema.properties.q.maxLength, 100);

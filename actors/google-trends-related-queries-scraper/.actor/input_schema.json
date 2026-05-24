@@ -3,7 +3,10 @@
   "description": "Find top and rising Google Trends related queries for one keyword.",
   "type": "object",
   "schemaVersion": 1,
-  "required": [],
+  "anyOf": [
+    { "required": ["query"] },
+    { "required": ["q"] }
+  ],
   "properties": {
     "query": {
       "title": "Search Query",
