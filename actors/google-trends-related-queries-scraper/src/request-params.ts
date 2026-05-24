@@ -97,10 +97,18 @@ function cleanBoolean(value: unknown, field: string): boolean {
     throw new Error(`${field} must be a boolean`);
 }
 
+function cleanQueryInput(input: GoogleTrendsRelatedQueriesInput): string {
+    const query = cleanString(input.query, 'query', 100);
+    if (query !== undefined) {
+        return query;
+    }
+
+    return cleanRequiredString(input.q, 'query', 100);
+}
+
 export function buildGoogleTrendsRelatedQueriesParams(input: GoogleTrendsRelatedQueriesInput): Record<string, unknown> {
-    const query = input.query ?? input.q;
     const params: Record<string, unknown> = {
-        q: cleanRequiredString(query, 'query', 100),
+        q: cleanQueryInput(input),
     };
 
     const geo = cleanGeo(input.geo);
