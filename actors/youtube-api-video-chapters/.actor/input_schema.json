@@ -3,15 +3,21 @@
     "type": "object",
     "schemaVersion": 1,
     "properties": {
-        "id": {
-            "title": "YouTube Video ID",
+        "ids": {
+            "title": "YouTube Video IDs",
             "type": "string",
-            "description": "YouTube Video ID",
+            "description": "Comma-separated YouTube video IDs. Prefer this batch field to process multiple videos in one Apify run.",
+            "editor": "textfield",
+            "prefill": "dQw4w9WgXcQ,aqz-KE-bpKQ",
+            "pattern": "^[^,\\s]+(\\s*,\\s*[^,\\s]+)*$"
+        },
+        "id": {
+            "title": "Legacy YouTube Video ID",
+            "type": "string",
+            "description": "Single YouTube video ID. Use ids for batch runs.",
             "editor": "textfield",
             "prefill": "dQw4w9WgXcQ"
         }
     },
-    "required": [
-        "id"
-    ]
+    "required": []
 }

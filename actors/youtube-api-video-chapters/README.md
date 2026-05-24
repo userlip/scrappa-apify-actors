@@ -6,17 +6,17 @@ This actor is a thin Apify wrapper around Scrappa's YouTube API. Scraping runs o
 
 ## Input
 
-Provide a YouTube video ID. Optional pagination and filter fields are passed through to Scrappa when present.
+Provide one or more YouTube video IDs. Use `ids` for batch runs; the legacy `id` field still works for a single video.
 
 ```json
 {
-  "id": "dQw4w9WgXcQ"
+  "ids": "dQw4w9WgXcQ,aqz-KE-bpKQ"
 }
 ```
 
 ## Output
 
-The video chapters object returned by Scrappa.
+One dataset item per video ID. Successful items contain the video chapters object returned by Scrappa. Failed items contain the video ID and error message so valid IDs in the same batch are still processed.
 
 ## Endpoint
 

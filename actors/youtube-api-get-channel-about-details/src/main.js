@@ -65,12 +65,29 @@ Actor.main(async () => {
         throw new Error('At least one YouTube channel ID must be provided in "ids" or "id".');
     }
 
+    let successCount = 0;
+    let failureCount = 0;
+
     for (const id of ids) {
-        const data = await getChannelAboutDetails(id);
-        await Actor.pushData(data);
+        try {
+            const data = await getChannelAboutDetails(id);
+            await Actor.pushData(data);
+            successCount += 1;
+        } catch (error) {
+            failureCount += 1;
+            await Actor.pushData({
+                id,
+                error: errorMessage(error),
+                success: false,
+            });
+        }
     }
 
-    console.log(`Successfully fetched about details for ${ids.length} channel(s).`);
+    if (successCount === 0) {
+        throw new Error(`Failed to fetch about details for all ${failureCount} channel(s).`);
+    }
+
+    console.log(`Successfully fetched about details for ${successCount} channel(s); ${failureCount} failed.`);
 
     // Gracefully exit the Actor process.
     await Actor.exit();
