@@ -1,6 +1,17 @@
 import { Actor } from 'apify';
 import axios from 'axios';
 
+const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+
+function errorMessage(error) {
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    if (rawMessage.includes('timeout') || rawMessage.includes('aborted')) {
+        return `Scrappa API request timed out after ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s`;
+    }
+
+    return rawMessage;
+}
+
 async function searchHashtag(query, sort = 'relevance', limit, duration, upload_date, continuation = '', contentType, features) {
     // Validate that the required query parameter is present.
     if (!query) {
@@ -42,7 +53,9 @@ async function searchHashtag(query, sort = 'relevance', limit, duration, upload_
 
     try {
         console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl);
+        const response = await axios.get(apiUrl, {
+            timeout: SCRAPPA_REQUEST_TIMEOUT_MS,
+        });
         const data = response.data['results'];
         
         // Save the fetched data to the default dataset.
@@ -54,7 +67,7 @@ async function searchHashtag(query, sort = 'relevance', limit, duration, upload_
             console.log(`Continuation token available for next page: ${response.data.continuation}`);
         }
     } catch (error) {
-        console.error(`Failed to fetch hashtag for query: ${query}`, error.message);
+        console.error(`Failed to fetch hashtag for query: ${query}: ${errorMessage(error)}`);
         throw error;
     }
 }
