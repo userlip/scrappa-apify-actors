@@ -1,0 +1,67 @@
+{
+  "title": "Google Trends Related Queries Scraper",
+  "description": "Find top and rising Google Trends related queries for one keyword.",
+  "type": "object",
+  "schemaVersion": 1,
+  "anyOf": [
+    { "required": ["query"] },
+    { "required": ["q"] }
+  ],
+  "properties": {
+    "query": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Keyword or phrase to expand with Google Trends related queries.",
+      "editor": "textfield",
+      "maxLength": 100,
+      "prefill": "coffee"
+    },
+    "q": {
+      "title": "Search Query Alias",
+      "type": "string",
+      "description": "Alias for query, useful when reusing direct Scrappa API inputs.",
+      "editor": "textfield",
+      "maxLength": 100
+    },
+    "geo": {
+      "title": "Location",
+      "type": "string",
+      "description": "Geographic location code, such as US, GB, DE, or Worldwide.",
+      "editor": "textfield",
+      "default": "US"
+    },
+    "time_range": {
+      "title": "Time Range",
+      "type": "string",
+      "description": "Time period for related query discovery.",
+      "editor": "select",
+      "default": "1y",
+      "enum": ["1h", "4h", "1d", "7d", "30d", "90d", "1y", "5y", "all"],
+      "enumTitles": ["Past hour", "Past 4 hours", "Past day", "Past 7 days", "Past 30 days", "Past 90 days", "Past 12 months", "Past 5 years", "All time"]
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter language code, such as en, de, es, or fr.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "en"
+    },
+    "search_type": {
+      "title": "Search Type",
+      "type": "string",
+      "description": "Google Trends vertical to analyze.",
+      "editor": "select",
+      "default": "web",
+      "enum": ["web", "images", "news", "youtube", "shopping"],
+      "enumTitles": ["Web Search", "Image Search", "News Search", "YouTube Search", "Google Shopping"]
+    },
+    "include_autocomplete": {
+      "title": "Include Autocomplete Summary",
+      "type": "boolean",
+      "description": "Also call the Google Trends autocomplete endpoint and include suggestions in OUTPUT. Dataset rows remain focused on related queries and topics.",
+      "editor": "checkbox",
+      "default": false
+    }
+  }
+}

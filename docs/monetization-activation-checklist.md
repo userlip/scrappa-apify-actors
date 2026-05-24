@@ -6,8 +6,8 @@ Current inventory backstop for every activation audit:
 
 - 74 live `thescrappa` actors in Apify.
 - 64 public `thescrappa` actors in Apify according to the pricing and secret audits.
-- 64 local actor manifests in this repo; all 64 are represented by live Apify actors.
-- 10 live actors still missing local source directories here; `google-search-scraper` is represented by the legacy `actors/google-search` directory.
+- 65 local actor manifests in this repo; all 65 are represented by live Apify actors.
+- 9 live actors still missing local source directories here; `google-search-scraper` is represented by the legacy `actors/google-search` directory.
 - Pricing audit at 2026-05-24T07:50:40.247Z: 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 51 public actors with active paid evidence, and 13 public actors with future-only paid pricing.
 - Secret audit at 2026-05-24T07:50:47.636Z: all 64 public actors have `SCRAPPA_API_KEY` configured as a secret.
 - May 24 activation evidence at 2026-05-24T07:23:43.706Z: `tiktok-hashtag-posts-scraper` (`H2dZTreGZ7s3XJsQ7`) and `google-images-scraper` (`MrbqFgdpNTQcRW0Vt`) are public with active `PAY_PER_EVENT` evidence from `pricingInfos`; Apify still reports `pricingInfo/currentPricingInfo: null` for both.
@@ -127,14 +127,14 @@ Past-due items in this section should be rechecked against the latest pricing au
 
 ### 2026-06-07
 
-- [ ] `hoF0Qgm3S0wAfpY8y` - `google-trends-related-queries-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-07T08:00:00.000Z` with `related-result` priced at `$0.0002/result`.
+- [ ] `hoF0Qgm3S0wAfpY8y` - `google-trends-related-queries-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-07T08:00:00.000Z` with `related-result` priced at `$0.0002/result`; Apify blocked immediate pricing on 2026-05-24 with `cannot-modify-actor-pricing-with-immediate-effect`.
 
 ## Portfolio Backstop
 
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-24T07:50:47.636Z baseline on this branch is 74 live actors, 64 public actors, 64 local actor manifests, and 10 missing local source directories.
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-24T07:50:47.636Z baseline on this branch is 74 live actors, 64 public actors, 65 local actor manifests, and 9 missing local source directories.
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.

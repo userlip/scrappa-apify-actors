@@ -8,9 +8,9 @@
     "checkedAt": "2026-05-24T07:50:47.636Z",
     "liveActorCount": 74,
     "publicActorCount": 64,
-    "localActorManifestCount": 64,
-    "missingLocalSourceCount": 10,
-    "notes": "Use this as the baseline count before every activation audit. The live actor count includes google-search-scraper, which is represented locally by actors/google-search, plus 10 live actors without matching local source directories as of this check."
+    "localActorManifestCount": 65,
+    "missingLocalSourceCount": 9,
+    "notes": "Use this as the baseline count before every activation audit. The live actor count includes google-search-scraper, which is represented locally by actors/google-search, plus 9 live actors without matching local source directories as of this check."
   },
   "auditSummary": {
     "pricingCheckedAt": "2026-05-24T07:50:40.247Z",
@@ -330,7 +330,9 @@
       "expectedPricingModel": "PAY_PER_EVENT",
       "expectedEventName": "related-result",
       "expectedEventPriceUsd": 0.0002,
-      "localSourceStatus": "MISSING_LOCAL_SOURCE"
+      "localSourceStatus": "LOCAL_SOURCE_PRESENT",
+      "localSourceDirectory": "actors/google-trends-related-queries-scraper",
+      "blocker": "Apify blocked immediate pricing on 2026-05-24 with cannot-modify-actor-pricing-with-immediate-effect."
     }
   ],
   "newPublicActorsWithActivePaidPricing": [
