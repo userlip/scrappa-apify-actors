@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildLinkedInCompanyDatasetItem, buildLinkedInCompanyFailureItem } from '../dist/results.js';
+import {
+    buildLinkedInCompanyDatasetItem,
+    buildLinkedInCompanyFailureItem,
+    isRecoverableLinkedInCompanyError,
+} from '../dist/results.js';
 import { ScrappaApiError } from '../dist/shared/index.js';
 
 test('buildLinkedInCompanyDatasetItem preserves response fields and adds batch metadata', () => {
@@ -29,7 +33,7 @@ test('buildLinkedInCompanyDatasetItem preserves response fields and adds batch m
 test('buildLinkedInCompanyFailureItem emits per-item Scrappa error metadata', () => {
     assert.deepEqual(
         buildLinkedInCompanyFailureItem(
-            new ScrappaApiError(422, 'maximum_cache_age must be at least 1'),
+            new ScrappaApiError(404, 'Not found'),
             'linkedin.com/company/microsoft',
             'https://www.linkedin.com/company/microsoft',
         ),
@@ -38,10 +42,17 @@ test('buildLinkedInCompanyFailureItem emits per-item Scrappa error metadata', ()
             input_url: 'linkedin.com/company/microsoft',
             normalized_url: 'https://www.linkedin.com/company/microsoft',
             url: 'https://www.linkedin.com/company/microsoft',
-            error: 'Scrappa API error (422): maximum_cache_age must be at least 1',
+            error: 'Scrappa API error (404): Not found',
             error_type: 'scrappa_api_error',
-            message: 'Scrappa API error (422): maximum_cache_age must be at least 1',
-            status_code: 422,
+            message: 'Company not found',
+            status_code: 404,
         },
     );
+});
+
+test('isRecoverableLinkedInCompanyError only downgrades not-found API errors', () => {
+    assert.equal(isRecoverableLinkedInCompanyError(new ScrappaApiError(404, 'Not found')), true);
+    assert.equal(isRecoverableLinkedInCompanyError(new ScrappaApiError(401, 'Unauthorized')), false);
+    assert.equal(isRecoverableLinkedInCompanyError(new ScrappaApiError(500, 'Unavailable')), false);
+    assert.equal(isRecoverableLinkedInCompanyError(new Error('timeout')), false);
 });

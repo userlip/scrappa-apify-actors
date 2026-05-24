@@ -96,3 +96,7 @@ export function buildLinkedInCompanyFailureItem(
         status_code: statusCode,
     };
 }
+
+export function isRecoverableLinkedInCompanyError(error: unknown): boolean {
+    return error instanceof ScrappaApiError && error.status === 404;
+}

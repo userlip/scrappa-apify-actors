@@ -5,6 +5,7 @@ import { buildLinkedInCompanyParams } from './request-params.js';
 import {
     buildLinkedInCompanyDatasetItem,
     buildLinkedInCompanyFailureItem,
+    isRecoverableLinkedInCompanyError,
     type LinkedInCompanyResponse,
     type LinkedInCompanyResult,
 } from './results.js';
@@ -61,7 +62,11 @@ async function main(): Promise<void> {
                 const response = await client.get<LinkedInCompanyResponse>('/linkedin/company', params);
                 result = buildLinkedInCompanyDatasetItem(response, inputUrl, normalizedUrl);
             } catch (error) {
-                console.warn(`Company scraping failed for ${normalizedUrl}: ${error instanceof Error ? error.message : String(error)}`);
+                if (!isRecoverableLinkedInCompanyError(error)) {
+                    throw error;
+                }
+
+                console.warn(`Company scraping returned a per-item failure for ${normalizedUrl}: ${error instanceof Error ? error.message : String(error)}`);
                 result = buildLinkedInCompanyFailureItem(error, inputUrl, normalizedUrl);
             }
 
