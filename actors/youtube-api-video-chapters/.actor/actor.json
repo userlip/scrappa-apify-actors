@@ -1,0 +1,12 @@
+{
+    "actorSpecification": 1,
+    "name": "youtube-api-video-chapters",
+    "title": "YouTube API Video Chapters",
+    "description": "Fetch chapter markers for a YouTube video by video ID through the Scrappa YouTube API.",
+    "version": "0.0",
+    "meta": {
+        "templateId": "js-start"
+    },
+    "input": "./input_schema.json",
+    "dockerfile": "../Dockerfile"
+}

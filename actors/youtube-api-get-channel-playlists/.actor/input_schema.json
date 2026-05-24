@@ -1,0 +1,23 @@
+{
+    "title": "YouTube API Channel Playlists",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "id": {
+            "title": "YouTube Channel ID",
+            "type": "string",
+            "description": "YouTube Channel ID",
+            "editor": "textfield",
+            "prefill": "UCJZv4d5rbIKd4QHMPkcABCw"
+        },
+        "continuation": {
+            "title": "Continuation token",
+            "type": "string",
+            "description": "Pagination token for next page",
+            "editor": "textfield"
+        }
+    },
+    "required": [
+        "id"
+    ]
+}

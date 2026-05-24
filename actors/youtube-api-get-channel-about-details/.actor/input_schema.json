@@ -1,0 +1,23 @@
+{
+    "title": "YouTube API Channel About Details",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "ids": {
+            "title": "YouTube Channel IDs",
+            "type": "string",
+            "description": "Comma-separated YouTube channel IDs. Prefer this for batch runs.",
+            "editor": "textfield",
+            "pattern": "^\\s*[^,\\s]+(?:\\s*,\\s*[^,\\s]+)*\\s*$",
+            "prefill": "UCJZv4d5rbIKd4QHMPkcABCw,UC_x5XG1OV2P6uZZ5FSM9Ttw"
+        },
+        "id": {
+            "title": "Legacy YouTube Channel ID",
+            "type": "string",
+            "description": "Single YouTube channel ID. Use ids for batch runs.",
+            "editor": "textfield",
+            "prefill": "UCJZv4d5rbIKd4QHMPkcABCw"
+        }
+    },
+    "required": []
+}

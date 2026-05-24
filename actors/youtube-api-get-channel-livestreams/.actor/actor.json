@@ -1,0 +1,12 @@
+{
+    "actorSpecification": 1,
+    "name": "youtube-api-get-channel-livestreams",
+    "title": "YouTube API Channel Livestreams",
+    "description": "Fetch livestream videos for a YouTube channel by channel ID through the Scrappa YouTube API.",
+    "version": "0.0",
+    "meta": {
+        "templateId": "js-start"
+    },
+    "input": "./input_schema.json",
+    "dockerfile": "../Dockerfile"
+}
