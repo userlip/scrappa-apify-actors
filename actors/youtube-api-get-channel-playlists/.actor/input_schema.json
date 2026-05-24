@@ -1,0 +1,21 @@
+{
+    "title": "Youtube API Channel Podcasts",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "id": {
+            "title": "Youtube Channel ID",
+            "type": "string",
+            "description": "Youtube Channel ID",
+            "editor": "textfield",
+            "prefill": "UCJZv4d5rbIKd4QHMPkcABCw"
+        },
+        "continuation": {
+            "title": "continuation",
+            "type": "string",
+            "description": "Pagination token for next page",
+            "editor": "textfield"
+        }
+    },
+    "required": ["id"]
+}

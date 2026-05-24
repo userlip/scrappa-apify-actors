@@ -1,0 +1,15 @@
+{
+    "title": "Youtube Api Get Channel 'About' Details",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "id": {
+            "title": "YouTube Channel ID",
+            "type": "string",
+            "description": "YouTube Channel ID",
+            "editor": "textfield",
+            "prefill": "UCJZv4d5rbIKd4QHMPkcABCw"
+        }
+    },
+    "required": ["id"]
+}

@@ -1,0 +1,12 @@
+{
+    "actorSpecification": 1,
+    "name": "thescrappa/unlimited-youtube-api",
+    "title": "Unlimited YouTube API",
+    "description": "Get unlimited YouTube data access without API keys or quotas! Most affordable pricing at $50/req/sec. Access videos, channels, playlists, comments & trending content across 40+ languages. 99.9% uptime with no daily limits unlike official YouTube API.",
+    "version": "0.0",
+    "meta": {
+        "templateId": "js-start"
+    },
+    "input": "./input_schema.json",
+    "dockerfile": "../Dockerfile"
+}

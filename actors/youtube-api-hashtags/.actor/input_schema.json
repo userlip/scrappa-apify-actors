@@ -1,0 +1,78 @@
+{
+  "title": "Search for videos using a specific hashtag. Provide hashtag without #.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "hashtag": {
+      "title": "Hashtag",
+      "type": "string",
+      "description": "Hashtag to search for (without #)",
+      "editor": "textfield"
+    },
+    "sort": {
+      "title": "sort",
+      "type": "array",
+      "description": "Sort by: relevance, rating, upload_date, view_count",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["relevance", "rating", "upload_date","view_count"]
+      },
+      "prefill": ["relevance"]
+    },
+    "duration": {
+      "title": "duration",
+      "type": "array",
+      "description": "Video duration: short, medium, long",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["short", "medium", "long"]
+      },
+      "prefill": ["short"]
+    },
+    "upload_date": {
+      "title": "upload date",
+      "type": "array",
+      "description": "Upload date",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["hour", "today", "week", "month", "year"]
+      },
+      "prefill": ["hour"]
+    },
+    "limit": {
+      "title": "limit",
+      "type": "integer",
+      "description": "Results per page (1-50, default: 20)",
+      "default": 1,
+      "minimum": 1,
+      "maximum": 1024
+    },
+    "continuation": {
+      "title": "continuation",
+      "type": "string",
+      "description": "Pagination token for next page",
+      "editor": "textfield"
+    },
+    "contentType": {
+      "title": "content type",
+      "type": "array",
+      "description": "Filter by content type",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["live", "recorded", "premiere"]
+      },
+      "prefill": ["live"]
+    },
+    "features": {
+      "title": "features",
+      "type": "string",
+      "description": "Comma-separated: live,4k,hd,subtitles,cc,360,vr180,3d,hdr",
+      "editor": "textfield"
+    }
+  },
+  "required": ["hashtag"]
+}
