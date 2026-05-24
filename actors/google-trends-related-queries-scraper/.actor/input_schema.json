@@ -3,10 +3,7 @@
   "description": "Find top and rising Google Trends related queries for one keyword.",
   "type": "object",
   "schemaVersion": 1,
-  "anyOf": [
-    { "required": ["query"] },
-    { "required": ["q"] }
-  ],
+  "required": ["query"],
   "properties": {
     "query": {
       "title": "Search Query",
@@ -19,7 +16,7 @@
     "q": {
       "title": "Search Query Alias",
       "type": "string",
-      "description": "Alias for query, useful when reusing direct Scrappa API inputs.",
+      "description": "Alias for query when reusing direct Scrappa API inputs. Apify users should fill Search Query.",
       "editor": "textfield",
       "maxLength": 100
     },
