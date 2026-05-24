@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
-    "name": "my-actor",
-    "title": "Scrape single page in JavaScript",
-    "description": "Scrape data from single page with provided URL.",
+    "name": "youtube-api-hashtags",
+    "title": "YouTube API Hashtags",
+    "description": "Search YouTube videos by hashtag through the Scrappa YouTube API.",
     "version": "0.0",
     "meta": {
         "templateId": "js-start"

@@ -1,7 +1,7 @@
 import { Actor } from 'apify';
 import axios from 'axios';
 
-async function getChannelPodcasts(id, sort, continuation = '') {
+async function getChannelShorts(id, sort, continuation = '') {
     // Validate that the required query parameter is present.
     if (!id) {
         throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');
@@ -44,11 +44,11 @@ Actor.main(async () => {
     // The init() call configures the Actor for its environment.
     await Actor.init();
 
-    const input = await Actor.getInput();
+    const input = (await Actor.getInput()) || {};
     const { id, sort, continuation } = input;
 
     // Directly call the function with the input, as there is only one possible task.
-    await getChannelPodcasts(id, sort, continuation);
+    await getChannelShorts(id, sort, continuation);
 
     // Gracefully exit the Actor process.
     await Actor.exit();

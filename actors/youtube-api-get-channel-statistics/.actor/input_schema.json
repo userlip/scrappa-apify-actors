@@ -1,15 +1,17 @@
 {
-    "title": "Youtube API Video Chapters",
+    "title": "YouTube API Channel Statistics",
     "type": "object",
     "schemaVersion": 1,
     "properties": {
         "id": {
-            "title": "YouTube video ID",
+            "title": "YouTube Channel ID",
             "type": "string",
-            "description": "YouTube video ID",
+            "description": "YouTube Channel ID",
             "editor": "textfield",
             "prefill": "UCJZv4d5rbIKd4QHMPkcABCw"
         }
     },
-    "required": ["id"]
+    "required": [
+        "id"
+    ]
 }

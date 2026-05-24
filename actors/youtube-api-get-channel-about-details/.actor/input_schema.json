@@ -1,5 +1,5 @@
 {
-    "title": "Youtube Api Get Channel 'About' Details",
+    "title": "YouTube API Channel About Details",
     "type": "object",
     "schemaVersion": 1,
     "properties": {
@@ -11,5 +11,7 @@
             "prefill": "UCJZv4d5rbIKd4QHMPkcABCw"
         }
     },
-    "required": ["id"]
+    "required": [
+        "id"
+    ]
 }

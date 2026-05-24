@@ -39,7 +39,7 @@ Actor.main(async () => {
     // The init() call configures the Actor for its environment.
     await Actor.init();
 
-    const input = await Actor.getInput();
+    const input = (await Actor.getInput()) || {};
     const { id, continuation } = input;
 
     // Directly call the function with the input, as there is only one possible task.

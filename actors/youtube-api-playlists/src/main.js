@@ -58,7 +58,7 @@ Actor.main(async () => {
     await Actor.init();
 
     // Get the input, expecting only the 'searchPlaylistQuery' field.
-    const input = await Actor.getInput();
+    const input = (await Actor.getInput()) || {};
     const { q, sort, limit, continuation } = input;
 
     // Directly call the function with the input, as there is only one possible task.

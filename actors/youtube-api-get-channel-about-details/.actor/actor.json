@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-about-details",
-    "title": "Scrape single page in JavaScript",
-    "description": "Scrape data from single page with provided URL.",
+    "title": "YouTube API Channel About Details",
+    "description": "Fetch YouTube channel about details by channel ID through the Scrappa YouTube API.",
     "version": "0.0",
     "meta": {
         "templateId": "js-start"

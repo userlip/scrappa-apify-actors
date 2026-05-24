@@ -1,7 +1,7 @@
 import { Actor } from 'apify';
 import axios from 'axios';
 
-async function searchHashtag(query, sort = 'relevance',limit,duration,upload_date, continuation = '', contentType, features) {
+async function searchHashtag(query, sort = 'relevance', limit, duration, upload_date, continuation = '', contentType, features) {
     // Validate that the required query parameter is present.
     if (!query) {
         throw new Error('Search query "hashtag" not provided. Please provide a value for "searchHashtag" in the input.');
@@ -36,8 +36,8 @@ async function searchHashtag(query, sort = 'relevance',limit,duration,upload_dat
         apiUrl += `&contentType=${encodeURIComponent(contentType)}`;
     }
 
-     if (features && typeof features === 'string' && features.trim() !== '') {
-        apiUrl += `&contentType=${encodeURIComponent(features)}`;
+    if (features && typeof features === 'string' && features.trim() !== '') {
+        apiUrl += `&features=${encodeURIComponent(features)}`;
     }
 
     try {
@@ -64,11 +64,11 @@ Actor.main(async () => {
     // The init() call configures the Actor for its environment.
     await Actor.init();
 
-    const input = await Actor.getInput();
-    const { hashtag, sort,duration,upload_date, limit, continuation, contentType, features } = input;
+    const input = (await Actor.getInput()) || {};
+    const { hashtag, sort, duration, upload_date, limit, continuation, contentType, features } = input;
 
     // Directly call the function with the input, as there is only one possible task.
-    await searchHashtag(hashtag, sort,duration,upload_date, limit, continuation, contentType, features);
+    await searchHashtag(hashtag, sort, limit, duration, upload_date, continuation, contentType, features);
 
     // Gracefully exit the Actor process.
     await Actor.exit();
