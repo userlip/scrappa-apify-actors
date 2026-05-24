@@ -75,9 +75,9 @@ export function buildStepstoneJobsParams(input: StepstoneJobsInput): Record<stri
         }
     }
 
-    // Laravel validation rejects query-string booleans; send integer 1 for true and omit false.
+    // Scrappa's GET validation accepts a query-safe true value and false is omitted.
     if (input.work_from_home === true) {
-        params.work_from_home = 1;
+        params.work_from_home = '1';
     }
 
     return params;
