@@ -1,15 +1,16 @@
 # Monetization Activation Checklist
 
-Last live metadata check: 2026-05-24T07:25Z via Apify Actor list/detail API for the `TheScrappa` organization, `scripts/audit-apify-pricing.mjs --json --include-active`, `scripts/audit-apify-secrets.mjs --json --include-present`, and local actor manifest count.
+Last live metadata check: 2026-05-24T07:23:43.706Z via Apify Actor list/detail API for the `TheScrappa` organization, direct `GET /v2/acts/{actorId}` for the May 24 actors, recent runs/builds API, `scripts/audit-apify-pricing.mjs --json --include-active`, `scripts/audit-apify-secrets.mjs --json --include-present`, and local actor manifest count.
 
 Current inventory backstop for every activation audit:
 
 - 74 live `thescrappa` actors in Apify.
 - 63 public `thescrappa` actors in Apify according to the pricing and secret audits.
 - 65 local actor manifests in this repo.
-- 9 live actors still missing local source directories here.
-- Pricing audit: 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 50 public actors with active paid evidence, and 13 public actors with future-only paid pricing.
-- Secret audit: all 63 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- 9 live actors still missing local source directories here; `google-search-scraper` is represented by the legacy `actors/google-search` directory.
+- Pricing audit at 2026-05-24T07:23:16.998Z: 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 50 public actors with active paid evidence, and 13 public actors with future-only paid pricing.
+- Secret audit at 2026-05-24T07:23:23.727Z: all 63 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- May 24 activation evidence at 2026-05-24T07:23:43.706Z: `tiktok-hashtag-posts-scraper` (`H2dZTreGZ7s3XJsQ7`) and `google-images-scraper` (`MrbqFgdpNTQcRW0Vt`) are public with active `PAY_PER_EVENT` evidence from `pricingInfos`; Apify still reports `pricingInfo/currentPricingInfo: null` for both.
 - Run-health notes: `stepstone-jobs-scraper` (`DUUlFa5LGId75vOI0`) latest run `wr3oYXhiE25DmrsUH` failed with Scrappa API `422` validation for `work_from_home`; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `hRCogd7KpVQU9oRJ5` succeeding; `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still has Apify notice `UNDER_MAINTENANCE` despite latest run `bfhYjZNMzgn8wEaR4` succeeding; `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) latest run `fGubXwuYYNmoMyakt` succeeded.
 
 This checklist tracks Scrappa actors that were public on 2026-05-11 and whose paid pricing is scheduled for future activation, amended with newly published actors that now have scheduled paid pricing. On each activation date, verify pricing from the Apify API or Console before treating the actor as monetized.
@@ -85,8 +86,8 @@ Past-due items in this section should be rechecked against the latest pricing au
 
 ### 2026-05-24
 
-- [ ] `H2dZTreGZ7s3XJsQ7` - `tiktok-hashtag-posts-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-24T00:00:00.000Z`.
-- [ ] `MrbqFgdpNTQcRW0Vt` - `google-images-scraper` - verify `PAY_PER_EVENT` activation at `2026-05-24T07:16:00.000Z`.
+- [x] `H2dZTreGZ7s3XJsQ7` - `tiktok-hashtag-posts-scraper` - verified `PAY_PER_EVENT` activation at `2026-05-24T07:23:43.706Z`; direct actor detail returned `isPublic: true`, active evidence from `pricingInfos` started `2026-05-24T00:00:00.000Z`, `apify-default-dataset-item` at `$0.0003/result`, latest run `9jme9tLGVrekgx8RW` succeeded, latest build `adY4fybFQ8GgZ2iXQ` succeeded, and `SCRAPPA_API_KEY` is secret on version `1.0`.
+- [x] `MrbqFgdpNTQcRW0Vt` - `google-images-scraper` - verified `PAY_PER_EVENT` activation at `2026-05-24T07:23:43.706Z`; direct actor detail returned `isPublic: true`, active evidence from `pricingInfos` started `2026-05-24T07:16:00.000Z`, `apify-default-dataset-item` tiered pricing `FREE $0.0003`, `BRONZE $0.00025`, `SILVER $0.00022`, and `GOLD/PLATINUM/DIAMOND $0.0002`, latest run `GN4vccA6MYYEe3KDO` succeeded, latest build `psT5nsFjo6WkUpw3q` succeeded, and `SCRAPPA_API_KEY` is secret on version `1.0`.
 
 ### 2026-05-29
 
@@ -129,7 +130,7 @@ Past-due items in this section should be rechecked against the latest pricing au
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-24T07:25Z baseline on this branch is 74 live actors, 63 public actors, 65 local actor manifests, and 9 missing local source directories.
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-24T07:23:43.706Z baseline on this branch is 74 live actors, 63 public actors, 65 local actor manifests, and 9 missing local source directories.
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.
@@ -152,3 +153,4 @@ They are intentionally excluded from the public activation queue above and must 
 - `N5ol78TtqiMj4MtM6` - `youtube-api-hashtags`
 - `hueJrwkrbo20Ufrna` - `youtube-api-playlists`
 - `fq5Kq9OfBRWYu9go1` - `youtube-api-video-chapters`
+- `c1Lt3EdNOuoen5In7` - `tiktok-ads-scraper` - private on 2026-05-24 with `PAY_PER_EVENT` pricing active from `2026-05-24T07:22:00.000Z`; add to the public queue before publication.
