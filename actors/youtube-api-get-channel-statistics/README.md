@@ -6,17 +6,17 @@ This actor is a thin Apify wrapper around Scrappa's YouTube API. Scraping runs o
 
 ## Input
 
-Provide a YouTube channel ID. Optional pagination and filter fields are passed through to Scrappa when present.
+Provide one or more YouTube channel IDs. Use `ids` for normal batch runs so one Apify run can return multiple channel-statistic records. The legacy `id` field is still accepted for existing integrations.
 
 ```json
 {
-  "id": "UCJZv4d5rbIKd4QHMPkcABCw"
+  "ids": "UCJZv4d5rbIKd4QHMPkcABCw,UC_x5XG1OV2P6uZZ5FSM9Ttw"
 }
 ```
 
 ## Output
 
-The channel statistics object returned by Scrappa.
+One dataset item per channel statistics object returned by Scrappa.
 
 ## Endpoint
 
