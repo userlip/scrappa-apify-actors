@@ -85,6 +85,7 @@ export function buildRedfinPropertyDetailsDatasetItem(
 ): Record<string, unknown> {
     return {
         ...property,
+        success: true,
         property_id: firstNumber(property.property_id, request.params.property_id),
         address: firstString(property.address),
         city: firstString(property.city),

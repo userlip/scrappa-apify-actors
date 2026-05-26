@@ -53,6 +53,10 @@ function cleanInteger(value: unknown, field: string): number | undefined {
         throw new Error(`${field} must be an integer`);
     }
 
+    if (!Number.isSafeInteger(normalized)) {
+        throw new Error(`${field} must be a safe integer`);
+    }
+
     if (normalized <= 0) {
         throw new Error(`${field} must be greater than 0`);
     }
@@ -82,13 +86,26 @@ export function extractRedfinIdsFromUrl(value: unknown): { property_id?: number;
     let propertyId: number | undefined;
     let listingId: number | undefined;
 
-    const homeMatch = url.match(/\/home\/(\d+)(?:[/?#]|$)/i);
+    let parsedUrl: URL;
+    try {
+        parsedUrl = new URL(url);
+    } catch {
+        return { url };
+    }
+
+    const hostname = parsedUrl.hostname.toLowerCase();
+    if (hostname !== 'redfin.com' && !hostname.endsWith('.redfin.com')) {
+        return { url };
+    }
+
+    const normalizedUrl = parsedUrl.toString();
+    const homeMatch = normalizedUrl.match(/\/home\/(\d+)(?:[/?#]|$)/i);
     if (homeMatch) {
         propertyId = Number(homeMatch[1]);
     }
 
-    const listingMatch = url.match(/[?&](?:listing_id|listingId|listingIdOverride|listing)=([0-9]+)/i)
-        ?? url.match(/\/listing\/(\d+)(?:[/?#]|$)/i);
+    const listingMatch = normalizedUrl.match(/[?&](?:listing_id|listingId|listingIdOverride|listing)=([0-9]+)/i)
+        ?? normalizedUrl.match(/\/listing\/(\d+)(?:[/?#]|$)/i);
     if (listingMatch) {
         listingId = Number(listingMatch[1]);
     }

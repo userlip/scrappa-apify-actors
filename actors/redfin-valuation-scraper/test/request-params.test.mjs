@@ -95,6 +95,19 @@ test('extracts Redfin IDs from URLs where possible', () => {
     );
 });
 
+test('does not extract IDs from non-Redfin URLs', () => {
+    assert.deepEqual(
+        extractRedfinIdsFromUrl('https://example.com/home/194191988?listing_id=207388793'),
+        {
+            url: 'https://example.com/home/194191988?listing_id=207388793',
+        },
+    );
+    assert.throws(
+        () => buildRedfinValuationRequests({ url: 'https://example.com/home/194191988?listing_id=207388793' }),
+        /property_id is required/,
+    );
+});
+
 test('input schema exposes batch fields', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
     assert.equal(schema.required, undefined);
@@ -116,6 +129,14 @@ test('validates Redfin valuation inputs', () => {
     assert.throws(
         () => buildRedfinValuationRequests({ property_id: 0 }),
         /property_id must be greater than 0/,
+    );
+    assert.throws(
+        () => buildRedfinValuationRequests({ property_id: '9007199254740993' }),
+        /property_id must be a safe integer/,
+    );
+    assert.throws(
+        () => buildRedfinValuationRequests({ property_id: 194191988, listing_id: '9007199254740993' }),
+        /listing_id must be a safe integer/,
     );
     assert.throws(
         () => buildRedfinValuationRequests({ property_ids: [] }),

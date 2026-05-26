@@ -65,6 +65,7 @@ test('builds normalized Redfin property details dataset item', () => {
         request,
     );
 
+    assert.equal(item.success, true);
     assert.equal(item.property_id, 60791456);
     assert.equal(item.zip, '38106');
     assert.equal(item.price, 125000);

@@ -31,6 +31,38 @@ test('prefers batched urls while keeping single url compatibility', () => {
     );
 });
 
+test('deduplicates host case without collapsing path or query case', () => {
+    assert.deepEqual(
+        getInputUrls({
+            urls: [
+                'https://EXAMPLE.com/Docs',
+                'https://example.com/docs',
+                'https://example.com/Docs?A=1',
+                'https://example.com/Docs?a=1',
+                'https://example.com/Docs#section',
+            ],
+        }),
+        [
+            {
+                input_url: 'https://EXAMPLE.com/Docs',
+                request_url: 'https://EXAMPLE.com/Docs',
+            },
+            {
+                input_url: 'https://example.com/docs',
+                request_url: 'https://example.com/docs',
+            },
+            {
+                input_url: 'https://example.com/Docs?A=1',
+                request_url: 'https://example.com/Docs?A=1',
+            },
+            {
+                input_url: 'https://example.com/Docs?a=1',
+                request_url: 'https://example.com/Docs?a=1',
+            },
+        ],
+    );
+});
+
 test('defaults response_type to json and validates supported values', () => {
     assert.equal(getResponseType(null), 'json');
     assert.equal(getResponseType({ response_type: 'markdown' }), 'markdown');
