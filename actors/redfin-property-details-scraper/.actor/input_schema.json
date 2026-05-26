@@ -1,0 +1,46 @@
+{
+  "title": "Redfin Property Details Scraper",
+  "description": "Fetch detailed Redfin property records by property ID or Redfin URL. Use property_ids or urls to process multiple properties in one Apify run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "property_id": {
+      "title": "Property ID",
+      "type": "integer",
+      "description": "Single Redfin property ID. Example: 60791456 from a Redfin URL ending in /home/60791456.",
+      "editor": "number",
+      "minimum": 1,
+      "default": 60791456
+    },
+    "property_ids": {
+      "title": "Property IDs",
+      "type": "array",
+      "description": "Batch of Redfin property IDs to process in one Apify run.",
+      "editor": "json",
+      "maxItems": 100,
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "url": {
+      "title": "Redfin URL",
+      "type": "string",
+      "description": "Single Redfin property URL containing /home/{property_id}.",
+      "editor": "textfield",
+      "prefill": "https://www.redfin.com/TN/Memphis/1549-Ely-St-38106/home/60791456",
+      "maxLength": 2048
+    },
+    "urls": {
+      "title": "Redfin URLs",
+      "type": "array",
+      "description": "Batch of Redfin property URLs containing /home/{property_id}.",
+      "editor": "json",
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "maxLength": 2048
+      }
+    }
+  }
+}
