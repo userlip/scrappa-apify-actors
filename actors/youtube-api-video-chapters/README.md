@@ -20,4 +20,4 @@ One dataset item per video ID. Successful items contain the video chapters objec
 
 ## Endpoint
 
-`https://ytapi.scrappa.co/videos/chapters`
+`https://scrappa.co/api/youtube/chapters`

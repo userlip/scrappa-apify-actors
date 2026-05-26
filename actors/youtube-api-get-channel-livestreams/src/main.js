@@ -1,32 +1,30 @@
 import { Actor } from 'apify';
 import axios from 'axios';
+import {
+    buildChannelLivestreamsUrl,
+    buildScrappaRequest,
+    getChannelIds,
+    getScrappaApiKey,
+} from './youtube-request.js';
 
-async function getChannelLivestreams(id, sort, continuation = '') {
-    // Validate that the required query parameter is present.
-    if (!id) {
-        throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');
-    }
-    
-    // Construct the base API URL with required parameters
-    let apiUrl = `https://ytapi.scrappa.co/channels/livestreams?id=${encodeURIComponent(id)}`;
-    
-    // Add optional parameters only if they have valid values
-    if (sort && typeof sort === 'string' && sort.trim() !== '') {
-        apiUrl += `&sort=${encodeURIComponent(sort)}`;
-    }
+function livestreamVideos(responseData) {
+    const videos = responseData?.videos ?? [];
+    return videos.filter((video) => {
+        const type = String(video?.type ?? video?.videoType ?? '').toLowerCase();
+        return video?.isLive === true || type === 'live' || type === 'livestream';
+    });
+}
 
-    if (continuation && typeof continuation === 'string' && continuation.trim() !== '') {
-        apiUrl += `&continuation=${encodeURIComponent(continuation)}`;
-    }
-
+async function getChannelLivestreams(input, apiKey) {
+    const { apiUrl, requestOptions } = buildScrappaRequest(buildChannelLivestreamsUrl(input), apiKey);
     try {
         console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl);
-        const data = response.data.videos;
+        const response = await axios.get(apiUrl, requestOptions);
+        const data = livestreamVideos(response.data);
         
         // Save the fetched data to the default dataset.
         await Actor.pushData(data);
-        console.log(`Successfully fetched ${data.length} videos for query: ${id}`);
+        console.log(`Successfully fetched ${data.length} videos for query: ${input.id}`);
         
         // Log if there's a continuation token for next page
         if (response.data.continuation) {
@@ -39,17 +37,20 @@ async function getChannelLivestreams(id, sort, continuation = '') {
     }
 }
 
-// Main Actor logic
 Actor.main(async () => {
-    // The init() call configures the Actor for its environment.
     await Actor.init();
 
+    const apiKey = getScrappaApiKey();
     const input = (await Actor.getInput()) || {};
-    const { id, sort, continuation } = input;
+    const ids = getChannelIds(input);
 
-    // Directly call the function with the input, as there is only one possible task.
-    await getChannelLivestreams(id, sort, continuation);
+    if (ids.length === 0) {
+        throw new Error('At least one YouTube channel ID must be provided in "ids" or "id".');
+    }
 
-    // Gracefully exit the Actor process.
+    for (const id of ids) {
+        await getChannelLivestreams({ ...input, id }, apiKey);
+    }
+
     await Actor.exit();
 });

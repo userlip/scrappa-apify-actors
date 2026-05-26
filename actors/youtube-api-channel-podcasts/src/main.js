@@ -1,7 +1,6 @@
 import { Actor } from 'apify';
-import { buildChannelPodcastsUrl } from './channel-podcasts-url.js';
-
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+import { buildChannelPodcastsUrl, getChannelIds } from './channel-podcasts-url.js';
+import { fetchScrappaJson, getScrappaApiKey, SCRAPPA_REQUEST_TIMEOUT_MS } from './scrappa-request.js';
 
 function errorMessage(error) {
     const rawMessage = error instanceof Error ? error.message : String(error);
@@ -12,19 +11,16 @@ function errorMessage(error) {
     return rawMessage;
 }
 
-async function getChannelPodcasts(input) {
+function podcastVideos(responseData) {
+    return responseData?.videos ?? [];
+}
+
+async function getChannelPodcasts(input, apiKey) {
     const apiUrl = buildChannelPodcastsUrl(input);
 
     console.log(`Fetching from: ${apiUrl}`);
-    const response = await fetch(apiUrl, {
-        signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
-    });
-    if (!response.ok) {
-        throw new Error(`Scrappa API request failed with ${response.status} ${response.statusText}`);
-    }
-
-    const responseData = await response.json();
-    const videos = responseData?.videos ?? [];
+    const responseData = await fetchScrappaJson(apiUrl, { apiKey });
+    const videos = podcastVideos(responseData);
 
     await Actor.pushData(videos);
     console.log(`Successfully fetched ${videos.length} podcast video(s) for channel id: ${input.id}`);
@@ -36,8 +32,17 @@ async function getChannelPodcasts(input) {
 
 Actor.main(async () => {
     try {
+        const apiKey = getScrappaApiKey();
         const input = (await Actor.getInput()) ?? {};
-        await getChannelPodcasts(input);
+        const ids = getChannelIds(input);
+
+        if (ids.length === 0) {
+            throw new Error('At least one YouTube channel ID must be provided in "ids" or "id".');
+        }
+
+        for (const id of ids) {
+            await getChannelPodcasts({ ...input, id }, apiKey);
+        }
     } catch (error) {
         const message = errorMessage(error);
         console.error(`Failed to fetch YouTube channel podcasts: ${message}`);

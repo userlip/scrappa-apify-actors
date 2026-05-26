@@ -21,4 +21,4 @@ One dataset item per Shorts video returned by Scrappa.
 
 ## Endpoint
 
-`https://ytapi.scrappa.co/channels/shorts`
+`https://scrappa.co/api/youtube/channel-videos`

@@ -22,4 +22,4 @@ One dataset item per playlist search result returned by Scrappa.
 
 ## Endpoint
 
-`https://ytapi.scrappa.co/search/playlists`
+`https://scrappa.co/api/youtube/search`

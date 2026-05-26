@@ -20,4 +20,4 @@ One dataset item per channel statistics object returned by Scrappa.
 
 ## Endpoint
 
-`https://ytapi.scrappa.co/channels/stats`
+`https://scrappa.co/api/youtube/channel`

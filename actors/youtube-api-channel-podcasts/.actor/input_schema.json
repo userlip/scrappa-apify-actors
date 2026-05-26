@@ -4,11 +4,19 @@
     "schemaVersion": 1,
     "properties": {
         "id": {
-            "title": "Youtube Channel ID",
+            "title": "Legacy Youtube Channel ID",
             "type": "string",
-            "description": "Youtube Channel ID",
+            "description": "Single Youtube Channel ID. Use ids for batch runs.",
             "editor": "textfield",
             "prefill": "UCJZv4d5rbIKd4QHMPkcABCw"
+        },
+        "ids": {
+            "title": "Youtube Channel IDs",
+            "type": "string",
+            "description": "Comma-separated Youtube channel IDs. Prefer this for batch runs.",
+            "editor": "textfield",
+            "pattern": "^\\s*[^,\\s]+(?:\\s*,\\s*[^,\\s]+)*\\s*$",
+            "prefill": "UCJZv4d5rbIKd4QHMPkcABCw,UC_x5XG1OV2P6uZZ5FSM9Ttw"
         },
         "continuation": {
             "title": "continuation",
@@ -25,5 +33,5 @@
             "prefill": "newest"
         }
     },
-    "required": ["id"]
+    "required": []
 }

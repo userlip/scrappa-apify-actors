@@ -22,4 +22,4 @@ One dataset item per hashtag search result returned by Scrappa.
 
 ## Endpoint
 
-`https://ytapi.scrappa.co/search/hashtag`
+`https://scrappa.co/api/youtube/search`

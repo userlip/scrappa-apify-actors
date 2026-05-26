@@ -1,5 +1,10 @@
 import { Actor } from 'apify';
 import axios from 'axios';
+import {
+    buildPlaylistSearchUrl,
+    buildScrappaRequest,
+    getScrappaApiKey,
+} from './youtube-request.js';
 
 /**
  * Searches for playlists based on a query string.
@@ -9,33 +14,16 @@ import axios from 'axios';
  * @param {number} limit Number of results to return (optional)
  * @param {string} continuation Continuation token for pagination (optional)
  */
-async function searchPlaylists(query, sort = 'relevance', limit = 20, continuation = '') {
-    // Validate that the required query parameter is present.
-    if (!query) {
-        throw new Error('Search query "q" not provided. Please provide a value for "searchPlaylistQuery" in the input.');
-    }
-    
+async function searchPlaylists(query, sort = 'relevance', limit = 20, continuation = '', apiKey) {
     console.log(`Running action: Search Playlists for query: "${query}"`);
-    
-    // Construct the base API URL with required parameters
-    let apiUrl = `https://ytapi.scrappa.co/search/playlists?q=${encodeURIComponent(query)}`;
-    
-    // Add optional parameters only if they have valid values
-    if (sort && typeof sort === 'string' && sort.trim() !== '') {
-        apiUrl += `&sort=${encodeURIComponent(sort)}`;
-    }
-
-    if (limit && typeof limit === 'number' && limit > 0) {
-        apiUrl += `&limit=${encodeURIComponent(limit)}`;
-    }
-
-    if (continuation && typeof continuation === 'string' && continuation.trim() !== '') {
-        apiUrl += `&continuation=${encodeURIComponent(continuation)}`;
-    }
+    const { apiUrl, requestOptions } = buildScrappaRequest(
+        buildPlaylistSearchUrl({ q: query, sort, limit, continuation }),
+        apiKey,
+    );
 
     try {
         console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl);
+        const response = await axios.get(apiUrl, requestOptions);
         const data = response.data['results'];
         
         // Save the fetched data to the default dataset.
@@ -52,18 +40,14 @@ async function searchPlaylists(query, sort = 'relevance', limit = 20, continuati
     }
 }
 
-// Main Actor logic
 Actor.main(async () => {
-    // The init() call configures the Actor for its environment.
     await Actor.init();
 
-    // Get the input, expecting only the 'searchPlaylistQuery' field.
+    const apiKey = getScrappaApiKey();
     const input = (await Actor.getInput()) || {};
     const { q, sort, limit, continuation } = input;
 
-    // Directly call the function with the input, as there is only one possible task.
-    await searchPlaylists(q, sort, limit, continuation);
+    await searchPlaylists(q, sort, limit, continuation, apiKey);
 
-    // Gracefully exit the Actor process.
     await Actor.exit();
 });

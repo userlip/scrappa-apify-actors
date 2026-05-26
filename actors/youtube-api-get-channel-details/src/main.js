@@ -1,7 +1,12 @@
 import { Actor } from 'apify';
 import axios from 'axios';
-
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+import {
+    buildChannelDetailsUrl,
+    buildScrappaRequest,
+    getChannelIds,
+    getScrappaApiKey,
+    SCRAPPA_REQUEST_TIMEOUT_MS,
+} from './youtube-request.js';
 
 function errorMessage(error) {
     const rawMessage = error instanceof Error ? error.message : String(error);
@@ -12,23 +17,13 @@ function errorMessage(error) {
     return rawMessage;
 }
 
-async function getChannelDetails(id) {
-    // Validate that the required query parameter is present.
-    if (!id) {
-        throw new Error('Channel "id" not provided in input.');
-    }
-
-    // Construct the base API URL with required parameters
-    const apiUrl = `https://ytapi.scrappa.co/channels?id=${encodeURIComponent(id)}`;
-
+async function getChannelDetails(id, apiKey) {
+    const { apiUrl, requestOptions } = buildScrappaRequest(buildChannelDetailsUrl(id), apiKey);
     try {
         console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl, {
-            timeout: SCRAPPA_REQUEST_TIMEOUT_MS,
-        });
+        const response = await axios.get(apiUrl, requestOptions);
         const data = response.data;
 
-        // Save the fetched data to the default dataset.
         await Actor.pushData(data);
     } catch (error) {
         console.error(`Failed to fetch YouTube channel details for id ${id}: ${errorMessage(error)}`);
@@ -38,15 +33,19 @@ async function getChannelDetails(id) {
 
 // Main Actor logic
 Actor.main(async () => {
-    // The init() call configures the Actor for its environment.
     await Actor.init();
 
+    const apiKey = getScrappaApiKey();
     const input = (await Actor.getInput()) ?? {};
-    const { id } = input;
+    const ids = getChannelIds(input);
 
-    // Directly call the function with the input, as there is only one possible task.
-    await getChannelDetails(id);
+    if (ids.length === 0) {
+        throw new Error('At least one YouTube channel ID must be provided in "ids" or "id".');
+    }
 
-    // Gracefully exit the Actor process.
+    for (const id of ids) {
+        await getChannelDetails(id, apiKey);
+    }
+
     await Actor.exit();
 });

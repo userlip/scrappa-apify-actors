@@ -20,4 +20,4 @@ One dataset item per channel playlist returned by Scrappa.
 
 ## Endpoint
 
-`https://ytapi.scrappa.co/channels/playlists`
+`https://scrappa.co/api/youtube/channel-playlists`
