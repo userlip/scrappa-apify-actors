@@ -4,6 +4,10 @@ Get Redfin home value estimates, low/high value ranges, last sale context,
 property specs, and comparable sales by Redfin property ID. The actor is a thin
 Apify wrapper around Scrappa's Redfin valuation API and saves one dataset item
 per successful valuation.
+If a property is unavailable or Scrappa returns a recoverable per-property
+error, the actor still writes a dataset item for that property with
+`success: false`, `status`, and `message` fields so batch consumers can reconcile
+every input.
 
 Recommended paid pricing: **$0.50 per 1,000 saved valuation results** using the
 `valuation-result` pay-per-event charge.
@@ -47,6 +51,9 @@ you want the actor to extract IDs from Redfin URLs:
 Common top-level fields include:
 
 - `property_id`
+- `success`
+- `status`
+- `message`
 - `listing_id`
 - `predicted_value`
 - `predicted_value_low`

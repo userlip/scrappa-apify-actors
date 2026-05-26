@@ -6,6 +6,7 @@ const responseUtilsModule = process.env.TEST_SOURCE === 'src'
     : '../dist/response-utils.js';
 const {
     buildRedfinValuationDatasetItem,
+    buildRedfinValuationFailureItem,
     getRedfinValuationData,
     hasMeaningfulValuationData,
 } = await import(responseUtilsModule);
@@ -21,6 +22,8 @@ test('uses top-level response as fallback valuation data', () => {
 
 test('detects meaningful Redfin valuation fields', () => {
     assert.equal(hasMeaningfulValuationData({ predictedValue: '850000' }), true);
+    assert.equal(hasMeaningfulValuationData({ predicted_value: '850000' }), true);
+    assert.equal(hasMeaningfulValuationData({ last_sold_price: '750000' }), true);
     assert.equal(hasMeaningfulValuationData({ comparables: [] }), false);
 });
 
@@ -51,6 +54,7 @@ test('builds normalized Redfin valuation dataset item', () => {
         },
     );
 
+    assert.equal(item.success, true);
     assert.equal(item.property_id, 194191988);
     assert.equal(item.listing_id, 207388793);
     assert.equal(item.predicted_value, 850000);
@@ -79,4 +83,30 @@ test('ignores non-finite numeric strings in normalized fields', () => {
 
     assert.equal(item.predicted_value, null);
     assert.equal(item.beds, null);
+});
+
+test('builds Redfin valuation failure dataset item', () => {
+    const item = buildRedfinValuationFailureItem(
+        {
+            index: 2,
+            property_id: 194191988,
+            listing_id: null,
+            url: 'https://www.redfin.com/home/194191988',
+        },
+        {
+            status: 404,
+            message: 'Valuation unavailable',
+        },
+    );
+
+    assert.equal(item.success, false);
+    assert.equal(item.status, 404);
+    assert.equal(item.message, 'Valuation unavailable');
+    assert.equal(item.property_id, 194191988);
+    assert.equal(item.predicted_value, null);
+    assert.equal(item.comparables_count, 0);
+    assert.deepEqual(item.comparables, []);
+    assert.equal(item.request_index, 2);
+    assert.equal(item.request_property_id, 194191988);
+    assert.equal(item.request_url, 'https://www.redfin.com/home/194191988');
 });

@@ -52,9 +52,13 @@ export function getRedfinValuationData(response: RedfinValuationResponse): Recor
 export function hasMeaningfulValuationData(data: Record<string, unknown>): boolean {
     return firstNumber(
         data.predictedValue,
+        data.predicted_value,
         data.predictedValueLow,
+        data.predicted_value_low,
         data.predictedValueHigh,
+        data.predicted_value_high,
         data.lastSoldPrice,
+        data.last_sold_price,
     ) !== null;
 }
 
@@ -72,6 +76,7 @@ export function buildRedfinValuationDatasetItem(
 
     return {
         ...data,
+        success: true,
         property_id: request.property_id,
         listing_id: request.listing_id,
         predicted_value: firstNumber(data.predictedValue, data.predicted_value),
@@ -86,6 +91,43 @@ export function buildRedfinValuationDatasetItem(
         year_built: firstNumber(data.yearBuilt, data.year_built),
         comparables_count: comparables.length,
         comparables,
+        request_index: request.index,
+        request_property_id: request.property_id,
+        request_listing_id: request.listing_id,
+        request_url: request.url,
+    };
+}
+
+export function buildRedfinValuationFailureItem(
+    request: {
+        property_id: number;
+        listing_id: number | null;
+        url: string | null;
+        index: number;
+    },
+    failure: {
+        status: number | string;
+        message: string;
+    },
+): Record<string, unknown> {
+    return {
+        success: false,
+        status: failure.status,
+        message: failure.message,
+        property_id: request.property_id,
+        listing_id: request.listing_id,
+        predicted_value: null,
+        predicted_value_low: null,
+        predicted_value_high: null,
+        last_sold_price: null,
+        last_sold_date: null,
+        beds: null,
+        baths: null,
+        sqft: null,
+        lot_size: null,
+        year_built: null,
+        comparables_count: 0,
+        comparables: [],
         request_index: request.index,
         request_property_id: request.property_id,
         request_listing_id: request.listing_id,

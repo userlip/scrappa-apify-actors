@@ -26,11 +26,14 @@
         "valuations": {
           "title": "Valuations",
           "transformation": {
-            "fields": ["property_id", "listing_id", "predicted_value", "predicted_value_low", "predicted_value_high", "last_sold_price", "last_sold_date", "beds", "baths", "sqft", "lot_size", "year_built", "comparables_count", "comparables", "request_index", "request_property_id", "request_listing_id", "request_url"]
+            "fields": ["success", "status", "message", "property_id", "listing_id", "predicted_value", "predicted_value_low", "predicted_value_high", "last_sold_price", "last_sold_date", "beds", "baths", "sqft", "lot_size", "year_built", "comparables_count", "comparables", "request_index", "request_property_id", "request_listing_id", "request_url"]
           },
           "display": {
             "component": "table",
             "properties": {
+              "success": { "label": "Success", "format": "boolean" },
+              "status": { "label": "Status", "format": "text" },
+              "message": { "label": "Message", "format": "text" },
               "property_id": { "label": "Property ID", "format": "number" },
               "listing_id": { "label": "Listing ID", "format": "number" },
               "predicted_value": { "label": "Predicted Value", "format": "number" },

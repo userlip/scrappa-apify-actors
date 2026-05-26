@@ -2,7 +2,12 @@ import { Actor } from 'apify';
 import { actorChargingApi, getChargeLimitStatus, pushChargedValuation, REDFIN_VALUATION_RESULT_CHARGE_EVENT } from './charging.js';
 import { buildRedfinValuationRequests, describeRedfinValuationRequest } from './request-params.js';
 import type { RedfinValuationInput } from './request-params.js';
-import { buildRedfinValuationDatasetItem, getRedfinValuationData, hasMeaningfulValuationData } from './response-utils.js';
+import {
+    buildRedfinValuationDatasetItem,
+    buildRedfinValuationFailureItem,
+    getRedfinValuationData,
+    hasMeaningfulValuationData,
+} from './response-utils.js';
 import type { RedfinValuationResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
 
@@ -32,6 +37,7 @@ async function main(): Promise<void> {
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
         const failures: Record<string, unknown>[] = [];
+        const successfulItems: Record<string, unknown>[] = [];
         const savedItems: Record<string, unknown>[] = [];
         let statusMessage: string | null = null;
 
@@ -56,14 +62,20 @@ async function main(): Promise<void> {
                 const data = getRedfinValuationData(response);
 
                 if (!hasMeaningfulValuationData(data)) {
-                    failures.push({
-                        request_index: request.index,
-                        property_id: request.property_id,
-                        listing_id: request.listing_id,
-                        url: request.url,
+                    const failure = {
                         status: 'unavailable',
                         message: 'Scrappa returned no usable Redfin valuation fields.',
-                    });
+                    };
+                    const item = buildRedfinValuationFailureItem(request, failure);
+                    failures.push(item);
+                    const pushResult = await pushChargedValuation(actorChargingApi, item);
+                    if (pushResult.saved) {
+                        savedItems.push(item);
+                    }
+                    if (pushResult.statusMessage) {
+                        statusMessage = pushResult.statusMessage;
+                        break;
+                    }
                     console.warn(`No usable Redfin valuation fields for property ${request.property_id}`);
                     continue;
                 }
@@ -71,6 +83,7 @@ async function main(): Promise<void> {
                 const item = buildRedfinValuationDatasetItem(response, request);
                 const pushResult = await pushChargedValuation(actorChargingApi, item);
                 if (pushResult.saved) {
+                    successfulItems.push(item);
                     savedItems.push(item);
                 }
                 if (pushResult.statusMessage) {
@@ -79,14 +92,20 @@ async function main(): Promise<void> {
                 }
             } catch (error) {
                 if (isRecoverableAvailabilityError(error)) {
-                    failures.push({
-                        request_index: request.index,
-                        property_id: request.property_id,
-                        listing_id: request.listing_id,
-                        url: request.url,
+                    const failure = {
                         status: error.status,
                         message: error.details,
-                    });
+                    };
+                    const item = buildRedfinValuationFailureItem(request, failure);
+                    failures.push(item);
+                    const pushResult = await pushChargedValuation(actorChargingApi, item);
+                    if (pushResult.saved) {
+                        savedItems.push(item);
+                    }
+                    if (pushResult.statusMessage) {
+                        statusMessage = pushResult.statusMessage;
+                        break;
+                    }
                     console.warn(`Redfin valuation unavailable for property ${request.property_id}: ${error.details}`);
                     continue;
                 }
@@ -96,12 +115,13 @@ async function main(): Promise<void> {
         }
 
         const store = await Actor.openKeyValueStore();
-        if (requests.length === 1 && savedItems.length === 1 && failures.length === 0) {
-            await store.setValue('OUTPUT', savedItems[0]);
+        if (requests.length === 1 && successfulItems.length === 1 && failures.length === 0) {
+            await store.setValue('OUTPUT', successfulItems[0]);
         } else {
             await store.setValue('OUTPUT', {
                 requested: requests.length,
-                saved: savedItems.length,
+                saved: successfulItems.length,
+                dataset_items: savedItems.length,
                 failed: failures.length,
                 failures,
                 status_message: statusMessage,
@@ -113,7 +133,8 @@ async function main(): Promise<void> {
             : 'Redfin valuation scraping completed successfully');
         console.log('Results summary:', JSON.stringify({
             requested: requests.length,
-            saved: savedItems.length,
+            saved: successfulItems.length,
+            dataset_items: savedItems.length,
             failed: failures.length,
             status_message: statusMessage,
         }));
