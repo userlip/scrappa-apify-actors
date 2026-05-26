@@ -83,6 +83,28 @@ test('deduplicates host case without merging case-sensitive userinfo', () => {
     );
 });
 
+test('keeps URL fragments distinct when deduplicating hash-routed URLs', () => {
+    assert.deepEqual(
+        getInputUrls({
+            urls: [
+                'https://example.com/#/products/1',
+                'https://example.com/#/products/2',
+                'HTTPS://EXAMPLE.COM/#/products/1',
+            ],
+        }),
+        [
+            {
+                input_url: 'https://example.com/#/products/1',
+                request_url: 'https://example.com/#/products/1',
+            },
+            {
+                input_url: 'https://example.com/#/products/2',
+                request_url: 'https://example.com/#/products/2',
+            },
+        ],
+    );
+});
+
 test('ignores malformed non-string url entries', () => {
     assert.deepEqual(
         getInputUrls({

@@ -56,10 +56,9 @@ function normalizeForDedupe(url: string): string {
 
     try {
         new URL(candidate);
-        const withoutHash = candidate.split('#')[0] ?? candidate;
-        const match = withoutHash.match(/^(https?):\/\/([^/?#]*)(.*)$/i);
+        const match = candidate.match(/^(https?):\/\/([^/?#]*)(.*)$/i);
         if (!match) {
-            return withoutHash;
+            return candidate;
         }
 
         const [, protocol, authority, pathAndSearch] = match;
