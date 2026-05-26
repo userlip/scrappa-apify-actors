@@ -9,6 +9,7 @@ import {
     type WebScraperDatasetItem,
     type WebScraperJsonResponse,
 } from './response-utils.js';
+import { describeError } from './error-utils.js';
 import { ScrappaWebScraperClient } from './web-scraper-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
@@ -75,7 +76,7 @@ async function main(): Promise<void> {
                     item = buildJsonDatasetItem(response, request, params);
                 }
             } catch (error) {
-                const message = error instanceof Error ? error.message : String(error);
+                const message = describeError(error);
                 console.warn(`Scrappa Web Scraper API returned a per-URL failure for ${request.input_url}: ${message}`);
                 item = buildFailureDatasetItem(error, request, params);
             }
@@ -110,7 +111,7 @@ async function main(): Promise<void> {
             return;
         }
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = describeError(error);
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
         return;
@@ -120,7 +121,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = describeError(error);
     console.error('Actor failed: ' + message);
     process.exitCode = 1;
 });
