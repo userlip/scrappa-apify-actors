@@ -14,6 +14,7 @@ import { ScrappaClient } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_REQUEST_ATTEMPTS = 3;
+// Keep aligned with Apify's default per-dataset-item pricing event.
 const PATENT_DETAILS_CHARGE_EVENT = 'apify-default-dataset-item';
 
 async function main(): Promise<void> {

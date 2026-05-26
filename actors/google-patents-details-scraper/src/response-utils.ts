@@ -63,7 +63,7 @@ export function buildSuccessDatasetItem(
         links: data.links ?? {},
         citations: data.citations ?? {},
         inventor_count: Array.isArray(data.inventors) ? data.inventors.length : 0,
-        assignee_count: data.assignees && typeof data.assignees === 'object' ? Object.keys(data.assignees).length : 0,
+        assignee_count: countAssignees(data.assignees),
         citation_count: countCitations(data.citations),
         cached: data.cached ?? false,
         response_time_ms: data.response_time_ms ?? null,
@@ -105,6 +105,16 @@ export function buildErrorDatasetItem(
 export function extractScrappaStatusCode(message: string): number | null {
     const match = /Scrappa API error \((\d{3})\)/.exec(message);
     return match ? Number(match[1]) : null;
+}
+
+function countAssignees(assignees: GooglePatentsDetailsData['assignees']): number {
+    if (!assignees || typeof assignees !== 'object') {
+        return 0;
+    }
+
+    return Object.values(assignees).reduce((total, value) => {
+        return total + (Array.isArray(value) ? value.length : 0);
+    }, 0);
 }
 
 function countCitations(citations: GooglePatentsDetailsData['citations']): number {
