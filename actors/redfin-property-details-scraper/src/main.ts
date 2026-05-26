@@ -40,7 +40,7 @@ async function main(): Promise<void> {
         let totalResults = 0;
         let totalErrors = 0;
         let statusMessage: string | null = null;
-        const outputItems: Record<string, unknown>[] = [];
+        let singleOutputItem: Record<string, unknown> | null = null;
 
         for (const request of requests) {
             statusMessage = getChargeLimitStatus(actorChargingApi, totalResults, request.index);
@@ -66,7 +66,9 @@ async function main(): Promise<void> {
                     totalErrors += 1;
                     const item = buildRedfinPropertyErrorDatasetItem(request, 'Scrappa returned no property details', null);
                     await Actor.pushData(item);
-                    outputItems.push(item);
+                    if (requests.length === 1) {
+                        singleOutputItem = item;
+                    }
                     console.log(`No Redfin property details found for property_id ${request.params.property_id}`);
                     continue;
                 }
@@ -75,7 +77,9 @@ async function main(): Promise<void> {
                 const pushResult = await pushChargedProperty(actorChargingApi, item, request.index);
                 if (pushResult.saved) {
                     totalResults += 1;
-                    outputItems.push(item);
+                    if (requests.length === 1) {
+                        singleOutputItem = item;
+                    }
                 }
                 if (pushResult.statusMessage) {
                     statusMessage = pushResult.statusMessage;
@@ -86,7 +90,9 @@ async function main(): Promise<void> {
                     totalErrors += 1;
                     const item = buildRedfinPropertyErrorDatasetItem(request, error.message, error.status);
                     await Actor.pushData(item);
-                    outputItems.push(item);
+                    if (requests.length === 1) {
+                        singleOutputItem = item;
+                    }
                     console.log(`Redfin property error for property_id ${request.params.property_id}: ${error.message}`);
                     continue;
                 }
@@ -96,8 +102,8 @@ async function main(): Promise<void> {
         }
 
         const store = await Actor.openKeyValueStore();
-        if (requests.length === 1 && outputItems.length === 1) {
-            await store.setValue('OUTPUT', outputItems[0]);
+        if (requests.length === 1 && singleOutputItem !== null) {
+            await store.setValue('OUTPUT', singleOutputItem);
         } else {
             await store.setValue('OUTPUT', {
                 properties_requested: requests.length,
