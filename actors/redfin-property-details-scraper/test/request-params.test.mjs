@@ -85,6 +85,12 @@ test('input schema exposes batch property fields', async () => {
     assert.equal(schema.properties.urls.maxItems, 100);
 });
 
+test('actor metadata keeps low memory and enough timeout for batch runs', async () => {
+    const actor = JSON.parse(await readFile(new URL('../.actor/actor.json', import.meta.url), 'utf8'));
+    assert.equal(actor.defaultRunOptions.memoryMbytes, 128);
+    assert.equal(actor.defaultRunOptions.timeoutSecs, 3600);
+});
+
 test('requires at least one property input', () => {
     assert.throws(
         () => buildRedfinPropertyDetailsRequests({}),
