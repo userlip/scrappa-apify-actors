@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildChannelPodcastsUrl, getChannelIds } from '../src/channel-podcasts-url.js';
-import { buildScrappaRequest, getScrappaApiKey } from '../src/scrappa-request.js';
+import { buildScrappaRequest, getScrappaApiKey } from '../src/youtube-request.js';
 
 test('builds a channel podcasts URL with required id', () => {
     assert.equal(

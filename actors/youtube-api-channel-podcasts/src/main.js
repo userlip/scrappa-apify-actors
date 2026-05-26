@@ -1,6 +1,6 @@
 import { Actor } from 'apify';
 import { buildChannelPodcastsUrl, getChannelIds } from './channel-podcasts-url.js';
-import { fetchScrappaJson, getScrappaApiKey, SCRAPPA_REQUEST_TIMEOUT_MS } from './scrappa-request.js';
+import { fetchScrappaJson, getScrappaApiKey, SCRAPPA_REQUEST_TIMEOUT_MS } from './youtube-request.js';
 
 function errorMessage(error) {
     const rawMessage = error instanceof Error ? error.message : String(error);
