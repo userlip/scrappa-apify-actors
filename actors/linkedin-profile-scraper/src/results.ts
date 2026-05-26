@@ -83,7 +83,7 @@ export interface LinkedInProfileResponse {
     [key: string]: unknown;
 }
 
-export type LinkedInProfileResult = LinkedInProfileResponse & {
+export type LinkedInProfileResult = Omit<LinkedInProfileResponse, 'url'> & {
     input_url: string;
     normalized_url?: string;
     url?: string;
@@ -96,9 +96,13 @@ export function buildLinkedInProfileDatasetItem(
     inputUrl: string,
     normalizedUrl: string,
 ): LinkedInProfileResult {
+    const responseUrl = typeof response.url === 'string' && response.url.trim()
+        ? response.url
+        : normalizedUrl;
+
     return {
         ...response,
-        url: response.url as string | undefined ?? normalizedUrl,
+        url: responseUrl,
         input_url: inputUrl,
         normalized_url: normalizedUrl,
     };
@@ -125,5 +129,7 @@ export function buildLinkedInProfileFailureItem(
 }
 
 export function isRecoverableLinkedInProfileError(error: unknown): boolean {
+    // Keep only true per-profile misses recoverable. Auth, rate limit, and server errors
+    // should fail the run so Scrappa or Apify reliability issues are visible.
     return error instanceof ScrappaApiError && error.status === 404;
 }

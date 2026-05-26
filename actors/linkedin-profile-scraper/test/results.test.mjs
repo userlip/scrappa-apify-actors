@@ -15,6 +15,7 @@ test('buildLinkedInProfileDatasetItem preserves response fields and adds batch m
                 success: true,
                 name: 'Bill Gates',
                 followers: 1,
+                url: 'https://www.linkedin.com/in/williamhgates/',
             },
             'linkedin.com/in/williamhgates',
             'https://www.linkedin.com/in/williamhgates',
@@ -23,9 +24,29 @@ test('buildLinkedInProfileDatasetItem preserves response fields and adds batch m
             success: true,
             name: 'Bill Gates',
             followers: 1,
-            url: 'https://www.linkedin.com/in/williamhgates',
+            url: 'https://www.linkedin.com/in/williamhgates/',
             input_url: 'linkedin.com/in/williamhgates',
             normalized_url: 'https://www.linkedin.com/in/williamhgates',
+        },
+    );
+});
+
+test('buildLinkedInProfileDatasetItem falls back to normalized URL when response URL is missing', () => {
+    assert.deepEqual(
+        buildLinkedInProfileDatasetItem(
+            {
+                success: true,
+                name: 'Satya Nadella',
+            },
+            'https://de.linkedin.com/in/satyanadella/?trk=foo',
+            'https://www.linkedin.com/in/satyanadella',
+        ),
+        {
+            success: true,
+            name: 'Satya Nadella',
+            url: 'https://www.linkedin.com/in/satyanadella',
+            input_url: 'https://de.linkedin.com/in/satyanadella/?trk=foo',
+            normalized_url: 'https://www.linkedin.com/in/satyanadella',
         },
     );
 });

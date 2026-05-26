@@ -23,7 +23,7 @@ async function main(): Promise<void> {
         const input = await Actor.getInput<LinkedInProfileInput>();
         const urls = getInputUrls(input);
         if (urls.length === 0) {
-            throw new Error('At least one LinkedIn profile URL is required. Provide url or urls.');
+            throw new Error('At least one LinkedIn profile URL is required. Provide either url (single URL) or urls (array of URLs).');
         }
 
         const client = new ScrappaClient({ apiKey });

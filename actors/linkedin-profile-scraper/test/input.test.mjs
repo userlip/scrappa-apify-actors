@@ -37,6 +37,24 @@ test('getInputUrls combines url and urls inputs and deduplicates normalized URLs
     );
 });
 
+test('getInputUrls keeps the legacy url value first when urls contains the same profile', () => {
+    assert.deepEqual(
+        getInputUrls({
+            url: 'linkedin.com/in/williamhgates/?trk=legacy',
+            urls: [
+                'https://www.linkedin.com/in/williamhgates/details/contact-info/',
+                'https://m.linkedin.com/in/williamhgates',
+            ],
+        }),
+        [
+            {
+                input_url: 'linkedin.com/in/williamhgates/?trk=legacy',
+                normalized_url: 'https://www.linkedin.com/in/williamhgates',
+            },
+        ],
+    );
+});
+
 test('getInputUrls keeps invalid URLs as per-item validation failures', () => {
     assert.deepEqual(
         getInputUrls({ urls: ['https://example.com/in/acme'] }),
