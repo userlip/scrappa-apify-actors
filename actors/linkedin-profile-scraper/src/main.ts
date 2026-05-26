@@ -1,112 +1,15 @@
 import { Actor } from 'apify';
-import { ScrappaApiError, ScrappaClient } from './shared/index.js';
+import { ScrappaClient } from './shared/index.js';
+import { getInputUrls, type LinkedInProfileInput } from './input.js';
 import { buildLinkedInProfileParams } from './request-params.js';
-import { normalizeLinkedInProfileUrl } from './url.js';
-
-interface LinkedInProfileInput {
-    url?: string;
-    urls?: string[];
-    use_cache?: boolean;
-    maximum_cache_age?: number;
-}
-
-interface Experience {
-    company?: string;
-    url?: string;
-    start_date?: string;
-    end_date?: string;
-    [key: string]: unknown;
-}
-
-type LinkedInProfileResult = LinkedInProfileResponse & { url?: string };
-
-interface Education {
-    school?: string;
-    url?: string;
-    start_date?: string;
-    end_date?: string;
-    [key: string]: unknown;
-}
-
-interface Article {
-    title?: string;
-    url?: string;
-    published_date?: string;
-    [key: string]: unknown;
-}
-
-interface Activity {
-    type?: string;
-    text?: string;
-    date?: string;
-    [key: string]: unknown;
-}
-
-interface Publication {
-    title?: string;
-    publisher?: string;
-    date?: string;
-    [key: string]: unknown;
-}
-
-interface Project {
-    title?: string;
-    description?: string;
-    date?: string;
-    [key: string]: unknown;
-}
-
-interface Recommendation {
-    name?: string;
-    title?: string;
-    text?: string;
-    [key: string]: unknown;
-}
-
-interface SimilarProfile {
-    name?: string;
-    url?: string;
-    title?: string;
-    [key: string]: unknown;
-}
-
-interface LinkedInProfileResponse {
-    success: boolean;
-    name?: string;
-    image?: string;
-    location?: string;
-    followers?: number;
-    connections?: number;
-    about?: string;
-    job_titles?: string[];
-    experience?: Experience[];
-    education?: Education[];
-    skills?: string[];
-    articles?: Article[];
-    activity?: Activity[];
-    publications?: Publication[];
-    projects?: Project[];
-    recommendations?: Recommendation[];
-    similar_profiles?: SimilarProfile[];
-    cached?: boolean;
-    cached_at?: string;
-    message?: string;
-    status_code?: number;
-    [key: string]: unknown;
-}
-
-function getInputUrls(input: LinkedInProfileInput | null): string[] {
-    const inputUrls = Array.isArray(input?.urls) && input.urls.length > 0
-        ? input.urls
-        : input?.url ? [input.url] : [];
-
-    const urls = inputUrls
-        .map((url) => url.trim())
-        .filter((url) => url.length > 0)
-        .map(normalizeLinkedInProfileUrl);
-
-    return [...new Set(urls)];
-}
+import {
+    buildLinkedInProfileDatasetItem,
+    buildLinkedInProfileFailureItem,
+    buildLinkedInProfileOutput,
+    isRecoverableLinkedInProfileError,
+    type LinkedInProfileResponse,
+    type LinkedInProfileResult,
+} from './results.js';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -121,7 +24,7 @@ async function main(): Promise<void> {
         const input = await Actor.getInput<LinkedInProfileInput>();
         const urls = getInputUrls(input);
         if (urls.length === 0) {
-            throw new Error('At least one LinkedIn profile URL is required. Provide url or urls.');
+            throw new Error('At least one LinkedIn profile URL is required. Provide either url (single URL) or urls (array of URLs).');
         }
 
         const client = new ScrappaClient({ apiKey });
@@ -131,7 +34,21 @@ async function main(): Promise<void> {
 
         console.log(`Scraping ${urls.length} LinkedIn profile URL${urls.length === 1 ? '' : 's'}`);
 
-        for (const normalizedUrl of urls) {
+        for (const request of urls) {
+            const { input_url: inputUrl, normalized_url: normalizedUrl } = request;
+
+            if (!normalizedUrl) {
+                console.warn(`Invalid LinkedIn profile URL: "${inputUrl}"`);
+                const result = buildLinkedInProfileFailureItem(
+                    new Error(request.validation_error ?? 'Invalid LinkedIn profile URL'),
+                    inputUrl,
+                );
+                await Actor.pushData(result);
+                firstResult ??= result;
+                failed += 1;
+                continue;
+            }
+
             console.log(`Fetching LinkedIn profile: ${normalizedUrl}`);
 
             const params = buildLinkedInProfileParams({
@@ -144,23 +61,14 @@ async function main(): Promise<void> {
 
             try {
                 const response = await client.get<LinkedInProfileResponse>('/linkedin/profile', params);
-                result = {
-                    url: normalizedUrl,
-                    ...response,
-                };
+                result = buildLinkedInProfileDatasetItem(response, inputUrl, normalizedUrl);
             } catch (error) {
-                // Handle 404s gracefully per URL so one missing profile does not stop the batch.
-                if (error instanceof ScrappaApiError && error.status === 404) {
-                    console.warn(`Profile not found (404): ${normalizedUrl}`);
-                    result = {
-                        success: false,
-                        url: normalizedUrl,
-                        message: 'Profile not found',
-                        status_code: 404,
-                    };
-                } else {
+                if (!isRecoverableLinkedInProfileError(error)) {
                     throw error;
                 }
+
+                console.warn(`Profile scraping returned a per-item failure for ${normalizedUrl}: ${error instanceof Error ? error.message : String(error)}`);
+                result = buildLinkedInProfileFailureItem(error, inputUrl, normalizedUrl);
             }
 
             // Push the entire profile as a single dataset item
@@ -182,9 +90,14 @@ async function main(): Promise<void> {
 
         if (urls.length === 1 && firstResult) {
             const store = await Actor.openKeyValueStore();
-            const singleOutput = { ...firstResult };
-            delete singleOutput.url;
-            await store.setValue('OUTPUT', singleOutput);
+            await store.setValue('OUTPUT', buildLinkedInProfileOutput(firstResult));
+        } else {
+            const store = await Actor.openKeyValueStore();
+            await store.setValue('OUTPUT', {
+                requested: urls.length,
+                succeeded,
+                failed,
+            });
         }
 
         // Log summary
