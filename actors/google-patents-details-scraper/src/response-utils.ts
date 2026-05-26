@@ -6,6 +6,11 @@ export interface GooglePatentsDetailsData {
     inventors?: string[];
     assignees?: Record<string, string[]>;
     dates?: Record<string, string | null>;
+    country?: string | null;
+    language?: string | null;
+    application_number?: string | null;
+    prior_art_keywords?: string[];
+    links?: Record<string, string | null>;
     citations?: Record<string, unknown[]>;
     cached?: boolean;
     response_time_ms?: number;
@@ -25,11 +30,13 @@ export interface GooglePatentsDetailsDatasetContext {
     normalizedPatentId: string;
 }
 
-export function patentPageUrl(patentId: string): string {
+export function patentPageUrl(patentId: string): string | null {
     const match = /^patent\/([^/]+)\/[a-z]{2}$/i.exec(patentId);
-    const publicationNumber = match?.[1] ?? patentId;
+    if (!match) {
+        return null;
+    }
 
-    return `https://patents.google.com/patent/${publicationNumber}`;
+    return `https://patents.google.com/patent/${match[1]}`;
 }
 
 export function buildSuccessDatasetItem(
@@ -49,6 +56,12 @@ export function buildSuccessDatasetItem(
         patent_page: patentPageUrl(String(patentId)),
         title: data.title ?? null,
         abstract: data.abstract ?? null,
+        country: data.country ?? null,
+        language: data.language ?? null,
+        application_number: data.application_number ?? null,
+        prior_art_keywords: data.prior_art_keywords ?? [],
+        links: data.links ?? {},
+        citations: data.citations ?? {},
         inventor_count: Array.isArray(data.inventors) ? data.inventors.length : 0,
         assignee_count: data.assignees && typeof data.assignees === 'object' ? Object.keys(data.assignees).length : 0,
         citation_count: countCitations(data.citations),
@@ -68,6 +81,22 @@ export function buildErrorDatasetItem(
         input_patent_id: context.inputPatentId,
         normalized_patent_id: context.normalizedPatentId,
         success: false,
+        patent_id: null,
+        publication_number: null,
+        patent_page: patentPageUrl(context.normalizedPatentId),
+        title: null,
+        abstract: null,
+        country: null,
+        language: null,
+        application_number: null,
+        prior_art_keywords: [],
+        links: {},
+        citations: {},
+        inventor_count: 0,
+        assignee_count: 0,
+        citation_count: 0,
+        cached: null,
+        response_time_ms: null,
         error: message,
         status_code: statusCode,
     };

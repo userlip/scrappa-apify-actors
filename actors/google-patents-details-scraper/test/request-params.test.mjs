@@ -60,6 +60,29 @@ test('collects, normalizes, and deduplicates batch inputs', () => {
     );
 });
 
+test('deduplicates short IDs and URLs for the same patent', () => {
+    assert.deepEqual(
+        collectGooglePatentsDetailsRequests({
+            patent_id: 'US9789384B1',
+            urls: ['https://patents.google.com/patent/US9789384B1'],
+        }),
+        [
+            {
+                inputPatentId: 'US9789384B1',
+                normalizedPatentId: 'patent/US9789384B1/en',
+                params: { patent_id: 'patent/US9789384B1/en' },
+            },
+        ],
+    );
+});
+
+test('treats empty arrays as missing input', () => {
+    assert.throws(
+        () => collectGooglePatentsDetailsRequests({ patent_ids: [], urls: [] }),
+        /At least one patent ID or Google Patents URL is required/,
+    );
+});
+
 test('requires at least one patent ID or URL', () => {
     assert.throws(
         () => collectGooglePatentsDetailsRequests({}),

@@ -1,4 +1,5 @@
 import { Actor } from 'apify';
+import { formatGooglePatentsDetailsError } from './error-utils.js';
 import {
     collectGooglePatentsDetailsRequests,
     describeGooglePatentsDetailsRequest,
@@ -9,7 +10,7 @@ import {
     buildSuccessDatasetItem,
 } from './response-utils.js';
 import type { GooglePatentsDetailsResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/scrappa-client.js';
+import { ScrappaClient } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_REQUEST_ATTEMPTS = 3;
@@ -33,44 +34,45 @@ async function main(): Promise<void> {
         console.log(`Fetching Google Patents details for ${describeGooglePatentsDetailsRequest(requests)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const datasetItems: Record<string, unknown>[] = [];
+        let firstItem: Record<string, unknown> | undefined;
         let succeeded = 0;
         let failed = 0;
+        let saved = 0;
 
         for (const request of requests) {
             console.log(`Fetching patent details: ${request.normalizedPatentId}`);
+            let item: Record<string, unknown>;
 
             try {
                 const response = await client.get<GooglePatentsDetailsResponse>('/google-patents/details', request.params, {
                     attempts: SCRAPPA_REQUEST_ATTEMPTS,
                 });
 
-                const item = response.success
+                item = response.success
                     ? buildSuccessDatasetItem(response, request)
                     : buildErrorDatasetItem(response.error ?? response.message ?? 'Scrappa API returned success=false', request);
 
-                datasetItems.push(item);
                 if (item.success) {
                     succeeded += 1;
                 } else {
                     failed += 1;
                 }
             } catch (error) {
-                const item = buildErrorDatasetItem(formatScrappaError(error), request);
-                datasetItems.push(item);
+                item = buildErrorDatasetItem(formatGooglePatentsDetailsError(error, SCRAPPA_REQUEST_TIMEOUT_MS), request);
                 failed += 1;
                 console.warn(`Patent details failed for ${request.normalizedPatentId}: ${String(item.error)}`);
             }
-        }
 
-        if (datasetItems.length > 0) {
-            const chargeResult = await Actor.pushData(datasetItems, PATENT_DETAILS_CHARGE_EVENT);
-            if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
-                const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount}/${datasetItems.length} Google Patents detail result(s).`;
+            firstItem ??= item;
+            const chargeResult = await Actor.pushData(item, PATENT_DETAILS_CHARGE_EVENT);
+            saved += chargeResult.chargedCount;
+
+            if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < 1) {
+                const statusMessage = `Charge limit reached after saving ${saved}/${requests.length} Google Patents detail result(s).`;
                 console.log(statusMessage, JSON.stringify({
                     event: PATENT_DETAILS_CHARGE_EVENT,
-                    charged_count: chargeResult.chargedCount,
-                    result_count: datasetItems.length,
+                    charged_count: saved,
+                    result_count: requests.length,
                 }));
 
                 await Actor.exit({ statusMessage });
@@ -78,9 +80,9 @@ async function main(): Promise<void> {
             }
         }
 
-        if (datasetItems.length === 1) {
+        if (requests.length === 1 && firstItem) {
             const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', datasetItems[0]);
+            await store.setValue('OUTPUT', firstItem);
         }
 
         console.log('Google Patents details scraping completed successfully');
@@ -97,14 +99,6 @@ async function main(): Promise<void> {
     }
 
     await Actor.exit();
-}
-
-function formatScrappaError(error: unknown): unknown {
-    if (error instanceof ScrappaTimeoutError) {
-        return `${error.message}. The Google Patents details request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Run the request again or try a smaller batch.`;
-    }
-
-    return error;
 }
 
 main().catch((error) => {
