@@ -105,6 +105,28 @@ test('keeps URL fragments distinct when deduplicating hash-routed URLs', () => {
     );
 });
 
+test('keeps schemeless and protocol URLs distinct for dedupe', () => {
+    assert.deepEqual(
+        getInputUrls({
+            urls: [
+                'example.com',
+                'https://example.com',
+                'HTTPS://EXAMPLE.COM',
+            ],
+        }),
+        [
+            {
+                input_url: 'example.com',
+                request_url: 'example.com',
+            },
+            {
+                input_url: 'https://example.com',
+                request_url: 'https://example.com',
+            },
+        ],
+    );
+});
+
 test('ignores malformed non-string url entries', () => {
     assert.deepEqual(
         getInputUrls({

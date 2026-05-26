@@ -52,10 +52,15 @@ export function getInputUrls(input: WebsiteContentExtractorInput | null): UrlReq
 }
 
 function normalizeForDedupe(url: string): string {
-    const candidate = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const hasProtocol = /^https?:\/\//i.test(url);
+    const candidate = hasProtocol ? url : `https://${url}`;
 
     try {
         new URL(candidate);
+        if (!hasProtocol) {
+            return `schemeless:${url}`;
+        }
+
         const match = candidate.match(/^(https?):\/\/([^/?#]*)(.*)$/i);
         if (!match) {
             return candidate;
