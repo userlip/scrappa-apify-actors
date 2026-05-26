@@ -14,8 +14,6 @@ import { ScrappaClient } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_REQUEST_ATTEMPTS = 3;
-// Keep aligned with Apify's default per-dataset-item pricing event.
-const PATENT_DETAILS_CHARGE_EVENT = 'apify-default-dataset-item';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -38,7 +36,6 @@ async function main(): Promise<void> {
         let firstItem: Record<string, unknown> | undefined;
         let succeeded = 0;
         let failed = 0;
-        let saved = 0;
 
         for (const request of requests) {
             console.log(`Fetching patent details: ${request.normalizedPatentId}`);
@@ -65,20 +62,7 @@ async function main(): Promise<void> {
             }
 
             firstItem ??= item;
-            const chargeResult = await Actor.pushData(item, PATENT_DETAILS_CHARGE_EVENT);
-            saved += chargeResult.chargedCount;
-
-            if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < 1) {
-                const statusMessage = `Charge limit reached after saving ${saved}/${requests.length} Google Patents detail result(s).`;
-                console.log(statusMessage, JSON.stringify({
-                    event: PATENT_DETAILS_CHARGE_EVENT,
-                    charged_count: saved,
-                    result_count: requests.length,
-                }));
-
-                await Actor.exit({ statusMessage });
-                return;
-            }
+            await Actor.pushData(item);
         }
 
         if (requests.length === 1 && firstItem) {
