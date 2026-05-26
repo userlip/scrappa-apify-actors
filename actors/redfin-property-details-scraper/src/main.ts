@@ -5,6 +5,7 @@ import {
     pushChargedProperty,
     REDFIN_PROPERTY_DETAILS_RESULT_CHARGE_EVENT,
 } from './charging.js';
+import { isPerPropertyScrappaHttpError } from './http-errors.js';
 import { buildRedfinPropertyDetailsRequests, describeRedfinPropertyDetailsRequest } from './request-params.js';
 import type { RedfinPropertyDetailsInput } from './request-params.js';
 import {
@@ -13,7 +14,7 @@ import {
     getRedfinPropertyDetails,
 } from './response-utils.js';
 import type { RedfinPropertyDetailsResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
@@ -81,12 +82,12 @@ async function main(): Promise<void> {
                     break;
                 }
             } catch (error) {
-                if (error instanceof ScrappaHttpError && error.status === 404) {
+                if (isPerPropertyScrappaHttpError(error)) {
                     totalErrors += 1;
                     const item = buildRedfinPropertyErrorDatasetItem(request, error.message, error.status);
                     await Actor.pushData(item);
                     outputItems.push(item);
-                    console.log(`Redfin property not found for property_id ${request.params.property_id}`);
+                    console.log(`Redfin property error for property_id ${request.params.property_id}: ${error.message}`);
                     continue;
                 }
 
