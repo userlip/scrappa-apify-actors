@@ -1,0 +1,39 @@
+{
+  "title": "Google Patents Details Scraper",
+  "description": "Fetch full Google Patents metadata for one or more publication IDs or Google Patents URLs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "patent_id": {
+      "title": "Patent ID",
+      "type": "string",
+      "description": "Single patent publication ID or full Google Patents ID, such as US9789384B1 or patent/US9789384B1/en.",
+      "editor": "textfield",
+      "prefill": "US9789384B1"
+    },
+    "patent_ids": {
+      "title": "Patent IDs",
+      "type": "array",
+      "description": "Batch of patent publication IDs. Each item can be a short publication ID or a full Google Patents ID.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      }
+    },
+    "url": {
+      "title": "Google Patents URL",
+      "type": "string",
+      "description": "Single Google Patents URL, such as https://patents.google.com/patent/US9789384B1.",
+      "editor": "textfield"
+    },
+    "urls": {
+      "title": "Google Patents URLs",
+      "type": "array",
+      "description": "Batch of Google Patents URLs to enrich in the same Apify run.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
