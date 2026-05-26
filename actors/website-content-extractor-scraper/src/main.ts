@@ -90,6 +90,7 @@ async function main(): Promise<void> {
             if (savedItem) {
                 saved += 1;
             } else {
+                // A successful scrape that cannot be charged is not a delivered result.
                 failed += item.success ? 1 : 0;
                 succeeded -= item.success ? 1 : 0;
                 break;
