@@ -55,11 +55,15 @@ function normalizeForDedupe(url: string): string {
     const candidate = /^https?:\/\//i.test(url) ? url : `https://${url}`;
 
     try {
-        const parsed = new URL(candidate);
-        parsed.hash = '';
-        parsed.protocol = parsed.protocol.toLowerCase();
-        parsed.hostname = parsed.hostname.toLowerCase();
-        return parsed.toString().replace(/\/$/, '');
+        new URL(candidate);
+        const withoutHash = candidate.split('#')[0] ?? candidate;
+        const match = withoutHash.match(/^(https?):\/\/([^/?#]*)(.*)$/i);
+        if (!match) {
+            return withoutHash;
+        }
+
+        const [, protocol, host, pathAndSearch] = match;
+        return `${protocol.toLowerCase()}://${host.toLowerCase()}${pathAndSearch}`;
     } catch {
         return url;
     }

@@ -20,6 +20,10 @@ test('prefers batched urls while keeping single url compatibility', () => {
                 request_url: 'https://example.com',
             },
             {
+                input_url: 'https://example.com/',
+                request_url: 'https://example.com/',
+            },
+            {
                 input_url: 'https://www.iana.org/domains/reserved',
                 request_url: 'https://www.iana.org/domains/reserved',
             },
@@ -44,6 +48,10 @@ test('deduplicates scheme and host case without merging case-sensitive paths', (
             {
                 input_url: 'HTTPS://EXAMPLE.COM/Docs',
                 request_url: 'HTTPS://EXAMPLE.COM/Docs',
+            },
+            {
+                input_url: 'https://example.com/Docs/',
+                request_url: 'https://example.com/Docs/',
             },
             {
                 input_url: 'https://example.com/docs',
