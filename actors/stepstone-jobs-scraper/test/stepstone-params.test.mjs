@@ -29,7 +29,7 @@ test('forwards Stepstone jobs search parameters', () => {
             radius: 50,
             sort: 'date',
             job_type: 'full_time',
-            work_from_home: '1',
+            work_from_home: true,
             date_posted: 7,
             page: 2,
             limit: 25,
@@ -67,7 +67,7 @@ test('forwards true work-from-home request parameter after normalization', () =>
         query: 'komissionierer',
         location: 'Berlin',
         country: 'de',
-        work_from_home: '1',
+        work_from_home: true,
         page: 1,
         limit: 25,
     });

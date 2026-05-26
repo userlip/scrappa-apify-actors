@@ -75,9 +75,9 @@ export function buildStepstoneJobsParams(input: StepstoneJobsInput): Record<stri
         }
     }
 
-    // Scrappa's GET validation accepts a query-safe true value and false is omitted.
+    // Scrappa validates this as a boolean; false is omitted to preserve the default.
     if (input.work_from_home === true) {
-        params.work_from_home = '1';
+        params.work_from_home = true;
     }
 
     return params;
