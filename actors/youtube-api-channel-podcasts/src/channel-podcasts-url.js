@@ -28,6 +28,12 @@ export function getChannelIds(input = {}) {
     return [...new Set(ids)];
 }
 
+export function assertContinuationMatchesBatch(input = {}, ids = getChannelIds(input)) {
+    if (ids.length > 1 && typeof input.continuation === 'string' && input.continuation.trim() !== '') {
+        throw new Error('The "continuation" token can only be used with a single YouTube channel ID.');
+    }
+}
+
 export function buildChannelPodcastsUrl({ id, sort, continuation } = {}) {
     if (!id) {
         throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');

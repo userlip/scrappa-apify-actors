@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    assertContinuationMatchesBatch,
     buildChannelPlaylistsUrl,
     buildScrappaRequest,
     getChannelIds,
@@ -17,6 +18,13 @@ test('builds maintained channel playlists URL', () => {
 
 test('parses batch channel IDs', () => {
     assert.deepEqual(getChannelIds({ ids: 'UC1, UC2', id: 'UC2,UC3' }), ['UC1', 'UC2', 'UC3']);
+});
+
+test('rejects continuation tokens with batch channel IDs', () => {
+    assert.throws(
+        () => assertContinuationMatchesBatch({ ids: 'UC1,UC2', continuation: 'next page' }),
+        /continuation/,
+    );
 });
 
 test('builds authenticated request options', () => {

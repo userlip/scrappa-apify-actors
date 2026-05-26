@@ -1,6 +1,7 @@
 import { Actor } from 'apify';
 import axios from 'axios';
 import {
+    assertContinuationMatchesBatch,
     buildChannelLivestreamsUrl,
     buildScrappaRequest,
     getChannelIds,
@@ -46,6 +47,7 @@ Actor.main(async () => {
     if (ids.length === 0) {
         throw new Error('At least one YouTube channel ID must be provided in "ids" or "id".');
     }
+    assertContinuationMatchesBatch(input, ids);
 
     for (const id of ids) {
         await getChannelLivestreams({ ...input, id }, apiKey);

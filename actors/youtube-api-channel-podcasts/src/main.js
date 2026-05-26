@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { buildChannelPodcastsUrl, getChannelIds } from './channel-podcasts-url.js';
+import { assertContinuationMatchesBatch, buildChannelPodcastsUrl, getChannelIds } from './channel-podcasts-url.js';
 import { fetchScrappaJson, getScrappaApiKey, SCRAPPA_REQUEST_TIMEOUT_MS } from './youtube-request.js';
 
 function errorMessage(error) {
@@ -39,6 +39,7 @@ Actor.main(async () => {
         if (ids.length === 0) {
             throw new Error('At least one YouTube channel ID must be provided in "ids" or "id".');
         }
+        assertContinuationMatchesBatch(input, ids);
 
         for (const id of ids) {
             await getChannelPodcasts({ ...input, id }, apiKey);
