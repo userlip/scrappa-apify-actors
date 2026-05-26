@@ -63,6 +63,28 @@ test('deduplicates host case without collapsing path or query case', () => {
     );
 });
 
+test('keeps path trailing slash variants distinct', () => {
+    assert.deepEqual(
+        getInputUrls({
+            urls: [
+                'https://example.com/resource',
+                'https://example.com/resource/',
+                'https://example.com/resource#section',
+            ],
+        }),
+        [
+            {
+                input_url: 'https://example.com/resource',
+                request_url: 'https://example.com/resource',
+            },
+            {
+                input_url: 'https://example.com/resource/',
+                request_url: 'https://example.com/resource/',
+            },
+        ],
+    );
+});
+
 test('validates URL input values before trimming', () => {
     assert.throws(
         () => getInputUrls({ url: 123 }),

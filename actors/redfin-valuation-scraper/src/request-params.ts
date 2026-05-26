@@ -98,21 +98,20 @@ export function extractRedfinIdsFromUrl(value: unknown): { property_id?: number;
         return { url };
     }
 
-    const normalizedUrl = parsedUrl.toString();
-    const homeMatch = normalizedUrl.match(/\/home\/(\d+)(?:[/?#]|$)/i);
+    const homeMatch = parsedUrl.pathname.match(/\/home\/(\d+)(?:\/|$)/i);
     if (homeMatch) {
         propertyId = Number(homeMatch[1]);
     }
 
-    const listingMatch = normalizedUrl.match(/[?&](?:listing_id|listingId|listingIdOverride|listing)=([0-9]+)/i)
-        ?? normalizedUrl.match(/\/listing\/(\d+)(?:[/?#]|$)/i);
+    const listingMatch = parsedUrl.search.match(/[?&](?:listing_id|listingId|listingIdOverride|listing)=([0-9]+)/i)
+        ?? parsedUrl.pathname.match(/\/listing\/(\d+)(?:\/|$)/i);
     if (listingMatch) {
         listingId = Number(listingMatch[1]);
     }
 
     return {
-        property_id: propertyId,
-        listing_id: listingId,
+        ...(propertyId !== undefined ? { property_id: propertyId } : {}),
+        ...(listingId !== undefined ? { listing_id: listingId } : {}),
         url,
     };
 }

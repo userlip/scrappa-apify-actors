@@ -68,8 +68,8 @@ function normalizeForDedupe(url: string): string {
     try {
         const parsed = new URL(candidate);
         parsed.hash = '';
-        return parsed.toString().replace(/\/$/, '');
+        return parsed.toString();
     } catch {
-        return url.replace(/\/$/, '');
+        return url;
     }
 }

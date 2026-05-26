@@ -108,6 +108,20 @@ test('does not extract IDs from non-Redfin URLs', () => {
     );
 });
 
+test('extracts Redfin property IDs only from the URL path', () => {
+    assert.deepEqual(
+        extractRedfinIdsFromUrl('https://www.redfin.com/?redirect=/home/194191988&listing_id=207388793'),
+        {
+            listing_id: 207388793,
+            url: 'https://www.redfin.com/?redirect=/home/194191988&listing_id=207388793',
+        },
+    );
+    assert.throws(
+        () => buildRedfinValuationRequests({ url: 'https://www.redfin.com/?redirect=/home/194191988&listing_id=207388793' }),
+        /property_id is required/,
+    );
+});
+
 test('input schema exposes batch fields', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
     assert.equal(schema.required, undefined);
