@@ -20,7 +20,10 @@ export function buildHashtagSearchUrl({
     sort = 'relevance',
     limit,
     duration,
+    upload_date,
     continuation = '',
+    contentType,
+    features,
 } = {}) {
     if (!hashtag) {
         throw new Error('Search query "hashtag" not provided. Please provide a value for "searchHashtag" in the input.');
@@ -41,8 +44,20 @@ export function buildHashtagSearchUrl({
         params.set('videoDuration', duration);
     }
 
+    if (upload_date && typeof upload_date === 'string' && upload_date.trim() !== '') {
+        params.set('upload_date', upload_date);
+    }
+
     if (continuation && typeof continuation === 'string' && continuation.trim() !== '') {
         params.set('continuation', continuation);
+    }
+
+    if (contentType && typeof contentType === 'string' && contentType.trim() !== '') {
+        params.set('contentType', contentType);
+    }
+
+    if (features && typeof features === 'string' && features.trim() !== '') {
+        params.set('features', features);
     }
 
     return `${API_BASE_URL}?${params.toString()}`;
