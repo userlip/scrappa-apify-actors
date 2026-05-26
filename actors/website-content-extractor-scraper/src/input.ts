@@ -57,8 +57,10 @@ function normalizeForDedupe(url: string): string {
     try {
         const parsed = new URL(candidate);
         parsed.hash = '';
-        return parsed.toString().replace(/\/$/, '').toLowerCase();
+        parsed.protocol = parsed.protocol.toLowerCase();
+        parsed.hostname = parsed.hostname.toLowerCase();
+        return parsed.toString().replace(/\/$/, '');
     } catch {
-        return url.toLowerCase();
+        return url;
     }
 }

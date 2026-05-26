@@ -31,6 +31,28 @@ test('prefers batched urls while keeping single url compatibility', () => {
     );
 });
 
+test('deduplicates scheme and host case without merging case-sensitive paths', () => {
+    assert.deepEqual(
+        getInputUrls({
+            urls: [
+                'HTTPS://EXAMPLE.COM/Docs',
+                'https://example.com/Docs/',
+                'https://example.com/docs',
+            ],
+        }),
+        [
+            {
+                input_url: 'HTTPS://EXAMPLE.COM/Docs',
+                request_url: 'HTTPS://EXAMPLE.COM/Docs',
+            },
+            {
+                input_url: 'https://example.com/docs',
+                request_url: 'https://example.com/docs',
+            },
+        ],
+    );
+});
+
 test('defaults response_type to json and validates supported values', () => {
     assert.equal(getResponseType(null), 'json');
     assert.equal(getResponseType({ response_type: 'markdown' }), 'markdown');
