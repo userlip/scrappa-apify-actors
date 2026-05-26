@@ -61,6 +61,26 @@ test('deduplicates scheme and host case without merging case-sensitive paths', (
     );
 });
 
+test('ignores malformed non-string url entries', () => {
+    assert.deepEqual(
+        getInputUrls({
+            urls: [
+                'https://example.com',
+                null,
+                42,
+                { url: 'https://example.org' },
+                '   ',
+            ],
+        }),
+        [
+            {
+                input_url: 'https://example.com',
+                request_url: 'https://example.com',
+            },
+        ],
+    );
+});
+
 test('defaults response_type to json and validates supported values', () => {
     assert.equal(getResponseType(null), 'json');
     assert.equal(getResponseType({ response_type: 'markdown' }), 'markdown');

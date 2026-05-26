@@ -24,7 +24,7 @@ export function getResponseType(input: WebsiteContentExtractorInput | null): Web
 export function getInputUrls(input: WebsiteContentExtractorInput | null): UrlRequest[] {
     const rawUrls = [
         ...(typeof input?.url === 'string' ? [input.url] : []),
-        ...(Array.isArray(input?.urls) ? input.urls : []),
+        ...(Array.isArray(input?.urls) ? input.urls.filter((url): url is string => typeof url === 'string') : []),
     ];
 
     const seen = new Set<string>();
