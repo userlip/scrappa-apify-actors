@@ -14,6 +14,12 @@ test('builds maintained playlist search URL', () => {
     );
 });
 
+test('caps playlist search limit to Scrappa maximum', () => {
+    const url = new URL(buildPlaylistSearchUrl({ q: 'music mix', limit: 50 }));
+
+    assert.equal(url.searchParams.get('limit'), '20');
+});
+
 test('builds authenticated request options', () => {
     const { requestOptions } = buildScrappaRequest('https://scrappa.co/api/youtube/search?query=test&type=playlist', 'secret-key');
 

@@ -23,8 +23,7 @@ async function getChannelPlaylists(input, apiKey) {
             console.log(`Continuation token available for next page: ${response.data.continuation}`);
         }
     } catch (error) {
-        console.log()
-        console.error(`Failed to fetch videos for query: ${id}`, error.message);
+        console.error(`Failed to fetch playlists for channel id: ${input.id}`, error.message);
         throw error;
     }
 }

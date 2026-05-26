@@ -14,6 +14,13 @@ test('builds maintained hashtag search URL', () => {
     );
 });
 
+test('caps hashtag search limit to Scrappa maximum', () => {
+    const url = new URL(buildHashtagSearchUrl({ hashtag: '#javascript', limit: 50 }));
+
+    assert.equal(url.searchParams.get('query'), '#javascript');
+    assert.equal(url.searchParams.get('limit'), '20');
+});
+
 test('builds authenticated request options', () => {
     const { requestOptions } = buildScrappaRequest('https://scrappa.co/api/youtube/search?query=%23javascript', 'secret-key');
 

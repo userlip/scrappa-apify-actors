@@ -1,12 +1,15 @@
 # YouTube API Channel Podcasts
 
-Fetch podcast videos from a YouTube channel by channel ID. The Actor calls the Scrappa YouTube channel podcasts endpoint and saves each returned video to the default Apify dataset.
+Fetch podcast videos from a YouTube channel by channel ID. The Actor calls the Scrappa YouTube API and saves each returned video to the default Apify dataset.
+
+Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
 
 ## Input
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | Yes | YouTube channel ID. |
+| `ids` | string | No | Comma-separated YouTube channel IDs. Prefer this for batch runs. |
+| `id` | string | No | Legacy single YouTube channel ID. |
 | `sort` | string | No | Sort order: `newest`, `popular`, or `oldest`. Defaults to `newest`. |
 | `continuation` | string | No | Pagination token returned by a previous run. |
 
@@ -14,7 +17,7 @@ Fetch podcast videos from a YouTube channel by channel ID. The Actor calls the S
 
 ```json
 {
-  "id": "UCJZv4d5rbIKd4QHMPkcABCw",
+  "ids": "UCJZv4d5rbIKd4QHMPkcABCw,UC_x5XG1OV2P6uZZ5FSM9Ttw",
   "sort": "newest"
 }
 ```
@@ -27,7 +30,7 @@ If the API returns a continuation token, the Actor logs it so you can pass it in
 
 ## Pricing
 
-$0.30 per 1,000 results. No additional API keys required.
+$0.30 per 1,000 results.
 
 ## Support
 

@@ -6,7 +6,7 @@
         "hashtag": {
             "title": "Hashtag",
             "type": "string",
-            "description": "Hashtag to search for (without #)",
+            "description": "Hashtag to search for. The # prefix is optional.",
             "editor": "textfield"
         },
         "sort": {

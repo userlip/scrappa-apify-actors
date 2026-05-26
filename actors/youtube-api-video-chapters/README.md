@@ -4,6 +4,8 @@ Fetch chapter markers for a YouTube video by video ID through the Scrappa YouTub
 
 This actor is a thin Apify wrapper around Scrappa's YouTube API. Scraping runs on Scrappa infrastructure; Apify handles input validation, run orchestration, and dataset output.
 
+Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
+
 ## Input
 
 Provide one or more YouTube video IDs. Use `ids` for batch runs; the legacy `id` field still works for a single video.
