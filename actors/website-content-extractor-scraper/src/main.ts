@@ -22,8 +22,8 @@ async function pushDatasetItem(item: WebScraperDatasetItem): Promise<boolean> {
     }
 
     const chargeResult = await Actor.pushData(item, URL_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount === 0) {
-        console.log('Charge limit reached before saving the website content result.', JSON.stringify({
+    if (chargeResult.eventChargeLimitReached) {
+        console.log('Charge limit reached while saving the website content result.', JSON.stringify({
             event: URL_RESULT_CHARGE_EVENT,
             charged_count: chargeResult.chargedCount,
             input_url: item.input_url,
