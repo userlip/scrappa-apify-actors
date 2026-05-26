@@ -14,10 +14,9 @@ export interface LinkedInProfileUrlRequest {
 }
 
 export function getInputUrls(input: LinkedInProfileInput | null): LinkedInProfileUrlRequest[] {
-    const rawUrls = [
-        ...(typeof input?.url === 'string' ? [input.url] : []),
-        ...(Array.isArray(input?.urls) ? input.urls : []),
-    ];
+    const rawUrls = Array.isArray(input?.urls) && input.urls.length > 0
+        ? input.urls
+        : typeof input?.url === 'string' ? [input.url] : [];
 
     const seen = new Set<string>();
     const requests: LinkedInProfileUrlRequest[] = [];

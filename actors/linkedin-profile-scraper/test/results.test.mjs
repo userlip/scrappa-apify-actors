@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
     buildLinkedInProfileDatasetItem,
     buildLinkedInProfileFailureItem,
+    buildLinkedInProfileOutput,
     isRecoverableLinkedInProfileError,
 } from '../dist/results.js';
 import { ScrappaApiError } from '../dist/shared/index.js';
@@ -67,6 +68,24 @@ test('buildLinkedInProfileFailureItem emits per-item Scrappa error metadata', ()
             error_type: 'scrappa_api_error',
             message: 'Profile not found',
             status_code: 404,
+        },
+    );
+});
+
+test('buildLinkedInProfileOutput strips wrapper metadata for single-run compatibility', () => {
+    assert.deepEqual(
+        buildLinkedInProfileOutput({
+            success: true,
+            name: 'Bill Gates',
+            url: 'https://www.linkedin.com/in/williamhgates',
+            input_url: 'linkedin.com/in/williamhgates',
+            normalized_url: 'https://www.linkedin.com/in/williamhgates',
+            error: 'ignored wrapper error',
+            error_type: 'ignored_wrapper_error',
+        }),
+        {
+            success: true,
+            name: 'Bill Gates',
         },
     );
 });

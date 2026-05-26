@@ -15,33 +15,33 @@ test('getInputUrls supports backward-compatible url input', () => {
     );
 });
 
-test('getInputUrls combines url and urls inputs and deduplicates normalized URLs', () => {
+test('getInputUrls prefers urls over the legacy url input', () => {
     assert.deepEqual(
         getInputUrls({
-            url: 'https://linkedin.com/in/williamhgates',
+            url: 'https://linkedin.com/in/prefilled-profile',
             urls: [
-                'https://www.linkedin.com/in/williamhgates/details/experience/',
                 'https://de.linkedin.com/in/satyanadella/?trk=foo',
+                'https://www.linkedin.com/in/williamhgates/details/experience/',
             ],
         }),
         [
             {
-                input_url: 'https://linkedin.com/in/williamhgates',
-                normalized_url: 'https://www.linkedin.com/in/williamhgates',
-            },
-            {
                 input_url: 'https://de.linkedin.com/in/satyanadella/?trk=foo',
                 normalized_url: 'https://www.linkedin.com/in/satyanadella',
+            },
+            {
+                input_url: 'https://www.linkedin.com/in/williamhgates/details/experience/',
+                normalized_url: 'https://www.linkedin.com/in/williamhgates',
             },
         ],
     );
 });
 
-test('getInputUrls keeps the legacy url value first when urls contains the same profile', () => {
+test('getInputUrls deduplicates profiles within urls after normalization', () => {
     assert.deepEqual(
         getInputUrls({
-            url: 'linkedin.com/in/williamhgates/?trk=legacy',
             urls: [
+                'linkedin.com/in/williamhgates/?trk=legacy',
                 'https://www.linkedin.com/in/williamhgates/details/contact-info/',
                 'https://m.linkedin.com/in/williamhgates',
             ],

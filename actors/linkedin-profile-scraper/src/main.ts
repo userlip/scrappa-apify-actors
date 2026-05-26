@@ -5,6 +5,7 @@ import { buildLinkedInProfileParams } from './request-params.js';
 import {
     buildLinkedInProfileDatasetItem,
     buildLinkedInProfileFailureItem,
+    buildLinkedInProfileOutput,
     isRecoverableLinkedInProfileError,
     type LinkedInProfileResponse,
     type LinkedInProfileResult,
@@ -89,7 +90,7 @@ async function main(): Promise<void> {
 
         if (urls.length === 1 && firstResult) {
             const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', firstResult);
+            await store.setValue('OUTPUT', buildLinkedInProfileOutput(firstResult));
         } else {
             const store = await Actor.openKeyValueStore();
             await store.setValue('OUTPUT', {

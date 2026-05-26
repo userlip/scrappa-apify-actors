@@ -128,6 +128,19 @@ export function buildLinkedInProfileFailureItem(
     };
 }
 
+export function buildLinkedInProfileOutput(result: LinkedInProfileResult): LinkedInProfileResponse {
+    const {
+        input_url: _inputUrl,
+        normalized_url: _normalizedUrl,
+        url: _url,
+        error: _error,
+        error_type: _errorType,
+        ...output
+    } = result;
+
+    return output as LinkedInProfileResponse;
+}
+
 export function isRecoverableLinkedInProfileError(error: unknown): boolean {
     // Keep only true per-profile misses recoverable. Auth, rate limit, and server errors
     // should fail the run so Scrappa or Apify reliability issues are visible.
