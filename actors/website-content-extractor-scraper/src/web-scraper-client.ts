@@ -1,3 +1,4 @@
+import { describeError } from './error-utils.js';
 import type { WebScraperParams } from './request-params.js';
 
 export interface ScrappaWebScraperClientConfig {
@@ -177,14 +178,6 @@ function describeJsonError(body: ScrappaWebScraperErrorDetails, fallback: string
 
 function cleanText(value: string): string {
     return value.replace(/\s+/g, ' ').trim().slice(0, 500);
-}
-
-function describeError(error: unknown): string {
-    if (error instanceof Error) {
-        return error.message;
-    }
-
-    return String(error);
 }
 
 async function delay(ms: number): Promise<void> {

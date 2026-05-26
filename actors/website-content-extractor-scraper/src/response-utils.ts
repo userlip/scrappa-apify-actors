@@ -2,6 +2,7 @@ import {
     ScrappaWebScraperHttpError,
     ScrappaWebScraperTimeoutError,
 } from './web-scraper-client.js';
+import { describeError } from './error-utils.js';
 import type { UrlRequest } from './input.js';
 import type { WebScraperParams } from './request-params.js';
 
@@ -132,25 +133,4 @@ function classifyError(error: unknown): string {
     }
 
     return 'error';
-}
-
-function describeError(error: unknown): string {
-    if (error instanceof Error) {
-        return error.message;
-    }
-
-    if (typeof error === 'string') {
-        return error;
-    }
-
-    try {
-        const json = JSON.stringify(error);
-        if (json !== undefined) {
-            return json;
-        }
-    } catch {
-        return String(error);
-    }
-
-    return String(error);
 }
