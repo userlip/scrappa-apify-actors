@@ -71,8 +71,10 @@ APIFY_TOKEN=... pnpm audit:secrets --json --include-present
 Before deployment work, compare the live TheScrappa Apify inventory against local actor sources:
 
 ```bash
-APIFY_TOKEN=... pnpm verify:live-actors
+APIFY_TOKEN=... pnpm audit:live-actors
 ```
+
+`pnpm verify:live-actors` is kept as an equivalent alias. The audit exits with code `1` when a live actor is missing a local source directory.
 
 To import live `SOURCE_FILES` for actors that are missing locally without overwriting existing actor directories, run:
 

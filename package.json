@@ -8,6 +8,7 @@
   },
   "scripts": {
     "audit:pricing": "node scripts/audit-apify-pricing.mjs",
+    "audit:live-actors": "node scripts/verify-live-actor-sources.mjs",
     "audit:secrets": "node scripts/audit-apify-secrets.mjs",
     "build": "pnpm -r build",
     "import:live-actors": "node scripts/import-live-actor-sources.mjs",
