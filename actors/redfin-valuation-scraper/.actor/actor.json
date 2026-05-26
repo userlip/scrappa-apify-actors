@@ -1,0 +1,57 @@
+{
+  "actorSpecification": 1,
+  "name": "redfin-valuation-scraper",
+  "title": "Redfin Valuation Scraper",
+  "description": "Get Redfin home value estimates, value ranges, last sale context, property specs, and comparable sales by Redfin property ID.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 240
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "valuations": {
+          "title": "Valuations",
+          "transformation": {
+            "fields": ["property_id", "listing_id", "predicted_value", "predicted_value_low", "predicted_value_high", "last_sold_price", "last_sold_date", "beds", "baths", "sqft", "lot_size", "year_built", "comparables_count", "comparables", "request_index", "request_property_id", "request_listing_id", "request_url"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "property_id": { "label": "Property ID", "format": "number" },
+              "listing_id": { "label": "Listing ID", "format": "number" },
+              "predicted_value": { "label": "Predicted Value", "format": "number" },
+              "predicted_value_low": { "label": "Predicted Low", "format": "number" },
+              "predicted_value_high": { "label": "Predicted High", "format": "number" },
+              "last_sold_price": { "label": "Last Sold Price", "format": "number" },
+              "last_sold_date": { "label": "Last Sold Date", "format": "date" },
+              "beds": { "label": "Beds", "format": "number" },
+              "baths": { "label": "Baths", "format": "number" },
+              "sqft": { "label": "Square Feet", "format": "number" },
+              "lot_size": { "label": "Lot Size", "format": "number" },
+              "year_built": { "label": "Year Built", "format": "number" },
+              "comparables_count": { "label": "Comparables", "format": "number" },
+              "request_index": { "label": "Request Index", "format": "number" },
+              "request_property_id": { "label": "Request Property ID", "format": "number" },
+              "request_listing_id": { "label": "Request Listing ID", "format": "number" },
+              "request_url": { "label": "Request URL", "format": "link" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

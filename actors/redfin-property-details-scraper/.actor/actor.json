@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "redfin-property-details-scraper",
+  "title": "Redfin Property Details Scraper",
+  "description": "Scrape detailed Redfin property records by property ID or Redfin URL, including address, price, beds, baths, square footage, coordinates, photos, and description.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "memoryMbytes": 128,
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "properties": {
+          "title": "Property Details",
+          "transformation": {
+            "fields": ["property_id", "address", "city", "state", "zip", "country", "price", "price_label", "beds", "baths", "sqft", "lot_size", "year_built", "property_type", "status", "status_label", "latitude", "longitude", "url", "description", "photos", "request_property_index", "request_property_id", "request_input", "request_source", "success", "error", "status_code"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "property_id": { "label": "Property ID", "format": "number" },
+              "address": { "label": "Address", "format": "text" },
+              "city": { "label": "City", "format": "text" },
+              "state": { "label": "State", "format": "text" },
+              "zip": { "label": "ZIP", "format": "text" },
+              "country": { "label": "Country", "format": "text" },
+              "price": { "label": "Price", "format": "number" },
+              "price_label": { "label": "Price Label", "format": "text" },
+              "beds": { "label": "Beds", "format": "number" },
+              "baths": { "label": "Baths", "format": "number" },
+              "sqft": { "label": "Square Feet", "format": "number" },
+              "lot_size": { "label": "Lot Size", "format": "number" },
+              "year_built": { "label": "Year Built", "format": "number" },
+              "property_type": { "label": "Property Type ID", "format": "number" },
+              "status": { "label": "Status ID", "format": "number" },
+              "status_label": { "label": "Status", "format": "text" },
+              "latitude": { "label": "Latitude", "format": "number" },
+              "longitude": { "label": "Longitude", "format": "number" },
+              "url": { "label": "Redfin URL", "format": "link" },
+              "description": { "label": "Description", "format": "text" },
+              "photos": { "label": "Photos", "format": "object" },
+              "request_property_index": { "label": "Request Index", "format": "number" },
+              "request_property_id": { "label": "Requested Property ID", "format": "number" },
+              "request_input": { "label": "Request Input", "format": "text" },
+              "request_source": { "label": "Request Source", "format": "text" },
+              "success": { "label": "Success", "format": "boolean" },
+              "error": { "label": "Error", "format": "text" },
+              "status_code": { "label": "Status Code", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
