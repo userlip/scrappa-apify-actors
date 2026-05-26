@@ -1,0 +1,41 @@
+{
+  "title": "Website Content Extractor Scraper",
+  "description": "Extract structured content or clean markdown from one or more URLs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "urls": {
+      "title": "URLs",
+      "type": "array",
+      "description": "Preferred batch input. Enter one or more page URLs to extract in a single actor run.",
+      "editor": "stringList",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": ["https://example.com"]
+    },
+    "url": {
+      "title": "Single URL",
+      "type": "string",
+      "description": "Backward-compatible single URL input. Prefer URLs for batching.",
+      "editor": "textfield",
+      "maxLength": 2048,
+      "prefill": "https://example.com"
+    },
+    "include_html": {
+      "title": "Include Raw HTML",
+      "type": "boolean",
+      "description": "Include raw page HTML in JSON responses. Ignored when Response Type is Markdown.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "response_type": {
+      "title": "Response Type",
+      "type": "string",
+      "description": "Choose JSON for structured extraction fields, or Markdown for clean page content.",
+      "editor": "select",
+      "enum": ["json", "markdown"],
+      "enumTitles": ["JSON", "Markdown"],
+      "default": "json"
+    }
+  }
+}

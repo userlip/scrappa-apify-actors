@@ -1,0 +1,66 @@
+{
+  "actorSpecification": 1,
+  "name": "website-content-extractor-scraper",
+  "title": "Website Content Extractor Scraper",
+  "description": "Extract title, body text, links, emails, images, metadata, raw HTML, or clean markdown from one or more URLs using Scrappa's Web Scraper API.",
+  "categories": [
+    "WEB_SCRAPING",
+    "DATA_EXTRACTION",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "pages": {
+          "title": "Website Content",
+          "transformation": {
+            "fields": ["success", "input_url", "url", "final_url", "response_type", "include_html", "site_status_code", "title", "description", "body_text", "links_count", "emails_count", "phone_numbers_count", "images_count", "languages_detected", "markdown", "markdown_length", "error", "error_type", "error_code", "status_code"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": { "label": "Success", "format": "boolean" },
+              "input_url": { "label": "Input URL", "format": "link" },
+              "url": { "label": "Requested URL", "format": "link" },
+              "final_url": { "label": "Final URL", "format": "link" },
+              "response_type": { "label": "Response Type", "format": "text" },
+              "include_html": { "label": "Include HTML", "format": "boolean" },
+              "site_status_code": { "label": "Site Status", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "description": { "label": "Description", "format": "text" },
+              "body_text": { "label": "Body Text", "format": "text" },
+              "links_count": { "label": "Links", "format": "number" },
+              "emails_count": { "label": "Emails", "format": "number" },
+              "phone_numbers_count": { "label": "Phones", "format": "number" },
+              "images_count": { "label": "Images", "format": "number" },
+              "languages_detected": { "label": "Languages", "format": "array" },
+              "markdown": { "label": "Markdown", "format": "text" },
+              "markdown_length": { "label": "Markdown Length", "format": "number" },
+              "error": { "label": "Error", "format": "text" },
+              "error_type": { "label": "Error Type", "format": "text" },
+              "error_code": { "label": "Error Code", "format": "text" },
+              "status_code": { "label": "Scrappa Status", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
