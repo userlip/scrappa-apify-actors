@@ -1,8 +1,8 @@
 export type WebScraperResponseType = 'json' | 'markdown';
 
 export interface WebsiteContentExtractorInput {
-    url?: string;
-    urls?: string[];
+    url?: unknown;
+    urls?: unknown;
     include_html?: boolean;
     response_type?: WebScraperResponseType;
 }
@@ -23,15 +23,26 @@ export function getResponseType(input: WebsiteContentExtractorInput | null): Web
 
 export function getInputUrls(input: WebsiteContentExtractorInput | null): UrlRequest[] {
     const rawUrls = [
-        ...(typeof input?.url === 'string' ? [input.url] : []),
+        ...(input?.url !== undefined && input.url !== null ? [{ value: input.url, field: 'url' }] : []),
         ...(Array.isArray(input?.urls) ? input.urls : []),
     ];
 
     const seen = new Set<string>();
     const requests: UrlRequest[] = [];
 
-    for (const rawUrl of rawUrls) {
-        const inputUrl = rawUrl.trim();
+    for (const [index, rawUrl] of rawUrls.entries()) {
+        const value = typeof rawUrl === 'object' && rawUrl !== null && 'value' in rawUrl
+            ? (rawUrl as { value: unknown }).value
+            : rawUrl;
+        const field = typeof rawUrl === 'object' && rawUrl !== null && 'field' in rawUrl
+            ? String((rawUrl as { field: unknown }).field)
+            : `urls[${index - (input?.url !== undefined && input.url !== null ? 1 : 0)}]`;
+
+        if (typeof value !== 'string') {
+            throw new Error(`${field} must be a string.`);
+        }
+
+        const inputUrl = value.trim();
         if (!inputUrl) {
             continue;
         }

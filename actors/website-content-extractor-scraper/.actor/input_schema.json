@@ -11,6 +11,10 @@
       "editor": "stringList",
       "minItems": 1,
       "maxItems": 100,
+      "items": {
+        "type": "string",
+        "maxLength": 2048
+      },
       "prefill": ["https://example.com"]
     },
     "url": {

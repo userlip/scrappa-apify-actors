@@ -21,6 +21,10 @@ test('uses top-level response as fallback valuation data', () => {
 
 test('detects meaningful Redfin valuation fields', () => {
     assert.equal(hasMeaningfulValuationData({ predictedValue: '850000' }), true);
+    assert.equal(hasMeaningfulValuationData({ predicted_value: '850000' }), true);
+    assert.equal(hasMeaningfulValuationData({ predicted_value_low: '800000' }), true);
+    assert.equal(hasMeaningfulValuationData({ predicted_value_high: '900000' }), true);
+    assert.equal(hasMeaningfulValuationData({ last_sold_price: '750000' }), true);
     assert.equal(hasMeaningfulValuationData({ comparables: [] }), false);
 });
 

@@ -63,6 +63,17 @@ test('deduplicates host case without collapsing path or query case', () => {
     );
 });
 
+test('validates URL input values before trimming', () => {
+    assert.throws(
+        () => getInputUrls({ url: 123 }),
+        /url must be a string/,
+    );
+    assert.throws(
+        () => getInputUrls({ urls: ['https://example.com', 123] }),
+        /urls\[1\] must be a string/,
+    );
+});
+
 test('defaults response_type to json and validates supported values', () => {
     assert.equal(getResponseType(null), 'json');
     assert.equal(getResponseType({ response_type: 'markdown' }), 'markdown');

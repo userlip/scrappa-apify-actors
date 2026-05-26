@@ -52,9 +52,13 @@ export function getRedfinValuationData(response: RedfinValuationResponse): Recor
 export function hasMeaningfulValuationData(data: Record<string, unknown>): boolean {
     return firstNumber(
         data.predictedValue,
+        data.predicted_value,
         data.predictedValueLow,
+        data.predicted_value_low,
         data.predictedValueHigh,
+        data.predicted_value_high,
         data.lastSoldPrice,
+        data.last_sold_price,
     ) !== null;
 }
 
