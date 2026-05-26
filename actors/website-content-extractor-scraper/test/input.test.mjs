@@ -61,6 +61,28 @@ test('deduplicates scheme and host case without merging case-sensitive paths', (
     );
 });
 
+test('deduplicates host case without merging case-sensitive userinfo', () => {
+    assert.deepEqual(
+        getInputUrls({
+            urls: [
+                'https://User:PaSs@EXAMPLE.COM/Docs',
+                'https://user:pass@example.com/Docs',
+                'https://User:PaSs@example.com/Docs',
+            ],
+        }),
+        [
+            {
+                input_url: 'https://User:PaSs@EXAMPLE.COM/Docs',
+                request_url: 'https://User:PaSs@EXAMPLE.COM/Docs',
+            },
+            {
+                input_url: 'https://user:pass@example.com/Docs',
+                request_url: 'https://user:pass@example.com/Docs',
+            },
+        ],
+    );
+});
+
 test('ignores malformed non-string url entries', () => {
     assert.deepEqual(
         getInputUrls({

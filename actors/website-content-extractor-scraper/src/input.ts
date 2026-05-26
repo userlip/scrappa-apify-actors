@@ -62,9 +62,29 @@ function normalizeForDedupe(url: string): string {
             return withoutHash;
         }
 
-        const [, protocol, host, pathAndSearch] = match;
-        return `${protocol.toLowerCase()}://${host.toLowerCase()}${pathAndSearch}`;
+        const [, protocol, authority, pathAndSearch] = match;
+        return `${protocol.toLowerCase()}://${normalizeAuthorityForDedupe(authority)}${pathAndSearch}`;
     } catch {
         return url;
     }
+}
+
+function normalizeAuthorityForDedupe(authority: string): string {
+    const userInfoSeparator = authority.lastIndexOf('@');
+    const userInfo = userInfoSeparator >= 0 ? authority.slice(0, userInfoSeparator + 1) : '';
+    const hostAndPort = userInfoSeparator >= 0 ? authority.slice(userInfoSeparator + 1) : authority;
+
+    if (hostAndPort.startsWith('[')) {
+        const bracketEnd = hostAndPort.indexOf(']');
+        if (bracketEnd >= 0) {
+            return `${userInfo}${hostAndPort.slice(0, bracketEnd + 1).toLowerCase()}${hostAndPort.slice(bracketEnd + 1)}`;
+        }
+    }
+
+    const portSeparator = hostAndPort.lastIndexOf(':');
+    const hasSingleColon = portSeparator >= 0 && hostAndPort.indexOf(':') === portSeparator;
+    const host = hasSingleColon ? hostAndPort.slice(0, portSeparator) : hostAndPort;
+    const port = hasSingleColon ? hostAndPort.slice(portSeparator) : '';
+
+    return `${userInfo}${host.toLowerCase()}${port}`;
 }
