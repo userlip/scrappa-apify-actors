@@ -22,7 +22,7 @@ async function pushDatasetItem(item: WebScraperDatasetItem): Promise<boolean> {
     }
 
     const chargeResult = await Actor.pushData(item, URL_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < 1) {
+    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount === 0) {
         console.log('Charge limit reached before saving the website content result.', JSON.stringify({
             event: URL_RESULT_CHARGE_EVENT,
             charged_count: chargeResult.chargedCount,
@@ -80,19 +80,16 @@ async function main(): Promise<void> {
                 item = buildFailureDatasetItem(error, request, params);
             }
 
+            const savedItem = await pushDatasetItem(item);
+            if (!savedItem) {
+                break;
+            }
+
+            saved += 1;
             if (item.success) {
                 succeeded += 1;
             } else {
                 failed += 1;
-            }
-
-            const savedItem = await pushDatasetItem(item);
-            if (savedItem) {
-                saved += 1;
-            } else {
-                failed += item.success ? 1 : 0;
-                succeeded -= item.success ? 1 : 0;
-                break;
             }
         }
 

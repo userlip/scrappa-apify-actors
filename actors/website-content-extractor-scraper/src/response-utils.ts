@@ -54,7 +54,7 @@ export function buildJsonDatasetItem(
 
     return {
         ...response,
-        success: response.success !== false,
+        success: response.success === true,
         input_url: request.input_url,
         request_url: params.url,
         response_type: 'json',
@@ -88,7 +88,7 @@ export function buildMarkdownDatasetItem(
         final_url: null,
         site_status_code: null,
         markdown,
-        markdown_length: markdown.length,
+        markdown_length: Array.from(markdown).length,
     };
 }
 

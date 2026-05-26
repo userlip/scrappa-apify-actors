@@ -4,6 +4,8 @@ export interface ScrappaWebScraperClientConfig {
     apiKey: string;
     baseUrl?: string;
     timeoutMs?: number;
+    maxAttempts?: number;
+    retryDelayMs?: number;
 }
 
 export interface ScrappaWebScraperErrorDetails {
@@ -36,11 +38,15 @@ export class ScrappaWebScraperClient {
     private readonly apiKey: string;
     private readonly baseUrl: string;
     private readonly timeoutMs: number;
+    private readonly maxAttempts: number;
+    private readonly retryDelayMs: number;
 
     constructor(config: ScrappaWebScraperClientConfig) {
         this.apiKey = config.apiKey;
         this.baseUrl = config.baseUrl ?? 'https://scrappa.co/api';
         this.timeoutMs = config.timeoutMs ?? 90000;
+        this.maxAttempts = Math.max(1, config.maxAttempts ?? 2);
+        this.retryDelayMs = Math.max(0, config.retryDelayMs ?? 1000);
     }
 
     async scrapeJson<T>(params: WebScraperParams): Promise<T> {
@@ -54,6 +60,27 @@ export class ScrappaWebScraperClient {
     }
 
     private async fetchResponse(params: WebScraperParams, accept: string): Promise<Response> {
+        let lastError: unknown;
+
+        for (let attempt = 1; attempt <= this.maxAttempts; attempt += 1) {
+            try {
+                return await this.sendOnce(params, accept);
+            } catch (error) {
+                lastError = error;
+
+                if (attempt >= this.maxAttempts || !isRetryableError(error)) {
+                    break;
+                }
+
+                console.warn(`Scrappa Web Scraper API request failed (${describeError(error)}). Retrying attempt ${attempt + 1}/${this.maxAttempts}.`);
+                await delay(this.retryDelayMs);
+            }
+        }
+
+        throw lastError;
+    }
+
+    private async sendOnce(params: WebScraperParams, accept: string): Promise<Response> {
         const url = new URL(`${this.baseUrl}/web-scraper`);
         Object.entries(params).forEach(([key, value]) => {
             if (value === undefined || value === null || value === '') {
@@ -122,6 +149,18 @@ export class ScrappaWebScraperClient {
     }
 }
 
+function isRetryableError(error: unknown): boolean {
+    if (error instanceof ScrappaWebScraperTimeoutError) {
+        return true;
+    }
+
+    if (error instanceof ScrappaWebScraperHttpError) {
+        return [429, 500, 502, 503, 504].includes(error.status);
+    }
+
+    return error instanceof TypeError;
+}
+
 function describeJsonError(body: ScrappaWebScraperErrorDetails, fallback: string): string {
     let message = body.message ?? body.error ?? fallback;
     if (body.errors) {
@@ -138,4 +177,20 @@ function describeJsonError(body: ScrappaWebScraperErrorDetails, fallback: string
 
 function cleanText(value: string): string {
     return value.replace(/\s+/g, ' ').trim().slice(0, 500);
+}
+
+function describeError(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    return String(error);
+}
+
+async function delay(ms: number): Promise<void> {
+    if (ms === 0) {
+        return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, ms));
 }

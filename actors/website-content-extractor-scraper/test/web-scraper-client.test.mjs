@@ -72,6 +72,78 @@ test('reads markdown responses as text', async () => {
     }
 });
 
+test('retries transient Scrappa HTTP errors', async () => {
+    const originalFetch = globalThis.fetch;
+    let attempts = 0;
+
+    globalThis.fetch = async () => {
+        attempts += 1;
+        if (attempts === 1) {
+            return new Response('Temporary failure', { status: 503, statusText: 'Service Unavailable' });
+        }
+
+        return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+        });
+    };
+
+    try {
+        const client = new ScrappaWebScraperClient({
+            apiKey: 'test-key',
+            baseUrl: 'https://example.test/api',
+            retryDelayMs: 0,
+        });
+
+        assert.deepEqual(
+            await client.scrapeJson({
+                url: 'https://example.com',
+                response_type: 'json',
+            }),
+            { success: true },
+        );
+        assert.equal(attempts, 2);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test('does not retry validation errors', async () => {
+    const originalFetch = globalThis.fetch;
+    let attempts = 0;
+
+    globalThis.fetch = async () => {
+        attempts += 1;
+        return new Response(
+            JSON.stringify({ message: 'Invalid request' }),
+            {
+                status: 400,
+                statusText: 'Bad Request',
+                headers: { 'content-type': 'application/json' },
+            },
+        );
+    };
+
+    try {
+        const client = new ScrappaWebScraperClient({
+            apiKey: 'test-key',
+            baseUrl: 'https://example.test/api',
+            retryDelayMs: 0,
+        });
+
+        await assert.rejects(
+            () => client.scrapeJson({
+                url: '',
+                response_type: 'json',
+            }),
+            ScrappaWebScraperHttpError,
+        );
+        assert.equal(attempts, 1);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test('parses Scrappa JSON errors and validation details', async () => {
     const originalFetch = globalThis.fetch;
 

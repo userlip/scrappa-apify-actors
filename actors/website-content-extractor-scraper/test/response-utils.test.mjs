@@ -52,6 +52,24 @@ test('normalizes json response fields while preserving Scrappa response', () => 
     assert.deepEqual(item.languages_detected, ['en']);
 });
 
+test('requires explicit success true for json dataset success', () => {
+    const item = buildJsonDatasetItem(
+        {
+            data: {
+                title: 'Partial page',
+            },
+        },
+        request,
+        {
+            url: 'https://example.com',
+            response_type: 'json',
+        },
+    );
+
+    assert.equal(item.success, false);
+    assert.equal(item.title, 'Partial page');
+});
+
 test('wraps markdown response in a dataset item', () => {
     const item = buildMarkdownDatasetItem(
         '# Example Domain\n\nContent',
@@ -67,6 +85,19 @@ test('wraps markdown response in a dataset item', () => {
     assert.equal(item.include_html, false);
     assert.equal(item.markdown, '# Example Domain\n\nContent');
     assert.equal(item.markdown_length, 25);
+});
+
+test('counts markdown length by code point', () => {
+    const item = buildMarkdownDatasetItem(
+        'A😀B',
+        request,
+        {
+            url: 'https://example.com',
+            response_type: 'markdown',
+        },
+    );
+
+    assert.equal(item.markdown_length, 3);
 });
 
 test('builds per-url failure items from Scrappa errors', () => {
