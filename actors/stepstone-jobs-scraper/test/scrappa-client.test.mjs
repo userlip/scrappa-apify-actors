@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { ScrappaClient } from '../dist/shared/index.js';
 
-test('serializes boolean GET parameters as Laravel-compatible boolean values', async () => {
+test('serializes boolean GET parameters as Laravel-compatible query values', async () => {
     const originalFetch = globalThis.fetch;
     const requestedUrls = [];
 
@@ -34,6 +34,6 @@ test('serializes boolean GET parameters as Laravel-compatible boolean values', a
         globalThis.fetch = originalFetch;
     }
 
-    assert.equal(new URL(requestedUrls[0]).searchParams.get('work_from_home'), 'false');
-    assert.equal(new URL(requestedUrls[1]).searchParams.get('work_from_home'), 'true');
+    assert.equal(new URL(requestedUrls[0]).searchParams.get('work_from_home'), '0');
+    assert.equal(new URL(requestedUrls[1]).searchParams.get('work_from_home'), '1');
 });
