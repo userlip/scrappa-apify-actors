@@ -35,6 +35,45 @@ export function buildChannelAboutDetailsUrl(id) {
     return `${API_BASE_URL}?${params.toString()}`;
 }
 
+function splitSubscriberAndVideoCount(value) {
+    if (typeof value !== 'string') {
+        return { subscriberCount: null, videoCount: null };
+    }
+
+    const match = value.match(/^(.*? subscribers)(?:\s+(.+? videos))?$/);
+    if (!match) {
+        return { subscriberCount: value, videoCount: null };
+    }
+
+    return {
+        subscriberCount: match[1],
+        videoCount: match[2] ?? null,
+    };
+}
+
+export function toChannelAboutDetails(data = {}) {
+    const channelId = data.channelId ?? data.id ?? null;
+    const counts = splitSubscriberAndVideoCount(data.subscriberCount);
+
+    return {
+        channelId,
+        stats: {
+            joinDate: data.joinedDate ?? null,
+            viewCount: data.viewCount ?? null,
+            country: data.country ?? null,
+        },
+        links: Array.isArray(data.links) ? data.links : [],
+        details: {
+            description: data.description ?? null,
+            email: data.email ?? null,
+            name: data.name ?? null,
+            subscriberCount: counts.subscriberCount,
+            videoCount: data.videoCount ?? counts.videoCount,
+            channelUrl: data.channelUrl ?? data.url ?? (channelId ? `https://www.youtube.com/channel/${channelId}` : null),
+        },
+    };
+}
+
 export function buildScrappaRequest(apiUrl, apiKey) {
     return {
         apiUrl,

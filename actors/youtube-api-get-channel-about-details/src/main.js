@@ -6,6 +6,7 @@ import {
     getChannelIds,
     getScrappaApiKey,
     SCRAPPA_REQUEST_TIMEOUT_MS,
+    toChannelAboutDetails,
 } from './youtube-request.js';
 
 function errorMessage(error) {
@@ -22,7 +23,7 @@ async function getChannelAboutDetails(id, apiKey) {
     try {
         console.log(`Fetching from: ${apiUrl}`);
         const response = await axios.get(apiUrl, requestOptions);
-        return response.data;
+        return toChannelAboutDetails(response.data);
     } catch (error) {
         console.error(`Failed to fetch YouTube channel about details for id ${id}: ${errorMessage(error)}`);
         throw error;

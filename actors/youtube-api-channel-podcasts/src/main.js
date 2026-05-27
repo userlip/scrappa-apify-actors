@@ -4,7 +4,7 @@ import { fetchScrappaJson, getScrappaApiKey, SCRAPPA_REQUEST_TIMEOUT_MS } from '
 
 function errorMessage(error) {
     const rawMessage = error instanceof Error ? error.message : String(error);
-    if (rawMessage.includes('aborted')) {
+    if (rawMessage.includes('timeout') || rawMessage.includes('aborted')) {
         return `Scrappa API request timed out after ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s`;
     }
 
@@ -25,8 +25,9 @@ async function getChannelPodcasts(input, apiKey) {
     await Actor.pushData(videos);
     console.log(`Successfully fetched ${videos.length} podcast video(s) for channel id: ${input.id}`);
 
-    if (responseData?.continuation) {
-        console.log(`Continuation token available for next page: ${responseData.continuation}`);
+    const continuation = responseData?.continuation ?? responseData?.pagination?.continuationToken;
+    if (continuation) {
+        console.log(`Continuation token available for next page: ${continuation}`);
     }
 }
 
