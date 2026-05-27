@@ -22,9 +22,7 @@ async function getChannelDetails(id, apiKey) {
     try {
         console.log(`Fetching from: ${apiUrl}`);
         const response = await axios.get(apiUrl, requestOptions);
-        const data = response.data;
-
-        await Actor.pushData(data);
+        return response.data;
     } catch (error) {
         console.error(`Failed to fetch YouTube channel details for id ${id}: ${errorMessage(error)}`);
         throw error;
@@ -43,9 +41,29 @@ Actor.main(async () => {
         throw new Error('At least one YouTube channel ID must be provided in "ids" or "id".');
     }
 
+    let successCount = 0;
+    let failureCount = 0;
+
     for (const id of ids) {
-        await getChannelDetails(id, apiKey);
+        try {
+            const data = await getChannelDetails(id, apiKey);
+            await Actor.pushData(data);
+            successCount += 1;
+        } catch (error) {
+            failureCount += 1;
+            await Actor.pushData({
+                id,
+                error: errorMessage(error),
+                success: false,
+            });
+        }
     }
+
+    if (successCount === 0) {
+        throw new Error(`Failed to fetch details for all ${failureCount} channel(s).`);
+    }
+
+    console.log(`Successfully fetched details for ${successCount} channel(s); ${failureCount} failed.`);
 
     await Actor.exit();
 });
