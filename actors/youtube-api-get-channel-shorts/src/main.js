@@ -4,32 +4,33 @@ import {
     assertContinuationMatchesBatch,
     buildChannelShortsUrl,
     buildScrappaRequest,
+    collectFilteredChannelVideos,
     getChannelIds,
     getScrappaApiKey,
 } from './youtube-request.js';
 
-function shortVideos(responseData) {
-    const videos = responseData?.videos ?? [];
-    return videos.filter((video) => {
-        const type = String(video?.type ?? video?.videoType ?? '').toLowerCase();
-        return video?.isShort === true || type === 'short';
-    });
+function isShortVideo(video) {
+    const type = String(video?.type ?? video?.videoType ?? '').toLowerCase();
+    return video?.isShort === true || type === 'short';
 }
 
 async function getChannelShorts(input, apiKey) {
-    const { apiUrl, requestOptions } = buildScrappaRequest(buildChannelShortsUrl(input), apiKey);
     try {
-        console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl, requestOptions);
-        const data = shortVideos(response.data);
+        const result = await collectFilteredChannelVideos(input, async (pageInput) => {
+            const { apiUrl, requestOptions } = buildScrappaRequest(buildChannelShortsUrl(pageInput), apiKey);
+            console.log(`Fetching from: ${apiUrl}`);
+            const response = await axios.get(apiUrl, requestOptions);
+            return response.data;
+        }, isShortVideo);
+        const data = result.videos;
         
         // Save the fetched data to the default dataset.
         await Actor.pushData(data);
         console.log(`Successfully fetched ${data.length} videos for query: ${input.id}`);
         
         // Log if there's a continuation token for next page
-        if (response.data.continuation) {
-            console.log(`Continuation token available for next page: ${response.data.continuation}`);
+        if (result.continuation) {
+            console.log(`Continuation token available for next page: ${result.continuation}`);
         }
     } catch (error) {
         console.error(`Failed to fetch Shorts videos for channel id: ${input.id}`, error.message);

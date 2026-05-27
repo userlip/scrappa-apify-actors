@@ -1,5 +1,7 @@
 export const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const API_BASE_URL = 'https://scrappa.co/api/youtube/channel-videos';
+const DEFAULT_TARGET_RESULT_COUNT = 10;
+const MAX_FILTER_SCAN_PAGES = 10;
 
 export function getScrappaApiKey(env = process.env) {
     const apiKey = env.SCRAPPA_API_KEY;
@@ -46,6 +48,41 @@ export function buildChannelLivestreamsUrl({ id, sort, continuation = '' } = {})
     }
 
     return `${API_BASE_URL}?${params.toString()}`;
+}
+
+export function responseVideos(responseData = {}) {
+    return Array.isArray(responseData.videos) ? responseData.videos : [];
+}
+
+export function responseContinuation(responseData = {}) {
+    return responseData.continuation
+        ?? responseData.continuationToken
+        ?? responseData.pagination?.continuation
+        ?? responseData.pagination?.continuationToken
+        ?? '';
+}
+
+export async function collectFilteredChannelVideos(input, fetchPage, filterVideo, {
+    targetResultCount = DEFAULT_TARGET_RESULT_COUNT,
+    maxPages = MAX_FILTER_SCAN_PAGES,
+} = {}) {
+    const videos = [];
+    let continuation = input.continuation ?? '';
+    let nextContinuation = '';
+
+    for (let page = 0; page < maxPages && videos.length < targetResultCount; page += 1) {
+        const responseData = await fetchPage({ ...input, continuation });
+        videos.push(...responseVideos(responseData).filter(filterVideo));
+
+        nextContinuation = responseContinuation(responseData);
+        if (!nextContinuation || nextContinuation === continuation) {
+            break;
+        }
+
+        continuation = nextContinuation;
+    }
+
+    return { videos, continuation: nextContinuation };
 }
 
 export function buildScrappaRequest(apiUrl, apiKey) {

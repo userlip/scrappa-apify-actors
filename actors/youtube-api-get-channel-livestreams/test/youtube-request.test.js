@@ -5,6 +5,7 @@ import {
     assertContinuationMatchesBatch,
     buildChannelLivestreamsUrl,
     buildScrappaRequest,
+    collectFilteredChannelVideos,
     getChannelIds,
     getScrappaApiKey,
 } from '../src/youtube-request.js';
@@ -25,6 +26,34 @@ test('rejects continuation tokens with batch channel IDs', () => {
         () => assertContinuationMatchesBatch({ ids: 'UC1,UC2', continuation: 'next page' }),
         /continuation/,
     );
+});
+
+test('collects livestreams across mixed channel upload pages', async () => {
+    const requestedContinuations = [];
+    const pages = [
+        {
+            videos: [{ id: 'regular-1', type: 'video' }],
+            pagination: { continuationToken: 'page-2' },
+        },
+        {
+            videos: [{ id: 'live-1', videoType: 'live' }],
+            pagination: { continuationToken: 'page-3' },
+        },
+    ];
+
+    const result = await collectFilteredChannelVideos(
+        { id: 'UC1' },
+        async (input) => {
+            requestedContinuations.push(input.continuation ?? '');
+            return pages.shift();
+        },
+        (video) => String(video?.type ?? video?.videoType ?? '').toLowerCase() === 'live',
+        { targetResultCount: 1 },
+    );
+
+    assert.deepEqual(requestedContinuations, ['', 'page-2']);
+    assert.deepEqual(result.videos, [{ id: 'live-1', videoType: 'live' }]);
+    assert.equal(result.continuation, 'page-3');
 });
 
 test('builds authenticated request options', () => {
