@@ -21,15 +21,16 @@ test('caps hashtag search limit to Scrappa maximum', () => {
     assert.equal(url.searchParams.get('limit'), '20');
 });
 
-test('preserves legacy hashtag filter parameters', () => {
+test('maps upload_date to publishedAfter for hashtag search', () => {
     const url = new URL(buildHashtagSearchUrl({
         hashtag: 'javascript',
         upload_date: 'week',
         contentType: 'live',
         features: 'hd,subtitles',
-    }));
+    }, { now: new Date('2026-05-27T12:00:00.000Z') }));
 
-    assert.equal(url.searchParams.get('upload_date'), 'week');
+    assert.equal(url.searchParams.get('publishedAfter'), '2026-05-20T12:00:00.000Z');
+    assert.equal(url.searchParams.has('upload_date'), false);
     assert.equal(url.searchParams.get('contentType'), 'live');
     assert.equal(url.searchParams.get('features'), 'hd,subtitles');
 });
