@@ -8,7 +8,7 @@ Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
 
 ## Input
 
-Provide a hashtag, with or without `#`. Optional pagination and filter fields are passed through to Scrappa when present.
+Provide a hashtag, with or without `#`. Optional pagination, sort, duration, and upload date fields are passed through to Scrappa when present.
 
 ```json
 {

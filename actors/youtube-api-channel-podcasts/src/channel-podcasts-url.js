@@ -39,7 +39,7 @@ export function buildChannelPodcastsUrl({ id, sort, continuation } = {}) {
         throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');
     }
 
-    const params = new URLSearchParams({ channel_id: id, contentType: 'podcasts' });
+    const params = new URLSearchParams({ channel_id: id });
     const normalizedSort = normalizeSort(sort);
 
     if (normalizedSort && typeof normalizedSort === 'string' && normalizedSort.trim() !== '') {

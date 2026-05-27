@@ -14,6 +14,8 @@ const UPLOAD_DATE_FILTERS = {
     year: (now) => subtractUtcMonths(now, 12),
 };
 
+const UNSUPPORTED_FILTERS = ['contentType', 'features'];
+
 export function getScrappaApiKey(env = process.env) {
     const apiKey = env.SCRAPPA_API_KEY;
     if (!apiKey) {
@@ -67,6 +69,13 @@ export function buildHashtagSearchUrl({
         throw new Error('Search query "hashtag" not provided. Please provide a value for "searchHashtag" in the input.');
     }
 
+    for (const filterName of UNSUPPORTED_FILTERS) {
+        const filterValue = { contentType, features }[filterName];
+        if (filterValue && typeof filterValue === 'string' && filterValue.trim() !== '') {
+            throw new Error(`The "${filterName}" filter is not supported by the Scrappa YouTube search endpoint.`);
+        }
+    }
+
     const normalizedHashtag = hashtag.startsWith('#') ? hashtag : `#${hashtag}`;
     const params = new URLSearchParams({ query: normalizedHashtag, type: 'video' });
     const now = options.now instanceof Date ? options.now : new Date();
@@ -92,14 +101,6 @@ export function buildHashtagSearchUrl({
 
     if (continuation && typeof continuation === 'string' && continuation.trim() !== '') {
         params.set('continuation', continuation);
-    }
-
-    if (contentType && typeof contentType === 'string' && contentType.trim() !== '') {
-        params.set('contentType', contentType);
-    }
-
-    if (features && typeof features === 'string' && features.trim() !== '') {
-        params.set('features', features);
     }
 
     return `${API_BASE_URL}?${params.toString()}`;

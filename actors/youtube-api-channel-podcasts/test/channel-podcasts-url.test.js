@@ -7,21 +7,21 @@ import { buildScrappaRequest, getScrappaApiKey } from '../src/youtube-request.js
 test('builds a channel podcasts URL with required id', () => {
     assert.equal(
         buildChannelPodcastsUrl({ id: 'UC example' }),
-        'https://scrappa.co/api/youtube/channel-videos?channel_id=UC+example&contentType=podcasts',
+        'https://scrappa.co/api/youtube/channel-videos?channel_id=UC+example',
     );
 });
 
-test('adds podcast content type, string sort, and continuation parameters', () => {
+test('adds string sort and continuation parameters', () => {
     assert.equal(
         buildChannelPodcastsUrl({ id: 'UC123', sort: 'popular', continuation: 'next page' }),
-        'https://scrappa.co/api/youtube/channel-videos?channel_id=UC123&contentType=podcasts&sort=popular&continuation=next+page',
+        'https://scrappa.co/api/youtube/channel-videos?channel_id=UC123&sort=popular&continuation=next+page',
     );
 });
 
 test('supports legacy single-item sort arrays', () => {
     assert.equal(
         buildChannelPodcastsUrl({ id: 'UC123', sort: ['newest'] }),
-        'https://scrappa.co/api/youtube/channel-videos?channel_id=UC123&contentType=podcasts&sort=newest',
+        'https://scrappa.co/api/youtube/channel-videos?channel_id=UC123&sort=newest',
     );
 });
 

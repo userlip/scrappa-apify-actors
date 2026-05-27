@@ -1,5 +1,6 @@
 import { Actor } from 'apify';
 import { assertContinuationMatchesBatch, buildChannelPodcastsUrl, getChannelIds } from './channel-podcasts-url.js';
+import { podcastVideos } from './podcast-filter.js';
 import { fetchScrappaJson, getScrappaApiKey, SCRAPPA_REQUEST_TIMEOUT_MS } from './youtube-request.js';
 
 function errorMessage(error) {
@@ -9,10 +10,6 @@ function errorMessage(error) {
     }
 
     return rawMessage;
-}
-
-function podcastVideos(responseData) {
-    return responseData?.videos ?? [];
 }
 
 async function getChannelPodcasts(input, apiKey) {

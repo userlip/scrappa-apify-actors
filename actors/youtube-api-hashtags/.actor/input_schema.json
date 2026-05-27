@@ -70,27 +70,6 @@
             "type": "string",
             "description": "Pagination token for next page",
             "editor": "textfield"
-        },
-        "contentType": {
-            "title": "content type",
-            "type": "string",
-            "description": "Filter by content type",
-            "editor": "select",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "live",
-                    "recorded",
-                    "premiere"
-                ]
-            },
-            "prefill": "live"
-        },
-        "features": {
-            "title": "features",
-            "type": "string",
-            "description": "Comma-separated: live,4k,hd,subtitles,cc,360,vr180,3d,hdr",
-            "editor": "textfield"
         }
     },
     "required": [
