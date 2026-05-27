@@ -115,15 +115,15 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-24T07:23:43.706Z. It lists all 74 live `thescrappa` actors. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-26T19:25:14.000Z. It lists all 75 live `thescrappa` actors. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 74 live `thescrappa` actors in Apify
-- 64 public `thescrappa` actors in Apify according to the pricing and secret audits
-- 74 local actor source directories in this repo; all 74 are represented by live Apify actors
+- 75 live `thescrappa` actors in Apify
+- 65 public `thescrappa` actors in Apify according to the pricing and secret audits
+- 75 local actor source directories in this repo; all 75 are represented by live Apify actors
 - 0 live actors missing a local source directory here; `google-search-scraper` is represented by the legacy `actors/google-search` directory
-- Pricing follow-up: the 2026-05-24T07:50:40.247Z pricing audit found 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 51 public actors with active paid evidence, and 13 public actors with future-only paid pricing.
-- Secret follow-up: the 2026-05-24T07:50:47.636Z secret audit found all 64 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- Pricing follow-up: `website-content-extractor-scraper` is public with paid `PAY_PER_EVENT` pricing scheduled for 2026-06-09T19:25:00.000Z after Apify blocked immediate pricing with a two-week lead-time rule.
+- Secret follow-up: the new `website-content-extractor-scraper` version has `SCRAPPA_API_KEY` configured as a secret.
 - Run-health notes from the current audit pass: no latest run failures were returned by the all-actor run sweep; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) and `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still have Apify notice `UNDER_MAINTENANCE` while their monetization remains configured.
 
 Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
@@ -182,6 +182,7 @@ Use [docs/monetization-activation-checklist.md](docs/monetization-activation-che
 | `actors/trustpilot-business-search-scraper` | `trustpilot-business-search-scraper` | `W8yULHo0Mzq7CYRrM` | Trustpilot Business Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-02 (`PAY_PER_EVENT`, `business-result` at $0.0002/result); verify activation |
 | `actors/trustpilot-company-reviews-scraper` | `trustpilot-company-reviews-scraper` | `nBSazp2iBmBm1FQvz` | Trustpilot Company Reviews Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-23 (`PAY_PER_EVENT`); verify activation |
 | `actors/vinted-search-scraper` | `vinted-search-scraper` | `u8F5YhfXkQIrgLe73` | Vinted Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `SdU2bgbGDHeEilac1` succeeded with 1 result for `zara` in `FR` | Scheduled 2026-06-01 (`PAY_PER_EVENT`, `item-result` at $0.0002/result); Apify blocks immediate pricing with two-week lead time |
+| `actors/website-content-extractor-scraper` | `website-content-extractor-scraper` | `bAUjzVta9rv6bpa10` | Website Content Extractor Scraper | Local source present; live Apify version uses `SOURCE_FILES`; build `f4O4HmNC1l6Ve3a06` / `1.0.2` succeeded; smoke run `74zT24s0Z5G0zUR7x` succeeded with 1 dataset item for `https://example.com` | Public with `PAY_PER_EVENT` pricing scheduled for 2026-06-09T19:25:00.000Z, `url-result` at $0.0002/result; Apify blocked immediate pricing with two-week lead time |
 | `actors/youtube-api-batch-videos` | `youtube-api-batch-videos` | `6ZUj6u4SWuJxOQnn9` | YouTube API Batch Videos | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-channel-podcasts` | `youtube-api-channel-podcasts` | `Y3mKYlGNhsrBE7aZO` | YouTube API Channel Podcasts | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-api-channel-videos` | `youtube-api-channel-videos` | `w464EbPGGZqcmrC8j` | YouTube API Channel Videos | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
