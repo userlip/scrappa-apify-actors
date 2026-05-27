@@ -86,7 +86,7 @@ test('forwards false work-from-home request parameter as a boolean after normali
     });
 });
 
-test('never serializes work-from-home request parameter as numeric flags', () => {
+test('keeps work-from-home params boolean before GET query serialization', () => {
     assert.notEqual(buildStepstoneJobsParams({ work_from_home: true }).work_from_home, '1');
     assert.notEqual(buildStepstoneJobsParams({ work_from_home: false }).work_from_home, '0');
     assert.notEqual(buildStepstoneJobsParams({ work_from_home: true }).work_from_home, 1);
