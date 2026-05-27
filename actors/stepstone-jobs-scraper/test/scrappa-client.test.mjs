@@ -34,6 +34,6 @@ test('serializes boolean GET parameters as Laravel-compatible boolean values', a
         globalThis.fetch = originalFetch;
     }
 
-    assert.equal(new URL(requestedUrls[0]).searchParams.get('work_from_home'), '0');
-    assert.equal(new URL(requestedUrls[1]).searchParams.get('work_from_home'), '1');
+    assert.equal(new URL(requestedUrls[0]).searchParams.get('work_from_home'), 'false');
+    assert.equal(new URL(requestedUrls[1]).searchParams.get('work_from_home'), 'true');
 });
