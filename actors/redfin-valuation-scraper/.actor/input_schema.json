@@ -1,0 +1,76 @@
+{
+  "title": "Redfin Valuation Scraper",
+  "description": "Get Redfin home value estimates by property ID. Use property_ids or properties to batch multiple valuations in one Apify run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "property_id": {
+      "title": "Property ID",
+      "type": "integer",
+      "description": "Redfin property ID, usually the number after /home/ in a Redfin URL.",
+      "editor": "number",
+      "minimum": 1,
+      "default": 194191988
+    },
+    "listing_id": {
+      "title": "Listing ID",
+      "type": "integer",
+      "description": "Optional Redfin listing ID. Usually not needed; include it when you already have a listing-specific ID from Redfin search or property details.",
+      "editor": "number",
+      "minimum": 1
+    },
+    "url": {
+      "title": "Redfin URL",
+      "type": "string",
+      "description": "Optional Redfin property URL. The actor extracts the property ID from URLs containing /home/{property_id}.",
+      "editor": "textfield",
+      "prefill": "https://www.redfin.com/home/194191988",
+      "maxLength": 2000
+    },
+    "property_ids": {
+      "title": "Batch Property IDs",
+      "type": "array",
+      "description": "Run multiple Redfin property valuations in one Apify run. When provided, top-level property_id, listing_id, and url fields are ignored.",
+      "editor": "json",
+      "maxItems": 50,
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "prefill": [194191988]
+    },
+    "properties": {
+      "title": "Batch Properties",
+      "type": "array",
+      "description": "Run multiple Redfin valuations with per-property listing IDs or URLs. When provided, this takes precedence over property_ids.",
+      "editor": "json",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "properties": {
+          "property_id": {
+            "title": "Property ID",
+            "type": "integer",
+            "description": "Redfin property ID.",
+            "minimum": 1
+          },
+          "listing_id": {
+            "title": "Listing ID",
+            "type": "integer",
+            "description": "Optional Redfin listing ID.",
+            "minimum": 1
+          },
+          "url": {
+            "title": "Redfin URL",
+            "type": "string",
+            "description": "Optional Redfin URL containing /home/{property_id}.",
+            "maxLength": 2000
+          }
+        }
+      },
+      "prefill": [
+        { "property_id": 194191988 }
+      ]
+    }
+  }
+}
