@@ -10,7 +10,7 @@ import {
 test('builds maintained hashtag search URL', () => {
     assert.equal(
         buildHashtagSearchUrl({ hashtag: 'javascript', sort: 'upload_date', limit: 50, duration: 'short', continuation: 'next page' }),
-        'https://scrappa.co/api/youtube/search?query=%23javascript&order=date&limit=20&videoDuration=short&continuation=next+page',
+        'https://scrappa.co/api/youtube/search?query=%23javascript&type=video&order=date&limit=20&videoDuration=short&continuation=next+page',
     );
 });
 
@@ -18,6 +18,7 @@ test('caps hashtag search limit to Scrappa maximum', () => {
     const url = new URL(buildHashtagSearchUrl({ hashtag: '#javascript', limit: 50 }));
 
     assert.equal(url.searchParams.get('query'), '#javascript');
+    assert.equal(url.searchParams.get('type'), 'video');
     assert.equal(url.searchParams.get('limit'), '20');
 });
 

@@ -68,7 +68,7 @@ export function buildHashtagSearchUrl({
     }
 
     const normalizedHashtag = hashtag.startsWith('#') ? hashtag : `#${hashtag}`;
-    const params = new URLSearchParams({ query: normalizedHashtag });
+    const params = new URLSearchParams({ query: normalizedHashtag, type: 'video' });
     const now = options.now instanceof Date ? options.now : new Date();
 
     if (sort && typeof sort === 'string' && sort.trim() !== '') {
