@@ -4,13 +4,15 @@ Fetch Shorts videos for a YouTube channel by channel ID through the Scrappa YouT
 
 This actor is a thin Apify wrapper around Scrappa's YouTube API. Scraping runs on Scrappa infrastructure; Apify handles input validation, run orchestration, and dataset output.
 
+Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
+
 ## Input
 
-Provide a YouTube channel ID. Optional pagination and filter fields are passed through to Scrappa when present.
+Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the legacy `id` field still works for a single channel. Optional pagination and filter fields are passed through to Scrappa when present.
 
 ```json
 {
-  "id": "UCJZv4d5rbIKd4QHMPkcABCw",
+  "ids": "UCJZv4d5rbIKd4QHMPkcABCw,UC_x5XG1OV2P6uZZ5FSM9Ttw",
   "sort": "newest"
 }
 ```
@@ -21,4 +23,4 @@ One dataset item per Shorts video returned by Scrappa.
 
 ## Endpoint
 
-`https://ytapi.scrappa.co/channels/shorts`
+`https://scrappa.co/api/youtube/channel-videos`

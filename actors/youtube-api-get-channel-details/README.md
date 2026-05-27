@@ -2,13 +2,15 @@
 
 Fetch YouTube channel profile details from Scrappa's YouTube API and save the result to the Apify default dataset.
 
+Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
+
 ## Input
 
-Provide a YouTube channel ID.
+Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the legacy `id` field still works for a single channel.
 
 ```json
 {
-    "id": "UCJZv4d5rbIKd4QHMPkcABCw"
+    "ids": "UCJZv4d5rbIKd4QHMPkcABCw,UC_x5XG1OV2P6uZZ5FSM9Ttw"
 }
 ```
 

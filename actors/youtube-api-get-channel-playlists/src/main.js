@@ -1,50 +1,49 @@
 import { Actor } from 'apify';
 import axios from 'axios';
+import {
+    assertNoUnsupportedContinuation,
+    buildChannelPlaylistsUrl,
+    buildScrappaRequest,
+    getChannelIds,
+    getScrappaApiKey,
+} from './youtube-request.js';
 
-async function getChannelPlaylists(id, continuation = '') {
-    // Validate that the required query parameter is present.
-    if (!id) {
-        throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');
-    }
-    
-    // Construct the base API URL with required parameters
-    let apiUrl = `https://ytapi.scrappa.co/channels/playlists?id=${encodeURIComponent(id)}`;
-
-    if (continuation && typeof continuation === 'string' && continuation.trim() !== '') {
-        apiUrl += `&continuation=${encodeURIComponent(continuation)}`;
-    }
-
+async function getChannelPlaylists(input, apiKey) {
+    const { apiUrl, requestOptions } = buildScrappaRequest(buildChannelPlaylistsUrl(input), apiKey);
     try {
         console.log(`Fetching from: ${apiUrl}`);
-        const response = await axios.get(apiUrl);
+        const response = await axios.get(apiUrl, requestOptions);
         const data = response.data.playlists;
         
         // Save the fetched data to the default dataset.
         await Actor.pushData(data);
-        console.log(`Successfully fetched ${data.length} videos for query: ${id}`);
+        console.log(`Successfully fetched ${data.length} playlists for query: ${input.id}`);
         
         // Log if there's a continuation token for next page
         if (response.data.continuation) {
             console.log(`Continuation token available for next page: ${response.data.continuation}`);
         }
     } catch (error) {
-        console.log()
-        console.error(`Failed to fetch videos for query: ${id}`, error.message);
+        console.error(`Failed to fetch playlists for channel id: ${input.id}`, error.message);
         throw error;
     }
 }
 
-// Main Actor logic
 Actor.main(async () => {
-    // The init() call configures the Actor for its environment.
     await Actor.init();
 
+    const apiKey = getScrappaApiKey();
     const input = (await Actor.getInput()) || {};
-    const { id, continuation } = input;
+    const ids = getChannelIds(input);
 
-    // Directly call the function with the input, as there is only one possible task.
-    await getChannelPlaylists(id, continuation);
+    if (ids.length === 0) {
+        throw new Error('At least one YouTube channel ID must be provided in "ids" or "id".');
+    }
+    assertNoUnsupportedContinuation(input);
 
-    // Gracefully exit the Actor process.
+    for (const id of ids) {
+        await getChannelPlaylists({ ...input, id }, apiKey);
+    }
+
     await Actor.exit();
 });
