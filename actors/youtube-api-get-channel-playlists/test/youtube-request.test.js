@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-    assertContinuationMatchesBatch,
+    assertNoUnsupportedContinuation,
     buildChannelPlaylistsUrl,
     buildScrappaRequest,
     getChannelIds,
@@ -11,8 +11,8 @@ import {
 
 test('builds maintained channel playlists URL', () => {
     assert.equal(
-        buildChannelPlaylistsUrl({ id: 'UC example', continuation: 'next page' }),
-        'https://scrappa.co/api/youtube/channel-playlists?channel_id=UC+example&continuation=next+page',
+        buildChannelPlaylistsUrl({ id: 'UC example' }),
+        'https://scrappa.co/api/youtube/channel-playlists?channel_id=UC+example',
     );
 });
 
@@ -20,9 +20,13 @@ test('parses batch channel IDs', () => {
     assert.deepEqual(getChannelIds({ ids: 'UC1, UC2', id: 'UC2,UC3' }), ['UC1', 'UC2', 'UC3']);
 });
 
-test('rejects continuation tokens with batch channel IDs', () => {
+test('rejects unsupported continuation tokens', () => {
     assert.throws(
-        () => assertContinuationMatchesBatch({ ids: 'UC1,UC2', continuation: 'next page' }),
+        () => assertNoUnsupportedContinuation({ id: 'UC1', continuation: 'next page' }),
+        /continuation/,
+    );
+    assert.throws(
+        () => buildChannelPlaylistsUrl({ id: 'UC1', continuation: 'next page' }),
         /continuation/,
     );
 });

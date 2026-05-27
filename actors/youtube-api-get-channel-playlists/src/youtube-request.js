@@ -26,9 +26,9 @@ export function getChannelIds(input = {}) {
     return [...new Set([...parseIds(input.ids), ...parseIds(input.id)])];
 }
 
-export function assertContinuationMatchesBatch(input = {}, ids = getChannelIds(input)) {
-    if (ids.length > 1 && typeof input.continuation === 'string' && input.continuation.trim() !== '') {
-        throw new Error('The "continuation" token can only be used with a single YouTube channel ID.');
+export function assertNoUnsupportedContinuation(input = {}) {
+    if (typeof input.continuation === 'string' && input.continuation.trim() !== '') {
+        throw new Error('The "continuation" token is not supported by the Scrappa YouTube channel playlists endpoint.');
     }
 }
 
@@ -36,11 +36,9 @@ export function buildChannelPlaylistsUrl({ id, continuation = '' } = {}) {
     if (!id) {
         throw new Error('Search query "id" not provided. Please provide a value for "id" in the input.');
     }
+    assertNoUnsupportedContinuation({ continuation });
 
     const params = new URLSearchParams({ channel_id: id });
-    if (continuation && typeof continuation === 'string' && continuation.trim() !== '') {
-        params.set('continuation', continuation);
-    }
 
     return `${API_BASE_URL}?${params.toString()}`;
 }

@@ -8,7 +8,7 @@ Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
 
 ## Input
 
-Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the legacy `id` field still works for a single channel. Optional pagination fields are passed through to Scrappa when present.
+Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the legacy `id` field still works for a single channel.
 
 ```json
 {
