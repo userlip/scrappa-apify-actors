@@ -117,3 +117,7 @@ export function buildScrappaRequest(apiUrl, apiKey) {
         },
     };
 }
+
+export function getContinuationToken(responseData = {}) {
+    return responseData?.continuation ?? responseData?.pagination?.continuationToken;
+}

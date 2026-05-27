@@ -3,6 +3,7 @@ import axios from 'axios';
 import {
     buildPlaylistSearchUrl,
     buildScrappaRequest,
+    getContinuationToken,
     getScrappaApiKey,
 } from './youtube-request.js';
 
@@ -31,8 +32,9 @@ async function searchPlaylists(query, sort = 'relevance', limit = 20, continuati
         console.log(`Successfully fetched ${data.length} playlists for query: ${query}`);
         
         // Log if there's a continuation token for next page
-        if (response.data.continuation) {
-            console.log(`Continuation token available for next page: ${response.data.continuation}`);
+        const continuationToken = getContinuationToken(response.data);
+        if (continuationToken) {
+            console.log(`Continuation token available for next page: ${continuationToken}`);
         }
     } catch (error) {
         console.error(`Failed to fetch playlists for query: ${query}`, error.message);

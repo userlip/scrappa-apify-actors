@@ -3,6 +3,7 @@ import axios from 'axios';
 import {
     buildHashtagSearchUrl,
     buildScrappaRequest,
+    getContinuationToken,
     getScrappaApiKey,
     SCRAPPA_REQUEST_TIMEOUT_MS,
 } from './youtube-request.js';
@@ -33,8 +34,9 @@ async function searchHashtag(query, sort = 'relevance', limit, duration, upload_
         console.log(`Successfully fetched ${data.length} hashtag for query: ${query}`);
         
         // Log if there's a continuation token for next page
-        if (response.data.continuation) {
-            console.log(`Continuation token available for next page: ${response.data.continuation}`);
+        const continuationToken = getContinuationToken(response.data);
+        if (continuationToken) {
+            console.log(`Continuation token available for next page: ${continuationToken}`);
         }
     } catch (error) {
         console.error(`Failed to fetch hashtag for query: ${query}: ${errorMessage(error)}`);
