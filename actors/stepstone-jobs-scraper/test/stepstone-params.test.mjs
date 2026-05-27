@@ -29,7 +29,7 @@ test('forwards Stepstone jobs search parameters', () => {
             radius: 50,
             sort: 'date',
             job_type: 'full_time',
-            work_from_home: '1',
+            work_from_home: true,
             date_posted: 7,
             page: 2,
             limit: 25,
@@ -60,29 +60,37 @@ test('omits work-from-home request parameter after normalization when unset', ()
     });
 });
 
-test('forwards true work-from-home request parameter after normalization', () => {
+test('forwards true work-from-home request parameter as a boolean after normalization', () => {
     const input = normalizeStepstoneJobsInput({ query: 'komissionierer', work_from_home: true });
 
     assert.deepEqual(buildStepstoneJobsParams(input), {
         query: 'komissionierer',
         location: 'Berlin',
         country: 'de',
-        work_from_home: '1',
+        work_from_home: true,
         page: 1,
         limit: 25,
     });
 });
 
-test('omits false work-from-home request parameter after normalization', () => {
+test('forwards false work-from-home request parameter as a boolean after normalization', () => {
     const input = normalizeStepstoneJobsInput({ query: 'komissionierer', work_from_home: false });
 
     assert.deepEqual(buildStepstoneJobsParams(input), {
         query: 'komissionierer',
         location: 'Berlin',
         country: 'de',
+        work_from_home: false,
         page: 1,
         limit: 25,
     });
+});
+
+test('never serializes work-from-home request parameter as numeric flags', () => {
+    assert.notEqual(buildStepstoneJobsParams({ work_from_home: true }).work_from_home, '1');
+    assert.notEqual(buildStepstoneJobsParams({ work_from_home: false }).work_from_home, '0');
+    assert.notEqual(buildStepstoneJobsParams({ work_from_home: true }).work_from_home, 1);
+    assert.notEqual(buildStepstoneJobsParams({ work_from_home: false }).work_from_home, 0);
 });
 
 test('uses the default search when input is empty', () => {
