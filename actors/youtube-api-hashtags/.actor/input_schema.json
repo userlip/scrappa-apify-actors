@@ -14,15 +14,7 @@
             "type": "string",
             "description": "Sort by: relevance, rating, upload_date, view_count",
             "editor": "select",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "relevance",
-                    "rating",
-                    "upload_date",
-                    "view_count"
-                ]
-            },
+            "enum": ["relevance", "rating", "upload_date", "view_count"],
             "prefill": "relevance"
         },
         "duration": {
@@ -30,14 +22,7 @@
             "type": "string",
             "description": "Video duration: short, medium, long",
             "editor": "select",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "short",
-                    "medium",
-                    "long"
-                ]
-            },
+            "enum": ["short", "medium", "long"],
             "prefill": "short"
         },
         "upload_date": {
@@ -45,16 +30,7 @@
             "type": "string",
             "description": "Upload date",
             "editor": "select",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "hour",
-                    "today",
-                    "week",
-                    "month",
-                    "year"
-                ]
-            },
+            "enum": ["hour", "today", "week", "month", "year"],
             "prefill": "hour"
         },
         "limit": {

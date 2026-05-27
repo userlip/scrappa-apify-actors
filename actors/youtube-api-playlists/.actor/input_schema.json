@@ -14,15 +14,7 @@
             "type": "string",
             "description": "Sort by: relevance, rating, upload_date, view_count",
             "editor": "select",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "relevance",
-                    "rating",
-                    "upload_date",
-                    "view_count"
-                ]
-            },
+            "enum": ["relevance", "rating", "upload_date", "view_count"],
             "prefill": "relevance"
         },
         "limit": {

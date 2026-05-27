@@ -29,14 +29,7 @@
             "type": "string",
             "description": "Sort by (newest, popular, oldest)",
             "editor": "select",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "newest",
-                    "popular",
-                    "oldest"
-                ]
-            },
+            "enum": ["newest", "popular", "oldest"],
             "prefill": "newest"
         }
     },
