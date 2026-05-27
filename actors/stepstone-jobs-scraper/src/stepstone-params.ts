@@ -75,9 +75,8 @@ export function buildStepstoneJobsParams(input: StepstoneJobsInput): Record<stri
         }
     }
 
-    // Scrappa validates this as a boolean; false is omitted to preserve the default.
-    if (input.work_from_home === true) {
-        params.work_from_home = true;
+    if (input.work_from_home !== undefined) {
+        params.work_from_home = input.work_from_home;
     }
 
     return params;
