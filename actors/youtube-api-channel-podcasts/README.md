@@ -10,7 +10,7 @@ Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
 |-------|------|----------|-------------|
 | `ids` | string | No | Comma-separated YouTube channel IDs. Prefer this for batch runs. |
 | `id` | string | No | Legacy single YouTube channel ID. |
-| `sort` | string | No | Sort order: `newest`, `popular`, or `oldest`. Defaults to `newest`. |
+| `sort` | string | No | Sort order for the channel videos page before podcast filtering: `newest`, `popular`, or `oldest`. Defaults to `newest`. |
 | `continuation` | string | No | Pagination token returned by a previous run. |
 
 ## Example Input
@@ -25,6 +25,8 @@ Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
 ## Output
 
 The Actor stores one dataset item per podcast video returned by the API. Fields depend on the current Scrappa YouTube response and typically include the video ID, title, URL, thumbnails, duration, view count, and publish metadata.
+
+Podcast filtering is applied after Scrappa returns the channel videos page. If a channel has many regular uploads before older podcast content, use a continuation token to keep paging through results.
 
 If the API returns a continuation token, the Actor logs it so you can pass it in the next run to fetch the next page.
 
