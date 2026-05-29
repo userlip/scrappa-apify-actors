@@ -75,7 +75,9 @@
       "description": "Filter by Kununu score buckets.",
       "editor": "stringList",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": ["excellent", "good", "satisfactory", "subpar"],
+        "enumTitles": ["Excellent", "Good", "Satisfactory", "Subpar"]
       }
     },
     "recommended_filters": {
@@ -84,7 +86,9 @@
       "description": "Filter by recommendation status.",
       "editor": "stringList",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": ["yes", "no"],
+        "enumTitles": ["Recommended", "Not recommended"]
       }
     },
     "jobstatus_filters": {
@@ -93,7 +97,9 @@
       "description": "Filter employee reviews by current or former employees.",
       "editor": "stringList",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": ["current", "former"],
+        "enumTitles": ["Current employee", "Former employee"]
       }
     },
     "position_filters": {
@@ -102,7 +108,9 @@
       "description": "Filter by reviewer position.",
       "editor": "stringList",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": ["employee", "manager", "apprentice", "student", "intern", "freelancer", "contractor"],
+        "enumTitles": ["Employee", "Manager", "Apprentice", "Student", "Intern", "Freelancer", "Contractor"]
       }
     },
     "department_filters": {
@@ -111,7 +119,9 @@
       "description": "Filter by department.",
       "editor": "stringList",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": ["administration", "sales", "legal", "operations", "recruiting", "communication", "product", "logistic", "it", "management", "research", "controlling", "design", "procurement"],
+        "enumTitles": ["Administration", "Sales", "Legal", "Operations", "Recruiting", "Communication", "Product", "Logistic", "IT", "Management", "Research", "Controlling", "Design", "Procurement"]
       }
     },
     "response_filters": {
@@ -120,7 +130,9 @@
       "description": "Filter by whether the company responded.",
       "editor": "stringList",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": ["yes", "no"],
+        "enumTitles": ["Has response", "No response"]
       }
     },
     "date_filters": {
@@ -129,7 +141,9 @@
       "description": "Filter by review age.",
       "editor": "stringList",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": ["24months", "12months", "6months", "30days"],
+        "enumTitles": ["Last 24 months", "Last 12 months", "Last 6 months", "Last 30 days"]
       }
     },
     "fetch_factor_scores": {
