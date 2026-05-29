@@ -11,6 +11,7 @@ const THESCRAPPA_USER_ID = '8683TqwnXHrQ46FhH';
 const THESCRAPPA_USERNAME = 'thescrappa';
 const FAILED_RUN_STATUSES = new Set(['FAILED', 'TIMED-OUT', 'ABORTED']);
 const NON_TERMINAL_RUN_STATUSES = new Set(['READY', 'RUNNING', 'TIMING-OUT', 'ABORTING']);
+const FAILED_BUILD_STATUSES = new Set(['FAILED', 'TIMED-OUT', 'ABORTED']);
 
 if (isCliEntrypoint()) {
   runCli().catch((error) => {
@@ -51,7 +52,12 @@ async function runCli() {
     printReport(report);
   }
 
-  if (report.summary.failedLatestRuns > 0 || report.summary.nonTerminalLatestRuns > 0 || report.summary.auditErrors > 0) {
+  if (
+    report.summary.failedLatestRuns > 0 ||
+    report.summary.nonTerminalLatestRuns > 0 ||
+    report.summary.failedLatestBuilds > 0 ||
+    report.summary.auditErrors > 0
+  ) {
     process.exit(1);
   }
 }
@@ -116,6 +122,7 @@ export function createHealthAuditReport({ actors, excludedPublicActors = [], err
   const noRunActors = actorReports.filter((report) => report.status === 'NO_RUNS');
   const failedLatestActors = actorReports.filter((report) => report.status === 'FAILED_LATEST_RUN');
   const nonTerminalLatestActors = actorReports.filter((report) => report.status === 'NON_TERMINAL_LATEST_RUN');
+  const failedLatestBuildActors = actorReports.filter((report) => report.status === 'FAILED_LATEST_BUILD');
   const recentFailedButLatestOkActors = actorReports.filter((report) => report.status === 'RECENT_FAILED_BUT_LATEST_OK');
   const noticeActors = actorReports.filter((report) => report.notice);
   const okActors = actorReports.filter((report) => report.status === 'OK');
@@ -133,6 +140,7 @@ export function createHealthAuditReport({ actors, excludedPublicActors = [], err
       noRuns: noRunActors.length,
       failedLatestRuns: failedLatestActors.length,
       nonTerminalLatestRuns: nonTerminalLatestActors.length,
+      failedLatestBuilds: failedLatestBuildActors.length,
       recentFailedButLatestOk: recentFailedButLatestOkActors.length,
       notices: noticeActors.length,
       excludedPublicActors: excludedPublicActors.length,
@@ -142,6 +150,7 @@ export function createHealthAuditReport({ actors, excludedPublicActors = [], err
     noRunActors,
     failedLatestActors,
     nonTerminalLatestActors,
+    failedLatestBuildActors,
     recentFailedButLatestOkActors,
     noticeActors,
     excludedPublicActors,
@@ -197,6 +206,14 @@ export function auditActorHealth(input) {
       ...base,
       status: 'NON_TERMINAL_LATEST_RUN',
       reason: `Latest run status is ${latestRun.status} and has not reached a terminal state.`,
+    };
+  }
+
+  if (FAILED_BUILD_STATUSES.has(latestBuild?.status)) {
+    return {
+      ...base,
+      status: 'FAILED_LATEST_BUILD',
+      reason: `Latest build status is ${latestBuild.status}.`,
     };
   }
 
@@ -485,6 +502,7 @@ function printReport(report) {
   console.log(`No recent runs: ${report.summary.noRuns}`);
   console.log(`Failed latest runs: ${report.summary.failedLatestRuns}`);
   console.log(`Non-terminal latest runs: ${report.summary.nonTerminalLatestRuns}`);
+  console.log(`Failed latest builds: ${report.summary.failedLatestBuilds}`);
   console.log(`Recent failed but latest OK: ${report.summary.recentFailedButLatestOk}`);
   console.log(`Actor notices: ${report.summary.notices}`);
   console.log(`Excluded public non-owned/unknown actors: ${report.summary.excludedPublicActors}`);
@@ -498,6 +516,10 @@ function printReport(report) {
 
   printActorSection('NON-TERMINAL LATEST RUNS', report.nonTerminalLatestActors, (actor) => {
     return `${actorLabel(actor)} latest ${actor.latestRun?.id || 'unknown'} ${actor.latestRun?.status || 'UNKNOWN'}`;
+  });
+
+  printActorSection('FAILED LATEST BUILDS', report.failedLatestBuildActors, (actor) => {
+    return `${actorLabel(actor)} latest build ${actor.latestBuild?.id || 'unknown'} ${actor.latestBuild?.status || 'UNKNOWN'}`;
   });
 
   printActorSection('RECENT FAILURES BUT LATEST OK', report.recentFailedButLatestOkActors, (actor) => {

@@ -168,6 +168,19 @@ test('auditActorHealth reports non-terminal latest runs separately from OK', () 
   assert.match(readyReport.reason, /READY/);
 });
 
+test('auditActorHealth reports failed latest builds separately from OK', () => {
+  const report = auditActorHealth({
+    actor: actorDetail({ id: 'failed-build-id', name: 'failed-build-actor' }),
+    runs: [{ id: 'latest-run', status: 'SUCCEEDED' }],
+    builds: [{ id: 'latest-build', status: 'FAILED' }],
+  });
+
+  assert.equal(report.status, 'FAILED_LATEST_BUILD');
+  assert.equal(report.latestRun.status, 'SUCCEEDED');
+  assert.equal(report.latestBuild.id, 'latest-build');
+  assert.match(report.reason, /FAILED/);
+});
+
 test('auditActorHealth includes maintenance notice type and message', () => {
   const report = auditActorHealth({
     actor: actorDetail({
@@ -235,6 +248,7 @@ test('createHealthAuditReport summarizes owned actors and exclusions', () => {
   assert.equal(report.summary.noRuns, 1);
   assert.equal(report.summary.failedLatestRuns, 1);
   assert.equal(report.summary.nonTerminalLatestRuns, 0);
+  assert.equal(report.summary.failedLatestBuilds, 0);
   assert.equal(report.summary.excludedPublicActors, 1);
   assert.deepEqual(report.failedLatestActors.map((actor) => actor.actorId), ['failed-id']);
   assert.deepEqual(report.noRunActors.map((actor) => actor.actorId), ['no-run-id']);
