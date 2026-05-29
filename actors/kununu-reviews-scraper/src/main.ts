@@ -16,6 +16,17 @@ import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const REVIEW_RESULT_CHARGE_EVENT = 'review-result';
 
+function getChargeableReviewCapacity(): number {
+    const chargingManager = Actor.getChargingManager();
+    const { isPayPerEvent } = chargingManager.getPricingInfo();
+
+    if (!isPayPerEvent) {
+        return Infinity;
+    }
+
+    return chargingManager.calculateMaxEventChargeCountWithinLimit(REVIEW_RESULT_CHARGE_EVENT);
+}
+
 async function main(): Promise<void> {
     await Actor.init();
 
@@ -47,6 +58,20 @@ async function main(): Promise<void> {
             for (let offset = 0; offset < plan.maxPages; offset++) {
                 const page = plan.startPage + offset;
                 const params = buildPageParams(plan, target, page);
+
+                const chargeableReviewCapacity = getChargeableReviewCapacity();
+                if (chargeableReviewCapacity <= 0) {
+                    const statusMessage = `Charge limit reached before fetching Kununu reviews page ${page} for ${target.country}/${target.company_slug}.`;
+                    console.log(statusMessage, JSON.stringify({
+                        event: REVIEW_RESULT_CHARGE_EVENT,
+                        saved_count: reviewsExtracted,
+                        target: `${target.country}/${target.company_slug}`,
+                        page,
+                    }));
+                    await Actor.exit({ statusMessage });
+                    return;
+                }
+
                 console.log(`Fetching Kununu reviews page ${page} for ${target.country}/${target.company_slug}`);
 
                 const response = await client.get<KununuReviewsResponse>('/kununu/reviews', params);
