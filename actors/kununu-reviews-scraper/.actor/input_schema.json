@@ -1,0 +1,144 @@
+{
+  "title": "Kununu Reviews Scraper",
+  "description": "Extract structured Kununu company reviews. Use targets or companies for batch mode; one dataset item is written and charged per review.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "targets": {
+      "title": "Companies",
+      "type": "array",
+      "description": "Kununu company slugs, country/slug pairs, full Kununu company URLs, or objects with country and company_slug. Up to 25 companies per run.",
+      "editor": "stringList",
+      "maxItems": 25,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      },
+      "prefill": ["de/bmwgroup", "https://www.kununu.com/de/sap-se"]
+    },
+    "company_slug": {
+      "title": "Single Company Slug",
+      "type": "string",
+      "description": "Single Kununu company slug for compatibility. Ignored when Companies is provided.",
+      "editor": "textfield",
+      "prefill": "bmwgroup",
+      "maxLength": 255
+    },
+    "country": {
+      "title": "Default Country",
+      "type": "string",
+      "description": "Kununu country for bare slugs. Kununu supports Germany, Austria, and Switzerland.",
+      "editor": "select",
+      "default": "de",
+      "enum": ["de", "at", "ch"],
+      "enumTitles": ["Germany", "Austria", "Switzerland"]
+    },
+    "page": {
+      "title": "Start Page",
+      "type": "integer",
+      "description": "First Kununu review page to fetch.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "max_pages": {
+      "title": "Max Pages",
+      "type": "integer",
+      "description": "Number of pages to fetch per company target.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 25,
+      "default": 1
+    },
+    "review_type": {
+      "title": "Review Type",
+      "type": "string",
+      "description": "Employee reviews or candidate interview reviews.",
+      "editor": "select",
+      "default": "employees",
+      "enum": ["employees", "candidates"],
+      "enumTitles": ["Employees", "Candidates"]
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "description": "Optional Kununu sort order. Leave empty for Kununu relevance order.",
+      "editor": "select",
+      "enum": ["newest", "oldest", "best", "worst"],
+      "enumTitles": ["Newest", "Oldest", "Best", "Worst"]
+    },
+    "score_filters": {
+      "title": "Score Filters",
+      "type": "array",
+      "description": "Filter by Kununu score buckets.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_filters": {
+      "title": "Recommended Filters",
+      "type": "array",
+      "description": "Filter by recommendation status.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      }
+    },
+    "jobstatus_filters": {
+      "title": "Job Status Filters",
+      "type": "array",
+      "description": "Filter employee reviews by current or former employees.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      }
+    },
+    "position_filters": {
+      "title": "Position Filters",
+      "type": "array",
+      "description": "Filter by reviewer position.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      }
+    },
+    "department_filters": {
+      "title": "Department Filters",
+      "type": "array",
+      "description": "Filter by department.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      }
+    },
+    "response_filters": {
+      "title": "Response Filters",
+      "type": "array",
+      "description": "Filter by whether the company responded.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      }
+    },
+    "date_filters": {
+      "title": "Date Filters",
+      "type": "array",
+      "description": "Filter by review age.",
+      "editor": "stringList",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fetch_factor_scores": {
+      "title": "Fetch Factor Scores",
+      "type": "boolean",
+      "description": "Include detailed factor ratings when Kununu provides them.",
+      "editor": "checkbox",
+      "default": false
+    }
+  },
+  "required": []
+}
