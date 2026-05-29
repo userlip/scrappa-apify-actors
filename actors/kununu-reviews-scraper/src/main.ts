@@ -64,23 +64,31 @@ async function main(): Promise<void> {
                     const enrichedReviews = reviews.map((review) => enrichReview(review, target, params, response, {
                         includeRawReview: plan.includeRawReview,
                     }));
-                    const chargeResult = await Actor.pushData(enrichedReviews, REVIEW_RESULT_CHARGE_EVENT);
-                    const savedCount = getSavedCount(chargeResult, enrichedReviews.length);
+                    let savedCount = enrichedReviews.length;
+
+                    const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
+                    if (isPayPerEvent) {
+                        const chargeResult = await Actor.pushData(enrichedReviews, REVIEW_RESULT_CHARGE_EVENT);
+                        savedCount = getSavedCount(chargeResult, enrichedReviews.length);
+
+                        if (chargeResult.eventChargeLimitReached) {
+                            const statusMessage = `Charge limit reached after saving ${savedCount} of ${enrichedReviews.length} Kununu reviews for ${target.country}/${target.company_slug} page ${page}.`;
+                            console.log(statusMessage, JSON.stringify({
+                                event: REVIEW_RESULT_CHARGE_EVENT,
+                                saved_count: savedCount,
+                                requested_count: enrichedReviews.length,
+                                target: `${target.country}/${target.company_slug}`,
+                                page,
+                            }));
+                            await Actor.exit({ statusMessage });
+                            return;
+                        }
+                    } else {
+                        await Actor.pushData(enrichedReviews);
+                    }
+
                     reviewsExtracted += savedCount;
                     console.log(`Found ${reviews.length} reviews on page ${page}`);
-
-                    if (chargeResult.eventChargeLimitReached) {
-                        const statusMessage = `Charge limit reached after saving ${savedCount} of ${enrichedReviews.length} Kununu reviews for ${target.country}/${target.company_slug} page ${page}.`;
-                        console.log(statusMessage, JSON.stringify({
-                            event: REVIEW_RESULT_CHARGE_EVENT,
-                            saved_count: savedCount,
-                            requested_count: enrichedReviews.length,
-                            target: `${target.country}/${target.company_slug}`,
-                            page,
-                        }));
-                        await Actor.exit({ statusMessage });
-                        return;
-                    }
                 } else {
                     console.log(`No reviews found on page ${page}`);
                 }
