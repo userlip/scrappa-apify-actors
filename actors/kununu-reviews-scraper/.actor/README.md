@@ -9,7 +9,7 @@ This Actor is a thin wrapper: Apify validates input, calls `https://scrappa.co/a
 - Batch `targets` so one Apify run can process multiple Kununu companies
 - Accepts Kununu slugs, `country/slug` pairs, and full Kununu company URLs
 - Employee and candidate review modes
-- Review scores, title, text blocks, dates, company responses, and reviewer role metadata
+- Review scores, title, text blocks, dates, and reviewer role metadata
 - Filters for score, recommendation, job status, position, department, response status, date, and factor scores
 - Dataset rows optimized for Apify table views
 - One paid `review-result` event per saved review
@@ -80,6 +80,8 @@ Each Kununu review is saved as one dataset item:
   "source_url": "https://www.kununu.com/de/bmwgroup"
 }
 ```
+
+The default dataset stays compact and flattened for Apify table/export usage. Enable `include_raw_review` only when you need full per-review details such as raw rating factors or company responses.
 
 The `OUTPUT` key-value-store record includes target/page metadata and per-page summaries. Enable `include_raw_responses` only when you need full Scrappa page payloads for debugging.
 
