@@ -52,6 +52,22 @@ APIFY_TOKEN=... pnpm audit:pricing --now 2026-05-17T15:00:00.000Z
 
 The audit exits with code `1` when a public actor has due paid `pricingInfos` but no active paid evidence in `pricingInfo` or `currentPricingInfo`, or when a public actor has no paid `pricingInfos`.
 
+### Auditing actor health
+
+Run the live health audit with a configured Apify organization token:
+
+```bash
+APIFY_TOKEN=... pnpm audit:health
+```
+
+For machine-readable triage output, use:
+
+```bash
+APIFY_TOKEN=... pnpm audit:health --json
+```
+
+The health audit fetches visible Apify actors, then strictly scopes reports to public TheScrappa-owned actors where `userId` is `8683TqwnXHrQ46FhH` or `username` is `thescrappa`. Public actors that are visible to the token but are not owned by TheScrappa, or that have unknown ownership fields, are reported as exclusions instead of being included in run/build/notice health. This prevents accessible store actors such as Apify-owned actors from creating false Scrappa alarms. Do not commit raw Apify tokens.
+
 ### Auditing actor secrets
 
 Public actors that call Scrappa APIs must have `SCRAPPA_API_KEY` configured as a secret on their default Actor version. The secret audit resolves the default version from Apify `defaultRunOptions.build` and the available version `buildTag` values before checking env vars, so legacy `0.0` Actors and newer `1.0` Actors are both checked correctly:
