@@ -67,7 +67,12 @@ function dateToIso(value: unknown): string | null {
     }
 
     const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+    if (Number.isNaN(parsed.getTime())) {
+        console.warn(`Could not parse Google Finance intraday date: ${value}`);
+        return null;
+    }
+
+    return parsed.toISOString();
 }
 
 export function buildIntradayPricePointDatasetItems(
@@ -92,8 +97,5 @@ export function buildIntradayPricePointDatasetItems(
         request_exchange: params.exchange ?? null,
         request_hl: params.hl ?? null,
         request_gl: params.gl ?? null,
-        result_counts: {
-            graph: graph.length,
-        },
     }));
 }

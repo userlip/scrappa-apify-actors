@@ -36,7 +36,7 @@ test('builds dataset items from intraday graph points', () => {
     assert.equal(items[0].percent_change, 0.63);
     assert.equal(items[0].volume, 3482103);
     assert.equal(items[0].currency, 'USD');
-    assert.deepEqual(items[0].result_counts, { graph: 1 });
+    assert.equal('result_counts' in items[0], false);
 });
 
 test('falls back to request symbol and returns no rows for missing graph', () => {
@@ -46,4 +46,25 @@ test('falls back to request symbol and returns no rows for missing graph', () =>
     );
 
     assert.deepEqual(items, []);
+});
+
+test('warns and returns null date_iso for unparseable intraday dates', () => {
+    const originalWarn = console.warn;
+    const warnings = [];
+    console.warn = (message) => warnings.push(message);
+
+    try {
+        const items = buildIntradayPricePointDatasetItems(
+            {
+                symbol: 'AAPL',
+                graph: [{ date: 'not a google finance date', price: 1 }],
+            },
+            { symbol: 'AAPL' },
+        );
+
+        assert.equal(items[0].date_iso, null);
+        assert.deepEqual(warnings, ['Could not parse Google Finance intraday date: not a google finance date']);
+    } finally {
+        console.warn = originalWarn;
+    }
 });

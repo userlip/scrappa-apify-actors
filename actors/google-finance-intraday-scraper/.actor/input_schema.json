@@ -42,6 +42,7 @@
       "type": "string",
       "description": "Google Finance language code, such as en, de, es, or zh-cn.",
       "editor": "textfield",
+      "maxLength": 10,
       "default": "en"
     },
     "gl": {

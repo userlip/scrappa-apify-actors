@@ -32,7 +32,7 @@
             "component": "table",
             "properties": {
               "position": { "label": "#", "format": "number" },
-              "date": { "label": "Date", "format": "text" },
+              "date": { "label": "Timestamp", "format": "text" },
               "date_iso": { "label": "Date ISO", "format": "text" },
               "price": { "label": "Price", "format": "number" },
               "change": { "label": "Change", "format": "number" },
