@@ -79,6 +79,34 @@ test('createOwnedPublicActorScope skips private actors', () => {
   assert.deepEqual(scope.errors, []);
 });
 
+test('createOwnedPublicActorScope reports detail errors only for known public actors', () => {
+  const scope = createOwnedPublicActorScope([
+    {
+      actor: { id: 'public-error', name: 'public-error', isPublic: true },
+      detail: null,
+      error: new Error('Public detail failed'),
+    },
+    {
+      actor: { id: 'unknown-visibility-error', name: 'unknown-visibility-error' },
+      detail: null,
+      error: new Error('Unknown visibility failed'),
+    },
+    {
+      actor: { id: 'private-error', name: 'private-error', isPublic: false },
+      detail: null,
+      error: new Error('Private detail failed'),
+    },
+  ]);
+
+  assert.deepEqual(scope.ownedPublicActors, []);
+  assert.equal(scope.errors.length, 1);
+  assert.equal(scope.errors[0].actorId, 'public-error');
+  assert.match(scope.errors[0].reason, /Public detail failed/);
+  assert.equal(scope.excludedPublicActors.length, 2);
+  assert.deepEqual(scope.excludedPublicActors.map((actor) => actor.actorId), ['private-error', 'unknown-visibility-error']);
+  assert.match(scope.excludedPublicActors[1].reason, /Unknown visibility failed/);
+});
+
 test('auditActorHealth reports no-run actors', () => {
   const report = auditActorHealth({
     actor: actorDetail({ id: 'no-run-id', name: 'no-run-actor' }),
@@ -89,6 +117,7 @@ test('auditActorHealth reports no-run actors', () => {
   assert.equal(report.status, 'NO_RUNS');
   assert.equal(report.latestRun, null);
   assert.equal(report.latestBuild.id, 'build-id');
+  assert.match(report.reason, /latest 5-run history request/);
 });
 
 test('auditActorHealth reports failed latest runs', () => {
@@ -210,6 +239,31 @@ test('parseArgs supports JSON output', () => {
   });
 
   assert.throws(() => parseArgs(['--include-active']), /Unknown argument/);
+});
+
+test('getRetryDelayMs uses retry-after seconds, HTTP dates, and fallback delays', async () => {
+  const { getRetryDelayMs } = await import('./audit-apify-health.mjs');
+  const secondsResponse = {
+    headers: {
+      get(name) {
+        return name === 'retry-after' ? '3' : null;
+      },
+    },
+  };
+  const dateResponse = {
+    headers: {
+      get(name) {
+        return name === 'retry-after' ? new Date(Date.now() + 5000).toUTCString() : null;
+      },
+    },
+  };
+
+  assert.equal(getRetryDelayMs(secondsResponse, 1), 3000);
+  assert.equal(getRetryDelayMs(null, 2), 1500);
+
+  const dateDelay = getRetryDelayMs(dateResponse, 1);
+  assert.ok(dateDelay > 0);
+  assert.ok(dateDelay <= 5000);
 });
 
 function actorDetail(overrides) {

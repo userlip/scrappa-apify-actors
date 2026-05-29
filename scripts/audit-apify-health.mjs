@@ -63,11 +63,19 @@ export function createOwnedPublicActorScope(detailResults) {
   for (const result of detailResults) {
     if (result.error) {
       const actor = result.actor || {};
-      if (actor.isPublic === false) {
+      if (actor.isPublic === true) {
+        errors.push(formatDetailFetchError(actor, result.error));
         continue;
       }
 
-      errors.push(formatDetailFetchError(actor, result.error));
+      excludedPublicActors.push({
+        actorId: actor.id,
+        slug: actor.name,
+        title: actor.title || null,
+        userId: null,
+        username: null,
+        reason: `Actor detail fetch failed before public TheScrappa ownership could be confirmed; excluded from audit scope: ${formatErrorMessage(result.error)}`,
+      });
       continue;
     }
 
@@ -167,7 +175,7 @@ export function auditActorHealth(input) {
     return {
       ...base,
       status: 'NO_RUNS',
-      reason: 'Public TheScrappa actor has no recent runs in the Apify API response.',
+      reason: `Apify returned no runs for this public TheScrappa actor in the latest ${RECENT_RUN_LIMIT}-run history request.`,
     };
   }
 
@@ -288,7 +296,7 @@ function formatDetailFetchError(actor, error) {
     title: actor.title || null,
     isPublic: actor.isPublic === true,
     status: 'ERROR',
-    reason: `Failed to fetch actor detail: ${error instanceof Error ? error.message : String(error)}`,
+    reason: `Failed to fetch actor detail: ${formatErrorMessage(error)}`,
   };
 }
 
@@ -306,6 +314,10 @@ function formatAuditError(input) {
     status: 'ERROR',
     reason: input.reason || (input.error instanceof Error ? input.error.message : String(input.error)),
   };
+}
+
+function formatErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 async function fetchActorHealthSafely(actor, token) {
