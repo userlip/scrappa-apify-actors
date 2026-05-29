@@ -69,13 +69,17 @@ async function main(): Promise<void> {
                     reviewsExtracted += savedCount;
                     console.log(`Found ${reviews.length} reviews on page ${page}`);
 
-                    if (chargeResult.eventChargeLimitReached && savedCount < enrichedReviews.length) {
+                    if (chargeResult.eventChargeLimitReached) {
                         const statusMessage = `Charge limit reached after saving ${savedCount} of ${enrichedReviews.length} Kununu reviews for ${target.country}/${target.company_slug} page ${page}.`;
-                        await Actor.setStatusMessage(statusMessage, {
-                            level: 'WARNING',
-                        });
-                        console.log(statusMessage);
-                        break;
+                        console.log(statusMessage, JSON.stringify({
+                            event: REVIEW_RESULT_CHARGE_EVENT,
+                            saved_count: savedCount,
+                            requested_count: enrichedReviews.length,
+                            target: `${target.country}/${target.company_slug}`,
+                            page,
+                        }));
+                        await Actor.exit({ statusMessage });
+                        return;
                     }
                 } else {
                     console.log(`No reviews found on page ${page}`);
