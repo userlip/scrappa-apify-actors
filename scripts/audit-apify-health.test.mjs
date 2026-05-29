@@ -107,6 +107,27 @@ test('createOwnedPublicActorScope reports detail errors only for known public ac
   assert.match(scope.excludedPublicActors[1].reason, /Unknown visibility failed/);
 });
 
+test('createOwnedPublicActorScope reports detail errors for owned actors with unknown visibility', () => {
+  const scope = createOwnedPublicActorScope([
+    {
+      actor: { id: 'owned-by-username-error', name: 'owned-by-username-error', username: 'thescrappa' },
+      detail: null,
+      error: new Error('Owned detail failed'),
+    },
+    {
+      actor: { id: 'owned-by-user-id-error', name: 'owned-by-user-id-error', userId: '8683TqwnXHrQ46FhH' },
+      detail: null,
+      error: new Error('Owned detail failed by userId'),
+    },
+  ]);
+
+  assert.deepEqual(scope.ownedPublicActors, []);
+  assert.deepEqual(scope.excludedPublicActors, []);
+  assert.equal(scope.errors.length, 2);
+  assert.deepEqual(scope.errors.map((actor) => actor.actorId), ['owned-by-user-id-error', 'owned-by-username-error']);
+  assert.match(scope.errors[0].reason, /Owned detail failed/);
+});
+
 test('auditActorHealth reports no-run actors', () => {
   const report = auditActorHealth({
     actor: actorDetail({ id: 'no-run-id', name: 'no-run-actor' }),

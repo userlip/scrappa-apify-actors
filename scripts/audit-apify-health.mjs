@@ -70,7 +70,8 @@ export function createOwnedPublicActorScope(detailResults) {
   for (const result of detailResults) {
     if (result.error) {
       const actor = result.actor || {};
-      if (actor.isPublic === true) {
+      const ownership = getActorOwnership(actor);
+      if (actor.isPublic === true || ownership.isOwned) {
         errors.push(formatDetailFetchError(actor, result.error));
         continue;
       }
