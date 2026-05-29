@@ -44,7 +44,7 @@ async function main(): Promise<void> {
         let reviewsExtracted = 0;
 
         for (const target of plan.targets) {
-            for (let offset = 0; offset < plan.maxPages; offset += 1) {
+            for (let offset = 0; offset < plan.maxPages; offset++) {
                 const page = plan.startPage + offset;
                 const params = buildPageParams(plan, target, page);
                 console.log(`Fetching Kununu reviews page ${page} for ${target.country}/${target.company_slug}`);

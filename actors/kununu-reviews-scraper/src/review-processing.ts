@@ -131,8 +131,6 @@ export function enrichReview(
         reviewer_recommended: review.isRecommended ?? null,
         reviewer_city: review.city ?? null,
         reviewer_job_title: review.jobTitle ?? null,
-        ratings: review.ratings ?? [],
-        responses: review.responses ?? [],
         page: requestParams.page,
         source_url: sourceUrl,
         request_sort: requestParams.sort ?? null,

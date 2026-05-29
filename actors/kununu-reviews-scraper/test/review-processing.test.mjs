@@ -78,6 +78,8 @@ test('enriches reviews with target, normalized text, and reviewer metadata', () 
     assert.equal(enriched.rounded_rating, 4);
     assert.equal(enriched.text, 'Good team\n\nLong meetings');
     assert.equal(enriched.texts, undefined);
+    assert.equal(enriched.ratings, undefined);
+    assert.equal(enriched.responses, undefined);
     assert.equal(enriched.date, '2026-05-01T12:00:00.000Z');
     assert.equal(enriched.reviewer_position, 'employee');
     assert.equal(enriched.reviewer_department, 'it');

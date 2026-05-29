@@ -31,7 +31,7 @@
         "reviews": {
           "title": "Kununu Reviews",
           "transformation": {
-            "fields": ["company_name", "company_country", "company_slug", "rating", "rounded_rating", "title", "text", "date", "review_type", "reviewer_position", "reviewer_department", "reviewer_employment_status", "reviewer_recommended", "responses", "review_id", "page", "source_url"]
+            "fields": ["company_name", "company_country", "company_slug", "rating", "rounded_rating", "title", "text", "date", "review_type", "reviewer_position", "reviewer_department", "reviewer_employment_status", "reviewer_recommended", "review_id", "page", "source_url"]
           },
           "display": {
             "component": "table",
@@ -49,7 +49,6 @@
               "reviewer_department": { "label": "Department", "format": "text" },
               "reviewer_employment_status": { "label": "Employment Status", "format": "text" },
               "reviewer_recommended": { "label": "Recommended", "format": "boolean" },
-              "responses": { "label": "Company Responses", "format": "object" },
               "review_id": { "label": "Review ID", "format": "text" },
               "page": { "label": "Page", "format": "number" },
               "source_url": { "label": "Source URL", "format": "link" }
