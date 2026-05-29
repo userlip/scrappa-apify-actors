@@ -7,7 +7,7 @@
     "targets": {
       "title": "Companies",
       "type": "array",
-      "description": "Kununu company slugs, country/slug pairs, full Kununu company URLs, or objects with country and company_slug. Up to 25 companies per run.",
+      "description": "Kununu company slugs, country/slug pairs, or full Kununu company URLs. Up to 25 companies per run.",
       "editor": "stringList",
       "maxItems": 25,
       "items": {
