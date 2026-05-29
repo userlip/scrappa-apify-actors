@@ -1,0 +1,54 @@
+{
+  "actorSpecification": 1,
+  "name": "google-finance-intraday-scraper",
+  "title": "Google Finance Intraday Scraper",
+  "description": "Scrape minute-level intraday price and volume graph data from Google Finance for charting, dashboards, trading research, and market monitoring workflows.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 200
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "intradayPoints": {
+          "title": "Intraday Price Points",
+          "transformation": {
+            "fields": ["position", "date", "date_iso", "price", "change", "percent_change", "volume", "symbol", "exchange", "currency", "request_symbol", "request_exchange", "request_hl", "request_gl"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "#", "format": "number" },
+              "date": { "label": "Date", "format": "text" },
+              "date_iso": { "label": "Date ISO", "format": "text" },
+              "price": { "label": "Price", "format": "number" },
+              "change": { "label": "Change", "format": "number" },
+              "percent_change": { "label": "% Change", "format": "number" },
+              "volume": { "label": "Volume", "format": "number" },
+              "symbol": { "label": "Symbol", "format": "text" },
+              "exchange": { "label": "Exchange", "format": "text" },
+              "currency": { "label": "Currency", "format": "text" },
+              "request_symbol": { "label": "Requested Symbol", "format": "text" },
+              "request_exchange": { "label": "Requested Exchange", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" },
+              "request_gl": { "label": "Country", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

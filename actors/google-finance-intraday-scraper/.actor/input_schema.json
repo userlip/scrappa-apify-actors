@@ -1,0 +1,56 @@
+{
+  "title": "Google Finance Intraday Scraper",
+  "description": "Fetch minute-level Google Finance price and volume graph points for one or more ticker symbols.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["symbols"],
+  "properties": {
+    "symbols": {
+      "title": "Symbols",
+      "type": "array",
+      "description": "Ticker symbols to process in one Apify run. Batching avoids one run per ticker and keeps Apify overhead low.",
+      "editor": "json",
+      "minItems": 1,
+      "prefill": [
+        {
+          "symbol": "AAPL",
+          "exchange": "NASDAQ"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": ["symbol"],
+        "properties": {
+          "symbol": {
+            "title": "Symbol",
+            "type": "string",
+            "description": "Ticker symbol to fetch, such as AAPL, MSFT, TSLA, or VOO.",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "exchange": {
+            "title": "Exchange",
+            "type": "string",
+            "description": "Google Finance exchange code, such as NASDAQ, NYSE, NSE, LON, TSE, or CRYPTO. Recommended to avoid symbol ambiguity.",
+            "maxLength": 40
+          }
+        }
+      }
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Google Finance language code, such as en, de, es, or zh-cn.",
+      "editor": "textfield",
+      "default": "en"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code, such as us, gb, de, or ca.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "us"
+    }
+  }
+}
