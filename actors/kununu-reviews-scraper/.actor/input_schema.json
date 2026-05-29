@@ -138,6 +138,20 @@
       "description": "Include detailed factor ratings when Kununu provides them.",
       "editor": "checkbox",
       "default": false
+    },
+    "include_raw_review": {
+      "title": "Include Raw Review",
+      "type": "boolean",
+      "description": "Include the full Scrappa review object in each dataset item. Leave disabled for smaller, cheaper dataset output.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "include_raw_responses": {
+      "title": "Include Raw Page Responses",
+      "type": "boolean",
+      "description": "Include full per-page Scrappa responses in the OUTPUT key-value-store record. Leave disabled for large batch runs.",
+      "editor": "checkbox",
+      "default": false
     }
   },
   "required": []

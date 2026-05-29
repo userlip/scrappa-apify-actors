@@ -26,7 +26,7 @@ test('returns no reviews when Scrappa response has no data array', () => {
     assert.deepEqual(collectReviews({ success: true }), []);
 });
 
-test('enriches reviews with target, normalized text, reviewer metadata, and raw payload', () => {
+test('enriches reviews with target, normalized text, and reviewer metadata', () => {
     const review = {
         uuid: 'review-1',
         type: 'employees',
@@ -87,5 +87,18 @@ test('enriches reviews with target, normalized text, reviewer metadata, and raw 
     assert.deepEqual(enriched.request_score_filters, ['good']);
     assert.equal(enriched.page_total_results, 123);
     assert.equal(enriched.page_total_pages, 7);
+    assert.equal(enriched.raw_review, undefined);
+});
+
+test('includes raw review only when requested', () => {
+    const review = { uuid: 'review-raw', title: 'Raw review' };
+    const enriched = enrichReview(
+        review,
+        { country: 'de', company_slug: 'example-gmbh', input: 'de/example-gmbh' },
+        { page: 1 },
+        {},
+        { includeRawReview: true },
+    );
+
     assert.equal(enriched.raw_review, review);
 });

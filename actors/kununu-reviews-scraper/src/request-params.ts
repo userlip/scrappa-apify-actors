@@ -30,6 +30,8 @@ export interface KununuReviewsInput {
     response_filters?: unknown;
     date_filters?: unknown;
     fetch_factor_scores?: unknown;
+    include_raw_review?: unknown;
+    include_raw_responses?: unknown;
 }
 
 export interface KununuTarget {
@@ -44,6 +46,8 @@ export interface KununuReviewsRequestPlan {
     baseParams: Record<string, unknown>;
     startPage: number;
     maxPages: number;
+    includeRawReview: boolean;
+    includeRawResponses: boolean;
 }
 
 const COUNTRIES = ['de', 'at', 'ch'] as const;
@@ -297,6 +301,8 @@ export function buildKununuReviewsPlan(input: KununuReviewsInput): KununuReviews
     const targets = buildTargets(input);
     const startPage = cleanInteger(input.page, 'page', 1, 100) ?? 1;
     const maxPages = cleanInteger(input.max_pages, 'max_pages', 1, 25) ?? 1;
+    const includeRawReview = cleanBoolean(input.include_raw_review, 'include_raw_review') ?? false;
+    const includeRawResponses = cleanBoolean(input.include_raw_responses, 'include_raw_responses') ?? false;
 
     const baseParams: Record<string, unknown> = {};
 
@@ -325,7 +331,7 @@ export function buildKununuReviewsPlan(input: KununuReviewsInput): KununuReviews
         }
     }
 
-    return { targets, baseParams, startPage, maxPages };
+    return { targets, baseParams, startPage, maxPages, includeRawReview, includeRawResponses };
 }
 
 export function buildPageParams(

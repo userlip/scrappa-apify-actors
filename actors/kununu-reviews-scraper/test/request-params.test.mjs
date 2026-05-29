@@ -15,6 +15,8 @@ test('builds params for batch Kununu review targets', () => {
         review_type: 'candidates',
         sort: 'newest',
         fetch_factor_scores: true,
+        include_raw_review: true,
+        include_raw_responses: true,
     });
 
     assert.deepEqual(plan.targets, [
@@ -28,6 +30,8 @@ test('builds params for batch Kununu review targets', () => {
     });
     assert.equal(plan.startPage, 2);
     assert.equal(plan.maxPages, 3);
+    assert.equal(plan.includeRawReview, true);
+    assert.equal(plan.includeRawResponses, true);
 
     assert.deepEqual(buildPageParams(plan, plan.targets[0], 2), {
         review_type: 'candidates',
@@ -49,6 +53,8 @@ test('supports single slug compatibility input with default country', () => {
         { country: 'de', company_slug: 'bmwgroup', input: 'BMWGROUP' },
     ]);
     assert.deepEqual(plan.baseParams, {});
+    assert.equal(plan.includeRawReview, false);
+    assert.equal(plan.includeRawResponses, false);
     assert.equal(describeKununuReviewsRequest(plan), 'de/bmwgroup (page 1)');
 });
 
@@ -126,5 +132,10 @@ test('rejects invalid Kununu request params', () => {
     assert.throws(
         () => buildKununuReviewsPlan({ targets: ['bmwgroup'], score_filters: ['bad'] }),
         /score_filters values must be one of/,
+    );
+
+    assert.throws(
+        () => buildKununuReviewsPlan({ targets: ['bmwgroup'], include_raw_review: 'true' }),
+        /include_raw_review must be a boolean/,
     );
 });

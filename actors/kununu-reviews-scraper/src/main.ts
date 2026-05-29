@@ -4,12 +4,13 @@ import {
     buildPageParams,
     describeKununuReviewsRequest,
 } from './request-params.js';
+import { getSavedCount } from './charging.js';
 import type { KununuReviewsInput } from './request-params.js';
 import {
     collectReviews,
     enrichReview,
 } from './review-processing.js';
-import type { KununuReviewsResponse } from './review-processing.js';
+import type { KununuPagination, KununuReviewsResponse } from './review-processing.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
@@ -36,9 +37,11 @@ async function main(): Promise<void> {
         const responses: Array<{
             target: string;
             page: number;
-            response: KununuReviewsResponse;
+            response?: KununuReviewsResponse;
+            pagination?: KununuPagination;
+            count: number;
         }> = [];
-        const allReviews: Record<string, unknown>[] = [];
+        let reviewsExtracted = 0;
 
         for (const target of plan.targets) {
             for (let offset = 0; offset < plan.maxPages; offset += 1) {
@@ -47,17 +50,27 @@ async function main(): Promise<void> {
                 console.log(`Fetching Kununu reviews page ${page} for ${target.country}/${target.company_slug}`);
 
                 const response = await client.get<KununuReviewsResponse>('/kununu/reviews', params);
-                responses.push({ target: `${target.country}/${target.company_slug}`, page, response });
 
                 const reviews = collectReviews(response);
+                responses.push({
+                    target: `${target.country}/${target.company_slug}`,
+                    page,
+                    count: reviews.length,
+                    pagination: response.meta?.pagination,
+                    ...(plan.includeRawResponses ? { response } : {}),
+                });
+
                 if (reviews.length > 0) {
-                    const enrichedReviews = reviews.map((review) => enrichReview(review, target, params, response));
+                    const enrichedReviews = reviews.map((review) => enrichReview(review, target, params, response, {
+                        includeRawReview: plan.includeRawReview,
+                    }));
                     const chargeResult = await Actor.pushData(enrichedReviews, REVIEW_RESULT_CHARGE_EVENT);
-                    allReviews.push(...enrichedReviews.slice(0, chargeResult.chargedCount));
+                    const savedCount = getSavedCount(chargeResult, enrichedReviews.length);
+                    reviewsExtracted += savedCount;
                     console.log(`Found ${reviews.length} reviews on page ${page}`);
 
-                    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < enrichedReviews.length) {
-                        const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${enrichedReviews.length} Kununu reviews for ${target.country}/${target.company_slug} page ${page}.`;
+                    if (chargeResult.eventChargeLimitReached && savedCount < enrichedReviews.length) {
+                        const statusMessage = `Charge limit reached after saving ${savedCount} of ${enrichedReviews.length} Kununu reviews for ${target.country}/${target.company_slug} page ${page}.`;
                         await Actor.setStatusMessage(statusMessage, {
                             level: 'WARNING',
                         });
@@ -85,14 +98,14 @@ async function main(): Promise<void> {
                 max_pages: plan.maxPages,
             },
             pages_fetched: responses.length,
-            reviews_extracted: allReviews.length,
+            reviews_extracted: reviewsExtracted,
             responses,
         });
 
         const summary = {
             targets: plan.targets.map((target) => `${target.country}/${target.company_slug}`),
             pages_fetched: responses.length,
-            reviews_extracted: allReviews.length,
+            reviews_extracted: reviewsExtracted,
         };
 
         console.log('Kununu reviews extraction completed successfully');

@@ -9,7 +9,7 @@ This Actor is a thin wrapper: Apify validates input, calls `https://scrappa.co/a
 - Batch `targets` so one Apify run can process multiple Kununu companies
 - Accepts Kununu slugs, `country/slug` pairs, and full Kununu company URLs
 - Employee and candidate review modes
-- Review scores, title, text blocks, dates, company responses, reviewer role metadata, and raw review payload
+- Review scores, title, text blocks, dates, company responses, and reviewer role metadata
 - Filters for score, recommendation, job status, position, department, response status, date, and factor scores
 - Dataset rows optimized for Apify table views
 - One paid `review-result` event per saved review
@@ -33,6 +33,8 @@ This Actor is a thin wrapper: Apify validates input, calls `https://scrappa.co/a
 | `response_filters` | array | No | `yes` or `no` company-response filter. |
 | `date_filters` | array | No | `24months`, `12months`, `6months`, or `30days`. |
 | `fetch_factor_scores` | boolean | No | Include detailed rating factors when available. |
+| `include_raw_review` | boolean | No | Include the full raw review object in each dataset item. Default `false`. |
+| `include_raw_responses` | boolean | No | Include full per-page Scrappa responses in `OUTPUT`. Default `false`. |
 
 ## Example Input
 
@@ -47,7 +49,9 @@ This Actor is a thin wrapper: Apify validates input, calls `https://scrappa.co/a
   "review_type": "employees",
   "sort": "newest",
   "score_filters": ["excellent", "good"],
-  "fetch_factor_scores": true
+  "fetch_factor_scores": true,
+  "include_raw_review": false,
+  "include_raw_responses": false
 }
 ```
 
@@ -73,12 +77,11 @@ Each Kununu review is saved as one dataset item:
   "reviewer_employment_status": "current",
   "reviewer_recommended": true,
   "page": 1,
-  "source_url": "https://www.kununu.com/de/bmwgroup",
-  "raw_review": {}
+  "source_url": "https://www.kununu.com/de/bmwgroup"
 }
 ```
 
-The full combined response is saved to `OUTPUT`, including target/page metadata and Scrappa responses.
+The `OUTPUT` key-value-store record includes target/page metadata and per-page summaries. Enable `include_raw_responses` only when you need full Scrappa page payloads for debugging.
 
 ## Notes
 

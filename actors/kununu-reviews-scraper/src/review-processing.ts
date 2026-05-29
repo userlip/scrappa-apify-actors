@@ -58,6 +58,10 @@ export interface KununuReviewsResponse {
     [key: string]: unknown;
 }
 
+export interface EnrichReviewOptions {
+    includeRawReview?: boolean;
+}
+
 function joinedReviewText(texts: KununuReviewText[] | undefined): string | null {
     if (!Array.isArray(texts) || texts.length === 0) {
         return null;
@@ -100,11 +104,12 @@ export function enrichReview(
     target: KununuTarget,
     requestParams: Record<string, unknown>,
     response: KununuReviewsResponse,
+    options: EnrichReviewOptions = {},
 ): Record<string, unknown> {
     const pagination = response.meta?.pagination;
     const sourceUrl = `https://www.kununu.com/${target.country}/${target.company_slug}`;
 
-    return {
+    const item: Record<string, unknown> = {
         review_id: review.uuid ?? null,
         company_target: target.input,
         company_country: target.country,
@@ -141,6 +146,11 @@ export function enrichReview(
         request_date_filters: requestParams.date_filters ?? null,
         page_total_results: pagination?.totalResults ?? null,
         page_total_pages: pagination?.totalPages ?? null,
-        raw_review: review,
     };
+
+    if (options.includeRawReview) {
+        item.raw_review = review;
+    }
+
+    return item;
 }
