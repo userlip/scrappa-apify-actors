@@ -157,6 +157,7 @@ export function auditActorHealth(input) {
   const latestBuild = builds[0] || null;
   const recentStatuses = runs.map((run) => run.status || 'UNKNOWN');
   const notice = formatNotice(getActorNotice(actor));
+  // Any failure in the fetched recent-run window is useful triage context, even if the latest run recovered.
   const recentFailedRuns = runs.filter((run) => FAILED_RUN_STATUSES.has(run.status));
   const base = {
     actorId: actor.id,
