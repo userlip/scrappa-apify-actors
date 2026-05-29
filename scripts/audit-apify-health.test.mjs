@@ -150,6 +150,24 @@ test('auditActorHealth reports recent failures when latest run recovered', () =>
   assert.equal(report.recentFailedRuns[0].status, 'TIMED-OUT');
 });
 
+test('auditActorHealth reports non-terminal latest runs separately from OK', () => {
+  const runningReport = auditActorHealth({
+    actor: actorDetail({ id: 'running-id', name: 'running-actor' }),
+    runs: [{ id: 'running-run', status: 'RUNNING' }],
+    builds: [],
+  });
+  const readyReport = auditActorHealth({
+    actor: actorDetail({ id: 'ready-id', name: 'ready-actor' }),
+    runs: [{ id: 'ready-run', status: 'READY' }],
+    builds: [],
+  });
+
+  assert.equal(runningReport.status, 'NON_TERMINAL_LATEST_RUN');
+  assert.match(runningReport.reason, /RUNNING/);
+  assert.equal(readyReport.status, 'NON_TERMINAL_LATEST_RUN');
+  assert.match(readyReport.reason, /READY/);
+});
+
 test('auditActorHealth includes maintenance notice type and message', () => {
   const report = auditActorHealth({
     actor: actorDetail({
@@ -216,6 +234,7 @@ test('createHealthAuditReport summarizes owned actors and exclusions', () => {
   assert.equal(report.summary.ok, 1);
   assert.equal(report.summary.noRuns, 1);
   assert.equal(report.summary.failedLatestRuns, 1);
+  assert.equal(report.summary.nonTerminalLatestRuns, 0);
   assert.equal(report.summary.excludedPublicActors, 1);
   assert.deepEqual(report.failedLatestActors.map((actor) => actor.actorId), ['failed-id']);
   assert.deepEqual(report.noRunActors.map((actor) => actor.actorId), ['no-run-id']);
