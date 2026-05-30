@@ -15,4 +15,4 @@ Notes:
 - Google Videos smoke input used query `coffee brewing tutorial`, `page: 1`, `hl: en`, `gl: us`, `google_domain: google.com`, `safe: off`.
 - Google Hotels smoke input used `Paris, France` with 2026-07-01 to 2026-07-03 stay dates, `adults: 2`, `currency: EUR`, `gl: fr`, `hl: en`.
 - YouTube Transcript smoke input used video ID `dQw4w9WgXcQ`, `language: en`, `hl: en`, `gl: US`.
-- Google Hotels emitted Apify warning `Attempting to charge for an unknown event 'hotel-result'`; local source was updated to charge `apify-default-dataset-item`, matching the live pricing configuration.
+- Google Hotels emitted Apify warning `Attempting to charge for an unknown event 'hotel-result'`; local source was updated to stop passing the obsolete explicit charge event and rely on the configured default dataset item pricing.

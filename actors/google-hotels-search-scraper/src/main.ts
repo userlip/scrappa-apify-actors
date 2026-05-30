@@ -7,7 +7,6 @@ import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
-const HOTEL_RESULT_CHARGE_EVENT = 'apify-default-dataset-item';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -33,22 +32,7 @@ async function main(): Promise<void> {
         const hotels = getHotelProperties(response).map((hotel) => buildHotelDatasetItem(hotel, params));
 
         if (hotels.length > 0) {
-            const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
-            if (isPayPerEvent) {
-                const chargeResult = await Actor.pushData(hotels, HOTEL_RESULT_CHARGE_EVENT);
-                if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < hotels.length) {
-                    const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${hotels.length} Google Hotels results; OUTPUT was not written.`;
-                    console.log(statusMessage, JSON.stringify({
-                        event: HOTEL_RESULT_CHARGE_EVENT,
-                        charged_count: chargeResult.chargedCount,
-                        requested_count: hotels.length,
-                    }));
-                    await Actor.exit({ statusMessage });
-                    return;
-                }
-            } else {
-                await Actor.pushData(hotels);
-            }
+            await Actor.pushData(hotels);
 
             console.log(`Found ${hotels.length} hotel result(s)`);
         } else {
