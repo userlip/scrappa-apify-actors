@@ -1,0 +1,333 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import {
+  auditActorHealth,
+  createHealthAuditReport,
+  createOwnedPublicActorScope,
+  getActorOwnership,
+  parseArgs,
+} from './audit-apify-health.mjs';
+
+const checkedAt = new Date('2026-05-24T05:01:12.000Z');
+
+test('createOwnedPublicActorScope includes public TheScrappa actors by userId or username', () => {
+  const scope = createOwnedPublicActorScope([
+    {
+      actor: { id: 'owned-by-id', name: 'owned-by-id' },
+      detail: actorDetail({ id: 'owned-by-id', name: 'owned-by-id', userId: '8683TqwnXHrQ46FhH' }),
+      error: null,
+    },
+    {
+      actor: { id: 'owned-by-username', name: 'owned-by-username' },
+      detail: actorDetail({ id: 'owned-by-username', name: 'owned-by-username', username: 'thescrappa' }),
+      error: null,
+    },
+  ]);
+
+  assert.deepEqual(scope.ownedPublicActors.map((actor) => actor.id), ['owned-by-id', 'owned-by-username']);
+  assert.deepEqual(scope.excludedPublicActors, []);
+  assert.deepEqual(scope.errors, []);
+});
+
+test('createOwnedPublicActorScope excludes visible Apify-owned public actors', () => {
+  const scope = createOwnedPublicActorScope([
+    {
+      actor: { id: 'RB9HEZitC8hIUXAha', name: 'instagram-api-scraper' },
+      detail: actorDetail({
+        id: 'RB9HEZitC8hIUXAha',
+        name: 'instagram-api-scraper',
+        userId: 'ZscMwFR5H7eCtWtyh',
+        username: 'apify',
+      }),
+      error: null,
+    },
+  ]);
+
+  assert.deepEqual(scope.ownedPublicActors, []);
+  assert.equal(scope.excludedPublicActors.length, 1);
+  assert.equal(scope.excludedPublicActors[0].actorId, 'RB9HEZitC8hIUXAha');
+  assert.equal(scope.excludedPublicActors[0].username, 'apify');
+  assert.match(scope.excludedPublicActors[0].reason, /not owned by TheScrappa/);
+});
+
+test('createOwnedPublicActorScope excludes public actors with unknown ownership as warnings', () => {
+  const scope = createOwnedPublicActorScope([
+    {
+      actor: { id: 'unknown-owner', name: 'unknown-owner' },
+      detail: actorDetail({ id: 'unknown-owner', name: 'unknown-owner', userId: null, username: null }),
+      error: null,
+    },
+  ]);
+
+  assert.deepEqual(scope.ownedPublicActors, []);
+  assert.equal(scope.excludedPublicActors.length, 1);
+  assert.match(scope.excludedPublicActors[0].reason, /no userId or username/);
+});
+
+test('createOwnedPublicActorScope skips private actors', () => {
+  const scope = createOwnedPublicActorScope([
+    {
+      actor: { id: 'private-actor', name: 'private-actor' },
+      detail: actorDetail({ id: 'private-actor', name: 'private-actor', isPublic: false, userId: '8683TqwnXHrQ46FhH' }),
+      error: null,
+    },
+  ]);
+
+  assert.deepEqual(scope.ownedPublicActors, []);
+  assert.deepEqual(scope.excludedPublicActors, []);
+  assert.deepEqual(scope.errors, []);
+});
+
+test('createOwnedPublicActorScope reports detail errors only for known public actors', () => {
+  const scope = createOwnedPublicActorScope([
+    {
+      actor: { id: 'public-error', name: 'public-error', isPublic: true },
+      detail: null,
+      error: new Error('Public detail failed'),
+    },
+    {
+      actor: { id: 'unknown-visibility-error', name: 'unknown-visibility-error' },
+      detail: null,
+      error: new Error('Unknown visibility failed'),
+    },
+    {
+      actor: { id: 'private-error', name: 'private-error', isPublic: false },
+      detail: null,
+      error: new Error('Private detail failed'),
+    },
+  ]);
+
+  assert.deepEqual(scope.ownedPublicActors, []);
+  assert.equal(scope.errors.length, 1);
+  assert.equal(scope.errors[0].actorId, 'public-error');
+  assert.match(scope.errors[0].reason, /Public detail failed/);
+  assert.equal(scope.excludedPublicActors.length, 2);
+  assert.deepEqual(scope.excludedPublicActors.map((actor) => actor.actorId), ['private-error', 'unknown-visibility-error']);
+  assert.match(scope.excludedPublicActors[1].reason, /Unknown visibility failed/);
+});
+
+test('createOwnedPublicActorScope reports detail errors for owned actors with unknown visibility', () => {
+  const scope = createOwnedPublicActorScope([
+    {
+      actor: { id: 'owned-by-username-error', name: 'owned-by-username-error', username: 'thescrappa' },
+      detail: null,
+      error: new Error('Owned detail failed'),
+    },
+    {
+      actor: { id: 'owned-by-user-id-error', name: 'owned-by-user-id-error', userId: '8683TqwnXHrQ46FhH' },
+      detail: null,
+      error: new Error('Owned detail failed by userId'),
+    },
+  ]);
+
+  assert.deepEqual(scope.ownedPublicActors, []);
+  assert.deepEqual(scope.excludedPublicActors, []);
+  assert.equal(scope.errors.length, 2);
+  assert.deepEqual(scope.errors.map((actor) => actor.actorId), ['owned-by-user-id-error', 'owned-by-username-error']);
+  assert.match(scope.errors[0].reason, /Owned detail failed/);
+});
+
+test('auditActorHealth reports no-run actors', () => {
+  const report = auditActorHealth({
+    actor: actorDetail({ id: 'no-run-id', name: 'no-run-actor' }),
+    runs: [],
+    builds: [{ id: 'build-id', status: 'SUCCEEDED' }],
+  });
+
+  assert.equal(report.status, 'NO_RUNS');
+  assert.equal(report.latestRun, null);
+  assert.equal(report.latestBuild.id, 'build-id');
+  assert.match(report.reason, /latest 5-run history request/);
+});
+
+test('auditActorHealth reports failed latest runs', () => {
+  const report = auditActorHealth({
+    actor: actorDetail({ id: 'failed-id', name: 'failed-actor' }),
+    runs: [
+      { id: 'latest-run', status: 'FAILED', startedAt: '2026-05-24T05:00:00.000Z' },
+      { id: 'previous-run', status: 'SUCCEEDED' },
+    ],
+    builds: [],
+  });
+
+  assert.equal(report.status, 'FAILED_LATEST_RUN');
+  assert.equal(report.latestRun.id, 'latest-run');
+  assert.deepEqual(report.recentStatuses, ['FAILED', 'SUCCEEDED']);
+});
+
+test('auditActorHealth reports recent failures when latest run recovered', () => {
+  const report = auditActorHealth({
+    actor: actorDetail({ id: 'recovered-id', name: 'recovered-actor' }),
+    runs: [
+      { id: 'latest-run', status: 'SUCCEEDED' },
+      { id: 'previous-run', status: 'TIMED-OUT' },
+    ],
+    builds: [],
+  });
+
+  assert.equal(report.status, 'RECENT_FAILED_BUT_LATEST_OK');
+  assert.equal(report.recentFailedRuns.length, 1);
+  assert.equal(report.recentFailedRuns[0].status, 'TIMED-OUT');
+});
+
+test('auditActorHealth reports non-terminal latest runs separately from OK', () => {
+  const runningReport = auditActorHealth({
+    actor: actorDetail({ id: 'running-id', name: 'running-actor' }),
+    runs: [{ id: 'running-run', status: 'RUNNING' }],
+    builds: [],
+  });
+  const readyReport = auditActorHealth({
+    actor: actorDetail({ id: 'ready-id', name: 'ready-actor' }),
+    runs: [{ id: 'ready-run', status: 'READY' }],
+    builds: [],
+  });
+
+  assert.equal(runningReport.status, 'NON_TERMINAL_LATEST_RUN');
+  assert.match(runningReport.reason, /RUNNING/);
+  assert.equal(readyReport.status, 'NON_TERMINAL_LATEST_RUN');
+  assert.match(readyReport.reason, /READY/);
+});
+
+test('auditActorHealth reports failed latest builds separately from OK', () => {
+  const report = auditActorHealth({
+    actor: actorDetail({ id: 'failed-build-id', name: 'failed-build-actor' }),
+    runs: [{ id: 'latest-run', status: 'SUCCEEDED' }],
+    builds: [{ id: 'latest-build', status: 'FAILED' }],
+  });
+
+  assert.equal(report.status, 'FAILED_LATEST_BUILD');
+  assert.equal(report.latestRun.status, 'SUCCEEDED');
+  assert.equal(report.latestBuild.id, 'latest-build');
+  assert.match(report.reason, /FAILED/);
+});
+
+test('auditActorHealth includes maintenance notice type and message', () => {
+  const report = auditActorHealth({
+    actor: actorDetail({
+      id: 'notice-id',
+      name: 'notice-actor',
+      notices: [{ type: 'UNDER_MAINTENANCE', message: 'Temporarily under maintenance.' }],
+    }),
+    runs: [{ id: 'latest-run', status: 'SUCCEEDED' }],
+    builds: [{ id: 'build-id', status: 'SUCCEEDED' }],
+  });
+
+  assert.equal(report.status, 'OK');
+  assert.equal(report.notice.type, 'UNDER_MAINTENANCE');
+  assert.equal(report.notice.message, 'Temporarily under maintenance.');
+});
+
+test('auditActorHealth ignores Apify NONE notices', () => {
+  const stringNoticeReport = auditActorHealth({
+    actor: actorDetail({ id: 'none-string-id', name: 'none-string-actor', notice: 'NONE' }),
+    runs: [{ id: 'latest-run', status: 'SUCCEEDED' }],
+    builds: [],
+  });
+  const objectNoticeReport = auditActorHealth({
+    actor: actorDetail({ id: 'none-object-id', name: 'none-object-actor', notice: { type: 'NONE' } }),
+    runs: [{ id: 'latest-run', status: 'SUCCEEDED' }],
+    builds: [],
+  });
+
+  assert.equal(stringNoticeReport.notice, null);
+  assert.equal(objectNoticeReport.notice, null);
+});
+
+test('createHealthAuditReport summarizes owned actors and exclusions', () => {
+  const report = createHealthAuditReport({
+    checkedAt,
+    actors: [
+      {
+        actor: actorDetail({ id: 'ok-id', name: 'ok-actor' }),
+        runs: [{ id: 'ok-run', status: 'SUCCEEDED' }],
+        builds: [{ id: 'ok-build', status: 'SUCCEEDED' }],
+      },
+      {
+        actor: actorDetail({ id: 'no-run-id', name: 'no-run-actor' }),
+        runs: [],
+        builds: [],
+      },
+      {
+        actor: actorDetail({ id: 'failed-id', name: 'failed-actor' }),
+        runs: [{ id: 'failed-run', status: 'ABORTED' }],
+        builds: [],
+      },
+    ],
+    excludedPublicActors: [{
+      actorId: 'RB9HEZitC8hIUXAha',
+      slug: 'instagram-api-scraper',
+      username: 'apify',
+      userId: 'ZscMwFR5H7eCtWtyh',
+      reason: 'Public actor is visible to this token but is not owned by TheScrappa.',
+    }],
+  });
+
+  assert.equal(report.checkedAt, '2026-05-24T05:01:12.000Z');
+  assert.equal(report.publicActors, 3);
+  assert.equal(report.summary.ok, 1);
+  assert.equal(report.summary.noRuns, 1);
+  assert.equal(report.summary.failedLatestRuns, 1);
+  assert.equal(report.summary.nonTerminalLatestRuns, 0);
+  assert.equal(report.summary.failedLatestBuilds, 0);
+  assert.equal(report.summary.excludedPublicActors, 1);
+  assert.deepEqual(report.failedLatestActors.map((actor) => actor.actorId), ['failed-id']);
+  assert.deepEqual(report.noRunActors.map((actor) => actor.actorId), ['no-run-id']);
+});
+
+test('getActorOwnership handles nested owner fields and case-insensitive username', () => {
+  assert.deepEqual(getActorOwnership({ user: { id: '8683TqwnXHrQ46FhH', username: 'other' } }), {
+    userId: '8683TqwnXHrQ46FhH',
+    username: 'other',
+    hasOwnershipFields: true,
+    isOwned: true,
+  });
+
+  assert.equal(getActorOwnership({ owner: { username: 'TheScrappa' } }).isOwned, true);
+});
+
+test('parseArgs supports JSON output', () => {
+  assert.deepEqual(parseArgs(['--json']), {
+    help: false,
+    json: true,
+  });
+
+  assert.throws(() => parseArgs(['--include-active']), /Unknown argument/);
+});
+
+test('getRetryDelayMs uses retry-after seconds, HTTP dates, and fallback delays', async () => {
+  const { getRetryDelayMs } = await import('./audit-apify-health.mjs');
+  const secondsResponse = {
+    headers: {
+      get(name) {
+        return name === 'retry-after' ? '3' : null;
+      },
+    },
+  };
+  const dateResponse = {
+    headers: {
+      get(name) {
+        return name === 'retry-after' ? new Date(Date.now() + 5000).toUTCString() : null;
+      },
+    },
+  };
+
+  assert.equal(getRetryDelayMs(secondsResponse, 1), 3000);
+  assert.equal(getRetryDelayMs(null, 2), 1500);
+
+  const dateDelay = getRetryDelayMs(dateResponse, 1);
+  assert.ok(dateDelay > 0);
+  assert.ok(dateDelay <= 5000);
+});
+
+function actorDetail(overrides) {
+  return {
+    id: 'actor-id',
+    name: 'actor-slug',
+    title: 'Actor Title',
+    isPublic: true,
+    userId: '8683TqwnXHrQ46FhH',
+    username: 'thescrappa',
+    ...overrides,
+  };
+}
