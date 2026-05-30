@@ -1,0 +1,49 @@
+{
+  "actorSpecification": 1,
+  "name": "startpage-search-scraper",
+  "title": "Startpage Search Scraper",
+  "description": "Search privacy-focused Startpage SERPs through Scrappa, with batch query input and one Apify dataset item per organic result.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 180
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "organic": {
+          "title": "Organic Results",
+          "transformation": {
+            "fields": ["position", "title", "description", "url", "domain", "source", "query", "request_language", "request_page", "request_safe_search", "total_results"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": { "label": "#", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "description": { "label": "Description", "format": "text" },
+              "url": { "label": "URL", "format": "link" },
+              "domain": { "label": "Domain", "format": "text" },
+              "source": { "label": "Source", "format": "text" },
+              "query": { "label": "Query", "format": "text" },
+              "request_language": { "label": "Language", "format": "text" },
+              "request_page": { "label": "Page", "format": "number" },
+              "request_safe_search": { "label": "Safe Search", "format": "number" },
+              "total_results": { "label": "Total Results", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
