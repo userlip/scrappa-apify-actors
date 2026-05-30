@@ -6,7 +6,6 @@ import type { StartpageSearchResponse } from './response-utils.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
-const STARTPAGE_RESULT_CHARGE_EVENT = 'apify-default-dataset-item';
 
 interface PushResultItemsResult {
     savedCount: number;
@@ -18,23 +17,7 @@ async function pushResultItems(items: Record<string, unknown>[]): Promise<PushRe
         return { savedCount: 0, statusMessage: null };
     }
 
-    const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
-    if (!isPayPerEvent) {
-        await Actor.pushData(items);
-        return { savedCount: items.length, statusMessage: null };
-    }
-
-    const chargeResult = await Actor.pushData(items, STARTPAGE_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < items.length) {
-        const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${items.length} Startpage results.`;
-        console.log(statusMessage, JSON.stringify({
-            event: STARTPAGE_RESULT_CHARGE_EVENT,
-            charged_count: chargeResult.chargedCount,
-            requested_count: items.length,
-        }));
-        return { savedCount: chargeResult.chargedCount, statusMessage };
-    }
-
+    await Actor.pushData(items);
     return { savedCount: items.length, statusMessage: null };
 }
 
