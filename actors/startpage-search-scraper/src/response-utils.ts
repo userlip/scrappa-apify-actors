@@ -41,6 +41,15 @@ export function extractStartpageOrganicResults(response: unknown): StartpageOrga
     return [];
 }
 
+function cleanSource(value: unknown): string | undefined {
+    if (typeof value !== 'string') {
+        return undefined;
+    }
+
+    const source = value.trim();
+    return source === '' ? undefined : source;
+}
+
 export function buildStartpageDatasetItem(
     result: StartpageOrganicResult,
     params: Record<string, unknown>,
@@ -54,7 +63,7 @@ export function buildStartpageDatasetItem(
         description: result.description ?? null,
         url: result.url ?? null,
         domain: result.domain ?? null,
-        source: result.source ?? response.source ?? 'startpage',
+        source: cleanSource(result.source) ?? cleanSource(response.source) ?? 'startpage',
         request_query: params.query ?? null,
         request_language: params.language ?? null,
         request_page: params.page ?? null,

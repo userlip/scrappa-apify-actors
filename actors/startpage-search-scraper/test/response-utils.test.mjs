@@ -70,3 +70,29 @@ test('builds dataset item with request and pagination metadata', () => {
         },
     );
 });
+
+test('falls back to Startpage source when API source fields are blank', () => {
+    assert.equal(
+        buildStartpageDatasetItem(
+            {
+                title: 'Privacy Tools',
+                source: '',
+            },
+            { query: 'privacy tools' },
+            { source: '   ' },
+        ).source,
+        'startpage',
+    );
+
+    assert.equal(
+        buildStartpageDatasetItem(
+            {
+                title: 'Privacy Tools',
+                source: ' custom-source ',
+            },
+            { query: 'privacy tools' },
+            { source: 'startpage' },
+        ).source,
+        'custom-source',
+    );
+});
