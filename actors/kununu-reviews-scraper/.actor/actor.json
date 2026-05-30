@@ -1,0 +1,61 @@
+{
+  "actorSpecification": 1,
+  "name": "kununu-reviews-scraper",
+  "title": "Kununu Reviews Scraper",
+  "description": "Scrape Kununu company reviews by company slug or URL. Supports batch companies in one run and saves each employee or candidate review as one charged dataset item.",
+  "categories": [
+    "MARKETING",
+    "LEAD_GENERATION",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "reviews": {
+          "title": "Kununu Reviews",
+          "transformation": {
+            "fields": ["company_name", "company_country", "company_slug", "rating", "rounded_rating", "title", "text", "date", "review_type", "reviewer_position", "reviewer_department", "reviewer_employment_status", "reviewer_recommended", "review_id", "page", "source_url"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "company_name": { "label": "Company", "format": "text" },
+              "company_country": { "label": "Country", "format": "text" },
+              "company_slug": { "label": "Slug", "format": "text" },
+              "rating": { "label": "Rating", "format": "number" },
+              "rounded_rating": { "label": "Rounded Rating", "format": "number" },
+              "title": { "label": "Title", "format": "text" },
+              "text": { "label": "Review", "format": "text" },
+              "date": { "label": "Date", "format": "date" },
+              "review_type": { "label": "Type", "format": "text" },
+              "reviewer_position": { "label": "Position", "format": "text" },
+              "reviewer_department": { "label": "Department", "format": "text" },
+              "reviewer_employment_status": { "label": "Employment Status", "format": "text" },
+              "reviewer_recommended": { "label": "Recommended", "format": "boolean" },
+              "review_id": { "label": "Review ID", "format": "text" },
+              "page": { "label": "Page", "format": "number" },
+              "source_url": { "label": "Source URL", "format": "link" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
