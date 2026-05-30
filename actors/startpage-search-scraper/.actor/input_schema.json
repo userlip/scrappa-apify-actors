@@ -1,0 +1,72 @@
+{
+  "title": "Startpage Search Scraper",
+  "description": "Batch Startpage SERP searches. Each query returns one dataset item per organic result.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": ["queries"],
+  "properties": {
+    "queries": {
+      "title": "Queries",
+      "type": "array",
+      "description": "Search requests to run in one Actor run.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "query": "privacy tools",
+          "language": "english",
+          "page": 0,
+          "safe_search": true
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": {
+            "title": "Search Query",
+            "type": "string",
+            "description": "Keyword or phrase to search on Startpage.",
+            "editor": "textfield",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "language": {
+            "title": "Language",
+            "type": "string",
+            "description": "Startpage language filter.",
+            "editor": "select",
+            "enum": ["english", "deutsch", "french", "spanish", "italian", "portuguese", "dutch", "russian", "chinese", "japanese", "arabic", "all"],
+            "enumTitles": ["English", "Deutsch", "French", "Spanish", "Italian", "Portuguese", "Dutch", "Russian", "Chinese", "Japanese", "Arabic", "All"],
+            "default": "english"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "description": "Startpage page number from 0 to 10.",
+            "editor": "number",
+            "minimum": 0,
+            "maximum": 10,
+            "default": 0
+          },
+          "safe_search": {
+            "title": "Safe Search",
+            "type": "boolean",
+            "description": "When set, send Startpage safe search as 1 or 0 to Scrappa.",
+            "editor": "checkbox"
+          }
+        }
+      }
+    },
+    "max_results_per_query": {
+      "title": "Max Results Per Query",
+      "type": "integer",
+      "description": "Maximum organic results to save for each query.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    }
+  }
+}
