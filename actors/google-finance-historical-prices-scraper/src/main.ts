@@ -3,11 +3,31 @@ import { buildGoogleFinanceHistoricalPricesParams, describeGoogleFinanceHistoric
 import type { GoogleFinanceHistoricalPricesInput } from './request-params.js';
 import { buildHistoricalPriceDatasetItems } from './response-utils.js';
 import type { GoogleFinanceHistoricalPricesResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
 const PRICE_POINT_CHARGE_EVENT = 'price-point';
+
+function hasCustomDateRange(params: Record<string, unknown>): boolean {
+    return typeof params.start_date === 'string' && typeof params.end_date === 'string';
+}
+
+function isScrappaNotFoundError(error: unknown): boolean {
+    return error instanceof ScrappaHttpError && error.status === 404;
+}
+
+function buildNoHistoricalDataOutput(params: Record<string, unknown>, message: string): Record<string, unknown> {
+    return {
+        symbol: params.symbol ?? null,
+        exchange: params.exchange ?? null,
+        prices: [],
+        request: params,
+        error: message,
+        error_code: 'NOT_FOUND',
+        status_code: 404,
+    };
+}
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -27,9 +47,24 @@ async function main(): Promise<void> {
         console.log(`Fetching Google Finance historical prices for ${describeGoogleFinanceHistoricalPricesRequest(params)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<GoogleFinanceHistoricalPricesResponse>('/google-finance/historical', params, {
-            attempts: SCRAPPA_MAX_ATTEMPTS,
-        });
+        let response: GoogleFinanceHistoricalPricesResponse;
+        try {
+            response = await client.get<GoogleFinanceHistoricalPricesResponse>('/google-finance/historical', params, {
+                attempts: SCRAPPA_MAX_ATTEMPTS,
+            });
+        } catch (error) {
+            if (hasCustomDateRange(params) && isScrappaNotFoundError(error)) {
+                const statusMessage = 'No Google Finance historical price points found for this custom date range. Scrappa returned NOT_FOUND; use a preset range for the most stable historical data.';
+                console.log(statusMessage);
+                const store = await Actor.openKeyValueStore();
+                await store.setValue('OUTPUT', buildNoHistoricalDataOutput(params, statusMessage));
+                await Actor.exit({ statusMessage });
+                return;
+            }
+
+            throw error;
+        }
+
         const datasetItems = buildHistoricalPriceDatasetItems(response, params);
 
         if (datasetItems.length > 0) {

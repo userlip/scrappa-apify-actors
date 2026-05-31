@@ -11,6 +11,9 @@ interface ScrappaRequestOptions {
 
 interface ScrappaError {
     message?: string;
+    error?: string;
+    code?: string;
+    status?: number;
     errors?: Record<string, string[]>;
 }
 
@@ -18,10 +21,25 @@ interface ScrappaTimeoutErrorOptions extends ErrorOptions {
     message?: string;
 }
 
+interface ScrappaHttpErrorOptions extends ErrorOptions {
+    status: number;
+    message: string;
+}
+
 export class ScrappaTimeoutError extends Error {
     constructor(timeoutMs: number, options?: ScrappaTimeoutErrorOptions) {
         super(options?.message ?? `Scrappa API request timed out after ${timeoutMs}ms`, options);
         this.name = 'ScrappaTimeoutError';
+    }
+}
+
+export class ScrappaHttpError extends Error {
+    status: number;
+
+    constructor(options: ScrappaHttpErrorOptions) {
+        super(`Scrappa API error (${options.status}): ${options.message}`, options);
+        this.name = 'ScrappaHttpError';
+        this.status = options.status;
     }
 }
 
@@ -32,6 +50,10 @@ export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() 
 export function isRetryableScrappaError(error: unknown): boolean {
     if (error instanceof ScrappaTimeoutError) {
         return true;
+    }
+
+    if (error instanceof ScrappaHttpError) {
+        return [408, 429, 500, 502, 503, 504].includes(error.status);
     }
 
     if (error instanceof TypeError && /fetch failed|network|terminated|ECONN|ETIMEDOUT|ENOTFOUND|EAI_AGAIN/i.test(error.message)) {
@@ -156,7 +178,7 @@ export class ScrappaClient {
 
             if (!response.ok) {
                 const errorMessage = await this.readErrorMessage(response);
-                throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
+                throw new ScrappaHttpError({ status: response.status, message: errorMessage });
             }
 
             return await response.json() as T;
@@ -207,7 +229,10 @@ export class ScrappaClient {
     private tryParseJsonError(bodyText: string, fallback: string): string | null {
         try {
             const errorData = JSON.parse(bodyText) as ScrappaError;
-            let message = errorData.message ?? fallback;
+            let message = errorData.message ?? errorData.error ?? fallback;
+            if (errorData.code) {
+                message += ` [${errorData.code}]`;
+            }
             if (errorData.errors) {
                 const errorDetails = Object.entries(errorData.errors)
                     .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
