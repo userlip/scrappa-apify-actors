@@ -7,7 +7,7 @@ Scrape historical price and volume data from Google Finance for stock backtestin
 - Daily, weekly, or monthly historical price points
 - Close price, change, percent change, and volume per point
 - Symbol, exchange, currency, and previous close metadata
-- Preset ranges from 1 day to max, or a custom start/end date range
+- Preset ranges from 1 day to max
 - Full Scrappa response saved to key-value store record `OUTPUT`
 
 ## Input
@@ -25,7 +25,7 @@ Scrape historical price and volume data from Google Finance for stock backtestin
 
 `exchange` is optional, but recommended. Without it, Scrappa attempts to resolve the exchange before fetching historical prices, which can add latency and may fail for ambiguous symbols.
 
-Use either `range` or both `start_date` and `end_date`. Do not send both a preset range and custom dates in the same run.
+Use `range` for the most stable historical data. The Scrappa API contract also exposes `start_date` and `end_date`; when you use custom dates, send both fields and do not send `range`. If Scrappa returns no data for a custom date range, the actor exits successfully with an empty dataset and writes the no-data details to `OUTPUT`.
 
 ## Output
 

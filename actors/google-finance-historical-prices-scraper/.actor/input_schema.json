@@ -22,7 +22,7 @@
     "range": {
       "title": "Range",
       "type": "integer",
-      "description": "Preset time range. Use either this or both start_date and end_date.",
+      "description": "Preset time range. Recommended and most stable. Use either this or both start_date and end_date.",
       "editor": "number",
       "minimum": 1,
       "maximum": 8,
@@ -31,13 +31,13 @@
     "start_date": {
       "title": "Start Date",
       "type": "string",
-      "description": "Custom range start date in YYYY-MM-DD format. Must be used with end_date and without range.",
+      "description": "Custom range start date in YYYY-MM-DD format. Must be used with end_date and without range. Scrappa may return no data for custom ranges; preset range is more stable.",
       "editor": "datepicker"
     },
     "end_date": {
       "title": "End Date",
       "type": "string",
-      "description": "Custom range end date in YYYY-MM-DD format. Must be used with start_date and without range.",
+      "description": "Custom range end date in YYYY-MM-DD format. Must be used with start_date and without range. Scrappa may return no data for custom ranges; preset range is more stable.",
       "editor": "datepicker"
     },
     "interval": {

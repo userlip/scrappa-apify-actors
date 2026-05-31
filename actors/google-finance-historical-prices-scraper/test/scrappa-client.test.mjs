@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
     ScrappaClient,
+    ScrappaHttpError,
     ScrappaTimeoutError,
     getRetryDelayMs,
     isRetryableScrappaError,
@@ -78,6 +79,38 @@ test('parses Scrappa JSON error messages and validation details', async () => {
     }
 });
 
+test('parses Scrappa error/code fields from JSON error bodies', async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = async () => new Response(
+        JSON.stringify({
+            error: 'No historical data found for the given symbol',
+            code: 'NOT_FOUND',
+            status: 404,
+        }),
+        { status: 404, statusText: 'Not Found' },
+    );
+
+    try {
+        const client = new ScrappaClient({
+            apiKey: 'test-key',
+            baseUrl: 'https://example.test/api',
+        });
+
+        await assert.rejects(
+            () => client.get('/google-finance/historical'),
+            (error) => {
+                assert.equal(error instanceof ScrappaHttpError, true);
+                assert.equal(error.status, 404);
+                assert.match(error.message, /Scrappa API error \(404\): No historical data found for the given symbol \[NOT_FOUND\]/);
+                return true;
+            },
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test('preserves timeout classification when reading an error response aborts', async () => {
     const originalFetch = globalThis.fetch;
 
@@ -110,6 +143,9 @@ test('preserves timeout classification when reading an error response aborts', a
 
 test('classifies retryable Scrappa errors and timeout errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError({ status: 429, message: 'Rate limited' })), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError({ status: 503, message: 'Service unavailable' })), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError({ status: 404, message: 'Not found' })), false);
     assert.equal(isRetryableScrappaError(new TypeError('fetch failed')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (429): Rate limited')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (503): Service unavailable')), true);
