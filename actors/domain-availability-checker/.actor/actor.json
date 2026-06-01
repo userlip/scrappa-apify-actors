@@ -1,0 +1,53 @@
+{
+  "actorSpecification": 1,
+  "name": "domain-availability-checker",
+  "title": "Domain Availability Checker",
+  "description": "Check domain availability in bulk using RDAP. Great for brand research, SEO projects, domain lists, and registrar pre-checks.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "domains": {
+          "title": "Domain Checks",
+          "transformation": {
+            "fields": ["success", "domain", "available", "registered", "status", "confidence", "source", "rdap_url", "rdap_status_code", "nameservers", "message", "error", "input_domain"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": { "label": "Success", "format": "boolean" },
+              "domain": { "label": "Domain", "format": "text" },
+              "available": { "label": "Available", "format": "boolean" },
+              "registered": { "label": "Registered", "format": "boolean" },
+              "status": { "label": "Status", "format": "text" },
+              "confidence": { "label": "Confidence", "format": "text" },
+              "source": { "label": "Source", "format": "text" },
+              "rdap_url": { "label": "RDAP URL", "format": "link" },
+              "rdap_status_code": { "label": "RDAP Status", "format": "number" },
+              "nameservers": { "label": "Nameservers", "format": "array" },
+              "message": { "label": "Message", "format": "text" },
+              "error": { "label": "Error", "format": "text" },
+              "input_domain": { "label": "Input Domain", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
