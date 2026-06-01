@@ -87,7 +87,7 @@ export function isPerDomainAvailabilityFailure(error: unknown): boolean {
     }
 
     if (error instanceof ScrappaHttpError) {
-        return [400, 404, 408, 422, 429, 500, 502, 503, 504].includes(error.status);
+        return [400, 404, 422].includes(error.status);
     }
 
     return false;

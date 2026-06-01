@@ -26,7 +26,7 @@
         "domains": {
           "title": "Domain Checks",
           "transformation": {
-            "fields": ["success", "domain", "available", "registered", "status", "confidence", "source", "rdap_url", "rdap_status_code", "rdap_events", "nameservers", "message", "error", "input_domain"]
+            "fields": ["success", "domain", "available", "registered", "status", "confidence", "source", "rdap_url", "rdap_status_code", "rdap_events", "nameservers", "message", "error", "status_code", "input_domain"]
           },
           "display": {
             "component": "table",
@@ -44,6 +44,7 @@
               "nameservers": { "label": "Nameservers", "format": "array" },
               "message": { "label": "Message", "format": "text" },
               "error": { "label": "Error", "format": "text" },
+              "status_code": { "label": "Status Code", "format": "number" },
               "input_domain": { "label": "Input Domain", "format": "text" }
             }
           }
