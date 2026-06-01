@@ -91,7 +91,7 @@ export function getDomainRequests(input: DomainAvailabilityInput | null): Domain
             requests.push({ input_domain: inputDomain, domain });
         } catch (error) {
             const fallback = typeof inputDomain === 'string' ? inputDomain : String(rawDomain);
-            const key = `invalid:${fallback}`;
+            const key = `invalid:${typeof rawDomain === 'string' ? rawDomain : String(rawDomain)}`;
             if (seen.has(key)) {
                 return;
             }

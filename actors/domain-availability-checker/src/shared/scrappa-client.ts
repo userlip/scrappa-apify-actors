@@ -57,6 +57,14 @@ export function isRetryableScrappaError(error: unknown): boolean {
     return /Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message);
 }
 
+export function describeScrappaError(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    return String(error);
+}
+
 export class ScrappaClient {
     private apiKey: string;
     private baseUrl: string;
@@ -107,7 +115,7 @@ export class ScrappaClient {
                 }
 
                 const delayMs = getRetryDelayMs(attempt);
-                console.warn(`Scrappa API request failed (${this.describeError(error)}). Retrying attempt ${attempt + 1}/${attempts} in ${delayMs}ms.`);
+                console.warn(`Scrappa API request failed (${describeScrappaError(error)}). Retrying attempt ${attempt + 1}/${attempts} in ${delayMs}ms.`);
                 await new Promise((resolve) => setTimeout(resolve, delayMs));
             }
         }
@@ -126,13 +134,7 @@ export class ScrappaClient {
         if (method === 'GET') {
             Object.entries(params).forEach(([key, value]) => {
                 if (value !== undefined && value !== null && value !== '') {
-                    if (typeof value === 'boolean') {
-                        if (value) {
-                            url.searchParams.set(key, '1');
-                        }
-                    } else {
-                        url.searchParams.set(key, String(value));
-                    }
+                    url.searchParams.set(key, String(value));
                 }
             });
         }
@@ -180,14 +182,6 @@ export class ScrappaClient {
         } finally {
             clearTimeout(timeoutId);
         }
-    }
-
-    private describeError(error: unknown): string {
-        if (error instanceof Error) {
-            return error.message;
-        }
-
-        return String(error);
     }
 
     private async readErrorMessage(response: Response): Promise<string> {

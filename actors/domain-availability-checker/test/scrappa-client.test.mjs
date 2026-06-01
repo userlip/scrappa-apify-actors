@@ -32,3 +32,27 @@ test('ScrappaClient builds the domain availability request with actor user agent
         globalThis.fetch = originalFetch;
     }
 });
+
+test('ScrappaClient preserves false boolean query params', async () => {
+    const originalFetch = globalThis.fetch;
+    let capturedUrl;
+
+    globalThis.fetch = async (url) => {
+        capturedUrl = url;
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    };
+
+    try {
+        const client = new ScrappaClient({
+            apiKey: 'test-key',
+            baseUrl: 'https://example.test/api',
+        });
+
+        await client.get('/domains/availability', { domain: 'example.com', debug: false });
+
+        const url = new URL(capturedUrl);
+        assert.equal(url.searchParams.get('debug'), 'false');
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});

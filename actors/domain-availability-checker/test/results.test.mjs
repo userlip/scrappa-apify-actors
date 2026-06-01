@@ -4,7 +4,7 @@ import test from 'node:test';
 import {
     buildDomainAvailabilityDatasetItem,
     buildDomainAvailabilityFailureItem,
-    isRecoverableDomainAvailabilityError,
+    isPerDomainAvailabilityFailure,
 } from '../dist/results.js';
 import { ScrappaHttpError, ScrappaTimeoutError } from '../dist/shared/index.js';
 
@@ -38,7 +38,6 @@ test('buildDomainAvailabilityDatasetItem maps a successful Scrappa response', ()
             rdap_events: [{ action: 'registration', date: '1995-08-14T04:00:00Z' }],
             nameservers: ['A.IANA-SERVERS.NET'],
             message: undefined,
-            raw_response: response,
         },
     );
 });
@@ -65,10 +64,32 @@ test('buildDomainAvailabilityFailureItem preserves per-domain errors', () => {
     );
 });
 
-test('isRecoverableDomainAvailabilityError classifies per-domain Scrappa failures', () => {
-    assert.equal(isRecoverableDomainAvailabilityError(new ScrappaTimeoutError(1000)), true);
-    assert.equal(isRecoverableDomainAvailabilityError(new ScrappaHttpError(422, 'Invalid request')), true);
-    assert.equal(isRecoverableDomainAvailabilityError(new ScrappaHttpError(503, 'Unavailable')), true);
-    assert.equal(isRecoverableDomainAvailabilityError(new ScrappaHttpError(401, 'Unauthorized')), false);
-    assert.equal(isRecoverableDomainAvailabilityError(new Error('network reset')), false);
+test('buildDomainAvailabilityFailureItem supports validation failures without normalized domains', () => {
+    assert.deepEqual(
+        buildDomainAvailabilityFailureItem(new Error('Invalid domain'), 'localhost'),
+        {
+            success: false,
+            input_domain: 'localhost',
+            domain: null,
+            available: null,
+            registered: null,
+            status: 'error',
+            confidence: null,
+            source: 'scrappa',
+            rdap_url: null,
+            rdap_status_code: null,
+            rdap_events: [],
+            nameservers: [],
+            error: 'Invalid domain',
+            status_code: undefined,
+        },
+    );
+});
+
+test('isPerDomainAvailabilityFailure classifies batch-safe Scrappa failures', () => {
+    assert.equal(isPerDomainAvailabilityFailure(new ScrappaTimeoutError(1000)), true);
+    assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(422, 'Invalid request')), true);
+    assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(503, 'Unavailable')), true);
+    assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(401, 'Unauthorized')), false);
+    assert.equal(isPerDomainAvailabilityFailure(new Error('network reset')), false);
 });

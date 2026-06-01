@@ -50,6 +50,27 @@ test('getDomainRequests keeps invalid domains as per-item failures', () => {
     );
 });
 
+test('getDomainRequests returns no requests for empty input', () => {
+    assert.deepEqual(getDomainRequests(null), []);
+    assert.deepEqual(getDomainRequests({}), []);
+});
+
+test('getDomainRequests preserves distinct invalid raw inputs', () => {
+    assert.deepEqual(
+        getDomainRequests({ domains: [' localhost ', 'localhost'] }),
+        [
+            {
+                input_domain: 'localhost',
+                validation_error: 'Invalid domain "localhost". Provide a fully qualified domain such as example.com.',
+            },
+            {
+                input_domain: 'localhost',
+                validation_error: 'Invalid domain "localhost". Provide a fully qualified domain such as example.com.',
+            },
+        ],
+    );
+});
+
 test('getDomainRequests rejects a non-array domains field', () => {
     assert.throws(
         () => getDomainRequests({ domains: 'example.com' }),

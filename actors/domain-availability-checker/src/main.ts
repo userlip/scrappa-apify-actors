@@ -1,42 +1,21 @@
 import { Actor } from 'apify';
+import {
+    actorChargingApi,
+    getDomainChargeLimitStatus,
+    pushDomainResult,
+} from './charging.js';
 import { getDomainRequests, type DomainAvailabilityInput } from './input.js';
-import { buildDomainAvailabilityParams } from './request-params.js';
 import {
     buildDomainAvailabilityDatasetItem,
     buildDomainAvailabilityFailureItem,
-    isRecoverableDomainAvailabilityError,
+    isPerDomainAvailabilityFailure,
     type DomainAvailabilityDatasetItem,
     type DomainAvailabilityResponse,
 } from './results.js';
-import { ScrappaClient } from './shared/index.js';
+import { ScrappaClient, describeScrappaError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 25000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
-const DOMAIN_RESULT_CHARGE_EVENT = 'domain-result';
-
-function describeUnknownError(error: unknown): string {
-    if (error instanceof Error) {
-        return error.message;
-    }
-
-    return typeof error === 'string' ? error : String(error);
-}
-
-async function pushResult(item: DomainAvailabilityDatasetItem): Promise<boolean> {
-    const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
-    if (!isPayPerEvent || !item.success) {
-        await Actor.pushData(item);
-        return true;
-    }
-
-    const chargeResult = await Actor.pushData(item, DOMAIN_RESULT_CHARGE_EVENT);
-    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < 1) {
-        console.warn(`Charge limit reached before saving ${item.domain}; stopping batch without writing uncharged success results.`);
-        return false;
-    }
-
-    return true;
-}
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -70,28 +49,35 @@ async function main(): Promise<void> {
                     inputDomain,
                 );
             } else {
+                const statusMessage = getDomainChargeLimitStatus(actorChargingApi, succeeded + failed, requests.length);
+                if (statusMessage) {
+                    console.log(statusMessage);
+                    await Actor.exit({ statusMessage });
+                    return;
+                }
+
                 console.log(`Checking domain availability: ${domain}`);
 
                 try {
                     const response = await client.get<DomainAvailabilityResponse>(
                         '/domains/availability',
-                        buildDomainAvailabilityParams(domain),
+                        { domain },
                         { attempts: SCRAPPA_MAX_ATTEMPTS },
                     );
                     result = buildDomainAvailabilityDatasetItem(response, inputDomain, domain);
                 } catch (error) {
-                    if (!isRecoverableDomainAvailabilityError(error)) {
+                    if (!isPerDomainAvailabilityFailure(error)) {
                         throw error;
                     }
 
-                    console.warn(`Domain availability returned a per-domain failure for ${domain}: ${describeUnknownError(error)}`);
+                    console.warn(`Domain availability returned a per-domain failure for ${domain}: ${describeScrappaError(error)}`);
                     result = buildDomainAvailabilityFailureItem(error, inputDomain, domain);
                 }
             }
 
-            const pushed = await pushResult(result);
-            if (!pushed) {
-                await Actor.exit({ statusMessage: 'Charge limit reached before saving all successful domain availability results.' });
+            const pushResult = await pushDomainResult(actorChargingApi, result);
+            if (!pushResult.saved) {
+                await Actor.exit({ statusMessage: pushResult.statusMessage ?? 'Charge limit reached before saving all successful domain availability results.' });
                 return;
             }
 
@@ -111,7 +97,7 @@ async function main(): Promise<void> {
         console.log('Domain availability checks completed successfully');
         console.log('Results summary:', JSON.stringify({ requested: requests.length, succeeded, failed }, null, 2));
     } catch (error) {
-        const message = describeUnknownError(error);
+        const message = describeScrappaError(error);
         console.error(`Actor failed: ${message}`);
         await Actor.fail(message);
         return;
@@ -120,4 +106,8 @@ async function main(): Promise<void> {
     await Actor.exit();
 }
 
-main();
+main().catch((error) => {
+    const message = describeScrappaError(error);
+    console.error('Actor failed: ' + message);
+    process.exitCode = 1;
+});

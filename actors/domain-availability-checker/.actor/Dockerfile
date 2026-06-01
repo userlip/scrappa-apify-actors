@@ -1,9 +1,12 @@
 FROM apify/actor-node:20
 
+COPY --chown=myuser:myuser package*.json ./
+
+RUN npm install --include=dev
+
 COPY --chown=myuser:myuser . ./
 
-RUN npm install --include=dev \
-    && npm run build \
+RUN npm run build \
     && npm prune --omit=dev
 
 CMD npm run start

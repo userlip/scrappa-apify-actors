@@ -17,7 +17,7 @@
     "memoryMbytes": 128
   },
   "defaultRunOptions": {
-    "timeoutSecs": 300
+    "timeoutSecs": 600
   },
   "storages": {
     "dataset": {
@@ -26,7 +26,7 @@
         "domains": {
           "title": "Domain Checks",
           "transformation": {
-            "fields": ["success", "domain", "available", "registered", "status", "confidence", "source", "rdap_url", "rdap_status_code", "nameservers", "message", "error", "input_domain"]
+            "fields": ["success", "domain", "available", "registered", "status", "confidence", "source", "rdap_url", "rdap_status_code", "rdap_events", "nameservers", "message", "error", "input_domain"]
           },
           "display": {
             "component": "table",
@@ -40,6 +40,7 @@
               "source": { "label": "Source", "format": "text" },
               "rdap_url": { "label": "RDAP URL", "format": "link" },
               "rdap_status_code": { "label": "RDAP Status", "format": "number" },
+              "rdap_events": { "label": "RDAP Events", "format": "array" },
               "nameservers": { "label": "Nameservers", "format": "array" },
               "message": { "label": "Message", "format": "text" },
               "error": { "label": "Error", "format": "text" },

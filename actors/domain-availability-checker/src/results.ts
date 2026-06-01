@@ -26,6 +26,7 @@ export interface DomainAvailabilityDatasetItem extends Record<string, unknown> {
     source: string | null;
     rdap_url: string | null;
     rdap_status_code: number | null;
+    rdap_events: unknown[];
     nameservers: string[];
     message?: string;
     error?: string;
@@ -51,7 +52,6 @@ export function buildDomainAvailabilityDatasetItem(
         rdap_events: Array.isArray(response.rdap_events) ? response.rdap_events : [],
         nameservers: Array.isArray(response.nameservers) ? response.nameservers : [],
         message: typeof response.message === 'string' ? response.message : undefined,
-        raw_response: response,
     };
 }
 
@@ -81,7 +81,7 @@ export function buildDomainAvailabilityFailureItem(
     };
 }
 
-export function isRecoverableDomainAvailabilityError(error: unknown): boolean {
+export function isPerDomainAvailabilityFailure(error: unknown): boolean {
     if (error instanceof ScrappaTimeoutError) {
         return true;
     }
