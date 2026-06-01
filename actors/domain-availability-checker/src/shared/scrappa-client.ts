@@ -194,6 +194,12 @@ export class ScrappaClient {
             }
 
             return await response.json() as T;
+        } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw new ScrappaTimeoutError(this.timeoutMs, { cause: error });
+            }
+
+            throw error;
         } finally {
             clearTimeout(timeoutId);
         }
