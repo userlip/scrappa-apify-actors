@@ -25,6 +25,13 @@ export class ScrappaTimeoutError extends Error {
     }
 }
 
+export class ScrappaNetworkError extends Error {
+    constructor(message: string, options?: ErrorOptions) {
+        super(`Scrappa API network error: ${message}`, options);
+        this.name = 'ScrappaNetworkError';
+    }
+}
+
 export class ScrappaHttpError extends Error {
     status: number;
     details: string;
@@ -42,7 +49,7 @@ export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() 
 }
 
 export function isRetryableScrappaError(error: unknown): boolean {
-    if (error instanceof ScrappaTimeoutError) {
+    if (error instanceof ScrappaTimeoutError || error instanceof ScrappaNetworkError) {
         return true;
     }
 
@@ -163,10 +170,23 @@ export class ScrappaClient {
         const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
         try {
-            const response = await fetch(url.toString(), {
-                ...requestOptions,
-                signal: controller.signal,
-            });
+            let response: Response;
+            try {
+                response = await fetch(url.toString(), {
+                    ...requestOptions,
+                    signal: controller.signal,
+                });
+            } catch (error) {
+                if (error instanceof Error && error.name === 'AbortError') {
+                    throw new ScrappaTimeoutError(this.timeoutMs, { cause: error });
+                }
+
+                if (error instanceof TypeError) {
+                    throw new ScrappaNetworkError(error.message, { cause: error });
+                }
+
+                throw error;
+            }
 
             if (!response.ok) {
                 const errorMessage = await this.readErrorMessage(response);
@@ -174,11 +194,6 @@ export class ScrappaClient {
             }
 
             return await response.json() as T;
-        } catch (error) {
-            if (error instanceof Error && error.name === 'AbortError') {
-                throw new ScrappaTimeoutError(this.timeoutMs, { cause: error });
-            }
-            throw error;
         } finally {
             clearTimeout(timeoutId);
         }

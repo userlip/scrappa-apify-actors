@@ -1,4 +1,4 @@
-import { ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaHttpError, ScrappaNetworkError, ScrappaTimeoutError } from './shared/index.js';
 
 export interface DomainAvailabilityResponse {
     domain?: string;
@@ -30,7 +30,7 @@ export interface DomainAvailabilityDatasetItem extends Record<string, unknown> {
     nameservers: string[];
     message?: string;
     error?: string;
-    status_code?: number;
+    status_code: number | null;
 }
 
 export function buildDomainAvailabilityDatasetItem(
@@ -52,6 +52,7 @@ export function buildDomainAvailabilityDatasetItem(
         rdap_events: Array.isArray(response.rdap_events) ? response.rdap_events : [],
         nameservers: Array.isArray(response.nameservers) ? response.nameservers : [],
         message: typeof response.message === 'string' ? response.message : undefined,
+        status_code: null,
     };
 }
 
@@ -61,7 +62,7 @@ export function buildDomainAvailabilityFailureItem(
     domain?: string,
 ): DomainAvailabilityDatasetItem {
     const message = error instanceof Error ? error.message : String(error);
-    const statusCode = error instanceof ScrappaHttpError ? error.status : undefined;
+    const statusCode = error instanceof ScrappaHttpError ? error.status : null;
 
     return {
         success: false,
@@ -91,6 +92,10 @@ export function isPerDomainAvailabilityFailure(error: unknown): boolean {
 
 export function isScrappaServiceAvailabilityFailure(error: unknown): boolean {
     if (error instanceof ScrappaTimeoutError) {
+        return true;
+    }
+
+    if (error instanceof ScrappaNetworkError) {
         return true;
     }
 

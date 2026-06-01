@@ -7,7 +7,7 @@ import {
     isPerDomainAvailabilityFailure,
     isScrappaServiceAvailabilityFailure,
 } from '../dist/results.js';
-import { ScrappaHttpError, ScrappaTimeoutError } from '../dist/shared/index.js';
+import { ScrappaHttpError, ScrappaNetworkError, ScrappaTimeoutError } from '../dist/shared/index.js';
 
 test('buildDomainAvailabilityDatasetItem maps a successful Scrappa response', () => {
     const response = {
@@ -39,6 +39,7 @@ test('buildDomainAvailabilityDatasetItem maps a successful Scrappa response', ()
             rdap_events: [{ action: 'registration', date: '1995-08-14T04:00:00Z' }],
             nameservers: ['A.IANA-SERVERS.NET'],
             message: undefined,
+            status_code: null,
         },
     );
 });
@@ -82,7 +83,7 @@ test('buildDomainAvailabilityFailureItem supports validation failures without no
             rdap_events: [],
             nameservers: [],
             error: 'Invalid domain',
-            status_code: undefined,
+            status_code: null,
         },
     );
 });
@@ -97,10 +98,12 @@ test('isPerDomainAvailabilityFailure classifies batch-safe Scrappa failures', ()
     assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(503, 'Unavailable')), false);
     assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(401, 'Unauthorized')), false);
     assert.equal(isPerDomainAvailabilityFailure(new Error('network reset')), false);
+    assert.equal(isPerDomainAvailabilityFailure(new ScrappaNetworkError('network reset')), false);
 });
 
 test('isScrappaServiceAvailabilityFailure classifies transient Scrappa failures', () => {
     assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaTimeoutError(1000)), true);
+    assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaNetworkError('network reset')), true);
     assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaHttpError(408, 'Timeout')), true);
     assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaHttpError(429, 'Rate limited')), true);
     assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaHttpError(503, 'Unavailable')), true);
