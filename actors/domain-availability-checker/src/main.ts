@@ -9,6 +9,7 @@ import {
     buildDomainAvailabilityDatasetItem,
     buildDomainAvailabilityFailureItem,
     isPerDomainAvailabilityFailure,
+    isScrappaServiceAvailabilityFailure,
     type DomainAvailabilityDatasetItem,
     type DomainAvailabilityResponse,
 } from './results.js';
@@ -37,6 +38,7 @@ async function main(): Promise<void> {
         let succeeded = 0;
         let failed = 0;
         let statusMessage: string | null = null;
+        let failureMessage: string | null = null;
 
         console.log(`Checking availability for ${requests.length} domain${requests.length === 1 ? '' : 's'}`);
 
@@ -49,6 +51,8 @@ async function main(): Promise<void> {
                     new Error(request.validation_error ?? 'Invalid domain'),
                     inputDomain,
                 );
+            } else if (failureMessage) {
+                result = buildDomainAvailabilityFailureItem(new Error(failureMessage), inputDomain, domain);
             } else {
                 statusMessage = getDomainChargeLimitStatus(actorChargingApi, succeeded + failed, requests.length);
                 if (statusMessage) {
@@ -65,12 +69,16 @@ async function main(): Promise<void> {
                         );
                         result = buildDomainAvailabilityDatasetItem(response, inputDomain, domain);
                     } catch (error) {
-                        if (!isPerDomainAvailabilityFailure(error)) {
+                        if (isScrappaServiceAvailabilityFailure(error)) {
+                            failureMessage = `Scrappa domain availability service failed after retries: ${describeScrappaError(error)}`;
+                            console.warn(failureMessage);
+                            result = buildDomainAvailabilityFailureItem(error, inputDomain, domain);
+                        } else if (!isPerDomainAvailabilityFailure(error)) {
                             throw error;
+                        } else {
+                            console.warn(`Domain availability returned a per-domain failure for ${domain}: ${describeScrappaError(error)}`);
+                            result = buildDomainAvailabilityFailureItem(error, inputDomain, domain);
                         }
-
-                        console.warn(`Domain availability returned a per-domain failure for ${domain}: ${describeScrappaError(error)}`);
-                        result = buildDomainAvailabilityFailureItem(error, inputDomain, domain);
                     }
                 }
             }
@@ -100,6 +108,11 @@ async function main(): Promise<void> {
 
         if (statusMessage) {
             await Actor.exit({ statusMessage });
+            return;
+        }
+
+        if (failureMessage) {
+            await Actor.fail(failureMessage);
             return;
         }
     } catch (error) {

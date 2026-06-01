@@ -5,6 +5,7 @@ import {
     buildDomainAvailabilityDatasetItem,
     buildDomainAvailabilityFailureItem,
     isPerDomainAvailabilityFailure,
+    isScrappaServiceAvailabilityFailure,
 } from '../dist/results.js';
 import { ScrappaHttpError, ScrappaTimeoutError } from '../dist/shared/index.js';
 
@@ -87,13 +88,22 @@ test('buildDomainAvailabilityFailureItem supports validation failures without no
 });
 
 test('isPerDomainAvailabilityFailure classifies batch-safe Scrappa failures', () => {
-    assert.equal(isPerDomainAvailabilityFailure(new ScrappaTimeoutError(1000)), true);
     assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(422, 'Invalid request')), true);
     assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(400, 'Bad request')), true);
     assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(404, 'Not found')), true);
+    assert.equal(isPerDomainAvailabilityFailure(new ScrappaTimeoutError(1000)), false);
     assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(408, 'Timeout')), false);
     assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(429, 'Rate limited')), false);
     assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(503, 'Unavailable')), false);
     assert.equal(isPerDomainAvailabilityFailure(new ScrappaHttpError(401, 'Unauthorized')), false);
     assert.equal(isPerDomainAvailabilityFailure(new Error('network reset')), false);
+});
+
+test('isScrappaServiceAvailabilityFailure classifies transient Scrappa failures', () => {
+    assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaTimeoutError(1000)), true);
+    assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaHttpError(408, 'Timeout')), true);
+    assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaHttpError(429, 'Rate limited')), true);
+    assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaHttpError(503, 'Unavailable')), true);
+    assert.equal(isScrappaServiceAvailabilityFailure(new ScrappaHttpError(422, 'Invalid request')), false);
+    assert.equal(isScrappaServiceAvailabilityFailure(new Error('network reset')), false);
 });
