@@ -1,0 +1,28 @@
+{
+  "title": "Domain Availability Checker",
+  "description": "Check one or more domains for RDAP-based availability.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "domains": {
+      "title": "Domains",
+      "type": "array",
+      "description": "Domain names or URLs to check in one Apify run. Batch this field to reduce run overhead and get one dataset item per checked domain.",
+      "editor": "stringList",
+      "minItems": 1,
+      "prefill": ["example.com", "brand-name-test-availability-2026.com"],
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "domain": {
+      "title": "Single Domain",
+      "type": "string",
+      "description": "Backward-compatible single domain input. Prefer Domains for bulk checks.",
+      "editor": "textfield",
+      "minLength": 1,
+      "prefill": "example.com"
+    }
+  }
+}
