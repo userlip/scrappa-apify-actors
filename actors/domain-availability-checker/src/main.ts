@@ -38,7 +38,8 @@ async function main(): Promise<void> {
         let succeeded = 0;
         let failed = 0;
         let statusMessage: string | null = null;
-        let failureMessage: string | null = null;
+        let serviceFailureStreak = 0;
+        let fatalServiceFailureMessage: string | null = null;
 
         console.log(`Checking availability for ${requests.length} domain${requests.length === 1 ? '' : 's'}`);
 
@@ -51,8 +52,8 @@ async function main(): Promise<void> {
                     new Error(request.validation_error ?? 'Invalid domain'),
                     inputDomain,
                 );
-            } else if (failureMessage) {
-                result = buildDomainAvailabilityFailureItem(new Error(failureMessage), inputDomain, domain);
+            } else if (fatalServiceFailureMessage) {
+                result = buildDomainAvailabilityFailureItem(new Error(fatalServiceFailureMessage), inputDomain, domain);
             } else {
                 statusMessage = getDomainChargeLimitStatus(actorChargingApi, succeeded + failed, requests.length);
                 if (statusMessage) {
@@ -68,16 +69,22 @@ async function main(): Promise<void> {
                             { attempts: SCRAPPA_MAX_ATTEMPTS },
                         );
                         result = buildDomainAvailabilityDatasetItem(response, inputDomain, domain);
+                        serviceFailureStreak = 0;
                     } catch (error) {
                         if (isScrappaServiceAvailabilityFailure(error)) {
-                            failureMessage = `Scrappa domain availability service failed after retries: ${describeScrappaError(error)}`;
-                            console.warn(failureMessage);
+                            serviceFailureStreak += 1;
+                            const serviceFailureMessage = `Scrappa domain availability service failed after retries: ${describeScrappaError(error)}`;
+                            console.warn(serviceFailureMessage);
                             result = buildDomainAvailabilityFailureItem(error, inputDomain, domain);
+                            if (serviceFailureStreak >= 2) {
+                                fatalServiceFailureMessage = `Scrappa domain availability service failed repeatedly; stopping further upstream requests after ${succeeded + failed + 1} of ${requests.length} domain(s).`;
+                            }
                         } else if (!isPerDomainAvailabilityFailure(error)) {
                             throw error;
                         } else {
                             console.warn(`Domain availability returned a per-domain failure for ${domain}: ${describeScrappaError(error)}`);
                             result = buildDomainAvailabilityFailureItem(error, inputDomain, domain);
+                            serviceFailureStreak = 0;
                         }
                     }
                 }
@@ -111,8 +118,8 @@ async function main(): Promise<void> {
             return;
         }
 
-        if (failureMessage) {
-            await Actor.fail(failureMessage);
+        if (fatalServiceFailureMessage) {
+            await Actor.fail(fatalServiceFailureMessage);
             return;
         }
     } catch (error) {
