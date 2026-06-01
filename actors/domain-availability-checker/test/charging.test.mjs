@@ -83,15 +83,21 @@ test('pushDomainResult does not charge failed domain items', async () => {
 });
 
 test('pushDomainResult reports charge limit before saving successful domain result', async () => {
+    const originalWarn = console.warn;
+    console.warn = () => undefined;
     const actor = createActorMock({
         isPayPerEvent: true,
         pushResults: [{ chargedCount: 0, eventChargeLimitReached: true }],
     });
 
-    const result = await pushDomainResult(actor, successItem);
+    try {
+        const result = await pushDomainResult(actor, successItem);
 
-    assert.deepEqual(result, {
-        saved: false,
-        statusMessage: 'Charge limit reached before saving example.com; stopping batch without writing uncharged success results.',
-    });
+        assert.deepEqual(result, {
+            saved: false,
+            statusMessage: 'Charge limit reached before saving example.com; stopping batch without writing uncharged success results.',
+        });
+    } finally {
+        console.warn = originalWarn;
+    }
 });

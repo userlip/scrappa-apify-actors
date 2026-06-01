@@ -36,6 +36,7 @@ async function main(): Promise<void> {
         let firstResult: DomainAvailabilityDatasetItem | undefined;
         let succeeded = 0;
         let failed = 0;
+        let statusMessage: string | null = null;
 
         console.log(`Checking availability for ${requests.length} domain${requests.length === 1 ? '' : 's'}`);
 
@@ -49,36 +50,36 @@ async function main(): Promise<void> {
                     inputDomain,
                 );
             } else {
-                const statusMessage = getDomainChargeLimitStatus(actorChargingApi, succeeded + failed, requests.length);
+                statusMessage = getDomainChargeLimitStatus(actorChargingApi, succeeded + failed, requests.length);
                 if (statusMessage) {
                     console.log(statusMessage);
-                    await Actor.exit({ statusMessage });
-                    return;
-                }
+                    result = buildDomainAvailabilityFailureItem(new Error(statusMessage), inputDomain, domain);
+                } else {
+                    console.log(`Checking domain availability: ${domain}`);
 
-                console.log(`Checking domain availability: ${domain}`);
+                    try {
+                        const response = await client.get<DomainAvailabilityResponse>(
+                            '/domains/availability',
+                            { domain },
+                            { attempts: SCRAPPA_MAX_ATTEMPTS },
+                        );
+                        result = buildDomainAvailabilityDatasetItem(response, inputDomain, domain);
+                    } catch (error) {
+                        if (!isPerDomainAvailabilityFailure(error)) {
+                            throw error;
+                        }
 
-                try {
-                    const response = await client.get<DomainAvailabilityResponse>(
-                        '/domains/availability',
-                        { domain },
-                        { attempts: SCRAPPA_MAX_ATTEMPTS },
-                    );
-                    result = buildDomainAvailabilityDatasetItem(response, inputDomain, domain);
-                } catch (error) {
-                    if (!isPerDomainAvailabilityFailure(error)) {
-                        throw error;
+                        console.warn(`Domain availability returned a per-domain failure for ${domain}: ${describeScrappaError(error)}`);
+                        result = buildDomainAvailabilityFailureItem(error, inputDomain, domain);
                     }
-
-                    console.warn(`Domain availability returned a per-domain failure for ${domain}: ${describeScrappaError(error)}`);
-                    result = buildDomainAvailabilityFailureItem(error, inputDomain, domain);
                 }
             }
 
             const pushResult = await pushDomainResult(actorChargingApi, result);
             if (!pushResult.saved) {
-                await Actor.exit({ statusMessage: pushResult.statusMessage ?? 'Charge limit reached before saving all successful domain availability results.' });
-                return;
+                statusMessage = pushResult.statusMessage ?? 'Charge limit reached before saving all successful domain availability results.';
+                result = buildDomainAvailabilityFailureItem(new Error(statusMessage), inputDomain, domain);
+                await pushDomainResult(actorChargingApi, result);
             }
 
             firstResult ??= result;
@@ -96,6 +97,11 @@ async function main(): Promise<void> {
 
         console.log('Domain availability checks completed successfully');
         console.log('Results summary:', JSON.stringify({ requested: requests.length, succeeded, failed }, null, 2));
+
+        if (statusMessage) {
+            await Actor.exit({ statusMessage });
+            return;
+        }
     } catch (error) {
         const message = describeScrappaError(error);
         console.error(`Actor failed: ${message}`);
