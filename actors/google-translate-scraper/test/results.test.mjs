@@ -29,6 +29,7 @@ const request = {
 test('extracts translated text from Scrappa response shapes', () => {
     assert.equal(extractTranslatedText({ translated_text: 'Guten Morgen' }), 'Guten Morgen');
     assert.equal(extractTranslatedText({ data: { translated_text: 'Buenos dias' } }), 'Buenos dias');
+    assert.equal(extractTranslatedText({ data: 'Hola' }), 'Hola');
     assert.equal(extractTranslatedText({ translation: 'Bonjour' }), 'Bonjour');
     assert.equal(extractTranslatedText({ result: 'Ciao' }), 'Ciao');
     assert.equal(extractTranslatedText('Hallo'), 'Hallo');
@@ -79,6 +80,19 @@ test('throws when translation response has no translated text', () => {
 test('builds successful translation dataset item', () => {
     assert.deepEqual(
         buildTranslationDatasetItem(request, { translated_text: 'Guten Morgen' }),
+        {
+            success: true,
+            index: 1,
+            text: 'Good morning',
+            translated_text: 'Guten Morgen',
+            source: 'en',
+            target: 'de',
+            error: null,
+            status_code: null,
+        },
+    );
+    assert.deepEqual(
+        buildTranslationDatasetItem(request, { data: 'Guten Morgen' }),
         {
             success: true,
             index: 1,
