@@ -4,4 +4,4 @@ Search Google Patents for prior art, IP monitoring, assignee tracking, inventor 
 
 The actor returns one dataset item per patent result with patent ID, publication number, title, snippet, assignee, inventor, dates, PDF link, Google Patents URL, family status summary, and request metadata.
 
-Recommended paid pricing: **$0.20 per 1,000 dataset items**.
+Recommended paid pricing: **$0.20 per 1,000 dataset items** on the `apify-default-dataset-item` event.
