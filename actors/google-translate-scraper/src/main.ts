@@ -71,8 +71,12 @@ async function main(): Promise<void> {
     await Actor.exit();
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
     const message = describeScrappaError(error);
     console.error('Actor failed: ' + message);
-    process.exitCode = 1;
+    try {
+        await Actor.fail(message);
+    } catch {
+        process.exitCode = 1;
+    }
 });
