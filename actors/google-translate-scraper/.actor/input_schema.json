@@ -25,14 +25,14 @@
           "source": {
             "title": "Source Language",
             "type": "string",
-            "description": "Source language code, such as en, de, fr-CA, zh-CN, ms-Arab, or mni-Mtei.",
+            "description": "Source language code supported by Scrappa, such as en, de, fr-CA, zh-CN, ms-Arab, or mni-Mtei. Numeric-region code syntax is accepted when supported upstream.",
             "minLength": 2,
             "maxLength": 10
           },
           "target": {
             "title": "Target Language",
             "type": "string",
-            "description": "Target language code, such as en, de, fr-CA, zh-CN, ms-Arab, or mni-Mtei.",
+            "description": "Target language code supported by Scrappa, such as en, de, fr-CA, zh-CN, ms-Arab, or mni-Mtei. Numeric-region code syntax is accepted when supported upstream.",
             "minLength": 2,
             "maxLength": 10
           }
