@@ -53,7 +53,7 @@ function cleanRequiredString(value: unknown, field: string, maxLength: number): 
 function cleanLanguage(value: unknown, field: string): string {
     const language = normalizeLanguageCode(cleanRequiredString(value, field, 10));
     if (!LANGUAGE_CODE_PATTERN.test(language)) {
-        throw new Error(`${field} must be a language code like en, de, es-419, zh-CN, pt-BR, or mni-Mtei`);
+        throw new Error(`${field} must be a language code like en, de, fr-CA, zh-CN, ms-Arab, or mni-Mtei`);
     }
 
     return language;
