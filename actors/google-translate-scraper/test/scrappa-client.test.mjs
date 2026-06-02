@@ -8,6 +8,7 @@ const {
     ScrappaClient,
     ScrappaHttpError,
     ScrappaNetworkError,
+    getRetryDelayMs,
 } = await import(sharedModule);
 
 test('ScrappaClient builds the Google Translate request with actor user agent', async () => {
@@ -93,4 +94,110 @@ test('ScrappaClient exposes persistent network failures as ScrappaNetworkError',
     } finally {
         globalThis.fetch = originalFetch;
     }
+});
+
+test('ScrappaClient retries transient Scrappa errors before returning success', async () => {
+    const originalFetch = globalThis.fetch;
+    const delays = [];
+    let calls = 0;
+
+    globalThis.fetch = async () => {
+        calls += 1;
+        return calls === 1
+            ? new Response(JSON.stringify({ error: 'Temporary upstream failure.' }), { status: 503 })
+            : new Response(JSON.stringify({ translated_text: 'Hallo' }), { status: 200 });
+    };
+
+    try {
+        const client = new ScrappaClient({
+            apiKey: 'test-key',
+            baseUrl: 'https://example.test/api',
+        });
+
+        const result = await client.get('/google-translate', { text: 'Hello', source: 'en', target: 'de' }, {
+            attempts: 2,
+            retryDelayMs(failedAttempt) {
+                delays.push(failedAttempt);
+                return 0;
+            },
+        });
+
+        assert.deepEqual(result, { translated_text: 'Hallo' });
+        assert.equal(calls, 2);
+        assert.deepEqual(delays, [1]);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test('ScrappaClient does not retry non-retryable Scrappa errors', async () => {
+    const originalFetch = globalThis.fetch;
+    let calls = 0;
+
+    globalThis.fetch = async () => {
+        calls += 1;
+        return new Response(JSON.stringify({ message: 'Invalid target language.' }), { status: 400 });
+    };
+
+    try {
+        const client = new ScrappaClient({
+            apiKey: 'test-key',
+            baseUrl: 'https://example.test/api',
+        });
+
+        await assert.rejects(
+            () => client.get('/google-translate', { text: 'Hello', source: 'en', target: 'invalid' }, {
+                attempts: 3,
+                retryDelayMs() {
+                    throw new Error('retry delay should not be used');
+                },
+            }),
+            (error) => error instanceof ScrappaHttpError
+                && error.status === 400
+                && error.details === 'Invalid target language.',
+        );
+        assert.equal(calls, 1);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test('ScrappaClient surfaces the last transient error after retries are exhausted', async () => {
+    const originalFetch = globalThis.fetch;
+    const delays = [];
+    let calls = 0;
+
+    globalThis.fetch = async () => {
+        calls += 1;
+        return new Response(JSON.stringify({ error: `Temporary upstream failure ${calls}.` }), { status: 503 });
+    };
+
+    try {
+        const client = new ScrappaClient({
+            apiKey: 'test-key',
+            baseUrl: 'https://example.test/api',
+        });
+
+        await assert.rejects(
+            () => client.get('/google-translate', { text: 'Hello', source: 'en', target: 'de' }, {
+                attempts: 3,
+                retryDelayMs(failedAttempt) {
+                    delays.push(failedAttempt);
+                    return 0;
+                },
+            }),
+            (error) => error instanceof ScrappaHttpError
+                && error.status === 503
+                && error.details === 'Temporary upstream failure 3.',
+        );
+        assert.equal(calls, 3);
+        assert.deepEqual(delays, [1, 2]);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test('getRetryDelayMs applies exponential backoff with deterministic jitter', () => {
+    assert.equal(getRetryDelayMs(1, 250), 2250);
+    assert.equal(getRetryDelayMs(4, 250), 10000);
 });
