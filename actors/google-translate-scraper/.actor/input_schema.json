@@ -1,0 +1,74 @@
+{
+  "title": "Google Translate Scraper",
+  "description": "Translate one or more text items. Use items for batch translation in one Apify run, or use top-level text/source/target for a single translation.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "items": {
+      "title": "Batch Translation Items",
+      "type": "array",
+      "description": "Translate multiple text items in one Apify run. Each item must include text, source, and target.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": ["text", "source", "target"],
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string",
+            "description": "Text to translate.",
+            "minLength": 1,
+            "maxLength": 5000
+          },
+          "source": {
+            "title": "Source Language",
+            "type": "string",
+            "description": "Source language code, such as en, de, es, fr, zh-CN, pt-BR, or mni-Mtei.",
+            "minLength": 2,
+            "maxLength": 10
+          },
+          "target": {
+            "title": "Target Language",
+            "type": "string",
+            "description": "Target language code, such as en, de, es, fr, zh-CN, pt-BR, or mni-Mtei.",
+            "minLength": 2,
+            "maxLength": 10
+          }
+        }
+      },
+      "prefill": [
+        { "text": "Good morning", "source": "en", "target": "de" },
+        { "text": "How are you?", "source": "en", "target": "es" }
+      ]
+    },
+    "text": {
+      "title": "Text",
+      "type": "string",
+      "description": "Single text to translate when items is not provided.",
+      "editor": "textarea",
+      "minLength": 1,
+      "maxLength": 5000,
+      "prefill": "Good morning"
+    },
+    "source": {
+      "title": "Source Language",
+      "type": "string",
+      "description": "Single-item source language code.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 10,
+      "default": "en"
+    },
+    "target": {
+      "title": "Target Language",
+      "type": "string",
+      "description": "Single-item target language code.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 10,
+      "default": "de"
+    }
+  }
+}
