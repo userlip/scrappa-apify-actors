@@ -66,4 +66,6 @@ If an individual item fails after Scrappa retries, the actor writes an uncharged
 
 The actor only accepts `text`, `source`, and `target`. Scrappa's admin-only `append` and `html` parameters are intentionally not exposed.
 
+The dataset is the primary output channel. For compatibility, single-item runs also write that translation item to `OUTPUT`; batch runs write a compact summary to `OUTPUT`.
+
 For higher-volume translation or direct API access, use Scrappa's Google Translate API at `https://scrappa.co/api/google-translate`.

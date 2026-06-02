@@ -6,7 +6,6 @@ export interface GoogleTranslateResponse {
     translation?: unknown;
     result?: unknown;
     data?: unknown;
-    [key: string]: unknown;
 }
 
 export interface TranslationDatasetItem {
