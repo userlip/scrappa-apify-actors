@@ -108,6 +108,37 @@ test('stops before fetching when charge limit status is returned', async () => {
     assert.equal(summary.saved, 0);
 });
 
+test('rethrows Scrappa authentication failures instead of saving item failures', async () => {
+    const requests = buildTranslationRequests({
+        items: [
+            { text: 'Good morning', source: 'en', target: 'de' },
+            { text: 'How are you?', source: 'en', target: 'es' },
+        ],
+    });
+    let pushes = 0;
+
+    await assert.rejects(
+        runTranslations(
+            requests,
+            {
+                async get() {
+                    throw new ScrappaHttpError(401, 'Unauthenticated.');
+                },
+            },
+            {
+                async push() {
+                    pushes += 1;
+                    return { saved: true, statusMessage: null };
+                },
+            },
+            () => null,
+        ),
+        /Scrappa API error \(401\): Unauthenticated\./,
+    );
+
+    assert.equal(pushes, 0);
+});
+
 test('stops without counting an unsaved item when charge limit is hit during push', async () => {
     const requests = buildTranslationRequests({
         items: [

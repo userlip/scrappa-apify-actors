@@ -5,7 +5,7 @@ import {
     type GoogleTranslateResponse,
     type TranslationDatasetItem,
 } from './results.js';
-import { describeScrappaError } from './shared/index.js';
+import { ScrappaHttpError, describeScrappaError } from './shared/index.js';
 
 const SCRAPPA_MAX_ATTEMPTS = 2;
 
@@ -52,6 +52,10 @@ export async function runTranslations(
             const response = await runner.get('/google-translate', request.params, { attempts: SCRAPPA_MAX_ATTEMPTS }) as GoogleTranslateResponse;
             item = buildTranslationDatasetItem(request, response);
         } catch (error) {
+            if (error instanceof ScrappaHttpError && [401, 403].includes(error.status)) {
+                throw error;
+            }
+
             console.warn(`Translation item ${request.index + 1} failed: ${describeScrappaError(error)}`);
             item = buildTranslationFailureItem(request, error);
         }
