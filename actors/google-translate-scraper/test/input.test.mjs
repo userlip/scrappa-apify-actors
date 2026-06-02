@@ -106,6 +106,10 @@ test('validates translation input', () => {
         () => buildTranslationRequests({ text: 'Hello', source: 'en', target: 'es-1a2' }),
         /target must be a language code/,
     );
+    assert.throws(
+        () => buildTranslationRequests({ text: 'Hello', source: 'en', target: 'zh-CN-Hans' }),
+        /target must be a language code/,
+    );
 });
 
 test('describes translation requests', () => {

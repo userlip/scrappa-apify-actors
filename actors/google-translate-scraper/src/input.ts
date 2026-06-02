@@ -25,7 +25,12 @@ function normalizeLanguageCode(value: string): string {
         return value.toLowerCase();
     }
 
-    const [language, region] = value.split('-', 2);
+    const parts = value.split('-');
+    if (parts.length !== 2) {
+        return value.toLowerCase();
+    }
+
+    const [language, region] = parts;
     const normalizedRegion = region.length === 2
         ? region.toUpperCase()
         : `${region.slice(0, 1).toUpperCase()}${region.slice(1).toLowerCase()}`;
