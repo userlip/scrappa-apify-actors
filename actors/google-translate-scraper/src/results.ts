@@ -46,7 +46,7 @@ export function extractTranslatedText(response: unknown): string {
             return translated;
         }
 
-        if (payload.data !== undefined) {
+        if (payload.data != null) {
             return extractTranslatedText(payload.data);
         }
     }

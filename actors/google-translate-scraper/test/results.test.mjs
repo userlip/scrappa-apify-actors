@@ -68,6 +68,10 @@ test('throws when translation response has no translated text', () => {
         /did not include translated_text/,
     );
     assert.throws(
+        () => extractTranslatedText({ data: null }),
+        /did not include translated_text/,
+    );
+    assert.throws(
         () => extractTranslatedText(''),
         /did not include translated_text/,
     );
