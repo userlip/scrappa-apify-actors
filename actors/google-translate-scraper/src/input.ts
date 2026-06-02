@@ -18,7 +18,7 @@ export interface TranslationRequest {
 
 const MAX_ITEMS_PER_RUN = 100;
 const MAX_TEXT_LENGTH = 5000;
-const LANGUAGE_CODE_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,4})?$/;
+const LANGUAGE_CODE_PATTERN = /^[a-z]{2,3}(?:-(?:[A-Z][a-z]{3}|[A-Z]{2}|[0-9]{3}))?$/;
 
 function normalizeLanguageCode(value: string): string {
     if (!value.includes('-')) {
