@@ -63,4 +63,6 @@ export async function pushTranslationResult(
     return { saved: true, statusMessage: null };
 }
 
+// Apify SDK 3.x exposes these charging methods at runtime, but its public type
+// surface does not model the pay-per-event helpers narrowly enough for tests.
 export const actorChargingApi = Actor as unknown as ActorChargingApi;

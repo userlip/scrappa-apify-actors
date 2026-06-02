@@ -18,7 +18,7 @@ export interface TranslationRequest {
 
 const MAX_ITEMS_PER_RUN = 100;
 const MAX_TEXT_LENGTH = 5000;
-const LANGUAGE_CODE_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/;
+const LANGUAGE_CODE_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,4})?$/;
 
 function normalizeLanguageCode(value: string): string {
     if (!value.includes('-')) {
@@ -53,7 +53,7 @@ function cleanRequiredString(value: unknown, field: string, maxLength: number): 
 function cleanLanguage(value: unknown, field: string): string {
     const language = normalizeLanguageCode(cleanRequiredString(value, field, 10));
     if (!LANGUAGE_CODE_PATTERN.test(language)) {
-        throw new Error(`${field} must be a language code like en, de, es, zh-CN, pt-BR, or mni-Mtei`);
+        throw new Error(`${field} must be a language code like en, de, es-419, zh-CN, pt-BR, or mni-Mtei`);
     }
 
     return language;

@@ -81,6 +81,7 @@ test('stops before fetching when charge limit status is returned', async () => {
         ],
     });
     let calls = 0;
+    const chargeLimitChecks = [];
 
     const summary = await runTranslations(
         requests,
@@ -95,10 +96,52 @@ test('stops before fetching when charge limit status is returned', async () => {
                 return { saved: true, statusMessage: null };
             },
         },
-        () => 'Charge limit reached before fetching.',
+        (processed, requested) => {
+            chargeLimitChecks.push({ processed, requested });
+            return 'Charge limit reached before fetching.';
+        },
     );
 
     assert.equal(calls, 0);
+    assert.deepEqual(chargeLimitChecks, [{ processed: 0, requested: 2 }]);
     assert.equal(summary.statusMessage, 'Charge limit reached before fetching.');
     assert.equal(summary.saved, 0);
+});
+
+test('stops without counting an unsaved item when charge limit is hit during push', async () => {
+    const requests = buildTranslationRequests({
+        items: [
+            { text: 'Good morning', source: 'en', target: 'de' },
+            { text: 'How are you?', source: 'en', target: 'es' },
+        ],
+    });
+    const pushed = [];
+
+    const summary = await runTranslations(
+        requests,
+        {
+            async get(_endpoint, params) {
+                return { translated_text: `${params.text} translated` };
+            },
+        },
+        {
+            async push(item) {
+                pushed.push(item);
+                return pushed.length === 1
+                    ? { saved: true, statusMessage: null }
+                    : { saved: false, statusMessage: 'Charge limit reached during push.' };
+            },
+        },
+        () => null,
+    );
+
+    assert.equal(pushed.length, 2);
+    assert.deepEqual(summary, {
+        requested: 2,
+        succeeded: 1,
+        failed: 0,
+        saved: 1,
+        statusMessage: 'Charge limit reached during push.',
+        firstItem: pushed[0],
+    });
 });

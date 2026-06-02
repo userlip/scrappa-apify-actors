@@ -37,6 +37,7 @@ test('builds batch translation requests and prefers items over top-level fields'
                 { text: 'Hello', source: 'en', target: 'es' },
                 { text: 'Welcome', source: 'pt-br', target: 'ZH-cn' },
                 { text: 'Script code', source: 'MS-arab', target: 'MNI-mtei' },
+                { text: 'Latin America', source: 'en', target: 'ES-419' },
             ],
         }),
         [
@@ -60,6 +61,13 @@ test('builds batch translation requests and prefers items over top-level fields'
                 source: 'ms-Arab',
                 target: 'mni-Mtei',
                 params: { text: 'Script code', source: 'ms-Arab', target: 'mni-Mtei' },
+            },
+            {
+                index: 3,
+                text: 'Latin America',
+                source: 'en',
+                target: 'es-419',
+                params: { text: 'Latin America', source: 'en', target: 'es-419' },
             },
         ],
     );

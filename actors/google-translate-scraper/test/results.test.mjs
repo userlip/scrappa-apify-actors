@@ -39,6 +39,14 @@ test('throws when translation response has no translated text', () => {
         () => extractTranslatedText({ data: {} }),
         /did not include translated_text/,
     );
+    assert.throws(
+        () => extractTranslatedText(''),
+        /did not include translated_text/,
+    );
+    assert.throws(
+        () => extractTranslatedText({ translated_text: '   ' }),
+        /did not include translated_text/,
+    );
 });
 
 test('builds successful translation dataset item', () => {
