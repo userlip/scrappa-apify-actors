@@ -7,8 +7,6 @@ import { ScrappaClient, ScrappaTimeoutError } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_REQUEST_ATTEMPTS = 3;
-const PATENT_RESULT_CHARGE_EVENT = 'result';
-
 async function main(): Promise<void> {
     await Actor.init();
 
@@ -32,42 +30,53 @@ async function main(): Promise<void> {
         });
         const data = extractPatentSearchData(response);
         const patents = extractPatentResults(response);
+        const requestedResultCount = typeof params.num === 'number' ? params.num : patents.length;
+        const patentsToSave = patents.slice(0, requestedResultCount);
+        let savedPatentCount = 0;
+        let statusMessage: string | undefined;
 
-        if (patents.length > 0) {
-            const datasetItems = patents.map((result) => enrichResult(result, params));
-            const chargeResult = await Actor.pushData(datasetItems, PATENT_RESULT_CHARGE_EVENT);
-            if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
-                const outputResponse = limitPatentSearchResponse(response, chargeResult.chargedCount);
-                const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount}/${datasetItems.length} Google Patents result(s).`;
+        if (patentsToSave.length > 0) {
+            const datasetItems = patentsToSave.map((result) => enrichResult(result, params));
+            const pushResult = await Actor.getDefaultInstance().pushData(datasetItems);
+            savedPatentCount = pushResult.chargedCount > 0 || pushResult.eventChargeLimitReached
+                ? pushResult.chargedCount
+                : datasetItems.length;
+            console.log(`Found ${patents.length} patent results; saved ${savedPatentCount}`);
+
+            if (pushResult.eventChargeLimitReached && savedPatentCount < datasetItems.length) {
+                statusMessage = `Charge limit reached after saving ${savedPatentCount}/${datasetItems.length} Google Patents result(s).`;
                 console.log(statusMessage, JSON.stringify({
-                    event: PATENT_RESULT_CHARGE_EVENT,
-                    charged_count: chargeResult.chargedCount,
-                    result_count: datasetItems.length,
+                    charged_count: savedPatentCount,
+                    requested_count: datasetItems.length,
                 }));
-
-                const store = await Actor.openKeyValueStore();
-                await store.setValue('OUTPUT', outputResponse);
-                await Actor.exit({ statusMessage });
-                return;
             }
-            console.log(`Found ${patents.length} patent results`);
         } else {
             console.log('No Google Patents results found for this request');
         }
 
+        const outputResponse = savedPatentCount === patents.length
+            ? response
+            : limitPatentSearchResponse(response, savedPatentCount);
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
+        await store.setValue('OUTPUT', outputResponse);
 
+        if (statusMessage) {
+            await Actor.exit({ statusMessage });
+            return;
+        }
+
+        const savedPatents = patentsToSave.slice(0, savedPatentCount);
         const summary = {
-            patent_results: patents.length,
+            patent_results: savedPatentCount,
+            upstream_patent_results: patents.length,
             total_results: data.total_results ?? null,
             total_pages: data.total_pages ?? null,
             current_page: data.current_page ?? null,
             many_results: data.many_results ?? false,
             cached: data.cached ?? false,
             stale: data.stale ?? false,
-            with_pdf: patents.filter((result) => typeof result.pdf === 'string' && result.pdf !== '').length,
-            with_family_status: patents.filter((result) => (result.family_status?.length ?? 0) > 0).length,
+            with_pdf: savedPatents.filter((result) => typeof result.pdf === 'string' && result.pdf !== '').length,
+            with_family_status: savedPatents.filter((result) => (result.family_status?.length ?? 0) > 0).length,
         };
 
         console.log('Google Patents scraping completed successfully');

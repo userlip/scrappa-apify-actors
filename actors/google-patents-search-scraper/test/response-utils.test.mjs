@@ -125,7 +125,7 @@ test('enriches null patent page and empty family countries for boundary patent I
     assert.equal(result.family_countries, null);
 });
 
-test('limits patent payloads for charge-aligned output', () => {
+test('limits patent payloads to the requested result count', () => {
     const patents = [
         { patent_id: 'patent/US1/en' },
         { patent_id: 'patent/US2/en' },

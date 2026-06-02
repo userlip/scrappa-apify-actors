@@ -4,7 +4,7 @@ Search Google Patents through Scrappa and export structured patent results to an
 
 ## Pricing
 
-This actor is intended for paid per-result monetization. Recommended marketplace pricing is **$0.20 per 1,000 dataset items** so users pay for successful patent results, not empty runs.
+This actor is intended for paid per-result monetization on Apify's default dataset-item event (`apify-default-dataset-item`). Recommended marketplace pricing is **$0.20 per 1,000 dataset items** so users pay for successful patent results, not empty runs.
 
 ## Input
 
