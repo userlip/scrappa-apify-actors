@@ -37,6 +37,15 @@ test('extracts translated text from Scrappa response shapes', () => {
 test('extracts translated text using documented field precedence', () => {
     assert.equal(
         extractTranslatedText({
+            translated_text: 'Guten Morgen',
+            translation: 'Bonjour',
+            result: 'Ciao',
+            data: { translated_text: 'Hola' },
+        }),
+        'Guten Morgen',
+    );
+    assert.equal(
+        extractTranslatedText({
             translation: 'Bonjour',
             result: 'Ciao',
             data: { translated_text: 'Guten Morgen' },
