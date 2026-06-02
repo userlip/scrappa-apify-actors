@@ -1,0 +1,49 @@
+{
+  "actorSpecification": 1,
+  "name": "google-translate-scraper",
+  "title": "Google Translate Scraper",
+  "description": "Translate text in bulk through Scrappa's Google Translate API. Batch multiple text items in one Apify run and export one dataset item per translation.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300,
+    "memoryMbytes": 128
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "translations": {
+          "title": "Translations",
+          "transformation": {
+            "fields": ["success", "index", "text", "translated_text", "source", "target", "error", "status_code"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": { "label": "Success", "format": "boolean" },
+              "index": { "label": "#", "format": "number" },
+              "text": { "label": "Original Text", "format": "text" },
+              "translated_text": { "label": "Translated Text", "format": "text" },
+              "source": { "label": "Source", "format": "text" },
+              "target": { "label": "Target", "format": "text" },
+              "error": { "label": "Error", "format": "text" },
+              "status_code": { "label": "Status Code", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
