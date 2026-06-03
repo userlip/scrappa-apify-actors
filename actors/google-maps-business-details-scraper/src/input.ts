@@ -10,6 +10,8 @@ export interface BusinessIdRequest {
     business_id: string;
 }
 
+export const MAX_BUSINESS_IDS_PER_RUN = 50;
+
 export function getBusinessIdRequests(input: GoogleMapsBusinessDetailsInput | null): BusinessIdRequest[] {
     const rawBusinessIds = [
         ...(typeof input?.business_id === 'string' ? [input.business_id] : []),
@@ -30,6 +32,10 @@ export function getBusinessIdRequests(input: GoogleMapsBusinessDetailsInput | nu
             input_business_id: businessId,
             business_id: businessId,
         });
+    }
+
+    if (requests.length > MAX_BUSINESS_IDS_PER_RUN) {
+        throw new Error(`business_ids must contain ${MAX_BUSINESS_IDS_PER_RUN} unique items or fewer`);
     }
 
     return requests;

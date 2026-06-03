@@ -9,6 +9,7 @@ const inputSchema = JSON.parse(
 test('input schema supports batch business_ids before legacy business_id', () => {
     assert.equal(inputSchema.properties.business_ids.type, 'array');
     assert.equal(inputSchema.properties.business_ids.items.type, 'string');
+    assert.equal(inputSchema.properties.business_ids.maxItems, 50);
     assert.equal(inputSchema.properties.business_id.type, 'string');
     assert.deepEqual(Object.keys(inputSchema.properties).slice(0, 2), ['business_ids', 'business_id']);
     assert.equal(inputSchema.required, undefined);

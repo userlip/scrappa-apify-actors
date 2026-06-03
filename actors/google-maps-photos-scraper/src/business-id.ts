@@ -17,6 +17,8 @@ export interface BusinessIdRequest {
     validation_error?: string;
 }
 
+export const MAX_BUSINESS_IDS_PER_RUN = 50;
+
 export function getBusinessIdRequests(input: GoogleMapsPhotosInput | null): BusinessIdRequest[] {
     const rawBusinessIds = [
         ...(typeof input?.business_id === 'string' ? [input.business_id] : []),
@@ -56,6 +58,10 @@ export function getBusinessIdRequests(input: GoogleMapsPhotosInput | null): Busi
                 validation_error: error instanceof Error ? error.message : String(error),
             });
         }
+    }
+
+    if (requests.length > MAX_BUSINESS_IDS_PER_RUN) {
+        throw new Error(`business_ids must contain ${MAX_BUSINESS_IDS_PER_RUN} unique items or fewer`);
     }
 
     return requests;
