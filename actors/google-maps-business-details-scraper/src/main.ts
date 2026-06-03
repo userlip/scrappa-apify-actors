@@ -145,6 +145,12 @@ try {
                 });
             } else {
                 console.log(`No business details found for ID: ${request.business_id}`);
+                await Actor.pushData([{
+                    success: false,
+                    input_business_id: request.input_business_id,
+                    business_id: request.business_id,
+                    error: 'No business details found',
+                }]);
                 results.push({
                     input_business_id: request.input_business_id,
                     business_id: request.business_id,

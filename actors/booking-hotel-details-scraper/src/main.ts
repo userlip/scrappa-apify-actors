@@ -1,13 +1,30 @@
 import { Actor } from 'apify';
-import { pushErrorHotelItem, pushSuccessfulHotelItem } from './charging.js';
+import {
+    BOOKING_HOTEL_RESULT_CHARGE_EVENT,
+    getHotelChargeLimitStatus,
+    pushErrorHotelItem,
+    pushSuccessfulHotelItem,
+} from './charging.js';
 import { buildBookingHotelRequests, describeBookingHotelRequest } from './request-params.js';
 import type { BookingHotelInput } from './request-params.js';
 import { buildBookingHotelDatasetItem, buildBookingHotelErrorItem, getBookingHotelDetails } from './response-utils.js';
 import type { BookingHotelResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient, ScrappaNetworkError, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
+
+function isActorLevelScrappaFailure(error: unknown): boolean {
+    if (error instanceof ScrappaTimeoutError || error instanceof ScrappaNetworkError) {
+        return true;
+    }
+
+    if (!(error instanceof Error)) {
+        return false;
+    }
+
+    return /Scrappa API error \((?:401|403|408|429|500|502|503|504)\)/.test(error.message);
+}
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -31,6 +48,18 @@ async function main(): Promise<void> {
         let failedRequests = 0;
 
         for (const request of requests) {
+            const chargeLimitStatus = getHotelChargeLimitStatus(Actor, savedResults, request.index);
+            if (chargeLimitStatus) {
+                console.log(chargeLimitStatus, JSON.stringify({
+                    event: BOOKING_HOTEL_RESULT_CHARGE_EVENT,
+                    hotels_requested: requests.length,
+                    results_saved: savedResults,
+                    next_request_index: request.index,
+                }));
+                await Actor.exit({ statusMessage: chargeLimitStatus });
+                return;
+            }
+
             console.log(`Fetching Booking.com hotel details for ${describeBookingHotelRequest(request)}`);
 
             try {
@@ -38,22 +67,28 @@ async function main(): Promise<void> {
                     attempts: SCRAPPA_MAX_ATTEMPTS,
                 });
                 const item = buildBookingHotelDatasetItem(getBookingHotelDetails(response), request);
-                const chargeResult = await pushSuccessfulHotelItem(Actor, item);
+                const pushResult = await pushSuccessfulHotelItem(Actor, item, request.index);
 
-                savedResults += 1;
-                console.log(`Saved hotel detail result ${request.index + 1}`);
+                if (pushResult.saved) {
+                    savedResults += 1;
+                    console.log(`Saved hotel detail result ${request.index + 1}`);
+                }
 
-                if (chargeResult.eventChargeLimitReached) {
-                    const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount ?? 0} Booking.com hotel detail result(s).`;
-                    console.log(statusMessage, JSON.stringify({
-                        charged_count: chargeResult.chargedCount ?? 0,
+                if (pushResult.statusMessage) {
+                    console.log(pushResult.statusMessage, JSON.stringify({
+                        event: BOOKING_HOTEL_RESULT_CHARGE_EVENT,
+                        charged_count: pushResult.chargedCount,
                         requested_count: requests.length,
                         request_index: request.index,
                     }));
-                    await Actor.exit({ statusMessage });
+                    await Actor.exit({ statusMessage: pushResult.statusMessage });
                     return;
                 }
             } catch (error) {
+                if (isActorLevelScrappaFailure(error)) {
+                    throw error;
+                }
+
                 failedRequests += 1;
                 const rawMessage = error instanceof Error ? error.message : String(error);
                 const message = error instanceof ScrappaTimeoutError
@@ -72,7 +107,10 @@ async function main(): Promise<void> {
             failed_requests: failedRequests,
         }));
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const rawMessage = error instanceof Error ? error.message : String(error);
+        const message = error instanceof ScrappaTimeoutError
+            ? `${rawMessage}. The Booking.com hotel detail request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try the Booking.com URL form or run the request again.`
+            : rawMessage;
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
         return;
