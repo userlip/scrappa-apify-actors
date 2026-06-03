@@ -6,27 +6,37 @@ Search Jameda doctor profiles by specialty, doctor name, symptom, medical servic
 
 - Search Jameda by specialty, service, symptom, or doctor name
 - Optional German city/location targeting
+- Batch multiple query/location searches in one Apify run
 - Fetch one or more one-based search result pages per run
 - Extract doctor name, specialty, profile URL, rating, review count, address, and image URL
 - Dataset rows optimized for Apify table views
-- Full Scrappa page responses saved to the `OUTPUT` key-value-store record
+- Full Scrappa page responses saved to the `OUTPUT` key-value-store record for debugging and auditability
 
 ## Input
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `q` | string | Yes | Doctor name, specialty, symptom, or medical service, for example `Zahnarzt` |
-| `loc` | string | No | German city or location, for example `Berlin` |
-| `page` | integer | No | First one-based result page, 1-500. Default `1` |
+| `searches` | array | Yes, unless using legacy `q` | Recommended input. Process multiple Jameda query/location searches in one Apify run. Each item has `q` and optional `loc`. |
+| `q` | string | Yes, unless using `searches` | Legacy single-search query, for example `Zahnarzt`. Use `searches` for normal usage, especially when running more than one query. |
+| `loc` | string | No | German city or location for the legacy single query, for example `Berlin`. |
+| `page` | integer | No | First one-based result page for every search, 1-500. Default `1` |
 | `per_page` | integer | No | Results to save per page, 1-28. Default `28` |
-| `max_pages` | integer | No | Number of pages to fetch, 1-10. Default `1` |
+| `max_pages` | integer | No | Number of pages to fetch per search, 1-10. Default `1` |
 
 ## Example Input
 
 ```json
 {
-  "q": "Zahnarzt",
-  "loc": "Berlin",
+  "searches": [
+    {
+      "q": "Zahnarzt",
+      "loc": "Berlin"
+    },
+    {
+      "q": "Hausarzt",
+      "loc": "München"
+    }
+  ],
   "page": 1,
   "per_page": 28,
   "max_pages": 2
@@ -56,8 +66,8 @@ Each doctor profile is saved as one dataset item:
 }
 ```
 
-The `OUTPUT` record includes the request summary, pages fetched, doctor count, reported Jameda totals, and raw Scrappa responses for the fetched pages. Runs that fetch many pages can create a larger `OUTPUT` record because each raw Scrappa page response is retained there for debugging and auditability.
+The `OUTPUT` record includes per-search summaries, pages fetched, doctor count, reported Jameda totals, and raw Scrappa responses for the fetched pages. Runs that fetch many searches or pages can create a larger `OUTPUT` record because each raw Scrappa page response is retained there for debugging and auditability.
 
 ## Notes
 
-Jameda search returns public doctor profile summaries. For doctor details, reviews, higher-volume access, or direct API usage, use Scrappa at https://scrappa.co.
+Jameda search returns public doctor profile summaries. Put multiple query/location pairs in `searches` when you have a list so Apify run overhead is shared across many results. For doctor details, reviews, higher-volume access, or direct API usage, use Scrappa at https://scrappa.co.

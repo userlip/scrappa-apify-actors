@@ -4,10 +4,26 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
+    "queries": {
+      "title": "Search Queries",
+      "type": "array",
+      "description": "Recommended. Process many Google News keyword searches in one Apify run so run startup and storage overhead are shared across results. Leave empty when using token parameters.",
+      "editor": "stringList",
+      "maxItems": 50,
+      "prefill": [
+        "artificial intelligence",
+        "climate technology"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
     "q": {
-      "title": "Search Query",
+      "title": "Legacy Search Query",
       "type": "string",
-      "description": "Keyword or phrase to search in Google News. Leave empty when using a token parameter.",
+      "description": "Backward-compatible single keyword or phrase to search in Google News. Prefer Search Queries for normal usage, especially when running more than one keyword. Leave empty when using a token parameter.",
       "editor": "textfield",
       "prefill": "artificial intelligence"
     },

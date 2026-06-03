@@ -4,26 +4,30 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "url": {
-      "title": "LinkedIn Profile URL",
-      "type": "string",
-      "description": "Single LinkedIn profile URL. For lower Apify costs, prefer the URLs field when scraping multiple profiles.",
-      "editor": "textfield",
-      "minLength": 1,
-      "prefill": "https://www.linkedin.com/in/williamhgates",
-      "pattern": "^(https?://)?((www|m|[a-z]{2,3})\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
-    },
     "urls": {
       "title": "LinkedIn Profile URLs",
       "type": "array",
-      "description": "Multiple LinkedIn profile URLs to process in one Apify run. This is the recommended option for batches because it avoids one Apify run per result.",
+      "description": "Recommended. Process many LinkedIn profile URLs in one Apify run so run startup and storage overhead are shared across results.",
       "editor": "stringList",
       "minItems": 1,
+      "prefill": [
+        "https://www.linkedin.com/in/williamhgates",
+        "https://www.linkedin.com/in/satyanadella"
+      ],
       "items": {
         "type": "string",
         "minLength": 1,
         "pattern": "^(https?://)?((www|m|[a-z]{2,3})\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
       }
+    },
+    "url": {
+      "title": "Legacy Single LinkedIn Profile URL",
+      "type": "string",
+      "description": "Backward-compatible single profile URL. Prefer URLs for normal usage, especially when processing more than one profile.",
+      "editor": "textfield",
+      "minLength": 1,
+      "prefill": "https://www.linkedin.com/in/williamhgates",
+      "pattern": "^(https?://)?((www|m|[a-z]{2,3})\\.)?linkedin\\.com/in/[a-zA-Z0-9._-]+/?"
     },
     "use_cache": {
       "title": "Use Cache",

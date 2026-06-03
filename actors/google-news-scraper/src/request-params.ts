@@ -1,5 +1,6 @@
 export interface GoogleNewsInput {
     q?: unknown;
+    queries?: unknown;
     gl?: unknown;
     hl?: unknown;
     page?: unknown;
@@ -13,6 +14,7 @@ export interface GoogleNewsInput {
 }
 
 const TOKEN_FIELDS = ['topic_token', 'kgmid', 'publication_token', 'section_token', 'story_token'] as const;
+const MAX_QUERIES_PER_RUN = 50;
 
 type TokenField = typeof TOKEN_FIELDS[number];
 type TokenFieldInputKeyCheck = Exclude<TokenField, keyof GoogleNewsInput> extends never ? true : never;
@@ -129,6 +131,57 @@ export function buildGoogleNewsParams(input: GoogleNewsInput): Record<string, un
     }
 
     return params;
+}
+
+export function buildGoogleNewsParamList(input: GoogleNewsInput): Record<string, unknown>[] {
+    const queries = getGoogleNewsQueries(input);
+    if (queries.length === 0) {
+        return [buildGoogleNewsParams(input)];
+    }
+
+    for (const field of TOKEN_FIELDS) {
+        if (input[field] !== undefined && input[field] !== null && input[field] !== '') {
+            throw new Error('Cannot use queries with topic_token, kgmid, publication_token, section_token, or story_token');
+        }
+    }
+
+    return queries.map((query) => buildGoogleNewsParams({
+        ...input,
+        q: query,
+        queries: undefined,
+    }));
+}
+
+function getGoogleNewsQueries(input: GoogleNewsInput): string[] {
+    const rawQueries = [
+        ...(input.q !== undefined && input.q !== null && input.q !== '' ? [input.q] : []),
+    ];
+
+    if (input.queries !== undefined && input.queries !== null && input.queries !== '') {
+        if (!Array.isArray(input.queries)) {
+            throw new Error('queries must be an array');
+        }
+
+        if (input.queries.length > MAX_QUERIES_PER_RUN) {
+            throw new Error(`queries must contain ${MAX_QUERIES_PER_RUN} items or fewer`);
+        }
+
+        rawQueries.push(...input.queries);
+    }
+
+    const seen = new Set<string>();
+    const queries: string[] = [];
+    for (const rawQuery of rawQueries) {
+        const query = cleanOptionalString(rawQuery, 'q', 500);
+        if (query === undefined || seen.has(query)) {
+            continue;
+        }
+
+        seen.add(query);
+        queries.push(query);
+    }
+
+    return queries;
 }
 
 export function describeGoogleNewsRequest(params: Record<string, unknown>): string {

@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "start:dev": "tsx src/main.ts",
-    "test": "node --test",
+    "test": "npm run build && node --test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

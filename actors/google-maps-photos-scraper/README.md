@@ -1,6 +1,6 @@
 # Google Maps Photos Scraper
 
-Extract photo URLs and visual metadata from a Google Maps business listing by business ID. Use this actor to build location galleries, audit brand imagery, monitor customer-uploaded photos, and collect visual evidence for local business research.
+Extract photo URLs and visual metadata from one or many Google Maps business listings by business ID. Use this actor to build location galleries, audit brand imagery, monitor customer-uploaded photos, and collect visual evidence for local business research.
 
 Apify actor: [`gLbfii9Nq4H7auMnN`](https://console.apify.com/actors/gLbfii9Nq4H7auMnN)
 
@@ -10,7 +10,7 @@ Pricing: **$0.30 per 1,000 results**. No Google Maps API key required.
 
 - Photo URLs, large photo URLs, dimensions, and photo IDs.
 - Contributor names, contributor profile URLs, and relative posting age when available.
-- One dataset item per photo for CSV, JSON, Excel, and integration exports.
+- Batch input with one dataset item per photo for CSV, JSON, Excel, and integration exports.
 - Cache controls for faster repeat runs and lower-cost monitoring jobs.
 - Structured error items for missing businesses instead of failed empty exports.
 
@@ -23,11 +23,14 @@ Pricing: **$0.30 per 1,000 results**. No Google Maps API key required.
 
 ## Input
 
-Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format, a Google Place ID such as `ChIJ...`, or a Google Maps URL that contains one of those identifiers. URLs copied from Google Maps sometimes include only coordinates and a place name; for those, first run Google Maps Search or Business Details and use the returned `business_id` or `place_id`.
+Provide Google Maps `business_ids` in the `0x[hex]:0x[hex]` format, Google Place IDs such as `ChIJ...`, or Google Maps URLs that contain one of those identifiers. URLs copied from Google Maps sometimes include only coordinates and a place name; for those, first run Google Maps Search or Business Details and use the returned `business_id` or `place_id`.
 
 ```json
 {
-  "business_id": "0x808fba02425dad8f:0x6c296c66619367e0",
+  "business_ids": [
+    "0x808fba02425dad8f:0x6c296c66619367e0",
+    "ChIJj61dQgK6j4AR4GeTYWZsKWw"
+  ],
   "use_cache": true,
   "maximum_cache_age": 3600
 }
@@ -37,7 +40,8 @@ Provide a Google Maps `business_id` in the `0x[hex]:0x[hex]` format, a Google Pl
 
 | Field | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
-| `business_id` | string | Yes | - | Google Maps business ID, Place ID, or Maps URL containing one of those identifiers. |
+| `business_ids` | array | Yes, unless using legacy `business_id` | - | Recommended input. Process multiple Google Maps business IDs, Place IDs, or supported Maps URLs in one Apify run. |
+| `business_id` | string | Yes, unless using `business_ids` | - | Legacy single-business input. Use `business_ids` for normal usage, especially when processing more than one business. |
 | `use_cache` | boolean | No | `true` | Uses cached Scrappa results when available for faster and lower-cost runs. |
 | `maximum_cache_age` | integer | No | `3600` | Controls how old cached results can be, in seconds. Set to `0` when you need the freshest available data. |
 
@@ -56,7 +60,9 @@ The actor pushes one dataset item per photo. Available fields can vary by listin
   "height": 2268,
   "contributor_name": "Roger Hall",
   "contributor_url": "https://www.google.com/maps/contrib/106568860865951283765?hl=en",
-  "posted_at": "7 months ago"
+  "posted_at": "7 months ago",
+  "input_business_id": "0x808fba02425dad8f:0x6c296c66619367e0",
+  "business_id": "0x808fba02425dad8f:0x6c296c66619367e0"
 }
 ```
 
@@ -64,7 +70,7 @@ Dataset records may also include `latitude`, `longitude`, `photo_index`, `source
 
 ### Key-value store summary
 
-The actor also writes an `OUTPUT` key-value store record with:
+For legacy single-business runs, the actor also writes an `OUTPUT` key-value store record with:
 
 ```json
 {
@@ -79,13 +85,14 @@ The actor also writes an `OUTPUT` key-value store record with:
 }
 ```
 
-This key-value store record is a summary envelope for the run. `photos` contains the same photo objects pushed to the dataset, `total` is the number of photos returned, and `nextPage` is included when the upstream response provides pagination context.
+This key-value store record is a summary envelope for the run. `photos` contains the same photo objects pushed to the dataset, `total` is the number of photos returned, and `nextPage` is included when the upstream response provides pagination context. Batch runs use the dataset as the primary result channel and write a compact per-business summary to `OUTPUT`.
 
 If the business ID is not found, or if a Maps URL does not contain a supported identifier, the dataset receives a structured error item instead of an unhandled failure.
 
 ```json
 {
   "success": false,
+  "input_business_id": "0x0000000000000000:0x0000000000000000",
   "business_id": "0x0000000000000000:0x0000000000000000",
   "error": "Business not found"
 }
@@ -110,7 +117,7 @@ Caching is enabled by default because photo lists usually do not change minute b
 ## Recommended workflow
 
 1. Run Google Maps Search, Advanced Search, Autocomplete, or Business Details to collect `business_id` values.
-2. Run this actor once per target `business_id`.
+2. Put those IDs into `business_ids` and run this actor once for the whole batch.
 3. Export photo records to your data warehouse, local SEO audit, visual review queue, or media monitoring pipeline.
 4. Store `business_id` with every photo record so you can join photos back to business details, reviews, ratings, categories, and location data.
 
@@ -124,7 +131,7 @@ Caching is enabled by default because photo lists usually do not change minute b
 
 ## Direct API
 
-For higher-volume or direct API workflows, use Scrappa's Google Maps endpoints directly and keep this actor as the Apify-ready no-code runner.
+For Apify usage, put many businesses in `business_ids` so a single run can produce many photo records. For higher-volume or direct API workflows, use Scrappa's Google Maps endpoints directly and keep this actor as the Apify-ready no-code runner.
 
 ```bash
 curl 'https://scrappa.co/api/maps/photos?business_id=0x808fba02425dad8f:0x6c296c66619367e0&use_cache=1&maximum_cache_age=3600' \

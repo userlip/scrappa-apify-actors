@@ -11,8 +11,9 @@ This actor is powered by Scrappa and is priced for simple Apify runs at **$0.30 
 - Specialties and positioning keywords from the company page
 - Public office address data when LinkedIn exposes it
 - Public employees, posts, similar pages, and funding data when available
+- Batch input with one clean dataset item per company URL
 - Cache controls for faster repeat runs and lower duplicate work
-- One clean dataset item per company URL, plus the full response in `OUTPUT`
+- A full single-company response in `OUTPUT` for legacy one-URL runs; batch runs use the dataset as the primary output
 - No LinkedIn login and no extra API key required inside Apify
 
 ## Best For
@@ -25,11 +26,14 @@ This actor is powered by Scrappa and is priced for simple Apify runs at **$0.30 
 
 ## Tested Input
 
-This input was tested successfully on Apify with actor `EMGCTVXuOBRERiDMf`:
+This batch input was tested successfully on Apify with actor `EMGCTVXuOBRERiDMf`:
 
 ```json
 {
-  "url": "https://www.linkedin.com/company/microsoft",
+  "urls": [
+    "https://www.linkedin.com/company/microsoft",
+    "https://www.linkedin.com/company/openai"
+  ],
   "use_cache": true,
   "maximum_cache_age": 2592000
 }
@@ -47,7 +51,8 @@ Country subdomains such as `de.linkedin.com` or `uk.linkedin.com` are normalized
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `url` | string | Yes | Full public LinkedIn company URL, for example `https://www.linkedin.com/company/microsoft`. |
+| `urls` | array | Yes, unless using legacy `url` | Recommended input. Process multiple public LinkedIn company URLs in one Apify run. |
+| `url` | string | Yes, unless using `urls` | Legacy single-company input. Use `urls` for normal usage, especially when processing more than one company. |
 | `use_cache` | boolean | No | When enabled, asks Scrappa to return a cached result when available. Default in the Apify input form is `false`. |
 | `maximum_cache_age` | integer | No | Maximum cache age in seconds. Use `2592000` for up to 30 days. Only useful when cache is enabled. |
 
@@ -64,7 +69,7 @@ Cache is useful for repeated enrichment jobs, QA runs, marketplace tests, and wo
 
 ## Output Fields
 
-Each successful company scrape is pushed to the default Apify dataset and saved in the key-value store under `OUTPUT`.
+Each successful company scrape is pushed to the default Apify dataset. For legacy single-URL runs, the same company response is also saved in the key-value store under `OUTPUT`; batch runs write a small summary to `OUTPUT`.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -120,7 +125,7 @@ Nested arrays are returned only when LinkedIn exposes the data publicly for the 
 
 Use this Apify actor when you want a managed marketplace actor, scheduled runs, datasets, webhooks, and Apify integrations.
 
-For higher-volume enrichment, lower-latency workflows, or direct backend integration, use the Scrappa API directly:
+For Apify usage, put many company URLs in `urls` so a single run can produce many dataset items. For higher-volume enrichment, lower-latency workflows, or direct backend integration, use the Scrappa API directly:
 
 ```bash
 curl "https://scrappa.co/api/linkedin/company?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fmicrosoft&use_cache=1&maximum_cache_age=2592000" \

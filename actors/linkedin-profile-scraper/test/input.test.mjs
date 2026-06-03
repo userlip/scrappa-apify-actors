@@ -15,10 +15,10 @@ test('getInputUrls supports backward-compatible url input', () => {
     );
 });
 
-test('getInputUrls prefers urls over the legacy url input', () => {
+test('getInputUrls combines url and urls inputs and deduplicates normalized URLs', () => {
     assert.deepEqual(
         getInputUrls({
-            url: 'https://linkedin.com/in/prefilled-profile',
+            url: 'https://linkedin.com/in/williamhgates',
             urls: [
                 'https://de.linkedin.com/in/satyanadella/?trk=foo',
                 'https://www.linkedin.com/in/williamhgates/details/experience/',
@@ -26,12 +26,12 @@ test('getInputUrls prefers urls over the legacy url input', () => {
         }),
         [
             {
-                input_url: 'https://de.linkedin.com/in/satyanadella/?trk=foo',
-                normalized_url: 'https://www.linkedin.com/in/satyanadella',
+                input_url: 'https://linkedin.com/in/williamhgates',
+                normalized_url: 'https://www.linkedin.com/in/williamhgates',
             },
             {
-                input_url: 'https://www.linkedin.com/in/williamhgates/details/experience/',
-                normalized_url: 'https://www.linkedin.com/in/williamhgates',
+                input_url: 'https://de.linkedin.com/in/satyanadella/?trk=foo',
+                normalized_url: 'https://www.linkedin.com/in/satyanadella',
             },
         ],
     );

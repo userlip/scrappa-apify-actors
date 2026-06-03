@@ -14,13 +14,15 @@ Extract comprehensive public LinkedIn profile data without login. Get profession
 - **Projects** - Professional projects and contributions
 - **Recommendations** - Endorsements from colleagues and clients
 - **Similar Profiles** - LinkedIn's suggestions for similar professionals
+- **Batch Input** - Process many profile URLs in one Apify run and write one dataset item per profile
 - **Caching** - Optional caching to reduce costs and improve speed
 
 ## Input
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `url` | string | Yes | LinkedIn profile URL (e.g., https://www.linkedin.com/in/williamhgates) |
+| `urls` | array | Yes, unless using legacy `url` | Recommended input. Process multiple LinkedIn profile URLs in one Apify run. |
+| `url` | string | Yes, unless using `urls` | Legacy single-profile input. Use `urls` for normal usage, especially when processing more than one profile. |
 | `use_cache` | boolean | No | Use cached data if available (default: true) |
 | `maximum_cache_age` | integer | No | Maximum cache age in seconds (default: 2592000 = 30 days) |
 
@@ -77,15 +79,18 @@ Each profile is saved to the dataset with main fields:
 }
 ```
 
-### Key-Value Store (Full Response)
+### Key-Value Store
 
-The complete response is saved to the `OUTPUT` key with all profile data.
+For legacy single-URL runs, the complete response is saved to the `OUTPUT` key with all profile data. Batch runs use the dataset as the primary result channel and write a small summary to `OUTPUT`.
 
 ## Example Input
 
 ```json
 {
-  "url": "https://www.linkedin.com/in/williamhgates",
+  "urls": [
+    "https://www.linkedin.com/in/williamhgates",
+    "https://www.linkedin.com/in/satyanadella"
+  ],
   "use_cache": true,
   "maximum_cache_age": 2592000
 }
@@ -135,6 +140,8 @@ The complete response is saved to the `OUTPUT` key with all profile data.
 ## Pricing
 
 $0.30 per 1,000 results. No LinkedIn login or additional API keys required.
+
+Put multiple profile URLs in `urls` when you have a list. This keeps Apify run startup and storage overhead shared across many results while Scrappa does the actual scraping work.
 
 ## Use Cases
 

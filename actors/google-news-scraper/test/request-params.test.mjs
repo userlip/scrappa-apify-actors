@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildGoogleNewsParams, describeGoogleNewsRequest } from '../dist/request-params.js';
+import { buildGoogleNewsParamList, buildGoogleNewsParams, describeGoogleNewsRequest } from '../dist/request-params.js';
 
 test('builds params for query searches', () => {
     assert.deepEqual(
@@ -19,6 +19,43 @@ test('builds params for query searches', () => {
             page: 2,
             so: 1,
         },
+    );
+});
+
+test('builds params for multiple query searches and deduplicates queries', () => {
+    assert.deepEqual(
+        buildGoogleNewsParamList({
+            q: 'artificial intelligence',
+            queries: [' artificial intelligence ', 'climate technology'],
+            gl: 'US',
+            hl: 'EN',
+            page: 1,
+        }),
+        [
+            {
+                q: 'artificial intelligence',
+                gl: 'us',
+                hl: 'en',
+                page: 1,
+            },
+            {
+                q: 'climate technology',
+                gl: 'us',
+                hl: 'en',
+                page: 1,
+            },
+        ],
+    );
+});
+
+test('validates query batch input shape', () => {
+    assert.throws(
+        () => buildGoogleNewsParamList({ queries: 'markets' }),
+        /queries must be an array/,
+    );
+    assert.throws(
+        () => buildGoogleNewsParamList({ queries: ['markets'], topic_token: 'CAAqExample' }),
+        /Cannot use queries with/,
     );
 });
 

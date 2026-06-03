@@ -7,6 +7,7 @@ const requestParamsModule = process.env.TEST_SOURCE === 'src'
     : '../dist/request-params.js';
 const {
     buildJamedaSearchPlan,
+    buildJamedaSearchPlans,
     buildPageParams,
     describeJamedaSearchRequest,
 } = await import(requestParamsModule);
@@ -54,6 +55,53 @@ test('normalizes numeric strings and encoded German query text', () => {
     assert.equal(describeJamedaSearchRequest(plan), '"HNO Arzt" in München (pages 2-4, 10 per page)');
 });
 
+test('builds multiple Jameda search plans and deduplicates query/location pairs', () => {
+    const plans = buildJamedaSearchPlans({
+        q: 'Zahnarzt',
+        loc: 'Berlin',
+        searches: [
+            { q: 'Zahnarzt', loc: 'Berlin' },
+            { q: 'Hausarzt', loc: 'München' },
+        ],
+        max_pages: 2,
+    });
+
+    assert.deepEqual(
+        plans.map((plan) => ({
+            baseParams: plan.baseParams,
+            startPage: plan.startPage,
+            maxPages: plan.maxPages,
+        })),
+        [
+            {
+                baseParams: { q: 'Zahnarzt', loc: 'Berlin', per_page: 28 },
+                startPage: 1,
+                maxPages: 2,
+            },
+            {
+                baseParams: { q: 'Hausarzt', loc: 'München', per_page: 28 },
+                startPage: 1,
+                maxPages: 2,
+            },
+        ],
+    );
+});
+
+test('validates searches input shape', () => {
+    assert.throws(
+        () => buildJamedaSearchPlans({ searches: 'Zahnarzt' }),
+        /searches must be an array/,
+    );
+    assert.throws(
+        () => buildJamedaSearchPlans({ searches: ['Zahnarzt'] }),
+        /Each searches item must be an object/,
+    );
+    assert.throws(
+        () => buildJamedaSearchPlans({ searches: [] }),
+        /Provide q or searches/,
+    );
+});
+
 test('preserves ampersands and percent characters in query text', () => {
     assert.equal(buildJamedaSearchPlan({ q: 'Hals & Nase' }).baseParams.q, 'Hals & Nase');
     assert.equal(buildJamedaSearchPlan({ q: '100% privat' }).baseParams.q, '100% privat');
@@ -89,7 +137,9 @@ test('validates required query and pagination bounds', () => {
 test('input schema matches the Jameda search contract', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
 
-    assert.deepEqual(schema.required, ['q']);
+    assert.equal(schema.required, undefined);
+    assert.equal(schema.properties.searches.type, 'array');
+    assert.deepEqual(Object.keys(schema.properties).slice(0, 3), ['searches', 'q', 'loc']);
     assert.equal(schema.properties.page.minimum, 1);
     assert.equal(schema.properties.page.maximum, 500);
     assert.equal(schema.properties.per_page.maximum, 28);

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { normalizeBusinessId } from '../dist/business-id.js';
+import { getBusinessIdRequests, normalizeBusinessId } from '../dist/business-id.js';
 
 test('keeps google_id business identifiers unchanged', () => {
     assert.deepEqual(normalizeBusinessId(' 0x808fba02425dad8f:0x6c296c66619367e0 '), {
@@ -91,4 +91,53 @@ test('passes non-url values through for API validation', () => {
         businessId: 'not-a-real-business-id',
         source: 'business_id',
     });
+});
+
+test('getBusinessIdRequests supports backward-compatible business_id input', () => {
+    assert.deepEqual(
+        getBusinessIdRequests({ business_id: ' 0x808fba02425dad8f:0x6c296c66619367e0 ' }),
+        [
+            {
+                input_business_id: '0x808fba02425dad8f:0x6c296c66619367e0',
+                business_id: '0x808fba02425dad8f:0x6c296c66619367e0',
+                source: 'business_id',
+            },
+        ],
+    );
+});
+
+test('getBusinessIdRequests combines business_id and business_ids inputs and deduplicates normalized IDs', () => {
+    assert.deepEqual(
+        getBusinessIdRequests({
+            business_id: '0x808fba02425dad8f:0x6c296c66619367e0',
+            business_ids: [
+                'https://www.google.com/maps/place/Googleplex/data=!4m2!3m1!1s0x808fba02425dad8f:0x6c296c66619367e0',
+                'https://www.google.com/maps/search/?api=1&query_place_id=ChIJj61dQgK6j4AR4GeTYWZsKWw',
+            ],
+        }),
+        [
+            {
+                input_business_id: '0x808fba02425dad8f:0x6c296c66619367e0',
+                business_id: '0x808fba02425dad8f:0x6c296c66619367e0',
+                source: 'business_id',
+            },
+            {
+                input_business_id: 'https://www.google.com/maps/search/?api=1&query_place_id=ChIJj61dQgK6j4AR4GeTYWZsKWw',
+                business_id: 'ChIJj61dQgK6j4AR4GeTYWZsKWw',
+                source: 'url',
+            },
+        ],
+    );
+});
+
+test('getBusinessIdRequests keeps invalid Google Maps URLs as per-item validation failures', () => {
+    assert.deepEqual(
+        getBusinessIdRequests({ business_ids: ['https://www.google.com/maps/place/Googleplex/@37.4220656,-122.0862784,17z'] }),
+        [
+            {
+                input_business_id: 'https://www.google.com/maps/place/Googleplex/@37.4220656,-122.0862784,17z',
+                validation_error: 'Google Maps URL must contain an extractable 0x...:0x... business ID or ChIJ... place ID. Use a business_id from a Google Maps Search or Business Details actor run.',
+            },
+        ],
+    );
 });

@@ -3,21 +3,51 @@
   "description": "Search Jameda doctor profiles by specialty, doctor name, and optional German location.",
   "type": "object",
   "schemaVersion": 1,
-  "required": ["q"],
   "properties": {
+    "searches": {
+      "title": "Searches",
+      "type": "array",
+      "description": "Recommended. Process many Jameda query/location searches in one Apify run so run startup and storage overhead are shared across doctor results.",
+      "editor": "json",
+      "prefill": [
+        {
+          "q": "Zahnarzt",
+          "loc": "Berlin"
+        },
+        {
+          "q": "Hausarzt",
+          "loc": "München"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": ["q"],
+        "properties": {
+          "q": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 255
+          },
+          "loc": {
+            "type": "string",
+            "maxLength": 100
+          }
+        }
+      }
+    },
     "q": {
-      "title": "Search Query",
+      "title": "Legacy Search Query",
       "type": "string",
-      "description": "Doctor name, specialty, symptom, or medical service to search on Jameda.",
+      "description": "Backward-compatible single doctor name, specialty, symptom, or medical service to search on Jameda. Prefer searches for normal usage, especially when running more than one query.",
       "editor": "textfield",
       "minLength": 2,
       "maxLength": 255,
       "prefill": "Zahnarzt"
     },
     "loc": {
-      "title": "Location",
+      "title": "Legacy Location",
       "type": "string",
-      "description": "Optional German city or location.",
+      "description": "Optional German city or location for the legacy single query.",
       "editor": "textfield",
       "maxLength": 100,
       "prefill": "Berlin"

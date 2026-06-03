@@ -1,11 +1,6 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/index.js';
-
-interface GoogleMapsBusinessDetailsInput {
-    business_id: string;
-    use_cache?: boolean;
-    maximum_cache_age?: number;
-}
+import { getBusinessIdRequests, type GoogleMapsBusinessDetailsInput } from './input.js';
 
 interface BusinessDetails {
     business_id?: string;
@@ -68,60 +63,110 @@ try {
     }
 
     const input = await Actor.getInput<GoogleMapsBusinessDetailsInput>();
-    if (!input?.business_id) {
-        throw new Error('Business ID is required');
+    const requests = getBusinessIdRequests(input);
+    if (requests.length === 0) {
+        throw new Error('At least one Business ID is required. Provide business_ids or legacy business_id.');
     }
-
-    console.log(`Fetching details for business ID: ${input.business_id}`);
 
     const client = new ScrappaClient({ apiKey });
-    const params: Record<string, unknown> = {
-        business_id: input.business_id,
-    };
+    const results: Array<{
+        input_business_id: string;
+        business_id: string;
+        found: boolean;
+        error?: string;
+    }> = [];
+    let firstOutput: GoogleMapsBusinessDetailsResponse | { data: []; error: string } | undefined;
+    let succeeded = 0;
+    let failed = 0;
 
-    if (input.use_cache !== false) {
-        params.use_cache = 1;
-    }
-    if (input.maximum_cache_age !== undefined) {
-        params.maximum_cache_age = input.maximum_cache_age;
-    }
+    console.log(`Fetching Google Maps business details for ${requests.length} business${requests.length === 1 ? '' : 'es'}`);
 
-    let response: GoogleMapsBusinessDetailsResponse | null = null;
-    let handled404 = false;
+    for (const request of requests) {
+        console.log(`Fetching details for business ID: ${request.business_id}`);
 
-    try {
-        response = await client.get<GoogleMapsBusinessDetailsResponse>('/maps/business-details', params);
-    } catch (apiError) {
-        const statusCode = (apiError as any)?.statusCode;
+        const params: Record<string, unknown> = {
+            business_id: request.business_id,
+        };
 
-        // Handle 404 gracefully - push empty result instead of failing
-        if (statusCode === 404) {
-            console.log(`Business not found (404): ${input.business_id}`);
-            await Actor.pushData([{
-                success: false,
-                business_id: input.business_id,
-                error: 'Business not found',
-            }]);
-            const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', { data: [], error: 'Business not found' });
-            handled404 = true;
-        } else {
-            // Re-throw non-404 errors
-            throw apiError;
+        if (input?.use_cache !== false) {
+            params.use_cache = 1;
+        }
+        if (input?.maximum_cache_age !== undefined) {
+            params.maximum_cache_age = input.maximum_cache_age;
+        }
+
+        let response: GoogleMapsBusinessDetailsResponse | null = null;
+        let handled404 = false;
+
+        try {
+            response = await client.get<GoogleMapsBusinessDetailsResponse>('/maps/business-details', params);
+        } catch (apiError) {
+            const statusCode = (apiError as any)?.statusCode;
+
+            // Handle 404 gracefully - push empty result instead of failing
+            if (statusCode === 404) {
+                console.log(`Business not found (404): ${request.business_id}`);
+                await Actor.pushData([{
+                    success: false,
+                    input_business_id: request.input_business_id,
+                    business_id: request.business_id,
+                    error: 'Business not found',
+                }]);
+                results.push({
+                    input_business_id: request.input_business_id,
+                    business_id: request.business_id,
+                    found: false,
+                    error: 'Business not found',
+                });
+                firstOutput ??= { data: [], error: 'Business not found' };
+                failed += 1;
+                handled404 = true;
+            } else {
+                // Re-throw non-404 errors
+                throw apiError;
+            }
+        }
+
+        if (!handled404 && response) {
+            // The API returns data as an array
+            if (response.data && response.data.length > 0) {
+                const datasetItems = response.data.map((item) => ({
+                    ...item,
+                    input_business_id: request.input_business_id,
+                    business_id: item.business_id ?? request.business_id,
+                }));
+                await Actor.pushData(datasetItems);
+                console.log(`Successfully fetched: ${datasetItems[0]?.name ?? 'Business'}`);
+                succeeded += 1;
+                results.push({
+                    input_business_id: request.input_business_id,
+                    business_id: request.business_id,
+                    found: true,
+                });
+            } else {
+                console.log(`No business details found for ID: ${request.business_id}`);
+                results.push({
+                    input_business_id: request.input_business_id,
+                    business_id: request.business_id,
+                    found: false,
+                });
+                failed += 1;
+            }
+
+            firstOutput ??= response;
         }
     }
 
-    if (!handled404 && response) {
-        // The API returns data as an array
-        if (response.data && response.data.length > 0) {
-            await Actor.pushData(response.data);
-            console.log(`Successfully fetched: ${response.data[0]?.name ?? 'Business'}`);
-        } else {
-            console.log('No business details found for the given ID');
-        }
-
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
+    const store = await Actor.openKeyValueStore();
+    if (requests.length === 1 && firstOutput) {
+        await store.setValue('OUTPUT', firstOutput);
+    } else {
+        await store.setValue('OUTPUT', {
+            requested: requests.length,
+            succeeded,
+            failed,
+            results,
+        });
     }
 
     console.log('Completed successfully');

@@ -3,6 +3,64 @@ export interface BusinessIdNormalization {
     source: 'business_id' | 'place_id' | 'url';
 }
 
+export interface GoogleMapsPhotosInput {
+    business_id?: string;
+    business_ids?: string[];
+    use_cache?: boolean;
+    maximum_cache_age?: number;
+}
+
+export interface BusinessIdRequest {
+    input_business_id: string;
+    business_id?: string;
+    source?: BusinessIdNormalization['source'];
+    validation_error?: string;
+}
+
+export function getBusinessIdRequests(input: GoogleMapsPhotosInput | null): BusinessIdRequest[] {
+    const rawBusinessIds = [
+        ...(typeof input?.business_id === 'string' ? [input.business_id] : []),
+        ...(Array.isArray(input?.business_ids) ? input.business_ids : []),
+    ];
+
+    const seen = new Set<string>();
+    const requests: BusinessIdRequest[] = [];
+
+    for (const rawBusinessId of rawBusinessIds) {
+        const inputBusinessId = rawBusinessId.trim();
+        if (!inputBusinessId) {
+            continue;
+        }
+
+        try {
+            const normalized = normalizeBusinessId(inputBusinessId);
+            if (seen.has(normalized.businessId)) {
+                continue;
+            }
+
+            seen.add(normalized.businessId);
+            requests.push({
+                input_business_id: inputBusinessId,
+                business_id: normalized.businessId,
+                source: normalized.source,
+            });
+        } catch (error) {
+            const key = `invalid:${inputBusinessId}`;
+            if (seen.has(key)) {
+                continue;
+            }
+
+            seen.add(key);
+            requests.push({
+                input_business_id: inputBusinessId,
+                validation_error: error instanceof Error ? error.message : String(error),
+            });
+        }
+    }
+
+    return requests;
+}
+
 export function normalizeBusinessId(rawValue: string): BusinessIdNormalization {
     const value = rawValue.trim();
     if (!value) {

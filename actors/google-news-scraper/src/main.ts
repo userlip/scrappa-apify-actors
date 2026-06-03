@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { buildGoogleNewsParams, describeGoogleNewsRequest } from './request-params.js';
+import { buildGoogleNewsParamList, describeGoogleNewsRequest } from './request-params.js';
 import type { GoogleNewsInput } from './request-params.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
 
@@ -82,32 +82,55 @@ async function main(): Promise<void> {
             throw new Error('Input is required');
         }
 
-        const params = buildGoogleNewsParams(input);
-        console.log(`Fetching Google News for ${describeGoogleNewsRequest(params)}`);
+        const paramList = buildGoogleNewsParamList(input);
+        console.log(`Running ${paramList.length} Google News request${paramList.length === 1 ? '' : 's'}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<GoogleNewsResponse>('/google/news', params);
-        const newsResults = response.news_results ?? [];
+        const responses: GoogleNewsResponse[] = [];
+        const requestSummaries: Array<{
+            request: Record<string, unknown>;
+            news_results: number;
+            stories: number;
+            related_searches: number;
+        }> = [];
+        let totalNewsResults = 0;
 
-        if (newsResults.length > 0) {
-            await Actor.pushData(newsResults.map((result) => enrichResult(result, params)));
-            console.log(`Found ${newsResults.length} news results`);
-        } else {
-            console.log('No Google News results found for this request');
+        for (const params of paramList) {
+            console.log(`Fetching Google News for ${describeGoogleNewsRequest(params)}`);
+            const response = await client.get<GoogleNewsResponse>('/google/news', params);
+            responses.push(response);
+            const newsResults = response.news_results ?? [];
+            totalNewsResults += newsResults.length;
+
+            if (newsResults.length > 0) {
+                await Actor.pushData(newsResults.map((result) => enrichResult(result, params)));
+                console.log(`Found ${newsResults.length} news results`);
+            } else {
+                console.log('No Google News results found for this request');
+            }
+
+            requestSummaries.push({
+                request: params,
+                news_results: newsResults.length,
+                stories: response.stories?.length ?? 0,
+                related_searches: response.related_searches?.length ?? 0,
+            });
         }
 
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
+        if (paramList.length === 1) {
+            await store.setValue('OUTPUT', responses[0]);
+        } else {
+            await store.setValue('OUTPUT', {
+                requests: requestSummaries,
+                responses,
+                news_results: totalNewsResults,
+            });
+        }
 
         const summary = {
-            news_results: newsResults.length,
-            menu_links: response.menu_links?.length ?? 0,
-            related_publications: response.related_publications?.length ?? 0,
-            sub_menu_links: response.sub_menu_links?.length ?? 0,
-            related_topics: response.related_topics?.length ?? 0,
-            related_searches: response.related_searches?.length ?? 0,
-            stories: response.stories?.length ?? 0,
-            has_highlight: !!response.highlight,
+            requests: paramList.length,
+            news_results: totalNewsResults,
         };
 
         console.log('Google News scraping completed successfully');
