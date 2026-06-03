@@ -5,26 +5,15 @@ import {
     pushErrorHotelItem,
     pushSuccessfulHotelItem,
 } from './charging.js';
+import { isActorLevelScrappaFailure } from './failures.js';
 import { buildBookingHotelRequests, describeBookingHotelRequest } from './request-params.js';
 import type { BookingHotelInput } from './request-params.js';
 import { buildBookingHotelDatasetItem, buildBookingHotelErrorItem, getBookingHotelDetails } from './response-utils.js';
 import type { BookingHotelResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaNetworkError, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
-
-function isActorLevelScrappaFailure(error: unknown): boolean {
-    if (error instanceof ScrappaTimeoutError || error instanceof ScrappaNetworkError) {
-        return true;
-    }
-
-    if (!(error instanceof Error)) {
-        return false;
-    }
-
-    return /Scrappa API error \((?:401|403|408|429|500|502|503|504)\)/.test(error.message);
-}
 
 async function main(): Promise<void> {
     await Actor.init();
