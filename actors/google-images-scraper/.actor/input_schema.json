@@ -3,10 +3,6 @@
   "description": "Search Google Images with filters for size, type, color, aspect ratio, safe search, language, country, and pagination.",
   "type": "object",
   "schemaVersion": 1,
-  "anyOf": [
-    { "required": ["queries"] },
-    { "required": ["q"] }
-  ],
   "properties": {
     "queries": {
       "title": "Search Queries",

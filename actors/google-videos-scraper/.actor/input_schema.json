@@ -3,10 +3,6 @@
   "description": "Search Google Videos with query, localization, pagination, safe search, and advanced Google SERP filters.",
   "type": "object",
   "schemaVersion": 1,
-  "anyOf": [
-    { "required": ["queries"] },
-    { "required": ["q"] }
-  ],
   "properties": {
     "queries": {
       "title": "Search Queries",

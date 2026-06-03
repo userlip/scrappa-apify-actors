@@ -86,7 +86,8 @@ async function main(): Promise<void> {
         console.log(`Running ${paramList.length} Google News request${paramList.length === 1 ? '' : 's'}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const responses: GoogleNewsResponse[] = [];
+        const keepRawResponse = paramList.length === 1;
+        let singleResponse: GoogleNewsResponse | null = null;
         const requestSummaries: Array<{
             request: Record<string, unknown>;
             news_results: number;
@@ -98,7 +99,9 @@ async function main(): Promise<void> {
         for (const params of paramList) {
             console.log(`Fetching Google News for ${describeGoogleNewsRequest(params)}`);
             const response = await client.get<GoogleNewsResponse>('/google/news', params);
-            responses.push(response);
+            if (keepRawResponse) {
+                singleResponse = response;
+            }
             const newsResults = response.news_results ?? [];
             totalNewsResults += newsResults.length;
 
@@ -118,12 +121,11 @@ async function main(): Promise<void> {
         }
 
         const store = await Actor.openKeyValueStore();
-        if (paramList.length === 1) {
-            await store.setValue('OUTPUT', responses[0]);
+        if (keepRawResponse) {
+            await store.setValue('OUTPUT', singleResponse);
         } else {
             await store.setValue('OUTPUT', {
                 requests: requestSummaries,
-                responses,
                 news_results: totalNewsResults,
             });
         }

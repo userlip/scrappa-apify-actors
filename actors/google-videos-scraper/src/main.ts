@@ -26,8 +26,9 @@ async function main(): Promise<void> {
         console.log(`Running ${paramList.length} Google Videos request${paramList.length === 1 ? '' : 's'}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const requestSummaries: Array<{ request: Record<string, unknown>; video_results: number }> = [];
+        const keepRawResponse = paramList.length === 1;
         let singleResponse: GoogleVideosResponse | null = null;
+        const requestSummaries: Array<{ request: Record<string, unknown>; video_results: number }> = [];
         let totalVideoResults = 0;
         let totalFoundInVideos = 0;
         let totalShortVideos = 0;
@@ -38,7 +39,7 @@ async function main(): Promise<void> {
         for (const params of paramList) {
             console.log(`Fetching Google Videos for ${describeGoogleVideosRequest(params)}`);
             const response = await client.get<GoogleVideosResponse>('/google/videos', params);
-            if (paramList.length === 1) {
+            if (keepRawResponse) {
                 singleResponse = response;
             }
             const videoResults = extractVideoResults(response);
@@ -77,7 +78,7 @@ async function main(): Promise<void> {
         }
 
         const store = await Actor.openKeyValueStore();
-        if (paramList.length === 1) {
+        if (keepRawResponse) {
             await store.setValue('OUTPUT', singleResponse);
         } else {
             await store.setValue('OUTPUT', {
