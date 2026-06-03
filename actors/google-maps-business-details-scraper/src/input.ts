@@ -10,7 +10,7 @@ export interface BusinessIdRequest {
     business_id: string;
 }
 
-export const MAX_BUSINESS_IDS_PER_RUN = 50;
+export const MAX_BUSINESS_IDS_PER_RUN = 10;
 
 export function getBusinessIdRequests(input: GoogleMapsBusinessDetailsInput | null): BusinessIdRequest[] {
     const rawBusinessIds = [

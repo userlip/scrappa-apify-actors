@@ -22,7 +22,7 @@
       "description": "Recommended. Process many Google Maps business IDs in one Apify run so run startup and storage overhead are shared across results.",
       "editor": "stringList",
       "minItems": 1,
-      "maxItems": 50,
+      "maxItems": 10,
       "prefill": [
         "0x808fba02425dad8f:0x6c296c66619367e0"
       ],

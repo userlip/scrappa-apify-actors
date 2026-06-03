@@ -17,7 +17,7 @@ export interface BusinessIdRequest {
     validation_error?: string;
 }
 
-export const MAX_BUSINESS_IDS_PER_RUN = 50;
+export const MAX_BUSINESS_IDS_PER_RUN = 10;
 
 export function getBusinessIdRequests(input: GoogleMapsPhotosInput | null): BusinessIdRequest[] {
     const rawBusinessIds = [

@@ -40,21 +40,21 @@ test('getBusinessIdRequests combines business_id and business_ids inputs and ded
 test('getBusinessIdRequests caps unique business IDs per run', () => {
     assert.equal(
         getBusinessIdRequests({
-            business_ids: Array.from({ length: 50 }, (_, index) => `business-${index}`),
+            business_ids: Array.from({ length: 10 }, (_, index) => `business-${index}`),
         }).length,
-        50,
+        10,
     );
     assert.equal(
         getBusinessIdRequests({
             business_id: 'business-0',
-            business_ids: Array.from({ length: 50 }, (_, index) => `business-${index}`),
+            business_ids: Array.from({ length: 10 }, (_, index) => `business-${index}`),
         }).length,
-        50,
+        10,
     );
     assert.throws(
         () => getBusinessIdRequests({
-            business_ids: Array.from({ length: 51 }, (_, index) => `business-${index}`),
+            business_ids: Array.from({ length: 11 }, (_, index) => `business-${index}`),
         }),
-        /business_ids must contain 50 unique items or fewer/,
+        /business_ids must contain 10 unique items or fewer/,
     );
 });
