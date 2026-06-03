@@ -192,6 +192,10 @@ function getGoogleVideosQueries(input: GoogleVideosInput): string[] {
         throw new Error('q is required');
     }
 
+    if (queries.length > MAX_QUERIES_PER_RUN) {
+        throw new Error(`queries must contain ${MAX_QUERIES_PER_RUN} items or fewer`);
+    }
+
     return queries;
 }
 

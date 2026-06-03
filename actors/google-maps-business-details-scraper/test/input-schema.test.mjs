@@ -12,4 +12,8 @@ test('input schema supports batch business_ids before legacy business_id', () =>
     assert.equal(inputSchema.properties.business_id.type, 'string');
     assert.deepEqual(Object.keys(inputSchema.properties).slice(0, 2), ['business_ids', 'business_id']);
     assert.equal(inputSchema.required, undefined);
+    assert.deepEqual(inputSchema.anyOf, [
+        { required: ['business_ids'] },
+        { required: ['business_id'] },
+    ]);
 });

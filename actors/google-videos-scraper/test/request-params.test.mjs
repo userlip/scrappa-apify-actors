@@ -62,6 +62,13 @@ test('validates video query batch input shape', () => {
         () => buildGoogleVideosParamList({ queries: 'coffee' }),
         /queries must be an array/,
     );
+    assert.throws(
+        () => buildGoogleVideosParamList({
+            q: 'extra query',
+            queries: Array.from({ length: 50 }, (_, index) => `query ${index}`),
+        }),
+        /queries must contain 50 items or fewer/,
+    );
 });
 
 test('supports start offset pagination', () => {

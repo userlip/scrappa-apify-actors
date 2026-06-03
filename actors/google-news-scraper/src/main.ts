@@ -90,34 +90,58 @@ async function main(): Promise<void> {
         let singleResponse: GoogleNewsResponse | null = null;
         const requestSummaries: Array<{
             request: Record<string, unknown>;
+            success: boolean;
             news_results: number;
             stories: number;
             related_searches: number;
+            error_message?: string;
         }> = [];
         let totalNewsResults = 0;
+        let failedRequests = 0;
 
         for (const params of paramList) {
-            console.log(`Fetching Google News for ${describeGoogleNewsRequest(params)}`);
-            const response = await client.get<GoogleNewsResponse>('/google/news', params);
-            if (keepRawResponse) {
-                singleResponse = response;
-            }
-            const newsResults = response.news_results ?? [];
-            totalNewsResults += newsResults.length;
+            const requestDescription = describeGoogleNewsRequest(params);
+            console.log(`Fetching Google News for ${requestDescription}`);
 
-            if (newsResults.length > 0) {
-                await Actor.pushData(newsResults.map((result) => enrichResult(result, params)));
-                console.log(`Found ${newsResults.length} news results`);
-            } else {
-                console.log('No Google News results found for this request');
-            }
+            try {
+                const response = await client.get<GoogleNewsResponse>('/google/news', params);
+                if (keepRawResponse) {
+                    singleResponse = response;
+                }
+                const newsResults = response.news_results ?? [];
+                totalNewsResults += newsResults.length;
 
-            requestSummaries.push({
-                request: params,
-                news_results: newsResults.length,
-                stories: response.stories?.length ?? 0,
-                related_searches: response.related_searches?.length ?? 0,
-            });
+                if (newsResults.length > 0) {
+                    await Actor.pushData(newsResults.map((result) => enrichResult(result, params)));
+                    console.log(`Found ${newsResults.length} news results`);
+                } else {
+                    console.log('No Google News results found for this request');
+                }
+
+                requestSummaries.push({
+                    request: params,
+                    success: true,
+                    news_results: newsResults.length,
+                    stories: response.stories?.length ?? 0,
+                    related_searches: response.related_searches?.length ?? 0,
+                });
+            } catch (error) {
+                if (paramList.length === 1) {
+                    throw error;
+                }
+
+                failedRequests += 1;
+                const message = error instanceof Error ? error.message : String(error);
+                console.warn(`Google News request failed for ${requestDescription}: ${message}`);
+                requestSummaries.push({
+                    request: params,
+                    success: false,
+                    news_results: 0,
+                    stories: 0,
+                    related_searches: 0,
+                    error_message: message,
+                });
+            }
         }
 
         const store = await Actor.openKeyValueStore();
@@ -127,12 +151,14 @@ async function main(): Promise<void> {
             await store.setValue('OUTPUT', {
                 requests: requestSummaries,
                 news_results: totalNewsResults,
+                failed_requests: failedRequests,
             });
         }
 
         const summary = {
             requests: paramList.length,
             news_results: totalNewsResults,
+            failed_requests: failedRequests,
         };
 
         console.log('Google News scraping completed successfully');

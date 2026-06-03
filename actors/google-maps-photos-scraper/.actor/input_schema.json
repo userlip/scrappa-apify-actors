@@ -3,6 +3,18 @@
   "description": "Extract all photos for a specific business from Google Maps.",
   "type": "object",
   "schemaVersion": 1,
+  "anyOf": [
+    {
+      "required": [
+        "business_ids"
+      ]
+    },
+    {
+      "required": [
+        "business_id"
+      ]
+    }
+  ],
   "properties": {
     "business_ids": {
       "title": "Business IDs, Place IDs, or Maps URLs",

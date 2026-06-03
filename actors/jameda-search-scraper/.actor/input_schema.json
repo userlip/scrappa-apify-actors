@@ -3,6 +3,18 @@
   "description": "Search Jameda doctor profiles by specialty, doctor name, and optional German location.",
   "type": "object",
   "schemaVersion": 1,
+  "anyOf": [
+    {
+      "required": [
+        "searches"
+      ]
+    },
+    {
+      "required": [
+        "q"
+      ]
+    }
+  ],
   "properties": {
     "searches": {
       "title": "Searches",

@@ -60,6 +60,13 @@ test('validates image query batch input shape', () => {
         () => buildGoogleImagesParamList({ queries: 'coffee' }),
         /queries must be an array/,
     );
+    assert.throws(
+        () => buildGoogleImagesParamList({
+            q: 'extra query',
+            queries: Array.from({ length: 50 }, (_, index) => `query ${index}`),
+        }),
+        /queries must contain 50 items or fewer/,
+    );
 });
 
 test('requires a non-empty query', () => {

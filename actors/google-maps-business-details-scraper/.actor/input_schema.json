@@ -3,6 +3,18 @@
   "description": "Extract detailed information for a specific business from Google Maps including ratings, reviews, photos, and operating hours.",
   "type": "object",
   "schemaVersion": 1,
+  "anyOf": [
+    {
+      "required": [
+        "business_ids"
+      ]
+    },
+    {
+      "required": [
+        "business_id"
+      ]
+    }
+  ],
   "properties": {
     "business_ids": {
       "title": "Business IDs",

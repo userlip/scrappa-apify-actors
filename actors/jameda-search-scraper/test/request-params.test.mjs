@@ -107,6 +107,17 @@ test('preserves ampersands and percent characters in query text', () => {
     assert.equal(buildJamedaSearchPlan({ q: '100% privat' }).baseParams.q, '100% privat');
 });
 
+test('decodes batch query and location values once', () => {
+    const [plan] = buildJamedaSearchPlans({
+        searches: [
+            { q: '100%2526 privat', loc: 'Berlin%2526Mitte' },
+        ],
+    });
+
+    assert.equal(plan.baseParams.q, '100%26 privat');
+    assert.equal(plan.baseParams.loc, 'Berlin%26Mitte');
+});
+
 test('validates required query and pagination bounds', () => {
     assert.throws(
         () => buildJamedaSearchPlan({ q: 'a' }),
@@ -138,6 +149,10 @@ test('input schema matches the Jameda search contract', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
 
     assert.equal(schema.required, undefined);
+    assert.deepEqual(schema.anyOf, [
+        { required: ['searches'] },
+        { required: ['q'] },
+    ]);
     assert.equal(schema.properties.searches.type, 'array');
     assert.deepEqual(Object.keys(schema.properties).slice(0, 3), ['searches', 'q', 'loc']);
     assert.equal(schema.properties.page.minimum, 1);

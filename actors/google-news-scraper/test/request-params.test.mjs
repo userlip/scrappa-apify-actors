@@ -54,6 +54,13 @@ test('validates query batch input shape', () => {
         /queries must be an array/,
     );
     assert.throws(
+        () => buildGoogleNewsParamList({
+            q: 'extra query',
+            queries: Array.from({ length: 50 }, (_, index) => `query ${index}`),
+        }),
+        /queries must contain 50 items or fewer/,
+    );
+    assert.throws(
         () => buildGoogleNewsParamList({ queries: ['markets'], topic_token: 'CAAqExample' }),
         /Cannot use queries with/,
     );
