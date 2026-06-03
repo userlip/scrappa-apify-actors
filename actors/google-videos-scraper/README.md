@@ -7,13 +7,17 @@ Search Google Videos and export structured video SERP results through the Scrapp
 - Video results with title, link, displayed link, thumbnail, snippet, duration, date, and key moments
 - Country, language, Google domain, location, UULE, safe search, and language restriction controls
 - Page or start-offset pagination
+- Batch multiple keyword searches in one Apify run with `queries`
 - Full raw Scrappa response saved to the key-value store
 
 ## Input
 
 ```json
 {
-  "q": "coffee brewing tutorial",
+  "queries": [
+    "coffee brewing tutorial",
+    "espresso machine review"
+  ],
   "page": 1,
   "hl": "en",
   "gl": "us",
@@ -42,4 +46,4 @@ Each item in `video_results` is saved to the default dataset with request metada
 }
 ```
 
-The complete Scrappa response is saved to key-value store record `OUTPUT`, including `found_in_videos`, `short_videos`, `related_searches`, `pagination`, and `scrappa_pagination` when returned.
+For legacy single-query runs, the complete Scrappa response is saved to key-value store record `OUTPUT`, including `found_in_videos`, `short_videos`, `related_searches`, `pagination`, and `scrappa_pagination` when returned. Batch runs use the dataset as the primary result channel and write a compact request summary plus raw responses to `OUTPUT`.

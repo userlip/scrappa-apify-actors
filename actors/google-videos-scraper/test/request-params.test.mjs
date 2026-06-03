@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildGoogleVideosParams, describeGoogleVideosRequest } from '../dist/request-params.js';
+import { buildGoogleVideosParamList, buildGoogleVideosParams, describeGoogleVideosRequest } from '../dist/request-params.js';
 
 test('builds params for a localized video search', () => {
     assert.deepEqual(
@@ -31,6 +31,36 @@ test('builds params for a localized video search', () => {
             nfpr: 0,
             lr: 'lang_en',
         },
+    );
+});
+
+test('builds params for multiple video searches and deduplicates queries', () => {
+    assert.deepEqual(
+        buildGoogleVideosParamList({
+            q: 'coffee brewing tutorial',
+            queries: [' coffee brewing tutorial ', 'espresso machine review'],
+            gl: 'US',
+            safe: 'OFF',
+        }),
+        [
+            {
+                q: 'coffee brewing tutorial',
+                gl: 'us',
+                safe: 'off',
+            },
+            {
+                q: 'espresso machine review',
+                gl: 'us',
+                safe: 'off',
+            },
+        ],
+    );
+});
+
+test('validates video query batch input shape', () => {
+    assert.throws(
+        () => buildGoogleVideosParamList({ queries: 'coffee' }),
+        /queries must be an array/,
     );
 });
 

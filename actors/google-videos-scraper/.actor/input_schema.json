@@ -3,12 +3,27 @@
   "description": "Search Google Videos with query, localization, pagination, safe search, and advanced Google SERP filters.",
   "type": "object",
   "schemaVersion": 1,
-  "required": ["q"],
   "properties": {
+    "queries": {
+      "title": "Search Queries",
+      "type": "array",
+      "description": "Recommended. Process many Google Videos keyword searches in one Apify run so run startup and storage overhead are shared across video results.",
+      "editor": "stringList",
+      "maxItems": 50,
+      "prefill": [
+        "coffee brewing tutorial",
+        "espresso machine review"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
     "q": {
-      "title": "Search Query",
+      "title": "Legacy Search Query",
       "type": "string",
-      "description": "Keyword or phrase to search in Google Videos.",
+      "description": "Backward-compatible single keyword or phrase to search in Google Videos. Prefer Search Queries for normal usage, especially when running more than one keyword.",
       "editor": "textfield",
       "prefill": "coffee brewing tutorial"
     },
