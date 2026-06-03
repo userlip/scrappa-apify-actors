@@ -7,6 +7,7 @@ const requestParamsModule = process.env.TEST_SOURCE === 'src'
     : '../dist/request-params.js';
 const {
     buildJamedaSearchPlan,
+    buildJamedaSearchPlans,
     buildPageParams,
     describeJamedaSearchRequest,
 } = await import(requestParamsModule);
@@ -38,7 +39,7 @@ test('normalizes numeric strings and encoded German query text', () => {
         loc: 'M%C3%BCnchen',
         page: '2',
         per_page: '10',
-        max_pages: '3',
+        max_pages: '2',
     });
 
     assert.deepEqual(plan, {
@@ -49,14 +50,72 @@ test('normalizes numeric strings and encoded German query text', () => {
         },
         startPage: 2,
         perPage: 10,
-        maxPages: 3,
+        maxPages: 2,
     });
-    assert.equal(describeJamedaSearchRequest(plan), '"HNO Arzt" in München (pages 2-4, 10 per page)');
+    assert.equal(describeJamedaSearchRequest(plan), '"HNO Arzt" in München (pages 2-3, 10 per page)');
+});
+
+test('builds multiple Jameda search plans and deduplicates query/location pairs', () => {
+    const plans = buildJamedaSearchPlans({
+        q: 'Zahnarzt',
+        loc: 'Berlin',
+        searches: [
+            { q: 'Zahnarzt', loc: 'Berlin' },
+            { q: 'Hausarzt', loc: 'München' },
+        ],
+        max_pages: 2,
+    });
+
+    assert.deepEqual(
+        plans.map((plan) => ({
+            baseParams: plan.baseParams,
+            startPage: plan.startPage,
+            maxPages: plan.maxPages,
+        })),
+        [
+            {
+                baseParams: { q: 'Zahnarzt', loc: 'Berlin', per_page: 28 },
+                startPage: 1,
+                maxPages: 2,
+            },
+            {
+                baseParams: { q: 'Hausarzt', loc: 'München', per_page: 28 },
+                startPage: 1,
+                maxPages: 2,
+            },
+        ],
+    );
+});
+
+test('validates searches input shape', () => {
+    assert.throws(
+        () => buildJamedaSearchPlans({ searches: 'Zahnarzt' }),
+        /searches must be an array/,
+    );
+    assert.throws(
+        () => buildJamedaSearchPlans({ searches: ['Zahnarzt'] }),
+        /Each searches item must be an object/,
+    );
+    assert.throws(
+        () => buildJamedaSearchPlans({ searches: [] }),
+        /Provide q or searches/,
+    );
 });
 
 test('preserves ampersands and percent characters in query text', () => {
     assert.equal(buildJamedaSearchPlan({ q: 'Hals & Nase' }).baseParams.q, 'Hals & Nase');
     assert.equal(buildJamedaSearchPlan({ q: '100% privat' }).baseParams.q, '100% privat');
+});
+
+test('decodes batch query and location values once', () => {
+    const [plan] = buildJamedaSearchPlans({
+        searches: [
+            { q: '100%2526 privat', loc: 'Berlin%2526Mitte' },
+        ],
+    });
+
+    assert.equal(plan.baseParams.q, '100%26 privat');
+    assert.equal(plan.baseParams.loc, 'Berlin%26Mitte');
 });
 
 test('validates required query and pagination bounds', () => {
@@ -77,11 +136,11 @@ test('validates required query and pagination bounds', () => {
         /per_page must be between 1 and 28/,
     );
     assert.throws(
-        () => buildJamedaSearchPlan({ q: 'Zahnarzt', max_pages: 11 }),
-        /max_pages must be between 1 and 10/,
+        () => buildJamedaSearchPlan({ q: 'Zahnarzt', max_pages: 3 }),
+        /max_pages must be between 1 and 2/,
     );
     assert.throws(
-        () => buildJamedaSearchPlan({ q: 'Zahnarzt', page: 495, max_pages: 10 }),
+        () => buildJamedaSearchPlan({ q: 'Zahnarzt', page: 500, max_pages: 2 }),
         /page plus max_pages cannot exceed page 500/,
     );
 });
@@ -89,9 +148,16 @@ test('validates required query and pagination bounds', () => {
 test('input schema matches the Jameda search contract', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
 
-    assert.deepEqual(schema.required, ['q']);
+    assert.equal(schema.required, undefined);
+    assert.deepEqual(schema.anyOf, [
+        { required: ['searches'] },
+        { required: ['q'] },
+    ]);
+    assert.equal(schema.properties.searches.type, 'array');
+    assert.deepEqual(Object.keys(schema.properties).slice(0, 3), ['searches', 'q', 'loc']);
     assert.equal(schema.properties.page.minimum, 1);
     assert.equal(schema.properties.page.maximum, 500);
     assert.equal(schema.properties.per_page.maximum, 28);
-    assert.equal(schema.properties.max_pages.maximum, 10);
+    assert.equal(schema.properties.max_pages.maximum, 2);
+    assert.equal(schema.properties.searches.maxItems, 10);
 });

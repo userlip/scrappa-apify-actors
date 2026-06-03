@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { buildGoogleNewsParams, describeGoogleNewsRequest } from './request-params.js';
+import { buildGoogleNewsParamList, describeGoogleNewsRequest } from './request-params.js';
 import type { GoogleNewsInput } from './request-params.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
 
@@ -42,6 +42,10 @@ interface GoogleNewsResponse {
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
+function isActorLevelScrappaFailure(error: unknown): boolean {
+    return error instanceof Error && /Scrappa API error \((?:401|403)\)/.test(error.message);
+}
+
 function sourceName(source: GoogleNewsSource | string | undefined): string | undefined {
     if (typeof source === 'string') {
         return source;
@@ -82,32 +86,83 @@ async function main(): Promise<void> {
             throw new Error('Input is required');
         }
 
-        const params = buildGoogleNewsParams(input);
-        console.log(`Fetching Google News for ${describeGoogleNewsRequest(params)}`);
+        const paramList = buildGoogleNewsParamList(input);
+        console.log(`Running ${paramList.length} Google News request${paramList.length === 1 ? '' : 's'}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<GoogleNewsResponse>('/google/news', params);
-        const newsResults = response.news_results ?? [];
+        const keepRawResponse = paramList.length === 1;
+        let singleResponse: GoogleNewsResponse | null = null;
+        const requestSummaries: Array<{
+            request: Record<string, unknown>;
+            success: boolean;
+            news_results: number;
+            stories: number;
+            related_searches: number;
+            error_message?: string;
+        }> = [];
+        let totalNewsResults = 0;
+        let failedRequests = 0;
 
-        if (newsResults.length > 0) {
-            await Actor.pushData(newsResults.map((result) => enrichResult(result, params)));
-            console.log(`Found ${newsResults.length} news results`);
-        } else {
-            console.log('No Google News results found for this request');
+        for (const params of paramList) {
+            const requestDescription = describeGoogleNewsRequest(params);
+            console.log(`Fetching Google News for ${requestDescription}`);
+
+            try {
+                const response = await client.get<GoogleNewsResponse>('/google/news', params);
+                if (keepRawResponse) {
+                    singleResponse = response;
+                }
+                const newsResults = response.news_results ?? [];
+                totalNewsResults += newsResults.length;
+
+                if (newsResults.length > 0) {
+                    await Actor.pushData(newsResults.map((result) => enrichResult(result, params)));
+                    console.log(`Found ${newsResults.length} news results`);
+                } else {
+                    console.log('No Google News results found for this request');
+                }
+
+                requestSummaries.push({
+                    request: params,
+                    success: true,
+                    news_results: newsResults.length,
+                    stories: response.stories?.length ?? 0,
+                    related_searches: response.related_searches?.length ?? 0,
+                });
+            } catch (error) {
+                if (paramList.length === 1 || isActorLevelScrappaFailure(error)) {
+                    throw error;
+                }
+
+                failedRequests += 1;
+                const message = error instanceof Error ? error.message : String(error);
+                console.warn(`Google News request failed for ${requestDescription}: ${message}`);
+                requestSummaries.push({
+                    request: params,
+                    success: false,
+                    news_results: 0,
+                    stories: 0,
+                    related_searches: 0,
+                    error_message: message,
+                });
+            }
         }
 
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
+        if (keepRawResponse) {
+            await store.setValue('OUTPUT', singleResponse);
+        } else {
+            await store.setValue('OUTPUT', {
+                requests: requestSummaries,
+                news_results: totalNewsResults,
+                failed_requests: failedRequests,
+            });
+        }
 
         const summary = {
-            news_results: newsResults.length,
-            menu_links: response.menu_links?.length ?? 0,
-            related_publications: response.related_publications?.length ?? 0,
-            sub_menu_links: response.sub_menu_links?.length ?? 0,
-            related_topics: response.related_topics?.length ?? 0,
-            related_searches: response.related_searches?.length ?? 0,
-            stories: response.stories?.length ?? 0,
-            has_highlight: !!response.highlight,
+            requests: paramList.length,
+            news_results: totalNewsResults,
+            failed_requests: failedRequests,
         };
 
         console.log('Google News scraping completed successfully');

@@ -3,11 +3,39 @@
   "description": "Extract all photos for a specific business from Google Maps.",
   "type": "object",
   "schemaVersion": 1,
+  "anyOf": [
+    {
+      "required": [
+        "business_ids"
+      ]
+    },
+    {
+      "required": [
+        "business_id"
+      ]
+    }
+  ],
   "properties": {
+    "business_ids": {
+      "title": "Business IDs, Place IDs, or Maps URLs",
+      "type": "array",
+      "description": "Recommended. Process many Google Maps business IDs, ChIJ... Place IDs, or supported Maps URLs in one Apify run so run startup and storage overhead are shared across photo results.",
+      "editor": "stringList",
+      "minItems": 1,
+      "maxItems": 10,
+      "prefill": [
+        "0x808fba02425dad8f:0x6c296c66619367e0",
+        "ChIJj61dQgK6j4AR4GeTYWZsKWw"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
     "business_id": {
-      "title": "Business ID, Place ID, or Maps URL",
+      "title": "Legacy Single Business ID, Place ID, or Maps URL",
       "type": "string",
-      "description": "Google Maps business ID in 0x[hex]:0x[hex] format, a ChIJ... Place ID, or a Google Maps URL that contains one of those identifiers.",
+      "description": "Backward-compatible single Google Maps business ID, ChIJ... Place ID, or supported Maps URL. Prefer business_ids for normal usage, especially when processing more than one business.",
       "editor": "textfield",
       "prefill": "0x808fba02425dad8f:0x6c296c66619367e0"
     },
@@ -26,8 +54,5 @@
       "minimum": 0,
       "default": 3600
     }
-  },
-  "required": [
-    "business_id"
-  ]
+  }
 }

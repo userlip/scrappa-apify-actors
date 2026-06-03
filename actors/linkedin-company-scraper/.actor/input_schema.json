@@ -4,24 +4,28 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "url": {
-      "title": "LinkedIn Company URL",
-      "type": "string",
-      "description": "Single LinkedIn company page URL. For lower Apify costs, prefer the URLs field when scraping multiple companies.",
-      "editor": "textfield",
-      "minLength": 1,
-      "prefill": "https://www.linkedin.com/company/microsoft"
-    },
     "urls": {
       "title": "LinkedIn Company URLs",
       "type": "array",
-      "description": "Multiple LinkedIn company page URLs to process in one Apify run. This is the recommended option for batches because it avoids one Apify run per result.",
+      "description": "Recommended. Process many LinkedIn company URLs in one Apify run so run startup and storage overhead are shared across results.",
       "editor": "stringList",
       "minItems": 1,
+      "prefill": [
+        "https://www.linkedin.com/company/microsoft",
+        "https://www.linkedin.com/company/openai"
+      ],
       "items": {
         "type": "string",
         "minLength": 1
       }
+    },
+    "url": {
+      "title": "Legacy Single LinkedIn Company URL",
+      "type": "string",
+      "description": "Backward-compatible single company URL. Prefer URLs for normal usage, especially when processing more than one company.",
+      "editor": "textfield",
+      "minLength": 1,
+      "prefill": "https://www.linkedin.com/company/microsoft"
     },
     "use_cache": {
       "title": "Use Cache",

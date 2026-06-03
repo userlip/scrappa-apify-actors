@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { buildGoogleVideosParams, describeGoogleVideosRequest } from './request-params.js';
+import { buildGoogleVideosParamList, describeGoogleVideosRequest } from './request-params.js';
 import type { GoogleVideosInput } from './request-params.js';
 import { enrichResult, extractVideoResults } from './response-utils.js';
 import type { GoogleVideosResponse } from './response-utils.js';
@@ -22,51 +22,93 @@ async function main(): Promise<void> {
             throw new Error('Input is required');
         }
 
-        const params = buildGoogleVideosParams(input);
-        console.log(`Fetching Google Videos for ${describeGoogleVideosRequest(params)}`);
+        const paramList = buildGoogleVideosParamList(input);
+        console.log(`Running ${paramList.length} Google Videos request${paramList.length === 1 ? '' : 's'}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<GoogleVideosResponse>('/google/videos', params);
-        const videoResults = extractVideoResults(response);
-        const datasetItems = videoResults.map((result) => enrichResult(result, params));
+        const keepRawResponse = paramList.length === 1;
+        let singleResponse: GoogleVideosResponse | null = null;
+        const requestSummaries: Array<{ request: Record<string, unknown>; video_results: number }> = [];
+        let totalVideoResults = 0;
+        let totalFoundInVideos = 0;
+        let totalShortVideos = 0;
+        let totalRelatedSearches = 0;
+        let hasPagination = false;
+        let hasScrappaPagination = false;
+        let statusMessage: string | null = null;
 
-        if (datasetItems.length > 0) {
-            const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
-            if (isPayPerEvent) {
-                const chargeResult = await Actor.pushData(datasetItems, VIDEO_RESULT_CHARGE_EVENT);
-                if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
-                    const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${datasetItems.length} Google Videos results; OUTPUT was not written.`;
-                    console.log(statusMessage, JSON.stringify({
-                        event: VIDEO_RESULT_CHARGE_EVENT,
-                        charged_count: chargeResult.chargedCount,
-                        requested_count: datasetItems.length,
-                    }));
-                    await Actor.exit({ statusMessage });
-                    return;
+        for (const params of paramList) {
+            console.log(`Fetching Google Videos for ${describeGoogleVideosRequest(params)}`);
+            const response = await client.get<GoogleVideosResponse>('/google/videos', params);
+            if (keepRawResponse) {
+                singleResponse = response;
+            }
+            const videoResults = extractVideoResults(response);
+            const datasetItems = videoResults.map((result) => enrichResult(result, params));
+            let savedVideoResults = videoResults.length;
+            totalFoundInVideos += response.found_in_videos?.length ?? 0;
+            totalShortVideos += response.short_videos?.length ?? 0;
+            totalRelatedSearches += response.related_searches?.length ?? 0;
+            hasPagination ||= !!response.pagination;
+            hasScrappaPagination ||= !!response.scrappa_pagination;
+
+            if (datasetItems.length > 0) {
+                const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
+                if (isPayPerEvent) {
+                    const chargeResult = await Actor.pushData(datasetItems, VIDEO_RESULT_CHARGE_EVENT);
+                    if (chargeResult.eventChargeLimitReached) {
+                        savedVideoResults = Math.min(chargeResult.chargedCount ?? 0, datasetItems.length);
+                        statusMessage = `Charge limit reached after saving ${savedVideoResults} of ${datasetItems.length} Google Videos results; OUTPUT will be written before exit.`;
+                        console.log(statusMessage, JSON.stringify({
+                            event: VIDEO_RESULT_CHARGE_EVENT,
+                            charged_count: savedVideoResults,
+                            requested_count: datasetItems.length,
+                        }));
+                    }
+                } else {
+                    await Actor.pushData(datasetItems);
                 }
+
+                console.log(`Found ${videoResults.length} video results`);
             } else {
-                await Actor.pushData(datasetItems);
+                console.log('No Google Videos results found for this request');
             }
 
-            console.log(`Found ${videoResults.length} video results`);
-        } else {
-            console.log('No Google Videos results found for this request');
+            totalVideoResults += savedVideoResults;
+            requestSummaries.push({ request: params, video_results: savedVideoResults });
+
+            if (statusMessage) {
+                break;
+            }
         }
 
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
+        if (keepRawResponse) {
+            await store.setValue('OUTPUT', singleResponse);
+        } else {
+            await store.setValue('OUTPUT', {
+                requests: requestSummaries,
+                video_results: totalVideoResults,
+            });
+        }
 
         const summary = {
-            video_results: videoResults.length,
-            found_in_videos: response.found_in_videos?.length ?? 0,
-            short_videos: response.short_videos?.length ?? 0,
-            related_searches: response.related_searches?.length ?? 0,
-            has_pagination: !!response.pagination,
-            has_scrappa_pagination: !!response.scrappa_pagination,
+            requests: paramList.length,
+            video_results: totalVideoResults,
+            found_in_videos: totalFoundInVideos,
+            short_videos: totalShortVideos,
+            related_searches: totalRelatedSearches,
+            has_pagination: hasPagination,
+            has_scrappa_pagination: hasScrappaPagination,
         };
 
         console.log('Google Videos scraping completed successfully');
         console.log('Results summary:', JSON.stringify(summary));
+
+        if (statusMessage) {
+            await Actor.exit({ statusMessage });
+            return;
+        }
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
         const message = rawMessage.includes('timed out')

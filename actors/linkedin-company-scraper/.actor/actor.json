@@ -13,6 +13,9 @@
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
+  "resources": {
+    "memoryMbytes": 128
+  },
   "storages": {
     "dataset": {
       "actorSpecification": 1,

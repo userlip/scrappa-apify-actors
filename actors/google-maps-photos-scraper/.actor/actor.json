@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "google-maps-photos-scraper",
   "title": "Google Maps Photos",
-  "description": "Extract all photos for a business from Google Maps. Get photo URLs, metadata, and coordinates for building image galleries and visual archives.",
+  "description": "Extract photos for one or many businesses from Google Maps. Get photo URLs, metadata, and coordinates for building image galleries and visual archives.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": { "templateId": "ts-start" },
@@ -10,7 +10,10 @@
   "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 720
   },
   "storages": {
     "dataset": {

@@ -1,5 +1,6 @@
 export interface GoogleImagesInput {
     q?: unknown;
+    queries?: unknown;
     page?: unknown;
     hl?: unknown;
     gl?: unknown;
@@ -10,6 +11,8 @@ export interface GoogleImagesInput {
     tbs?: unknown;
     safe?: unknown;
 }
+
+const MAX_QUERIES_PER_RUN = 50;
 
 const IMAGE_SIZE_VALUES = ['large', 'medium', 'icon'] as const;
 const IMAGE_TYPE_VALUES = ['photo', 'clipart', 'lineart', 'gif', 'face'] as const;
@@ -135,6 +138,55 @@ export function buildGoogleImagesParams(input: GoogleImagesInput): Record<string
     if (safe !== undefined) params.safe = safe;
 
     return params;
+}
+
+export function buildGoogleImagesParamList(input: GoogleImagesInput): Record<string, unknown>[] {
+    const queries = getGoogleImagesQueries(input);
+    return queries.map((query) => buildGoogleImagesParams({
+        ...input,
+        q: query,
+        queries: undefined,
+    }));
+}
+
+function getGoogleImagesQueries(input: GoogleImagesInput): string[] {
+    const rawQueries = [
+        ...(input.q !== undefined && input.q !== null && input.q !== '' ? [input.q] : []),
+    ];
+
+    if (input.queries !== undefined && input.queries !== null && input.queries !== '') {
+        if (!Array.isArray(input.queries)) {
+            throw new Error('queries must be an array');
+        }
+
+        if (input.queries.length > MAX_QUERIES_PER_RUN) {
+            throw new Error(`queries must contain ${MAX_QUERIES_PER_RUN} items or fewer`);
+        }
+
+        rawQueries.push(...input.queries);
+    }
+
+    const seen = new Set<string>();
+    const queries: string[] = [];
+    for (const rawQuery of rawQueries) {
+        const query = cleanString(rawQuery, 'q', 500);
+        if (query === undefined || seen.has(query)) {
+            continue;
+        }
+
+        seen.add(query);
+        queries.push(query);
+    }
+
+    if (queries.length === 0) {
+        throw new Error('q is required');
+    }
+
+    if (queries.length > MAX_QUERIES_PER_RUN) {
+        throw new Error(`queries must contain ${MAX_QUERIES_PER_RUN} items or fewer`);
+    }
+
+    return queries;
 }
 
 export function describeGoogleImagesRequest(params: Record<string, unknown>): string {

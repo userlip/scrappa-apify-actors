@@ -1,6 +1,6 @@
 import { Actor } from 'apify';
 import {
-    buildJamedaSearchPlan,
+    buildJamedaSearchPlans,
     buildPageParams,
     describeJamedaSearchRequest,
 } from './request-params.js';
@@ -62,68 +62,101 @@ async function main(): Promise<void> {
             throw new Error('Input is required');
         }
 
-        const plan = buildJamedaSearchPlan(input);
-        console.log(`Searching Jameda for ${describeJamedaSearchRequest(plan)}`);
+        const plans = buildJamedaSearchPlans(input);
+        console.log(`Running ${plans.length} Jameda search${plans.length === 1 ? '' : 'es'}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
         const responses: JamedaSearchResponse[] = [];
+        const shouldStoreRawResponses = plans.length === 1;
         let pagesFetched = 0;
         let savedDoctors = 0;
         let statusMessage: string | null = null;
         let latestMeta: JamedaSearchResponse['meta'] | undefined;
+        const searchSummaries: Array<{
+            request: Record<string, unknown>;
+            pages_fetched: number;
+            doctors_extracted: number;
+            total_results: number | null;
+            total_pages: number | null;
+        }> = [];
 
-        for (let offset = 0; offset < plan.maxPages; offset += 1) {
-            const page = plan.startPage + offset;
-            const params = buildPageParams(plan, page);
-            console.log(`Fetching Jameda page ${page} for ${String(params.q)}${params.loc ? ` in ${String(params.loc)}` : ''}`);
+        for (const plan of plans) {
+            console.log(`Searching Jameda for ${describeJamedaSearchRequest(plan)}`);
+            let searchPagesFetched = 0;
+            let searchDoctorsExtracted = 0;
+            let searchMeta: JamedaSearchResponse['meta'] | undefined;
 
-            const response = await client.get<JamedaSearchResponse>('/jameda/search', params, {
-                attempts: SCRAPPA_MAX_ATTEMPTS,
-            });
-            pagesFetched += 1;
-            latestMeta = response.meta;
+            for (let offset = 0; offset < plan.maxPages; offset += 1) {
+                const page = plan.startPage + offset;
+                const params = buildPageParams(plan, page);
+                console.log(`Fetching Jameda page ${page} for ${String(params.q)}${params.loc ? ` in ${String(params.loc)}` : ''}`);
 
-            const doctors = getJamedaDoctors(response).map((doctor) => buildJamedaDoctorDatasetItem(doctor, params, response));
-            responses.push(response);
+                const response = await client.get<JamedaSearchResponse>('/jameda/search', params, {
+                    attempts: SCRAPPA_MAX_ATTEMPTS,
+                });
+                pagesFetched += 1;
+                searchPagesFetched += 1;
+                latestMeta = response.meta;
+                searchMeta = response.meta;
 
-            if (doctors.length > 0) {
-                const result = await pushChargedItems(doctors, page);
-                savedDoctors += result.savedCount;
-                console.log(`Found ${doctors.length} doctor result(s) on page ${page}; saved ${result.savedCount}`);
-                if (result.statusMessage) {
-                    statusMessage = result.statusMessage;
+                const doctors = getJamedaDoctors(response).map((doctor) => buildJamedaDoctorDatasetItem(doctor, params, response));
+                if (shouldStoreRawResponses) {
+                    responses.push(response);
+                }
+
+                if (doctors.length > 0) {
+                    const result = await pushChargedItems(doctors, page);
+                    savedDoctors += result.savedCount;
+                    searchDoctorsExtracted += result.savedCount;
+                    console.log(`Found ${doctors.length} doctor result(s) on page ${page}; saved ${result.savedCount}`);
+                    if (result.statusMessage) {
+                        statusMessage = result.statusMessage;
+                        break;
+                    }
+                } else {
+                    console.log(`No Jameda results found on page ${page}`);
                     break;
                 }
-            } else {
-                console.log(`No Jameda results found on page ${page}`);
-                break;
+
+                if (response.meta?.has_next_page === false) {
+                    console.log(`Stopping after page ${page}; Scrappa reported no next page`);
+                    break;
+                }
+
+                const totalPages = response.meta?.total_pages;
+                if (typeof totalPages === 'number' && page >= totalPages) {
+                    console.log(`Stopping after page ${page}; Scrappa reported ${totalPages} total page(s)`);
+                    break;
+                }
             }
 
-            if (response.meta?.has_next_page === false) {
-                console.log(`Stopping after page ${page}; Scrappa reported no next page`);
-                break;
-            }
+            searchSummaries.push({
+                request: {
+                    ...plan.baseParams,
+                    start_page: plan.startPage,
+                    max_pages: plan.maxPages,
+                },
+                pages_fetched: searchPagesFetched,
+                doctors_extracted: searchDoctorsExtracted,
+                total_results: searchMeta?.total_results ?? null,
+                total_pages: searchMeta?.total_pages ?? null,
+            });
 
-            const totalPages = response.meta?.total_pages;
-            if (typeof totalPages === 'number' && page >= totalPages) {
-                console.log(`Stopping after page ${page}; Scrappa reported ${totalPages} total page(s)`);
+            if (statusMessage) {
                 break;
             }
         }
 
         const output = {
-            request: {
-                ...plan.baseParams,
-                start_page: plan.startPage,
-                max_pages: plan.maxPages,
-            },
+            searches_requested: plans.length,
+            searches: searchSummaries,
             pages_fetched: pagesFetched,
             responses_saved: responses.length,
             doctors_extracted: savedDoctors,
             status_message: statusMessage,
             total_results: latestMeta?.total_results ?? null,
             total_pages: latestMeta?.total_pages ?? null,
-            responses,
+            ...(shouldStoreRawResponses ? { responses } : {}),
         };
 
         const store = await Actor.openKeyValueStore();
@@ -132,7 +165,7 @@ async function main(): Promise<void> {
         console.log('Jameda search completed successfully');
         console.log('Results summary:', JSON.stringify({
             pages_fetched: pagesFetched,
-            responses_saved: responses.length,
+            responses_saved: shouldStoreRawResponses ? responses.length : 0,
             doctors_extracted: savedDoctors,
             total_results: output.total_results,
             total_pages: output.total_pages,

@@ -3,11 +3,38 @@
   "description": "Extract detailed information for a specific business from Google Maps including ratings, reviews, photos, and operating hours.",
   "type": "object",
   "schemaVersion": 1,
+  "anyOf": [
+    {
+      "required": [
+        "business_ids"
+      ]
+    },
+    {
+      "required": [
+        "business_id"
+      ]
+    }
+  ],
   "properties": {
+    "business_ids": {
+      "title": "Business IDs",
+      "type": "array",
+      "description": "Recommended. Process many Google Maps business IDs in one Apify run so run startup and storage overhead are shared across results.",
+      "editor": "stringList",
+      "minItems": 1,
+      "maxItems": 10,
+      "prefill": [
+        "0x808fba02425dad8f:0x6c296c66619367e0"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
     "business_id": {
-      "title": "Business ID",
+      "title": "Legacy Single Business ID",
       "type": "string",
-      "description": "Google Maps business identifier in format: 0x[hex]:0x[hex] (e.g., 0x1234abcd:0x5678efgh). Obtain this from the Search or Autocomplete actor.",
+      "description": "Backward-compatible single Google Maps business ID in format: 0x[hex]:0x[hex]. Prefer business_ids for normal usage, especially when processing more than one business.",
       "editor": "textfield",
       "prefill": "0x808fba02425dad8f:0x6c296c66619367e0"
     },
@@ -26,8 +53,5 @@
       "minimum": 0,
       "default": 3600
     }
-  },
-  "required": [
-    "business_id"
-  ]
+  }
 }

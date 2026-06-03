@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "google-news-scraper",
   "title": "Google News Scraper",
-  "description": "Scrape Google News articles for keywords, topics, publications, and story clusters. Extract titles, links, sources, snippets, dates, thumbnails, and Google News tokens for media monitoring and market research.",
+  "description": "Scrape Google News articles for one or many keywords, topics, publications, and story clusters. Extract titles, links, sources, snippets, dates, thumbnails, and Google News tokens for media monitoring and market research.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {
@@ -17,7 +17,7 @@
     "memoryMbytes": 128
   },
   "defaultRunOptions": {
-    "timeoutSecs": 120
+    "timeoutSecs": 720
   },
   "storages": {
     "dataset": {

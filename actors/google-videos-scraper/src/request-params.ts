@@ -1,5 +1,6 @@
 export interface GoogleVideosInput {
     q?: unknown;
+    queries?: unknown;
     page?: unknown;
     start?: unknown;
     hl?: unknown;
@@ -15,6 +16,7 @@ export interface GoogleVideosInput {
 }
 
 const SAFE_VALUES = ['active', 'off'] as const;
+const MAX_QUERIES_PER_RUN = 10;
 
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null) {
@@ -146,6 +148,55 @@ export function buildGoogleVideosParams(input: GoogleVideosInput): Record<string
     if (lr !== undefined) params.lr = lr;
 
     return params;
+}
+
+export function buildGoogleVideosParamList(input: GoogleVideosInput): Record<string, unknown>[] {
+    const queries = getGoogleVideosQueries(input);
+    return queries.map((query) => buildGoogleVideosParams({
+        ...input,
+        q: query,
+        queries: undefined,
+    }));
+}
+
+function getGoogleVideosQueries(input: GoogleVideosInput): string[] {
+    const rawQueries = [
+        ...(input.q !== undefined && input.q !== null && input.q !== '' ? [input.q] : []),
+    ];
+
+    if (input.queries !== undefined && input.queries !== null && input.queries !== '') {
+        if (!Array.isArray(input.queries)) {
+            throw new Error('queries must be an array');
+        }
+
+        if (input.queries.length > MAX_QUERIES_PER_RUN) {
+            throw new Error(`queries must contain ${MAX_QUERIES_PER_RUN} items or fewer`);
+        }
+
+        rawQueries.push(...input.queries);
+    }
+
+    const seen = new Set<string>();
+    const queries: string[] = [];
+    for (const rawQuery of rawQueries) {
+        const query = cleanString(rawQuery, 'q', 500);
+        if (query === undefined || seen.has(query)) {
+            continue;
+        }
+
+        seen.add(query);
+        queries.push(query);
+    }
+
+    if (queries.length === 0) {
+        throw new Error('q is required');
+    }
+
+    if (queries.length > MAX_QUERIES_PER_RUN) {
+        throw new Error(`queries must contain ${MAX_QUERIES_PER_RUN} items or fewer`);
+    }
+
+    return queries;
 }
 
 export function describeGoogleVideosRequest(params: Record<string, unknown>): string {

@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "jameda-search-scraper",
   "title": "Jameda Search Scraper",
-  "description": "Search Jameda doctor profiles by specialty, doctor name, and German location, including ratings, review counts, addresses, profile URLs, and images.",
+  "description": "Search Jameda doctor profiles by specialty, doctor name, and German location, including ratings, review counts, addresses, profile URLs, and images. Supports batching multiple searches in one run.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {
@@ -14,10 +14,10 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
-    "timeoutSecs": 360
+    "timeoutSecs": 2400
   },
   "storages": {
     "dataset": {

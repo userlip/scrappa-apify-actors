@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildGoogleImagesParams, describeGoogleImagesRequest } from '../dist/request-params.js';
+import { buildGoogleImagesParamList, buildGoogleImagesParams, describeGoogleImagesRequest } from '../dist/request-params.js';
 
 test('builds params for a filtered image search', () => {
     assert.deepEqual(
@@ -29,6 +29,43 @@ test('builds params for a filtered image search', () => {
             tbs: 'qdr:w',
             safe: 'active',
         },
+    );
+});
+
+test('builds params for multiple image searches and deduplicates queries', () => {
+    assert.deepEqual(
+        buildGoogleImagesParamList({
+            q: 'coffee product photography',
+            queries: [' coffee product photography ', 'espresso machine'],
+            gl: 'US',
+            safe: 'ACTIVE',
+        }),
+        [
+            {
+                q: 'coffee product photography',
+                gl: 'us',
+                safe: 'active',
+            },
+            {
+                q: 'espresso machine',
+                gl: 'us',
+                safe: 'active',
+            },
+        ],
+    );
+});
+
+test('validates image query batch input shape', () => {
+    assert.throws(
+        () => buildGoogleImagesParamList({ queries: 'coffee' }),
+        /queries must be an array/,
+    );
+    assert.throws(
+        () => buildGoogleImagesParamList({
+            q: 'extra query',
+            queries: Array.from({ length: 50 }, (_, index) => `query ${index}`),
+        }),
+        /queries must contain 50 items or fewer/,
     );
 });
 

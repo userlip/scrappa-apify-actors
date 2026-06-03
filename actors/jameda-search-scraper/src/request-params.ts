@@ -1,9 +1,15 @@
 export interface JamedaSearchInput {
     q?: unknown;
     loc?: unknown;
+    searches?: unknown;
     page?: unknown;
     per_page?: unknown;
     max_pages?: unknown;
+}
+
+export interface JamedaSearchLookup {
+    q: string;
+    loc?: string;
 }
 
 export interface JamedaSearchPlan {
@@ -18,7 +24,14 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_PER_PAGE = 28;
 const MAX_PER_PAGE = 28;
 const DEFAULT_MAX_PAGES = 1;
-const MAX_PAGES_PER_RUN = 10;
+const MAX_PAGES_PER_RUN = 2;
+const MAX_SEARCHES_PER_RUN = 10;
+
+interface JamedaPagination {
+    startPage: number;
+    perPage: number;
+    maxPages: number;
+}
 
 function decodeInputString(value: string): string {
     if (!value.includes('%')) {
@@ -87,6 +100,13 @@ function cleanInteger(value: unknown, field: string, min: number, max: number): 
 }
 
 export function buildJamedaSearchPlan(input: JamedaSearchInput): JamedaSearchPlan {
+    return buildJamedaSearchPlanFromLookup({
+        q: cleanRequiredString(input.q, 'q', 2, 255),
+        loc: cleanString(input.loc, 'loc', 100),
+    }, buildJamedaPagination(input));
+}
+
+function buildJamedaPagination(input: JamedaSearchInput): JamedaPagination {
     const startPage = cleanInteger(input.page, 'page', 1, MAX_PAGE) ?? DEFAULT_PAGE;
     const perPage = cleanInteger(input.per_page, 'per_page', 1, MAX_PER_PAGE) ?? DEFAULT_PER_PAGE;
     const maxPages = cleanInteger(input.max_pages, 'max_pages', 1, MAX_PAGES_PER_RUN) ?? DEFAULT_MAX_PAGES;
@@ -95,16 +115,83 @@ export function buildJamedaSearchPlan(input: JamedaSearchInput): JamedaSearchPla
         throw new Error('page plus max_pages cannot exceed page 500');
     }
 
+    return { startPage, perPage, maxPages };
+}
+
+function buildJamedaSearchPlanFromLookup(
+    lookup: JamedaSearchLookup,
+    pagination: JamedaPagination,
+): JamedaSearchPlan {
     return {
         baseParams: {
-            q: cleanRequiredString(input.q, 'q', 2, 255),
-            loc: cleanString(input.loc, 'loc', 100),
-            per_page: perPage,
+            q: lookup.q,
+            loc: lookup.loc,
+            per_page: pagination.perPage,
         },
-        startPage,
-        perPage,
-        maxPages,
+        startPage: pagination.startPage,
+        perPage: pagination.perPage,
+        maxPages: pagination.maxPages,
     };
+}
+
+export function buildJamedaSearchPlans(input: JamedaSearchInput): JamedaSearchPlan[] {
+    const lookups = getJamedaSearchLookups(input);
+    const pagination = buildJamedaPagination(input);
+
+    return lookups.map((lookup) => buildJamedaSearchPlanFromLookup(lookup, pagination));
+}
+
+function getJamedaSearchLookups(input: JamedaSearchInput): JamedaSearchLookup[] {
+    const rawLookups: Array<{ q?: unknown; loc?: unknown }> = [];
+
+    if (input.q !== undefined && input.q !== null && input.q !== '') {
+        rawLookups.push({
+            q: input.q,
+            loc: input.loc,
+        });
+    }
+
+    if (input.searches !== undefined && input.searches !== null && input.searches !== '') {
+        if (!Array.isArray(input.searches)) {
+            throw new Error('searches must be an array');
+        }
+
+        if (input.searches.length > MAX_SEARCHES_PER_RUN) {
+            throw new Error(`searches must contain ${MAX_SEARCHES_PER_RUN} items or fewer`);
+        }
+
+        for (const search of input.searches) {
+            if (search === null || typeof search !== 'object' || Array.isArray(search)) {
+                throw new Error('Each searches item must be an object with q and optional loc');
+            }
+
+            const lookup = search as JamedaSearchLookup;
+            rawLookups.push({
+                q: lookup.q,
+                loc: lookup.loc,
+            });
+        }
+    }
+
+    if (rawLookups.length === 0) {
+        throw new Error('Provide q or searches');
+    }
+
+    const seen = new Set<string>();
+    const deduped: JamedaSearchLookup[] = [];
+    for (const lookup of rawLookups) {
+        const q = cleanRequiredString(lookup.q, 'q', 2, 255);
+        const loc = cleanString(lookup.loc, 'loc', 100);
+        const key = `${q}\u0000${loc ?? ''}`;
+        if (seen.has(key)) {
+            continue;
+        }
+
+        seen.add(key);
+        deduped.push({ q, loc });
+    }
+
+    return deduped;
 }
 
 export function buildPageParams(plan: JamedaSearchPlan, page: number): Record<string, unknown> {
