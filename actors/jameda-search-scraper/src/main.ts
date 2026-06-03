@@ -67,6 +67,7 @@ async function main(): Promise<void> {
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
         const responses: JamedaSearchResponse[] = [];
+        const shouldStoreRawResponses = plans.length === 1;
         let pagesFetched = 0;
         let savedDoctors = 0;
         let statusMessage: string | null = null;
@@ -99,7 +100,9 @@ async function main(): Promise<void> {
                 searchMeta = response.meta;
 
                 const doctors = getJamedaDoctors(response).map((doctor) => buildJamedaDoctorDatasetItem(doctor, params, response));
-                responses.push(response);
+                if (shouldStoreRawResponses) {
+                    responses.push(response);
+                }
 
                 if (doctors.length > 0) {
                     const result = await pushChargedItems(doctors, page);
@@ -153,7 +156,7 @@ async function main(): Promise<void> {
             status_message: statusMessage,
             total_results: latestMeta?.total_results ?? null,
             total_pages: latestMeta?.total_pages ?? null,
-            responses,
+            ...(shouldStoreRawResponses ? { responses } : {}),
         };
 
         const store = await Actor.openKeyValueStore();
@@ -162,7 +165,7 @@ async function main(): Promise<void> {
         console.log('Jameda search completed successfully');
         console.log('Results summary:', JSON.stringify({
             pages_fetched: pagesFetched,
-            responses_saved: responses.length,
+            responses_saved: shouldStoreRawResponses ? responses.length : 0,
             doctors_extracted: savedDoctors,
             total_results: output.total_results,
             total_pages: output.total_pages,

@@ -26,8 +26,8 @@ async function main(): Promise<void> {
         console.log(`Running ${paramList.length} Google Videos request${paramList.length === 1 ? '' : 's'}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const responses: GoogleVideosResponse[] = [];
         const requestSummaries: Array<{ request: Record<string, unknown>; video_results: number }> = [];
+        let singleResponse: GoogleVideosResponse | null = null;
         let totalVideoResults = 0;
         let totalFoundInVideos = 0;
         let totalShortVideos = 0;
@@ -38,7 +38,9 @@ async function main(): Promise<void> {
         for (const params of paramList) {
             console.log(`Fetching Google Videos for ${describeGoogleVideosRequest(params)}`);
             const response = await client.get<GoogleVideosResponse>('/google/videos', params);
-            responses.push(response);
+            if (paramList.length === 1) {
+                singleResponse = response;
+            }
             const videoResults = extractVideoResults(response);
             const datasetItems = videoResults.map((result) => enrichResult(result, params));
             totalVideoResults += videoResults.length;
@@ -52,7 +54,7 @@ async function main(): Promise<void> {
                 const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
                 if (isPayPerEvent) {
                     const chargeResult = await Actor.pushData(datasetItems, VIDEO_RESULT_CHARGE_EVENT);
-                    if (chargeResult.eventChargeLimitReached && chargeResult.chargedCount < datasetItems.length) {
+                    if (chargeResult.eventChargeLimitReached) {
                         const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${datasetItems.length} Google Videos results; OUTPUT was not written.`;
                         console.log(statusMessage, JSON.stringify({
                             event: VIDEO_RESULT_CHARGE_EVENT,
@@ -76,11 +78,10 @@ async function main(): Promise<void> {
 
         const store = await Actor.openKeyValueStore();
         if (paramList.length === 1) {
-            await store.setValue('OUTPUT', responses[0]);
+            await store.setValue('OUTPUT', singleResponse);
         } else {
             await store.setValue('OUTPUT', {
                 requests: requestSummaries,
-                responses,
                 video_results: totalVideoResults,
             });
         }
