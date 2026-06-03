@@ -1,0 +1,53 @@
+{
+  "actorSpecification": 1,
+  "name": "booking-hotel-details-scraper",
+  "title": "Booking.com Hotel Details Scraper",
+  "description": "Scrape Booking.com property-page details by hotel URL or country/slug with title, canonical URL, hotel schema, aggregate rating, JSON-LD, and parsed metadata.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "hotels": {
+          "title": "Hotel Details",
+          "transformation": {
+            "fields": ["title", "canonical_url", "hotel_schema", "aggregate_rating", "json_ld", "parsed", "request_index", "request_input_type", "request_url", "request_country", "request_slug", "request_success", "error_message"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": { "label": "Title", "format": "text" },
+              "canonical_url": { "label": "Canonical URL", "format": "link" },
+              "hotel_schema": { "label": "Hotel Schema", "format": "object" },
+              "aggregate_rating": { "label": "Aggregate Rating", "format": "object" },
+              "json_ld": { "label": "JSON-LD", "format": "object" },
+              "parsed": { "label": "Parsed", "format": "boolean" },
+              "request_index": { "label": "Request Index", "format": "number" },
+              "request_input_type": { "label": "Input Type", "format": "text" },
+              "request_url": { "label": "Request URL", "format": "link" },
+              "request_country": { "label": "Country", "format": "text" },
+              "request_slug": { "label": "Slug", "format": "text" },
+              "request_success": { "label": "Success", "format": "boolean" },
+              "error_message": { "label": "Error", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

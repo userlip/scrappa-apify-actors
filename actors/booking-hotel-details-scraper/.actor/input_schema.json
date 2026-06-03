@@ -1,0 +1,81 @@
+{
+  "title": "Booking.com Hotel Details Scraper",
+  "description": "Extract Booking.com property-page details by URL or by country plus hotel slug. Provide one hotel or batch multiple hotels in a single actor run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "url": {
+      "title": "Hotel URL",
+      "type": "string",
+      "description": "Full Booking.com hotel URL for a single hotel detail request. If URL is provided, it takes precedence over Country and Slug.",
+      "editor": "textfield",
+      "prefill": "https://www.booking.com/hotel/fr/ritz-paris.html",
+      "pattern": "^https?://(?:[A-Za-z0-9-]+\\.)*booking\\.com/hotel/"
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code from the Booking.com hotel URL, such as fr, us, de, or gb. Use with Slug.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$",
+      "prefill": "fr"
+    },
+    "slug": {
+      "title": "Hotel Slug",
+      "type": "string",
+      "description": "Booking.com hotel slug, such as ritz-paris. The trailing .html is optional.",
+      "editor": "textfield",
+      "minLength": 2,
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9._-]+(?:\\.html)?$",
+      "prefill": "ritz-paris"
+    },
+    "urls": {
+      "title": "Batch Hotel URLs",
+      "type": "array",
+      "description": "Optional list of Booking.com hotel URLs to process in one actor run.",
+      "editor": "json",
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "pattern": "^https?://(?:[A-Za-z0-9-]+\\.)*booking\\.com/hotel/"
+      }
+    },
+    "hotels": {
+      "title": "Batch Hotels",
+      "type": "array",
+      "description": "Optional list of hotel request objects. Each item can include { \"url\" } or { \"country\", \"slug\" }.",
+      "editor": "json",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "title": "Hotel URL",
+            "type": "string",
+            "description": "Full Booking.com hotel URL. Takes precedence over Country and Slug for this item.",
+            "pattern": "^https?://(?:[A-Za-z0-9-]+\\.)*booking\\.com/hotel/"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "description": "Two-letter country code from the Booking.com hotel URL.",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[A-Za-z]{2}$"
+          },
+          "slug": {
+            "title": "Hotel Slug",
+            "type": "string",
+            "description": "Booking.com hotel slug. The trailing .html is optional.",
+            "minLength": 2,
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+(?:\\.html)?$"
+          }
+        }
+      }
+    }
+  }
+}
