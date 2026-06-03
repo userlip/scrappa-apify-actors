@@ -35,6 +35,7 @@ async function main(): Promise<void> {
         let totalRelatedSearches = 0;
         let hasPagination = false;
         let hasScrappaPagination = false;
+        let statusMessage: string | null = null;
 
         for (const params of paramList) {
             console.log(`Fetching Google Videos for ${describeGoogleVideosRequest(params)}`);
@@ -44,7 +45,7 @@ async function main(): Promise<void> {
             }
             const videoResults = extractVideoResults(response);
             const datasetItems = videoResults.map((result) => enrichResult(result, params));
-            totalVideoResults += videoResults.length;
+            let savedVideoResults = videoResults.length;
             totalFoundInVideos += response.found_in_videos?.length ?? 0;
             totalShortVideos += response.short_videos?.length ?? 0;
             totalRelatedSearches += response.related_searches?.length ?? 0;
@@ -56,14 +57,13 @@ async function main(): Promise<void> {
                 if (isPayPerEvent) {
                     const chargeResult = await Actor.pushData(datasetItems, VIDEO_RESULT_CHARGE_EVENT);
                     if (chargeResult.eventChargeLimitReached) {
-                        const statusMessage = `Charge limit reached after saving ${chargeResult.chargedCount} of ${datasetItems.length} Google Videos results; OUTPUT was not written.`;
+                        savedVideoResults = Math.min(chargeResult.chargedCount ?? 0, datasetItems.length);
+                        statusMessage = `Charge limit reached after saving ${savedVideoResults} of ${datasetItems.length} Google Videos results; OUTPUT will be written before exit.`;
                         console.log(statusMessage, JSON.stringify({
                             event: VIDEO_RESULT_CHARGE_EVENT,
-                            charged_count: chargeResult.chargedCount,
+                            charged_count: savedVideoResults,
                             requested_count: datasetItems.length,
                         }));
-                        await Actor.exit({ statusMessage });
-                        return;
                     }
                 } else {
                     await Actor.pushData(datasetItems);
@@ -74,7 +74,12 @@ async function main(): Promise<void> {
                 console.log('No Google Videos results found for this request');
             }
 
-            requestSummaries.push({ request: params, video_results: videoResults.length });
+            totalVideoResults += savedVideoResults;
+            requestSummaries.push({ request: params, video_results: savedVideoResults });
+
+            if (statusMessage) {
+                break;
+            }
         }
 
         const store = await Actor.openKeyValueStore();
@@ -99,6 +104,11 @@ async function main(): Promise<void> {
 
         console.log('Google Videos scraping completed successfully');
         console.log('Results summary:', JSON.stringify(summary));
+
+        if (statusMessage) {
+            await Actor.exit({ statusMessage });
+            return;
+        }
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
         const message = rawMessage.includes('timed out')

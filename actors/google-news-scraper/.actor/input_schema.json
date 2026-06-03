@@ -9,7 +9,7 @@
       "type": "array",
       "description": "Recommended. Process many Google News keyword searches in one Apify run so run startup and storage overhead are shared across results. Leave empty when using token parameters.",
       "editor": "stringList",
-      "maxItems": 50,
+      "maxItems": 10,
       "prefill": [
         "artificial intelligence",
         "climate technology"

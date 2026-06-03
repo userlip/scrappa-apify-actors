@@ -21,6 +21,7 @@
       "type": "array",
       "description": "Recommended. Process many Jameda query/location searches in one Apify run so run startup and storage overhead are shared across doctor results.",
       "editor": "json",
+      "maxItems": 10,
       "prefill": [
         {
           "q": "Zahnarzt",
@@ -88,7 +89,7 @@
       "description": "Number of result pages to fetch, starting from Start Page.",
       "editor": "number",
       "minimum": 1,
-      "maximum": 10,
+      "maximum": 2,
       "default": 1
     }
   }

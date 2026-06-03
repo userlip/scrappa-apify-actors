@@ -24,8 +24,8 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_PER_PAGE = 28;
 const MAX_PER_PAGE = 28;
 const DEFAULT_MAX_PAGES = 1;
-const MAX_PAGES_PER_RUN = 10;
-const MAX_SEARCHES_PER_RUN = 50;
+const MAX_PAGES_PER_RUN = 2;
+const MAX_SEARCHES_PER_RUN = 10;
 
 interface JamedaPagination {
     startPage: number;

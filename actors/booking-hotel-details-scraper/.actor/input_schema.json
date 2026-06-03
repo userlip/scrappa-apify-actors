@@ -37,7 +37,7 @@
       "type": "array",
       "description": "Optional list of Booking.com hotel URLs to process in one actor run.",
       "editor": "json",
-      "maxItems": 50,
+      "maxItems": 10,
       "items": {
         "type": "string",
         "pattern": "^https?://(?:[A-Za-z0-9-]+\\.)*booking\\.com/hotel/"
@@ -48,7 +48,7 @@
       "type": "array",
       "description": "Optional list of hotel request objects. Each item can include { \"url\" } or { \"country\", \"slug\" }.",
       "editor": "json",
-      "maxItems": 50,
+      "maxItems": 10,
       "items": {
         "type": "object",
         "properties": {

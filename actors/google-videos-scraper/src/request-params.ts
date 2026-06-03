@@ -16,7 +16,7 @@ export interface GoogleVideosInput {
 }
 
 const SAFE_VALUES = ['active', 'off'] as const;
-const MAX_QUERIES_PER_RUN = 50;
+const MAX_QUERIES_PER_RUN = 10;
 
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null) {

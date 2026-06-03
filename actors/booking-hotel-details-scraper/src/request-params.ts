@@ -12,7 +12,7 @@ export interface BookingHotelRequest {
     inputType: 'url' | 'country_slug';
 }
 
-const MAX_HOTELS_PER_RUN = 50;
+const MAX_HOTELS_PER_RUN = 10;
 const BOOKING_URL_REGEX = /^https?:\/\/(?:[a-z0-9-]+\.)*booking\.com\/hotel\//i;
 const SLUG_REGEX = /^[a-z0-9._-]+(?:\.html)?$/i;
 

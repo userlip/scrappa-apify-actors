@@ -82,9 +82,9 @@ test('input schema exposes url, country/slug, urls, and hotels', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
     assert.equal(schema.properties.url.type, 'string');
     assert.equal(schema.properties.urls.type, 'array');
-    assert.equal(schema.properties.urls.maxItems, 50);
+    assert.equal(schema.properties.urls.maxItems, 10);
     assert.equal(schema.properties.hotels.type, 'array');
-    assert.equal(schema.properties.hotels.maxItems, 50);
+    assert.equal(schema.properties.hotels.maxItems, 10);
     assert.equal(schema.properties.country.pattern, '^[A-Za-z]{2}$');
     assert.equal(schema.properties.slug.pattern, '^[A-Za-z0-9._-]+(?:\\.html)?$');
 });
@@ -120,9 +120,9 @@ test('validates required input shape and field contracts', () => {
     );
     assert.throws(
         () => buildBookingHotelRequests({
-            urls: Array.from({ length: 51 }, () => 'https://www.booking.com/hotel/fr/ritz-paris.html'),
+            urls: Array.from({ length: 11 }, () => 'https://www.booking.com/hotel/fr/ritz-paris.html'),
         }),
-        /Hotel batches cannot include more than 50 hotels/,
+        /Hotel batches cannot include more than 10 hotels/,
     );
 });
 

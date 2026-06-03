@@ -10,7 +10,7 @@
       "description": "Recommended. Process many Google Videos keyword searches in one Apify run so run startup and storage overhead are shared across video results.",
       "editor": "stringList",
       "minItems": 1,
-      "maxItems": 50,
+      "maxItems": 10,
       "prefill": [
         "coffee brewing tutorial",
         "espresso machine review"

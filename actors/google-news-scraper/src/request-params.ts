@@ -14,7 +14,7 @@ export interface GoogleNewsInput {
 }
 
 const TOKEN_FIELDS = ['topic_token', 'kgmid', 'publication_token', 'section_token', 'story_token'] as const;
-const MAX_QUERIES_PER_RUN = 50;
+const MAX_QUERIES_PER_RUN = 10;
 
 type TokenField = typeof TOKEN_FIELDS[number];
 type TokenFieldInputKeyCheck = Exclude<TokenField, keyof GoogleNewsInput> extends never ? true : never;

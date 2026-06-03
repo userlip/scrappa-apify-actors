@@ -42,6 +42,10 @@ interface GoogleNewsResponse {
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 
+function isActorLevelScrappaFailure(error: unknown): boolean {
+    return error instanceof Error && /Scrappa API error \((?:401|403)\)/.test(error.message);
+}
+
 function sourceName(source: GoogleNewsSource | string | undefined): string | undefined {
     if (typeof source === 'string') {
         return source;
@@ -126,7 +130,7 @@ async function main(): Promise<void> {
                     related_searches: response.related_searches?.length ?? 0,
                 });
             } catch (error) {
-                if (paramList.length === 1) {
+                if (paramList.length === 1 || isActorLevelScrappaFailure(error)) {
                     throw error;
                 }
 

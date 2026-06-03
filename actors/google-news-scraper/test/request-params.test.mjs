@@ -56,9 +56,9 @@ test('validates query batch input shape', () => {
     assert.throws(
         () => buildGoogleNewsParamList({
             q: 'extra query',
-            queries: Array.from({ length: 50 }, (_, index) => `query ${index}`),
+            queries: Array.from({ length: 11 }, (_, index) => `query ${index}`),
         }),
-        /queries must contain 50 items or fewer/,
+        /queries must contain 10 items or fewer/,
     );
     assert.throws(
         () => buildGoogleNewsParamList({ queries: ['markets'], topic_token: 'CAAqExample' }),

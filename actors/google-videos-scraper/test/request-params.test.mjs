@@ -65,9 +65,9 @@ test('validates video query batch input shape', () => {
     assert.throws(
         () => buildGoogleVideosParamList({
             q: 'extra query',
-            queries: Array.from({ length: 50 }, (_, index) => `query ${index}`),
+            queries: Array.from({ length: 11 }, (_, index) => `query ${index}`),
         }),
-        /queries must contain 50 items or fewer/,
+        /queries must contain 10 items or fewer/,
     );
 });
 
