@@ -10,7 +10,7 @@ Search Jameda doctor profiles by specialty, doctor name, symptom, medical servic
 - Fetch one or more one-based search result pages per run
 - Extract doctor name, specialty, profile URL, rating, review count, address, and image URL
 - Dataset rows optimized for Apify table views
-- Full Scrappa page responses saved to the `OUTPUT` key-value-store record for debugging and auditability
+- Full Scrappa page responses saved to `OUTPUT` for single-search runs; batch runs write compact summaries
 
 ## Input
 
@@ -21,7 +21,7 @@ Search Jameda doctor profiles by specialty, doctor name, symptom, medical servic
 | `loc` | string | No | German city or location for the legacy single query, for example `Berlin`. |
 | `page` | integer | No | First one-based result page for every search, 1-500. Default `1` |
 | `per_page` | integer | No | Results to save per page, 1-28. Default `28` |
-| `max_pages` | integer | No | Number of pages to fetch per search, 1-10. Default `1` |
+| `max_pages` | integer | No | Number of pages to fetch per search, 1-2. Default `1` |
 
 ## Example Input
 
@@ -66,7 +66,7 @@ Each doctor profile is saved as one dataset item:
 }
 ```
 
-The `OUTPUT` record includes per-search summaries, pages fetched, doctor count, reported Jameda totals, and raw Scrappa responses for the fetched pages. Runs that fetch many searches or pages can create a larger `OUTPUT` record because each raw Scrappa page response is retained there for debugging and auditability.
+The `OUTPUT` record includes per-search summaries, pages fetched, doctor count, and reported Jameda totals. Single-search runs also include raw Scrappa responses for debugging and auditability; batch runs keep `OUTPUT` compact because doctor records are already saved to the dataset.
 
 ## Notes
 
