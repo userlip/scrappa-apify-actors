@@ -88,9 +88,29 @@ export function limitLinkedInSearchResultCount(input: LinkedInSearchInput, maxRe
         return input;
     }
 
+    const requestedNum = input.num ?? DEFAULT_LINKEDIN_SEARCH_INPUT.num ?? 10;
+    const cappedNum = Math.min(requestedNum, maxResults);
+    if (cappedNum >= requestedNum) {
+        return input;
+    }
+
+    if (input.page !== undefined) {
+        const start = (input.page - 1) * requestedNum;
+        if (start > 170) {
+            return input;
+        }
+
+        const { page, ...inputWithoutPage } = input;
+        return {
+            ...inputWithoutPage,
+            start,
+            num: cappedNum,
+        };
+    }
+
     return {
         ...input,
-        num: Math.min(input.num ?? DEFAULT_LINKEDIN_SEARCH_INPUT.num ?? 10, maxResults),
+        num: cappedNum,
     };
 }
 

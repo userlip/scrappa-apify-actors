@@ -121,6 +121,25 @@ test('caps result count to remaining charge capacity', () => {
     );
 });
 
+test('preserves page offset when capping paginated result count', () => {
+    assert.deepEqual(
+        limitLinkedInSearchResultCount({ query: 'site:linkedin.com/in founder', num: 10, page: 2 }, 3),
+        { query: 'site:linkedin.com/in founder', num: 3, start: 10 },
+    );
+});
+
+test('keeps paginated input unchanged when equivalent start would exceed the supported range', () => {
+    const input = { query: 'site:linkedin.com/in founder', num: 20, page: 10 };
+
+    assert.equal(limitLinkedInSearchResultCount(input, 3), input);
+});
+
+test('keeps input unchanged when remaining charge capacity covers the requested count', () => {
+    const input = { query: 'site:linkedin.com/in founder', num: 3, page: 2 };
+
+    assert.equal(limitLinkedInSearchResultCount(input, 10), input);
+});
+
 test('keeps result count unchanged outside pay-per-event charge limits', () => {
     const input = { query: 'site:linkedin.com/in founder', num: 10 };
 
