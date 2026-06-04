@@ -5,6 +5,7 @@ import {
     buildLinkedInSearchParams,
     DEFAULT_LINKEDIN_SEARCH_INPUT,
     DEFAULT_LINKEDIN_SEARCH_QUERY,
+    limitLinkedInSearchResultCount,
     normalizeLinkedInSearchInput,
     validateLinkedInSearchInput,
 } from '../dist/search-params.js';
@@ -111,6 +112,26 @@ test('accepts valid normalized search input', () => {
         gl: 'de',
         hl: 'en',
     }));
+});
+
+test('caps result count to remaining charge capacity', () => {
+    assert.deepEqual(
+        limitLinkedInSearchResultCount({ query: 'site:linkedin.com/in founder', num: 10 }, 3),
+        { query: 'site:linkedin.com/in founder', num: 3 },
+    );
+});
+
+test('keeps result count unchanged outside pay-per-event charge limits', () => {
+    const input = { query: 'site:linkedin.com/in founder', num: 10 };
+
+    assert.equal(limitLinkedInSearchResultCount(input, null), input);
+});
+
+test('uses the default result count when charge-capping input without num', () => {
+    assert.deepEqual(
+        limitLinkedInSearchResultCount({ query: 'site:linkedin.com/in founder' }, 3),
+        { query: 'site:linkedin.com/in founder', num: 3 },
+    );
 });
 
 assert.equal(DEFAULT_LINKEDIN_SEARCH_QUERY, DEFAULT_LINKEDIN_SEARCH_INPUT.query);

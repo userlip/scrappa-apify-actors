@@ -26,6 +26,7 @@ jobs:
           - path: actors/instagram-user-info-cheapest-0-20-1000-results
           - path: actors/instagram-user-posts-cheapest-0-20-1000-results
           - path: actors/linkedin-post-scraper
+          - path: actors/linkedin-search-scraper
           - path: actors/tiktok-comments-scraper
           - path: actors/tiktok-profile-scraper
           - path: actors/tiktok-search-scraper

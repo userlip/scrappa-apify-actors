@@ -2,6 +2,7 @@ import { Actor } from 'apify';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 import {
     buildLinkedInSearchParams,
+    limitLinkedInSearchResultCount,
     normalizeLinkedInSearchInput,
     validateLinkedInSearchInput,
 } from './search-params.js';
@@ -11,6 +12,7 @@ import type { LinkedInSearchResponse } from './search-response.js';
 import {
     actorChargingApi,
     getLinkedInSearchChargeLimitStatus,
+    getRemainingLinkedInSearchResultCharges,
     pushLinkedInSearchResult,
 } from './charging.js';
 
@@ -20,6 +22,17 @@ const SCRAPPA_MAX_ATTEMPTS = 3;
 await Actor.init();
 
 try {
+    await main();
+} catch (error) {
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const message = error instanceof ScrappaTimeoutError
+        ? `${rawMessage}. The LinkedIn Search request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try again or refine the query.`
+        : rawMessage;
+    console.error('Actor failed: ' + message);
+    await Actor.fail(message);
+}
+
+async function main(): Promise<void> {
     const apiKey = process.env.SCRAPPA_API_KEY;
     if (!apiKey) {
         throw new Error('SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings.');
@@ -28,12 +41,32 @@ try {
     const input = normalizeLinkedInSearchInput(await Actor.getInput<LinkedInSearchInput>());
     validateLinkedInSearchInput(input);
 
+    const remainingCharges = getRemainingLinkedInSearchResultCharges(actorChargingApi);
+    if (remainingCharges === 0) {
+        const statusMessage = 'Charge limit reached before calling Scrappa; no LinkedIn search results were requested.';
+        console.log(statusMessage);
+        const store = await Actor.openKeyValueStore();
+        await store.setValue('OUTPUT', {
+            results: 0,
+            total_results: null,
+            current_page: null,
+            pages: 0,
+            search_information: null,
+            pagination: null,
+            status: statusMessage,
+        });
+        await Actor.exit({ statusMessage });
+        return;
+    }
+
+    const requestInput = limitLinkedInSearchResultCount(input, remainingCharges);
+
     console.log(`Searching LinkedIn for: "${input.query}"`);
 
     const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
     const response = await client.get<LinkedInSearchResponse>(
         '/linkedin/search',
-        buildLinkedInSearchParams(input),
+        buildLinkedInSearchParams(requestInput),
         { attempts: SCRAPPA_MAX_ATTEMPTS }
     );
     const results = getLinkedInSearchResults(response);
@@ -86,12 +119,4 @@ try {
     } else {
         await Actor.exit();
     }
-
-} catch (error) {
-    const rawMessage = error instanceof Error ? error.message : String(error);
-    const message = error instanceof ScrappaTimeoutError
-        ? `${rawMessage}. The LinkedIn Search request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try again or refine the query.`
-        : rawMessage;
-    console.error('Actor failed: ' + message);
-    await Actor.fail(message);
 }

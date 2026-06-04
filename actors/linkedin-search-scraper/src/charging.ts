@@ -21,18 +21,23 @@ export interface PushLinkedInSearchResult {
     statusMessage: string | null;
 }
 
-export function getLinkedInSearchChargeLimitStatus(
-    actor: ActorChargingApi,
-    processed: number,
-    requested: number,
-): string | null {
+export function getRemainingLinkedInSearchResultCharges(actor: ActorChargingApi): number | null {
     const chargingManager = actor.getChargingManager();
     const { isPayPerEvent } = chargingManager.getPricingInfo();
     if (!isPayPerEvent) {
         return null;
     }
 
-    if (chargingManager.calculateMaxEventChargeCountWithinLimit(LINKEDIN_SEARCH_RESULT_CHARGE_EVENT) > 0) {
+    return chargingManager.calculateMaxEventChargeCountWithinLimit(LINKEDIN_SEARCH_RESULT_CHARGE_EVENT);
+}
+
+export function getLinkedInSearchChargeLimitStatus(
+    actor: ActorChargingApi,
+    processed: number,
+    requested: number,
+): string | null {
+    const remainingCharges = getRemainingLinkedInSearchResultCharges(actor);
+    if (remainingCharges === null || remainingCharges > 0) {
         return null;
     }
 

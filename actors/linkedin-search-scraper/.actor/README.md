@@ -85,7 +85,18 @@ The key-value store `OUTPUT` key contains a compact run summary with result coun
   },
   "pagination": {
     "current_page": 1,
-    "pages": []
+    "pages": [
+      { "page": 1, "start": 0 },
+      { "page": 2, "start": 3 },
+      { "page": 3, "start": 6 },
+      { "page": 4, "start": 9 },
+      { "page": 5, "start": 12 },
+      { "page": 6, "start": 15 },
+      { "page": 7, "start": 18 },
+      { "page": 8, "start": 21 },
+      { "page": 9, "start": 24 },
+      { "page": 10, "start": 27 }
+    ]
   }
 }
 ```

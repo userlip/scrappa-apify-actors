@@ -83,6 +83,17 @@ export function validateLinkedInSearchInput(input: LinkedInSearchInput): void {
     }
 }
 
+export function limitLinkedInSearchResultCount(input: LinkedInSearchInput, maxResults: number | null): LinkedInSearchInput {
+    if (maxResults === null) {
+        return input;
+    }
+
+    return {
+        ...input,
+        num: Math.min(input.num ?? DEFAULT_LINKEDIN_SEARCH_INPUT.num ?? 10, maxResults),
+    };
+}
+
 export function buildLinkedInSearchParams(input: LinkedInSearchInput): Record<string, unknown> {
     const params: Record<string, unknown> = {};
     const entries: [keyof LinkedInSearchInput, unknown][] = [
