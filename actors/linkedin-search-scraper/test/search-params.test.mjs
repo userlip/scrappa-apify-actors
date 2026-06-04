@@ -128,10 +128,11 @@ test('preserves page offset when capping paginated result count', () => {
     );
 });
 
-test('keeps paginated input unchanged when equivalent start would exceed the supported range', () => {
-    const input = { query: 'site:linkedin.com/in founder', num: 20, page: 10 };
-
-    assert.equal(limitLinkedInSearchResultCount(input, 3), input);
+test('rejects charge-capped page pagination when preserving offset would exceed the supported start range', () => {
+    assert.throws(
+        () => limitLinkedInSearchResultCount({ query: 'site:linkedin.com/in founder', num: 20, page: 10 }, 3),
+        /Charge limit prevents preserving the requested page offset/,
+    );
 });
 
 test('keeps input unchanged when remaining charge capacity covers the requested count', () => {

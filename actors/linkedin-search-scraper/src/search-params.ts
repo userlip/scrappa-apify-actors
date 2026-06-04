@@ -97,7 +97,7 @@ export function limitLinkedInSearchResultCount(input: LinkedInSearchInput, maxRe
     if (input.page !== undefined) {
         const start = (input.page - 1) * requestedNum;
         if (start > 170) {
-            return input;
+            throw new Error('Charge limit prevents preserving the requested page offset. Use start pagination with a lower offset or increase the run charge limit.');
         }
 
         const { page, ...inputWithoutPage } = input;
