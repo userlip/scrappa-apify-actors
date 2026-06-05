@@ -1,0 +1,38 @@
+{
+  "title": "Google Trends Autocomplete Scraper",
+  "description": "Get Google Trends autocomplete suggestions for one seed keyword.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Search Query",
+      "type": "string",
+      "description": "Partial keyword or phrase to expand with Google Trends autocomplete suggestions.",
+      "editor": "textfield",
+      "maxLength": 100,
+      "prefill": "tesla"
+    },
+    "q": {
+      "title": "Search Query Alias",
+      "type": "string",
+      "description": "Alias for query when reusing direct Scrappa API inputs. Either Search Query or this alias is required.",
+      "editor": "textfield",
+      "maxLength": 100
+    },
+    "geo": {
+      "title": "Location",
+      "type": "string",
+      "description": "Geographic location code, such as US, GB, DE, or Worldwide.",
+      "editor": "textfield",
+      "default": "US"
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter language code, such as en, de, es, or fr.",
+      "editor": "textfield",
+      "maxLength": 2,
+      "default": "en"
+    }
+  }
+}
