@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-06-05T09:56:20.000Z",
-  "source": "Apify Actor list/detail API for TheScrappa organization, direct GET /v2/acts/{actorId}, recent runs/builds API, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, local actor manifest count, and direct google-trends-autocomplete-scraper build/run/dataset checks",
+  "lastCheckedAt": "2026-06-05T10:12:08.383Z",
+  "source": "Apify Actor list/detail API for TheScrappa organization, direct GET /v2/acts/{actorId}, recent runs/builds API, scripts/audit-apify-pricing.mjs --json, scripts/audit-apify-secrets.mjs --json --include-present, local actor manifest count, and direct google-trends-autocomplete-scraper build/run/dataset checks",
   "relatedDocument": "docs/monetization-activation-checklist.md",
   "purpose": "Living snapshot of public actors with future paid pricing scheduled, amended as new actors are published and audit baselines change.",
   "inventoryBackstop": {
-    "checkedAt": "2026-06-05T09:56:20.000Z",
-    "liveActorCount": 75,
-    "publicActorCount": 65,
-    "localActorManifestCount": 66,
-    "missingLocalSourceCount": 9,
-    "notes": "Use this as the baseline count before every activation audit. The live actor count includes google-search-scraper, which is represented locally by actors/google-search, plus 9 live actors without matching local source directories as of this check. google-trends-autocomplete-scraper was added and published on 2026-06-05."
+    "checkedAt": "2026-06-05T10:12:08.383Z",
+    "liveActorCount": 86,
+    "publicActorCount": 76,
+    "localActorManifestCount": 86,
+    "missingLocalSourceCount": 0,
+    "notes": "Use this as the baseline count before every activation audit. google-trends-autocomplete-scraper was added and published on 2026-06-05."
   },
   "auditSummary": {
-    "pricingCheckedAt": "2026-05-24T07:50:40.247Z",
-    "secretCheckedAt": "2026-05-24T07:50:47.636Z",
-    "activePaidEvidenceCount": 51,
-    "futureOnlyPaidPricingCount": 14,
+    "pricingCheckedAt": "2026-06-05T10:11:21.189Z",
+    "secretCheckedAt": "2026-06-05T10:12:08.383Z",
+    "activePaidEvidenceCount": 67,
+    "futureOnlyPaidPricingCount": 9,
     "missingPaidPricingCount": 0,
     "overdueActivePricingGapCount": 0,
-    "publicActorsWithScrappaApiKeySecret": 65,
+    "publicActorsWithScrappaApiKeySecret": 76,
     "missingScrappaApiKeySecretCount": 0,
     "notSecretScrappaApiKeyCount": 0,
     "healthNotes": [
