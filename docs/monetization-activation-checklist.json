@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "lastCheckedAt": "2026-05-24T07:50:47.636Z",
-  "source": "Apify Actor list/detail API for TheScrappa organization, direct GET /v2/acts/{actorId}, recent runs/builds API, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, and local actor manifest count",
+  "lastCheckedAt": "2026-06-05T09:27:45.000Z",
+  "source": "Apify Actor list/detail API for TheScrappa organization, direct GET /v2/acts/{actorId}, recent runs/builds API, scripts/audit-apify-pricing.mjs --json --include-active, scripts/audit-apify-secrets.mjs --json --include-present, local actor manifest count, and direct google-trends-autocomplete-scraper build/run/dataset checks",
   "relatedDocument": "docs/monetization-activation-checklist.md",
   "purpose": "Living snapshot of public actors with future paid pricing scheduled, amended as new actors are published and audit baselines change.",
   "inventoryBackstop": {
-    "checkedAt": "2026-05-24T07:50:47.636Z",
-    "liveActorCount": 74,
-    "publicActorCount": 64,
-    "localActorManifestCount": 65,
+    "checkedAt": "2026-06-05T09:27:45.000Z",
+    "liveActorCount": 75,
+    "publicActorCount": 65,
+    "localActorManifestCount": 66,
     "missingLocalSourceCount": 9,
-    "notes": "Use this as the baseline count before every activation audit. The live actor count includes google-search-scraper, which is represented locally by actors/google-search, plus 9 live actors without matching local source directories as of this check."
+    "notes": "Use this as the baseline count before every activation audit. The live actor count includes google-search-scraper, which is represented locally by actors/google-search, plus 9 live actors without matching local source directories as of this check. google-trends-autocomplete-scraper was added and published on 2026-06-05."
   },
   "auditSummary": {
     "pricingCheckedAt": "2026-05-24T07:50:40.247Z",
@@ -19,7 +19,7 @@
     "futureOnlyPaidPricingCount": 13,
     "missingPaidPricingCount": 0,
     "overdueActivePricingGapCount": 0,
-    "publicActorsWithScrappaApiKeySecret": 64,
+    "publicActorsWithScrappaApiKeySecret": 65,
     "missingScrappaApiKeySecretCount": 0,
     "notSecretScrappaApiKeyCount": 0,
     "healthNotes": [
@@ -333,6 +333,23 @@
       "localSourceStatus": "LOCAL_SOURCE_PRESENT",
       "localSourceDirectory": "actors/google-trends-related-queries-scraper",
       "blocker": "Apify blocked immediate pricing on 2026-05-24 with cannot-modify-actor-pricing-with-immediate-effect."
+    },
+    {
+      "actorId": "x4NPccdc4xbJZ2r6c",
+      "slug": "google-trends-autocomplete-scraper",
+      "scheduledActivationAt": "2026-06-19T09:30:30.582Z",
+      "expectedPricingModel": "PAY_PER_EVENT",
+      "expectedEventName": "suggestion-result",
+      "expectedEventPriceUsd": 0.0002,
+      "localSourceStatus": "LOCAL_SOURCE_PRESENT",
+      "localSourceDirectory": "actors/google-trends-autocomplete-scraper",
+      "latestBuildId": "qOOP2FPPA0nHE1klU",
+      "latestBuildNumber": "1.0.2",
+      "successfulRunId": "RINdV5VYPzjfj42Fe",
+      "successfulDatasetId": "HJVYxriINaR0ReY3o",
+      "successfulResultCount": 5,
+      "secretStatus": "SECRET_PRESENT",
+      "blocker": "Apify blocked immediate pricing on 2026-06-05 with cannot-modify-actor-pricing-with-immediate-effect."
     }
   ],
   "newPublicActorsWithActivePaidPricing": [

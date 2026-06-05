@@ -1,15 +1,16 @@
 # Monetization Activation Checklist
 
-Last live metadata check: 2026-05-24T07:50:47.636Z via Apify Actor list/detail API for the `TheScrappa` organization, direct `GET /v2/acts/{actorId}` for the May 24 actors, recent runs/builds API, `scripts/audit-apify-pricing.mjs --json --include-active`, `scripts/audit-apify-secrets.mjs --json --include-present`, and local actor manifest count.
+Last live metadata check: 2026-06-05T09:27:45.000Z via Apify Actor detail API for `google-trends-autocomplete-scraper`, direct build/run/dataset/key-value-store checks, and the prior 2026-05-24 portfolio audit baseline.
 
 Current inventory backstop for every activation audit:
 
-- 74 live `thescrappa` actors in Apify.
-- 64 public `thescrappa` actors in Apify according to the pricing and secret audits.
-- 65 local actor manifests in this repo; all 65 are represented by live Apify actors.
+- 75 live `thescrappa` actors in Apify after adding `google-trends-autocomplete-scraper`.
+- 65 public `thescrappa` actors in Apify after publishing `google-trends-autocomplete-scraper`; the full portfolio pricing audit baseline remains from 2026-05-24.
+- 66 local actor manifests in this repo; all 66 are represented by live Apify actors.
 - 9 live actors still missing local source directories here; `google-search-scraper` is represented by the legacy `actors/google-search` directory.
 - Pricing audit at 2026-05-24T07:50:40.247Z: 0 public actors missing paid pricing, 0 overdue active-pricing gaps, 51 public actors with active paid evidence, and 13 public actors with future-only paid pricing.
 - Secret audit at 2026-05-24T07:50:47.636Z: all 64 public actors have `SCRAPPA_API_KEY` configured as a secret.
+- New actor evidence at 2026-06-05T09:27:45.000Z: `google-trends-autocomplete-scraper` (`x4NPccdc4xbJZ2r6c`) is public, latest build `qOOP2FPPA0nHE1klU` / `1.0.2` succeeded, smoke run `RINdV5VYPzjfj42Fe` succeeded with 5 dataset rows, `SCRAPPA_API_KEY` is secret, and `PAY_PER_EVENT` pricing is scheduled for 2026-06-19T09:30:30.582Z because Apify blocked immediate pricing with `cannot-modify-actor-pricing-with-immediate-effect`.
 - May 24 activation evidence at 2026-05-24T07:23:43.706Z: `tiktok-hashtag-posts-scraper` (`H2dZTreGZ7s3XJsQ7`) and `google-images-scraper` (`MrbqFgdpNTQcRW0Vt`) are public with active `PAY_PER_EVENT` evidence from `pricingInfos`; Apify still reports `pricingInfo/currentPricingInfo: null` for both.
 - Run-health notes: no latest run failures were returned by the all-actor run sweep; `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) and `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`) still have Apify notice `UNDER_MAINTENANCE` while their monetization remains configured.
 
@@ -129,12 +130,16 @@ Past-due items in this section should be rechecked against the latest pricing au
 
 - [ ] `hoF0Qgm3S0wAfpY8y` - `google-trends-related-queries-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-07T08:00:00.000Z` with `related-result` priced at `$0.0002/result`; Apify blocked immediate pricing on 2026-05-24 with `cannot-modify-actor-pricing-with-immediate-effect`.
 
+### 2026-06-19
+
+- [ ] `x4NPccdc4xbJZ2r6c` - `google-trends-autocomplete-scraper` - verify `PAY_PER_EVENT` activation at `2026-06-19T09:30:30.582Z` with `suggestion-result` priced at `$0.0002/result`; Apify blocked immediate pricing on 2026-06-05 with `cannot-modify-actor-pricing-with-immediate-effect`.
+
 ## Portfolio Backstop
 
 Run this backstop on every activation date after checking the due actors:
 
 - [ ] List all `TheScrappa` actors through `GET /v2/acts?my=1`.
-- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-05-24T07:50:47.636Z baseline on this branch is 74 live actors, 64 public actors, 65 local actor manifests, and 9 missing local source directories.
+- [ ] Confirm the live inventory count against the README before starting the audit; the 2026-06-05T09:27:45.000Z baseline on this branch is 75 live actors, 65 public actors, 66 local actor manifests, and 9 missing local source directories.
 - [ ] For every actor where `isPublic` is `true`, fetch `GET /v2/acts/{actorId}`.
 - [ ] Flag any public actor with `pricingInfo: null`, `pricingInfos: null`, an empty `pricingInfos` array, or no pricing entry whose `startedAt` is at or before the verification time.
 - [ ] Flag any public actor whose only paid pricing starts in the future.
