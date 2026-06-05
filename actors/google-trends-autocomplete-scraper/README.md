@@ -11,7 +11,7 @@ Recommended paid pricing: **$0.20 per 1,000 saved suggestions** using the `sugge
 - Google Trends autocomplete suggestions for a seed keyword
 - One Apify dataset row per suggestion
 - Request context on every row: source keyword, location, and language
-- A single `OUTPUT` summary with suggestion count and raw Scrappa response
+- A single `OUTPUT` summary with suggestion counts and the raw Scrappa response when the run is not stopped by a pay-per-event charge limit
 
 Autocomplete suggestions vary by geography and language. For reliable first tests, use broad keywords such as `tesla`, `coffee`, `bitcoin`, or `fitness`.
 

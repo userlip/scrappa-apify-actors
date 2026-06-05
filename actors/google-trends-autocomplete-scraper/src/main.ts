@@ -24,8 +24,9 @@ async function writeOutput(
         suggestion_count: datasetItems.length,
         saved_suggestion_count: savedSuggestionCount,
         charge_limit_reached: chargeLimitReached,
+        raw_response_omitted: chargeLimitReached,
         response_time_ms: response.response_time_ms ?? null,
-        raw_response: response,
+        raw_response: chargeLimitReached ? null : response,
     });
 }
 
