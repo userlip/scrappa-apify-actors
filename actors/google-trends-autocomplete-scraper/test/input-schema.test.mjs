@@ -6,8 +6,8 @@ const schema = JSON.parse(
     await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'),
 );
 
-test('input schema uses Apify-supported query validation and documents q alias', () => {
-    assert.deepEqual(schema.required, ['query']);
+test('input schema allows the q alias to reach runtime validation', () => {
+    assert.equal(schema.required, undefined);
     assert.equal(schema.anyOf, undefined);
     assert.equal(schema.properties.query.maxLength, 100);
     assert.equal(schema.properties.q.type, 'string');

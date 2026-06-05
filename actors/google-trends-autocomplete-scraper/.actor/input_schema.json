@@ -3,7 +3,6 @@
   "description": "Get Google Trends autocomplete suggestions for one seed keyword.",
   "type": "object",
   "schemaVersion": 1,
-  "required": ["query"],
   "properties": {
     "query": {
       "title": "Search Query",
@@ -16,7 +15,7 @@
     "q": {
       "title": "Search Query Alias",
       "type": "string",
-      "description": "Alias for query when reusing direct Scrappa API inputs. Apify users should fill Search Query.",
+      "description": "Alias for query when reusing direct Scrappa API inputs. Either Search Query or this alias is required.",
       "editor": "textfield",
       "maxLength": 100
     },
