@@ -7,6 +7,8 @@ export interface TikTokFollowingInput {
     cursor?: unknown;
 }
 
+export const SCRAPPA_TIKTOK_FOLLOWING_PAGE_SIZE = 50;
+
 type TikTokLookup = {
     key: 'unique_id' | 'user_id';
     value: string;
@@ -140,11 +142,10 @@ export function buildTikTokFollowingParams(
             typeof input.count === 'number'
             && Number.isInteger(input.count)
             && input.count >= 1
-            && input.count <= 50
         ) {
             params.count = input.count;
         } else {
-            warn(`count must be an integer between 1 and 50, got ${String(input.count)}. Using Scrappa default.`);
+            warn(`count must be a positive integer, got ${String(input.count)}. Using Scrappa default.`);
         }
     }
 

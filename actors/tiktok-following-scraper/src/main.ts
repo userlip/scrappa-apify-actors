@@ -1,6 +1,10 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/scrappa-client.js';
-import { buildTikTokFollowingParams, formatTikTokFollowingLookupForLog } from './request-params.js';
+import {
+    SCRAPPA_TIKTOK_FOLLOWING_PAGE_SIZE,
+    buildTikTokFollowingParams,
+    formatTikTokFollowingLookupForLog,
+} from './request-params.js';
 import type { TikTokFollowingInput } from './request-params.js';
 import { extractFollowing, extractPagination, extractProfileUserId } from './response-utils.js';
 import type { TikTokFollowingResponse } from './response-utils.js';
@@ -27,6 +31,7 @@ async function main(): Promise<void> {
         }
 
         const params = buildTikTokFollowingParams(input);
+        const requestedCount = typeof params.count === 'number' ? params.count : 10;
         const originalLookupUniqueId = typeof params.unique_id === 'string' ? params.unique_id : null;
         console.log(`Fetching TikTok following for: ${formatTikTokFollowingLookupForLog(input)}`);
 
@@ -48,35 +53,79 @@ async function main(): Promise<void> {
             delete params.unique_id;
         }
 
-        const response = await client.get<TikTokFollowingResponse>('/tiktok/user/following', params);
+        let latestResponse: TikTokFollowingResponse | null = null;
+        let latestPagination = { hasNextPage: false, nextTime: null as string | number | null };
+        let nextTime = params.time;
+        let followingExtracted = 0;
+        let pagesFetched = 0;
 
-        if (response.code !== undefined && response.code !== 0) {
-            throw new Error(`Scrappa TikTok Following API returned code ${response.code}: ${response.msg ?? 'Unknown error'}`);
+        while (followingExtracted < requestedCount) {
+            const currentTime = nextTime;
+            const remainingCount = requestedCount - followingExtracted;
+            const pageCount = Math.min(SCRAPPA_TIKTOK_FOLLOWING_PAGE_SIZE, remainingCount);
+            const pageParams: Record<string, unknown> = {
+                ...params,
+                count: pageCount,
+            };
+
+            if (currentTime !== undefined) {
+                pageParams.time = currentTime;
+            }
+
+            console.log(`Fetching TikTok following page ${pagesFetched + 1} (${pageCount} requested)`);
+            const response = await client.get<TikTokFollowingResponse>('/tiktok/user/following', pageParams);
+            latestResponse = response;
+            pagesFetched += 1;
+
+            if (response.code !== undefined && response.code !== 0) {
+                throw new Error(`Scrappa TikTok Following API returned code ${response.code}: ${response.msg ?? 'Unknown error'}`);
+            }
+
+            const following = extractFollowing(response.data);
+            latestPagination = extractPagination(response.data);
+
+            if (following.length > 0) {
+                const datasetItems = following.slice(0, remainingCount).map((followedUser) => ({
+                    ...followedUser,
+                    lookup_unique_id: originalLookupUniqueId,
+                    lookup_user_id: params.user_id ?? null,
+                }));
+
+                await Actor.pushData(datasetItems);
+                followingExtracted += datasetItems.length;
+                console.log(`Found ${datasetItems.length} followed accounts on page ${pagesFetched}`);
+            }
+
+            if (
+                following.length === 0
+                || !latestPagination.hasNextPage
+                || latestPagination.nextTime === null
+                || (currentTime !== undefined && latestPagination.nextTime === currentTime)
+            ) {
+                break;
+            }
+
+            nextTime = latestPagination.nextTime;
         }
 
-        const following = extractFollowing(response.data);
-        const pagination = extractPagination(response.data);
-
-        if (following.length > 0) {
-            await Actor.pushData(following.map((followedUser) => ({
-                ...followedUser,
-                lookup_unique_id: originalLookupUniqueId,
-                lookup_user_id: params.user_id ?? null,
-            })));
-            console.log(`Found ${following.length} followed accounts`);
-        } else {
+        if (followingExtracted === 0) {
             console.log('No followed accounts found for the given TikTok lookup');
+        } else {
+            console.log(`Found ${followingExtracted} followed accounts`);
         }
 
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', response);
 
         const summary = {
-            following_extracted: following.length,
-            has_next_page: pagination.hasNextPage,
-            next_time: pagination.nextTime,
-            processed_time: response.processed_time ?? null,
+            following_extracted: followingExtracted,
+            requested_count: requestedCount,
+            pages_fetched: pagesFetched,
+            has_next_page: latestPagination.hasNextPage,
+            next_time: latestPagination.nextTime,
+            processed_time: latestResponse?.processed_time ?? null,
         };
+
+        await store.setValue('OUTPUT', requestedCount <= SCRAPPA_TIKTOK_FOLLOWING_PAGE_SIZE && latestResponse ? latestResponse : summary);
 
         console.log('TikTok following extraction completed successfully');
         console.log('Results summary:', JSON.stringify(summary));

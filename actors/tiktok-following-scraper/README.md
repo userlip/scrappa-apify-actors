@@ -5,17 +5,17 @@ Extract the public TikTok accounts a creator follows through Scrappa. Use it for
 ## Features
 
 - Lookup by TikTok username, full profile URL, or numeric user ID
-- Fetch a page of public followed accounts with profile and verification metadata
-- Support pagination via Scrappa's `time` marker
+- Fetch public followed accounts with profile and verification metadata
+- Automatically paginate through Scrappa's `time` marker when more than 50 accounts are requested
 - Dataset rows optimized for Apify table views
-- Full Scrappa response saved to the `OUTPUT` key-value-store record
+- Scrappa response or compact run summary saved to the `OUTPUT` key-value-store record
 
 ## Input
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `profile` | string | Yes | TikTok username with or without `@`, full profile URL, or numeric user ID. Bare numeric values are treated as user IDs; prefix numeric usernames with `@`. |
-| `count` | integer | No | Number of followed accounts to return. Scrappa accepts `1-50`. |
+| `count` | integer | No | Maximum number of followed accounts to return. Accepts any positive integer; the actor fetches multiple Scrappa pages when needed. |
 | `time` | integer | No | Following pagination token/time marker from a previous run. Leave empty for the first page. |
 
 The actor also accepts `cursor` as a compatibility alias and sends it to Scrappa as `time`.
@@ -46,7 +46,7 @@ Each followed TikTok account is saved as one dataset item:
 }
 ```
 
-The full API response, including pagination metadata, is saved to `OUTPUT`.
+For requests up to 50 accounts, the full API response is saved to `OUTPUT`. For larger requests, `OUTPUT` contains a compact run summary with pagination metadata.
 
 ## Support
 

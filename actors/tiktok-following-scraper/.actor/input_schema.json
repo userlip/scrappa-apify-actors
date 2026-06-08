@@ -13,12 +13,11 @@
       "pattern": "^(?![0-9]{31,}$)(?:@?[A-Za-z0-9._]{2,255}|[0-9]{1,30}|[Hh][Tt][Tt][Pp][Ss]://([^/]+\\.)?[Tt][Ii][Kk][Tt][Oo][Kk]\\.com/@[A-Za-z0-9._]{2,255}/?(?:[?#].*)?)$"
     },
     "count": {
-      "title": "Following Per Page",
+      "title": "Maximum Followed Accounts",
       "type": "integer",
-      "description": "Number of followed accounts to return from this page. Scrappa accepts 1-50.",
+      "description": "Maximum number of followed accounts to return. The actor fetches additional Scrappa pages when you request more than 50.",
       "editor": "number",
       "minimum": 1,
-      "maximum": 50,
       "default": 10
     },
     "time": {

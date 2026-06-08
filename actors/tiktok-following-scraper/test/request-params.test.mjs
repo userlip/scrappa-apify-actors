@@ -42,6 +42,13 @@ test('accepts explicit numeric user_id lookup', () => {
     );
 });
 
+test('accepts high count values for multi-page runs without an actor-side maximum', () => {
+    assert.deepEqual(
+        buildTikTokFollowingParams({ profile: '@tiktok', count: 100000 }),
+        { unique_id: '@tiktok', count: 100000 },
+    );
+});
+
 test('warns and omits invalid count values', () => {
     const warnings = [];
     const params = buildTikTokFollowingParams(
@@ -50,7 +57,7 @@ test('warns and omits invalid count values', () => {
     );
 
     assert.deepEqual(params, { unique_id: '@tiktok' });
-    assert.match(warnings[0], /count must be an integer between 1 and 50/);
+    assert.match(warnings[0], /count must be a positive integer/);
 });
 
 test('warns and omits non-numeric count values', () => {
@@ -61,7 +68,7 @@ test('warns and omits non-numeric count values', () => {
     );
 
     assert.deepEqual(params, { unique_id: '@tiktok' });
-    assert.match(warnings[0], /count must be an integer between 1 and 50/);
+    assert.match(warnings[0], /count must be a positive integer/);
 });
 
 test('accepts cursor as a compatibility alias for time', () => {
