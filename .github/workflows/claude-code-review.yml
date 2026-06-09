@@ -379,7 +379,7 @@ jobs:
         uses: anthropics/claude-code-action@9db782c3a17ef2bfc274cd17411bc3e0a5ba1345
         env:
           ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.base_url }}
-          ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.token }}
+          ANTHROPIC_API_KEY: ${{ steps.ai-config.outputs.token }}
           ANTHROPIC_MODEL: ${{ steps.ai-config.outputs.model }}
           ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ steps.ai-config.outputs.default_opus_model }}
           ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ steps.ai-config.outputs.default_sonnet_model }}
@@ -388,7 +388,7 @@ jobs:
           CLAUDE_CODE_EFFORT_LEVEL: ${{ steps.ai-config.outputs.effort_level }}
         with:
           github_token: ${{ github.token }}
-          claude_code_oauth_token: ${{ steps.ai-config.outputs.token }}
+          anthropic_api_key: ${{ steps.ai-config.outputs.token }}
           settings: |
             {
               "env": {
@@ -426,7 +426,7 @@ jobs:
         uses: anthropics/claude-code-action@9db782c3a17ef2bfc274cd17411bc3e0a5ba1345
         env:
           ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.base_url }}
-          ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.token }}
+          ANTHROPIC_API_KEY: ${{ steps.ai-config.outputs.token }}
           ANTHROPIC_MODEL: ${{ steps.ai-config.outputs.model }}
           ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ steps.ai-config.outputs.default_opus_model }}
           ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ steps.ai-config.outputs.default_sonnet_model }}
@@ -435,7 +435,7 @@ jobs:
           CLAUDE_CODE_EFFORT_LEVEL: ${{ steps.ai-config.outputs.effort_level }}
         with:
           github_token: ${{ github.token }}
-          claude_code_oauth_token: ${{ steps.ai-config.outputs.token }}
+          anthropic_api_key: ${{ steps.ai-config.outputs.token }}
           settings: |
             {
               "env": {
@@ -548,7 +548,7 @@ jobs:
         uses: anthropics/claude-code-action@9db782c3a17ef2bfc274cd17411bc3e0a5ba1345
         env:
           ANTHROPIC_BASE_URL: ${{ steps.ai-config.outputs.backup_base_url }}
-          ANTHROPIC_AUTH_TOKEN: ${{ steps.ai-config.outputs.backup_token }}
+          ANTHROPIC_API_KEY: ${{ steps.ai-config.outputs.backup_token }}
           ANTHROPIC_MODEL: ${{ steps.ai-config.outputs.backup_model }}
           ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ steps.ai-config.outputs.backup_default_opus_model }}
           ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ steps.ai-config.outputs.backup_default_sonnet_model }}
@@ -557,7 +557,7 @@ jobs:
           CLAUDE_CODE_EFFORT_LEVEL: ${{ steps.ai-config.outputs.backup_effort_level }}
         with:
           github_token: ${{ github.token }}
-          claude_code_oauth_token: ${{ steps.ai-config.outputs.backup_token }}
+          anthropic_api_key: ${{ steps.ai-config.outputs.backup_token }}
           settings: |
             {
               "env": {
