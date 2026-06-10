@@ -66,7 +66,7 @@ test('defaults locale and passes optional fields', () => {
 test('rejects invalid input', () => {
     assert.throws(
         () => buildTrustpilotCompanyDetailsPlan({ company_domain: 'invalid' }),
-        /company_domains must be a valid domain name/,
+        /company_domain must be a valid domain name/,
     );
 
     assert.throws(
@@ -89,5 +89,19 @@ test('rejects invalid input', () => {
             company_domains: Array.from({ length: 101 }, (_, index) => `example${index}.com`),
         }),
         /at most 100 domains/,
+    );
+});
+
+test('rejects malformed hostnames', () => {
+    for (const company_domain of ['-example.com', 'example-.com', 'example..com', 'exa_mple.com']) {
+        assert.throws(
+            () => buildTrustpilotCompanyDetailsPlan({ company_domain }),
+            /company_domain must be a valid domain name/,
+        );
+    }
+
+    assert.throws(
+        () => buildTrustpilotCompanyDetailsPlan({ company_domains: ['example..com'] }),
+        /company_domains must be a valid domain name/,
     );
 });

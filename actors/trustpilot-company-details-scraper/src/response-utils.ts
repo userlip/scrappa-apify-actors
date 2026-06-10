@@ -49,7 +49,7 @@ export interface TrustpilotCompanyDetailsData {
         address?: string | null;
         [key: string]: unknown;
     };
-    categories?: TrustpilotCategory[];
+    categories?: unknown[];
     contact?: {
         website?: string | null;
         email?: string | null;
@@ -86,12 +86,26 @@ function withProtocol(url: unknown): string | null {
     return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
+function firstNonEmptyString(...values: unknown[]): string | null {
+    for (const value of values) {
+        if (typeof value === 'string' && value.trim() !== '') {
+            return value.trim();
+        }
+    }
+
+    return null;
+}
+
 function trustpilotProfileUrl(value: unknown, domain: string): string {
     if (typeof value !== 'string' || value.trim() === '') {
         return `https://www.trustpilot.com/review/${domain}`;
     }
 
     const trimmed = value.trim();
+    if (/^\/\//.test(trimmed)) {
+        return withProtocol(trimmed) ?? `https://www.trustpilot.com/review/${domain}`;
+    }
+
     if (trimmed.startsWith('/')) {
         return `https://www.trustpilot.com${trimmed}`;
     }
@@ -107,6 +121,10 @@ function categorySlug(category: TrustpilotCategory): string | undefined {
     return category.slug ?? category.categoryId ?? category.id;
 }
 
+function isTrustpilotCategory(value: unknown): value is TrustpilotCategory {
+    return typeof value === 'object' && value !== null;
+}
+
 export function buildTrustpilotCompanyDetailsDatasetItem(
     response: TrustpilotCompanyDetailsResponse,
     context: TrustpilotCompanyDetailsDatasetContext,
@@ -118,8 +136,11 @@ export function buildTrustpilotCompanyDetailsDatasetItem(
     const contact = details.contact ?? {};
     const metadata = details.metadata ?? {};
     const scrapeMetadata = response.meta ?? {};
-    const categories = Array.isArray(details.categories) ? details.categories : [];
-    const domain = basicInfo.domain ?? basicInfo.identifying_name ?? context.companyDomain;
+    const categories = Array.isArray(details.categories)
+        ? details.categories.filter(isTrustpilotCategory)
+        : [];
+    const domain = firstNonEmptyString(basicInfo.domain, basicInfo.identifying_name, context.companyDomain)
+        ?? context.companyDomain;
 
     return {
         ...response,
@@ -127,7 +148,7 @@ export function buildTrustpilotCompanyDetailsDatasetItem(
         requested_company_domain: context.companyDomain,
         company_name: basicInfo.name ?? basicInfo.display_name ?? null,
         business_unit_id: basicInfo.business_unit_id ?? null,
-        website_url: withProtocol(contact.website ?? basicInfo.website ?? basicInfo.website_url ?? domain),
+        website_url: withProtocol(firstNonEmptyString(contact.website, basicInfo.website, basicInfo.website_url, domain)),
         profile_url: trustpilotProfileUrl(basicInfo.profile_url ?? basicInfo.profileUrl, domain),
         logo_url: withProtocol(basicInfo.logo_url ?? basicInfo.image_url ?? basicInfo.logo),
         trust_score: ratings.trustscore ?? ratings.trust_score ?? null,

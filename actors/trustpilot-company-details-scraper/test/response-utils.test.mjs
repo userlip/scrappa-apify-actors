@@ -170,3 +170,44 @@ test('unwraps live Scrappa company details response shape', () => {
     assert.equal(item.response_source, 'aws_waf_replay_primary');
     assert.equal(item.scraped_at, '2026-06-10T19:52:39.578820Z');
 });
+
+test('normalizes protocol-relative profile URLs and ignores empty response domains', () => {
+    const item = buildTrustpilotCompanyDetailsDatasetItem(
+        {
+            basic_info: {
+                domain: '',
+                profile_url: '//www.trustpilot.com/review/example.com',
+                website: '',
+            },
+        },
+        {
+            companyDomain: 'example.com',
+            params: {},
+        },
+    );
+
+    assert.equal(item.company_domain, 'example.com');
+    assert.equal(item.profile_url, 'https://www.trustpilot.com/review/example.com');
+    assert.equal(item.website_url, 'https://example.com');
+});
+
+test('filters malformed category entries before building aliases', () => {
+    const item = buildTrustpilotCompanyDetailsDatasetItem(
+        {
+            categories: [
+                null,
+                'invalid',
+                { name: 'Review Site', id: 'review_site' },
+                42,
+                { displayName: 'Media Company', slug: 'media-company' },
+            ],
+        },
+        {
+            companyDomain: 'example.com',
+            params: {},
+        },
+    );
+
+    assert.equal(item.category_names, 'Review Site, Media Company');
+    assert.equal(item.category_slugs, 'review_site, media-company');
+});

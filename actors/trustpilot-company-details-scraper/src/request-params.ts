@@ -40,6 +40,29 @@ const LOCALES = [
 const DEFAULT_LOCALE = 'en-US';
 const MAX_DOMAINS_PER_RUN = 100;
 
+interface DomainInputValue {
+    field: 'company_domain' | 'company_domains';
+    value: unknown;
+}
+
+function isValidDomainName(domain: string): boolean {
+    if (domain.length > 253 || !domain.includes('.')) {
+        return false;
+    }
+
+    const labels = domain.split('.');
+    if (labels.some((label) => label.length === 0 || label.length > 63)) {
+        return false;
+    }
+
+    const labelPattern = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+    if (!labels.every((label) => labelPattern.test(label))) {
+        return false;
+    }
+
+    return /^[a-z]{2,}$/.test(labels[labels.length - 1]);
+}
+
 function cleanDomain(value: unknown, field = 'company_domain'): string {
     if (typeof value !== 'string') {
         throw new Error(`${field} must be a string`);
@@ -58,12 +81,8 @@ function cleanDomain(value: unknown, field = 'company_domain'): string {
         throw new Error(`${field} must be a valid domain name, for example trustpilot.com`);
     }
 
-    if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) {
+    if (!isValidDomainName(domain)) {
         throw new Error(`${field} must be a valid domain name, for example trustpilot.com`);
-    }
-
-    if (domain.length > 255) {
-        throw new Error(`${field} must be 255 characters or fewer`);
     }
 
     return domain;
@@ -108,17 +127,21 @@ function cleanEnum<T extends readonly string[]>(
 }
 
 function parseCompanyDomains(input: TrustpilotCompanyDetailsInput): string[] {
-    const values: unknown[] = [];
+    const values: DomainInputValue[] = [];
 
     if (input.company_domain !== undefined && input.company_domain !== null && input.company_domain !== '') {
-        values.push(input.company_domain);
+        values.push({ field: 'company_domain', value: input.company_domain });
     }
 
     if (input.company_domains !== undefined && input.company_domains !== null && input.company_domains !== '') {
         if (Array.isArray(input.company_domains)) {
-            values.push(...input.company_domains);
+            values.push(...input.company_domains.map((value) => ({ field: 'company_domains' as const, value })));
         } else if (typeof input.company_domains === 'string') {
-            values.push(...input.company_domains.split(/\r?\n|,/).map((value) => value.trim()).filter(Boolean));
+            values.push(...input.company_domains
+                .split(/\r?\n|,/)
+                .map((value) => value.trim())
+                .filter(Boolean)
+                .map((value) => ({ field: 'company_domains' as const, value })));
         } else {
             throw new Error('company_domains must be an array of strings or a comma/newline-separated string');
         }
@@ -128,7 +151,7 @@ function parseCompanyDomains(input: TrustpilotCompanyDetailsInput): string[] {
         throw new Error('Provide company_domain or company_domains');
     }
 
-    const domains = values.map((value) => cleanDomain(value, 'company_domains'));
+    const domains = values.map(({ field, value }) => cleanDomain(value, field));
     const uniqueDomains = [...new Set(domains)];
 
     if (uniqueDomains.length > MAX_DOMAINS_PER_RUN) {

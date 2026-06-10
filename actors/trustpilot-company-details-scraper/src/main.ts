@@ -38,7 +38,7 @@ async function main(): Promise<void> {
         console.log(`Fetching Trustpilot company details for ${describeTrustpilotCompanyDetailsRequest(plan)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const responses: TrustpilotCompanyDetailsResponse[] = [];
+        const chargedResponses: TrustpilotCompanyDetailsResponse[] = [];
         const failures: Record<string, string>[] = [];
         let savedCompanies = 0;
         let statusMessage: string | null = null;
@@ -51,7 +51,6 @@ async function main(): Promise<void> {
                 const response = await client.get<TrustpilotCompanyDetailsResponse>('/trustpilot/company-details', params, {
                     attempts: SCRAPPA_MAX_ATTEMPTS,
                 });
-                responses.push(response);
 
                 const item = buildTrustpilotCompanyDetailsDatasetItem(response, { companyDomain, params });
                 const result = await pushChargedItems({
@@ -61,6 +60,9 @@ async function main(): Promise<void> {
                         : Actor.pushData(items, eventName),
                 }, [item]);
                 savedCompanies += result.savedCount;
+                if (result.savedCount > 0) {
+                    chargedResponses.push(response);
+                }
                 console.log(`Saved ${result.savedCount} Trustpilot company detail result(s) for ${companyDomain}`);
 
                 if (result.statusMessage) {
@@ -87,10 +89,10 @@ async function main(): Promise<void> {
             companies_requested: plan.domains.length,
             companies_saved: savedCompanies,
             companies_failed: failures.length,
-            responses_saved: responses.length,
+            responses_saved: chargedResponses.length,
             status_message: statusMessage,
             failures,
-            responses,
+            responses: chargedResponses,
         };
 
         const store = await Actor.openKeyValueStore();
