@@ -6,7 +6,6 @@ import type { GoogleVideosResponse } from './response-utils.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
-const VIDEO_RESULT_CHARGE_EVENT = 'apify-default-dataset-item';
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -53,22 +52,15 @@ async function main(): Promise<void> {
             hasScrappaPagination ||= !!response.scrappa_pagination;
 
             if (datasetItems.length > 0) {
-                const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
-                if (isPayPerEvent) {
-                    const chargeResult = await Actor.pushData(datasetItems, VIDEO_RESULT_CHARGE_EVENT);
-                    if (chargeResult.eventChargeLimitReached) {
-                        savedVideoResults = Math.min(chargeResult.chargedCount ?? 0, datasetItems.length);
-                        statusMessage = `Charge limit reached after saving ${savedVideoResults} of ${datasetItems.length} Google Videos results; OUTPUT will be written before exit.`;
-                        console.log(statusMessage, JSON.stringify({
-                            event: VIDEO_RESULT_CHARGE_EVENT,
-                            charged_count: savedVideoResults,
-                            requested_count: datasetItems.length,
-                        }));
-                    }
-                } else {
-                    await Actor.pushData(datasetItems);
+                const pushResult = await Actor.getDefaultInstance().pushData(datasetItems);
+                if (pushResult.eventChargeLimitReached && pushResult.chargedCount < datasetItems.length) {
+                    savedVideoResults = Math.max(pushResult.chargedCount, 0);
+                    statusMessage = `Charge limit reached after saving ${savedVideoResults} of ${datasetItems.length} Google Videos results; OUTPUT will be written before exit.`;
+                    console.log(statusMessage, JSON.stringify({
+                        charged_count: pushResult.chargedCount,
+                        requested_count: datasetItems.length,
+                    }));
                 }
-
                 console.log(`Found ${videoResults.length} video results`);
             } else {
                 console.log('No Google Videos results found for this request');
