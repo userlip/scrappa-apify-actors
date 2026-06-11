@@ -6,6 +6,7 @@ const responseUtilsModule = process.env.TEST_SOURCE === 'src'
     : '../dist/response-utils.js';
 const {
     buildTrustpilotCompanyDetailsDatasetItem,
+    buildTrustpilotCompanyDetailsOutputSummary,
 } = await import(responseUtilsModule);
 
 test('builds normalized Trustpilot company details dataset item', () => {
@@ -210,4 +211,41 @@ test('filters malformed category entries before building aliases', () => {
 
     assert.equal(item.category_names, 'Review Site, Media Company');
     assert.equal(item.category_slugs, 'review_site, media-company');
+});
+
+test('builds OUTPUT summary without uncharged response payloads', () => {
+    const summary = buildTrustpilotCompanyDetailsOutputSummary({
+        domains: ['trustpilot.com', 'example.com'],
+        baseParams: {
+            locale: 'en-US',
+        },
+        savedCompanies: 1,
+        failures: [
+            {
+                company_domain: 'example.com',
+                error: 'Not found',
+            },
+        ],
+        statusMessage: '1 of 2 Trustpilot company detail request(s) failed.',
+    });
+
+    assert.deepEqual(summary, {
+        request: {
+            endpoint: '/trustpilot/company-details',
+            company_domains: ['trustpilot.com', 'example.com'],
+            locale: 'en-US',
+        },
+        companies_requested: 2,
+        companies_saved: 1,
+        companies_failed: 1,
+        responses_saved: 1,
+        status_message: '1 of 2 Trustpilot company detail request(s) failed.',
+        failures: [
+            {
+                company_domain: 'example.com',
+                error: 'Not found',
+            },
+        ],
+    });
+    assert.equal(Object.hasOwn(summary, 'responses'), false);
 });

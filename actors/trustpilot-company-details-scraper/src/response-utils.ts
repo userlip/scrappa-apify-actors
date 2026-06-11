@@ -73,6 +73,14 @@ export interface TrustpilotCompanyDetailsDatasetContext {
     params: Record<string, unknown>;
 }
 
+export interface TrustpilotCompanyDetailsOutputSummaryContext {
+    domains: string[];
+    baseParams: Record<string, unknown>;
+    savedCompanies: number;
+    failures: Record<string, string>[];
+    statusMessage: string | null;
+}
+
 function withProtocol(url: unknown): string | null {
     if (typeof url !== 'string' || url.trim() === '') {
         return null;
@@ -168,5 +176,23 @@ export function buildTrustpilotCompanyDetailsDatasetItem(
         request_locale: context.params.locale ?? null,
         response_source: metadata.source ?? scrapeMetadata.source ?? null,
         scraped_at: metadata.scraped_at ?? scrapeMetadata.scraped_at ?? null,
+    };
+}
+
+export function buildTrustpilotCompanyDetailsOutputSummary(
+    context: TrustpilotCompanyDetailsOutputSummaryContext,
+): Record<string, unknown> {
+    return {
+        request: {
+            endpoint: '/trustpilot/company-details',
+            company_domains: context.domains,
+            ...context.baseParams,
+        },
+        companies_requested: context.domains.length,
+        companies_saved: context.savedCompanies,
+        companies_failed: context.failures.length,
+        responses_saved: context.savedCompanies,
+        status_message: context.statusMessage,
+        failures: context.failures,
     };
 }
