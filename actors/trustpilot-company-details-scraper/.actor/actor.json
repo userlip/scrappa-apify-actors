@@ -1,0 +1,65 @@
+{
+  "actorSpecification": 1,
+  "name": "trustpilot-company-details-scraper",
+  "title": "Trustpilot Company Details Scraper",
+  "description": "Scrape Trustpilot company profile details by domain. Extract company name, TrustScore, review count, claimed status, categories, location, contact, social media, and metadata for reputation monitoring and competitor research.",
+  "categories": [
+    "MARKETING",
+    "LEAD_GENERATION",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "company_details": {
+          "title": "Trustpilot Company Details",
+          "transformation": {
+            "fields": ["company_name", "company_domain", "trust_score", "stars", "review_count", "is_claimed", "is_verified", "website_url", "profile_url", "email", "phone", "country", "country_code", "city", "address", "category_names", "category_slugs", "request_locale", "response_source", "scraped_at"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "company_name": { "label": "Company", "format": "text" },
+              "company_domain": { "label": "Domain", "format": "text" },
+              "trust_score": { "label": "TrustScore", "format": "number" },
+              "stars": { "label": "Stars", "format": "number" },
+              "review_count": { "label": "Reviews", "format": "number" },
+              "is_claimed": { "label": "Claimed", "format": "boolean" },
+              "is_verified": { "label": "Verified", "format": "boolean" },
+              "website_url": { "label": "Website", "format": "link" },
+              "profile_url": { "label": "Trustpilot Profile", "format": "link" },
+              "email": { "label": "Email", "format": "text" },
+              "phone": { "label": "Phone", "format": "text" },
+              "country": { "label": "Country", "format": "text" },
+              "country_code": { "label": "Country Code", "format": "text" },
+              "city": { "label": "City", "format": "text" },
+              "address": { "label": "Address", "format": "text" },
+              "category_names": { "label": "Categories", "format": "text" },
+              "category_slugs": { "label": "Category Slugs", "format": "text" },
+              "request_locale": { "label": "Locale", "format": "text" },
+              "response_source": { "label": "Source", "format": "text" },
+              "scraped_at": { "label": "Scraped At", "format": "date" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
