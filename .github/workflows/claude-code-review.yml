@@ -3,6 +3,8 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
+  pull_request_target:
+    types: [opened, synchronize, ready_for_review, reopened]
 
 permissions:
   contents: read
@@ -13,27 +15,58 @@ permissions:
 
 jobs:
   claude-review:
-    if: ${{ github.event.pull_request.head.repo.fork == false }}
+    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork == true) }}
     runs-on: [self-hosted, ci, github-actions]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Detect reviewer workflow changes
-        id: review-workflow
+      - name: Checkout pull request merge
+        if: ${{ github.event.pull_request.head.repo.fork == false }}
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --name-only "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" | grep -qx '.github/workflows/claude-code-review.yml'; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+
+          git init "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          echo "::add-mask::${auth_header}"
+          if git remote get-url origin >/dev/null 2>&1; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
           else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           fi
+          git config --local --unset-all http.https://github.com/.extraheader || true
+          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_header}"
+          git fetch --no-tags --prune origin "$GITHUB_SHA"
+          git checkout --force --detach "$GITHUB_SHA"
+          git clean -ffdx
+
+      - name: Checkout trusted base for fork pull request
+        if: ${{ github.event.pull_request.head.repo.fork == true }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          git init "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          echo "::add-mask::${auth_header}"
+          if git remote get-url origin >/dev/null 2>&1; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          else
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          fi
+          git config --local --unset-all http.https://github.com/.extraheader || true
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --no-tags --prune origin "${{ github.event.pull_request.base.sha }}"
+          git checkout --force --detach "${{ github.event.pull_request.base.sha }}"
+          git clean -ffdx
 
       - name: Ensure jq is available
-        if: ${{ steps.review-workflow.outputs.changed != 'true' }}
         id: ensure-jq
         continue-on-error: true
         shell: bash
@@ -43,7 +76,7 @@ jobs:
           fi
 
           if ! command -v apt-get >/dev/null 2>&1; then
-            echo "::error::jq is required to parse broker responses, but apt-get is not available in this runner image."
+            echo "::error::jq is required to parse GitHub API and broker responses, but apt-get is not available in this runner image."
             exit 1
           fi
 
@@ -55,8 +88,72 @@ jobs:
             apt-get install -y jq
           fi
 
+      - name: Detect reviewer workflow changes
+        if: ${{ steps.ensure-jq.outcome == 'success' }}
+        id: review-workflow
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          files_url="${{ github.event.pull_request.url }}/files?per_page=100"
+          changed=false
+          file_count=0
+          response_headers=""
+          response_body=""
+
+          cleanup_review_workflow_response() {
+            rm -f "${response_headers:-}" "${response_body:-}"
+          }
+
+          trap cleanup_review_workflow_response EXIT
+
+          while [[ -n "$files_url" ]]; do
+            response_headers="$(mktemp)"
+            response_body="$(mktemp)"
+            curl -fsSL \
+              -D "$response_headers" \
+              -o "$response_body" \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "$files_url"
+
+            page_file_count="$(jq -er 'length' "$response_body")"
+            file_count=$((file_count + page_file_count))
+
+            if jq -er '.[].filename | select(. == ".github/workflows/claude-code-review.yml")' "$response_body" >/dev/null; then
+              changed=true
+            fi
+
+            files_url="$(awk '
+              BEGIN { RS="," }
+              /rel="next"/ {
+                if (match($0, /<[^>]+>/)) {
+                  print substr($0, RSTART + 1, RLENGTH - 2)
+                  exit
+                }
+              }
+            ' "$response_headers")"
+            rm -f "$response_headers" "$response_body"
+            response_headers=""
+            response_body=""
+
+            if [[ "$changed" == "true" ]]; then
+              break
+            fi
+          done
+
+          if [[ "$changed" != "true" && "$file_count" -ge 3000 ]]; then
+            echo "::error::Unable to prove the reviewer workflow was unchanged because the pull request files API is capped at 3000 files."
+            exit 1
+          fi
+
+          echo "changed=${changed}" >> "$GITHUB_OUTPUT"
+
       - name: Fetch AI backend configuration
-        if: ${{ steps.review-workflow.outputs.changed != 'true' }}
+        if: ${{ steps.ensure-jq.outcome == 'success' && steps.review-workflow.outcome == 'success' && steps.review-workflow.outputs.changed != 'true' }}
         id: ai-config
         continue-on-error: true
         env:
@@ -196,7 +293,7 @@ jobs:
         run: echo "Skipping Claude Code Review because this PR changes the review workflow."
 
       - name: Install Laravel Boost for Claude Code
-        if: ${{ steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' }}
+        if: ${{ github.event.pull_request.head.repo.fork == false && steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' }}
         id: laravel-boost
         continue-on-error: true
         shell: bash
@@ -312,6 +409,8 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
+            For fork pull requests, do not check out, execute, install dependencies from, or otherwise run code from the PR head. Review fork PRs using the GitHub pull request context and diff only.
+
             Please review this pull request and provide feedback on:
             - Code quality and best practices
             - Potential bugs or issues
@@ -358,6 +457,8 @@ jobs:
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
+
+            For fork pull requests, do not check out, execute, install dependencies from, or otherwise run code from the PR head. Review fork PRs using the GitHub pull request context and diff only.
 
             The first Claude Code Review attempt failed, likely due to a transient AI backend or network issue. Resume the interrupted review session and continue from the existing context.
 
@@ -408,6 +509,8 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
+            For fork pull requests, do not check out, execute, install dependencies from, or otherwise run code from the PR head. Review fork PRs using the GitHub pull request context and diff only.
+
             Please review this pull request and provide feedback on:
             - Code quality and best practices
             - Potential bugs or issues
@@ -454,6 +557,8 @@ jobs:
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
+
+            For fork pull requests, do not check out, execute, install dependencies from, or otherwise run code from the PR head. Review fork PRs using the GitHub pull request context and diff only.
 
             The first Claude Code Review attempt failed, likely due to a transient AI backend or network issue. Resume the interrupted review session and continue from the existing context.
 
@@ -528,6 +633,8 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
+            For fork pull requests, do not check out, execute, install dependencies from, or otherwise run code from the PR head. Review fork PRs using the GitHub pull request context and diff only.
+
             The primary Claude Code Review backend and resume retry failed. Continue the review using the configured backup AI backend.
 
             Please review this pull request and provide feedback on:
@@ -577,6 +684,8 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
+            For fork pull requests, do not check out, execute, install dependencies from, or otherwise run code from the PR head. Review fork PRs using the GitHub pull request context and diff only.
+
             The primary Claude Code Review backend and resume retry failed. Continue the review using the configured backup AI backend.
 
             Please review this pull request and provide feedback on:
@@ -591,13 +700,13 @@ jobs:
             Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
       - name: Warn when Claude review is unavailable
-        if: ${{ steps.ensure-jq.outcome == 'failure' || steps.ai-config.outcome == 'failure' || steps.laravel-boost.outcome == 'failure' || steps.claude-review-backup.outputs.available == 'false' || (steps.ai-config.outputs.backup_token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review-backup-oauth.outcome == 'failure') || (steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_API_KEY' && steps.claude-review-backup-custom.outcome == 'failure') }}
+        if: ${{ steps.ensure-jq.outcome == 'failure' || steps.review-workflow.outcome == 'failure' || steps.ai-config.outcome == 'failure' || steps.laravel-boost.outcome == 'failure' || steps.claude-review-backup.outputs.available == 'false' || (steps.ai-config.outputs.backup_token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review-backup-oauth.outcome == 'failure') || (steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_API_KEY' && steps.claude-review-backup-custom.outcome == 'failure') }}
         shell: bash
         run: |
-          echo "::warning::Claude review is currently unavailable due to an external AI service or authentication issue."
+          echo "::warning::Claude review is currently unavailable because a required workflow prerequisite, AI service, or authentication configuration is unavailable."
           {
             echo "## Claude review unavailable"
             echo
-            echo "The Claude review action failed because the AI service, broker, or authentication configuration is currently unavailable to this repository."
-            echo "Please restore AI backend access before relying on this workflow for automated review."
+            echo "The Claude review action failed because jq, workflow-change detection, the AI service, broker, or authentication configuration is currently unavailable to this repository."
+            echo "Please restore the missing workflow prerequisite or AI backend access before relying on this workflow for automated review."
           } >> "$GITHUB_STEP_SUMMARY"
