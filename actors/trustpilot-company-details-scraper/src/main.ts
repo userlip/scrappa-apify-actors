@@ -7,6 +7,7 @@ import {
 } from './request-params.js';
 import type { TrustpilotCompanyDetailsInput } from './request-params.js';
 import { buildTrustpilotCompanyDetailsDatasetItem } from './response-utils.js';
+import { buildTrustpilotCompanyDetailsOutputSummary } from './response-utils.js';
 import type { TrustpilotCompanyDetailsResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
@@ -38,7 +39,6 @@ async function main(): Promise<void> {
         console.log(`Fetching Trustpilot company details for ${describeTrustpilotCompanyDetailsRequest(plan)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const chargedResponses: TrustpilotCompanyDetailsResponse[] = [];
         const failures: Record<string, string>[] = [];
         let savedCompanies = 0;
         let statusMessage: string | null = null;
@@ -60,9 +60,6 @@ async function main(): Promise<void> {
                         : Actor.pushData(items, eventName),
                 }, [item]);
                 savedCompanies += result.savedCount;
-                if (result.savedCount > 0) {
-                    chargedResponses.push(response);
-                }
                 console.log(`Saved ${result.savedCount} Trustpilot company detail result(s) for ${companyDomain}`);
 
                 if (result.statusMessage) {
@@ -80,23 +77,14 @@ async function main(): Promise<void> {
             statusMessage = `${failures.length} of ${plan.domains.length} Trustpilot company detail request(s) failed.`;
         }
 
-        const output = {
-            request: {
-                endpoint: '/trustpilot/company-details',
-                company_domains: plan.domains,
-                ...plan.baseParams,
-            },
-            companies_requested: plan.domains.length,
-            companies_saved: savedCompanies,
-            companies_failed: failures.length,
-            responses_saved: chargedResponses.length,
-            status_message: statusMessage,
-            failures,
-            responses: chargedResponses,
-        };
-
         const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', output);
+        await store.setValue('OUTPUT', buildTrustpilotCompanyDetailsOutputSummary({
+            domains: plan.domains,
+            baseParams: plan.baseParams,
+            savedCompanies,
+            failures,
+            statusMessage,
+        }));
 
         console.log('Trustpilot company details extraction completed successfully');
         console.log('Results summary:', JSON.stringify({
