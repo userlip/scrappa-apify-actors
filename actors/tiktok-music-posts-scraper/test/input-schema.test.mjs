@@ -17,3 +17,12 @@ test('musicIds schema rejects pure numeric values over 100 digits', () => {
 test('musicIds schema rejects non-numeric music IDs', () => {
     assert.equal(musicIdPattern.test('track-name'), false);
 });
+
+test('cursor schema uses a single Apify-compatible type', () => {
+    assert.equal(schema.properties.cursor.type, 'string');
+    assert.equal(schema.properties.cursor.editor, 'textfield');
+});
+
+test('legacy music_id is not prefilled alongside musicIds', () => {
+    assert.equal(Object.hasOwn(schema.properties.music_id, 'prefill'), false);
+});

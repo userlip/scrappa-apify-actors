@@ -24,9 +24,16 @@ test('accepts legacy music_id input', () => {
     );
 });
 
-test('deduplicates musicIds and legacy music_id', () => {
+test('ignores legacy music_id when musicIds contains valid IDs', () => {
     assert.deepEqual(
-        buildTikTokMusicPostsRequests({ musicIds: ['7002634556977908485'], music_id: '7002634556977908485' }),
+        buildTikTokMusicPostsRequests({ musicIds: ['7002634556977908485'], music_id: '7002634556977908486' }),
+        [{ musicId: '7002634556977908485', params: { music_id: '7002634556977908485' } }],
+    );
+});
+
+test('falls back to legacy music_id when musicIds is empty', () => {
+    assert.deepEqual(
+        buildTikTokMusicPostsRequests({ musicIds: [], music_id: '7002634556977908485' }),
         [{ musicId: '7002634556977908485', params: { music_id: '7002634556977908485' } }],
     );
 });
@@ -36,6 +43,14 @@ test('accepts safe integer music ID values', () => {
         buildTikTokMusicPostsRequests({ musicIds: [12345], music_id: 67890 }),
         [
             { musicId: '12345', params: { music_id: '12345' } },
+        ],
+    );
+});
+
+test('accepts safe integer legacy music_id fallback', () => {
+    assert.deepEqual(
+        buildTikTokMusicPostsRequests({ music_id: 67890 }),
+        [
             { musicId: '67890', params: { music_id: '67890' } },
         ],
     );

@@ -59,6 +59,10 @@ function collectMusicIds(input: TikTokMusicPostsInput, warn: (message: string) =
         warn(`musicIds must be an array, got ${typeof input.musicIds}. Falling back to music_id.`);
     }
 
+    if (musicIds.length > 0) {
+        return [...new Set(musicIds)];
+    }
+
     if (typeof input.music_id === 'string') {
         const musicId = normalizeTikTokMusicId(input.music_id);
         if (musicId !== '') {
