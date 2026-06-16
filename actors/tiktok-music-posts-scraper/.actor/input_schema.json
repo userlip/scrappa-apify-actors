@@ -1,0 +1,42 @@
+{
+  "title": "TikTok Music Posts Scraper",
+  "description": "Extract public TikTok posts that use one or more specific TikTok music tracks.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "musicIds": {
+      "title": "TikTok Music IDs",
+      "type": "array",
+      "description": "One or more TikTok music track IDs. Batch multiple music IDs in one run to reduce Apify run overhead.",
+      "editor": "stringList",
+      "prefill": ["7002634556977908485"],
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{1,100}$"
+      }
+    },
+    "music_id": {
+      "title": "Legacy Music ID",
+      "type": "string",
+      "description": "Legacy single TikTok music ID input. Prefer musicIds for new integrations.",
+      "editor": "textfield",
+      "pattern": "^[0-9]{1,100}$"
+    },
+    "count": {
+      "title": "Posts Per Page",
+      "type": "integer",
+      "description": "Number of posts to return for each music ID. Scrappa accepts 1-50.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10
+    },
+    "cursor": {
+      "title": "Cursor",
+      "type": "string",
+      "description": "Pagination cursor from a previous run. Leave empty for the first page. The same cursor is applied to every music ID in this run.",
+      "editor": "textfield",
+      "prefill": "0"
+    }
+  }
+}

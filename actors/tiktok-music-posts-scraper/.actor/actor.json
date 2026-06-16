@@ -1,0 +1,49 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-music-posts-scraper",
+  "title": "TikTok Music Posts Scraper",
+  "description": "TikTok music scraper for extracting public videos that use specific music tracks or sounds. Monitor TikTok sound videos, music track posts, creator adoption, captions, engagement metrics, timestamps, and pagination cursors through Scrappa.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 120
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "posts": {
+          "title": "Music Posts",
+          "transformation": {
+            "fields": ["desc", "author", "digg_count", "comment_count", "share_count", "play_count", "create_time", "aweme_id", "request_music_id"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "desc": { "label": "Caption", "format": "text" },
+              "author": { "label": "Author", "format": "object" },
+              "digg_count": { "label": "Likes", "format": "number" },
+              "comment_count": { "label": "Comments", "format": "number" },
+              "share_count": { "label": "Shares", "format": "number" },
+              "play_count": { "label": "Views", "format": "number" },
+              "create_time": { "label": "Created", "format": "number" },
+              "aweme_id": { "label": "Post ID", "format": "text" },
+              "request_music_id": { "label": "Music ID", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
