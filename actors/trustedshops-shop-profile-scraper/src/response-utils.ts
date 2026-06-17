@@ -161,11 +161,16 @@ function categoryId(category: unknown): string | undefined {
     return typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined;
 }
 
-function hasShopProfileSignal(value: Record<string, unknown>): boolean {
+function hasTsidSignal(value: Record<string, unknown>): boolean {
     return firstNonEmptyString(
         value.tsid,
         value.tsID,
         value.tsId,
+    ) !== null;
+}
+
+function hasMerchantProfileSignal(value: Record<string, unknown>): boolean {
+    return firstNonEmptyString(
         value.name,
         value.displayName,
         value.accountName,
@@ -188,7 +193,11 @@ export function getTrustedShopsShopProfileData(
     ];
 
     for (const candidate of candidates) {
-        if (isPopulatedObject(candidate) && hasShopProfileSignal(candidate)) {
+        if (
+            isPopulatedObject(candidate)
+            && hasTsidSignal(candidate)
+            && hasMerchantProfileSignal(candidate)
+        ) {
             return candidate as TrustedShopsShopProfileData;
         }
     }

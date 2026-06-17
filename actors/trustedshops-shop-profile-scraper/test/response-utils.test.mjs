@@ -116,8 +116,9 @@ test('falls back to shopCategories when categories is empty', () => {
 
 test('reports missing shop profile payloads as invalid before charging', () => {
     assert.equal(hasTrustedShopsShopProfileData({ response: { data: { shop: {} } } }), false);
+    assert.equal(hasTrustedShopsShopProfileData({ response: { data: { shop: { tsId: TSID } } } }), false);
     assert.throws(
-        () => buildTrustedShopsShopProfileDatasetItem({ response: { data: { shop: {} } } }, {
+        () => buildTrustedShopsShopProfileDatasetItem({ response: { data: { shop: { tsId: TSID } } } }, {
             requestedTsid: TSID,
             includeRawResponse: false,
         }),
