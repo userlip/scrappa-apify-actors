@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "trustedshops-shop-profile-scraper",
+  "title": "TrustedShops Shop Profile Scraper",
+  "description": "Fetch TrustedShops shop profile data by TSID or profile URL. Extract merchant URL, display name, language, target market, certification metadata, categories, rating, and review count for enrichment workflows.",
+  "categories": [
+    "MARKETING",
+    "LEAD_GENERATION",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "shop_profiles": {
+          "title": "TrustedShops Shop Profiles",
+          "transformation": {
+            "fields": ["tsid", "requested_tsid", "name", "url", "profile_url", "language", "target_market", "rating", "review_count", "certified", "category_names", "category_ids", "source_url", "profile_metadata"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "tsid": { "label": "TSID", "format": "text" },
+              "requested_tsid": { "label": "Requested TSID", "format": "text" },
+              "name": { "label": "Shop Name", "format": "text" },
+              "url": { "label": "Merchant URL", "format": "link" },
+              "profile_url": { "label": "TrustedShops Profile", "format": "link" },
+              "language": { "label": "Language", "format": "text" },
+              "target_market": { "label": "Target Market", "format": "text" },
+              "rating": { "label": "Rating", "format": "number" },
+              "review_count": { "label": "Reviews", "format": "number" },
+              "certified": { "label": "Certified", "format": "boolean" },
+              "category_names": { "label": "Categories", "format": "text" },
+              "category_ids": { "label": "Category IDs", "format": "text" },
+              "source_url": { "label": "Source URL", "format": "link" },
+              "profile_metadata": { "label": "Profile Metadata", "format": "object" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

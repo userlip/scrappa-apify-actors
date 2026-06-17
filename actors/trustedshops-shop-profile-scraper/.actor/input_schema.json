@@ -1,0 +1,57 @@
+{
+  "title": "TrustedShops Shop Profile Scraper",
+  "description": "Enrich one or more TrustedShops TSIDs or profile URLs with merchant-level shop profile data.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "tsids": {
+      "title": "TrustedShops TSIDs",
+      "type": "array",
+      "description": "Recommended. Process many TrustedShops IDs in one Apify run. Each successful TSID produces one charged dataset item.",
+      "editor": "stringList",
+      "prefill": ["XFB15FFBDE1DEE7A55D292A7D48598A6A"],
+      "items": {
+        "type": "string",
+        "minLength": 33,
+        "maxLength": 33,
+        "pattern": "^[A-Z0-9]{33}$"
+      }
+    },
+    "urls": {
+      "title": "TrustedShops Profile URLs",
+      "type": "array",
+      "description": "TrustedShops profile URLs. The actor extracts TSIDs from URLs when possible, then fetches the shop profile.",
+      "editor": "stringList",
+      "prefill": ["https://www.trustedshops.de/bewertung/info_XFB15FFBDE1DEE7A55D292A7D48598A6A.html"],
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tsid": {
+      "title": "Single TSID",
+      "type": "string",
+      "description": "Single TrustedShops ID. Prefer TSIDs for batch usage.",
+      "editor": "textfield",
+      "minLength": 33,
+      "maxLength": 33,
+      "pattern": "^[A-Z0-9]{33}$",
+      "prefill": "XFB15FFBDE1DEE7A55D292A7D48598A6A"
+    },
+    "url": {
+      "title": "Single Profile URL",
+      "type": "string",
+      "description": "Single TrustedShops profile URL. Prefer URLs for batch usage.",
+      "editor": "textfield",
+      "minLength": 1,
+      "prefill": "https://www.trustedshops.de/bewertung/info_XFB15FFBDE1DEE7A55D292A7D48598A6A.html"
+    },
+    "include_raw_response": {
+      "title": "Include Raw Response",
+      "type": "boolean",
+      "description": "Include the full Scrappa TrustedShops shop profile response in each dataset item for debugging or custom field mapping.",
+      "editor": "checkbox",
+      "default": false
+    }
+  }
+}
