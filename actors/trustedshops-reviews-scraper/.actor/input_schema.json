@@ -1,0 +1,94 @@
+{
+  "title": "TrustedShops Reviews Scraper",
+  "description": "Extract TrustedShops reviews by batch TSIDs or profile URLs. One dataset item is written and charged per review.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [],
+  "properties": {
+    "tsids": {
+      "title": "TrustedShops TSIDs",
+      "type": "array",
+      "description": "TrustedShops shop TSIDs. Up to 50 shops per run.",
+      "editor": "stringList",
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9]{33}$",
+        "minLength": 33,
+        "maxLength": 33
+      },
+      "prefill": ["XFB15FFBDE1DEE7A55D292A7D48598A6A"]
+    },
+    "urls": {
+      "title": "TrustedShops Profile URLs",
+      "type": "array",
+      "description": "TrustedShops shop profile URLs containing info_<TSID>. Use this for batch monitoring from profile links.",
+      "editor": "stringList",
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      },
+      "prefill": ["https://www.trustedshops.de/bewertung/info_XFB15FFBDE1DEE7A55D292A7D48598A6A.html"]
+    },
+    "tsid": {
+      "title": "Single TSID",
+      "type": "string",
+      "description": "Single TSID compatibility input. Ignored when TSIDs or Profile URLs are provided.",
+      "editor": "textfield",
+      "pattern": "^[A-Z0-9]{33}$",
+      "minLength": 33,
+      "maxLength": 33
+    },
+    "url": {
+      "title": "Single Profile URL",
+      "type": "string",
+      "description": "Single TrustedShops profile URL compatibility input.",
+      "editor": "textfield",
+      "maxLength": 500
+    },
+    "market": {
+      "title": "Market",
+      "type": "string",
+      "description": "Optional TrustedShops market parameter when supported by the Scrappa endpoint.",
+      "editor": "select",
+      "enum": ["DEU", "GBR", "AUT", "CHE", "NLD", "ESP", "ITA", "FRA", "BEL", "POL", "PRT"],
+      "enumTitles": ["Germany", "United Kingdom", "Austria", "Switzerland", "Netherlands", "Spain", "Italy", "France", "Belgium", "Poland", "Portugal"]
+    },
+    "page": {
+      "title": "Start Page",
+      "type": "integer",
+      "description": "First TrustedShops reviews page to fetch.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "max_pages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Number of review pages to fetch per TSID.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 25,
+      "default": 1
+    },
+    "size": {
+      "title": "Page Size",
+      "type": "integer",
+      "description": "Reviews to request per page from Scrappa.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    },
+    "include_raw_responses": {
+      "title": "Include Raw Page Responses",
+      "type": "boolean",
+      "description": "Include full Scrappa page responses in the OUTPUT key-value-store record. Leave disabled for large batch runs.",
+      "editor": "checkbox",
+      "default": false
+    }
+  }
+}
