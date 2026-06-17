@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { fetchQuoteWithFallback, shouldRetryBaseQuote } from '../dist/quote-fetch.js';
+import {
+    buildQuoteResponseFromSearchResult,
+    fetchQuoteWithFallback,
+    fetchSearchQuoteFallback,
+    shouldRetryBaseQuote,
+} from '../dist/quote-fetch.js';
 import { ScrappaHttpError } from '../dist/shared/index.js';
 
 function createClientStub(results) {
@@ -123,4 +128,91 @@ test('classifies only Scrappa 5xx errors with period_type for base quote fallbac
     assert.equal(shouldRetryBaseQuote(new ScrappaHttpError(429, 'Rate limited'), { period_type: 'quarterly' }), false);
     assert.equal(shouldRetryBaseQuote(new ScrappaHttpError(500, 'Internal Server Error'), { symbol: 'MSFT' }), false);
     assert.equal(shouldRetryBaseQuote(new Error('Scrappa API error (500): Internal Server Error'), { period_type: 'quarterly' }), false);
+});
+
+test('builds a quote-shaped response from an exact search result fallback', () => {
+    const response = buildQuoteResponseFromSearchResult(
+        {
+            symbol: 'MSFT',
+            exchange: 'NASDAQ',
+            name: 'Microsoft Corp',
+            currency: 'USD',
+            current_price: 409.43,
+            price_change: 4.22,
+            percent_change: 1.04,
+            previous_close: 405.21,
+            country: 'US',
+        },
+        { symbol: 'MSFT', exchange: 'NASDAQ' },
+    );
+
+    assert.deepEqual(response, {
+        quote: {
+            summary: {
+                name: 'Microsoft Corp',
+                symbol: 'MSFT',
+                exchange: 'NASDAQ',
+                current_price: 409.43,
+                price_change: 4.22,
+                percent_change: 1.04,
+                currency: 'USD',
+                country: 'US',
+            },
+            key_stats: {
+                previous_close: 405.21,
+            },
+            about: {},
+            financials: [],
+            news: [],
+            discover_more: [],
+        },
+    });
+});
+
+test('returns search fallback for the requested symbol and exchange', async () => {
+    const { client, calls } = createClientStub([
+        {
+            results: [
+                { symbol: 'MSFT', exchange: 'BMV', current_price: 7055 },
+                { symbol: 'MSFT', exchange: 'NASDAQ', current_price: 409.43, currency: 'USD' },
+            ],
+        },
+    ]);
+
+    const result = await fetchSearchQuoteFallback(
+        client,
+        { symbol: 'MSFT', exchange: 'NASDAQ', period_type: 'quarterly', hl: 'en', gl: 'us' },
+        3,
+    );
+
+    assert.equal(result.response.quote.summary.current_price, 409.43);
+    assert.deepEqual(result.fallback, {
+        reason: 'scrappa_quote_empty_search_result',
+        omitted_params: [],
+        primary_error: 'Scrappa quote response did not contain usable price, key stats, profile, financials, news, or related ticker data.',
+        source_endpoint: '/google-finance/search',
+        unavailable_sections: ['about', 'financials', 'news', 'discover_more'],
+        not_applicable_params: ['period_type'],
+    });
+    assert.deepEqual(calls, [
+        {
+            endpoint: '/google-finance/search',
+            params: { q: 'MSFT', hl: 'en', gl: 'us' },
+            options: { attempts: 3 },
+        },
+    ]);
+});
+
+test('returns null when search fallback cannot match the requested exchange', async () => {
+    const { client } = createClientStub([
+        {
+            results: [
+                { symbol: 'MSFT', exchange: 'BMV', current_price: 7055 },
+            ],
+        },
+    ]);
+
+    const result = await fetchSearchQuoteFallback(client, { symbol: 'MSFT', exchange: 'NASDAQ' }, 3);
+
+    assert.equal(result, null);
 });
