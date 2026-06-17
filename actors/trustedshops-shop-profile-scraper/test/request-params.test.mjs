@@ -32,6 +32,16 @@ test('extracts TSID from TrustedShops profile URL', () => {
     assert.equal(result.source_url, `https://www.trustedshops.de/bewertung/info_${TSID}.html`);
 });
 
+test('rejects TSID extraction from overlong tokens', () => {
+    const plan = buildTrustedShopsShopProfilePlan({
+        urls: [`https://www.trustedshops.de/bewertung/info_${TSID}A.html`],
+    });
+
+    assert.equal(plan.requests.length, 1);
+    assert.equal(plan.requests[0].tsid, undefined);
+    assert.match(plan.requests[0].validation_error, /must contain a TrustedShops TSID/);
+});
+
 test('builds a deduplicated batch plan from TSIDs and URLs', () => {
     const plan = buildTrustedShopsShopProfilePlan({
         tsids: [TSID, TSID.toLowerCase()],

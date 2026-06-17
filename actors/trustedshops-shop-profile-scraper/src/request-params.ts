@@ -18,6 +18,8 @@ export interface TrustedShopsShopProfilePlan {
 }
 
 const TSID_PATTERN = /^[A-Z0-9]{33}$/;
+const TSID_IN_URL_PATTERN = /(?:info_|tsid=)([A-Z0-9]{33})(?![A-Z0-9])/i;
+const BARE_TSID_IN_TEXT_PATTERN = /(?:^|[^A-Z0-9])([A-Z0-9]{33})(?![A-Z0-9])/i;
 const MAX_SHOPS_PER_RUN = 100;
 
 interface InputValue {
@@ -72,8 +74,8 @@ export function extractTrustedShopsTsidFromUrl(value: unknown, field = 'url'): T
         throw new Error(`${field} cannot be empty`);
     }
 
-    const match = sourceUrl.match(/(?:info_|tsid=|tsID=)([A-Z0-9]{33})/i)
-        ?? sourceUrl.match(/\b([A-Z0-9]{33})\b/i);
+    const match = sourceUrl.match(TSID_IN_URL_PATTERN)
+        ?? sourceUrl.match(BARE_TSID_IN_TEXT_PATTERN);
 
     if (!match) {
         throw new Error(`${field} must contain a TrustedShops TSID, for example https://www.trustedshops.de/bewertung/info_XFB15FFBDE1DEE7A55D292A7D48598A6A.html`);

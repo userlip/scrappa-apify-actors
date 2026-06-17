@@ -66,9 +66,13 @@ function isObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isPopulatedObject(value: unknown): value is Record<string, unknown> {
+    return isObject(value) && Object.keys(value).length > 0;
+}
+
 function firstObject(...values: unknown[]): Record<string, unknown> {
     for (const value of values) {
-        if (isObject(value)) {
+        if (isPopulatedObject(value)) {
             return value;
         }
     }
@@ -157,14 +161,52 @@ function categoryId(category: unknown): string | undefined {
     return typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined;
 }
 
-function getProfileData(response: TrustedShopsShopProfileResponse): TrustedShopsShopProfileData {
-    return firstObject(
+function hasShopProfileSignal(value: Record<string, unknown>): boolean {
+    return firstNonEmptyString(
+        value.tsid,
+        value.tsID,
+        value.tsId,
+        value.name,
+        value.displayName,
+        value.accountName,
+        value.shopName,
+        value.url,
+        value.shopUrl,
+        value.website,
+    ) !== null;
+}
+
+export function getTrustedShopsShopProfileData(
+    response: TrustedShopsShopProfileResponse,
+): TrustedShopsShopProfileData | null {
+    const candidates = [
         response.response?.data?.shop,
         response.data?.shop,
         response.data,
         response.shop,
         response,
-    ) as TrustedShopsShopProfileData;
+    ];
+
+    for (const candidate of candidates) {
+        if (isPopulatedObject(candidate) && hasShopProfileSignal(candidate)) {
+            return candidate as TrustedShopsShopProfileData;
+        }
+    }
+
+    return null;
+}
+
+export function hasTrustedShopsShopProfileData(response: TrustedShopsShopProfileResponse): boolean {
+    return getTrustedShopsShopProfileData(response) !== null;
+}
+
+function getProfileData(response: TrustedShopsShopProfileResponse): TrustedShopsShopProfileData {
+    const profile = getTrustedShopsShopProfileData(response);
+    if (!profile) {
+        throw new Error('Scrappa response did not include a TrustedShops shop profile object');
+    }
+
+    return profile;
 }
 
 export function buildTrustedShopsShopProfileDatasetItem(
@@ -180,7 +222,7 @@ export function buildTrustedShopsShopProfileDatasetItem(
         response.meta,
         response.metaData,
     );
-    const categories = Array.isArray(profile.categories)
+    const categories = Array.isArray(profile.categories) && profile.categories.length > 0
         ? profile.categories
         : Array.isArray(profile.shopCategories)
             ? profile.shopCategories

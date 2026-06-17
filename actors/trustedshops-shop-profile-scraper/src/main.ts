@@ -8,6 +8,7 @@ import type { TrustedShopsShopProfileInput } from './request-params.js';
 import {
     buildTrustedShopsShopProfileDatasetItem,
     buildTrustedShopsShopProfileOutputSummary,
+    hasTrustedShopsShopProfileData,
 } from './response-utils.js';
 import type { TrustedShopsShopProfileResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
@@ -62,6 +63,10 @@ async function main(): Promise<void> {
                     {},
                     { attempts: SCRAPPA_MAX_ATTEMPTS },
                 );
+                if (!hasTrustedShopsShopProfileData(response)) {
+                    throw new Error('Scrappa response did not include a TrustedShops shop profile object');
+                }
+
                 const item = buildTrustedShopsShopProfileDatasetItem(response, {
                     requestedTsid: request.tsid,
                     sourceUrl: request.source_url,

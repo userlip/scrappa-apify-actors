@@ -31,12 +31,13 @@
         "shop_profiles": {
           "title": "TrustedShops Shop Profiles",
           "transformation": {
-            "fields": ["tsid", "name", "url", "profile_url", "language", "target_market", "rating", "review_count", "certified", "category_names", "category_ids", "source_url", "profile_metadata"]
+            "fields": ["tsid", "requested_tsid", "name", "url", "profile_url", "language", "target_market", "rating", "review_count", "certified", "category_names", "category_ids", "source_url", "profile_metadata"]
           },
           "display": {
             "component": "table",
             "properties": {
               "tsid": { "label": "TSID", "format": "text" },
+              "requested_tsid": { "label": "Requested TSID", "format": "text" },
               "name": { "label": "Shop Name", "format": "text" },
               "url": { "label": "Merchant URL", "format": "link" },
               "profile_url": { "label": "TrustedShops Profile", "format": "link" },
