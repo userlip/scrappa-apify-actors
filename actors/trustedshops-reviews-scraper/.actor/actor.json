@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "trustedshops-reviews-scraper",
+  "title": "TrustedShops Reviews Scraper",
+  "description": "Scrape TrustedShops shop reviews by TSID or profile URL. Supports batch shops in one run and saves each review as one charged dataset item.",
+  "categories": [
+    "MARKETING",
+    "LEAD_GENERATION",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "reviews": {
+          "title": "TrustedShops Reviews",
+          "transformation": {
+            "fields": ["tsid", "shop_name", "rating", "review_title", "review_text", "created_at", "verified", "criteria", "review_id", "page", "source_url", "request_market", "page_total_reviews", "page_total_pages"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "tsid": { "label": "TSID", "format": "text" },
+              "shop_name": { "label": "Shop", "format": "text" },
+              "rating": { "label": "Rating", "format": "number" },
+              "review_title": { "label": "Title", "format": "text" },
+              "review_text": { "label": "Review", "format": "text" },
+              "created_at": { "label": "Created", "format": "date" },
+              "verified": { "label": "Verified", "format": "boolean" },
+              "criteria": { "label": "Criteria", "format": "object" },
+              "review_id": { "label": "Review ID", "format": "text" },
+              "page": { "label": "Page", "format": "number" },
+              "source_url": { "label": "Source URL", "format": "link" },
+              "request_market": { "label": "Market", "format": "text" },
+              "page_total_reviews": { "label": "Total Reviews", "format": "number" },
+              "page_total_pages": { "label": "Total Pages", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
