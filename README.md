@@ -131,14 +131,14 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-05-30T07:50:04.044Z. It lists all 80 live `thescrappa` actors. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-06-17T09:52:00.000Z. It lists all 81 live `thescrappa` actors. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 80 live `thescrappa` actors in Apify
-- 70 public `thescrappa` actors in Apify according to the pricing and secret audits
-- 80 local actor source directories in this repo; all 80 are represented by live Apify actors
+- 81 live `thescrappa` actors in Apify
+- 71 public `thescrappa` actors in Apify according to the pricing and secret audits
+- 81 local actor source directories in this repo; all 81 are represented by live Apify actors
 - 0 live actors missing a local source directory here; `google-search-scraper` is represented by the legacy `actors/google-search` directory
-- Pricing audit: 56 public actors have active paid pricing, 14 public actors have future-only paid pricing scheduled, 0 public actors are missing paid pricing, and 0 public actors have overdue active-pricing gaps.
+- Pricing audit: 57 public actors have active paid pricing, 14 public actors have future-only paid pricing scheduled, 0 public actors are missing paid pricing, and 0 public actors have overdue active-pricing gaps.
 - Secret audit: all 70 public actors have `SCRAPPA_API_KEY` configured as a secret on their default Actor version.
 - Run-health notes from the 2026-05-30 audit pass: no latest run failures were returned by the all-actor run sweep; stale Apify `UNDER_MAINTENANCE` notices were cleared for `booking-search-scraper` (`BehWN3LEvBxhEiJDF`), `google-videos-scraper` (`kAdTwn5fkBCGKOQUq`), `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`), and `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) after successful cloud run evidence. Google Hotels smoke run `0kc6kUen9F8Z53MAK` succeeded but logged unknown charge event `hotel-result`; local source now avoids the obsolete explicit charge event and relies on configured default dataset item pricing.
 
@@ -201,6 +201,7 @@ Use [docs/monetization-activation-checklist.md](docs/monetization-activation-che
 | `actors/tiktok-video-scraper` | `tiktok-video-scraper` | `4DSOKG4JhcS4lhu60` | TikTok Video Details Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-21 (`PAY_PER_EVENT`, default dataset video detail result at $0.0002/result); verify activation |
 | `actors/tiktok-user-posts-scraper` | `tiktok-user-posts-scraper` | `iSnxQQAvqnI0ZKL9F` | TikTok User Posts Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-19 (`PAY_PER_EVENT`); verify activation |
 | `actors/trustedshops-search-scraper` | `trustedshops-search-scraper` | `m7Ss9UWPRN5cQhIAK` | Trusted Shops Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `Aiz8AnjChhjer5rjV` succeeded with 20 results for `zalando` in `DEU` | Public with `pricingInfos` active from 2026-05-17 (`PAY_PER_EVENT`, `shop-result` at $0.0002/result); API still reports `pricingInfo/currentPricingInfo: null` immediately after publication |
+| `actors/trustedshops-shop-profile-scraper` | `trustedshops-shop-profile-scraper` | `hhSb9mCZkXYTQc3Lo` | TrustedShops Shop Profile Scraper | Local source present; live Apify version uses `SOURCE_FILES`; latest build `WIXCLT4x1CH7ZjoXz` / `1.0.2` succeeded; smoke run `0hOz53dBI1NfAXIVK` succeeded with 1 dataset item for TSID `XFB15FFBDE1DEE7A55D292A7D48598A6A` (`NeuTrends`, `https://www.neutrends.de`, language `de`, target market `DEU`) | Public with `pricingInfos` active from 2026-06-17T09:48:02Z (`PAY_PER_EVENT`, `shop-profile-result` at $0.0002/result); smoke run charged `shop-profile-result = 1` |
 | `actors/trustpilot-business-search-scraper` | `trustpilot-business-search-scraper` | `W8yULHo0Mzq7CYRrM` | Trustpilot Business Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-02 (`PAY_PER_EVENT`, `business-result` at $0.0002/result); verify activation |
 | `actors/trustpilot-company-reviews-scraper` | `trustpilot-company-reviews-scraper` | `nBSazp2iBmBm1FQvz` | Trustpilot Company Reviews Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-23 (`PAY_PER_EVENT`); verify activation |
 | `actors/vinted-search-scraper` | `vinted-search-scraper` | `u8F5YhfXkQIrgLe73` | Vinted Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `SdU2bgbGDHeEilac1` succeeded with 1 result for `zara` in `FR` | Scheduled 2026-06-01 (`PAY_PER_EVENT`, `item-result` at $0.0002/result); Apify blocks immediate pricing with two-week lead time |
