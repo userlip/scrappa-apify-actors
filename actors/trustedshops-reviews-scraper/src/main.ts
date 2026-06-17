@@ -160,4 +160,14 @@ async function main(): Promise<void> {
     await Actor.exit();
 }
 
-main();
+main().catch(async (error) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Actor failed: ' + message);
+    try {
+        await Actor.fail(message);
+    } catch (failError) {
+        const failMessage = failError instanceof Error ? failError.message : String(failError);
+        console.error('Actor failure reporting failed: ' + failMessage);
+        process.exitCode = 1;
+    }
+});

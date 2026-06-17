@@ -50,6 +50,7 @@ test('extracts TSIDs from direct values and profile URLs', () => {
     assert.equal(extractTrustedShopsTsid(TSID.toLowerCase()), TSID);
     assert.equal(extractTrustedShopsTsid(`www.trustedshops.de/bewertung/info_${TSID}.html`), TSID);
     assert.equal(extractTrustedShopsTsid(`https://example.com/api/trustedshops/reviews/${TSID}`), TSID);
+    assert.equal(extractTrustedShopsTsid(`https://example.com/%E0%A4%A/info_${TSID}.html`), TSID);
 });
 
 test('supports single compatibility inputs', () => {

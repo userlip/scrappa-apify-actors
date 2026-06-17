@@ -38,6 +38,39 @@ test('collects TrustedShops reviews from common response shapes and dedupes by i
     assert.deepEqual(collectReviews({}), []);
 });
 
+test('dedupes reviews without ids from stable review fields', () => {
+    const collected = collectReviews({
+        reviews: [
+            {
+                rating: 5,
+                title: 'Same review',
+                comment: 'Duplicate text',
+                createdAt: 1780254823000,
+                verificationStatus: 'MEMBER_VERIFIED',
+            },
+        ],
+        data: {
+            reviews: [
+                {
+                    rating: 5,
+                    title: 'Same review',
+                    comment: 'Duplicate text',
+                    createdAt: 1780254823000,
+                    verificationStatus: 'MEMBER_VERIFIED',
+                },
+                {
+                    rating: 4,
+                    title: 'Different review',
+                    comment: 'Different text',
+                    createdAt: 1780254823000,
+                },
+            ],
+        },
+    });
+
+    assert.deepEqual(collected.map((review) => review.title), ['Same review', 'Different review']);
+});
+
 test('enriches review records with normalized fields and keeps raw fields', () => {
     const review = {
         id: 'review-1',
@@ -148,6 +181,29 @@ test('normalizes live Scrappa TrustedShops wrapper fields', () => {
     assert.equal(enriched.created_at, '2026-05-31T19:13:43.000Z');
     assert.equal(enriched.verified, true);
     assert.equal(enriched.page_total_reviews, 100);
+});
+
+test('uses exact verification status matching', () => {
+    assert.equal(enrichReview(
+        { id: 'verified', verificationStatus: 'MEMBER_VERIFIED' },
+        target,
+        { page: 1, size: 10 },
+        {},
+    ).verified, true);
+
+    assert.equal(enrichReview(
+        { id: 'unverified', verificationStatus: 'UNVERIFIED' },
+        target,
+        { page: 1, size: 10 },
+        {},
+    ).verified, false);
+
+    assert.equal(enrichReview(
+        { id: 'unknown', verificationStatus: 'PENDING' },
+        target,
+        { page: 1, size: 10 },
+        {},
+    ).verified, null);
 });
 
 test('detects pagination stop conditions', () => {

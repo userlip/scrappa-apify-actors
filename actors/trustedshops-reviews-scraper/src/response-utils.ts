@@ -124,13 +124,13 @@ export function collectReviews(response: TrustedShopsReviewsResponse): TrustedSh
         }
 
         for (const review of container) {
-            const id = reviewId(review);
-            if (id && seen.has(id)) {
+            const dedupeKey = reviewDedupeKey(review);
+            if (dedupeKey && seen.has(dedupeKey)) {
                 continue;
             }
 
-            if (id) {
-                seen.add(id);
+            if (dedupeKey) {
+                seen.add(dedupeKey);
             }
 
             reviews.push(review);
@@ -143,6 +143,33 @@ export function collectReviews(response: TrustedShopsReviewsResponse): TrustedSh
 function reviewId(review: TrustedShopsReview): string | undefined {
     const id = review.review_id ?? review.reviewId ?? review.id;
     return typeof id === 'string' && id.trim() !== '' ? id.trim() : undefined;
+}
+
+function reviewDedupeKey(review: TrustedShopsReview): string | undefined {
+    const id = reviewId(review);
+    if (id) {
+        return `id:${id}`;
+    }
+
+    const title = reviewTitle(review);
+    const text = reviewText(review);
+    const date = reviewDate(review);
+    const rating = reviewRating(review);
+    const verificationStatus = typeof review.verificationStatus === 'string'
+        ? review.verificationStatus.trim().toUpperCase()
+        : null;
+
+    if (!title && !text && !date) {
+        return undefined;
+    }
+
+    return JSON.stringify({
+        rating,
+        title,
+        text,
+        date,
+        verificationStatus,
+    });
 }
 
 function reviewTitle(review: TrustedShopsReview): string | null {
@@ -181,7 +208,14 @@ function reviewVerified(review: TrustedShopsReview): boolean | null {
     }
 
     if (typeof review.verificationStatus === 'string') {
-        return review.verificationStatus.toUpperCase().includes('VERIFIED');
+        const status = review.verificationStatus.trim().toUpperCase();
+        if (['MEMBER_VERIFIED', 'VERIFIED'].includes(status)) {
+            return true;
+        }
+
+        if (['UNVERIFIED', 'NOT_VERIFIED', 'NOT_MEMBER_VERIFIED'].includes(status)) {
+            return false;
+        }
     }
 
     return null;

@@ -1,5 +1,5 @@
-# TrustedShops Reviews Scraper
+# Trusted Shops Reviews Scraper
 
-Apify Actor source for extracting TrustedShops review records through Scrappa.
+Apify Actor source for extracting Trusted Shops review records through Scrappa.
 
 See [.actor/README.md](.actor/README.md) for marketplace-facing usage docs.

@@ -117,7 +117,13 @@ export function extractTrustedShopsTsid(value: string): string | undefined {
         return directTsid;
     }
 
-    const decoded = decodeURIComponent(trimmed);
+    let decoded = trimmed;
+    try {
+        decoded = decodeURIComponent(trimmed);
+    } catch {
+        decoded = trimmed;
+    }
+
     const match = decoded.match(/(?:info_|tsid[=/]|trustedshops\/reviews\/)([A-Z0-9]{33})/i)
         ?? decoded.match(/([A-Z0-9]{33})/i);
 
