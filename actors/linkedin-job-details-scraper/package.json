@@ -8,7 +8,7 @@
     "start": "node dist/main.js",
     "start:dev": "tsx src/main.ts",
     "test": "npm run build && node --test test/*.test.mjs",
-    "test:dev": "TEST_SOURCE=src tsx --test test/*.test.mjs",
+    "test:dev": "ACTOR_TEST_TARGET=src tsx --test test/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

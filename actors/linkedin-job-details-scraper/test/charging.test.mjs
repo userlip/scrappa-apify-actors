@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-const chargingModule = process.env.TEST_SOURCE === 'src'
+const chargingModule = process.env.ACTOR_TEST_TARGET === 'src'
     ? '../src/charging.ts'
     : '../dist/charging.js';
 const {

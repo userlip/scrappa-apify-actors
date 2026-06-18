@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-const inputModule = process.env.TEST_SOURCE === 'src'
+const inputModule = process.env.ACTOR_TEST_TARGET === 'src'
     ? '../src/input.ts'
     : '../dist/input.js';
 const { getInputUrls } = await import(inputModule);

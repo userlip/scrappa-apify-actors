@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-const urlModule = process.env.TEST_SOURCE === 'src'
+const urlModule = process.env.ACTOR_TEST_TARGET === 'src'
     ? '../src/url.ts'
     : '../dist/url.js';
 const { normalizeLinkedInJobUrl } = await import(urlModule);

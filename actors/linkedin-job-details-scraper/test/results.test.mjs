@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-const resultsModule = process.env.TEST_SOURCE === 'src'
+const resultsModule = process.env.ACTOR_TEST_TARGET === 'src'
     ? '../src/results.ts'
     : '../dist/results.js';
-const sharedModule = process.env.TEST_SOURCE === 'src'
+const sharedModule = process.env.ACTOR_TEST_TARGET === 'src'
     ? '../src/shared/index.ts'
     : '../dist/shared/index.js';
 

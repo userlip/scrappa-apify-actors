@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-const requestParamsModule = process.env.TEST_SOURCE === 'src'
+const requestParamsModule = process.env.ACTOR_TEST_TARGET === 'src'
     ? '../src/request-params.ts'
     : '../dist/request-params.js';
 const { buildLinkedInJobDetailsParams } = await import(requestParamsModule);
