@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
+const chargingModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/charging.ts'
+    : '../dist/charging.js';
+const {
     JOB_RESULT_CHARGE_EVENT,
     pushChargedItems,
-} from '../dist/charging.js';
+} = await import(chargingModule);
 
 function makeDataset({ isPayPerEvent, chargeResult } = {}) {
     const calls = [];
@@ -46,6 +49,16 @@ test('pushes paid-mode items with job result charge event', async () => {
     const result = await pushChargedItems(dataset, items);
 
     assert.deepEqual(result, { savedCount: 2, statusMessage: null });
+    assert.equal(dataset.calls.length, 1);
+    assert.equal(dataset.calls[0].eventName, JOB_RESULT_CHARGE_EVENT);
+});
+
+test('handles paid-mode pushData implementations that return void', async () => {
+    const dataset = makeDataset({ isPayPerEvent: true });
+    const items = [{ id: 1 }];
+    const result = await pushChargedItems(dataset, items);
+
+    assert.deepEqual(result, { savedCount: 1, statusMessage: null });
     assert.equal(dataset.calls.length, 1);
     assert.equal(dataset.calls[0].eventName, JOB_RESULT_CHARGE_EVENT);
 });

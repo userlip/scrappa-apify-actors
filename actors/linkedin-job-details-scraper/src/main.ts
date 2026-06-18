@@ -124,4 +124,8 @@ async function main(): Promise<void> {
     await Actor.exit();
 }
 
-main();
+main().catch((error) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Actor failed: ${message}`);
+    process.exitCode = 1;
+});

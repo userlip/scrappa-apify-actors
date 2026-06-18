@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { getInputUrls } from '../dist/input.js';
+const inputModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/input.ts'
+    : '../dist/input.js';
+const { getInputUrls } = await import(inputModule);
 
 test('getInputUrls supports backward-compatible url input', () => {
     assert.deepEqual(

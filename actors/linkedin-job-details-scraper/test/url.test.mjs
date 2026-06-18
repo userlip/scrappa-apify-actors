@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { normalizeLinkedInJobUrl } from '../dist/url.js';
+const urlModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/url.ts'
+    : '../dist/url.js';
+const { normalizeLinkedInJobUrl } = await import(urlModule);
 
 test('normalizeLinkedInJobUrl accepts common LinkedIn jobs view URLs', () => {
     assert.equal(
@@ -25,6 +28,13 @@ test('normalizeLinkedInJobUrl rejects non-job URLs', () => {
     );
     assert.throws(
         () => normalizeLinkedInJobUrl('https://example.com/jobs/view/123'),
+        /Invalid LinkedIn job URL/,
+    );
+});
+
+test('normalizeLinkedInJobUrl rejects blank input with validation error', () => {
+    assert.throws(
+        () => normalizeLinkedInJobUrl('   '),
         /Invalid LinkedIn job URL/,
     );
 });

@@ -38,7 +38,13 @@ export type LinkedInJobDetailsResult = Omit<LinkedInJobDetailsResponse, 'url'> &
 };
 
 function firstPresent<T>(...values: (T | null | undefined)[]): T | undefined {
-    return values.find((value): value is T => value !== undefined && value !== null);
+    return values.find((value): value is T => {
+        if (value === undefined || value === null) {
+            return false;
+        }
+
+        return typeof value !== 'string' || value.trim() !== '';
+    });
 }
 
 function optionalField<T>(key: string, value: T | undefined): Record<string, T> {

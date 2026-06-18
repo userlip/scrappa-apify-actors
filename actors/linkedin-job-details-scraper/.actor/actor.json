@@ -31,7 +31,7 @@
         "job_details": {
           "title": "LinkedIn Job Details",
           "transformation": {
-            "fields": ["success", "title", "company", "location", "employment_type", "seniority_level", "posted_date", "applicants", "apply_url", "url", "input_url", "normalized_url", "status_code", "error"]
+            "fields": ["success", "title", "company", "location", "employment_type", "seniority_level", "posted_date", "applicants", "apply_url", "url", "input_url", "normalized_url", "status_code", "message", "error_type", "error"]
           },
           "display": {
             "component": "table",
@@ -49,6 +49,8 @@
               "input_url": { "label": "Input URL", "format": "link" },
               "normalized_url": { "label": "Normalized URL", "format": "link" },
               "status_code": { "label": "Status", "format": "number" },
+              "message": { "label": "Message", "format": "text" },
+              "error_type": { "label": "Error Type", "format": "text" },
               "error": { "label": "Error", "format": "text" }
             }
           }

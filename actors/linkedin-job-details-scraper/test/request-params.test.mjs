@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildLinkedInJobDetailsParams } from '../dist/request-params.js';
+const requestParamsModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/request-params.ts'
+    : '../dist/request-params.js';
+const { buildLinkedInJobDetailsParams } = await import(requestParamsModule);
 
 test('includes cache age only when cache is enabled and age is at least 1', () => {
     assert.deepEqual(

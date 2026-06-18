@@ -33,7 +33,11 @@ export async function pushChargedItems(
         return { savedCount: items.length, statusMessage: null };
     }
 
-    const chargeResult = await dataset.pushData(items, JOB_RESULT_CHARGE_EVENT) as ChargeResult;
+    const chargeResult = await dataset.pushData(items, JOB_RESULT_CHARGE_EVENT);
+    if (!chargeResult) {
+        return { savedCount: items.length, statusMessage: null };
+    }
+
     if (chargeResult.eventChargeLimitReached) {
         const savedCount = Math.min(chargeResult.chargedCount, items.length);
         const statusMessage = `Charge limit reached after saving ${savedCount} of ${items.length} LinkedIn job detail results.`;
