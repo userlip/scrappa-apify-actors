@@ -1,0 +1,48 @@
+{
+  "title": "LinkedIn Job Details Scraper",
+  "description": "Extract structured details for one or more public LinkedIn job posting URLs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "urls": {
+      "title": "LinkedIn Job URLs",
+      "type": "array",
+      "description": "Recommended. Process many LinkedIn job URLs in one Apify run so run startup and storage overhead are shared across results.",
+      "editor": "stringList",
+      "minItems": 1,
+      "prefill": [
+        "https://www.linkedin.com/jobs/view/1234567890/",
+        "https://www.linkedin.com/jobs/view/software-engineer-at-example-2345678901/"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^(https?://)?((www|m|[a-z]{2,3})\\.)?linkedin\\.com/jobs/view/[^\\s?#]+"
+      }
+    },
+    "url": {
+      "title": "Legacy Single LinkedIn Job URL",
+      "type": "string",
+      "description": "Backward-compatible single job URL. Prefer URLs for normal usage, especially when processing more than one job.",
+      "editor": "textfield",
+      "minLength": 1,
+      "prefill": "https://www.linkedin.com/jobs/view/1234567890/",
+      "pattern": "^(https?://)?((www|m|[a-z]{2,3})\\.)?linkedin\\.com/jobs/view/[^\\s?#]+"
+    },
+    "use_cache": {
+      "title": "Use Cache",
+      "type": "boolean",
+      "description": "Use cached data if available to reduce costs and speed up requests.",
+      "editor": "checkbox",
+      "default": true
+    },
+    "maximum_cache_age": {
+      "title": "Maximum Cache Age",
+      "type": "integer",
+      "description": "Maximum age of cached data in seconds (default: 2592000 = 30 days). Must be at least 1 second. Only used if use_cache is enabled.",
+      "editor": "number",
+      "minimum": 1,
+      "default": 2592000
+    }
+  }
+}
