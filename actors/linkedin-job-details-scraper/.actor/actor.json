@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "linkedin-job-details-scraper",
+  "title": "LinkedIn Job Details Scraper",
+  "description": "Scrape structured public LinkedIn job posting details from one or more job URLs. Get title, company, location, employment type, seniority, posted date, applicants, apply URL, and raw job data. No LinkedIn login required.",
+  "categories": [
+    "LEAD_GENERATION",
+    "MARKETING",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "job_details": {
+          "title": "LinkedIn Job Details",
+          "transformation": {
+            "fields": ["success", "title", "company", "location", "employment_type", "seniority_level", "posted_date", "applicants", "apply_url", "url", "input_url", "normalized_url", "status_code", "error"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": { "label": "Success", "format": "boolean" },
+              "title": { "label": "Title", "format": "text" },
+              "company": { "label": "Company", "format": "text" },
+              "location": { "label": "Location", "format": "text" },
+              "employment_type": { "label": "Employment Type", "format": "text" },
+              "seniority_level": { "label": "Seniority", "format": "text" },
+              "posted_date": { "label": "Posted Date", "format": "date" },
+              "applicants": { "label": "Applicants", "format": "text" },
+              "apply_url": { "label": "Apply URL", "format": "link" },
+              "url": { "label": "LinkedIn Job URL", "format": "link" },
+              "input_url": { "label": "Input URL", "format": "link" },
+              "normalized_url": { "label": "Normalized URL", "format": "link" },
+              "status_code": { "label": "Status", "format": "number" },
+              "error": { "label": "Error", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
