@@ -13,9 +13,7 @@
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
-  "resources": {
-    "memoryMbytes": 128
-  },
+  "defaultMemoryMbytes": 128,
   "defaultRunOptions": {
     "timeoutSecs": 120
   },
