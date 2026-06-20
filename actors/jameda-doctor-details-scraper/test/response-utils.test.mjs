@@ -125,6 +125,56 @@ test('tolerates sparse doctor details responses', () => {
     assert.equal(item.languages, null);
 });
 
+test('normalizes DE thousands separators without breaking decimal values', () => {
+    const item = buildJamedaDoctorDetailsDatasetItem(
+        {
+            rating: {
+                rating: '4,5',
+                review_count: '1.234 Bewertungen',
+            },
+            coordinates: {
+                latitude: '52,5200',
+                longitude: '13.4050',
+            },
+        },
+        {
+            doctorUrl,
+            params: {
+                doctor_url: doctorUrl,
+            },
+        },
+    );
+
+    assert.equal(item.rating_number, 4.5);
+    assert.equal(item.review_count_number, 1234);
+    assert.equal(item.latitude, 52.52);
+    assert.equal(item.longitude, 13.405);
+});
+
+test('normalizes count separators without treating decimal coordinates as thousands', () => {
+    const item = buildJamedaDoctorDetailsDatasetItem(
+        {
+            rating: {
+                review_count: '1,234 reviews',
+            },
+            coordinates: {
+                latitude: '52.520',
+                longitude: '13.405',
+            },
+        },
+        {
+            doctorUrl,
+            params: {
+                doctor_url: doctorUrl,
+            },
+        },
+    );
+
+    assert.equal(item.review_count_number, 1234);
+    assert.equal(item.latitude, 52.52);
+    assert.equal(item.longitude, 13.405);
+});
+
 test('unwraps live Scrappa response shape', () => {
     const response = {
         success: true,

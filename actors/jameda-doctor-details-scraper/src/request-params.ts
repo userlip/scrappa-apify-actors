@@ -27,6 +27,11 @@ function hasDoctorProfileShape(pathname: string): boolean {
     return segments.length >= 3;
 }
 
+function looksLikeHostStyleUrl(value: string): boolean {
+    const firstSegment = value.split('/')[0];
+    return firstSegment.includes('.');
+}
+
 export function cleanJamedaDoctorUrl(value: unknown, field = 'doctorUrl'): string {
     if (typeof value !== 'string') {
         throw new Error(`${field} must be a string`);
@@ -41,6 +46,8 @@ export function cleanJamedaDoctorUrl(value: unknown, field = 'doctorUrl'): strin
     try {
         if (/^https?:\/\//i.test(rawValue)) {
             url = new URL(rawValue);
+        } else if (looksLikeHostStyleUrl(rawValue)) {
+            url = new URL(`https://${rawValue}`);
         } else {
             const path = rawValue.startsWith('/') ? rawValue : `/${rawValue}`;
             url = new URL(path, JAMEDA_BASE_URL);

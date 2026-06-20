@@ -51,6 +51,7 @@ test('pushes paid-mode items with doctor profile result charge event', async () 
     assert.deepEqual(result, { savedCount: 2, statusMessage: null });
     assert.equal(dataset.calls.length, 1);
     assert.equal(dataset.calls[0].eventName, DOCTOR_PROFILE_RESULT_CHARGE_EVENT);
+    assert.deepEqual(dataset.calls[0].items, items);
 });
 
 test('reports partial save when charge limit is reached', async () => {

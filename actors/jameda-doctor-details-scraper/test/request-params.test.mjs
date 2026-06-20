@@ -70,6 +70,23 @@ test('normalizes encoded paths and http URLs', () => {
     );
 });
 
+test('normalizes host-style Jameda URLs without treating them as profile paths', () => {
+    assert.equal(
+        cleanJamedaDoctorUrl('www.jameda.de/markus-lietzau-msc/zahnarzt/berlin'),
+        markusUrl,
+    );
+
+    assert.equal(
+        cleanJamedaDoctorUrl('jameda.de/markus-lietzau-msc/zahnarzt/berlin'),
+        markusUrl,
+    );
+
+    assert.throws(
+        () => cleanJamedaDoctorUrl('example.com/markus-lietzau-msc/zahnarzt/berlin'),
+        /jameda.de domain/,
+    );
+});
+
 test('collects invalid URL entries when valid entries are present', () => {
     const plan = buildJamedaDoctorDetailsPlan({
         doctorUrls: [

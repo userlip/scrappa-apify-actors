@@ -121,20 +121,66 @@ function buildFullAddress(address: JamedaDoctorProfile['address']): string | nul
     );
 }
 
-function toNumber(value: unknown): number | null {
+function extractNumericString(value: unknown): string | null {
     if (typeof value === 'number' && Number.isFinite(value)) {
-        return value;
+        return String(value);
     }
 
     if (typeof value !== 'string') {
         return null;
     }
 
-    const normalized = value.replace(',', '.').replace(/[^\d.-]/g, '');
+    const numericMatch = value.match(/-?\d[\d.,]*/);
+    return numericMatch?.[0] ?? null;
+}
+
+function toDecimalNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    const numericValue = extractNumericString(value);
+    if (!numericValue) {
+        return null;
+    }
+
+    const hasComma = numericValue.includes(',');
+    const hasDot = numericValue.includes('.');
+    let normalized: string;
+
+    if (hasComma && hasDot) {
+        const lastComma = numericValue.lastIndexOf(',');
+        const lastDot = numericValue.lastIndexOf('.');
+        normalized = lastComma > lastDot
+            ? numericValue.replace(/\./g, '').replace(',', '.')
+            : numericValue.replace(/,/g, '');
+    } else if (hasComma) {
+        normalized = numericValue.replace(',', '.');
+    } else {
+        normalized = numericValue;
+    }
+
     if (normalized === '') {
         return null;
     }
 
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toCountNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    const numericValue = extractNumericString(value);
+    if (!numericValue) {
+        return null;
+    }
+
+    const normalized = /^[\d.,]+$/.test(numericValue) && /[.,]\d{3}(?:[.,]\d{3})*$/.test(numericValue)
+        ? numericValue.replace(/[.,]/g, '')
+        : numericValue.replace(',', '.');
     const parsed = Number(normalized);
     return Number.isFinite(parsed) ? parsed : null;
 }
@@ -169,17 +215,17 @@ export function buildJamedaDoctorDetailsDatasetItem(
         specialty: firstNonEmptyString(basicInfo.specialty, basicInfo.specializations, profile.specialty),
         description: profile.description ?? null,
         rating: rating.rating ?? rating.score ?? rating.overall_score ?? null,
-        rating_number: toNumber(rating.rating ?? rating.score ?? rating.overall_score),
+        rating_number: toDecimalNumber(rating.rating ?? rating.score ?? rating.overall_score),
         review_count: rating.count ?? rating.review_count ?? null,
-        review_count_number: toNumber(rating.count ?? rating.review_count),
+        review_count_number: toCountNumber(rating.count ?? rating.review_count),
         clinic_name: firstNonEmptyString(clinic.name),
         phone: firstNonEmptyString(contact.phone),
         website_url: withProtocol(contact.website),
         address: buildFullAddress(profile.address),
         city: typeof profile.address === 'object' && profile.address !== null ? profile.address.city ?? null : null,
         postal_code: typeof profile.address === 'object' && profile.address !== null ? profile.address.postal_code ?? profile.address.zip ?? null : null,
-        latitude: toNumber(coordinates.latitude ?? coordinates.lat),
-        longitude: toNumber(coordinates.longitude ?? coordinates.lng),
+        latitude: toDecimalNumber(coordinates.latitude ?? coordinates.lat),
+        longitude: toDecimalNumber(coordinates.longitude ?? coordinates.lng),
         image_url: withProtocol(basicInfo.image_url),
         services_count: countItems(profile.services),
         focus_areas_count: countItems(profile.focus_areas ?? profile.specialization_focus),
