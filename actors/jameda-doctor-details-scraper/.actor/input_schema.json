@@ -1,0 +1,33 @@
+{
+  "title": "Jameda Doctor Details Scraper",
+  "description": "Extract complete Jameda doctor profile details for one or more doctor URLs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "doctorUrls": {
+      "title": "Doctor URLs",
+      "type": "array",
+      "description": "Recommended. Process many Jameda doctor profile URLs in one Apify run. Each successful doctor URL produces one dataset item.",
+      "editor": "stringList",
+      "maxItems": 100,
+      "prefill": [
+        "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
+        "/markus-lietzau-msc/zahnarzt/berlin"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 500
+      }
+    },
+    "doctorUrl": {
+      "title": "Legacy Doctor URL",
+      "type": "string",
+      "description": "Backward-compatible single Jameda doctor profile URL or path. Prefer Doctor URLs for normal usage, especially when enriching more than one profile.",
+      "editor": "textfield",
+      "minLength": 3,
+      "maxLength": 500,
+      "prefill": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin"
+    }
+  }
+}

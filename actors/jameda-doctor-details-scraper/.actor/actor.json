@@ -1,0 +1,68 @@
+{
+  "actorSpecification": 1,
+  "name": "jameda-doctor-details-scraper",
+  "title": "Jameda Doctor Details Scraper",
+  "description": "Enrich one or more Jameda doctor profile URLs with complete profile details, ratings, clinic, contact, address, coordinates, opening hours, services, accepted patients, focus areas, conditions, languages, and booking IDs.",
+  "categories": [
+    "MARKETING",
+    "LEAD_GENERATION",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "doctor_profiles": {
+          "title": "Jameda Doctor Profiles",
+          "transformation": {
+            "fields": ["doctor_name", "title", "specialty", "rating", "rating_number", "review_count", "review_count_number", "clinic_name", "phone", "website_url", "address", "city", "postal_code", "latitude", "longitude", "services_count", "focus_areas_count", "conditions_count", "languages_count", "doctor_url", "requested_doctor_url", "response_source", "scraped_at"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "doctor_name": { "label": "Doctor", "format": "text" },
+              "title": { "label": "Title", "format": "text" },
+              "specialty": { "label": "Specialty", "format": "text" },
+              "rating": { "label": "Rating", "format": "text" },
+              "rating_number": { "label": "Rating Number", "format": "number" },
+              "review_count": { "label": "Reviews", "format": "text" },
+              "review_count_number": { "label": "Review Count", "format": "number" },
+              "clinic_name": { "label": "Clinic", "format": "text" },
+              "phone": { "label": "Phone", "format": "text" },
+              "website_url": { "label": "Website", "format": "link" },
+              "address": { "label": "Address", "format": "text" },
+              "city": { "label": "City", "format": "text" },
+              "postal_code": { "label": "Postal Code", "format": "text" },
+              "latitude": { "label": "Latitude", "format": "number" },
+              "longitude": { "label": "Longitude", "format": "number" },
+              "services_count": { "label": "Services", "format": "number" },
+              "focus_areas_count": { "label": "Focus Areas", "format": "number" },
+              "conditions_count": { "label": "Conditions", "format": "number" },
+              "languages_count": { "label": "Languages", "format": "number" },
+              "doctor_url": { "label": "Jameda Profile", "format": "link" },
+              "requested_doctor_url": { "label": "Requested URL", "format": "link" },
+              "response_source": { "label": "Source", "format": "text" },
+              "scraped_at": { "label": "Scraped At", "format": "date" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
