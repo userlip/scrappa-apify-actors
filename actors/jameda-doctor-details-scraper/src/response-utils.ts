@@ -155,7 +155,11 @@ function toDecimalNumber(value: unknown): number | null {
             ? numericValue.replace(/\./g, '').replace(',', '.')
             : numericValue.replace(/,/g, '');
     } else if (hasComma) {
-        normalized = numericValue.replace(',', '.');
+        normalized = /^\d{1,3}(?:,\d{3})+$/.test(numericValue)
+            ? numericValue.replace(/,/g, '')
+            : numericValue.replace(',', '.');
+    } else if (/^\d{1,3}(?:\.\d{3}){2,}$/.test(numericValue)) {
+        normalized = numericValue.replace(/\./g, '');
     } else {
         normalized = numericValue;
     }

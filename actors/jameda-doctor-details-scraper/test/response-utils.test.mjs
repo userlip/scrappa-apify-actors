@@ -175,6 +175,29 @@ test('normalizes count separators without treating decimal coordinates as thousa
     assert.equal(item.longitude, 13.405);
 });
 
+test('normalizes multi-group decimal strings without returning null', () => {
+    const item = buildJamedaDoctorDetailsDatasetItem(
+        {
+            rating: {
+                rating: '1,234,567',
+                score: null,
+            },
+            coordinates: {
+                latitude: '1.234.567',
+            },
+        },
+        {
+            doctorUrl,
+            params: {
+                doctor_url: doctorUrl,
+            },
+        },
+    );
+
+    assert.equal(item.rating_number, 1234567);
+    assert.equal(item.latitude, 1234567);
+});
+
 test('unwraps live Scrappa response shape', () => {
     const response = {
         success: true,
