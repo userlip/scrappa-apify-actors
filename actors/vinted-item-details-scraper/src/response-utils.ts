@@ -56,6 +56,41 @@ type SellerValue = {
     [key: string]: unknown;
 };
 
+const ITEM_DETAIL_FIELDS = [
+    'id',
+    'title',
+    'description',
+    'price',
+    'total_item_price',
+    'shipping_price',
+    'service_fee',
+    'brand',
+    'brand_title',
+    'category',
+    'size',
+    'size_title',
+    'color',
+    'color_title',
+    'condition',
+    'condition_title',
+    'status',
+    'status_title',
+    'url',
+    'path',
+    'image_url',
+    'photo_url',
+    'photo',
+    'photos',
+    'seller',
+    'user',
+    'favourite_count',
+    'favorites_count',
+    'view_count',
+    'availability',
+    'created_at',
+    'updated_at',
+] as const;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -65,8 +100,15 @@ function isVintedItemDetails(value: unknown): value is VintedItemDetails {
         return false;
     }
 
-    return ['id', 'title', 'url', 'description', 'price', 'image_url', 'photo', 'photos']
-        .some((key) => value[key] !== undefined && value[key] !== null);
+    return ITEM_DETAIL_FIELDS.some((key) => value[key] !== undefined && value[key] !== null);
+}
+
+function scrappaFailureMessage(response: VintedItemDetailsResponse): string {
+    if (typeof response.message === 'string' && response.message.trim() !== '') {
+        return response.message.trim();
+    }
+
+    return 'Scrappa response reported failure';
 }
 
 function label(value: unknown): string | null {
@@ -123,6 +165,10 @@ function firstPhotoUrl(item: VintedItemDetails): string | null {
 }
 
 export function getVintedItemDetails(response: VintedItemDetailsResponse): VintedItemDetails {
+    if (response.success === false) {
+        throw new Error(scrappaFailureMessage(response));
+    }
+
     if (isVintedItemDetails(response.item)) {
         return response.item;
     }

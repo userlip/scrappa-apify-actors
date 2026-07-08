@@ -25,15 +25,33 @@ test('extracts details from common Scrappa response shapes', () => {
     assert.deepEqual(getVintedItemDetails({ item: { title: 'Item C' } }), { title: 'Item C' });
 });
 
+test('rejects failed Scrappa envelopes before item extraction', () => {
+    assert.throws(
+        () => getVintedItemDetails({ success: false, data: { item: { id: 123 } }, message: 'Item not found' }),
+        /Item not found/,
+    );
+    assert.throws(
+        () => getVintedItemDetails({ success: false, data: { item: { id: 123 } } }),
+        /Scrappa response reported failure/,
+    );
+});
+
 test('rejects successful envelopes that do not include item details', () => {
     assert.throws(
-        () => getVintedItemDetails({ success: false, data: {}, message: 'Item not found' }),
+        () => getVintedItemDetails({ success: true, data: {} }),
         /Scrappa response did not include Vinted item details/,
     );
     assert.throws(
         () => getVintedItemDetails({ success: true, data: { item: {} } }),
         /Scrappa response did not include Vinted item details/,
     );
+});
+
+test('accepts sparse item details using supported output fields', () => {
+    assert.deepEqual(getVintedItemDetails({ data: { item: { path: '/items/123' } } }), { path: '/items/123' });
+    assert.deepEqual(getVintedItemDetails({ data: { item: { brand_title: 'Nike' } } }), { brand_title: 'Nike' });
+    assert.deepEqual(getVintedItemDetails({ data: { item: { availability: 'InStock' } } }), { availability: 'InStock' });
+    assert.deepEqual(getVintedItemDetails({ data: { item: { user: { login: 'seller123' } } } }), { user: { login: 'seller123' } });
 });
 
 test('builds normalized Vinted item details dataset item', () => {
