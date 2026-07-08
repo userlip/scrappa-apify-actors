@@ -1,0 +1,60 @@
+{
+  "actorSpecification": 1,
+  "name": "kununu-jobs-scraper",
+  "title": "Kununu Jobs Scraper ($0.30/1k results)",
+  "description": "Search Kununu job listings across Germany, Austria, and Switzerland by query, location, company score, workplace model, benefits, and Top Company status.",
+  "categories": [
+    "LEAD_GENERATION",
+    "MARKETING",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "jobs": {
+          "title": "Kununu Jobs",
+          "transformation": {
+            "fields": ["title", "company_name", "company_score", "company_is_top_company", "location_formatted", "workplace", "workplace_model", "employment_type", "employment_types", "career_level", "benefits", "salary", "date_posted", "posted_at", "job_url"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": { "label": "Title", "format": "text" },
+              "company_name": { "label": "Company", "format": "text" },
+              "company_score": { "label": "Company Score", "format": "number" },
+              "company_is_top_company": { "label": "Top Company", "format": "boolean" },
+              "location_formatted": { "label": "Location", "format": "text" },
+              "workplace": { "label": "Workplace", "format": "text" },
+              "workplace_model": { "label": "Workplace Model", "format": "text" },
+              "employment_type": { "label": "Employment Type", "format": "text" },
+              "employment_types": { "label": "Employment Types", "format": "array" },
+              "career_level": { "label": "Career Level", "format": "text" },
+              "benefits": { "label": "Benefits", "format": "array" },
+              "salary": { "label": "Salary", "format": "object" },
+              "date_posted": { "label": "Date Posted", "format": "text" },
+              "posted_at": { "label": "Posted At", "format": "text" },
+              "job_url": { "label": "Job URL", "format": "link" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
