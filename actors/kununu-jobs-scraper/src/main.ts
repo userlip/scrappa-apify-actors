@@ -80,8 +80,10 @@ try {
                 console.warn(`Saved ${datasetJobs.length} Kununu job result(s) on page ${page}, but no ${KUNUNU_JOB_RESULT_CHARGE_EVENT} events were charged. Check actor pricing if this was a paid run.`);
             }
 
-            if (chargeResult.eventChargeLimitReached && pageSavedJobs < datasetJobs.length) {
-                const statusMessage = `Charge limit reached after saving ${pageSavedJobs} of ${datasetJobs.length} Kununu job result(s) on page ${page}.`;
+            if (chargeResult.eventChargeLimitReached) {
+                const statusMessage = pageSavedJobs < datasetJobs.length
+                    ? `Charge limit reached after saving ${pageSavedJobs} of ${datasetJobs.length} Kununu job result(s) on page ${page}.`
+                    : `Charge limit reached after saving all ${pageSavedJobs} Kununu job result(s) on page ${page}.`;
                 console.log(statusMessage, JSON.stringify({
                     event: KUNUNU_JOB_RESULT_CHARGE_EVENT,
                     charged_count: chargeResult.chargedCount,
