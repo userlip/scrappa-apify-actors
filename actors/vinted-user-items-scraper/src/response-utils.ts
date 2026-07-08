@@ -188,7 +188,6 @@ export function buildVintedDatasetItem(
         seller_feedback_count: seller.feedback_count ?? null,
         seller_feedback_reputation: seller.feedback_reputation ?? null,
         input_user_id: params.user_id ?? null,
-        request_user_id: params.user_id ?? null,
         request_country: params.country ?? null,
         request_page: params.page ?? null,
         request_per_page: params.per_page ?? null,

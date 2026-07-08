@@ -29,6 +29,7 @@ async function main(): Promise<void> {
         const summary = await runVintedUserItems({
             client,
             dataset: {
+                // Apify types do not expose pay-per-event charge metadata, but runtime returns it.
                 pushData: (items, eventName) => eventName === undefined
                     ? Actor.pushData(items)
                     : Actor.pushData(items, eventName),

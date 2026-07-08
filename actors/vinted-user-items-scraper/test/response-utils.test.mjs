@@ -74,7 +74,7 @@ test('builds normalized Vinted dataset item', () => {
     assert.equal(item.image_url, 'https://images1.vinted.net/example.jpg');
     assert.equal(item.seller_login, 'seller123');
     assert.equal(item.input_user_id, '98765432');
-    assert.equal(item.request_user_id, '98765432');
+    assert.equal(Object.hasOwn(item, 'request_user_id'), false);
     assert.equal(item.request_country, 'DE');
     assert.equal(item.request_page, 2);
     assert.equal(item.request_per_page, 50);

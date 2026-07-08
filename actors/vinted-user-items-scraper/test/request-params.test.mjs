@@ -18,6 +18,7 @@ test('builds a Vinted user-items plan from a single user_id', () => {
         baseParams: {
             country: 'FR',
             per_page: 24,
+            order: 'newest_first',
         },
         userIds: ['12345678'],
         startPage: 1,
@@ -27,6 +28,7 @@ test('builds a Vinted user-items plan from a single user_id', () => {
     assert.deepEqual(buildUserPageParams(plan, '12345678', 1), {
         country: 'FR',
         per_page: 24,
+        order: 'newest_first',
         user_id: '12345678',
         page: 1,
     });

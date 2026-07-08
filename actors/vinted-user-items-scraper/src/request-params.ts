@@ -21,6 +21,7 @@ const VALID_ORDERS = ['newest_first', 'price_low_to_high', 'price_high_to_low', 
 const MAX_PAGE = 999;
 const DEFAULT_PER_PAGE = 24;
 const DEFAULT_MAX_PAGES = 1;
+const DEFAULT_ORDER = 'newest_first';
 const MAX_PAGES_PER_USER = 20;
 const MAX_USER_IDS_PER_RUN = 100;
 
@@ -79,11 +80,8 @@ function cleanCountry(value: unknown): string {
     return normalized;
 }
 
-function cleanOrder(value: unknown): string | undefined {
-    const order = cleanString(value, 'order', 30);
-    if (order === undefined) {
-        return undefined;
-    }
+function cleanOrder(value: unknown): string {
+    const order = cleanString(value, 'order', 30) ?? DEFAULT_ORDER;
 
     if (!VALID_ORDERS.includes(order as typeof VALID_ORDERS[number])) {
         throw new Error(`order must be one of: ${VALID_ORDERS.join(', ')}`);
@@ -137,10 +135,7 @@ export function buildVintedUserItemsPlan(input: VintedUserItemsInput): VintedUse
         per_page: cleanInteger(input.per_page, 'per_page', 1, 100) ?? DEFAULT_PER_PAGE,
     };
 
-    const order = cleanOrder(input.order);
-    if (order !== undefined) {
-        baseParams.order = order;
-    }
+    baseParams.order = cleanOrder(input.order);
 
     const startPage = cleanInteger(input.page, 'page', 1, MAX_PAGE) ?? 1;
     const maxPages = cleanInteger(input.max_pages, 'max_pages', 1, MAX_PAGES_PER_USER) ?? DEFAULT_MAX_PAGES;

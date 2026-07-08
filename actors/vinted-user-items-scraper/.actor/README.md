@@ -25,7 +25,7 @@ This actor is intended for paid pay-per-result pricing with the `user-item-resul
 | `max_pages` | integer | No | Number of pages to fetch per seller, 1-20. Default `1` |
 | `order` | string | No | `newest_first`, `price_low_to_high`, `price_high_to_low`, or `relevance` |
 
-Provide at least one seller ID through `user_id` or `user_ids`. The actor deduplicates IDs before fetching.
+Provide at least one seller ID through `user_id` or `user_ids`. The actor deduplicates IDs before fetching. The requested page range must stay within Vinted pages 1-999, so `page + max_pages - 1` cannot exceed 999.
 
 ## Example Input
 
@@ -61,7 +61,9 @@ Each listing is saved as one dataset item:
   "view_count": 234,
   "input_user_id": "12345678",
   "request_country": "DE",
-  "request_page": 1
+  "request_page": 1,
+  "request_per_page": 50,
+  "request_order": "newest_first"
 }
 ```
 

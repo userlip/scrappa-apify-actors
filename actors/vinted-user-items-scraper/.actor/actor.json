@@ -26,7 +26,7 @@
         "items": {
           "title": "Vinted Seller Listings",
           "transformation": {
-            "fields": ["id", "title", "price_amount", "price_currency", "total_item_price", "shipping_price", "brand_name", "category_name", "size_name", "condition", "url", "image_url", "seller_id", "seller_login", "favourite_count", "view_count", "input_user_id", "request_country", "request_page", "request_order", "total_entries", "total_pages"]
+            "fields": ["id", "title", "price_amount", "price_currency", "total_item_price", "total_item_price_currency", "shipping_price", "shipping_price_currency", "brand_name", "category_name", "size_name", "condition", "url", "image_url", "seller_id", "seller_login", "favourite_count", "view_count", "input_user_id", "request_country", "request_page", "request_per_page", "request_order", "total_entries", "total_pages"]
           },
           "display": {
             "component": "table",
@@ -36,7 +36,9 @@
               "price_amount": { "label": "Price", "format": "text" },
               "price_currency": { "label": "Currency", "format": "text" },
               "total_item_price": { "label": "Total Price", "format": "text" },
+              "total_item_price_currency": { "label": "Total Currency", "format": "text" },
               "shipping_price": { "label": "Shipping", "format": "text" },
+              "shipping_price_currency": { "label": "Shipping Currency", "format": "text" },
               "brand_name": { "label": "Brand", "format": "text" },
               "category_name": { "label": "Category", "format": "text" },
               "size_name": { "label": "Size", "format": "text" },
@@ -50,6 +52,7 @@
               "input_user_id": { "label": "Input User ID", "format": "text" },
               "request_country": { "label": "Country", "format": "text" },
               "request_page": { "label": "Page", "format": "number" },
+              "request_per_page": { "label": "Per Page", "format": "number" },
               "request_order": { "label": "Sort", "format": "text" },
               "total_entries": { "label": "Total Listings", "format": "number" },
               "total_pages": { "label": "Total Pages", "format": "number" }
