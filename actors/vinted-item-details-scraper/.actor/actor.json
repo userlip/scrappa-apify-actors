@@ -1,0 +1,62 @@
+{
+  "actorSpecification": 1,
+  "name": "vinted-item-details-scraper",
+  "title": "Vinted Item Details Scraper",
+  "description": "Enrich Vinted item IDs with full listing details including description, price, photos, seller, category, condition, favorites, views, and availability. Built as a thin Scrappa-powered companion to Vinted Search.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 256
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 420
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "items": {
+          "title": "Vinted Item Details",
+          "transformation": {
+            "fields": ["id", "title", "price_amount", "price_currency", "total_item_price", "shipping_price", "brand_name", "category_name", "size_name", "condition", "availability", "url", "image_url", "seller_login", "seller_feedback_reputation", "favourite_count", "view_count", "request_item_id", "request_country", "request_index", "request_success", "error_message"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": { "label": "Item ID", "format": "text" },
+              "title": { "label": "Title", "format": "text" },
+              "price_amount": { "label": "Price", "format": "text" },
+              "price_currency": { "label": "Currency", "format": "text" },
+              "total_item_price": { "label": "Total Price", "format": "text" },
+              "shipping_price": { "label": "Shipping", "format": "text" },
+              "brand_name": { "label": "Brand", "format": "text" },
+              "category_name": { "label": "Category", "format": "text" },
+              "size_name": { "label": "Size", "format": "text" },
+              "condition": { "label": "Condition", "format": "text" },
+              "availability": { "label": "Availability", "format": "text" },
+              "url": { "label": "Listing URL", "format": "link" },
+              "image_url": { "label": "Image", "format": "image" },
+              "seller_login": { "label": "Seller", "format": "text" },
+              "seller_feedback_reputation": { "label": "Seller Rating", "format": "number" },
+              "favourite_count": { "label": "Favorites", "format": "number" },
+              "view_count": { "label": "Views", "format": "number" },
+              "request_item_id": { "label": "Requested ID", "format": "text" },
+              "request_country": { "label": "Country", "format": "text" },
+              "request_index": { "label": "Request Index", "format": "number" },
+              "request_success": { "label": "Success", "format": "boolean" },
+              "error_message": { "label": "Error", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
