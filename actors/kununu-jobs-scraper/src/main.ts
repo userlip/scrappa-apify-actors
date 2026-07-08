@@ -20,6 +20,12 @@ const KUNUNU_JOB_RESULT_CHARGE_EVENT = 'kununu-job-result';
 
 await Actor.init();
 
+interface PageSummary {
+    page: number;
+    count: number;
+    pagination?: Record<string, unknown>;
+}
+
 let actorFinished = false;
 
 try {
@@ -32,17 +38,12 @@ try {
     console.log(`Searching Kununu Jobs for: ${describeKununuJobsRequest(plan.params)}`);
 
     const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-    const responses: Array<{
-        page: number;
-        count: number;
-        pagination?: Record<string, unknown>;
-        response: KununuJobsResponse;
-    }> = [];
+    const pages: PageSummary[] = [];
     let totalJobs = 0;
     let savedJobs = 0;
     let firstJobSummary: Record<string, unknown> | null = null;
+    let exitStatusMessage: string | null = null;
 
-    searchPages:
     for (let offset = 0; offset < plan.maxPages; offset++) {
         const page = plan.startPage + offset;
         const params = { ...plan.params, page };
@@ -57,7 +58,7 @@ try {
         const pagination = getKununuPagination(response);
         const datasetJobs = jobs.map((job) => toKununuDatasetJob(job, { includeRawJob: plan.includeRawJob }));
 
-        responses.push({ page, count: jobs.length, pagination, response });
+        pages.push({ page, count: jobs.length, pagination });
         totalJobs += jobs.length;
 
         if (!firstJobSummary && jobs[0]) {
@@ -87,9 +88,9 @@ try {
                     requested_count: datasetJobs.length,
                     page,
                 }));
-                await Actor.exit({ statusMessage });
                 actorFinished = true;
-                break searchPages;
+                exitStatusMessage = statusMessage;
+                break;
             }
 
             console.log(`Found ${datasetJobs.length} Kununu job result(s) on page ${page}`);
@@ -105,6 +106,10 @@ try {
         }
     }
 
+    if (exitStatusMessage) {
+        await Actor.exit({ statusMessage: exitStatusMessage });
+    }
+
     if (!actorFinished) {
         const store = await Actor.openKeyValueStore();
         await store.setValue('OUTPUT', {
@@ -113,10 +118,10 @@ try {
                 start_page: plan.startPage,
                 max_pages: plan.maxPages,
             },
-            pages_fetched: responses.length,
+            pages_fetched: pages.length,
             jobs_extracted: totalJobs,
             jobs_saved: savedJobs,
-            responses,
+            pages,
         });
 
         console.log('Kununu Jobs search completed successfully');
@@ -124,7 +129,7 @@ try {
         const summary = {
             jobs: totalJobs,
             saved_jobs: savedJobs,
-            pages_fetched: responses.length,
+            pages_fetched: pages.length,
             start_page: plan.startPage,
             first_job: firstJobSummary,
         };

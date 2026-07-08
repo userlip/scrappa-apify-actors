@@ -147,7 +147,8 @@ export function toKununuDatasetJob(job: KununuJob, options: { includeRawJob?: bo
     const jobUrl = getJobUrl(job);
     const datePosted = getString(job.date_posted ?? job.posted_at ?? job.postedAt) ?? null;
     const datasetJob: KununuDatasetJob = {
-        ...job,
+        ...(options.includeRawJob ? {} : job),
+        title: job.title ?? null,
         job_id: job.id ?? job.uuid ?? null,
         job_url: jobUrl ?? null,
         company: job.company ?? null,

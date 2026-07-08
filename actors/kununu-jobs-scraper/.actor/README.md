@@ -88,4 +88,4 @@ Each dataset item is one Kununu job listing. The actor preserves Scrappa job fie
 }
 ```
 
-The key-value store `OUTPUT` record contains the request, page count, saved job count, and per-page Scrappa responses including pagination and metadata when provided.
+The key-value store `OUTPUT` record contains the request, page count, saved job count, and compact per-page metadata including pagination when Scrappa provides it.

@@ -64,7 +64,7 @@ test('formats Kununu locations for table summaries', () => {
     assert.equal(getFormattedLocation(null), undefined);
 });
 
-test('adds table-friendly dataset aliases while preserving raw job fields', () => {
+test('adds table-friendly dataset aliases and optional raw job payload', () => {
     const job = {
         id: 'job-1',
         title: 'Software Engineer',
@@ -80,9 +80,16 @@ test('adds table-friendly dataset aliases while preserving raw job fields', () =
     };
 
     assert.deepEqual(toKununuDatasetJob(job, { includeRawJob: true }), {
-        ...job,
+        title: 'Software Engineer',
         job_id: 'job-1',
         job_url: 'https://www.kununu.com/de/example/jobs/job-1',
+        company: {
+            name: 'Example GmbH',
+            slug: 'example',
+            url: 'https://www.kununu.com/de/example',
+            kununu_score: 4.4,
+            is_top_company: true,
+        },
         company_name: 'Example GmbH',
         company_slug: 'example',
         company_url: 'https://www.kununu.com/de/example',
