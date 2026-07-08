@@ -1,0 +1,72 @@
+{
+  "title": "Vinted User Items Scraper",
+  "description": "Fetch current listings from one or more Vinted seller user IDs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "user_id": {
+      "title": "Seller User ID",
+      "type": "string",
+      "description": "Single Vinted seller user ID. Use User IDs for batches.",
+      "editor": "textfield",
+      "pattern": "^\\d*$",
+      "prefill": "12345678"
+    },
+    "user_ids": {
+      "title": "Seller User IDs",
+      "type": "array",
+      "description": "Batch of Vinted seller user IDs. Up to 100 unique IDs per run.",
+      "editor": "stringList",
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "pattern": "^\\d+$"
+      }
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Vinted country market.",
+      "editor": "select",
+      "enum": ["FR", "DE", "ES", "IT", "NL", "BE", "AT", "PL", "CZ", "LT", "LU", "SK", "HU", "RO", "PT", "SE", "DK", "FI", "US"],
+      "enumTitles": ["France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Austria", "Poland", "Czech Republic", "Lithuania", "Luxembourg", "Slovakia", "Hungary", "Romania", "Portugal", "Sweden", "Denmark", "Finland", "United States"],
+      "default": "FR"
+    },
+    "page": {
+      "title": "Start Page",
+      "type": "integer",
+      "description": "One-based Vinted seller inventory page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 999,
+      "default": 1
+    },
+    "per_page": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "description": "Number of listings to request per page. Scrappa allows up to 100.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 24
+    },
+    "max_pages": {
+      "title": "Maximum Pages Per Seller",
+      "type": "integer",
+      "description": "Number of inventory pages to fetch for each seller, starting from Start Page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 1
+    },
+    "order": {
+      "title": "Sort Order",
+      "type": "string",
+      "description": "Vinted seller inventory sort order.",
+      "editor": "select",
+      "enum": ["newest_first", "price_low_to_high", "price_high_to_low", "relevance"],
+      "enumTitles": ["Newest First", "Price Low to High", "Price High to Low", "Relevance"],
+      "default": "newest_first"
+    }
+  }
+}
