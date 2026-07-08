@@ -5,9 +5,16 @@ const scrappaClientModule = process.env.TEST_SOURCE === 'src'
     ? '../src/shared/scrappa-client.ts'
     : '../dist/shared/scrappa-client.js';
 const {
+    getRetryDelayMs,
     isRetryableScrappaError,
     ScrappaTimeoutError,
 } = await import(scrappaClientModule);
+
+test('starts exponential retry delays at the first failed attempt', () => {
+    assert.equal(getRetryDelayMs(0, 0), 1000);
+    assert.equal(getRetryDelayMs(1, 0), 2000);
+    assert.equal(getRetryDelayMs(20, 0), 10000);
+});
 
 test('retries timeout, transient API, and fetch transport errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);

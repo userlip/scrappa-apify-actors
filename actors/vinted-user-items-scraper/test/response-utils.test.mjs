@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const responseUtilsModule = process.env.TEST_SOURCE === 'src'
@@ -9,6 +10,37 @@ const {
     getVintedItems,
     getVintedPagination,
 } = await import(responseUtilsModule);
+
+const COMMON_VINTED_NORMALIZED_FIELDS = [
+    'id',
+    'title',
+    'description',
+    'url',
+    'path',
+    'image_url',
+    'price_amount',
+    'price_currency',
+    'total_item_price',
+    'total_item_price_currency',
+    'shipping_price',
+    'shipping_price_currency',
+    'service_fee',
+    'service_fee_currency',
+    'brand_name',
+    'category_name',
+    'size_name',
+    'color_name',
+    'condition',
+    'availability',
+    'favourite_count',
+    'view_count',
+    'seller_id',
+    'seller_login',
+    'seller_feedback_count',
+    'seller_feedback_reputation',
+    'total_pages',
+    'total_entries',
+];
 
 test('extracts listings from primary and wrapped response shapes', () => {
     assert.deepEqual(getVintedItems({ items: [{ title: 'Item A' }] }), [{ title: 'Item A' }]);
@@ -81,4 +113,17 @@ test('builds normalized Vinted dataset item', () => {
     assert.equal(item.request_order, 'newest_first');
     assert.equal(item.total_pages, 20);
     assert.equal(item.total_entries, 980);
+});
+
+test('keeps common Vinted normalized fields aligned with search scraper', async () => {
+    const searchSource = await readFile(
+        new URL('../../vinted-search-scraper/src/response-utils.ts', import.meta.url),
+        'utf8',
+    );
+    const userItemsSource = await readFile(new URL('../src/response-utils.ts', import.meta.url), 'utf8');
+
+    for (const field of COMMON_VINTED_NORMALIZED_FIELDS) {
+        assert.match(searchSource, new RegExp(`\\b${field}:`), `${field} missing from Vinted Search normalizer`);
+        assert.match(userItemsSource, new RegExp(`\\b${field}:`), `${field} missing from Vinted User Items normalizer`);
+    }
 });
