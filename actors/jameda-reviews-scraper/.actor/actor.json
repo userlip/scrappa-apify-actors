@@ -1,0 +1,65 @@
+{
+  "actorSpecification": 1,
+  "name": "jameda-reviews-scraper",
+  "title": "Jameda Reviews Scraper",
+  "description": "Extract public Jameda doctor reviews for reputation monitoring, medical provider benchmarking, local SEO research, and patient sentiment workflows.",
+  "categories": [
+    "MARKETING",
+    "LEAD_GENERATION",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "reviews": {
+          "title": "Jameda Reviews",
+          "transformation": {
+            "fields": ["review_id", "rating", "rating_number", "date", "date_formatted", "verification_badge", "review_text", "doctor_name", "doctor_specializations", "doctor_overall_rating", "input_doctor_url", "normalized_doctor_url", "request_page", "request_sort", "request_rating", "request_per_page", "total_reviews", "total_pages", "has_next_page", "response_source"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "review_id": { "label": "Review ID", "format": "text" },
+              "rating": { "label": "Rating", "format": "text" },
+              "rating_number": { "label": "Rating Number", "format": "number" },
+              "date": { "label": "Date", "format": "date" },
+              "date_formatted": { "label": "Date Text", "format": "text" },
+              "verification_badge": { "label": "Verified", "format": "text" },
+              "review_text": { "label": "Review", "format": "text" },
+              "doctor_name": { "label": "Doctor", "format": "text" },
+              "doctor_specializations": { "label": "Specialization", "format": "text" },
+              "doctor_overall_rating": { "label": "Doctor Rating", "format": "text" },
+              "input_doctor_url": { "label": "Input URL", "format": "link" },
+              "normalized_doctor_url": { "label": "Doctor URL", "format": "link" },
+              "request_page": { "label": "Page", "format": "number" },
+              "request_sort": { "label": "Sort", "format": "text" },
+              "request_rating": { "label": "Rating Filter", "format": "text" },
+              "request_per_page": { "label": "Per Page", "format": "number" },
+              "total_reviews": { "label": "Total Reviews", "format": "number" },
+              "total_pages": { "label": "Total Pages", "format": "number" },
+              "has_next_page": { "label": "Has Next", "format": "boolean" },
+              "response_source": { "label": "Source", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

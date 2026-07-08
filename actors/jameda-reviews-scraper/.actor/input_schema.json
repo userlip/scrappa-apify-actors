@@ -1,0 +1,67 @@
+{
+  "title": "Jameda Reviews Scraper",
+  "description": "Extract public Jameda doctor reviews for one or more doctor profile URLs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "doctor_urls": {
+      "title": "Doctor URLs",
+      "type": "array",
+      "description": "Recommended. Process many Jameda doctor profile URLs in one Apify run. Each saved review is one dataset item.",
+      "editor": "stringList",
+      "maxItems": 100,
+      "prefill": [
+        "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
+        "/markus-lietzau-msc/zahnarzt/berlin"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 700
+      }
+    },
+    "doctor_url": {
+      "title": "Legacy Doctor URL",
+      "type": "string",
+      "description": "Backward-compatible single Jameda doctor profile URL or path. Prefer Doctor URLs for normal usage, especially when monitoring reviews for more than one provider.",
+      "editor": "textfield",
+      "minLength": 3,
+      "maxLength": 700,
+      "prefill": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "One-based reviews page to fetch for each doctor URL.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 1
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "description": "Sort order applied to available reviews.",
+      "editor": "select",
+      "enum": ["newest", "oldest", "highest", "lowest"],
+      "enumTitles": ["Newest", "Oldest", "Highest rating", "Lowest rating"],
+      "default": "newest"
+    },
+    "rating": {
+      "title": "Rating Filter",
+      "type": "string",
+      "description": "Optional rating filter. Use a single value from 1 to 5 or comma-separated values such as 4,5.",
+      "editor": "textfield",
+      "prefill": "4,5"
+    },
+    "per_page": {
+      "title": "Reviews Per Page",
+      "type": "integer",
+      "description": "Number of reviews to request per doctor URL.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    }
+  }
+}
