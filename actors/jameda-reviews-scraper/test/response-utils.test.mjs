@@ -114,6 +114,18 @@ test('returns empty array for empty or malformed review payloads', () => {
     assert.deepEqual(getJamedaReviews({ success: true }), []);
 });
 
+test('throws when Scrappa reports an unsuccessful reviews response', () => {
+    assert.throws(
+        () => getJamedaReviews({ success: false, message: 'Doctor not found' }),
+        /Doctor not found/,
+    );
+
+    assert.throws(
+        () => getJamedaReviews({ success: false }),
+        /not successful/,
+    );
+});
+
 test('builds OUTPUT summary without raw uncharged responses', () => {
     const summary = buildJamedaReviewsOutputSummary({
         doctorUrls: [doctorUrl, 'https://www.jameda.de/example/aerztin/hamburg'],
@@ -130,7 +142,6 @@ test('builds OUTPUT summary without raw uncharged responses', () => {
         doctors_requested: 2,
         reviews_saved: 3,
         requests_failed: 1,
-        responses_saved: 3,
         status_message: '1 Jameda review request failed; 3 reviews saved.',
         failures: [{ doctor_url: 'https://www.jameda.de/example/aerztin/hamburg', error: '404' }],
     });

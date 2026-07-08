@@ -5,6 +5,7 @@ const scrappaClientModule = process.env.TEST_SOURCE === 'src'
     ? '../src/shared/scrappa-client.ts'
     : '../dist/shared/scrappa-client.js';
 const {
+    buildScrappaUrl,
     getRetryDelayMs,
     isRetryableScrappaError,
     ScrappaTimeoutError,
@@ -35,4 +36,15 @@ test('does not retry validation or non-transient Scrappa errors', () => {
     assert.equal(isRetryableScrappaError(new Error('market must be one of: DEU')), false);
     assert.equal(isRetryableScrappaError(new TypeError('invalid URL')), false);
     assert.equal(isRetryableScrappaError('fetch failed'), false);
+});
+
+test('joins Scrappa base URLs and endpoints without dropping path prefixes', () => {
+    assert.equal(
+        buildScrappaUrl('https://scrappa.co/api', '/jameda/reviews').toString(),
+        'https://scrappa.co/api/jameda/reviews',
+    );
+    assert.equal(
+        buildScrappaUrl('https://example.test/custom/api/', 'jameda/reviews').toString(),
+        'https://example.test/custom/api/jameda/reviews',
+    );
 });

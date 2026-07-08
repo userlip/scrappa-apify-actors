@@ -88,6 +88,18 @@ test('normalizes http, host-style, path-only, and facility URLs', () => {
     );
 });
 
+test('rejects generic Jameda listing paths that are not review profile URLs', () => {
+    assert.throws(
+        () => cleanJamedaDoctorUrl('/aerzte/berlin'),
+        /doctor profile path/,
+    );
+
+    assert.throws(
+        () => cleanJamedaDoctorUrl('/search'),
+        /doctor profile path/,
+    );
+});
+
 test('normalizes rating filters from strings and arrays', () => {
     assert.equal(cleanRatingFilter('5, 4,4'), '5,4');
     assert.equal(cleanRatingFilter([1, '2', ' 5 ']), '1,2,5');
@@ -112,7 +124,7 @@ test('collects invalid URL entries when valid entries are present', () => {
     assert.deepEqual(plan.doctorUrls, [markusUrl]);
     assert.equal(plan.inputFailures.length, 3);
     assert.match(plan.inputFailures[0].error, /jameda.de domain/);
-    assert.match(plan.inputFailures[1].error, /doctor or facility profile path/);
+    assert.match(plan.inputFailures[1].error, /doctor profile path/);
     assert.match(plan.inputFailures[2].error, /doctor_urls must be a string/);
 });
 

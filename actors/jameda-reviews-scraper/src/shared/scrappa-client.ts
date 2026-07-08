@@ -54,6 +54,13 @@ export function isRetryableScrappaError(error: unknown): boolean {
     return false;
 }
 
+export function buildScrappaUrl(baseUrl: string, endpoint: string): URL {
+    const normalizedBaseUrl = `${baseUrl.replace(/\/+$/, '')}/`;
+    const relativeEndpoint = endpoint.replace(/^\/+/, '');
+
+    return new URL(relativeEndpoint, normalizedBaseUrl);
+}
+
 export class ScrappaClient {
     private apiKey: string;
     private baseUrl: string;
@@ -95,7 +102,7 @@ export class ScrappaClient {
     }
 
     private async send<T>(endpoint: string, params: Record<string, unknown> = {}): Promise<T> {
-        const url = new URL(`${this.baseUrl}${endpoint}`);
+        const url = buildScrappaUrl(this.baseUrl, endpoint);
 
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== '') {

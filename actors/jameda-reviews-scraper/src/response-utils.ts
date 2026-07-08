@@ -11,6 +11,7 @@ export interface JamedaReview {
 
 export interface JamedaReviewsResponse {
     success?: boolean;
+    message?: string | null;
     data?: JamedaReview[];
     meta?: {
         url?: string | null;
@@ -84,6 +85,10 @@ function firstNonEmptyString(...values: unknown[]): string | null {
 }
 
 export function getJamedaReviews(response: JamedaReviewsResponse): JamedaReview[] {
+    if (response.success === false) {
+        throw new Error(response.message ?? 'Scrappa Jameda reviews request was not successful');
+    }
+
     return Array.isArray(response.data) ? response.data : [];
 }
 
@@ -134,7 +139,6 @@ export function buildJamedaReviewsOutputSummary(
         doctors_requested: context.doctorUrls.length,
         reviews_saved: context.savedReviews,
         requests_failed: context.failures.length,
-        responses_saved: context.savedReviews,
         status_message: context.statusMessage,
         failures: context.failures,
     };

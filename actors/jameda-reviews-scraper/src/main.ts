@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { pushChargedItems } from './charging.js';
+import { JAMEDA_REVIEW_RESULT_CHARGE_EVENT, pushChargedItems } from './charging.js';
 import {
     buildJamedaReviewsParams,
     buildJamedaReviewsPlan,
@@ -22,6 +22,17 @@ function formatErrorMessage(error: unknown): string {
     return error instanceof ScrappaTimeoutError
         ? `${rawMessage}. The Jameda reviews request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try fewer doctor URLs or run the request again.`
         : rawMessage;
+}
+
+function getChargeableReviewCapacity(): number {
+    const chargingManager = Actor.getChargingManager();
+    const { isPayPerEvent } = chargingManager.getPricingInfo();
+
+    if (!isPayPerEvent) {
+        return Infinity;
+    }
+
+    return chargingManager.calculateMaxEventChargeCountWithinLimit(JAMEDA_REVIEW_RESULT_CHARGE_EVENT);
 }
 
 async function main(): Promise<void> {
@@ -47,6 +58,12 @@ async function main(): Promise<void> {
         let statusMessage: string | null = null;
 
         for (const doctorUrl of plan.doctorUrls) {
+            if (getChargeableReviewCapacity() <= 0) {
+                statusMessage = `Charge limit reached before fetching Jameda reviews for ${doctorUrl}; ${savedReviews} review(s) were saved.`;
+                console.log(statusMessage);
+                break;
+            }
+
             const params = buildJamedaReviewsParams(plan, doctorUrl);
             console.log(`Fetching Jameda reviews for ${doctorUrl}`);
 
@@ -93,7 +110,6 @@ async function main(): Promise<void> {
             statusMessage,
         }));
 
-        console.log('Jameda reviews extraction completed successfully');
         console.log('Results summary:', JSON.stringify({
             doctors_requested: plan.doctorUrls.length,
             reviews_saved: savedReviews,
@@ -109,6 +125,8 @@ async function main(): Promise<void> {
             await Actor.exit({ statusMessage });
             return;
         }
+
+        console.log('Jameda reviews extraction completed successfully');
     } catch (error) {
         const message = formatErrorMessage(error);
         console.error('Actor failed: ' + message);
@@ -119,8 +137,12 @@ async function main(): Promise<void> {
     await Actor.exit();
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
     const message = error instanceof Error ? error.message : String(error);
     console.error('Actor failed: ' + message);
-    process.exitCode = 1;
+    try {
+        await Actor.fail(message);
+    } catch {
+        process.exitCode = 1;
+    }
 });

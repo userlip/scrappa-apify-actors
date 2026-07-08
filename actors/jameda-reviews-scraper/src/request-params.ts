@@ -37,9 +37,13 @@ function normalizePath(pathname: string): string {
     return normalized.startsWith('/') ? normalized : `/${normalized}`;
 }
 
-function hasJamedaProfileShape(pathname: string): boolean {
+function hasJamedaReviewProfileShape(pathname: string): boolean {
     const segments = pathname.split('/').filter(Boolean);
-    return segments.length >= 2;
+    if (segments[0] === 'gesundheitseinrichtungen') {
+        return segments.length >= 2;
+    }
+
+    return segments.length >= 3;
 }
 
 function looksLikeHostStyleUrl(value: string): boolean {
@@ -76,8 +80,8 @@ export function cleanJamedaDoctorUrl(value: unknown, field = 'doctor_url'): stri
     }
 
     const pathname = normalizePath(url.pathname);
-    if (pathname === '/' || !hasJamedaProfileShape(pathname)) {
-        throw new Error(`${field} must point to a Jameda doctor or facility profile path, for example /markus-lietzau-msc/zahnarzt/berlin`);
+    if (pathname === '/' || !hasJamedaReviewProfileShape(pathname)) {
+        throw new Error(`${field} must point to a Jameda doctor profile path like /markus-lietzau-msc/zahnarzt/berlin or a supported /gesundheitseinrichtungen facility path`);
     }
 
     return `${JAMEDA_BASE_URL}${pathname}${url.hash}`;

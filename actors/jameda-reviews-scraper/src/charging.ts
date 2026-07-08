@@ -15,6 +15,12 @@ export interface ChargedDataset {
     pushData(items: Record<string, unknown>[], eventName?: string): Promise<ChargeResult | void>;
 }
 
+function assertChargeResult(value: ChargeResult | void): asserts value is ChargeResult {
+    if (!value || typeof value.chargedCount !== 'number') {
+        throw new Error('Apify pushData did not return a chargedCount for the Jameda review charge event.');
+    }
+}
+
 export async function pushChargedItems(
     dataset: ChargedDataset,
     items: Record<string, unknown>[],
@@ -28,7 +34,9 @@ export async function pushChargedItems(
         return { savedCount: items.length, statusMessage: null };
     }
 
-    const chargeResult = await dataset.pushData(items, JAMEDA_REVIEW_RESULT_CHARGE_EVENT) as ChargeResult;
+    const chargeResult = await dataset.pushData(items, JAMEDA_REVIEW_RESULT_CHARGE_EVENT);
+    assertChargeResult(chargeResult);
+
     if (chargeResult.eventChargeLimitReached) {
         const savedCount = Math.min(chargeResult.chargedCount, items.length);
         const statusMessage = `Charge limit reached after saving ${savedCount} of ${items.length} Jameda review results.`;

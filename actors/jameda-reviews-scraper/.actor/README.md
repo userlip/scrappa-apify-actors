@@ -51,6 +51,7 @@ Each Jameda review is saved as one dataset item:
   "verification_badge": "Termin verifiziert",
   "doctor_name": "Markus Lietzau M.Sc.",
   "doctor_specializations": "Zahnarzt",
+  "doctor_overall_rating": "4",
   "input_doctor_url": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
   "normalized_doctor_url": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
   "request_page": 1,

@@ -65,3 +65,15 @@ test('reports partial save when charge limit is reached', async () => {
     assert.match(result.statusMessage, /Charge limit reached after saving 1 of 2/);
     assert.equal(dataset.calls[0].eventName, JAMEDA_REVIEW_RESULT_CHARGE_EVENT);
 });
+
+test('rejects missing paid charge result shape', async () => {
+    const dataset = makeDataset({
+        isPayPerEvent: true,
+        chargeResult: undefined,
+    });
+
+    await assert.rejects(
+        () => pushChargedItems(dataset, [{ id: 1 }]),
+        /did not return a chargedCount/,
+    );
+});
