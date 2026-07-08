@@ -48,6 +48,7 @@ async function main(): Promise<void> {
             status_message: summary.statusMessage,
         }));
 
+        // Charge-limit exits include a status message; normal successful runs exit cleanly below.
         if (summary.statusMessage) {
             await Actor.exit({ statusMessage: summary.statusMessage });
             return;

@@ -160,6 +160,7 @@ export function buildVintedDatasetItem(
             : {};
 
     return {
+        // Preserve raw Scrappa listing fields while pinning the normalized fields below.
         ...item,
         id: item.id ?? null,
         title: item.title ?? null,

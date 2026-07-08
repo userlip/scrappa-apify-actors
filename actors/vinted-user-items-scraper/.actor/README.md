@@ -68,6 +68,7 @@ Each listing is saved as one dataset item:
 ```
 
 Dataset output is the primary result channel. The actor does not write per-item key-value records.
+Rows also preserve raw Scrappa listing fields where available, while the documented fields above are normalized for stable analysis.
 
 ## Notes
 
