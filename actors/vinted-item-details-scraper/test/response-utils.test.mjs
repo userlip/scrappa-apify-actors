@@ -27,8 +27,12 @@ test('extracts details from common Scrappa response shapes', () => {
 
 test('rejects failed Scrappa envelopes before item extraction', () => {
     assert.throws(
-        () => getVintedItemDetails({ success: false, data: { item: { id: 123 } }, message: 'Item not found' }),
-        /Item not found/,
+        () => getVintedItemDetails({ success: false, data: { item: { id: 123 } }, message: 'Item not found', status_code: 404 }),
+        /Item not found \(status_code: 404\)/,
+    );
+    assert.throws(
+        () => getVintedItemDetails({ success: false, data: { message: 'Nested item failure' }, status_code: 422 }),
+        /Nested item failure \(status_code: 422\)/,
     );
     assert.throws(
         () => getVintedItemDetails({ success: false, data: { item: { id: 123 } } }),

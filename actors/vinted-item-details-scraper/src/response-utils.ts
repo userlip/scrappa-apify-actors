@@ -103,12 +103,27 @@ function isVintedItemDetails(value: unknown): value is VintedItemDetails {
     return ITEM_DETAIL_FIELDS.some((key) => value[key] !== undefined && value[key] !== null);
 }
 
-function scrappaFailureMessage(response: VintedItemDetailsResponse): string {
-    if (typeof response.message === 'string' && response.message.trim() !== '') {
-        return response.message.trim();
+function nonEmptyString(value: unknown): string | null {
+    if (typeof value !== 'string') {
+        return null;
     }
 
-    return 'Scrappa response reported failure';
+    const trimmed = value.trim();
+    return trimmed === '' ? null : trimmed;
+}
+
+function scrappaFailureMessage(response: VintedItemDetailsResponse): string {
+    const dataMessage = isRecord(response.data) ? nonEmptyString(response.data.message) : null;
+    const message = nonEmptyString(response.message) ?? dataMessage;
+    const statusCode = typeof response.status_code === 'number' || typeof response.status_code === 'string'
+        ? ` (status_code: ${response.status_code})`
+        : '';
+
+    if (message) {
+        return `${message}${statusCode}`;
+    }
+
+    return `Scrappa response reported failure${statusCode}`;
 }
 
 function label(value: unknown): string | null {
