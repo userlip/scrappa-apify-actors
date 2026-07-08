@@ -18,12 +18,11 @@ function cleanString(value: unknown, field: string, maxLength: number): string |
         return undefined;
     }
 
-    const normalized = typeof value === 'number' && Number.isInteger(value) ? String(value) : value;
-    if (typeof normalized !== 'string') {
-        throw new Error(`${field} must be a string or integer`);
+    if (typeof value !== 'string') {
+        throw new Error(`${field} must be a string`);
     }
 
-    const trimmed = normalized.trim();
+    const trimmed = value.trim();
     if (trimmed === '') {
         return undefined;
     }
@@ -50,7 +49,9 @@ function cleanCountry(value: unknown): string {
 }
 
 function cleanItemId(value: unknown, field: string): string | undefined {
-    const itemId = cleanString(value, field, 32);
+    const itemId = typeof value === 'number'
+        ? cleanIntegerItemId(value, field)
+        : cleanString(value, field, 32);
     if (itemId === undefined) {
         return undefined;
     }
@@ -60,6 +61,14 @@ function cleanItemId(value: unknown, field: string): string | undefined {
     }
 
     return itemId;
+}
+
+function cleanIntegerItemId(value: number, field: string): string {
+    if (!Number.isSafeInteger(value) || value < 0) {
+        throw new Error(`${field} must be a numeric Vinted item ID string or a safe integer`);
+    }
+
+    return String(value);
 }
 
 function getInputItemIds(input: VintedItemDetailsInput): string[] {

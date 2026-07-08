@@ -26,13 +26,14 @@
         "items": {
           "title": "Vinted Item Details",
           "transformation": {
-            "fields": ["id", "title", "price_amount", "price_currency", "total_item_price", "shipping_price", "brand_name", "category_name", "size_name", "condition", "availability", "url", "image_url", "seller_login", "seller_feedback_reputation", "favourite_count", "view_count", "request_item_id", "request_country", "request_index", "request_success", "error_message"]
+            "fields": ["id", "title", "description", "price_amount", "price_currency", "total_item_price", "shipping_price", "brand_name", "category_name", "size_name", "condition", "availability", "url", "image_url", "seller_login", "seller_feedback_reputation", "favourite_count", "view_count", "request_item_id", "request_country", "request_index", "request_success", "error_message"]
           },
           "display": {
             "component": "table",
             "properties": {
               "id": { "label": "Item ID", "format": "text" },
               "title": { "label": "Title", "format": "text" },
+              "description": { "label": "Description", "format": "text" },
               "price_amount": { "label": "Price", "format": "text" },
               "price_currency": { "label": "Currency", "format": "text" },
               "total_item_price": { "label": "Total Price", "format": "text" },

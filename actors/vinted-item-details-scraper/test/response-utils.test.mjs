@@ -25,6 +25,17 @@ test('extracts details from common Scrappa response shapes', () => {
     assert.deepEqual(getVintedItemDetails({ item: { title: 'Item C' } }), { title: 'Item C' });
 });
 
+test('rejects successful envelopes that do not include item details', () => {
+    assert.throws(
+        () => getVintedItemDetails({ success: false, data: {}, message: 'Item not found' }),
+        /Scrappa response did not include Vinted item details/,
+    );
+    assert.throws(
+        () => getVintedItemDetails({ success: true, data: { item: {} } }),
+        /Scrappa response did not include Vinted item details/,
+    );
+});
+
 test('builds normalized Vinted item details dataset item', () => {
     const item = buildVintedItemDetailsDatasetItem(
         {

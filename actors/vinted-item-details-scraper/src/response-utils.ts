@@ -60,6 +60,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isVintedItemDetails(value: unknown): value is VintedItemDetails {
+    if (!isRecord(value)) {
+        return false;
+    }
+
+    return ['id', 'title', 'url', 'description', 'price', 'image_url', 'photo', 'photos']
+        .some((key) => value[key] !== undefined && value[key] !== null);
+}
+
 function label(value: unknown): string | null {
     if (typeof value === 'string' && value.trim() !== '') {
         return value;
@@ -114,19 +123,23 @@ function firstPhotoUrl(item: VintedItemDetails): string | null {
 }
 
 export function getVintedItemDetails(response: VintedItemDetailsResponse): VintedItemDetails {
-    if (isRecord(response.item)) {
-        return response.item as VintedItemDetails;
+    if (isVintedItemDetails(response.item)) {
+        return response.item;
     }
 
-    if (isRecord(response.data) && isRecord(response.data.item)) {
-        return response.data.item as VintedItemDetails;
+    if (isRecord(response.data) && isVintedItemDetails(response.data.item)) {
+        return response.data.item;
     }
 
-    if (isRecord(response.data)) {
-        return response.data as VintedItemDetails;
+    if (isVintedItemDetails(response.data)) {
+        return response.data;
     }
 
-    return response as VintedItemDetails;
+    if (isVintedItemDetails(response)) {
+        return response;
+    }
+
+    throw new Error('Scrappa response did not include Vinted item details');
 }
 
 export function buildVintedItemDetailsDatasetItem(
