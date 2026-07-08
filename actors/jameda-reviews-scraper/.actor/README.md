@@ -6,7 +6,7 @@ Extract public Jameda doctor reviews through Scrappa. Use this Jameda reviews sc
 
 - Scrape Jameda doctor reviews from one doctor URL or a batch of doctor URLs
 - Accept full `https://www.jameda.de/...` URLs, host-style URLs, or path-only inputs
-- Filter reviews by page, sort order, rating, and reviews per page
+- Fetch a selected review page for every doctor URL, with sort, rating, and page-size filters
 - Save one Apify dataset item per review with doctor URL context
 - Keep `OUTPUT` compact with request counts, saved review count, and failures
 
@@ -51,7 +51,8 @@ Each Jameda review is saved as one dataset item:
   "verification_badge": "Termin verifiziert",
   "doctor_name": "Markus Lietzau M.Sc.",
   "doctor_specializations": "Zahnarzt",
-  "doctor_overall_rating": "4",
+  "doctor_overall_rating": "4,5",
+  "doctor_overall_rating_number": 4.5,
   "input_doctor_url": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
   "normalized_doctor_url": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
   "request_page": 1,
@@ -69,4 +70,8 @@ The `OUTPUT` record includes the requested doctor URLs, reviews saved, failed re
 
 ## Notes
 
-Put multiple doctor URLs in `doctor_urls` when monitoring a provider group or competitor set. This shares Apify run overhead across many review results while Scrappa handles the actual Jameda scraping work. For high-volume direct API access, use Scrappa at https://scrappa.co.
+Put multiple doctor URLs in `doctor_urls` when monitoring a provider group or competitor set. This shares Apify run overhead across many review results while Scrappa handles the actual Jameda scraping work.
+
+The actor requests one selected review page per doctor URL. Use the `page`, `per_page`, `sort`, and `rating` inputs to page through larger review histories; dataset rows include `total_pages` and `has_next_page` when Jameda returns pagination metadata.
+
+For high-volume direct API access, use Scrappa at https://scrappa.co.
