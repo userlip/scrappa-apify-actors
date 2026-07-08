@@ -14,13 +14,9 @@ interface ScrappaError {
     errors?: Record<string, string[]>;
 }
 
-interface ScrappaTimeoutErrorOptions extends ErrorOptions {
-    message?: string;
-}
-
 export class ScrappaTimeoutError extends Error {
-    constructor(timeoutMs: number, options?: ScrappaTimeoutErrorOptions) {
-        super(options?.message ?? `Scrappa API request timed out after ${timeoutMs}ms`, options);
+    constructor(timeoutMs: number, options?: ErrorOptions) {
+        super(`Scrappa API request timed out after ${timeoutMs}ms`, options);
         this.name = 'ScrappaTimeoutError';
     }
 }
@@ -202,7 +198,10 @@ export class ScrappaClient {
             return fallback;
         }
 
-        const jsonMessage = this.tryParseJsonError(bodyText, fallback);
+        const contentType = response.headers.get('content-type') ?? '';
+        const jsonMessage = contentType.includes('application/json')
+            ? this.tryParseJsonError(bodyText, fallback)
+            : null;
         if (jsonMessage) {
             return jsonMessage;
         }

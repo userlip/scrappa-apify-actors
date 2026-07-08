@@ -3,6 +3,7 @@ export interface KununuJobsInput {
     location?: unknown;
     country?: unknown;
     page?: unknown;
+    max_pages?: unknown;
     radius?: unknown;
     sort?: unknown;
     workplace?: unknown;
@@ -18,6 +19,8 @@ export interface KununuJobsInput {
 
 export interface KununuJobsSearchPlan {
     params: Record<string, unknown>;
+    startPage: number;
+    maxPages: number;
     includeRawJob: boolean;
 }
 
@@ -59,11 +62,13 @@ const BENEFIT_VALUES = [
 
 export function buildKununuJobsSearchPlan(input: KununuJobsInput | null | undefined): KununuJobsSearchPlan {
     const source = input ?? {};
+    const startPage = cleanInteger(source.page, 'page', 1, 100) ?? 1;
+    const maxPages = cleanInteger(source.max_pages, 'max_pages', 1, 10) ?? 1;
     const params: Record<string, unknown> = {
         query: cleanOptionalString(source.query, 'query', 120) ?? DEFAULT_QUERY,
         location: cleanOptionalString(source.location, 'location', 120) ?? DEFAULT_LOCATION,
         country: cleanEnum(source.country, 'country', COUNTRIES, normalizeLowercase) ?? DEFAULT_COUNTRY,
-        page: cleanInteger(source.page, 'page', 1, 100) ?? 1,
+        page: startPage,
     };
 
     const radius = cleanInteger(source.radius, 'radius', 10, 200);
@@ -90,6 +95,8 @@ export function buildKununuJobsSearchPlan(input: KununuJobsInput | null | undefi
 
     return {
         params,
+        startPage,
+        maxPages,
         includeRawJob: cleanBoolean(source.include_raw_job, 'include_raw_job') ?? false,
     };
 }
@@ -122,12 +129,16 @@ function cleanOptionalString(value: unknown, field: string, maxLength: number): 
 }
 
 function cleanInteger(value: unknown, field: string, min: number, max: number): number | undefined {
-    if (value === undefined || value === null || value === '') {
+    if (value === undefined || value === null) {
         return undefined;
     }
 
-    if (typeof value === 'string' && value.trim() !== '') {
-        value = Number(value);
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed === '') {
+            return undefined;
+        }
+        value = Number(trimmed);
     }
 
     if (typeof value !== 'number' || !Number.isInteger(value)) {

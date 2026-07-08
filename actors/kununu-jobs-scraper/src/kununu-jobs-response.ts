@@ -90,10 +90,17 @@ export interface KununuJobsResponse {
         pagination?: Record<string, unknown>;
         [key: string]: unknown;
     };
+    message?: string;
+    error?: string | Record<string, unknown>;
     [key: string]: unknown;
 }
 
 export function getKununuJobs(response: KununuJobsResponse): KununuJob[] {
+    if (response.success === false) {
+        const message = getString(response.message) ?? getString(response.error) ?? 'Scrappa returned success=false for Kununu Jobs.';
+        throw new Error(message);
+    }
+
     if (Array.isArray(response.data)) {
         return response.data;
     }
@@ -175,7 +182,7 @@ export function getFormattedLocation(location: KununuJob['location'], job?: Kunu
     }
 
     if (!location || typeof location !== 'object') {
-        const fallbackParts = [job?.city, job?.region, job?.countryCode ?? job?.stateCode]
+        const fallbackParts = [job?.city, job?.region, job?.countryCode]
             .filter((part): part is string => typeof part === 'string' && part.trim() !== '');
 
         return fallbackParts.length > 0 ? fallbackParts.join(', ') : undefined;
@@ -185,7 +192,8 @@ export function getFormattedLocation(location: KununuJob['location'], job?: Kunu
         return location.formatted;
     }
 
-    const parts = [location.city, location.region, location.country]
+    const locationParts = getLocationParts(location, job);
+    const parts = [locationParts.city, locationParts.region, locationParts.country]
         .filter((part): part is string => typeof part === 'string' && part.trim() !== '');
 
     return parts.length > 0 ? parts.join(', ') : undefined;
@@ -201,8 +209,8 @@ function getCompanyParts(company: KununuJob['company'], job?: KununuJob): {
     if (typeof company === 'string') {
         return {
             name: company,
-        score: getNumber(job?.company_score ?? job?.kununu_score),
-        isTopCompany: getBoolean(job?.is_top_company ?? job?.isTopCompany ?? job?.top_company),
+            score: getNumber(job?.company_score ?? job?.kununu_score),
+            isTopCompany: getBoolean(job?.is_top_company ?? job?.isTopCompany ?? job?.top_company),
         };
     }
 
@@ -228,11 +236,16 @@ function getLocationParts(location: KununuJob['location'], job?: KununuJob): Kun
         return {
             city: getString(job?.city),
             region: getString(job?.region),
-            country: getString(job?.countryCode ?? job?.stateCode),
+            country: getString(job?.countryCode),
         };
     }
 
-    return location;
+    return {
+        ...location,
+        city: getString(location.city) ?? getString(job?.city) ?? null,
+        region: getString(location.region) ?? getString(job?.region) ?? null,
+        country: getString(location.country) ?? getString(job?.countryCode) ?? null,
+    };
 }
 
 function getJobUrl(job: KununuJob): string | undefined {

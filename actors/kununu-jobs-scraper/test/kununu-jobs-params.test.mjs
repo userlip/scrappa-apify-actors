@@ -14,6 +14,8 @@ test('builds default Kununu jobs search parameters', () => {
             country: 'de',
             page: 1,
         },
+        startPage: 1,
+        maxPages: 1,
         includeRawJob: false,
     });
 });
@@ -24,6 +26,7 @@ test('normalizes and forwards Kununu jobs search filters', () => {
         location: ' Munich ',
         country: ' DE ',
         page: '2',
+        max_pages: '3',
         radius: 100,
         sort: 'kununuScore',
         workplace: ['full_remote', 'PARTLY_REMOTE', 'FULL_REMOTE'],
@@ -52,8 +55,18 @@ test('normalizes and forwards Kununu jobs search filters', () => {
             benefits: ['flexWorkingHours', 'pensionPlan'],
             is_top_company: true,
         },
+        startPage: 2,
+        maxPages: 3,
         includeRawJob: true,
     });
+});
+
+test('treats whitespace-only integer inputs as omitted', () => {
+    const plan = buildKununuJobsSearchPlan({ page: '   ', max_pages: ' ', radius: '' });
+
+    assert.equal(plan.startPage, 1);
+    assert.equal(plan.maxPages, 1);
+    assert.equal(plan.params.radius, undefined);
 });
 
 test('keeps false Top Company filter explicit', () => {
@@ -63,6 +76,7 @@ test('keeps false Top Company filter explicit', () => {
 test('rejects unsupported enum and range values', () => {
     assert.throws(() => buildKununuJobsSearchPlan({ country: 'us' }), /country must be one of/);
     assert.throws(() => buildKununuJobsSearchPlan({ radius: 25 }), /radius must be one of/);
+    assert.throws(() => buildKununuJobsSearchPlan({ max_pages: 11 }), /max_pages must be between 1 and 10/);
     assert.throws(() => buildKununuJobsSearchPlan({ workplace: ['REMOTE'] }), /workplace must be one of/);
     assert.throws(() => buildKununuJobsSearchPlan({ industry: [45] }), /industry must be between 1 and 44/);
     assert.throws(() => buildKununuJobsSearchPlan({ discipline: [999] }), /discipline must be between 1001 and 1022/);

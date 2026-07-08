@@ -17,7 +17,8 @@ Berlin software engineering jobs:
   "query": "Software Engineer",
   "location": "Berlin",
   "country": "de",
-  "page": 1
+  "page": 1,
+  "max_pages": 2
 }
 ```
 
@@ -31,7 +32,8 @@ Remote and hybrid DACH jobs with strong company scores:
   "radius": 100,
   "workplace": ["FULL_REMOTE", "PARTLY_REMOTE"],
   "kununu_score": ["4-5", "3-4"],
-  "sort": "kununuScore"
+  "sort": "kununuScore",
+  "max_pages": 3
 }
 ```
 
@@ -47,7 +49,7 @@ Top Company employers with selected benefits:
 }
 ```
 
-Supported countries are `de`, `at`, and `ch`. Kununu returns about 30 results per page. Use `page` to fetch additional result pages.
+Supported countries are `de`, `at`, and `ch`. Kununu returns about 30 results per page. Use `page` as the first page and `max_pages` to fetch consecutive pages in one run.
 
 ## Output
 
@@ -86,4 +88,4 @@ Each dataset item is one Kununu job listing. The actor preserves Scrappa job fie
 }
 ```
 
-The complete Scrappa response, including pagination and metadata when provided, is saved to the key-value store under `OUTPUT`.
+The key-value store `OUTPUT` record contains the request, page count, saved job count, and per-page Scrappa responses including pagination and metadata when provided.

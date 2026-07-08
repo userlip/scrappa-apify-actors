@@ -20,13 +20,20 @@ test('returns jobs from common Scrappa response shapes', () => {
     assert.deepEqual(getKununuJobs({ results: jobs }), jobs);
 });
 
-test('returns an empty jobs array for unexpected response shape', () => {
+test('throws when Scrappa returns a business-level failure', () => {
+    assert.throws(
+        () => getKununuJobs({ success: false, message: 'Invalid Kununu request' }),
+        /Invalid Kununu request/
+    );
+});
+
+test('returns an empty jobs array for unexpected non-failure response shape', () => {
     const originalDebug = console.debug;
     const messages = [];
     console.debug = (message) => messages.push(message);
 
     try {
-        assert.deepEqual(getKununuJobs({ success: false }), []);
+        assert.deepEqual(getKununuJobs({ success: true }), []);
     } finally {
         console.debug = originalDebug;
     }
@@ -53,6 +60,7 @@ test('formats Kununu locations for table summaries', () => {
     assert.equal(getFormattedLocation('Berlin'), 'Berlin');
     assert.equal(getFormattedLocation({ formatted: 'Zurich' }), 'Zurich');
     assert.equal(getFormattedLocation({ city: 'Vienna', region: 'Vienna', country: 'AT' }), 'Vienna, Vienna, AT');
+    assert.equal(getFormattedLocation(null, { city: 'Berlin', region: 'Berlin', stateCode: 'DE-BE', countryCode: 'DE' }), 'Berlin, Berlin, DE');
     assert.equal(getFormattedLocation(null), undefined);
 });
 
@@ -119,12 +127,43 @@ test('normalizes live Kununu camelCase job fields', () => {
         company_url: 'https://www.findyou.de',
         company_score: 5,
         company_is_top_company: true,
-        location_formatted: 'Berlin, Berlin, DE-BE',
+        location_formatted: 'Berlin, Berlin',
         location_city: 'Berlin',
         location_region: 'Berlin',
-        location_country: 'DE-BE',
+        location_country: null,
         employment_types: ['JOB_EMPLOYMENT_FULLTIME'],
         date_posted: '2026-07-03',
         posted_at: '2026-07-03',
+    });
+});
+
+test('merges partial nested locations with top-level job location fields', () => {
+    const job = {
+        id: 'job-2',
+        title: 'Frontend Engineer',
+        city: 'Berlin',
+        region: 'Berlin',
+        countryCode: 'DE',
+        stateCode: 'DE-BE',
+        location: { city: null, region: null, country: null },
+    };
+
+    assert.deepEqual(toKununuDatasetJob(job), {
+        ...job,
+        job_id: 'job-2',
+        job_url: null,
+        company: null,
+        company_name: null,
+        company_slug: null,
+        company_url: null,
+        company_score: null,
+        company_is_top_company: null,
+        location_formatted: 'Berlin, Berlin, DE',
+        location_city: 'Berlin',
+        location_region: 'Berlin',
+        location_country: 'DE',
+        employment_types: null,
+        date_posted: null,
+        posted_at: null,
     });
 });
