@@ -153,7 +153,7 @@
     "include_raw_job": {
       "title": "Include Raw Job",
       "type": "boolean",
-      "description": "Also include the full Scrappa job object under raw_job. Leave disabled for mapped fields plus any unmapped top-level job fields.",
+      "description": "Move unmapped Scrappa job fields into raw_job instead of spreading them at the top level. Mapped fields remain at the top level.",
       "editor": "checkbox",
       "default": false
     }
