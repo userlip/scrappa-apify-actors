@@ -112,7 +112,7 @@ export class ScrappaClient {
         const headers: Record<string, string> = {
             'X-API-Key': this.apiKey,
             'Accept': 'application/json',
-            'User-Agent': 'thescrappa-vinted-search-scraper/1.0',
+            'User-Agent': 'thescrappa-vinted-user-items-scraper/1.0',
         };
 
         if (this.debug) {

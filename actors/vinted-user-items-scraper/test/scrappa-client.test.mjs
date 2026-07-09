@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const scrappaClientModule = process.env.TEST_SOURCE === 'src'
@@ -34,4 +35,17 @@ test('does not retry validation or non-transient Scrappa errors', () => {
     assert.equal(isRetryableScrappaError(new Error('country must be one of: FR')), false);
     assert.equal(isRetryableScrappaError(new TypeError('invalid URL')), false);
     assert.equal(isRetryableScrappaError('fetch failed'), false);
+});
+
+test('keeps Vinted ScrappaClient implementations aligned except user agent', async () => {
+    const normalizeClientSource = (source) => source.replace(
+        /'User-Agent': 'thescrappa-vinted-[^']+'/,
+        "'User-Agent': 'thescrappa-vinted-actor/1.0'",
+    );
+    const [userItemsClient, searchClient] = await Promise.all([
+        readFile(new URL('../src/shared/scrappa-client.ts', import.meta.url), 'utf8'),
+        readFile(new URL('../../vinted-search-scraper/src/shared/scrappa-client.ts', import.meta.url), 'utf8'),
+    ]);
+
+    assert.equal(normalizeClientSource(userItemsClient), normalizeClientSource(searchClient));
 });
