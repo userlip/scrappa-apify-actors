@@ -14,6 +14,22 @@
   "dependencies": {
     "apify": "^3.2.6"
   },
+  "overrides": {
+    "@crawlee/core": "3.17.0",
+    "@crawlee/utils": "3.17.0",
+    "esbuild": "^0.28.1",
+    "file-type": "^21.3.1",
+    "form-data": "^4.0.6",
+    "ws": "^8.21.0"
+  },
+  "dependencyOverrideRationale": {
+    "@crawlee/core": "Keep Crawlee runtime packages aligned while Apify depends on a vulnerable 3.16.x range.",
+    "@crawlee/utils": "Use the Crawlee release that depends on the fixed file-type range.",
+    "esbuild": "Pin the dev runtime above the vulnerable development server advisory range.",
+    "file-type": "Force the fixed parser range until Apify/Crawlee no longer need an override.",
+    "form-data": "Force the fixed multipart header escaping release for the Apify client dependency tree.",
+    "ws": "Force the fixed WebSocket memory exhaustion release for the Apify runtime dependency tree."
+  },
   "devDependencies": {
     "@types/node": "^20.17.10",
     "tsx": "^4.19.2",
