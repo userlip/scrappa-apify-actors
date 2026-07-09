@@ -153,7 +153,7 @@
     "include_raw_job": {
       "title": "Include Raw Job",
       "type": "boolean",
-      "description": "Include the full Scrappa job object in each dataset item. Leave disabled for smaller dataset output.",
+      "description": "Also include the full Scrappa job object under raw_job. Leave disabled for mapped fields plus any unmapped top-level job fields.",
       "editor": "checkbox",
       "default": false
     }

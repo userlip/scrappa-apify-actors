@@ -28,14 +28,14 @@ test('throws when Scrappa returns a business-level failure', () => {
 });
 
 test('returns an empty jobs array for unexpected non-failure response shape', () => {
-    const originalDebug = console.debug;
+    const originalWarn = console.warn;
     const messages = [];
-    console.debug = (message) => messages.push(message);
+    console.warn = (message) => messages.push(message);
 
     try {
         assert.deepEqual(getKununuJobs({ success: true }), []);
     } finally {
-        console.debug = originalDebug;
+        console.warn = originalWarn;
     }
 
     assert.deepEqual(messages, [

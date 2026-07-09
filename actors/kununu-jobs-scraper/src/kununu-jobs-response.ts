@@ -121,7 +121,7 @@ export function getKununuJobs(response: KununuJobsResponse): KununuJob[] {
         return response.results;
     }
 
-    console.debug('Unexpected Kununu Jobs response shape: expected "data.jobs", "data.results", "jobs", or "results" array.');
+    console.warn('Unexpected Kununu Jobs response shape: expected "data.jobs", "data.results", "jobs", or "results" array.');
     return [];
 }
 
