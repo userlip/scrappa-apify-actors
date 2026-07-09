@@ -1,0 +1,38 @@
+{
+  "title": "Vinted Item Details Scraper",
+  "description": "Fetch full details for one or more Vinted item IDs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "item_id": {
+      "title": "Item ID",
+      "type": "string",
+      "description": "Single Vinted item ID. Use item_ids for batches discovered from Vinted Search.",
+      "editor": "textfield",
+      "pattern": "^\\d+$",
+      "maxLength": 32,
+      "prefill": "1234567890"
+    },
+    "item_ids": {
+      "title": "Item IDs",
+      "type": "array",
+      "description": "Batch of Vinted item IDs. One dataset row is written per processed ID. Maximum 50 IDs per run.",
+      "editor": "stringList",
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "pattern": "^\\d+$",
+        "maxLength": 32
+      }
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Vinted country market.",
+      "editor": "select",
+      "enum": ["FR", "DE", "ES", "IT", "NL", "BE", "AT", "PL", "CZ", "LT", "LU", "SK", "HU", "RO", "PT", "SE", "DK", "FI", "US"],
+      "enumTitles": ["France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Austria", "Poland", "Czech Republic", "Lithuania", "Luxembourg", "Slovakia", "Hungary", "Romania", "Portugal", "Sweden", "Denmark", "Finland", "United States"],
+      "default": "FR"
+    }
+  }
+}
