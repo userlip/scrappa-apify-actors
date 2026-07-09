@@ -1,0 +1,162 @@
+{
+  "title": "Kununu Jobs Scraper ($0.30/1k results)",
+  "description": "Search Kununu jobs in Germany, Austria, and Switzerland with employer score, workplace, benefits, and Top Company filters.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "title": "Job Search Query",
+      "type": "string",
+      "description": "Job title or keyword, for example Software Engineer, Product Manager, Pflegefachkraft, or Sales.",
+      "editor": "textfield",
+      "prefill": "Software Engineer",
+      "maxLength": 120
+    },
+    "location": {
+      "title": "Location",
+      "type": "string",
+      "description": "City or location name. Pass a plain city name such as Berlin, Munich, Vienna, Zurich, or Hamburg.",
+      "editor": "textfield",
+      "prefill": "Berlin",
+      "maxLength": 120
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Kununu country market.",
+      "editor": "select",
+      "enum": ["de", "at", "ch"],
+      "enumTitles": ["Germany", "Austria", "Switzerland"],
+      "default": "de"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "First Kununu result page to fetch. Kununu returns about 30 results per page.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "max_pages": {
+      "title": "Max Pages",
+      "type": "integer",
+      "description": "Number of consecutive Kununu result pages to fetch in one run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 1
+    },
+    "radius": {
+      "title": "Radius",
+      "type": "integer",
+      "description": "Search radius in kilometers around the selected location. Allowed values: 10, 20, 30, 50, 100, or 200.",
+      "editor": "number",
+      "minimum": 10,
+      "maximum": 200
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "description": "Sort by newest listings or by Kununu company score. Leave empty for Kununu relevance order.",
+      "editor": "select",
+      "enum": ["", "newest", "kununuScore"],
+      "enumTitles": ["Relevance (default)", "Newest", "Kununu score"],
+      "default": ""
+    },
+    "workplace": {
+      "title": "Workplace Model",
+      "type": "array",
+      "description": "Filter jobs by remote, hybrid, or on-site workplace model.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["FULL_REMOTE", "PARTLY_REMOTE", "NON_REMOTE"],
+        "enumTitles": ["Remote", "Hybrid", "On-site"]
+      }
+    },
+    "employment_types": {
+      "title": "Employment Types",
+      "type": "array",
+      "description": "Filter by employment type.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["FULL_TIME", "PART_TIME", "INTERN", "TEMPORARY", "CONTRACTOR", "SEASONAL", "VOLUNTARY"],
+        "enumTitles": ["Full-time", "Part-time", "Internship", "Temporary", "Contractor", "Seasonal", "Voluntary"]
+      }
+    },
+    "career_level": {
+      "title": "Career Level",
+      "type": "array",
+      "description": "Filter by career level. Values follow Kununu's career-level IDs.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["1", "2", "3", "4", "5", "6", "99"],
+        "enumTitles": ["Student or intern", "Entry-level", "Experienced", "Manager", "Director", "Executive", "Apprentice"]
+      }
+    },
+    "kununu_score": {
+      "title": "Kununu Score",
+      "type": "array",
+      "description": "Filter by company score range.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["4-5", "3-4", "2-3", "1-2"],
+        "enumTitles": ["4 to 5", "3 to 4", "2 to 3", "1 to 2"]
+      }
+    },
+    "industry": {
+      "title": "Industry IDs",
+      "type": "array",
+      "description": "Kununu industry IDs from 1 to 44.",
+      "editor": "schemaBased",
+      "maxItems": 10,
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 44
+      }
+    },
+    "discipline": {
+      "title": "Discipline IDs",
+      "type": "array",
+      "description": "Kununu discipline or field-of-activity IDs from 1001 to 1022.",
+      "editor": "schemaBased",
+      "maxItems": 10,
+      "items": {
+        "type": "integer",
+        "minimum": 1001,
+        "maximum": 1022
+      }
+    },
+    "benefits": {
+      "title": "Benefits",
+      "type": "array",
+      "description": "Filter jobs by employer benefits.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["flexWorkingHours", "pensionPlan", "coaching", "mobilePhone", "internet", "healthProgram", "reachability", "events", "discounts", "parking", "car", "meals", "dogs", "daycare", "cantine", "stockOptions", "doctor", "accessibility", "material", "clothes", "transportation"],
+        "enumTitles": ["Flexible working hours", "Pension plan", "Coaching", "Mobile phone", "Internet", "Health program", "Good reachability", "Employee events", "Employee discounts", "Parking", "Company car", "Meals", "Dogs allowed", "Daycare", "Canteen", "Stock options", "Company doctor", "Accessibility", "Work equipment", "Work clothes", "Transportation"]
+      }
+    },
+    "is_top_company": {
+      "title": "Top Company Only",
+      "type": "boolean",
+      "description": "Only return employers with Kununu Top Company status.",
+      "editor": "checkbox",
+      "default": false
+    },
+    "include_raw_job": {
+      "title": "Include Raw Job",
+      "type": "boolean",
+      "description": "Move unmapped Scrappa job fields into raw_job instead of spreading them at the top level. Mapped fields remain at the top level.",
+      "editor": "checkbox",
+      "default": false
+    }
+  },
+  "required": []
+}
