@@ -1,34 +1,22 @@
-# PR Nudging Report: Kleinanzeigen Listing Details Scraper
+# PR Nudging Report: Stale Apify Notice Smoke Gate
 
 ## Release gates
 
-- Branch: `feat/kleinanzeigen-listing-details-scraper`
-- Deployed Apify actor: `kleinanzeigen-listing-details-scraper` (`1hSNdgPwGINp7xeHB`), public.
-- Cloud build: `yuhYcYVKEgrqygJhk` (`1.0.2`), succeeded.
-- Scrappa API key: configured as the encrypted `SCRAPPA_API_KEY` secret on version `1.0`.
-- Pricing: active `PAY_PER_EVENT` from `2026-07-10T11:19:59.585Z`; `listing-detail-result` is the primary event at `$0.00025` per successful listing.
+- Branch: `chore/smoke-gate-three-actors`.
+- Scope: documentation-only evidence for three controlled Apify smoke runs. No Actor source, deployment, secret, or pricing changes are included.
+- Local validation: `node --test scripts/audit-apify-health.test.mjs scripts/audit-apify-pricing.test.mjs` passed (31 tests); `git diff --check origin/main...HEAD` passed.
+- Unrelated untracked paths `.codegraph/` and `docs/source-document.md` remain excluded.
 
-## Live verification
+## Verified smoke evidence
 
-Public smoke run `wcCLm7I6kdC973Azh` supplied two distinct ad IDs in one run (`3348371956`, `3401748259`). It succeeded, saved two dataset items, and finalized Apify accounting reported exactly two `listing-detail-result` events.
+| Actor | ID | Run | Terminal result | Dataset / paid event | Maintenance notice |
+| --- | --- | --- | --- | --- | --- |
+| Booking Search Scraper | `BehWN3LEvBxhEiJDF` | `vgKnULJIsxREWa7Z7` | `SUCCEEDED` | 26 schema-valid rows; `booking-result: 26` | Cleared |
+| Google Maps Advanced Search Scraper | `DT8bUdm2Vn4HjlyDo` | `JVEjCoJ01QMfgzL0v` | `SUCCEEDED` | 1 schema-valid row; `search: 1` | Cleared |
+| YouTube Transcript Scraper | `ztc698cHC09lkCDYE` | `2A6MAGndQAxjjBMWf` | `SUCCEEDED` | 1 schema-valid row; `apify-default-dataset-item: 1` | Cleared |
 
-## Local verification
-
-- `npm --prefix actors/kleinanzeigen-listing-details-scraper test` — passed (15 tests).
-- `npm --prefix actors/kleinanzeigen-listing-details-scraper run test:dev` — passed (15 tests).
-- `npm --prefix actors/kleinanzeigen-listing-details-scraper run typecheck` — passed.
-- `git diff --check main...HEAD` — passed.
-
-## Repository inventory
-
-`README.md` now contains the new live actor, actor ID, deployment/build evidence, smoke-run evidence, and active pricing status, as required by `CONTRIBUTING.md`.
-
-## Review follow-up
-
-Automated review feedback was addressed with a shared error-sanitization utility. It redacts credential-like values from upstream error bodies before they can reach logs or the `OUTPUT` failure summary. The follow-up additionally rejects explicitly supplied `null` batch entries and accepts both root-level and documented wrapped detail payloads, including an upstream detail missing its own ID (which is safely replaced by the requested ID). These paths are covered by the 15-test suite.
-
-The suggested terminal failure for an all-failed batch was not adopted: the approved contract requires per-ID failures to be represented without aborting unrelated listings, and the `OUTPUT` summary gives the requested, completed, saved, and failed counts. The 360-second timeout is retained because it is the specified minimal thin-wrapper setting reused from `kleinanzeigen-search-scraper`.
+Each Actor remains publicly available with active `PAY_PER_EVENT` pricing. The implementation and testing records confirm the default-dataset shapes and that the public run API exposes the authoritative `actId` field.
 
 ## PR status
 
-PR [#265](https://github.com/userlip/scrappa-apify-actors/pull/265) is open, mergeable, and its completed GitHub checks are successful. The branch is pushed with the review follow-up; CI/review must complete again for the final merge handoff. Do not merge in this stage.
+PR [#268](https://github.com/userlip/scrappa-apify-actors/pull/268) is open against `main`. Its security checks are successful; the remaining automated code-review checks are being monitored. This stage never merges.
