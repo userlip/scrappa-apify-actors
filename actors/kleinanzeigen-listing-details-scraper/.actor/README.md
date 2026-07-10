@@ -2,7 +2,7 @@
 
 Get full details for Kleinanzeigen listings through Scrappa's structured API. This thin Apify wrapper accepts one listing ID or batches up to 100 IDs in one run, avoiding one run per listing.
 
-The Actor uses the paid `listing-detail-result` event at the proposed rate of **$0.25 per 1,000 successfully saved listings**. You pay only for successful dataset rows.
+The Actor uses the paid `listing-detail-result` event at the active rate of **$0.25 per 1,000 successfully saved listings**. You pay only for successful dataset rows.
 
 ## Input
 
