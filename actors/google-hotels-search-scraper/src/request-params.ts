@@ -30,11 +30,11 @@ const SORT_BY_VALUES = [3, 8, 13] as const;
 const HOTEL_CLASS_VALUES = [2, 3, 4, 5] as const;
 const RATING_VALUES = [7, 8, 9] as const;
 const MAX_PRICE = 5000;
-const RELATIVE_DATE_OFFSETS: Record<string, number> = {
-    today: 0,
-    tomorrow: 1,
-    'day-after-tomorrow': 2,
-};
+const RELATIVE_DATE_OFFSETS = new Map<string, number>([
+    ['today', 0],
+    ['tomorrow', 1],
+    ['day-after-tomorrow', 2],
+]);
 
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null || value === '') {
@@ -67,7 +67,7 @@ function cleanRequiredString(value: unknown, field: string, maxLength: number): 
 }
 
 export function resolveRelativeHotelDate(value: string, referenceDate = new Date()): string {
-    const offset = RELATIVE_DATE_OFFSETS[value.toLowerCase()];
+    const offset = RELATIVE_DATE_OFFSETS.get(value.toLowerCase());
     if (offset === undefined) {
         return value;
     }
@@ -78,9 +78,14 @@ export function resolveRelativeHotelDate(value: string, referenceDate = new Date
     return date.toISOString().slice(0, 10);
 }
 
-function cleanDate(value: unknown, field: string, options: { futureOrToday?: boolean } = {}): string {
+function cleanDate(
+    value: unknown,
+    field: string,
+    referenceDate: Date,
+    options: { futureOrToday?: boolean } = {},
+): string {
     const rawDate = cleanRequiredString(value, field, 18);
-    const date = resolveRelativeHotelDate(rawDate);
+    const date = resolveRelativeHotelDate(rawDate, referenceDate);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         throw new Error(`${field} must use YYYY-MM-DD format or a supported relative date`);
     }
@@ -91,7 +96,7 @@ function cleanDate(value: unknown, field: string, options: { futureOrToday?: boo
     }
 
     if (options.futureOrToday) {
-        const today = new Date().toISOString().slice(0, 10);
+        const today = referenceDate.toISOString().slice(0, 10);
         if (date < today) {
             throw new Error(`${field} must be today or a future date`);
         }
@@ -209,10 +214,11 @@ function setParam(params: Record<string, unknown>, field: string, value: unknown
 }
 
 export function buildGoogleHotelsSearchParams(input: GoogleHotelsSearchInput): Record<string, unknown> {
+    const referenceDate = new Date();
     const params: Record<string, unknown> = {
         q: cleanRequiredString(input.q, 'q', 200),
-        check_in_date: cleanDate(input.check_in_date, 'check_in_date', { futureOrToday: true }),
-        check_out_date: cleanDate(input.check_out_date, 'check_out_date'),
+        check_in_date: cleanDate(input.check_in_date, 'check_in_date', referenceDate, { futureOrToday: true }),
+        check_out_date: cleanDate(input.check_out_date, 'check_out_date', referenceDate),
     };
 
     if (String(params.check_out_date) <= String(params.check_in_date)) {

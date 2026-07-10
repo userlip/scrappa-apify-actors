@@ -123,6 +123,19 @@ test('resolves relative dates and keeps automated test prefills valid', async ()
     assert.ok(params.check_out_date > params.check_in_date);
 });
 
+test('rejects inherited object property names as invalid dates', () => {
+    for (const malformedDate of ['constructor', '__proto__', 'hasOwnProperty', 'toString']) {
+        assert.throws(
+            () => buildGoogleHotelsSearchParams({
+                q: 'Paris',
+                check_in_date: malformedDate,
+                check_out_date: 'day-after-tomorrow',
+            }),
+            /check_in_date must use YYYY-MM-DD format or a supported relative date/,
+        );
+    }
+});
+
 test('requires query and valid date range', () => {
     assert.throws(
         () => buildGoogleHotelsSearchParams({

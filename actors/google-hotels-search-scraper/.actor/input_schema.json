@@ -15,7 +15,7 @@
     "check_in_date": {
       "title": "Check-in Date",
       "type": "string",
-      "description": "Check-in date in YYYY-MM-DD format, or use today or tomorrow. Must resolve to today or a future date.",
+      "description": "Check-in date in YYYY-MM-DD format, or use today, tomorrow, or day-after-tomorrow. Must resolve to today or a future date.",
       "editor": "textfield",
       "prefill": "tomorrow"
     },
