@@ -15,7 +15,7 @@ npm test
 npm run typecheck
 ```
 
-Both commands passed on 2026-07-10 (7 focused tests). `npm ci` reported six transitive dependency audit findings; no automatic dependency upgrades were applied in this scoped implementation.
+Both commands passed on 2026-07-10. The focused suite includes charging-mode regression coverage: non-`PAY_PER_EVENT` runs write every successful listing without an event, while paid runs retain the per-result event and charge-capacity guard. `npm ci` reported six transitive dependency audit findings; no automatic dependency upgrades were applied in this scoped implementation.
 
 Deployment, Apify pricing activation/scheduling, and multi-ID live smoke validation are release-gated downstream operations and were intentionally not performed in this local implementation stage.
 
