@@ -88,3 +88,17 @@ test('continues after a per-listing request failure', async () => {
     assert.equal(fakeActor.writes.length, 1);
     assert.equal(fakeActor.writes[0].data.request_ad_id, '2');
 });
+
+test('does not save or charge an empty or error listing envelope', async () => {
+    const fakeActor = actor({ isPayPerEvent: true });
+    const result = await processKleinanzeigenListingDetails(fakeActor, twoListings, async (id) => (
+        id === '1'
+            ? { data: {} }
+            : { data: { success: false, message: 'Listing unavailable' } }
+    ));
+
+    assert.equal(result.savedCount, 0);
+    assert.equal(result.failures.length, 2);
+    assert.deepEqual(result.failures.map(({ ad_id }) => ad_id), ['1', '2']);
+    assert.equal(fakeActor.writes.length, 0);
+});

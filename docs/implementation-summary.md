@@ -17,6 +17,8 @@ npm run typecheck
 
 Both commands passed on 2026-07-10. The focused suite includes charging-mode regression coverage: non-`PAY_PER_EVENT` runs write every successful listing without an event, while paid runs retain the per-result event and charge-capacity guard. `npm ci` reported six transitive dependency audit findings; no automatic dependency upgrades were applied in this scoped implementation.
 
+Code-review follow-up completed on 2026-07-10: response selection now requires a non-empty upstream listing `id`, so empty or error envelopes are recorded as uncharged per-ID failures. Dataset normalization also explicitly whitelists the documented public fields and request metadata; unknown upstream fields are omitted. The focused suite now has 13 passing tests, including regressions for those cases.
+
 Deployment, Apify pricing activation/scheduling, and multi-ID live smoke validation are release-gated downstream operations and were intentionally not performed in this local implementation stage.
 
 IMPLEMENTATION_COMPLETE

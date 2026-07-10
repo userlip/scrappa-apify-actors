@@ -11,9 +11,16 @@ test('selects a detail from direct and common wrapped Scrappa envelopes', () => 
     assert.equal(selectKleinanzeigenDetail({}), null);
 });
 
-test('builds required detail fields without mutating the payload', () => {
-    const detail = { title: 'Bike', price: '120 €', seller: { name: 'A' }, images: ['image'], categories: ['bikes'] };
+test('rejects empty and error envelopes that do not contain a listing identifier', () => {
+    assert.equal(selectKleinanzeigenDetail({ data: {} }), null);
+    assert.equal(selectKleinanzeigenDetail({ data: { success: false, message: 'Listing unavailable' } }), null);
+    assert.equal(selectKleinanzeigenDetail({ data: { id: '  ' } }), null);
+});
+
+test('builds only required detail fields without mutating the payload', () => {
+    const detail = { id: '3451021120', title: 'Bike', price: '120 €', seller: { name: 'A' }, images: ['image'], categories: ['bikes'], raw_payload: { unexpected: true } };
     const item = buildKleinanzeigenDetailsDatasetItem(detail, '3451021120', 0);
-    assert.deepEqual(detail, { title: 'Bike', price: '120 €', seller: { name: 'A' }, images: ['image'], categories: ['bikes'] });
-    assert.deepEqual(item, { ...detail, id: '3451021120', title: 'Bike', price: '120 €', price_numeric: null, description: null, location: null, images: ['image'], seller: { name: 'A' }, attributes: null, shipping: null, posted_at: null, categories: ['bikes'], request_ad_id: '3451021120', request_index: 0 });
+    assert.deepEqual(detail, { id: '3451021120', title: 'Bike', price: '120 €', seller: { name: 'A' }, images: ['image'], categories: ['bikes'], raw_payload: { unexpected: true } });
+    assert.deepEqual(item, { id: '3451021120', title: 'Bike', price: '120 €', price_numeric: null, description: null, location: null, images: ['image'], seller: { name: 'A' }, attributes: null, shipping: null, posted_at: null, categories: ['bikes'], request_ad_id: '3451021120', request_index: 0 });
+    assert.equal('raw_payload' in item, false);
 });
