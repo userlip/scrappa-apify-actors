@@ -11,13 +11,13 @@ Scrape Google Hotels search results through Scrappa. The actor returns one datas
 
 ## Example input
 
-Replace the date values with future dates before running the actor.
+Use relative dates for a reusable request, or replace them with future dates in `YYYY-MM-DD` format.
 
 ```json
 {
   "q": "Paris, France",
-  "check_in_date": "YYYY-MM-DD",
-  "check_out_date": "YYYY-MM-DD",
+  "check_in_date": "tomorrow",
+  "check_out_date": "day-after-tomorrow",
   "adults": 2,
   "currency": "EUR",
   "gl": "fr",

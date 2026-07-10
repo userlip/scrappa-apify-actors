@@ -30,6 +30,11 @@ const SORT_BY_VALUES = [3, 8, 13] as const;
 const HOTEL_CLASS_VALUES = [2, 3, 4, 5] as const;
 const RATING_VALUES = [7, 8, 9] as const;
 const MAX_PRICE = 5000;
+const RELATIVE_DATE_OFFSETS: Record<string, number> = {
+    today: 0,
+    tomorrow: 1,
+    'day-after-tomorrow': 2,
+};
 
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null || value === '') {
@@ -61,10 +66,23 @@ function cleanRequiredString(value: unknown, field: string, maxLength: number): 
     return cleaned;
 }
 
+export function resolveRelativeHotelDate(value: string, referenceDate = new Date()): string {
+    const offset = RELATIVE_DATE_OFFSETS[value.toLowerCase()];
+    if (offset === undefined) {
+        return value;
+    }
+
+    const date = new Date(referenceDate);
+    date.setUTCHours(0, 0, 0, 0);
+    date.setUTCDate(date.getUTCDate() + offset);
+    return date.toISOString().slice(0, 10);
+}
+
 function cleanDate(value: unknown, field: string, options: { futureOrToday?: boolean } = {}): string {
-    const date = cleanRequiredString(value, field, 10);
+    const rawDate = cleanRequiredString(value, field, 18);
+    const date = resolveRelativeHotelDate(rawDate);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        throw new Error(`${field} must use YYYY-MM-DD format`);
+        throw new Error(`${field} must use YYYY-MM-DD format or a supported relative date`);
     }
 
     const parsed = new Date(`${date}T00:00:00.000Z`);
