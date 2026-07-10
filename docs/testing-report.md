@@ -14,7 +14,7 @@ The targeted regression checks and public Apify verification passed. The documen
 node --test scripts/audit-apify-health.test.mjs scripts/audit-apify-pricing.test.mjs
 31 passed, 0 failed
 
-git diff --check 1fd7add^ 1fd7add
+git diff --check origin/main...HEAD
 passed
 ```
 
@@ -32,6 +32,6 @@ The unauthenticated public run endpoint returns `actId` (not `actorId`); verific
 
 ## Scope and handoff
 
-- Reviewed change: documentation-only commit `1fd7add`; no source, build, deployment, secret, or pricing change.
+- Reviewed change: the documentation-only branch diff (`origin/main...HEAD`), covering the implementation, code-review, testing, and PR-nudging records; no source, build, deployment, secret, or pricing change.
 - Existing unrelated untracked paths (`.codegraph/` and `docs/source-document.md`) were not modified.
 - No regression or follow-up implementation work is required.
