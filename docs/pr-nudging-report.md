@@ -4,17 +4,18 @@
 
 - Branch: `feat/kleinanzeigen-listing-details-scraper`
 - Deployed Apify actor: `kleinanzeigen-listing-details-scraper` (`1hSNdgPwGINp7xeHB`), public.
-- Cloud build: `4jb5DP8IvTrkymaHy` (`1.0.1`), succeeded.
+- Cloud build: `yuhYcYVKEgrqygJhk` (`1.0.2`), succeeded.
 - Scrappa API key: configured as the encrypted `SCRAPPA_API_KEY` secret on version `1.0`.
 - Pricing: active `PAY_PER_EVENT` from `2026-07-10T11:19:59.585Z`; `listing-detail-result` is the primary event at `$0.00025` per successful listing.
 
 ## Live verification
 
-Private pre-publication smoke run `pcPHpHu5YeCqyppa2` supplied two distinct ad IDs in one run (`3348371956`, `3401748259`). It succeeded, saved two dataset items, and its `OUTPUT` record reported two requested, completed, and saved listings with zero failures. Finalized Apify run accounting reported exactly two `listing-detail-result` events.
+Public smoke run `wcCLm7I6kdC973Azh` supplied two distinct ad IDs in one run (`3348371956`, `3401748259`). It succeeded, saved two dataset items, and finalized Apify accounting reported exactly two `listing-detail-result` events.
 
 ## Local verification
 
-- `npm --prefix actors/kleinanzeigen-listing-details-scraper test` — passed (13 tests).
+- `npm --prefix actors/kleinanzeigen-listing-details-scraper test` — passed (14 tests).
+- `npm --prefix actors/kleinanzeigen-listing-details-scraper run test:dev` — passed (14 tests).
 - `npm --prefix actors/kleinanzeigen-listing-details-scraper run typecheck` — passed.
 - `git diff --check main...HEAD` — passed.
 
@@ -24,4 +25,4 @@ Private pre-publication smoke run `pcPHpHu5YeCqyppa2` supplied two distinct ad I
 
 ## PR status
 
-Ready to push and open for review. No implementation defects or review feedback remain.
+Automated review feedback was addressed with a shared error-sanitization utility. It redacts credential-like values from upstream error bodies before they can reach logs or the `OUTPUT` failure summary; its coverage is included in the 14 tests above. Ready for final CI and review.

@@ -3,15 +3,10 @@ import { buildKleinanzeigenDetailsPlan, describeKleinanzeigenDetailsRequest } fr
 import type { KleinanzeigenDetailsInput } from './request-params.js';
 import { buildListingDetailsOutput, processKleinanzeigenListingDetails } from './listing-processing.js';
 import type { KleinanzeigenDetailsResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+import { errorSummary, ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
-function errorSummary(error: unknown): string {
-    const message = error instanceof Error ? error.message : String(error);
-    return message.replace(/(?:X-API-Key|Authorization)\s*[:=]\s*\S+/gi, '[redacted]').slice(0, 500);
-}
-
 async function main(): Promise<void> {
     await Actor.init();
     try {

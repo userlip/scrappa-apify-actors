@@ -4,6 +4,7 @@ import {
     selectKleinanzeigenDetail,
 } from './response-utils.js';
 import type { KleinanzeigenDetailsResponse } from './response-utils.js';
+import { errorSummary } from './shared/error-utils.js';
 
 export const LISTING_DETAIL_RESULT_CHARGE_EVENT = 'listing-detail-result';
 
@@ -46,11 +47,6 @@ export function buildListingDetailsOutput(
         status_message: result.statusMessage,
         failures: result.failures,
     };
-}
-
-function errorSummary(error: unknown): string {
-    const message = error instanceof Error ? error.message : String(error);
-    return message.replace(/(?:X-API-Key|Authorization)\s*[:=]\s*\S+/gi, '[redacted]').slice(0, 500);
 }
 
 function getChargeableListingCapacity(actor: Pick<ActorLike, 'getChargingManager'>): number {

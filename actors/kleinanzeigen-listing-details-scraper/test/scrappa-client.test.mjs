@@ -4,10 +4,20 @@ import test from 'node:test';
 const scrappaClientModule = process.env.TEST_SOURCE === 'src'
     ? '../src/shared/scrappa-client.ts'
     : '../dist/shared/scrappa-client.js';
+const errorUtilsModule = process.env.TEST_SOURCE === 'src'
+    ? '../src/shared/error-utils.ts'
+    : '../dist/shared/error-utils.js';
 const {
     isRetryableScrappaError,
     ScrappaTimeoutError,
 } = await import(scrappaClientModule);
+const { errorSummary } = await import(errorUtilsModule);
+
+test('redacts credential-like values from upstream error summaries', () => {
+    const summary = errorSummary('Bad gateway: {"token":"secret-value","api_key":"another-secret"}');
+    assert.doesNotMatch(summary, /secret-value|another-secret/);
+    assert.match(summary, /\[redacted\]/);
+});
 
 test('retries timeout, transient API, and fetch transport errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);

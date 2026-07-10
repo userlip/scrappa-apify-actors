@@ -1,3 +1,5 @@
+import { errorSummary } from './error-utils.js';
+
 export interface ScrappaConfig {
     apiKey: string;
     baseUrl?: string;
@@ -169,10 +171,10 @@ export class ScrappaClient {
 
         const jsonMessage = this.tryParseJsonError(bodyText, fallback);
         if (jsonMessage) {
-            return jsonMessage;
+            return errorSummary(jsonMessage);
         }
 
-        return bodyText.replace(/\s+/g, ' ').trim().slice(0, 500);
+        return errorSummary(bodyText.replace(/\s+/g, ' ').trim());
     }
 
     private tryParseJsonError(bodyText: string, fallback: string): string | null {
