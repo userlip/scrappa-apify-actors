@@ -131,12 +131,12 @@ apify push
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-06-17T09:52:00.000Z. It lists all 81 live `thescrappa` actors. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory is aligned to the live `TheScrappa` Apify org as of 2026-07-10T11:22:00.000Z. It lists all 82 live `thescrappa` actors. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
 
 Current coverage in this repository:
-- 81 live `thescrappa` actors in Apify
+- 82 live `thescrappa` actors in Apify
 - 71 public `thescrappa` actors in Apify according to the pricing and secret audits
-- 81 local actor source directories in this repo; all 81 are represented by live Apify actors
+- 82 local actor source directories in this repo; all 82 are represented by live Apify actors
 - 0 live actors missing a local source directory here; `google-search-scraper` is represented by the legacy `actors/google-search` directory
 - Pricing audit: 57 public actors have active paid pricing, 14 public actors have future-only paid pricing scheduled, 0 public actors are missing paid pricing, and 0 public actors have overdue active-pricing gaps.
 - Secret audit: all 70 public actors have `SCRAPPA_API_KEY` configured as a secret on their default Actor version.
@@ -177,6 +177,7 @@ Use [docs/monetization-activation-checklist.md](docs/monetization-activation-che
 | `actors/jameda-search-scraper` | `jameda-search-scraper` | `8SvzPgdsdg1yZK1t4` | Jameda Search Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-06-02 (`PAY_PER_EVENT`, `doctor-result` at $0.0002/result); verify activation |
 | `actors/jameda-reviews-scraper` | `jameda-reviews-scraper` | `kqyuVCOyip4fBlGqG` | Jameda Reviews Scraper | Local source present; live Apify version uses `SOURCE_FILES`; build `MJfWOKZA8zjZYOEdc` / `1.0.3` succeeded; smoke run `6yKqjLWDK5ffJj4Gr` succeeded with 1 dataset review row for `https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin` | Public with active `PAY_PER_EVENT` pricing from 2026-07-08T22:51:42.030Z (`jameda-review-result` at $0.00025/review); smoke run charged `jameda-review-result = 1` |
 | `actors/kleinanzeigen-search-scraper` | `kleinanzeigen-search-scraper` | `OTzcE9BHg83MpDprO` | Kleinanzeigen Search Scraper | Local source present; live Apify version uses `SOURCE_FILES`; cloud run `UphOLJdyQU5jTx47Q` succeeded; build `4oPbUr5dbd0tcpD1l` succeeded | Public with `pricingInfos` active from 2026-05-22 (`PAY_PER_EVENT`, `listing-result` at $0.00025/result) |
+| `actors/kleinanzeigen-listing-details-scraper` | `kleinanzeigen-listing-details-scraper` | `1hSNdgPwGINp7xeHB` | Kleinanzeigen Listing Details Scraper | Local source present; live build `4jb5DP8IvTrkymaHy` succeeded; private pre-release smoke run `pcPHpHu5YeCqyppa2` saved two requested listings (`3348371956`, `3401748259`) | Public with active `PAY_PER_EVENT` pricing from 2026-07-10T11:19:59.585Z (`listing-detail-result` at $0.00025/result); smoke run charged two events |
 | `actors/kununu-reviews-scraper` | `kununu-reviews-scraper` | `u5QoR4Um3MXwbdavk` | Kununu Reviews Scraper | Local source present; live Apify version uses `SOURCE_FILES`; latest run `KiKqAyR2Ybw7dXPI1` succeeded; latest build `X58Z6Wcfd9fMtH2E4` succeeded | Public with `pricingInfos` active from 2026-05-29T22:26:00Z (`PAY_PER_EVENT`, `review-result` at $0.00025/result) |
 | `actors/stepstone-jobs-scraper` | `stepstone-jobs-scraper` | `DUUlFa5LGId75vOI0` | Stepstone Jobs Scraper ($0.30/1k results) | Local source present; live Apify version uses `SOURCE_FILES`; latest run `D9kHnhyxxBsHeFf8G` succeeded | Scheduled 2026-05-29 (`PAY_PER_EVENT`, default dataset job result at $0.0003/result); Apify pricing schedule created 2026-05-15 with two-week lead time |
 | `actors/instagram-post-info-cheapest-0-20-1000-results` | `instagram-post-info-cheapest-0-20-1000-results` | `nfdzs1z0cRIU1Bfhw` | Instagram Post Info &#124; Cheapest $0.20/1k results | Local source present; live Apify version uses `SOURCE_FILES` | `pricingInfos` start 2025-02-01 (`PRICE_PER_DATASET_ITEM`); verify `currentPricingInfo` |
