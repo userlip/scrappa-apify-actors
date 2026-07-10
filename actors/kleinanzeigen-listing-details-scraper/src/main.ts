@@ -24,6 +24,10 @@ async function main(): Promise<void> {
         ));
         await (await Actor.openKeyValueStore()).setValue('OUTPUT', buildListingDetailsOutput(plan.listings.length, result));
         if (result.statusMessage) { await Actor.exit({ statusMessage: result.statusMessage }); return; }
+        if (result.savedCount === 0 && result.failures.length > 0) {
+            await Actor.fail(`All ${result.failures.length} requested Kleinanzeigen listing detail request(s) failed.`);
+            return;
+        }
     } catch (error) {
         const rawMessage = errorSummary(error);
         const message = error instanceof ScrappaTimeoutError
