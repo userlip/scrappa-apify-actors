@@ -88,7 +88,7 @@
     "sort_by": {
       "title": "Sort By",
       "type": "string",
-      "description": "Google Hotels sort mode: 3 for lowest price, 8 for highest rating, 13 for most reviewed.",
+      "description": "Sort hotel results by lowest price, highest rating, or most reviewed.",
       "editor": "select",
       "enum": ["3", "8", "13"],
       "enumTitles": ["Lowest price", "Highest rating", "Most reviewed"]
@@ -111,7 +111,7 @@
     "hotel_class": {
       "title": "Hotel Class",
       "type": "string",
-      "description": "Hotel star class filter.",
+      "description": "Filter results by 2-star, 3-star, 4-star, or 5-star hotel class.",
       "editor": "select",
       "enum": ["2", "3", "4", "5"],
       "enumTitles": ["2-star", "3-star", "4-star", "5-star"]
@@ -119,7 +119,7 @@
     "rating": {
       "title": "Minimum Rating",
       "type": "string",
-      "description": "Google Hotels minimum rating filter: 7 means 3.5+, 8 means 4.0+, 9 means 4.5+.",
+      "description": "Filter results by a minimum guest rating of 3.5+, 4.0+, or 4.5+.",
       "editor": "select",
       "enum": ["7", "8", "9"],
       "enumTitles": ["3.5+", "4.0+", "4.5+"]
