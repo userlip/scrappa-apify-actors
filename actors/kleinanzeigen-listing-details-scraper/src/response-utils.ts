@@ -33,6 +33,12 @@ function hasListingId(value: unknown): value is KleinanzeigenDetail {
         || (typeof id === 'number' && Number.isFinite(id));
 }
 
+function hasListingDetailFields(value: unknown): value is KleinanzeigenDetail {
+    if (!isObject(value)) return false;
+    return ['title', 'price', 'price_numeric', 'description', 'location', 'images', 'seller', 'attributes', 'shipping', 'posted_at', 'categories']
+        .some((field) => value[field] !== undefined && value[field] !== null);
+}
+
 export function selectKleinanzeigenDetail(response: KleinanzeigenDetailsResponse | null | undefined): KleinanzeigenDetail | null {
     const data = response?.data;
     const candidates = [
@@ -43,8 +49,9 @@ export function selectKleinanzeigenDetail(response: KleinanzeigenDetailsResponse
         response?.listing,
         response?.result,
         response?.item,
+        response,
     ];
-    return candidates.find(hasListingId) ?? null;
+    return candidates.find(hasListingId) ?? candidates.find(hasListingDetailFields) ?? null;
 }
 
 export function buildKleinanzeigenDetailsDatasetItem(

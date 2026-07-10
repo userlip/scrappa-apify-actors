@@ -15,7 +15,8 @@ export interface KleinanzeigenDetailsPlan {
 export const MAX_BATCH_AD_IDS = 100;
 
 function normalizeAdId(value: unknown, field: string): string | undefined {
-    if (value === undefined || value === null) return undefined;
+    if (value === undefined) return undefined;
+    if (value === null) throw new Error(`${field} must be a string or safe integer`);
     if (typeof value === 'number') {
         if (!Number.isSafeInteger(value) || value < 0) throw new Error(`${field} must be a safe integer or string`);
         return String(value);

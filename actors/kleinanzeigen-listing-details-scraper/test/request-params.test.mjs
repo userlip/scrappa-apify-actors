@@ -18,6 +18,7 @@ test('validates supplied values and the unique-ID limit', () => {
     assert.throws(() => buildKleinanzeigenDetailsPlan({ ad_id: '12.5' }), /only digits/);
     assert.throws(() => buildKleinanzeigenDetailsPlan({ ad_id: 1.5 }), /safe integer/);
     assert.throws(() => buildKleinanzeigenDetailsPlan({ ad_ids: '1' }), /must be an array/);
+    assert.throws(() => buildKleinanzeigenDetailsPlan({ ad_ids: ['1', null] }), /ad_ids\[1\] must be a string or safe integer/);
     assert.equal(buildKleinanzeigenDetailsPlan({ ad_ids: Array.from({ length: 100 }, (_, i) => String(i)) }).listings.length, 100);
     assert.throws(() => buildKleinanzeigenDetailsPlan({ ad_id: '100', ad_ids: Array.from({ length: 100 }, (_, i) => String(i)) }), /maximum of 100/);
 });
