@@ -1,0 +1,49 @@
+{
+  "actorSpecification": 1,
+  "name": "kleinanzeigen-listing-details-scraper",
+  "title": "Kleinanzeigen Listing Details Scraper",
+  "description": "Get full Kleinanzeigen listing details by ad ID. Batch up to 100 IDs in one run and save each successful listing as one charged dataset item.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 360
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "listingDetails": {
+          "title": "Kleinanzeigen Listing Details",
+          "transformation": {
+            "fields": ["id", "title", "price", "price_numeric", "description", "location", "images", "seller", "attributes", "shipping", "posted_at", "categories", "request_ad_id", "request_index"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": { "label": "Listing ID", "format": "text" },
+              "title": { "label": "Title", "format": "text" },
+              "price": { "label": "Price", "format": "text" },
+              "price_numeric": { "label": "Price Numeric", "format": "number" },
+              "location": { "label": "Location", "format": "text" },
+              "description": { "label": "Description", "format": "text" },
+              "posted_at": { "label": "Posted At", "format": "text" },
+              "request_ad_id": { "label": "Requested ID", "format": "text" },
+              "request_index": { "label": "Request Index", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

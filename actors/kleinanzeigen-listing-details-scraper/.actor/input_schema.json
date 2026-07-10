@@ -1,0 +1,10 @@
+{
+  "title": "Kleinanzeigen Listing Details Scraper",
+  "description": "Get full Kleinanzeigen listing details by one ad ID or a batch of up to 100 IDs in a single run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "ad_id": { "title": "Listing Ad ID", "type": "string", "description": "A single Kleinanzeigen listing ID. It can be combined with ad_ids.", "editor": "textfield", "prefill": "3451021120" },
+    "ad_ids": { "title": "Listing Ad IDs", "type": "array", "description": "Optional batch of up to 100 listing IDs. Duplicate IDs are fetched once in first-seen order.", "editor": "json", "maxItems": 100, "items": { "type": "string" }, "prefill": ["3451021120"] }
+  }
+}
