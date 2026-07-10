@@ -19,4 +19,8 @@ Each Actor remains publicly available with active `PAY_PER_EVENT` pricing. The i
 
 ## PR status
 
-PR [#268](https://github.com/userlip/scrappa-apify-actors/pull/268) is open against `main`. Its security checks are successful; the remaining automated code-review checks are being monitored. This stage never merges.
+PR [#268](https://github.com/userlip/scrappa-apify-actors/pull/268) is open against `main`. The merge-safe evidence update in `b64fb1b` resolved the two review findings about intermediate commit references. Required checks now pass: Claude Code Review, Cubic AI code reviewer, Socket Security Project Report, and Socket Security Pull Request Alerts. The PR is clean and ready for the merge stage; this stage does not merge.
+
+## Outcome
+
+PR_NUDGING_PASSED
