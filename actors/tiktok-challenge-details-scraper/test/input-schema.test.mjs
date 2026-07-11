@@ -17,3 +17,13 @@ test('schema keeps optional single-value compatibility fields', () => {
     assert.equal(schema.properties.challenge_name.maxLength, 255);
     assert.equal(schema.properties.challenge_id.maxLength, 100);
 });
+
+test('schema uses an Apify-compatible text editor for the single ID', () => {
+    const field = schema.properties.challenge_id;
+
+    // Apify accepts `textfield` only for a single string schema type. Numeric
+    // legacy input remains supported by normalizeChallengeId at runtime.
+    assert.equal(field.editor, 'textfield');
+    assert.equal(field.type, 'string');
+    assert.equal(Array.isArray(field.type), false);
+});
