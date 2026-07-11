@@ -2,6 +2,8 @@ name: Actor Tests
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'actors/**'
       - '.github/workflows/actor-tests.yml'
@@ -11,6 +13,10 @@ on:
       - 'actors/**'
       - '.github/workflows/actor-tests.yml'
 
+concurrency:
+  group: actor-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-actors:
     runs-on: [self-hosted, ci, github-actions]
@@ -19,6 +25,7 @@ jobs:
       matrix:
         actor:
           - path: actors/google-images-scraper
+          - path: actors/google-hotels-search-scraper
           - path: actors/google-jobs-scraper
           - path: actors/google-maps-business-details-scraper
           - path: actors/google-news-scraper

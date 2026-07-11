@@ -5,7 +5,11 @@ import test from 'node:test';
 const requestParamsModule = process.env.TEST_SOURCE === 'src'
     ? '../src/request-params.ts'
     : '../dist/request-params.js';
-const { buildGoogleHotelsSearchParams, describeGoogleHotelsSearchRequest } = await import(requestParamsModule);
+const {
+    buildGoogleHotelsSearchParams,
+    describeGoogleHotelsSearchRequest,
+    resolveRelativeHotelDate,
+} = await import(requestParamsModule);
 
 function futureDate(daysFromNow) {
     const date = new Date();
@@ -84,18 +88,51 @@ test('accepts marketplace select values as numeric strings', () => {
     );
 });
 
-test('input schema accepts numeric and string select values', async () => {
+test('input schema uses valid marketplace string selects', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
     for (const [field, values] of Object.entries({
-        sort_by: [3, '3', 8, '8', 13, '13'],
-        hotel_class: [2, '2', 3, '3', 4, '4', 5, '5'],
-        rating: [7, '7', 8, '8', 9, '9'],
+        sort_by: ['3', '8', '13'],
+        hotel_class: ['2', '3', '4', '5'],
+        rating: ['7', '8', '9'],
     })) {
         const property = schema.properties[field];
-        assert.deepEqual(property.type, ['integer', 'string']);
-        for (const value of values) {
-            assert.ok(property.enum.includes(value), `${field} should allow ${String(value)}`);
-        }
+        assert.equal(property.type, 'string');
+        assert.equal(property.editor, 'select');
+        assert.deepEqual(property.enum, values);
+    }
+});
+
+test('resolves relative dates and keeps automated test prefills valid', async () => {
+    const referenceDate = new Date('2026-07-10T23:30:00.000Z');
+    assert.equal(resolveRelativeHotelDate('today', referenceDate), '2026-07-10');
+    assert.equal(resolveRelativeHotelDate('tomorrow', referenceDate), '2026-07-11');
+    assert.equal(resolveRelativeHotelDate('day-after-tomorrow', referenceDate), '2026-07-12');
+    assert.equal(resolveRelativeHotelDate('2026-08-01', referenceDate), '2026-08-01');
+
+    const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
+    assert.equal(schema.properties.check_in_date.prefill, 'tomorrow');
+    assert.equal(schema.properties.check_out_date.prefill, 'day-after-tomorrow');
+
+    const params = buildGoogleHotelsSearchParams({
+        q: schema.properties.q.prefill,
+        check_in_date: schema.properties.check_in_date.prefill,
+        check_out_date: schema.properties.check_out_date.prefill,
+    });
+    assert.match(params.check_in_date, /^\d{4}-\d{2}-\d{2}$/);
+    assert.match(params.check_out_date, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(params.check_out_date > params.check_in_date);
+});
+
+test('rejects inherited object property names as invalid dates', () => {
+    for (const malformedDate of ['constructor', '__proto__', 'hasOwnProperty', 'toString']) {
+        assert.throws(
+            () => buildGoogleHotelsSearchParams({
+                q: 'Paris',
+                check_in_date: malformedDate,
+                check_out_date: 'day-after-tomorrow',
+            }),
+            /check_in_date must use YYYY-MM-DD format or a supported relative date/,
+        );
     }
 });
 

@@ -15,14 +15,16 @@
     "check_in_date": {
       "title": "Check-in Date",
       "type": "string",
-      "description": "Check-in date in YYYY-MM-DD format. Must be today or a future date.",
-      "editor": "textfield"
+      "description": "Check-in date in YYYY-MM-DD format, or use today, tomorrow, or day-after-tomorrow. Must resolve to today or a future date.",
+      "editor": "textfield",
+      "prefill": "tomorrow"
     },
     "check_out_date": {
       "title": "Check-out Date",
       "type": "string",
-      "description": "Check-out date in YYYY-MM-DD format. Must be after the check-in date.",
-      "editor": "textfield"
+      "description": "Check-out date in YYYY-MM-DD format, or use tomorrow or day-after-tomorrow. Must resolve after the check-in date.",
+      "editor": "textfield",
+      "prefill": "day-after-tomorrow"
     },
     "adults": {
       "title": "Adults",
@@ -85,11 +87,11 @@
     },
     "sort_by": {
       "title": "Sort By",
-      "type": ["integer", "string"],
-      "description": "Google Hotels sort mode: 3 for lowest price, 8 for highest rating, 13 for most reviewed.",
+      "type": "string",
+      "description": "Sort hotel results by lowest price, highest rating, or most reviewed.",
       "editor": "select",
-      "enum": [3, "3", 8, "8", 13, "13"],
-      "enumTitles": ["Lowest price", "Lowest price", "Highest rating", "Highest rating", "Most reviewed", "Most reviewed"]
+      "enum": ["3", "8", "13"],
+      "enumTitles": ["Lowest price", "Highest rating", "Most reviewed"]
     },
     "min_price": {
       "title": "Minimum Price",
@@ -108,19 +110,19 @@
     },
     "hotel_class": {
       "title": "Hotel Class",
-      "type": ["integer", "string"],
-      "description": "Hotel star class filter.",
+      "type": "string",
+      "description": "Filter results by 2-star, 3-star, 4-star, or 5-star hotel class.",
       "editor": "select",
-      "enum": [2, "2", 3, "3", 4, "4", 5, "5"],
-      "enumTitles": ["2-star", "2-star", "3-star", "3-star", "4-star", "4-star", "5-star", "5-star"]
+      "enum": ["2", "3", "4", "5"],
+      "enumTitles": ["2-star", "3-star", "4-star", "5-star"]
     },
     "rating": {
       "title": "Minimum Rating",
-      "type": ["integer", "string"],
-      "description": "Google Hotels minimum rating filter: 7 means 3.5+, 8 means 4.0+, 9 means 4.5+.",
+      "type": "string",
+      "description": "Filter results by a minimum guest rating of 3.5+, 4.0+, or 4.5+.",
       "editor": "select",
-      "enum": [7, "7", 8, "8", 9, "9"],
-      "enumTitles": ["3.5+", "3.5+", "4.0+", "4.0+", "4.5+", "4.5+"]
+      "enum": ["7", "8", "9"],
+      "enumTitles": ["3.5+", "4.0+", "4.5+"]
     },
     "free_cancellation": {
       "title": "Free Cancellation",
