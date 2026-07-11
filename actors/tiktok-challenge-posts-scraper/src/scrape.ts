@@ -25,7 +25,7 @@ export async function scrapeChallenge(
     request: ChallengePostsRequest,
     seenIds: Set<string>,
 ): Promise<ChallengeSummary> {
-    const seenCursors = new Set<string>();
+    const seenCursors = new Set(request.initialCursor ? [request.initialCursor] : []);
     let cursor = request.initialCursor;
     let saved = 0;
     let pages = 0;

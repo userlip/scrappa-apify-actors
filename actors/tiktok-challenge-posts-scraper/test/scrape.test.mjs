@@ -129,6 +129,19 @@ test('reports a repeated pagination cursor instead of succeeding silently', asyn
     assert.equal(result.pages_fetched, 2);
 });
 
+test('does not refetch when upstream repeats the supplied initial cursor', async () => {
+    let calls = 0;
+    const client = { async get() {
+        calls += 1;
+        return { code: 0, data: { videos: [], cursor: '10', hasMore: true } };
+    } };
+
+    const result = await scrapeChallenge(client, actor(), { ...request, initialCursor: '10' }, new Set());
+
+    assert.equal(result.status, 'pagination-stalled');
+    assert.equal(calls, 1);
+});
+
 test('does not deduplicate rows that the charge limit prevented from saving', async () => {
     const client = { async get() {
         return { code: 0, data: { videos: [{ video_id: 'saved' }, { video_id: 'unpaid' }], hasMore: false } };

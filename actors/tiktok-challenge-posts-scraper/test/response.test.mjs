@@ -15,6 +15,9 @@ test('supports upstream fallback shapes', () => {
     assert.deepEqual(parsePage({ aweme_list: [{ aweme_id: '2' }], max_cursor: '20', has_more: false }), {
         videos: [{ aweme_id: '2' }], cursor: '20', hasMore: false,
     });
+    assert.deepEqual(parsePage({ posts: [{ video_id: '3' }], min_cursor: '30', hasMore: true }), {
+        videos: [{ video_id: '3' }], cursor: '30', hasMore: true,
+    });
 });
 
 test('prefers stable video identifiers', () => {

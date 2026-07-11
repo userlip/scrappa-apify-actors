@@ -28,7 +28,7 @@ export function parsePage(data: unknown): Page {
             : body && Array.isArray(body.aweme_list)
                 ? body.aweme_list
                 : [];
-    const cursorValue = body?.cursor ?? body?.max_cursor ?? null;
+    const cursorValue = body?.cursor ?? body?.max_cursor ?? body?.min_cursor ?? null;
 
     return {
         videos: values.map(record).filter((video): video is Record<string, unknown> => video !== null),
