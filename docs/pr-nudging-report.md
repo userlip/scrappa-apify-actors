@@ -6,7 +6,6 @@ Date: 2026-07-11
 
 - PR: [#272 — fix: make TikTok challenge ID schema Apify-compatible](https://github.com/userlip/scrappa-apify-actors/pull/272)
 - Branch: `fix/tiktok-challenge-details-input-schema`
-- Head: `85d74d3183bb72201a8c3ce4dae2dec2b5c30288`
 - Base: `main`
 - State: open, ready for merge (`mergeStateStatus: CLEAN`); this stage did not merge it.
 
@@ -32,14 +31,14 @@ Mixed live smoke run `EpVbStwLx5gJzk8Xk` succeeded in 4.35 seconds: the `booktok
 
 ## CI and review monitoring
 
-After pushing the final tested head, all PR checks passed:
+After pushing tested implementation commit `85d74d3183bb72201a8c3ce4dae2dec2b5c30288`, all PR checks passed:
 
 - Actor Tests workflow `29163099479`: all 22 matrix jobs passed.
 - Claude Code Review workflow `29163099505`: passed.
 - Cubic AI code reviewer: passed.
 - Socket Security project report and PR alerts: passed.
 
-The repository CI matrix does not yet enumerate this newly added Actor; its dedicated test command was run locally as the focused gate above. GitHub's REST endpoint temporarily rate-limited direct review-comment enumeration, but both configured automated reviewers completed successfully and no failing or actionable review check remains.
+The repository CI matrix does not yet enumerate this newly added Actor; its dedicated test command was run locally as the focused gate above. The subsequent commit(s) only update verification documentation and triggered no actor-test workflow; the current PR check is skipped rather than failed. GitHub's REST endpoint temporarily rate-limited direct review-comment enumeration, but both configured automated reviewers completed successfully and no failing or actionable review check remains.
 
 ## Outcome
 
