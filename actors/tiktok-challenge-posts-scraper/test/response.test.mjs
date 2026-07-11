@@ -25,3 +25,10 @@ test('prefers stable video identifiers', () => {
     assert.equal(getVideoId({ aweme_id: '2' }), '2');
     assert.equal(getVideoId({}), null);
 });
+
+test('accepts boolean and numeric pagination flags without treating zero as true', () => {
+    assert.equal(parsePage({ hasMore: 1 }).hasMore, true);
+    assert.equal(parsePage({ has_more: '1' }).hasMore, true);
+    assert.equal(parsePage({ hasMore: 0 }).hasMore, false);
+    assert.equal(parsePage({ has_more: '0' }).hasMore, false);
+});

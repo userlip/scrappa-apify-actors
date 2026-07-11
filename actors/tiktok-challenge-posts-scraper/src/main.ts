@@ -2,6 +2,7 @@ import { Actor } from 'apify';
 import { parseInput } from './input.js';
 import type { ChallengePostsInput } from './input.js';
 import { scrapeChallenge } from './scrape.js';
+import { isTotalFailure } from './run-summary.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
 
 async function main(): Promise<void> {
@@ -26,6 +27,10 @@ async function main(): Promise<void> {
         const saved = summaries.reduce((total, item) => total + item.videos_saved, 0);
         const incomplete = summaries.filter((item) => item.status !== 'succeeded').length;
         console.log(`Completed ${summaries.length}/${requests.length} challenges: ${saved} videos saved, ${incomplete} incomplete challenges.`);
+        if (isTotalFailure(summaries)) {
+            await Actor.fail('Every challenge failed before producing a video. Check the challenge IDs, Scrappa API key, and upstream availability.');
+            return;
+        }
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.error(`Actor failed: ${message}`);

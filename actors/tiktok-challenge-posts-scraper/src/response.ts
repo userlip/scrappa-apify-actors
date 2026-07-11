@@ -29,11 +29,12 @@ export function parsePage(data: unknown): Page {
                 ? body.aweme_list
                 : [];
     const cursorValue = body?.cursor ?? body?.max_cursor ?? body?.min_cursor ?? null;
+    const hasMoreValue = body?.hasMore ?? body?.has_more ?? false;
 
     return {
         videos: values.map(record).filter((video): video is Record<string, unknown> => video !== null),
         cursor: typeof cursorValue === 'string' || typeof cursorValue === 'number' ? String(cursorValue) : null,
-        hasMore: body?.hasMore === true || body?.has_more === true,
+        hasMore: hasMoreValue === true || hasMoreValue === 1 || hasMoreValue === '1',
     };
 }
 
