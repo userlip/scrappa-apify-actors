@@ -104,14 +104,14 @@ test('reports a short event charge as failed and stops after an event charge lim
     assert.equal(limitAfterSave.saved, 1); assert.equal(limitAfterSave.charge_limit_reached, true);
 });
 
-test('continues after a recoverable short save and records every outcome', async () => {
+test('retries an equivalent canonical challenge after a recoverable short save', async () => {
     let saves = 0;
-    const summary = await runChallengeDetailsBatch(requests, {
+    const summary = await runChallengeDetailsBatch([
+        { type: 'challenge_name', value: 'booktok', params: { challenge_name: 'booktok' } },
+        { type: 'challenge_id', value: '1622962893630470', params: { challenge_id: '1622962893630470' } },
+    ], {
         getCapacity: () => Infinity,
-        fetch: async (request) => ({ data: {
-            id: request.type === 'challenge_name' ? '2' : '1',
-            challenge_name: request.type === 'challenge_name' ? request.value : undefined,
-        } }),
+        fetch: async () => ({ data: { id: '1622962893630470', challenge_name: 'booktok' } }),
         save: async () => {
             saves += 1;
             return saves === 1
@@ -119,6 +119,7 @@ test('continues after a recoverable short save and records every outcome', async
                 : { savedCount: 1, chargeLimitReached: false };
         },
     });
+    assert.equal(saves, 2);
     assert.equal(summary.attempted, 2); assert.equal(summary.failed, 1); assert.equal(summary.saved, 1);
     assert.equal(summary.charge_limit_reached, false);
     assert.deepEqual(summary.outcomes.map((outcome) => outcome.status), ['failed', 'saved']);

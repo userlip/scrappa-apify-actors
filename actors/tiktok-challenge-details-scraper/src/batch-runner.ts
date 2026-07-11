@@ -92,8 +92,6 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
                 });
                 continue;
             }
-            resolvedChallengeIds.add(canonicalChallengeId);
-
             const pushResult = await dependencies.save(normalizeChallengeDetail(challenge, request));
             if (pushResult.savedCount !== 1) {
                 outcomes.push({ request_type: request.type, request_value: request.value, status: 'failed', error: 'Apify did not save a chargeable challenge detail result' });
@@ -106,6 +104,9 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
                 continue;
             }
             saved += 1;
+            // A recoverable short save must not prevent an equivalent later lookup
+            // from producing the one successful, chargeable dataset result.
+            resolvedChallengeIds.add(canonicalChallengeId);
             outcomes.push({ request_type: request.type, request_value: request.value, status: 'saved' });
             if (pushResult.chargeLimitReached) {
                 chargeLimitReached = true;
