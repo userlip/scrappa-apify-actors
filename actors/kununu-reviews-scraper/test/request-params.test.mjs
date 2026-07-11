@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
@@ -6,6 +7,17 @@ import {
     buildPageParams,
     describeKununuReviewsRequest,
 } from '../dist/request-params.js';
+
+test('uses one stable company for the automated quality-test prefill', async () => {
+    const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
+
+    assert.deepEqual(schema.properties.targets.prefill, ['de/bmwgroup']);
+    assert.deepEqual(buildKununuReviewsPlan({
+        targets: schema.properties.targets.prefill,
+    }).targets, [
+        { country: 'de', company_slug: 'bmwgroup', input: 'de/bmwgroup' },
+    ]);
+});
 
 test('builds params for batch Kununu review targets', () => {
     const plan = buildKununuReviewsPlan({
