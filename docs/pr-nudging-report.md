@@ -1,25 +1,35 @@
-# PR Nudging Report: Stale Apify Notice Smoke Gate
+# PR Nudging Report: TikTok Challenge Details Scraper
 
-## Release gates
+Date: 2026-07-11
 
-- Branch: `chore/smoke-gate-three-actors`.
-- Scope: documentation-only evidence for three controlled Apify smoke runs. No Actor source, deployment, secret, or pricing changes are included.
-- Local validation: `node --test scripts/audit-apify-health.test.mjs scripts/audit-apify-pricing.test.mjs` passed (31 tests); `git diff --check origin/main...HEAD` passed.
-- Unrelated untracked paths `.codegraph/` and `docs/source-document.md` remain excluded.
+## Pre-PR validation
 
-## Verified smoke evidence
+- Branch: `feat/tiktok-challenge-details-scraper`.
+- Reviewed commits: `58e7bda`, `2f0e4c5`, and `5b621e7` after base `913e3fc`.
+- Focused checks, rerun in `actors/tiktok-challenge-details-scraper`, passed:
+  - `npm test`: 13 passed, 0 failed.
+  - `npm run typecheck`: passed.
+  - `jq empty .actor/actor.json .actor/input_schema.json`: passed.
+  - `git diff --check 913e3fc..HEAD`: passed.
+- Code review found no blocking findings. The Actor is a thin, batch-first Scrappa wrapper and produces one charged dataset item per successful challenge lookup.
 
-| Actor | ID | Run | Terminal result | Dataset / paid event | Maintenance notice |
-| --- | --- | --- | --- | --- | --- |
-| Booking Search Scraper | `BehWN3LEvBxhEiJDF` | `vgKnULJIsxREWa7Z7` | `SUCCEEDED` | 26 schema-valid rows; `booking-result: 26` | Cleared |
-| Google Maps Advanced Search Scraper | `DT8bUdm2Vn4HjlyDo` | `JVEjCoJ01QMfgzL0v` | `SUCCEEDED` | 1 schema-valid row; `search: 1` | Cleared |
-| YouTube Transcript Scraper | `ztc698cHC09lkCDYE` | `2A6MAGndQAxjjBMWf` | `SUCCEEDED` | 1 schema-valid row; `apify-default-dataset-item: 1` | Cleared |
+## PR scope
 
-Each Actor remains publicly available with active `PAY_PER_EVENT` pricing. The implementation and testing records confirm the default-dataset shapes and that the public run API exposes the authoritative `actId` field.
+The change adds `actors/tiktok-challenge-details-scraper`, a batch-first Actor for resolving known TikTok challenge names and IDs using Scrappa's `/tiktok/challenges/details` endpoint. It accepts up to 100 normalized, deduplicated entities in one run; retains partial successes; writes clear per-entity outcomes; and uses the `challenge-detail-result` PAY_PER_EVENT event only for successful saved items.
+
+The marketplace title is **TikTok Hashtag & Challenge Details Scraper**. The listing and schema include campaign-research, user/view-count, and challenge-resolution examples.
+
+## Release gates for deployment
+
+The PR contains no production deployment, secret, or Apify pricing mutation. Before public release, the deployment and live-verification stages must:
+
+1. Configure `SCRAPPA_API_KEY` as a secret for the deployed version.
+2. Create and API-verify active, or earliest-scheduled, paid `PAY_PER_EVENT` pricing for `challenge-detail-result` at USD `$0.00025` per successful item.
+3. Run a mixed `booktok`, `1622962893630470`, and known-invalid batch; verify terminal success, per-entity failure reporting, one dataset item and one event per resolved challenge, and no charge for the invalid lookup.
 
 ## PR status
 
-PR [#268](https://github.com/userlip/scrappa-apify-actors/pull/268) is open against `main`. The merge-safe evidence update in `b64fb1b` resolved the two review findings about intermediate commit references. Required checks now pass: Claude Code Review, Cubic AI code reviewer, Socket Security Project Report, and Socket Security Pull Request Alerts. The PR is clean and ready for the merge stage; this stage does not merge.
+The branch is ready to push and open as a pull request against `main`. CI and review monitoring begin after the PR is created. This stage does not merge.
 
 ## Outcome
 

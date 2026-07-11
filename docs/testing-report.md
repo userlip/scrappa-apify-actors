@@ -1,37 +1,41 @@
-# Testing Report: Stale Apify Notice Smoke Gate
+# Testing Report: TikTok Challenge Details Scraper
 
-Date: 2026-07-10
+Date: 2026-07-11
 
 ## Result
 
 TESTING_PASSED
 
-The targeted regression checks and public Apify verification passed. The documented smoke runs remain terminally successful, produce the expected dataset shapes, account for paid events, and have no maintenance notice. No Actor source or pricing change was included in the reviewed implementation.
+The new `actors/tiktok-challenge-details-scraper` passes its focused automated coverage and static validation. The tests cover the batch-first workflow, mixed names/IDs, deduplication, the combined 100-entity guard, partial upstream failures, response normalization, and PAY_PER_EVENT charging limits.
 
-## Automated checks
+## Automated verification
+
+Run from `actors/tiktok-challenge-details-scraper`:
 
 ```text
-node --test scripts/audit-apify-health.test.mjs scripts/audit-apify-pricing.test.mjs
-31 passed, 0 failed
+npm test
+13 passed, 0 failed
 
-git diff --check origin/main...HEAD
+npm run typecheck
+passed
+
+jq empty .actor/actor.json .actor/input_schema.json
+passed
+
+git diff --check 913e3fc..HEAD
 passed
 ```
 
-## Live verification
+The test cases specifically confirm that a successful later entity survives an earlier API failure, no request starts after charge capacity is exhausted, one successful PAY_PER_EVENT dataset row has exactly one `challenge-detail-result` charge, short event charges are surfaced safely, and development pricing can save without an event.
 
-The public Apify API was refetched for each recorded run, Actor, and default dataset. Each Actor is public, has a cleared notice (`NONE` or absent), has an active `PAY_PER_EVENT` pricing record, and its run is linked through `actId`, terminally `SUCCEEDED`, and reports the expected positive charge event.
+## Direct verification and release gates
 
-| Actor ID | Smoke run ID | Dataset verification | Paid event verification |
-| --- | --- | --- | --- |
-| `BehWN3LEvBxhEiJDF` | `vgKnULJIsxREWa7Z7` | 26 rows; first row includes `name`, `url`, `currency`, and documented request context fields | `booking-result: 26` |
-| `DT8bUdm2Vn4HjlyDo` | `JVEjCoJ01QMfgzL0v` | 1 row; includes `name`, `rating`, `review_count`, `full_address`, `phone_numbers`, `website`, `latitude`, and `longitude` | `search: 1` (the implementation record also confirms `result: 1`) |
-| `ztc698cHC09lkCDYE` | `2A6MAGndQAxjjBMWf` | 1 row; includes `videoId`, `transcript`, `text`, and `segmentCount`; `segmentCount` equals transcript-array length | `apify-default-dataset-item: 1` |
+This test container has no `SCRAPPA_API_KEY` configured and the Actor has not yet been deployed. A live mixed name/ID smoke run was therefore not attempted locally; doing so requires the deployed Actor secret and must not use a test report as a substitute for production verification.
 
-The unauthenticated public run endpoint returns `actId` (not `actorId`); verification uses this authoritative field. Authenticated portfolio-wide audit commands were not rerun in this test container because no Apify token is configured here. The implementation record provides the previously completed authenticated audit evidence; the in-scope public smoke evidence was independently revalidated above.
+Before publication, the deployment and live-verification stages must:
 
-## Scope and handoff
+1. Configure `SCRAPPA_API_KEY` as an Apify secret for the deployed version.
+2. Create and API-verify active, or earliest-scheduled, paid `PAY_PER_EVENT` pricing for `challenge-detail-result` at USD `$0.00025` per successful row.
+3. Run a mixed batch using `booktok` and `1622962893630470`, plus a known-invalid value for the partial-failure path; confirm terminal success, one dataset item and one paid event per resolved detail, per-entity failure reporting, and no charge for the invalid value.
 
-- Reviewed change: the documentation-only branch diff (`origin/main...HEAD`), covering the implementation, code-review, testing, and PR-nudging records; no source, build, deployment, secret, or pricing change.
-- Existing unrelated untracked paths (`.codegraph/` and `docs/source-document.md`) were not modified.
-- No regression or follow-up implementation work is required.
+No source changes were made during testing.

@@ -1,0 +1,25 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-challenge-details-scraper",
+  "title": "TikTok Hashtag & Challenge Details Scraper",
+  "description": "Resolve known TikTok hashtags and challenge IDs into authoritative metadata through Scrappa.",
+  "version": "1.0", "buildTag": "latest",
+  "meta": { "templateId": "ts-start" },
+  "input": "./input_schema.json", "dockerfile": "./Dockerfile",
+  "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": { "timeoutSecs": 120 },
+  "storages": { "dataset": { "actorSpecification": 1, "views": {
+    "challenge_details": {
+      "title": "Challenge Details",
+      "transformation": { "fields": ["challenge_id", "challenge_name", "description", "user_count", "view_count", "video_count", "cover", "request_challenge_name", "request_challenge_id", "retrieved_at"] },
+      "display": { "component": "table", "properties": {
+        "challenge_id": { "label": "Challenge ID", "format": "text" }, "challenge_name": { "label": "Challenge", "format": "text" },
+        "description": { "label": "Description", "format": "text" }, "user_count": { "label": "Users", "format": "number" },
+        "view_count": { "label": "Views", "format": "number" }, "video_count": { "label": "Videos", "format": "number" },
+        "cover": { "label": "Cover", "format": "link" }, "request_challenge_name": { "label": "Requested name", "format": "text" },
+        "request_challenge_id": { "label": "Requested ID", "format": "text" }, "retrieved_at": { "label": "Retrieved at", "format": "date" }
+      }}
+    }
+  }}}
+}
