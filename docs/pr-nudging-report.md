@@ -2,35 +2,46 @@
 
 Date: 2026-07-11
 
-## Pre-PR validation
+## Pull request
 
-- Branch: `feat/tiktok-challenge-details-scraper`.
-- Reviewed commits: `58e7bda`, `2f0e4c5`, and `5b621e7` after base `913e3fc`.
-- Focused checks, rerun in `actors/tiktok-challenge-details-scraper`, passed:
-  - `npm test`: 13 passed, 0 failed.
-  - `npm run typecheck`: passed.
-  - `jq empty .actor/actor.json .actor/input_schema.json`: passed.
-  - `git diff --check 913e3fc..HEAD`: passed.
-- Code review found no blocking findings. The Actor is a thin, batch-first Scrappa wrapper and produces one charged dataset item per successful challenge lookup.
+- PR: [#272 — fix: make TikTok challenge ID schema Apify-compatible](https://github.com/userlip/scrappa-apify-actors/pull/272)
+- Branch: `fix/tiktok-challenge-details-input-schema`
+- Base: `main`
+- State: open, ready for merge (`mergeStateStatus: CLEAN`); this stage did not merge it.
 
-## PR scope
+This is the follow-up to the initial Actor PR. It makes the Apify input schema editor-compatible and prevents name or ID lookups from saving or charging a mismatched upstream challenge response. It also deduplicates canonical results and retries a recoverable short save without double charging.
 
-The change adds `actors/tiktok-challenge-details-scraper`, a batch-first Actor for resolving known TikTok challenge names and IDs using Scrappa's `/tiktok/challenges/details` endpoint. It accepts up to 100 normalized, deduplicated entities in one run; retains partial successes; writes clear per-entity outcomes; and uses the `challenge-detail-result` PAY_PER_EVENT event only for successful saved items.
+## Validation before push
 
-The marketplace title is **TikTok Hashtag & Challenge Details Scraper**. The listing and schema include campaign-research, user/view-count, and challenge-resolution examples.
+Run from `actors/tiktok-challenge-details-scraper`:
 
-## Release gates for deployment
+- `npm test` — 18 passed, 0 failed.
+- `npm run typecheck` — passed.
+- `jq empty .actor/actor.json .actor/input_schema.json` — passed.
+- `npm audit --omit=dev --package-lock-only --json` — 0 vulnerabilities.
+- `git diff --check origin/main...HEAD` — passed.
 
-The PR contains no production deployment, secret, or Apify pricing mutation. Before public release, the deployment and live-verification stages must:
+The focused suite covers normalization and the combined 100-entity limit, partial failures, response mapping, canonical deduplication, mismatch rejection, short-save retries, and one charge per saved result.
 
-1. Configure `SCRAPPA_API_KEY` as a secret for the deployed version.
-2. Create and API-verify active, or earliest-scheduled, paid `PAY_PER_EVENT` pricing for `challenge-detail-result` at USD `$0.00025` per successful item.
-3. Run a mixed `booktok`, `1622962893630470`, and known-invalid batch; verify terminal success, per-entity failure reporting, one dataset item and one event per resolved challenge, and no charge for the invalid lookup.
+## Release gate evidence
 
-## PR status
+The deployed Actor `bEajaru9WVbLA0YBh` (`tiktok-challenge-details-scraper`) has a secret `SCRAPPA_API_KEY` and active `PAY_PER_EVENT` pricing of USD `$0.00025` for `challenge-detail-result`.
 
-The branch is ready to push and open as a pull request against `main`. CI and review monitoring begin after the PR is created. This stage does not merge.
+Mixed live smoke run `EpVbStwLx5gJzk8Xk` succeeded in 4.35 seconds: the `booktok` name plus its canonical ID produced one BookTok dataset item and exactly one charged event; the canonical duplicate was explicitly uncharged and the malformed ID was omitted during normalization. Build `1.0.6` (`NfNCbykxUqynIQ4nT`) succeeded. Full evidence is in `docs/testing-report.md`.
+
+## CI and review monitoring
+
+After pushing tested implementation commit `85d74d3183bb72201a8c3ce4dae2dec2b5c30288`, all PR checks passed:
+
+- Actor Tests workflow `29163099479`: all 22 matrix jobs passed.
+- Claude Code Review workflow `29163099505`: passed.
+- Cubic AI code reviewer: passed.
+- Socket Security project report and PR alerts: passed.
+
+The repository CI matrix does not yet enumerate this newly added Actor; its dedicated test command was run locally as the focused gate above. GitHub reran the matrix for the current PR head because the PR still contains actor changes, and all 22 enumerated jobs passed. GitHub's REST endpoint temporarily rate-limited direct review-comment enumeration, but both configured automated reviewers completed successfully and no failing or actionable review check remains.
 
 ## Outcome
+
+The branch is pushed, PR #272 is open and clean, all rerun CI/review checks pass, and paid live behavior is verified. No merge was performed.
 
 PR_NUDGING_PASSED

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { runChallengeDetailsBatch } from '../dist/batch-runner.js';
+import { CHALLENGE_DETAIL_CHARGE_EVENT, runChallengeDetailsBatch } from '../dist/batch-runner.js';
+import { saveChallengeDetail } from '../dist/charged-save.js';
 
 const requests = [
     { type: 'challenge_name', value: 'missing', params: { challenge_name: 'missing' } },
@@ -16,6 +17,64 @@ test('preserves a later success after an upstream failure and only saves success
     });
     assert.equal(summary.attempted, 2); assert.equal(summary.saved, 1); assert.equal(summary.failed, 1);
     assert.equal(saved.length, 1); assert.match(summary.outcomes[0].error, /404/);
+});
+
+test('does not save or charge a name lookup when the upstream returns a different challenge', async () => {
+    let saves = 0;
+    const summary = await runChallengeDetailsBatch([requests[0]], {
+        getCapacity: () => Infinity,
+        fetch: async () => ({ data: { id: '1', challenge_name: 'unrelated' } }),
+        save: async () => { saves += 1; return { savedCount: 1, chargeLimitReached: false }; },
+    });
+    assert.equal(saves, 0);
+    assert.equal(summary.saved, 0);
+    assert.equal(summary.failed, 1);
+    assert.match(summary.outcomes[0].error, /unrelated.*missing/);
+});
+
+test('does not save or charge an ID lookup when the upstream returns a different challenge', async () => {
+    let saves = 0;
+    const summary = await runChallengeDetailsBatch([requests[1]], {
+        getCapacity: () => Infinity,
+        fetch: async () => ({ data: { id: '2', challenge_name: 'one' } }),
+        save: async () => { saves += 1; return { savedCount: 1, chargeLimitReached: false }; },
+    });
+    assert.equal(saves, 0);
+    assert.equal(summary.saved, 0);
+    assert.equal(summary.failed, 1);
+    assert.match(summary.outcomes[0].error, /"2".*"1"/);
+});
+
+test('saves and charges a canonical challenge only once when name and ID lookups resolve to it', async () => {
+    const datasetCalls = [];
+    const summary = await runChallengeDetailsBatch([
+        { type: 'challenge_name', value: 'booktok', params: { challenge_name: 'booktok' } },
+        { type: 'challenge_id', value: '1622962893630470', params: { challenge_id: '1622962893630470' } },
+    ], {
+        getCapacity: () => Infinity,
+        fetch: async () => ({ data: { id: '1622962893630470', challenge_name: 'booktok' } }),
+        save: (item) => saveChallengeDetail(item, {
+            getPricingInfo: () => ({ isPayPerEvent: true }),
+        }, {
+            pushData: async (...args) => {
+                datasetCalls.push(args);
+                return { chargedCount: 1, eventChargeLimitReached: false };
+            },
+        }, CHALLENGE_DETAIL_CHARGE_EVENT),
+    });
+
+    assert.equal(datasetCalls.length, 1);
+    assert.equal(datasetCalls[0][1], CHALLENGE_DETAIL_CHARGE_EVENT);
+    assert.equal(summary.saved, 1);
+    assert.equal(summary.failed, 0);
+    assert.deepEqual(summary.outcomes.map((outcome) => outcome.status), ['saved', 'duplicate']);
+    assert.deepEqual(summary.outcomes[1], {
+        request_type: 'challenge_id',
+        request_value: '1622962893630470',
+        status: 'duplicate',
+        canonical_challenge_id: '1622962893630470',
+        error: 'Duplicate canonical challenge ID 1622962893630470; result was not saved or charged',
+    });
 });
 
 test('stops before a request when charge capacity is exhausted', async () => {
@@ -45,11 +104,14 @@ test('reports a short event charge as failed and stops after an event charge lim
     assert.equal(limitAfterSave.saved, 1); assert.equal(limitAfterSave.charge_limit_reached, true);
 });
 
-test('continues after a recoverable short save and records every outcome', async () => {
+test('retries an equivalent canonical challenge after a recoverable short save', async () => {
     let saves = 0;
-    const summary = await runChallengeDetailsBatch(requests, {
+    const summary = await runChallengeDetailsBatch([
+        { type: 'challenge_name', value: 'booktok', params: { challenge_name: 'booktok' } },
+        { type: 'challenge_id', value: '1622962893630470', params: { challenge_id: '1622962893630470' } },
+    ], {
         getCapacity: () => Infinity,
-        fetch: async () => ({ data: { id: '1' } }),
+        fetch: async () => ({ data: { id: '1622962893630470', challenge_name: 'booktok' } }),
         save: async () => {
             saves += 1;
             return saves === 1
@@ -57,6 +119,7 @@ test('continues after a recoverable short save and records every outcome', async
                 : { savedCount: 1, chargeLimitReached: false };
         },
     });
+    assert.equal(saves, 2);
     assert.equal(summary.attempted, 2); assert.equal(summary.failed, 1); assert.equal(summary.saved, 1);
     assert.equal(summary.charge_limit_reached, false);
     assert.deepEqual(summary.outcomes.map((outcome) => outcome.status), ['failed', 'saved']);
