@@ -29,8 +29,6 @@ npx apify-cli validate-schema # input and dataset schemas pass Apify CLI validat
 git diff --check  # passes
 ```
 
-## Release handoff
-
 ## Deployment and release verification
 
 - Deployed build `NfNCbykxUqynIQ4nT` (`1.0.6`) succeeded after publishing the committed canonical-deduplication fix.

@@ -11,7 +11,3 @@ Verification passed from `actors/tiktok-challenge-details-scraper`:
 - `jq empty .actor/actor.json .actor/input_schema.json`
 - `npx apify-cli validate-schema` (input and dataset schemas valid)
 - `git diff --check`
-
-Follow-up PR: https://github.com/userlip/scrappa-apify-actors/pull/272
-
-Latest commit: `d9ba4ac` (`test: validate TikTok schema editor compatibility`)
