@@ -16,7 +16,7 @@ Date: 2026-07-11
 From `actors/tiktok-challenge-details-scraper`:
 
 ```text
-npm test          # 11 passing tests
+npm test          # 13 passing tests
 npm run typecheck # passes
 jq empty .actor/actor.json .actor/input_schema.json # passes
 git diff --check  # passes

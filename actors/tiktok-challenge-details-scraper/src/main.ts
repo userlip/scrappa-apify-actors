@@ -1,5 +1,6 @@
 import { Actor } from 'apify';
 import { CHALLENGE_DETAIL_CHARGE_EVENT, runChallengeDetailsBatch } from './batch-runner.js';
+import { saveChallengeDetail } from './charged-save.js';
 import { buildTikTokChallengeDetailsRequests } from './request-params.js';
 import type { TikTokChallengeDetailsInput } from './request-params.js';
 import type { TikTokChallengeDetailsResponse } from './response-utils.js';
@@ -12,16 +13,6 @@ function getChargeableCapacity(): number {
     return manager.getPricingInfo().isPayPerEvent
         ? manager.calculateMaxEventChargeCountWithinLimit(CHALLENGE_DETAIL_CHARGE_EVENT)
         : Infinity;
-}
-
-async function saveChallengeDetail(item: Record<string, unknown>): Promise<{ savedCount: number; chargeLimitReached: boolean }> {
-    const isPayPerEvent = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
-    if (!isPayPerEvent) {
-        await Actor.pushData(item);
-        return { savedCount: 1, chargeLimitReached: false };
-    }
-    const result = await Actor.pushData(item, CHALLENGE_DETAIL_CHARGE_EVENT);
-    return { savedCount: Math.min(result.chargedCount, 1), chargeLimitReached: result.eventChargeLimitReached || result.chargedCount < 1 };
 }
 
 async function main(): Promise<void> {
@@ -37,7 +28,7 @@ async function main(): Promise<void> {
         const summary = await runChallengeDetailsBatch(requests, {
             getCapacity: getChargeableCapacity,
             fetch: (request) => client.get<TikTokChallengeDetailsResponse>('/tiktok/challenges/details', request.params),
-            save: saveChallengeDetail,
+            save: (item) => saveChallengeDetail(item, Actor.getChargingManager(), Actor, CHALLENGE_DETAIL_CHARGE_EVENT),
         });
         const store = await Actor.openKeyValueStore();
         await store.setValue('OUTPUT', summary);
