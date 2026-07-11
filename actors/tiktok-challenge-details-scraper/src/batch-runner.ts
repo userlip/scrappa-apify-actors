@@ -1,5 +1,5 @@
 import type { TikTokChallengeDetailsRequest } from './request-params.js';
-import { challengeName, extractChallengeDetail, normalizeChallengeDetail } from './response-utils.js';
+import { challengeId, challengeName, extractChallengeDetail, normalizeChallengeDetail } from './response-utils.js';
 import type { TikTokChallengeDetailsResponse } from './response-utils.js';
 
 export const CHALLENGE_DETAIL_CHARGE_EVENT = 'challenge-detail-result';
@@ -71,6 +71,11 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
                 const returnedName = challengeName(challenge);
                 if (!returnedName || returnedName.toLowerCase() !== request.value.toLowerCase()) {
                     throw new Error(`Scrappa returned challenge ${JSON.stringify(returnedName)} but ${JSON.stringify(request.value)} was requested`);
+                }
+            } else {
+                const returnedId = challengeId(challenge);
+                if (returnedId !== request.value) {
+                    throw new Error(`Scrappa returned challenge ID ${JSON.stringify(returnedId)} but ${JSON.stringify(request.value)} was requested`);
                 }
             }
 

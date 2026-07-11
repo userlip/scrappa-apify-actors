@@ -31,6 +31,19 @@ test('does not save or charge a name lookup when the upstream returns a differen
     assert.match(summary.outcomes[0].error, /unrelated.*missing/);
 });
 
+test('does not save or charge an ID lookup when the upstream returns a different challenge', async () => {
+    let saves = 0;
+    const summary = await runChallengeDetailsBatch([requests[1]], {
+        getCapacity: () => Infinity,
+        fetch: async () => ({ data: { id: '2', challenge_name: 'one' } }),
+        save: async () => { saves += 1; return { savedCount: 1, chargeLimitReached: false }; },
+    });
+    assert.equal(saves, 0);
+    assert.equal(summary.saved, 0);
+    assert.equal(summary.failed, 1);
+    assert.match(summary.outcomes[0].error, /"2".*"1"/);
+});
+
 test('stops before a request when charge capacity is exhausted', async () => {
     let fetched = 0;
     const summary = await runChallengeDetailsBatch(requests, {

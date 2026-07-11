@@ -12,7 +12,12 @@ function text(value: unknown): string | null { return typeof value === 'string' 
 function count(value: unknown): number | null { return typeof value === 'number' ? value : null; }
 
 export function challengeName(challenge: TikTokChallengeDetail): string | null {
+    // Prefer the API's canonical field, then accept its documented aliases.
     return text(challenge.challenge_name ?? challenge.cha_name ?? challenge.name ?? challenge.title);
+}
+
+export function challengeId(challenge: TikTokChallengeDetail): string | null {
+    return text(challenge.challenge_id ?? challenge.id ?? challenge.cid);
 }
 
 export function extractChallengeDetail(data: TikTokChallengeDetailsResponse['data']): TikTokChallengeDetail | null {
@@ -25,7 +30,7 @@ export function extractChallengeDetail(data: TikTokChallengeDetailsResponse['dat
 export function normalizeChallengeDetail(challenge: TikTokChallengeDetail, request: { type: 'challenge_name' | 'challenge_id'; value: string }, retrievedAt = new Date().toISOString()): Record<string, unknown> {
     return {
         ...challenge,
-        challenge_id: text(challenge.challenge_id ?? challenge.id ?? challenge.cid),
+        challenge_id: challengeId(challenge),
         challenge_name: challengeName(challenge),
         description: text(challenge.description ?? challenge.desc),
         user_count: count(challenge.user_count ?? challenge.stats?.user_count),
