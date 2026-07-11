@@ -2,7 +2,13 @@
 
 Date: 2026-07-11
 
-## Completed locally
+## Rework completed locally
+
+- Fixed the Apify deployment blocker for `challenge_id`: the input schema now declares a single `string` type for its `textfield` editor, which Apify accepts.
+- Kept backwards-compatible numeric single-ID input in the runtime normalizer (`normalizeChallengeId`), so API clients sending safe integer values continue to work even though the UI schema field is a string.
+- Added a focused regression test that locks the Apify-compatible `textfield`/single-string pairing.
+
+## Original implementation
 
 - Created `actors/tiktok-challenge-details-scraper` on branch `feat/tiktok-challenge-details-scraper`.
 - Added batch-first name and ID normalization with mixed-input support, separate deduplication, malformed-entry warnings, and a strict combined 100-entity cap.
@@ -16,9 +22,10 @@ Date: 2026-07-11
 From `actors/tiktok-challenge-details-scraper`:
 
 ```text
-npm test          # 13 passing tests
+npm test          # 15 passing tests
 npm run typecheck # passes
 jq empty .actor/actor.json .actor/input_schema.json # passes
+npx apify-cli validate-schema # input and dataset schemas pass Apify CLI validation
 git diff --check  # passes
 ```
 
@@ -28,6 +35,6 @@ This implementation stage made no Apify account mutations. Before public release
 
 The requested new PR is intentionally not opened here: this stage is constrained to a local commit, and the PR stage follows testing.
 
-The feature implementation and the charging-path test coverage are committed locally on `feat/tiktok-challenge-details-scraper`.
+The feature implementation, deployment-blocker correction, and charging-path test coverage are committed locally on `feat/tiktok-challenge-details-scraper` (`5cd31ea`). The branch is intentionally not pushed and no PR is opened by this implementation stage; the follow-up PR stage owns those external actions.
 
 IMPLEMENTATION_COMPLETE
