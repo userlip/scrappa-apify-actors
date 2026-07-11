@@ -1,20 +1,24 @@
-# Code Review: Stale Apify Notice Smoke Gate
+# Code Review: TikTok Challenge Details Scraper
 
 ## Result
 
-No blocking findings. The implementation is documentation-only and records the requested controlled production smoke gate without modifying Actor source, builds, deployment configuration, pricing, or secrets.
+No blocking findings. The new Actor is a thin, batch-first Scrappa wrapper and conforms to the repository cost-control rules.
 
 ## Evidence reviewed
 
-- The final branch diff (`origin/main...HEAD`) contains four documentation records: `docs/implementation-summary.md`, `docs/code-review.md`, `docs/testing-report.md`, and `docs/pr-nudging-report.md`.
-- Public Apify API verification confirmed each recorded run is `SUCCEEDED`, the Actor is public, and its notice is `NONE`:
-  - Booking.com Search Scraper (`BehWN3LEvBxhEiJDF`): `vgKnULJIsxREWa7Z7`; 26 dataset items; `booking-result: 26`.
-  - Google Maps Advanced Search (`DT8bUdm2Vn4HjlyDo`): `JVEjCoJ01QMfgzL0v`; 1 dataset item; `search: 1`, `result: 1`.
-  - YouTube Transcript Scraper (`ztc698cHC09lkCDYE`): `2A6MAGndQAxjjBMWf`; 1 dataset item; `apify-default-dataset-item: 1`; `segmentCount` and transcript length are both 61.
-- Dataset fields match the local input/output contracts cited by the implementation record.
-- `node --test scripts/audit-apify-health.test.mjs scripts/audit-apify-pricing.test.mjs`: 31 passing, 0 failing.
-- `git diff --check origin/main...HEAD`: passed.
+- Diff reviewed: `913e3fc..HEAD`, including the new `actors/tiktok-challenge-details-scraper` implementation and focused tests.
+- The Actor normalizes and deduplicates mixed name/ID inputs, enforces the combined 100-entity limit before network work, sends exactly one lookup parameter per entity, and processes all entities in a single run.
+- Each successful detail lookup writes one dataset item. PAY_PER_EVENT uses `challenge-detail-result`, checks capacity before fetching, and retains later successes after per-entity failures. Failed and empty lookups are retained as safe per-entity `OUTPUT` outcomes without a charged dataset row.
+- Reviewed the Scrappa API contract in the reference API checkout: `GET /api/tiktok/challenges/details` accepts `challenge_id` or `challenge_name`, proxies `/challenge/info`, and returns the implemented metadata shape.
+- Metadata uses the required title, secret reference, 128 MB memory, 120-second timeout, batch-first schema, dataset view, and listing examples. No API key is present in the diff.
+- Local verification passed in `actors/tiktok-challenge-details-scraper`:
+  - `npm test`: 13 passing
+  - `npm run typecheck`: passed
+  - `jq empty .actor/actor.json .actor/input_schema.json`: passed
+  - `git diff --check 913e3fc..HEAD`: passed
 
-The current review container has no configured `APIFY_TOKEN`/`APIFY_API_TOKEN`, so the authenticated portfolio-wide audit commands could not be rerun here. This does not affect the independently verified public run, dataset, notice, and charge-event evidence for the three in-scope Actors.
+## Release gates outside this code review
+
+Before public release, the deployment stages must configure `SCRAPPA_API_KEY` as a secret; create and API-verify active or earliest-scheduled paid PAY_PER_EVENT pricing for `challenge-detail-result` at USD `$0.00025`; and complete the mixed name/ID smoke run with event-to-dataset accounting and a partial-failure check.
 
 CODE_REVIEW_PASSED
