@@ -21,8 +21,10 @@ export function parsePage(data: unknown): Page {
     const body = record(data);
     const values = Array.isArray(data)
         ? data
-        : body && Array.isArray(body.videos)
-            ? body.videos
+        : body && Array.isArray(body.posts)
+            ? body.posts
+            : body && Array.isArray(body.videos)
+                ? body.videos
             : body && Array.isArray(body.aweme_list)
                 ? body.aweme_list
                 : [];

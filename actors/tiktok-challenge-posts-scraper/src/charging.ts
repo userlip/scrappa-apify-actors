@@ -5,7 +5,7 @@ export interface ActorPort {
         getPricingInfo(): { isPayPerEvent?: boolean };
         calculateMaxEventChargeCountWithinLimit(eventName: string): number;
     };
-    pushData(data: unknown, eventName?: string): Promise<{ chargedCount?: number; eventChargeLimitReached?: boolean }>;
+    pushData(data: unknown, eventName?: string): Promise<{ chargedCount: number; eventChargeLimitReached?: boolean }>;
 }
 
 export function getAvailableCapacity(actor: ActorPort, requested: number): number {
@@ -26,12 +26,17 @@ export async function pushVideos(actor: ActorPort, videos: Record<string, unknow
     }
 
     let limitReached = false;
+    let saved = 0;
     for (const video of videos) {
         const result = await actor.pushData(video, RESULT_EVENT);
-        limitReached ||= Boolean(result.eventChargeLimitReached);
+        saved += Math.min(result.chargedCount, 1);
+        if (result.eventChargeLimitReached) {
+            limitReached = true;
+            break;
+        }
     }
     return {
-        saved: videos.length,
+        saved,
         limitReached,
     };
 }

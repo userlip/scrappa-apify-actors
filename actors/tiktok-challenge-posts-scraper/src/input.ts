@@ -58,6 +58,9 @@ export function parseInput(input: ChallengePostsInput): ChallengePostsRequest[] 
     }
     const pageSize = Math.min(positiveInteger(input.page_size, 10, MAX_PAGE_SIZE, 'page_size'), resultLimit);
 
+    if (input.region !== undefined && input.region !== null && typeof input.region !== 'string') {
+        throw new Error('region must be a two-letter country code');
+    }
     const region = typeof input.region === 'string' && input.region.trim() !== '' ? input.region.trim().toUpperCase() : undefined;
     if (region && !/^[A-Z]{2}$/.test(region)) {
         throw new Error('region must be a two-letter country code');

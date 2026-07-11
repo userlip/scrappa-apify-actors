@@ -23,5 +23,6 @@ test('enforces challenge and total-result caps', () => {
 test('rejects missing IDs, malformed region, and invalid limits', () => {
     assert.throws(() => parseInput({ challenge_ids: ['abc'] }), /numeric TikTok challenge ID/);
     assert.throws(() => parseInput({ challenge_id: '1', region: 'USA' }), /two-letter/);
+    assert.throws(() => parseInput({ challenge_id: '1', region: 123 }), /two-letter/);
     assert.throws(() => parseInput({ challenge_id: '1', page_size: 0 }), /page_size/);
 });

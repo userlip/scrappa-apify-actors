@@ -9,6 +9,9 @@ test('parses live challenge posts pagination shape', () => {
 });
 
 test('supports upstream fallback shapes', () => {
+    assert.deepEqual(parsePage({ posts: [{ video_id: '1' }] }), {
+        videos: [{ video_id: '1' }], cursor: null, hasMore: false,
+    });
     assert.deepEqual(parsePage({ aweme_list: [{ aweme_id: '2' }], max_cursor: '20', has_more: false }), {
         videos: [{ aweme_id: '2' }], cursor: '20', hasMore: false,
     });

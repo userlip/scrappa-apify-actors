@@ -12,15 +12,19 @@ const MAX_PAGES_PER_CHALLENGE = 100;
 
 export interface ChallengeSummary {
     challenge_id: string;
-    status: 'succeeded' | 'failed' | 'charge-limit-reached';
+    status: 'succeeded' | 'failed' | 'charge-limit-reached' | 'page-limit-reached' | 'pagination-stalled';
     videos_saved: number;
     pages_fetched: number;
     next_cursor: string | null;
     error?: string;
 }
 
-export async function scrapeChallenge(client: ClientPort, actor: ActorPort, request: ChallengePostsRequest): Promise<ChallengeSummary> {
-    const seenIds = new Set<string>();
+export async function scrapeChallenge(
+    client: ClientPort,
+    actor: ActorPort,
+    request: ChallengePostsRequest,
+    seenIds: Set<string>,
+): Promise<ChallengeSummary> {
     const seenCursors = new Set<string>();
     let cursor = request.initialCursor;
     let saved = 0;
@@ -47,10 +51,11 @@ export async function scrapeChallenge(client: ClientPort, actor: ActorPort, requ
             }
 
             const page = parsePage(response.data);
+            const pageIds = new Set<string>();
             const uniqueVideos = page.videos.filter((video) => {
                 const id = getVideoId(video);
-                if (!id || seenIds.has(id)) return false;
-                seenIds.add(id);
+                if (!id || seenIds.has(id) || pageIds.has(id)) return false;
+                pageIds.add(id);
                 return true;
             }).slice(0, count);
             const rows = uniqueVideos.map((video) => ({
@@ -60,14 +65,19 @@ export async function scrapeChallenge(client: ClientPort, actor: ActorPort, requ
                 scraped_at: new Date().toISOString(),
             }));
             const push = await pushVideos(actor, rows);
+            for (const row of rows.slice(0, push.saved)) {
+                const id = getVideoId(row);
+                if (id) seenIds.add(id);
+            }
             saved += push.saved;
             cursor = page.cursor ?? undefined;
 
             if (push.limitReached) return summary('charge-limit-reached');
-            if (!page.hasMore || !page.cursor || seenCursors.has(page.cursor)) break;
+            if (!page.hasMore || !page.cursor) return summary('succeeded');
+            if (seenCursors.has(page.cursor)) return summary('pagination-stalled');
             seenCursors.add(page.cursor);
         }
-        return summary('succeeded');
+        return summary(saved >= request.resultLimit ? 'succeeded' : 'page-limit-reached');
     } catch (error) {
         return { ...summary('failed'), error: error instanceof Error ? error.message : String(error) };
     }
