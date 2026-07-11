@@ -27,3 +27,7 @@ git diff --check  # passes
 This implementation stage made no Apify account mutations. Before public release, the deployment/verification stages must create and deploy the Actor, configure `SCRAPPA_API_KEY` as a secret, activate or earliest-schedule `PAY_PER_EVENT` pricing for `challenge-detail-result` at USD `$0.00025`, and API-verify that pricing. They must then run and inspect a mixed `booktok` plus `1622962893630470` smoke batch, including event accounting and a safe partial failure.
 
 The requested new PR is intentionally not opened here: this stage is constrained to a local commit, and the PR stage follows testing.
+
+The feature implementation and the charging-path test coverage are committed locally on `feat/tiktok-challenge-details-scraper`.
+
+IMPLEMENTATION_COMPLETE
