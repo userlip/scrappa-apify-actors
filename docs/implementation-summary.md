@@ -31,7 +31,14 @@ git diff --check  # passes
 
 ## Release handoff
 
-This implementation stage made no Apify account mutations. Before public release, the deployment/verification stages must create and deploy the Actor, configure `SCRAPPA_API_KEY` as a secret, activate or earliest-schedule `PAY_PER_EVENT` pricing for `challenge-detail-result` at USD `$0.00025`, and API-verify that pricing. They must then run and inspect a mixed `booktok` plus `1622962893630470` smoke batch, including event accounting and a safe partial failure.
+## Deployment and release verification
+
+- Deployed build `NfNCbykxUqynIQ4nT` (`1.0.6`) succeeded after publishing the committed canonical-deduplication fix.
+- Actor `bEajaru9WVbLA0YBh` remains private. Its deployed `SCRAPPA_API_KEY` is present as a secret, its resources are 128 MB / 120 seconds, and active `PAY_PER_EVENT` pricing started at `2026-07-11T18:02:19.820Z`.
+- The active primary event is `challenge-detail-result` at USD `$0.00025` per saved result.
+- Mixed smoke run `Y6BdN3NgAhM5k0W54` succeeded using `booktok`, the matching stable ID `1622962893630470`, and an unavailable challenge name. It saved one canonical BookTok dataset item and charged exactly one event; the unavailable name produced a safe per-entity error, and the duplicate ID was reported as uncharged.
+
+The prior smoke run exposed that its older live build had not yet included canonical-result deduplication and charged twice. The corrected build above resolves that production defect. The Actor remains private; publication and any PR remain downstream actions.
 
 The requested new PR is intentionally not opened here: this stage is constrained to a local commit, and the PR stage follows testing.
 
