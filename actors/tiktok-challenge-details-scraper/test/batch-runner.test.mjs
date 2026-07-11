@@ -26,6 +26,7 @@ test('stops before a request when charge capacity is exhausted', async () => {
         save: async () => ({ savedCount: 1, chargeLimitReached: false }),
     });
     assert.equal(fetched, 0); assert.equal(summary.attempted, 0); assert.equal(summary.charge_limit_reached, true);
+    assert.deepEqual(summary.outcomes.map((outcome) => outcome.status), ['not_attempted', 'not_attempted']);
 });
 
 test('reports a short event charge as failed and stops after an event charge limit', async () => {
@@ -42,4 +43,21 @@ test('reports a short event charge as failed and stops after an event charge lim
         save: async () => ({ savedCount: 1, chargeLimitReached: true }),
     });
     assert.equal(limitAfterSave.saved, 1); assert.equal(limitAfterSave.charge_limit_reached, true);
+});
+
+test('continues after a recoverable short save and records every outcome', async () => {
+    let saves = 0;
+    const summary = await runChallengeDetailsBatch(requests, {
+        getCapacity: () => Infinity,
+        fetch: async () => ({ data: { id: '1' } }),
+        save: async () => {
+            saves += 1;
+            return saves === 1
+                ? { savedCount: 0, chargeLimitReached: false }
+                : { savedCount: 1, chargeLimitReached: false };
+        },
+    });
+    assert.equal(summary.attempted, 2); assert.equal(summary.failed, 1); assert.equal(summary.saved, 1);
+    assert.equal(summary.charge_limit_reached, false);
+    assert.deepEqual(summary.outcomes.map((outcome) => outcome.status), ['failed', 'saved']);
 });

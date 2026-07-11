@@ -32,6 +32,17 @@ function safeError(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
+function addNotAttemptedOutcomes(
+    requests: TikTokChallengeDetailsRequest[],
+    startIndex: number,
+    outcomes: ChallengeDetailOutcome[],
+    error: string,
+): void {
+    for (const request of requests.slice(startIndex)) {
+        outcomes.push({ request_type: request.type, request_value: request.value, status: 'not_attempted', error });
+    }
+}
+
 export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsRequest[], dependencies: BatchDependencies): Promise<ChallengeDetailSummary> {
     const outcomes: ChallengeDetailOutcome[] = [];
     let attempted = 0;
@@ -39,11 +50,12 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
     let chargeLimitReached = false;
     let statusMessage: string | null = null;
 
-    for (const request of requests) {
+    for (let index = 0; index < requests.length; index += 1) {
+        const request = requests[index];
         if (dependencies.getCapacity() <= 0) {
             chargeLimitReached = true;
             statusMessage = 'Charge limit reached before fetching another TikTok challenge detail.';
-            outcomes.push({ request_type: request.type, request_value: request.value, status: 'not_attempted', error: 'Charge limit reached' });
+            addNotAttemptedOutcomes(requests, index, outcomes, 'Charge limit reached');
             break;
         }
 
@@ -62,6 +74,7 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
                 if (pushResult.chargeLimitReached) {
                     chargeLimitReached = true;
                     statusMessage = 'Charge limit reached while saving a TikTok challenge detail.';
+                    addNotAttemptedOutcomes(requests, index + 1, outcomes, 'Charge limit reached');
                     break;
                 }
                 continue;
@@ -71,6 +84,7 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
             if (pushResult.chargeLimitReached) {
                 chargeLimitReached = true;
                 statusMessage = 'Charge limit reached after saving a TikTok challenge detail.';
+                addNotAttemptedOutcomes(requests, index + 1, outcomes, 'Charge limit reached');
                 break;
             }
         } catch (error) {

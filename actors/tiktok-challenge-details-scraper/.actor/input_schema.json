@@ -3,8 +3,8 @@
   "description": "Resolve up to 100 known TikTok hashtag names or stable challenge IDs in one run.",
   "type": "object", "schemaVersion": 1,
   "properties": {
-    "challenge_names": { "title": "Challenge Names", "type": "array", "editor": "stringList", "description": "Preferred batch input. Hashtag/challenge names; an optional leading # is removed. Combined names and IDs are capped at 100.", "prefill": ["booktok", "fitness"], "items": { "type": "string", "minLength": 1, "maxLength": 255 } },
-    "challenge_ids": { "title": "Challenge IDs", "type": "array", "editor": "stringList", "description": "Preferred batch input for stable numeric IDs. Combined names and IDs are capped at 100.", "items": { "type": "string", "minLength": 1, "maxLength": 100 } },
+    "challenge_names": { "title": "Challenge Names", "type": "array", "editor": "stringList", "maxItems": 100, "description": "Preferred batch input. Hashtag/challenge names; an optional leading # is removed. Combined names and IDs are capped at 100.", "prefill": ["booktok", "fitness"], "items": { "type": "string", "minLength": 1, "maxLength": 255 } },
+    "challenge_ids": { "title": "Challenge IDs", "type": "array", "editor": "stringList", "maxItems": 100, "description": "Preferred batch input for stable numeric IDs. Combined names and IDs are capped at 100.", "items": { "type": "string", "minLength": 1, "maxLength": 100 } },
     "challenge_name": { "title": "Single Challenge Name", "type": "string", "editor": "textfield", "description": "Optional backward-compatible single lookup; processed together with batch inputs.", "minLength": 1, "maxLength": 255 },
     "challenge_id": { "title": "Single Challenge ID", "type": ["string", "integer"], "editor": "textfield", "description": "Optional backward-compatible numeric ID; processed together with batch inputs.", "minLength": 1, "maxLength": 100 }
   }
