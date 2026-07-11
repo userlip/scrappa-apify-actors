@@ -38,7 +38,7 @@ After pushing tested implementation commit `85d74d3183bb72201a8c3ce4dae2dec2b5c3
 - Cubic AI code reviewer: passed.
 - Socket Security project report and PR alerts: passed.
 
-The repository CI matrix does not yet enumerate this newly added Actor; its dedicated test command was run locally as the focused gate above. The subsequent commit(s) only update verification documentation and triggered no actor-test workflow; the current PR check is skipped rather than failed. GitHub's REST endpoint temporarily rate-limited direct review-comment enumeration, but both configured automated reviewers completed successfully and no failing or actionable review check remains.
+The repository CI matrix does not yet enumerate this newly added Actor; its dedicated test command was run locally as the focused gate above. GitHub reran the matrix for the current PR head because the PR still contains actor changes, and all 22 enumerated jobs passed. GitHub's REST endpoint temporarily rate-limited direct review-comment enumeration, but both configured automated reviewers completed successfully and no failing or actionable review check remains.
 
 ## Outcome
 
