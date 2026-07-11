@@ -1,6 +1,7 @@
 FROM apify/actor-node:22
 COPY package*.json ./
-RUN npm --quiet set progress=false && npm install --omit=dev --include=dev
+RUN npm --quiet set progress=false && npm ci --include=dev
 COPY . ./
 RUN npm run build
+RUN npm prune --omit=dev
 CMD npm start --silent
