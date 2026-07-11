@@ -15,7 +15,7 @@
         "minLength": 1,
         "maxLength": 500
       },
-      "prefill": ["de/bmwgroup", "https://www.kununu.com/de/sap-se"]
+      "prefill": ["de/bmwgroup"]
     },
     "company_slug": {
       "title": "Single Company Slug",
