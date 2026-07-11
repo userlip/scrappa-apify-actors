@@ -1,5 +1,5 @@
 import type { TikTokChallengeDetailsRequest } from './request-params.js';
-import { extractChallengeDetail, normalizeChallengeDetail } from './response-utils.js';
+import { challengeName, extractChallengeDetail, normalizeChallengeDetail } from './response-utils.js';
 import type { TikTokChallengeDetailsResponse } from './response-utils.js';
 
 export const CHALLENGE_DETAIL_CHARGE_EVENT = 'challenge-detail-result';
@@ -67,6 +67,12 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
             }
             const challenge = extractChallengeDetail(response.data);
             if (!challenge) throw new Error('Scrappa returned no challenge detail record');
+            if (request.type === 'challenge_name') {
+                const returnedName = challengeName(challenge);
+                if (!returnedName || returnedName.toLowerCase() !== request.value.toLowerCase()) {
+                    throw new Error(`Scrappa returned challenge ${JSON.stringify(returnedName)} but ${JSON.stringify(request.value)} was requested`);
+                }
+            }
 
             const pushResult = await dependencies.save(normalizeChallengeDetail(challenge, request));
             if (pushResult.savedCount !== 1) {

@@ -11,6 +11,10 @@ export interface TikTokChallengeDetailsResponse { code?: number; msg?: string; d
 function text(value: unknown): string | null { return typeof value === 'string' && value.trim() ? value.trim() : typeof value === 'number' && Number.isSafeInteger(value) ? String(value) : null; }
 function count(value: unknown): number | null { return typeof value === 'number' ? value : null; }
 
+export function challengeName(challenge: TikTokChallengeDetail): string | null {
+    return text(challenge.challenge_name ?? challenge.cha_name ?? challenge.name ?? challenge.title);
+}
+
 export function extractChallengeDetail(data: TikTokChallengeDetailsResponse['data']): TikTokChallengeDetail | null {
     if (!data || Array.isArray(data) || typeof data !== 'object') return null;
     if ('challenge' in data && data.challenge && typeof data.challenge === 'object') return data.challenge as TikTokChallengeDetail;
@@ -22,7 +26,7 @@ export function normalizeChallengeDetail(challenge: TikTokChallengeDetail, reque
     return {
         ...challenge,
         challenge_id: text(challenge.challenge_id ?? challenge.id ?? challenge.cid),
-        challenge_name: text(challenge.challenge_name ?? challenge.cha_name ?? challenge.name ?? challenge.title),
+        challenge_name: challengeName(challenge),
         description: text(challenge.description ?? challenge.desc),
         user_count: count(challenge.user_count ?? challenge.stats?.user_count),
         view_count: count(challenge.view_count ?? challenge.stats?.view_count),

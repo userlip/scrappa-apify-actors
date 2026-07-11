@@ -18,6 +18,19 @@ test('preserves a later success after an upstream failure and only saves success
     assert.equal(saved.length, 1); assert.match(summary.outcomes[0].error, /404/);
 });
 
+test('does not save or charge a name lookup when the upstream returns a different challenge', async () => {
+    let saves = 0;
+    const summary = await runChallengeDetailsBatch([requests[0]], {
+        getCapacity: () => Infinity,
+        fetch: async () => ({ data: { id: '1', challenge_name: 'unrelated' } }),
+        save: async () => { saves += 1; return { savedCount: 1, chargeLimitReached: false }; },
+    });
+    assert.equal(saves, 0);
+    assert.equal(summary.saved, 0);
+    assert.equal(summary.failed, 1);
+    assert.match(summary.outcomes[0].error, /unrelated.*missing/);
+});
+
 test('stops before a request when charge capacity is exhausted', async () => {
     let fetched = 0;
     const summary = await runChallengeDetailsBatch(requests, {
@@ -49,7 +62,7 @@ test('continues after a recoverable short save and records every outcome', async
     let saves = 0;
     const summary = await runChallengeDetailsBatch(requests, {
         getCapacity: () => Infinity,
-        fetch: async () => ({ data: { id: '1' } }),
+        fetch: async (request) => ({ data: { id: '1', challenge_name: request.type === 'challenge_name' ? request.value : undefined } }),
         save: async () => {
             saves += 1;
             return saves === 1
