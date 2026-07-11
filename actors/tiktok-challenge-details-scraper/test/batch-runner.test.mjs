@@ -34,6 +34,8 @@ test('reports a short event charge as failed and stops after an event charge lim
         save: async () => ({ savedCount: 0, chargeLimitReached: true }),
     });
     assert.equal(shortCharge.saved, 0); assert.equal(shortCharge.failed, 1);
+    assert.equal(shortCharge.charge_limit_reached, true);
+    assert.match(shortCharge.status_message, /Charge limit reached while saving/);
 
     const limitAfterSave = await runChallengeDetailsBatch(requests.slice(1), {
         getCapacity: () => 1, fetch: async () => ({ data: { id: '1' } }),

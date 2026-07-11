@@ -57,7 +57,15 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
             if (!challenge) throw new Error('Scrappa returned no challenge detail record');
 
             const pushResult = await dependencies.save(normalizeChallengeDetail(challenge, request));
-            if (pushResult.savedCount !== 1) throw new Error('Apify did not save a chargeable challenge detail result');
+            if (pushResult.savedCount !== 1) {
+                outcomes.push({ request_type: request.type, request_value: request.value, status: 'failed', error: 'Apify did not save a chargeable challenge detail result' });
+                if (pushResult.chargeLimitReached) {
+                    chargeLimitReached = true;
+                    statusMessage = 'Charge limit reached while saving a TikTok challenge detail.';
+                    break;
+                }
+                continue;
+            }
             saved += 1;
             outcomes.push({ request_type: request.type, request_value: request.value, status: 'saved' });
             if (pushResult.chargeLimitReached) {
