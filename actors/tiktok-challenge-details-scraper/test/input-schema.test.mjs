@@ -4,6 +4,19 @@ import test from 'node:test';
 
 const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
 
+function validateApifyEditorCompatibility(field) {
+    if (field.editor !== 'textfield') return;
+
+    const acceptedEditors = typeof field.type === 'string'
+        ? ['textfield', 'textarea', 'select', 'hidden']
+        : ['json', 'hidden'];
+
+    assert.ok(
+        acceptedEditors.includes(field.editor),
+        `Apify does not allow editor ${JSON.stringify(field.editor)} for type ${JSON.stringify(field.type)}`,
+    );
+}
+
 test('schema makes batch names and IDs the preferred string-list inputs', () => {
     assert.equal(schema.properties.challenge_names.editor, 'stringList');
     assert.equal(schema.properties.challenge_names.items.maxLength, 255);
@@ -18,13 +31,13 @@ test('schema keeps optional single-value compatibility fields', () => {
     assert.equal(schema.properties.challenge_id.maxLength, 100);
 });
 
-test('schema prevents the broken union-type textfield pattern that fails Apify deployment', () => {
+test('schema passes Apify textfield/editor compatibility validation', () => {
     const field = schema.properties.challenge_id;
 
-    // Apify accepts `textfield` only for a single string schema type. Numeric
-    // legacy input remains supported by normalizeChallengeId at runtime.
-    assert.equal(field.editor, 'textfield');
-    assert.equal(field.type, 'string');
-    assert.equal(Array.isArray(field.type), false);
-    assert.notDeepEqual(field.type, ['string', 'integer']);
+    validateApifyEditorCompatibility(field);
+
+    assert.throws(
+        () => validateApifyEditorCompatibility({ ...field, type: ['string', 'integer'] }),
+        /Apify does not allow editor "textfield" for type \["string","integer"\]/,
+    );
 });
