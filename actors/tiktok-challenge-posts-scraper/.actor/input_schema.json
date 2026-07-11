@@ -1,0 +1,57 @@
+{
+  "title": "TikTok Hashtag Videos Scraper Input",
+  "description": "Fetch videos for one or more TikTok challenge IDs in one cost-efficient run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "challenge_ids": {
+      "title": "Challenge IDs",
+      "type": "array",
+      "description": "Up to 20 numeric TikTok challenge IDs. Use TikTok Challenge Search first to discover IDs.",
+      "editor": "stringList",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[0-9]{1,100}$" },
+      "prefill": ["1622962893630470"]
+    },
+    "challenge_id": {
+      "title": "Single Challenge ID (legacy)",
+      "type": "string",
+      "description": "Compatibility input used only when challenge_ids is empty.",
+      "editor": "textfield",
+      "pattern": "^[0-9]{1,100}$"
+    },
+    "region": {
+      "title": "Region",
+      "type": "string",
+      "description": "Optional two-letter region code, such as US.",
+      "editor": "textfield",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "cursor": {
+      "title": "Starting Cursor",
+      "type": "string",
+      "description": "Optional cursor applied as the starting point for each challenge.",
+      "editor": "textfield"
+    },
+    "results_per_challenge": {
+      "title": "Results Per Challenge",
+      "type": "integer",
+      "description": "Maximum unique videos saved per challenge (1-500). Total requested results may not exceed 2,000.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 100
+    },
+    "page_size": {
+      "title": "Videos Per API Page",
+      "type": "integer",
+      "description": "Upstream page size (1-50). It is automatically reduced to remaining result and charge capacity.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10
+    }
+  }
+}
