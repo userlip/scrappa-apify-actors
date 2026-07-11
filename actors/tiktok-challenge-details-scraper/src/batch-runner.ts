@@ -13,7 +13,8 @@ export interface BatchDependencies {
 export interface ChallengeDetailOutcome {
     request_type: TikTokChallengeDetailsRequest['type'];
     request_value: string;
-    status: 'saved' | 'failed' | 'not_attempted';
+    status: 'saved' | 'duplicate' | 'failed' | 'not_attempted';
+    canonical_challenge_id?: string;
     error?: string;
 }
 
@@ -49,6 +50,7 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
     let saved = 0;
     let chargeLimitReached = false;
     let statusMessage: string | null = null;
+    const resolvedChallengeIds = new Set<string>();
 
     for (let index = 0; index < requests.length; index += 1) {
         const request = requests[index];
@@ -67,17 +69,30 @@ export async function runChallengeDetailsBatch(requests: TikTokChallengeDetailsR
             }
             const challenge = extractChallengeDetail(response.data);
             if (!challenge) throw new Error('Scrappa returned no challenge detail record');
+            const canonicalChallengeId = challengeId(challenge);
+            if (!canonicalChallengeId) throw new Error('Scrappa returned a challenge detail without a canonical challenge ID');
             if (request.type === 'challenge_name') {
                 const returnedName = challengeName(challenge);
                 if (!returnedName || returnedName.toLowerCase() !== request.value.toLowerCase()) {
                     throw new Error(`Scrappa returned challenge ${JSON.stringify(returnedName)} but ${JSON.stringify(request.value)} was requested`);
                 }
             } else {
-                const returnedId = challengeId(challenge);
-                if (returnedId !== request.value) {
-                    throw new Error(`Scrappa returned challenge ID ${JSON.stringify(returnedId)} but ${JSON.stringify(request.value)} was requested`);
+                if (canonicalChallengeId !== request.value) {
+                    throw new Error(`Scrappa returned challenge ID ${JSON.stringify(canonicalChallengeId)} but ${JSON.stringify(request.value)} was requested`);
                 }
             }
+
+            if (resolvedChallengeIds.has(canonicalChallengeId)) {
+                outcomes.push({
+                    request_type: request.type,
+                    request_value: request.value,
+                    status: 'duplicate',
+                    canonical_challenge_id: canonicalChallengeId,
+                    error: `Duplicate canonical challenge ID ${canonicalChallengeId}; result was not saved or charged`,
+                });
+                continue;
+            }
+            resolvedChallengeIds.add(canonicalChallengeId);
 
             const pushResult = await dependencies.save(normalizeChallengeDetail(challenge, request));
             if (pushResult.savedCount !== 1) {

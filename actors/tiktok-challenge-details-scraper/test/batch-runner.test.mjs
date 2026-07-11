@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { runChallengeDetailsBatch } from '../dist/batch-runner.js';
+import { CHALLENGE_DETAIL_CHARGE_EVENT, runChallengeDetailsBatch } from '../dist/batch-runner.js';
+import { saveChallengeDetail } from '../dist/charged-save.js';
 
 const requests = [
     { type: 'challenge_name', value: 'missing', params: { challenge_name: 'missing' } },
@@ -44,6 +45,38 @@ test('does not save or charge an ID lookup when the upstream returns a different
     assert.match(summary.outcomes[0].error, /"2".*"1"/);
 });
 
+test('saves and charges a canonical challenge only once when name and ID lookups resolve to it', async () => {
+    const datasetCalls = [];
+    const summary = await runChallengeDetailsBatch([
+        { type: 'challenge_name', value: 'booktok', params: { challenge_name: 'booktok' } },
+        { type: 'challenge_id', value: '1622962893630470', params: { challenge_id: '1622962893630470' } },
+    ], {
+        getCapacity: () => Infinity,
+        fetch: async () => ({ data: { id: '1622962893630470', challenge_name: 'booktok' } }),
+        save: (item) => saveChallengeDetail(item, {
+            getPricingInfo: () => ({ isPayPerEvent: true }),
+        }, {
+            pushData: async (...args) => {
+                datasetCalls.push(args);
+                return { chargedCount: 1, eventChargeLimitReached: false };
+            },
+        }, CHALLENGE_DETAIL_CHARGE_EVENT),
+    });
+
+    assert.equal(datasetCalls.length, 1);
+    assert.equal(datasetCalls[0][1], CHALLENGE_DETAIL_CHARGE_EVENT);
+    assert.equal(summary.saved, 1);
+    assert.equal(summary.failed, 0);
+    assert.deepEqual(summary.outcomes.map((outcome) => outcome.status), ['saved', 'duplicate']);
+    assert.deepEqual(summary.outcomes[1], {
+        request_type: 'challenge_id',
+        request_value: '1622962893630470',
+        status: 'duplicate',
+        canonical_challenge_id: '1622962893630470',
+        error: 'Duplicate canonical challenge ID 1622962893630470; result was not saved or charged',
+    });
+});
+
 test('stops before a request when charge capacity is exhausted', async () => {
     let fetched = 0;
     const summary = await runChallengeDetailsBatch(requests, {
@@ -75,7 +108,10 @@ test('continues after a recoverable short save and records every outcome', async
     let saves = 0;
     const summary = await runChallengeDetailsBatch(requests, {
         getCapacity: () => Infinity,
-        fetch: async (request) => ({ data: { id: '1', challenge_name: request.type === 'challenge_name' ? request.value : undefined } }),
+        fetch: async (request) => ({ data: {
+            id: request.type === 'challenge_name' ? '2' : '1',
+            challenge_name: request.type === 'challenge_name' ? request.value : undefined,
+        } }),
         save: async () => {
             saves += 1;
             return saves === 1
