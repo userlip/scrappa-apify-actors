@@ -18,7 +18,7 @@ test('schema keeps optional single-value compatibility fields', () => {
     assert.equal(schema.properties.challenge_id.maxLength, 100);
 });
 
-test('schema uses an Apify-compatible text editor for the single ID', () => {
+test('schema prevents the broken union-type textfield pattern that fails Apify deployment', () => {
     const field = schema.properties.challenge_id;
 
     // Apify accepts `textfield` only for a single string schema type. Numeric
@@ -26,4 +26,5 @@ test('schema uses an Apify-compatible text editor for the single ID', () => {
     assert.equal(field.editor, 'textfield');
     assert.equal(field.type, 'string');
     assert.equal(Array.isArray(field.type), false);
+    assert.notDeepEqual(field.type, ['string', 'integer']);
 });
