@@ -1,0 +1,45 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-challenge-posts-scraper",
+  "title": "TikTok Hashtag Videos Scraper",
+  "description": "Batch TikTok challenge video scraper for campaign monitoring and hashtag research, powered by Scrappa.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": { "templateId": "ts-start" },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
+  "resources": { "memoryMbytes": 128 },
+  "defaultRunOptions": { "timeoutSecs": 300, "memoryMbytes": 128, "maxItems": 2000 },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "videos": {
+          "title": "TikTok Hashtag Videos",
+          "transformation": {
+            "fields": ["video_id", "aweme_id", "title", "author", "play_count", "digg_count", "comment_count", "share_count", "duration", "region", "create_time", "challenge_id", "scraped_at"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "video_id": { "label": "Video ID", "format": "text" },
+              "aweme_id": { "label": "Aweme ID", "format": "text" },
+              "title": { "label": "Caption", "format": "text" },
+              "author": { "label": "Author", "format": "object" },
+              "play_count": { "label": "Views", "format": "number" },
+              "digg_count": { "label": "Likes", "format": "number" },
+              "comment_count": { "label": "Comments", "format": "number" },
+              "share_count": { "label": "Shares", "format": "number" },
+              "duration": { "label": "Duration", "format": "number" },
+              "region": { "label": "Video Region", "format": "text" },
+              "create_time": { "label": "Created", "format": "number" },
+              "challenge_id": { "label": "Challenge ID", "format": "text" },
+              "scraped_at": { "label": "Scraped At", "format": "date" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
