@@ -22,8 +22,68 @@ test('classifies typed transient errors without parsing messages', () => {
     assert.equal(isRetryableScrappaError(new ScrappaConnectionError()), true);
     assert.equal(isRetryableScrappaError(new ScrappaHttpError(429, 'slow down')), true);
     assert.equal(isRetryableScrappaError(new ScrappaHttpError(503, 'unavailable')), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError(403, 'upstream blocked', true)), true);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError(403, 'out of credits')), false);
+    assert.equal(isRetryableScrappaError(new ScrappaHttpError(422, 'invalid', true)), false);
     assert.equal(isRetryableScrappaError(new ScrappaHttpError(400, 'invalid')), false);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (503): text only')), false);
+});
+
+test('retries only body-flagged 403 responses', async (context) => {
+    const originalFetch = globalThis.fetch;
+    const originalRandom = Math.random;
+    context.after(() => {
+        globalThis.fetch = originalFetch;
+        Math.random = originalRandom;
+    });
+
+    Math.random = () => 0;
+    let requestCount = 0;
+    globalThis.fetch = async () => {
+        requestCount++;
+        return requestCount === 1
+            ? Response.json({ error: 'Upstream blocked', retryable: true }, { status: 403 })
+            : Response.json({ suggestions: [] });
+    };
+
+    const client = new ScrappaClient({ apiKey: 'test-key' });
+    const response = await client.get('/google-hotels/autocomplete', {}, { attempts: 2 });
+
+    assert.deepEqual(response, { suggestions: [] });
+    assert.equal(requestCount, 2);
+});
+
+test('does not retry an unflagged 403 response', async (context) => {
+    const originalFetch = globalThis.fetch;
+    context.after(() => { globalThis.fetch = originalFetch; });
+    let requestCount = 0;
+    globalThis.fetch = async () => {
+        requestCount++;
+        return Response.json({ message: 'Out of credits' }, { status: 403 });
+    };
+
+    const client = new ScrappaClient({ apiKey: 'test-key' });
+    await assert.rejects(
+        client.get('/google-hotels/autocomplete', {}, { attempts: 2 }),
+        (error) => error instanceof ScrappaHttpError && error.retryable === false,
+    );
+    assert.equal(requestCount, 1);
+});
+
+test('serializes true booleans as 1 and omits false booleans', async (context) => {
+    const originalFetch = globalThis.fetch;
+    context.after(() => { globalThis.fetch = originalFetch; });
+    let requestUrl;
+    globalThis.fetch = async (url) => {
+        requestUrl = new URL(url);
+        return Response.json({ suggestions: [] });
+    };
+
+    const client = new ScrappaClient({ apiKey: 'test-key' });
+    await client.get('/google-hotels/autocomplete', { enabled: true, disabled: false });
+
+    assert.equal(requestUrl.searchParams.get('enabled'), '1');
+    assert.equal(requestUrl.searchParams.has('disabled'), false);
 });
 
 test('retries a transient HTTP response and returns the successful response', async (context) => {
