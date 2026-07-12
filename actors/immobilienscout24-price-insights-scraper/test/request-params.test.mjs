@@ -19,3 +19,10 @@ test('rejects missing and invalid locations', () => {
     assert.throws(() => normalizeLocations({}), /at least one non-empty location/);
     assert.throws(() => normalizeLocations({ locations: 42 }), /array of strings or a comma-separated string/);
 });
+
+test('rejects overlong values and batches above the per-run limit before network work', () => {
+    assert.throws(() => normalizeLocations({ locations: ['x'.repeat(121)] }), /120 characters or fewer/);
+    assert.throws(() => normalizeLocations({
+        locations: Array.from({ length: 101 }, (_, index) => `Location ${index}`),
+    }), /at most 100 unique locations/);
+});

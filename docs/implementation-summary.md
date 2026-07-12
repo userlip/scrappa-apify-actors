@@ -1,45 +1,49 @@
-# Implementation Summary: TikTok Challenge Details Scraper
+# Implementation Summary: ImmobilienScout24 Price Insights Scraper
 
-Date: 2026-07-11
+Date: 2026-07-13
+Branch: `feat/immobilienscout24-price-insights-scraper`
 
-## Rework completed locally
+## Change completed
 
-- Fixed the Apify deployment blocker for `challenge_id`: the input schema now declares a single `string` type for its `textfield` editor, which Apify accepts.
-- Kept backwards-compatible numeric single-ID input in the runtime normalizer (`normalizeChallengeId`), so API clients sending safe integer values continue to work even though the UI schema field is a string.
-- Added a focused regression test that locks the Apify-compatible `textfield`/single-string pairing.
+- Corrected the `locations` input metadata to support the actor's documented array-or-comma-separated-string contract using Apify's supported union field type.
+- Expanded the Actor description to target property-market benchmarking, rent-vs-buy research, recurring city comparisons, and the Scrappa direct API upgrade path.
+- Added package description metadata for the thin Scrappa wrapper.
+- Added focused regression coverage for request limits, endpoint and retry parameter shape, bounded concurrency, every required response field, and existing partial-failure/charging behavior.
 
-## Original implementation
+The existing implementation remains a thin wrapper around Scrappa's `/immobilienscout24/price-insights` endpoint. It normalizes and deduplicates up to 100 locations, fetches them in bounded batches, writes one complete dataset item per successful snapshot, and uses only the confirmed `price-insight-result` PAY_PER_EVENT charge for successful PPE writes. It does not write per-item `OUTPUT` records or scrape ImmobilienScout24 directly.
 
-- Created `actors/tiktok-challenge-details-scraper` on branch `feat/tiktok-challenge-details-scraper`.
-- Added batch-first name and ID normalization with mixed-input support, separate deduplication, malformed-entry warnings, and a strict combined 100-entity cap.
-- Added a thin Scrappa `GET /tiktok/challenges/details` wrapper. It processes all normalized entities within one Apify run, retains successful items after per-entity API/empty-response failures, and writes one compact `OUTPUT` summary.
-- Added `challenge-detail-result` PAY_PER_EVENT handling: capacity is checked before every request and only successful saved records are charged.
-- Added normalized detail fields (stable IDs/names, nullable metrics, cover, provenance, UTC retrieval timestamp) while preserving source fields, plus listing/schema/readme metadata and dataset view.
-- Added focused tests for schema, normalization, endpoint request shape, response mapping, partial failure, development/PAY_PER_EVENT save paths, and charging limits.
+## Files changed
+
+- `actors/immobilienscout24-price-insights-scraper/.actor/actor.json`
+- `actors/immobilienscout24-price-insights-scraper/.actor/input_schema.json`
+- `actors/immobilienscout24-price-insights-scraper/package.json`
+- `actors/immobilienscout24-price-insights-scraper/package-lock.json`
+- `actors/immobilienscout24-price-insights-scraper/test/batch-runner.test.mjs`
+- `actors/immobilienscout24-price-insights-scraper/test/request-params.test.mjs`
+- `actors/immobilienscout24-price-insights-scraper/test/response-utils.test.mjs`
 
 ## Local verification
 
-From `actors/tiktok-challenge-details-scraper`:
+From `actors/immobilienscout24-price-insights-scraper`:
 
 ```text
-npm test          # 15 passing tests
-npm run typecheck # passes
-jq empty .actor/actor.json .actor/input_schema.json # passes
-npx apify-cli validate-schema # input and dataset schemas pass Apify CLI validation
-git diff --check  # passes
+npm test                                  # 26 passing tests
+npm run typecheck                         # passes
+jq empty .actor/actor.json .actor/input_schema.json
+npx apify-cli validate-schema             # input and dataset schemas pass
+git diff --check                          # passes
 ```
 
-## Deployment and release verification
+Repository audit test suites also pass:
 
-- Deployed build `NfNCbykxUqynIQ4nT` (`1.0.6`) succeeded after publishing the committed canonical-deduplication fix.
-- Actor `bEajaru9WVbLA0YBh` remains private. Its deployed `SCRAPPA_API_KEY` is present as a secret, its resources are 128 MB / 120 seconds, and active `PAY_PER_EVENT` pricing started at `2026-07-11T18:02:19.820Z`.
-- The active primary event is `challenge-detail-result` at USD `$0.00025` per saved result.
-- Mixed smoke run `Y6BdN3NgAhM5k0W54` succeeded using `booktok`, the matching stable ID `1622962893630470`, and an unavailable challenge name. It saved one canonical BookTok dataset item and charged exactly one event; the unavailable name produced a safe per-entity error, and the duplicate ID was reported as uncharged.
+```text
+npm run test:audit-health                 # 17 passing tests
+npm run test:audit-secrets                # 19 passing tests
+npm run test:audit-pricing                # 14 passing tests
+```
 
-The prior smoke run exposed that its older live build had not yet included canonical-result deduplication and charged twice. The corrected build above resolves that production defect. The Actor remains private; publication and any PR remain downstream actions.
+The live audit commands and Apify deployment/smoke verification were not run because this implementation container has no `APIFY_TOKEN`/`APIFY_API_TOKEN`. Secret configuration, successful build, paid pricing activation/API verification, and Berlin/Munich plus mixed-failure smoke runs remain downstream release gates.
 
-The requested new PR is intentionally not opened here: this stage is constrained to a local commit, and the PR stage follows testing.
+## Handoff
 
-The feature implementation, deployment-blocker correction, and charging-path test coverage are committed locally on `feat/tiktok-challenge-details-scraper` (`5cd31ea`). The branch is intentionally not pushed and no PR is opened by this implementation stage; the follow-up PR stage owns those external actions.
-
-IMPLEMENTATION_COMPLETE
+Changes are local only. No push or PR was created. The branch is ready for downstream code review, testing, deployment, monetization verification, and live charge-parity checks.

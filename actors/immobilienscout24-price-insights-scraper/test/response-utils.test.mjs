@@ -34,6 +34,20 @@ test('does not map incomplete responses', () => {
     assert.equal(buildPriceInsightItem({ ...completeResponse, prices: null }, { location: 'Berlin', index: 0 }), null);
 });
 
+for (const field of ['location', 'geocode', 'currency']) {
+    test(`does not map a response without ${field}`, () => {
+        assert.equal(buildPriceInsightItem({ ...completeResponse, [field]: '' }, { location: 'Berlin', index: 0 }), null);
+    });
+}
+
+for (const field of ['apartment_rent_per_m2', 'apartment_buy_per_m2', 'house_rent_per_m2', 'house_buy_per_m2']) {
+    test(`does not map a response without ${field}`, () => {
+        const prices = { ...completeResponse.prices };
+        delete prices[field];
+        assert.equal(buildPriceInsightItem({ ...completeResponse, prices }, { location: 'Berlin', index: 0 }), null);
+    });
+}
+
 test('does not map non-positive price benchmarks', () => {
     const prices = { ...completeResponse.prices, apartment_rent_per_m2: 0 };
 
