@@ -6,6 +6,7 @@ Date: 2026-07-13
 
 - Existing implementation PR: [#274 — Add ImmobilienScout24 Price Insights Actor](https://github.com/userlip/scrappa-apify-actors/pull/274)
 - Existing PR state: merged on 2026-07-12 after its CI and automated review checks passed.
+- Follow-up branch: `chore/immobilienscout24-price-insights-release-verification`.
 - This PR stage creates a follow-up branch for the tested metadata, regression coverage, and release evidence that were added after the original merge.
 - No merge is performed in this stage.
 
