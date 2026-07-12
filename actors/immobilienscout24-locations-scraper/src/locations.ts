@@ -19,6 +19,7 @@ export interface LocationDatasetItem {
     [key: string]: unknown;
 }
 
+/** Adds newly emitted geocodes to seenGeocodes so later queries cannot emit duplicates. */
 export function buildUniqueLocationItems(
     response: LocationsResponse,
     sourceQuery: string,

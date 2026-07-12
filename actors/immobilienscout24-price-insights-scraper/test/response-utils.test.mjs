@@ -39,3 +39,9 @@ test('does not map non-positive price benchmarks', () => {
 
     assert.equal(buildPriceInsightItem({ ...completeResponse, prices }, { location: 'Berlin', index: 0 }), null);
 });
+
+test('does not coerce unsupported price benchmark types', () => {
+    const prices = { ...completeResponse.prices, apartment_rent_per_m2: true };
+
+    assert.equal(buildPriceInsightItem({ ...completeResponse, prices }, { location: 'Berlin', index: 0 }), null);
+});
