@@ -18,8 +18,32 @@ export class ScrappaTimeoutError extends Error {
 }
 
 export function isRetryableScrappaError(error: unknown): boolean {
-    return error instanceof ScrappaTimeoutError
-        || (error instanceof ScrappaApiError && [408, 429, 500, 502, 503, 504].includes(error.status));
+    if (error instanceof ScrappaTimeoutError) {
+        return true;
+    }
+
+    if (error instanceof ScrappaApiError) {
+        return [408, 429, 500, 502, 503, 504].includes(error.status);
+    }
+
+    if (!(error instanceof Error)) {
+        return false;
+    }
+
+    if (error instanceof TypeError && /fetch failed|network|socket/i.test(error.message)) {
+        return true;
+    }
+
+    return isRetryableNetworkCause(error.cause);
+}
+
+function isRetryableNetworkCause(cause: unknown): boolean {
+    if (typeof cause !== 'object' || cause === null || !('code' in cause)) {
+        return false;
+    }
+
+    return ['ECONNRESET', 'ECONNREFUSED', 'EHOSTUNREACH', 'ENETUNREACH', 'ENOTFOUND', 'EAI_AGAIN', 'ETIMEDOUT']
+        .includes(String(cause.code));
 }
 
 export class ScrappaClient {
@@ -49,7 +73,9 @@ export class ScrappaClient {
     private async send<T>(endpoint: string, params: Record<string, unknown>): Promise<T> {
         const url = new URL(`https://scrappa.co/api${endpoint}`);
         for (const [key, value] of Object.entries(params)) {
-            url.searchParams.set(key, String(value));
+            if (value !== undefined && value !== null && value !== '') {
+                url.searchParams.set(key, String(value));
+            }
         }
 
         const controller = new AbortController();
