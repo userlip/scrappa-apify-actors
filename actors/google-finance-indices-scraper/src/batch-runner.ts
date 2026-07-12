@@ -9,10 +9,10 @@ export async function runIndicesBatch(requested: string[], params: { hl: string;
     if (dependencies.getCapacity() <= 0) return { requested: requested.length, attempted: 0, saved, duplicate, failed, charged: saved, charge_limit_reached: true, outcomes: requested.map((symbol) => ({ symbol, status: 'not_attempted', error: 'Charge limit reached' })) };
     let response: GoogleFinanceIndicesResponse;
     try { response = await dependencies.fetch(); } catch (error) { const message = error instanceof Error ? error.message : String(error); return { requested: requested.length, attempted: 1, saved, duplicate, failed: requested.length, charged: saved, charge_limit_reached: false, outcomes: requested.map((symbol) => ({ symbol, status: 'failed', error: message })) }; }
-    const wanted = new Set(requested); const rows = extractIndexRows(response);
+    const wanted = new Set(requested); const filterRequestedSymbols = wanted.size > 0; const rows = extractIndexRows(response);
     for (const row of rows) {
         const sourceSymbol = canonicalSymbol(row.symbol);
-        if (!sourceSymbol || !wanted.has(sourceSymbol)) { failed += 1; outcomes.push({ symbol: sourceSymbol ?? 'unknown', status: 'failed', error: 'Scrappa returned an index outside the requested batch' }); continue; }
+        if (!sourceSymbol || (filterRequestedSymbols && !wanted.has(sourceSymbol))) { failed += 1; outcomes.push({ symbol: sourceSymbol ?? 'unknown', status: 'failed', error: 'Scrappa returned an index outside the requested batch' }); continue; }
         const item = mapIndexRow(row, sourceSymbol, params); if (!item) { failed += 1; outcomes.push({ symbol: sourceSymbol, status: 'failed', error: 'Scrappa returned an index without a canonical symbol' }); continue; }
         if (seen.has(item.id)) { duplicate += 1; outcomes.push({ symbol: sourceSymbol, status: 'duplicate', error: `Duplicate index ${item.id}; result was not saved or charged` }); continue; }
         if (dependencies.getCapacity() <= 0) { limited = true; outcomes.push({ symbol: sourceSymbol, status: 'not_attempted', error: 'Charge limit reached' }); break; }
