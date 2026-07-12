@@ -1,0 +1,39 @@
+{
+  "title": "ImmobilienScout24 Location Autocomplete",
+  "description": "Resolve several city, district, or postal-code queries in one run. Duplicate queries and duplicate returned geocodes are saved only once.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "queries": {
+      "title": "Location queries",
+      "type": "array",
+      "description": "Batch-first list of up to 100 city, district, or postal-code queries.",
+      "editor": "stringList",
+      "prefill": ["Berlin", "Hamburg"],
+      "default": ["Berlin"],
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      }
+    },
+    "query": {
+      "title": "Single location query (compatibility)",
+      "type": "string",
+      "description": "Use this for older integrations that send one query. The queries list takes precedence when both are provided.",
+      "editor": "textfield",
+      "maxLength": 120
+    },
+    "limit": {
+      "title": "Matches per query",
+      "type": "integer",
+      "description": "Maximum location matches requested from Scrappa for each query.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    }
+  }
+}
