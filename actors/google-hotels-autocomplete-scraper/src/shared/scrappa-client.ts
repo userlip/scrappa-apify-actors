@@ -98,7 +98,9 @@ export class ScrappaClient {
     }
 
     private async send<T>(endpoint: string, params: Record<string, unknown>): Promise<T> {
-        const url = new URL(`${this.baseUrl}${endpoint}`);
+        const baseUrl = this.baseUrl.replace(/\/+$/, '');
+        const endpointPath = endpoint.replace(/^\/+/, '');
+        const url = new URL(`${baseUrl}/${endpointPath}`);
         for (const [key, value] of Object.entries(params)) {
             if (value !== undefined && value !== null && value !== '') {
                 if (typeof value === 'boolean') {

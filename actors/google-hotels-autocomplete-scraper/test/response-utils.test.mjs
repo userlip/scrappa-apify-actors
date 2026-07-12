@@ -43,3 +43,15 @@ test('deduplicates equivalent suggestions and drops empty suggestions', () => {
 test('returns no rows for an unexpected response shape', () => {
     assert.deepEqual(buildSuggestionDatasetItems({}, 'Berlin', {}), []);
 });
+
+test('skips malformed suggestions without dropping valid rows', () => {
+    const items = buildSuggestionDatasetItems({ suggestions: [
+        null,
+        42,
+        { value: 'Wrong type', type: 1 },
+        { value: 'Berlin hotels', type: 'location' },
+    ] }, 'Berlin', {});
+
+    assert.equal(items.length, 1);
+    assert.equal(items[0].value, 'Berlin hotels');
+});

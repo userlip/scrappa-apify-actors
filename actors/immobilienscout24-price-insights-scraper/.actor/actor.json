@@ -1,0 +1,41 @@
+{
+  "actorSpecification": 1,
+  "name": "immobilienscout24-price-insights-scraper",
+  "title": "ImmobilienScout24 Price Insights Scraper",
+  "description": "Compare apartment and house rent and purchase prices per square meter across German property markets.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": { "templateId": "ts-start" },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
+  "resources": { "memoryMbytes": 128 },
+  "defaultRunOptions": { "timeoutSecs": 300 },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "priceInsights": {
+          "title": "Price insights",
+          "transformation": {
+            "fields": ["location", "geocode", "currency", "apartment_rent_per_m2", "apartment_buy_per_m2", "house_rent_per_m2", "house_buy_per_m2", "request_location", "request_index"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "location": { "label": "Resolved location", "format": "text" },
+              "geocode": { "label": "Geocode", "format": "text" },
+              "currency": { "label": "Currency", "format": "text" },
+              "apartment_rent_per_m2": { "label": "Apartment rent / m²", "format": "number" },
+              "apartment_buy_per_m2": { "label": "Apartment buy / m²", "format": "number" },
+              "house_rent_per_m2": { "label": "House rent / m²", "format": "number" },
+              "house_buy_per_m2": { "label": "House buy / m²", "format": "number" },
+              "request_location": { "label": "Requested location", "format": "text" },
+              "request_index": { "label": "Request index", "format": "number" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "actorSpecification": 1,
+  "name": "immobilienscout24-locations-scraper",
+  "title": "ImmobilienScout24 Location Autocomplete",
+  "description": "Resolve cities, districts, and postal-code queries to ImmobilienScout24 location names, types, and geocodes in one batch run.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "locations": {
+          "title": "Location matches",
+          "transformation": {
+            "fields": ["geocode", "name", "type", "source_query"]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "geocode": { "label": "Geocode", "format": "text" },
+              "name": { "label": "Location", "format": "text" },
+              "type": { "label": "Type", "format": "text" },
+              "source_query": { "label": "Source query", "format": "text" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
