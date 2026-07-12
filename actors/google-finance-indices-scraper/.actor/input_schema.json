@@ -1,0 +1,16 @@
+{
+  "title": "Google Finance Indices Scraper",
+  "description": "Fetch multiple Google Finance indices in one run. Use a JSON array or comma-separated symbols.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "indices": {
+      "title": "Index symbols",
+      "type": ["string", "array"],
+      "description": "A comma-separated list or JSON array of up to 50 symbols, for example .INX, .DJI, .IXIC.",
+      "editor": "json"
+    },
+    "hl": { "title": "Language", "type": "string", "description": "Google Finance language code, such as en or de.", "editor": "textfield", "default": "en" },
+    "gl": { "title": "Country", "type": "string", "description": "Two-letter Google Finance country code, such as us or de.", "editor": "textfield", "default": "us", "minLength": 2, "maxLength": 2 }
+  }
+}
