@@ -1,6 +1,7 @@
 {
   "name": "immobilienscout24-price-insights-scraper",
   "version": "1.0.0",
+  "description": "Thin Apify wrapper for Scrappa ImmobilienScout24 property-market price insights.",
   "type": "module",
   "main": "./dist/main.js",
   "scripts": {

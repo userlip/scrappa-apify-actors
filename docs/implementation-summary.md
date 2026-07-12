@@ -1,28 +1,49 @@
-# Google Finance Indices Scraper implementation
+# Implementation Summary: ImmobilienScout24 Price Insights Scraper
 
-Added `actors/google-finance-indices-scraper` on `feat/google-finance-indices-scraper`.
+Date: 2026-07-13
+Branch: `feat/immobilienscout24-price-insights-scraper`
 
-- Thin 128 MB / 120-second Apify wrapper for Scrappa's verified `/api/google-finance/indices` route.
-- Supports a JSON array or CSV batch input, normalizes and deduplicates up to 50 symbols, and validates `hl`/`gl`.
-- Emits at most one canonical dataset item per returned index and charges `index-result` only after a successful save. Case-insensitive upstream matching, output-ID deduplication, unmatched-row rejection, and charge-limit handling avoid duplicate or invalid charges.
-- When no `indices` are supplied, retains every unique valid default result returned by Scrappa; retries timeouts, transient transport failures, and HTTP 408/429/500/502/503/504 while failing fast for other client errors.
-- The three-attempt policy uses 30-second request timeouts and 250 ms incremental backoff (90.75 seconds worst case), preserving a 20-second finalization reserve inside the 120-second Actor limit. A regression test binds this policy to the published runtime metadata.
-- An exhausted Scrappa request now propagates to `main()` so the Actor uses `Actor.fail()` instead of reporting a misleading successful zero-result run. Valid empty upstream responses still complete successfully with an empty summary.
-- Regression coverage verifies default-response saving, upstream-failure propagation, 429 retries, non-retryable 4xx behavior, direct/nested response containers, numeric aliases, stable IDs, locale provenance, and retry-budget safety.
-- Listing documentation covers S&P 500, Dow, NASDAQ, custom symbols, pricing ($0.00025/result), and the direct Scrappa API path.
+## Change completed
 
-Validated locally from the actor directory:
+- Corrected the `locations` input metadata to support the actor's documented array-or-comma-separated-string contract using Apify's supported union field type.
+- Expanded the Actor description to target property-market benchmarking, rent-vs-buy research, recurring city comparisons, and the Scrappa direct API upgrade path.
+- Added package description metadata for the thin Scrappa wrapper.
+- Added focused regression coverage for request limits, endpoint and retry parameter shape, bounded concurrency, every required response field, and existing partial-failure/charging behavior.
+
+The existing implementation remains a thin wrapper around Scrappa's `/immobilienscout24/price-insights` endpoint. It normalizes and deduplicates up to 100 locations, fetches them in bounded batches, writes one complete dataset item per successful snapshot, and uses only the confirmed `price-insight-result` PAY_PER_EVENT charge for successful PPE writes. It does not write per-item `OUTPUT` records or scrape ImmobilienScout24 directly.
+
+## Files changed
+
+- `actors/immobilienscout24-price-insights-scraper/.actor/actor.json`
+- `actors/immobilienscout24-price-insights-scraper/.actor/input_schema.json`
+- `actors/immobilienscout24-price-insights-scraper/package.json`
+- `actors/immobilienscout24-price-insights-scraper/package-lock.json`
+- `actors/immobilienscout24-price-insights-scraper/test/batch-runner.test.mjs`
+- `actors/immobilienscout24-price-insights-scraper/test/request-params.test.mjs`
+- `actors/immobilienscout24-price-insights-scraper/test/response-utils.test.mjs`
+
+## Local verification
+
+From `actors/immobilienscout24-price-insights-scraper`:
 
 ```text
-npm test                 # 12 passing
-npm run typecheck        # passing
-npx apify-cli validate-schema  # input and dataset schemas valid
+npm test                                  # 26 passing tests
+npm run typecheck                         # passes
 jq empty .actor/actor.json .actor/input_schema.json
-git diff --check main...HEAD
+npx apify-cli validate-schema             # input and dataset schemas pass
+git diff --check                          # passes
 ```
 
-The Apify input-schema validator accepts the `json`-editor string-or-array union but rejects `items` and `maxItems` on that flexible field. Element typing and the 50-symbol cap are therefore enforced by the existing runtime normalizer, with a schema regression test covering both published forms.
+Repository audit test suites also pass:
 
-Deployment, secret configuration, Apify pricing activation, publication, and live smoke verification remain release-stage work; no credentials were available locally and no external state was changed.
+```text
+npm run test:audit-health                 # 17 passing tests
+npm run test:audit-secrets                # 19 passing tests
+npm run test:audit-pricing                # 14 passing tests
+```
 
-IMPLEMENTATION_COMPLETE
+The live audit commands and Apify deployment/smoke verification were not run because this implementation container has no `APIFY_TOKEN`/`APIFY_API_TOKEN`. Secret configuration, successful build, paid pricing activation/API verification, and Berlin/Munich plus mixed-failure smoke runs remain downstream release gates.
+
+## Handoff
+
+Changes are local only. No push or PR was created. The branch is ready for downstream code review, testing, deployment, monetization verification, and live charge-parity checks.

@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "immobilienscout24-price-insights-scraper",
   "title": "ImmobilienScout24 Price Insights Scraper",
-  "description": "Compare apartment and house rent and purchase prices per square meter across German property markets.",
+  "description": "Benchmark German property markets with apartment and house rent and purchase prices per square meter for rent-vs-buy research and recurring city comparisons. Batch locations in one run; upgrade to the Scrappa API for larger recurring workloads.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": { "templateId": "ts-start" },

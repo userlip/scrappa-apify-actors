@@ -46,6 +46,32 @@ test('continues after a failed location and charges only successful snapshots', 
     assert.ok(calls.every((call) => call.eventName === PRICE_INSIGHT_RESULT_EVENT));
 });
 
+test('uses the price-insights endpoint and preserves request parameters and retry options', async () => {
+    const calls = [];
+    const result = await runPriceInsightsBatch(
+        [{ location: 'Berlin', index: 0 }],
+        {
+            async get(endpoint, params, options) {
+                calls.push({ endpoint, params, options });
+                return response('Berlin');
+            },
+        },
+        {
+            isPayPerEvent: () => false,
+            async pushData() {
+                return { chargedCount: 0, eventChargeLimitReached: false };
+            },
+        },
+    );
+
+    assert.equal(result.succeeded, 1);
+    assert.deepEqual(calls, [{
+        endpoint: '/immobilienscout24/price-insights',
+        params: { location: 'Berlin' },
+        options: { attempts: 2 },
+    }]);
+});
+
 test('writes successful snapshots without an event on non-PPE builds', async () => {
     const calls = [];
     const result = await runPriceInsightsBatch(
@@ -168,4 +194,32 @@ test('fetches concurrently but writes results in input order', async () => {
     await processing;
 
     assert.deepEqual(writes, ['Berlin', 'Munich']);
+});
+
+test('bounds concurrent upstream requests to ten locations', async () => {
+    let active = 0;
+    let peak = 0;
+    const requests = Array.from({ length: 25 }, (_, index) => ({ location: `Location ${index}`, index }));
+
+    const result = await runPriceInsightsBatch(
+        requests,
+        {
+            async get(_endpoint, params) {
+                active += 1;
+                peak = Math.max(peak, active);
+                await new Promise((resolve) => setImmediate(resolve));
+                active -= 1;
+                return response(params.location);
+            },
+        },
+        {
+            isPayPerEvent: () => false,
+            async pushData() {
+                return { chargedCount: 0, eventChargeLimitReached: false };
+            },
+        },
+    );
+
+    assert.equal(result.succeeded, requests.length);
+    assert.equal(peak, 10);
 });

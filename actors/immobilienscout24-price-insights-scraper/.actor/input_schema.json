@@ -6,13 +6,11 @@
   "properties": {
     "locations": {
       "title": "Locations",
-      "type": "array",
-      "description": "German cities, districts, postal codes, or ImmobilienScout24 geocodes. Batch locations in one run to reduce overhead.",
-      "editor": "stringList",
+      "description": "German cities, districts, postal codes, or ImmobilienScout24 geocodes. Use an array or comma-separated text to batch locations in one run and reduce overhead.",
+      "type": ["array", "string"],
+      "editor": "json",
       "prefill": ["Berlin", "Munich"],
-      "items": { "type": "string", "maxLength": 120 },
-      "minItems": 1,
-      "maxItems": 100
+      "example": ["Berlin", "Munich"]
     },
     "location": {
       "title": "Single location (compatibility)",
