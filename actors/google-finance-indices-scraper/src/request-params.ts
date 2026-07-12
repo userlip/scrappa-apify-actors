@@ -53,7 +53,12 @@ export function normalizeIndices(value: unknown): string[] {
     return result;
 }
 
-function locale(value: unknown, field: 'hl' | 'gl', pattern: RegExp, fallback: string): string {
+function locale(
+    value: unknown,
+    field: 'hl' | 'gl',
+    pattern: RegExp,
+    fallback: string,
+): string {
     const normalized = value === null || value === undefined
         ? fallback
         : typeof value === 'string'
@@ -68,7 +73,9 @@ function locale(value: unknown, field: 'hl' | 'gl', pattern: RegExp, fallback: s
     return normalized;
 }
 
-export function buildGoogleFinanceIndicesParams(input: GoogleFinanceIndicesInput): IndicesParams {
+export function buildGoogleFinanceIndicesParams(
+    input: GoogleFinanceIndicesInput,
+): IndicesParams {
     const indices = normalizeIndices(input.indices);
     const params: IndicesParams = {
         hl: locale(input.hl, 'hl', /^[a-z]{2,3}(?:-[a-z]{2,4})?$/, 'en'),

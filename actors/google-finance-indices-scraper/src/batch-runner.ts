@@ -20,7 +20,11 @@ export interface BatchSummary {
     outcomes: Array<{ symbol: string; status: string; error?: string }>;
 }
 
-export async function runIndicesBatch(requested: string[], params: { hl: string; gl: string }, dependencies: BatchDependencies): Promise<BatchSummary> {
+export async function runIndicesBatch(
+    requested: string[],
+    params: { hl: string; gl: string },
+    dependencies: BatchDependencies,
+): Promise<BatchSummary> {
     const outcomes: BatchSummary['outcomes'] = [];
     let saved = 0;
     let duplicate = 0;
@@ -45,27 +49,10 @@ export async function runIndicesBatch(requested: string[], params: { hl: string;
         };
     }
 
-    let response: GoogleFinanceIndicesResponse;
-    try {
-        response = await dependencies.fetch();
-    } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-
-        return {
-            requested: requested.length,
-            attempted: 1,
-            saved,
-            duplicate,
-            failed: requested.length,
-            charged: saved,
-            charge_limit_reached: false,
-            outcomes: requested.map((symbol) => ({
-                symbol,
-                status: 'failed',
-                error: message,
-            })),
-        };
-    }
+    // An exhausted Scrappa request is an Actor-level failure.  Keep this
+    // rejection intact so main() invokes Actor.fail() instead of publishing a
+    // misleading successful zero-result summary.
+    const response = await dependencies.fetch();
 
     const wanted = new Set(requested);
     const filterRequestedSymbols = wanted.size > 0;

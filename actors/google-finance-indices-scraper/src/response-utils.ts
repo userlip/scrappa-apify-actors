@@ -59,11 +59,15 @@ export function canonicalSymbol(value: unknown): string | null {
     return symbol ? symbol.toUpperCase() : null;
 }
 
-export function extractIndexRows(response: GoogleFinanceIndicesResponse): GoogleFinanceIndexRow[] {
+export function extractIndexRows(
+    response: GoogleFinanceIndicesResponse,
+): GoogleFinanceIndexRow[] {
     const candidate = response.data ?? response.indices ?? response.results;
 
     if (Array.isArray(candidate)) {
-        return candidate.filter((item): item is GoogleFinanceIndexRow => !!item && typeof item === 'object');
+        return candidate.filter(
+            (item): item is GoogleFinanceIndexRow => !!item && typeof item === 'object',
+        );
     }
 
     if (candidate && typeof candidate === 'object') {
@@ -71,14 +75,21 @@ export function extractIndexRows(response: GoogleFinanceIndicesResponse): Google
         const nested = container.indices ?? container.results;
 
         if (Array.isArray(nested)) {
-            return nested.filter((item): item is GoogleFinanceIndexRow => !!item && typeof item === 'object');
+            return nested.filter(
+                (item): item is GoogleFinanceIndexRow => !!item && typeof item === 'object',
+            );
         }
     }
 
     return [];
 }
 
-export function mapIndexRow(row: GoogleFinanceIndexRow, requestedSymbol: string, params: { hl: string; gl: string }, retrievedAt = new Date().toISOString()): IndexItem | null {
+export function mapIndexRow(
+    row: GoogleFinanceIndexRow,
+    requestedSymbol: string,
+    params: { hl: string; gl: string },
+    retrievedAt = new Date().toISOString(),
+): IndexItem | null {
     const symbol = canonicalSymbol(row.symbol);
     if (!symbol) {
         return null;

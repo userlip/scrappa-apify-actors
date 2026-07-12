@@ -9,7 +9,12 @@ export interface DatasetWriter {
     } | void>;
 }
 
-export async function saveIndex(item: object, charging: ChargingManager, dataset: DatasetWriter, event = 'index-result'): Promise<{ savedCount: number; chargeLimitReached: boolean }> {
+export async function saveIndex(
+    item: object,
+    charging: ChargingManager,
+    dataset: DatasetWriter,
+    event = 'index-result',
+): Promise<{ savedCount: number; chargeLimitReached: boolean }> {
     if (!charging.getPricingInfo().isPayPerEvent) {
         await dataset.pushData(item);
         return { savedCount: 1, chargeLimitReached: false };

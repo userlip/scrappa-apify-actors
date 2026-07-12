@@ -72,3 +72,16 @@ test('saves and charges each unique default result when no indices are requested
     assert.equal(summary.failed, 0);
     assert.deepEqual(writes.map((item) => item.requested_symbol), ['.INX', '.DJI']);
 });
+
+test('propagates an exhausted upstream request failure to the Actor failure handler', async () => {
+    const upstreamError = new Error('Scrappa request failed after retries');
+
+    await assert.rejects(
+        runIndicesBatch(['.INX'], { hl: 'en', gl: 'us' }, {
+            getCapacity: () => Infinity,
+            fetch: async () => { throw upstreamError; },
+            save: async () => ({ savedCount: 1, chargeLimitReached: false }),
+        }),
+        upstreamError,
+    );
+});

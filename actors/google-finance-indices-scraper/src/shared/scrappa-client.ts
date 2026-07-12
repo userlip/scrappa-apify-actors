@@ -32,7 +32,13 @@ export function isRetryableScrappaError(error: unknown): boolean {
 }
 
 export class ScrappaClient {
-    constructor(private readonly config: { apiKey: string; baseUrl?: string; timeoutMs?: number }) {
+    constructor(
+        private readonly config: {
+            apiKey: string;
+            baseUrl?: string;
+            timeoutMs?: number;
+        },
+    ) {
     }
 
     async get<T>(endpoint: string, params: object, attempts = REQUEST_ATTEMPTS): Promise<T> {
