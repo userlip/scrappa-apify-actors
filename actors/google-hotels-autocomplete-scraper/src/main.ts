@@ -41,6 +41,15 @@ async function main(): Promise<void> {
         console.log(`Fetching Google Hotels suggestions for ${request.queries.length} unique query or queries`);
 
         for (const query of request.queries) {
+            const chargeableCount = isPayPerEvent
+                ? chargingManager.calculateMaxEventChargeCountWithinLimit(RESULT_CHARGE_EVENT)
+                : Infinity;
+            if (chargeableCount <= 0) {
+                chargeLimitReached = true;
+                console.log(`Charge limit reached after saving ${savedSuggestionCount} suggestion result(s)`);
+                break;
+            }
+
             const params = paramsForQuery(query, request.commonParams);
 
             try {
@@ -59,16 +68,7 @@ async function main(): Promise<void> {
                 }
 
                 if (isPayPerEvent) {
-                    const chargeableCount = chargingManager.calculateMaxEventChargeCountWithinLimit(
-                        RESULT_CHARGE_EVENT,
-                    );
                     const itemsToSave = items.slice(0, chargeableCount);
-                    if (itemsToSave.length === 0) {
-                        chargeLimitReached = true;
-                        console.log(`Charge limit reached after saving ${savedSuggestionCount} suggestion result(s)`);
-                        break;
-                    }
-
                     const result = await Actor.pushData(itemsToSave, RESULT_CHARGE_EVENT);
                     savedSuggestionCount += itemsToSave.length;
                     if (itemsToSave.length < items.length || result.eventChargeLimitReached) {
