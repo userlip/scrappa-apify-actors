@@ -35,7 +35,7 @@ test('does not map incomplete responses', () => {
 });
 
 for (const field of ['location', 'geocode', 'currency']) {
-    test(`does not map a response without ${field}`, () => {
+    test(`does not map a response with empty ${field}`, () => {
         assert.equal(buildPriceInsightItem({ ...completeResponse, [field]: '' }, { location: 'Berlin', index: 0 }), null);
     });
 }
