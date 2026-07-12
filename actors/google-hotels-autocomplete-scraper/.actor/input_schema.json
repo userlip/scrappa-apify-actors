@@ -1,0 +1,58 @@
+{
+  "title": "Google Hotels Autocomplete Scraper",
+  "description": "Discover Google Hotels destinations and accommodations from multiple queries in one run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "queries": {
+      "title": "Queries",
+      "type": "array",
+      "description": "Destination, landmark, area, or hotel-name prefixes. You can also provide a comma-separated string through the API.",
+      "editor": "stringList",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": { "type": "string", "maxLength": 200 },
+      "prefill": ["Berlin", "Paris"]
+    },
+    "q": {
+      "title": "Single Query",
+      "type": "string",
+      "description": "Compatibility alias for one query. Queries and q are combined and deduplicated when both are provided.",
+      "editor": "textfield",
+      "maxLength": 200
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter Google country code, such as de, us, gb, or fr.",
+      "editor": "textfield",
+      "pattern": "^[A-Za-z]{2}$",
+      "default": "us"
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter language code, such as en, de, es, or fr.",
+      "editor": "textfield",
+      "pattern": "^[A-Za-z]{2}$",
+      "default": "en"
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string",
+      "description": "Three-letter currency code used in generated hotel-search links.",
+      "editor": "textfield",
+      "pattern": "^[A-Za-z]{3}$",
+      "default": "USD"
+    },
+    "type": {
+      "title": "Suggestion Type",
+      "type": "string",
+      "description": "Return locations, hotels/accommodations, or both.",
+      "editor": "select",
+      "enum": ["location", "hotel", "all"],
+      "enumTitles": ["Locations", "Hotels", "All"],
+      "default": "all"
+    }
+  }
+}
