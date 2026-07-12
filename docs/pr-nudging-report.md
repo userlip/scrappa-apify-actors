@@ -1,47 +1,46 @@
-# PR Nudging Report: TikTok Challenge Details Scraper
+# PR Nudging Report: ImmobilienScout24 Price Insights Scraper
 
-Date: 2026-07-11
+Date: 2026-07-13
 
 ## Pull request
 
-- PR: [#272 — fix: make TikTok challenge ID schema Apify-compatible](https://github.com/userlip/scrappa-apify-actors/pull/272)
-- Branch: `fix/tiktok-challenge-details-input-schema`
-- Base: `main`
-- State: open, ready for merge (`mergeStateStatus: CLEAN`); this stage did not merge it.
-
-This is the follow-up to the initial Actor PR. It makes the Apify input schema editor-compatible and prevents name or ID lookups from saving or charging a mismatched upstream challenge response. It also deduplicates canonical results and retries a recoverable short save without double charging.
+- Existing implementation PR: [#274 — Add ImmobilienScout24 Price Insights Actor](https://github.com/userlip/scrappa-apify-actors/pull/274)
+- Existing PR state: merged on 2026-07-12 after its CI and automated review checks passed.
+- This PR stage creates a follow-up branch for the tested metadata, regression coverage, and release evidence that were added after the original merge.
+- No merge is performed in this stage.
 
 ## Validation before push
 
-Run from `actors/tiktok-challenge-details-scraper`:
+From `actors/immobilienscout24-price-insights-scraper`:
 
-- `npm test` — 18 passed, 0 failed.
+- `npm test` — 26 passed, 0 failed.
+- `npm run test:dev` — 26 passed, 0 failed.
 - `npm run typecheck` — passed.
 - `jq empty .actor/actor.json .actor/input_schema.json` — passed.
-- `npm audit --omit=dev --package-lock-only --json` — 0 vulnerabilities.
-- `git diff --check origin/main...HEAD` — passed.
+- `npx apify-cli validate-schema` — input and dataset schemas passed.
+- `npm run test:audit-health` — 17 passed, 0 failed.
+- `npm run test:audit-secrets` — 19 passed, 0 failed.
+- `npm run test:audit-pricing` — 14 passed, 0 failed.
+- `git diff --check` — passed.
 
-The focused suite covers normalization and the combined 100-entity limit, partial failures, response mapping, canonical deduplication, mismatch rejection, short-save retries, and one charge per saved result.
+The focused suites cover array, CSV, and singular input normalization; trimming and case-insensitive deduplication; the 100-location limit; bounded concurrency; endpoint and retry parameter shape; complete response mapping; partial failures; and charge-confirmed dataset writes.
 
-## Release gate evidence
+## Live release evidence
 
-The deployed Actor `bEajaru9WVbLA0YBh` (`tiktok-challenge-details-scraper`) has a secret `SCRAPPA_API_KEY` and active `PAY_PER_EVENT` pricing of USD `$0.00025` for `challenge-detail-result`.
+Actor `gw1ZWMNQMBu0dGUnz` (`immobilienscout24-price-insights-scraper`) has:
 
-Mixed live smoke run `EpVbStwLx5gJzk8Xk` succeeded in 4.35 seconds: the `booktok` name plus its canonical ID produced one BookTok dataset item and exactly one charged event; the canonical duplicate was explicitly uncharged and the malformed ID was omitted during normalization. Build `1.0.6` (`NfNCbykxUqynIQ4nT`) succeeded. Full evidence is in `docs/testing-report.md`.
+- Successful build `1.0.9` (`BC4VS1JHWLSqLyDls`), 128 MB memory, and a 300-second timeout.
+- `SCRAPPA_API_KEY` configured as an Apify secret.
+- Active `PAY_PER_EVENT` pricing at `$0.0005` for `price-insight-result`.
+
+Berlin/Munich batch run `PKs7fmAHPsPpPVhsh` produced two complete EUR dataset rows and exactly two charged events. Mixed valid/invalid run `h4gumcKUWI1YRBABi` produced one Berlin row, one charged event, and skipped the invalid location without charging it. The default key-value store contained only `INPUT`; no per-item `OUTPUT` records were written.
+
+Portfolio audits reported 92/92 actors with secrets and active paid pricing. The health audit's only unrelated failure was `tiktok-challenge-posts-scraper` (`CVaJEgPjl3jWKbm71`); the new Actor had five recent successful runs and a successful latest build.
 
 ## CI and review monitoring
 
-After pushing tested implementation commit `85d74d3183bb72201a8c3ce4dae2dec2b5c30288`, all PR checks passed:
-
-- Actor Tests workflow `29163099479`: all 22 matrix jobs passed.
-- Claude Code Review workflow `29163099505`: passed.
-- Cubic AI code reviewer: passed.
-- Socket Security project report and PR alerts: passed.
-
-The repository CI matrix does not yet enumerate this newly added Actor; its dedicated test command was run locally as the focused gate above. GitHub reran the matrix for the current PR head because the PR still contains actor changes, and all 22 enumerated jobs passed. GitHub's REST endpoint temporarily rate-limited direct review-comment enumeration, but both configured automated reviewers completed successfully and no failing or actionable review check remains.
+The original implementation PR #274 completed all repository Actor Tests, Claude review, Cubic review, and Socket project checks successfully before merge. The follow-up PR will be monitored until its checks and review are clean. Any feedback requiring unrelated implementation work will be returned to implementation rather than expanded here.
 
 ## Outcome
 
-The branch is pushed, PR #272 is open and clean, all rerun CI/review checks pass, and paid live behavior is verified. No merge was performed.
-
-PR_NUDGING_PASSED
+The tested follow-up changes are ready for review. No merge was performed.
