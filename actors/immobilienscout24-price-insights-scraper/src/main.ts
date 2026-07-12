@@ -5,7 +5,7 @@ import { normalizeLocations } from './request-params.js';
 import type { PriceInsightsInput } from './request-params.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 10000;
 
 async function main(): Promise<void> {
     await Actor.init();

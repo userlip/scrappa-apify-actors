@@ -11,11 +11,12 @@ export interface LocationsResponse {
     [key: string]: unknown;
 }
 
-export interface LocationDatasetItem extends LocationMatch {
+export interface LocationDatasetItem {
     geocode: string;
     name: string;
     type: string;
     source_query: string;
+    [key: string]: unknown;
 }
 
 export function buildUniqueLocationItems(

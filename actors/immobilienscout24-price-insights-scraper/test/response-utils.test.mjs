@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildPriceInsightItem } from '../dist/response-utils.js';
+const modulePath = process.env.TEST_SOURCE === 'src' ? '../src/response-utils.ts' : '../dist/response-utils.js';
+const { buildPriceInsightItem } = await import(modulePath);
 
 const completeResponse = {
     success: true,

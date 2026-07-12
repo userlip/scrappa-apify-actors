@@ -37,7 +37,7 @@ export class ScrappaClient {
                     break;
                 }
 
-                const delayMs = Math.min(1000 * 2 ** attempt + Math.random() * 1000, 10000);
+                const delayMs = getRetryDelayMs(attempt);
                 console.warn(`Scrappa request failed (${describeError(error)}). Retrying ${attempt + 1}/${attempts} in ${Math.round(delayMs)}ms.`);
                 await new Promise((resolve) => setTimeout(resolve, delayMs));
             }
@@ -77,6 +77,11 @@ export class ScrappaClient {
             clearTimeout(timeout);
         }
     }
+}
+
+function getRetryDelayMs(failedAttempt: number): number {
+    const jitterMs = Math.random() * 1000;
+    return Math.min(1000 * 2 ** failedAttempt + jitterMs, 10000);
 }
 
 export function describeError(error: unknown): string {

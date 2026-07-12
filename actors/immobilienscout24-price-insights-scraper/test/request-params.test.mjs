@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { normalizeLocations } from '../dist/request-params.js';
+const modulePath = process.env.TEST_SOURCE === 'src' ? '../src/request-params.ts' : '../dist/request-params.js';
+const { normalizeLocations } = await import(modulePath);
 
 test('normalizes and deduplicates an array of locations', () => {
     assert.deepEqual(normalizeLocations({ locations: [' Berlin ', 'Munich', 'berlin', ''] }), [
