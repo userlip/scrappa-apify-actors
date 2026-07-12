@@ -7,6 +7,7 @@ Date: 2026-07-13
 - Existing implementation PR: [#274 — Add ImmobilienScout24 Price Insights Actor](https://github.com/userlip/scrappa-apify-actors/pull/274)
 - Existing PR state: merged on 2026-07-12 after its CI and automated review checks passed.
 - Follow-up branch: `chore/immobilienscout24-price-insights-release-verification`.
+- Follow-up PR: [#280 — release: verify ImmobilienScout24 price insights Actor](https://github.com/userlip/scrappa-apify-actors/pull/280).
 - This PR stage creates a follow-up branch for the tested metadata, regression coverage, and release evidence that were added after the original merge.
 - No merge is performed in this stage.
 
@@ -40,8 +41,8 @@ Portfolio audits reported 92/92 actors with secrets and active paid pricing. The
 
 ## CI and review monitoring
 
-The original implementation PR #274 completed all repository Actor Tests, Claude review, Cubic review, and Socket project checks successfully before merge. The follow-up PR will be monitored until its checks and review are clean. Any feedback requiring unrelated implementation work will be returned to implementation rather than expanded here.
+PR #280 completed all repository Actor Tests, Claude review, Cubic review, and Socket project checks successfully. Socket Alerts and one redundant Claude job were skipped by configuration. No actionable review comments were posted. Any future feedback requiring unrelated implementation work should be returned to implementation rather than expanded here.
 
 ## Outcome
 
-The tested follow-up changes are ready for review. No merge was performed.
+The tested follow-up changes are in PR #280 with green CI and review checks. No merge was performed.
