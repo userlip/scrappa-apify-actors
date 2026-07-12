@@ -9,14 +9,25 @@ interface ScrappaRequestOptions {
 }
 
 interface ScrappaError {
+    error?: string;
     message?: string;
     errors?: Record<string, string[]>;
+    retryable?: boolean;
+}
+
+interface ScrappaErrorDetails {
+    message: string;
+    retryable: boolean;
 }
 
 const RETRYABLE_HTTP_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 
 export class ScrappaHttpError extends Error {
-    constructor(public readonly status: number, message: string) {
+    constructor(
+        public readonly status: number,
+        message: string,
+        public readonly retryable = false,
+    ) {
         super(`Scrappa API error (${status}): ${message}`);
         this.name = 'ScrappaHttpError';
     }
@@ -43,7 +54,9 @@ export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() 
 export function isRetryableScrappaError(error: unknown): boolean {
     return error instanceof ScrappaTimeoutError
         || error instanceof ScrappaConnectionError
-        || (error instanceof ScrappaHttpError && RETRYABLE_HTTP_STATUSES.has(error.status));
+        || (error instanceof ScrappaHttpError
+            && (RETRYABLE_HTTP_STATUSES.has(error.status)
+                || (error.status === 403 && error.retryable)));
 }
 
 export class ScrappaClient {
@@ -88,7 +101,11 @@ export class ScrappaClient {
         const url = new URL(`${this.baseUrl}${endpoint}`);
         for (const [key, value] of Object.entries(params)) {
             if (value !== undefined && value !== null && value !== '') {
-                url.searchParams.set(key, String(value));
+                if (typeof value === 'boolean') {
+                    if (value) url.searchParams.set(key, '1');
+                } else {
+                    url.searchParams.set(key, String(value));
+                }
             }
         }
 
@@ -99,7 +116,8 @@ export class ScrappaClient {
             const response = await this.fetchResponse(url, controller.signal);
 
             if (!response.ok) {
-                throw new ScrappaHttpError(response.status, await this.readErrorMessage(response));
+                const error = await this.readError(response);
+                throw new ScrappaHttpError(response.status, error.message, error.retryable);
             }
 
             return await response.json() as T;
@@ -132,30 +150,33 @@ export class ScrappaClient {
         }
     }
 
-    private async readErrorMessage(response: Response): Promise<string> {
+    private async readError(response: Response): Promise<ScrappaErrorDetails> {
         const fallback = response.statusText || `HTTP ${response.status}`;
         let bodyText: string;
         try {
             bodyText = await response.text();
         } catch (error) {
             if (error instanceof Error && error.name === 'AbortError') throw error;
-            return fallback;
+            return { message: fallback, retryable: false };
         }
 
-        if (!bodyText) return fallback;
+        if (!bodyText) return { message: fallback, retryable: false };
 
         try {
             const errorData = JSON.parse(bodyText) as ScrappaError;
-            let message = errorData.message ?? fallback;
+            let message = errorData.message ?? errorData.error ?? fallback;
             if (errorData.errors) {
                 const details = Object.entries(errorData.errors)
                     .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
                     .join('; ');
                 if (details) message += ` - ${details}`;
             }
-            return message;
+            return { message, retryable: errorData.retryable === true };
         } catch {
-            return bodyText.replace(/\s+/g, ' ').trim().slice(0, 500);
+            return {
+                message: bodyText.replace(/\s+/g, ' ').trim().slice(0, 500),
+                retryable: false,
+            };
         }
     }
 }
