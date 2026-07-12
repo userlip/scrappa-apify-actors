@@ -32,7 +32,7 @@ export interface BatchResult {
 }
 
 type FetchOutcome =
-    | { item: Record<string, unknown> }
+    | { item: Record<string, unknown>; request: PriceInsightsRequest }
     | { failure: BatchFailure };
 
 export async function runPriceInsightsBatch(
@@ -59,6 +59,16 @@ export async function runPriceInsightsBatch(
                 outcome.item,
                 isPayPerEvent ? PRICE_INSIGHT_RESULT_EVENT : undefined,
             );
+            if (isPayPerEvent && pushResult.chargedCount < 1) {
+                if (!pushResult.eventChargeLimitReached) {
+                    failures.push({
+                        location: outcome.request.location,
+                        message: 'Apify did not confirm a charged dataset write',
+                        status: null,
+                    });
+                }
+                return { succeeded, failures, chargeLimitReached: pushResult.eventChargeLimitReached };
+            }
             // PPE writes count as successful only when Apify confirms the charge.
             if (pushResult.chargedCount >= 1 || !isPayPerEvent) {
                 succeeded += 1;
@@ -84,7 +94,7 @@ async function fetchPriceInsight(
         );
         const item = buildPriceInsightItem(response, request);
         if (item) {
-            return { item };
+            return { item, request };
         }
 
         return {

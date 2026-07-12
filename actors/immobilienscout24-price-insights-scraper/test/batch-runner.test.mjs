@@ -105,6 +105,44 @@ test('does not convert dataset or charging failures into location failures', asy
     );
 });
 
+test('does not count an item that cannot be saved within the charge limit', async () => {
+    const result = await runPriceInsightsBatch(
+        [{ location: 'Berlin', index: 0 }],
+        { get: async () => response('Berlin') },
+        {
+            isPayPerEvent: () => true,
+            async pushData() {
+                return { chargedCount: 0, eventChargeLimitReached: true };
+            },
+        },
+    );
+
+    assert.deepEqual(result, { succeeded: 0, failures: [], chargeLimitReached: true });
+});
+
+test('reports an unconfirmed charge without mislabeling it as a charge limit', async () => {
+    const result = await runPriceInsightsBatch(
+        [{ location: 'Berlin', index: 0 }],
+        { get: async () => response('Berlin') },
+        {
+            isPayPerEvent: () => true,
+            async pushData() {
+                return { chargedCount: 0, eventChargeLimitReached: false };
+            },
+        },
+    );
+
+    assert.deepEqual(result, {
+        succeeded: 0,
+        failures: [{
+            location: 'Berlin',
+            message: 'Apify did not confirm a charged dataset write',
+            status: null,
+        }],
+        chargeLimitReached: false,
+    });
+});
+
 test('fetches concurrently but writes results in input order', async () => {
     const resolvers = new Map();
     const writes = [];

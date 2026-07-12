@@ -44,8 +44,28 @@ export function isRetryableScrappaError(error: unknown): boolean {
         return true;
     }
 
-    return error instanceof ScrappaApiError
-        && [408, 429, 500, 502, 503, 504].includes(error.status);
+    if (error instanceof ScrappaApiError) {
+        return [408, 429, 500, 502, 503, 504].includes(error.status);
+    }
+
+    if (!(error instanceof Error)) {
+        return false;
+    }
+
+    if (error instanceof TypeError && /fetch failed|network|socket/i.test(error.message)) {
+        return true;
+    }
+
+    return isRetryableNetworkCause(error.cause);
+}
+
+function isRetryableNetworkCause(cause: unknown): boolean {
+    if (typeof cause !== 'object' || cause === null || !('code' in cause)) {
+        return false;
+    }
+
+    return ['ECONNRESET', 'ECONNREFUSED', 'EHOSTUNREACH', 'ENETUNREACH', 'ENOTFOUND', 'EAI_AGAIN', 'ETIMEDOUT']
+        .includes(String(cause.code));
 }
 
 export class ScrappaClient {

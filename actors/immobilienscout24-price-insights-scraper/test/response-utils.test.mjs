@@ -33,3 +33,9 @@ test('maps the complete Scrappa response to a dataset item', () => {
 test('does not map incomplete responses', () => {
     assert.equal(buildPriceInsightItem({ ...completeResponse, prices: null }, { location: 'Berlin', index: 0 }), null);
 });
+
+test('does not map non-positive price benchmarks', () => {
+    const prices = { ...completeResponse.prices, apartment_rent_per_m2: 0 };
+
+    assert.equal(buildPriceInsightItem({ ...completeResponse, prices }, { location: 'Berlin', index: 0 }), null);
+});
