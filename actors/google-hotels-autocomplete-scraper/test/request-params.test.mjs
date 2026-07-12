@@ -5,8 +5,9 @@ const sourceRoot = process.env.TEST_SOURCE === 'src' ? '../src' : '../dist';
 const { buildGoogleHotelsAutocompleteRequest, paramsForQuery } = await import(`${sourceRoot}/request-params.js`);
 
 test('normalizes array and singular queries while preserving first spelling', () => {
+    const queries = [' Berlin ', 'PARIS', 'berlin', ''];
     const request = buildGoogleHotelsAutocompleteRequest({
-        queries: [' Berlin ', 'PARIS', 'berlin', ''],
+        queries,
         q: ' London ',
         gl: 'DE',
         hl: 'EN',
@@ -21,6 +22,7 @@ test('normalizes array and singular queries while preserving first spelling', ()
     assert.deepEqual(paramsForQuery('Berlin', request.commonParams), {
         q: 'Berlin', gl: 'de', hl: 'en', currency: 'EUR', type: 'all',
     });
+    assert.deepEqual(queries, [' Berlin ', 'PARIS', 'berlin', '']);
 });
 
 test('preserves commas in the singular q compatibility input', () => {

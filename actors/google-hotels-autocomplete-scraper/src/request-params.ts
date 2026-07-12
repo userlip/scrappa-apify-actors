@@ -63,7 +63,7 @@ function readQueries(value: unknown, field: string): unknown[] {
 }
 
 function normalizeQueries(input: GoogleHotelsAutocompleteInput): string[] {
-    const candidates = readQueries(input.queries, 'queries');
+    const candidates = [...readQueries(input.queries, 'queries')];
     const singularQuery = cleanOptionalString(input.q, 'q', MAX_QUERY_LENGTH);
     if (singularQuery !== undefined) {
         candidates.push(singularQuery);
