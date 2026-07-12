@@ -6,8 +6,9 @@ import { buildUniqueLocationItems } from './locations.js';
 import type { LocationDatasetItem, LocationsResponse } from './locations.js';
 import { describeError, ScrappaApiError, ScrappaClient, ScrappaTimeoutError } from './shared/scrappa-client.js';
 
-const REQUEST_TIMEOUT_MS = 30000;
-const MAX_ATTEMPTS = 3;
+const REQUEST_TIMEOUT_MS = 10000;
+const MAX_ATTEMPTS = 2;
+const REQUEST_CONCURRENCY = 10;
 const CHARGE_EVENT = 'location-result';
 
 interface LocationsClient {
@@ -24,6 +25,10 @@ interface ProcessingSummary {
     savedResults: number;
     limitReached: boolean;
 }
+
+type FetchOutcome =
+    | { response: LocationsResponse; request: LocationsRequest }
+    | { error: unknown; request: LocationsRequest };
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -75,37 +80,49 @@ export async function processLocationRequests(
     let savedResults = 0;
     let failedQueries = 0;
 
-    for (const request of requests) {
-        let response: LocationsResponse;
-        try {
-            response = await client.get<LocationsResponse>('/immobilienscout24/locations', {
-                query: request.query,
-                limit: request.limit,
-            }, MAX_ATTEMPTS);
-        } catch (error) {
-            failedQueries += 1;
-            console.warn(`Location query “${request.query}” failed: ${formatQueryFailure(error)}`);
-            continue;
-        }
+    for (let offset = 0; offset < requests.length; offset += REQUEST_CONCURRENCY) {
+        const outcomes = await Promise.all(
+            requests.slice(offset, offset + REQUEST_CONCURRENCY).map((request) => fetchLocations(client, request)),
+        );
 
-        const items = buildUniqueLocationItems(response, request.query, seenGeocodes);
-        if (items.length === 0) {
-            console.log(`No new ImmobilienScout24 location matches for “${request.query}”`);
-            continue;
-        }
+        for (const outcome of outcomes) {
+            if ('error' in outcome) {
+                failedQueries += 1;
+                console.warn(`Location query “${outcome.request.query}” failed: ${formatQueryFailure(outcome.error)}`);
+                continue;
+            }
 
-        const result = await save(items);
-        savedResults += result.savedCount;
-        console.log(`Saved ${result.savedCount} location match(es) for “${request.query}”`);
-        if (result.limitReached) {
-            return { failedQueries, savedResults, limitReached: true };
+            const items = buildUniqueLocationItems(outcome.response, outcome.request.query, seenGeocodes);
+            if (items.length === 0) {
+                console.log(`No new ImmobilienScout24 location matches for “${outcome.request.query}”`);
+                continue;
+            }
+
+            const result = await save(items);
+            savedResults += result.savedCount;
+            console.log(`Saved ${result.savedCount} location match(es) for “${outcome.request.query}”`);
+            if (result.limitReached) {
+                return { failedQueries, savedResults, limitReached: true };
+            }
         }
     }
 
     return { failedQueries, savedResults, limitReached: false };
 }
 
-async function pushLocationItems(items: Record<string, unknown>[]): Promise<SaveResult> {
+async function fetchLocations(client: LocationsClient, request: LocationsRequest): Promise<FetchOutcome> {
+    try {
+        const response = await client.get<LocationsResponse>('/immobilienscout24/locations', {
+            query: request.query,
+            limit: request.limit,
+        }, MAX_ATTEMPTS);
+        return { request, response };
+    } catch (error) {
+        return { request, error };
+    }
+}
+
+async function pushLocationItems(items: LocationDatasetItem[]): Promise<SaveResult> {
     if (!Actor.getChargingManager().getPricingInfo().isPayPerEvent) {
         await Actor.pushData(items);
         return { savedCount: items.length, limitReached: false };

@@ -27,7 +27,7 @@ test('continues after a query failure and saves later results', async () => {
     assert.equal(saved[0].source_query, 'Berlin');
 });
 
-test('stops processing when the charge limit is reached', async () => {
+test('stops saving when the charge limit is reached', async () => {
     const calls = [];
     const client = {
         async get(_endpoint, request) {
@@ -42,7 +42,32 @@ test('stops processing when the charge limit is reached', async () => {
     ], client, async () => ({ savedCount: 0, limitReached: true }));
 
     assert.deepEqual(summary, { failedQueries: 0, savedResults: 0, limitReached: true });
-    assert.deepEqual(calls, ['Berlin']);
+    assert.deepEqual(calls, ['Berlin', 'Hamburg']);
+});
+
+test('fetches concurrently but applies deduplication in input order', async () => {
+    const resolvers = new Map();
+    const client = {
+        get(_endpoint, request) {
+            return new Promise((resolve) => resolvers.set(request.query, resolve));
+        },
+    };
+    const saved = [];
+    const processing = processLocationRequests([
+        { query: 'First', limit: 5 },
+        { query: 'Second', limit: 5 },
+    ], client, async (items) => {
+        saved.push(...items);
+        return { savedCount: items.length, limitReached: false };
+    });
+
+    await new Promise((resolve) => setImmediate(resolve));
+    resolvers.get('Second')({ locations: [{ geocode: 'shared', name: 'Shared', type: 'city' }] });
+    resolvers.get('First')({ locations: [{ geocode: 'shared', name: 'Shared', type: 'city' }] });
+    await processing;
+
+    assert.equal(saved.length, 1);
+    assert.equal(saved[0].source_query, 'First');
 });
 
 test('does not convert dataset or charging failures into partial query failures', async () => {

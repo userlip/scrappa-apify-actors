@@ -61,3 +61,41 @@ test('writes successful snapshots without an event on non-PPE builds', async () 
     assert.equal(result.succeeded, 1);
     assert.equal(calls[0].eventName, undefined);
 });
+
+test('stops immediately after a charged result reaches the event limit', async () => {
+    const fetched = [];
+    const result = await runPriceInsightsBatch(
+        [{ location: 'Berlin', index: 0 }, { location: 'Munich', index: 1 }],
+        {
+            async get(_endpoint, params) {
+                fetched.push(params.location);
+                return response(params.location);
+            },
+        },
+        {
+            isPayPerEvent: () => true,
+            async pushData() {
+                return { chargedCount: 1, eventChargeLimitReached: true };
+            },
+        },
+    );
+
+    assert.deepEqual(result, { succeeded: 1, failures: [], chargeLimitReached: true });
+    assert.deepEqual(fetched, ['Berlin']);
+});
+
+test('does not convert dataset or charging failures into location failures', async () => {
+    await assert.rejects(
+        runPriceInsightsBatch(
+            [{ location: 'Berlin', index: 0 }],
+            { get: async () => response('Berlin') },
+            {
+                isPayPerEvent: () => true,
+                async pushData() {
+                    throw new Error('dataset unavailable');
+                },
+            },
+        ),
+        /dataset unavailable/,
+    );
+});

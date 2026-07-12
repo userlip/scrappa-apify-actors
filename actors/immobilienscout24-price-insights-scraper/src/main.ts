@@ -1,10 +1,11 @@
+import { pathToFileURL } from 'node:url';
 import { Actor } from 'apify';
 import { runPriceInsightsBatch } from './batch-runner.js';
 import { normalizeLocations } from './request-params.js';
 import type { PriceInsightsInput } from './request-params.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
 
 async function main(): Promise<void> {
     await Actor.init();
@@ -51,8 +52,10 @@ async function main(): Promise<void> {
     }
 }
 
-main().catch((error) => {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('Actor failed: ' + message);
-    process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    main().catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('Actor failed: ' + message);
+        process.exitCode = 1;
+    });
+}
