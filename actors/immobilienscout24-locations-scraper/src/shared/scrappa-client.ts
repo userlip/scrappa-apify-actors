@@ -79,8 +79,7 @@ export class ScrappaClient {
     }
 }
 
-function getRetryDelayMs(failedAttempt: number): number {
-    const jitterMs = Math.random() * 1000;
+export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
     return Math.min(1000 * 2 ** failedAttempt + jitterMs, 10000);
 }
 

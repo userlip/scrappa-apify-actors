@@ -2,7 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 const modulePath = process.env.TEST_SOURCE === 'src' ? '../src/shared/scrappa-client.ts' : '../dist/shared/scrappa-client.js';
-const { ScrappaApiError, ScrappaClient } = await import(modulePath);
+const { getRetryDelayMs, ScrappaApiError, ScrappaClient } = await import(modulePath);
+
+test('calculates deterministic capped retry delays', () => {
+    assert.equal(getRetryDelayMs(1, 250), 2250);
+    assert.equal(getRetryDelayMs(4, 250), 10000);
+});
 
 test('calls only the Scrappa locations endpoint with query and limit', async () => {
     const originalFetch = globalThis.fetch;

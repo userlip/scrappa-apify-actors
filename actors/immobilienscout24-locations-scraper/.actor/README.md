@@ -29,6 +29,9 @@ For compatibility, `query` accepts one location when `queries` is omitted.
 Use the returned `geocode` as the `location` input for the
 [ImmobilienScout24 Search Actor](https://apify.com/thescrappa/immobilienscout24-search-scraper).
 Duplicate input queries and overlapping geocodes are emitted only once per run.
+Queries are fetched in ordered batches of 10. When a charge limit is reached,
+writes stop immediately, although requests already started in that batch may
+finish without producing output.
 
 This Actor charges **$0.25 per 1,000 successful location rows** through the
 `location-result` event. For higher-volume workflows and direct API access,

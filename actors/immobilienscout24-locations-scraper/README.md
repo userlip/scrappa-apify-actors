@@ -9,4 +9,8 @@ per-query `limit` from 1–20. It normalizes and deduplicates queries, continues
 after individual query failures, and writes one charged dataset row per unique
 geocode with its first `source_query`.
 
+Requests run in ordered batches of 10. If the Apify charge limit is reached,
+dataset writes stop immediately; up to nine already-started Scrappa requests in
+the current batch may still complete without producing charged output.
+
 See [.actor/README.md](.actor/README.md) for marketplace input/output examples.
