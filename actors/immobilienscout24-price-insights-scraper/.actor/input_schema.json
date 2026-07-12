@@ -3,10 +3,6 @@
   "description": "Get rent and purchase price-per-square-meter benchmarks for one or many German locations.",
   "type": "object",
   "schemaVersion": 1,
-  "anyOf": [
-    { "required": ["locations"] },
-    { "required": ["location"] }
-  ],
   "properties": {
     "locations": {
       "title": "Locations",
