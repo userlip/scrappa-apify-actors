@@ -1,0 +1,25 @@
+{
+  "title": "ImmobilienScout24 Price Insights Scraper",
+  "description": "Get rent and purchase price-per-square-meter benchmarks for one or many German locations.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "locations": {
+      "title": "Locations",
+      "type": "array",
+      "description": "German cities, districts, postal codes, or ImmobilienScout24 geocodes. Batch locations in one run to reduce overhead.",
+      "editor": "stringList",
+      "prefill": ["Berlin", "Munich"],
+      "items": { "type": "string", "maxLength": 120 },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "location": {
+      "title": "Single location (compatibility)",
+      "type": "string",
+      "description": "Use this only for integrations that send one location. Ignored when locations is provided.",
+      "editor": "textfield",
+      "maxLength": 120
+    }
+  }
+}
