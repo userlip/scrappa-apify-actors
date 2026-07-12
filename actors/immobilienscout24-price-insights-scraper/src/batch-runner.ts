@@ -60,7 +60,14 @@ export async function runPriceInsightsBatch(
                 payPerEvent ? PRICE_INSIGHT_RESULT_EVENT : undefined,
             );
             if (payPerEvent && pushResult.chargedCount < 1) {
-                return { succeeded, failures, chargeLimitReached: true };
+                if (!pushResult.eventChargeLimitReached) {
+                    failures.push({
+                        location: request.location,
+                        message: 'Apify did not confirm a charged dataset write',
+                        status: null,
+                    });
+                }
+                return { succeeded, failures, chargeLimitReached: pushResult.eventChargeLimitReached };
             }
             succeeded += 1;
             if (payPerEvent && pushResult.eventChargeLimitReached) {

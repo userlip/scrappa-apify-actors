@@ -101,3 +101,26 @@ test('does not count an item that cannot be saved within the charge limit', asyn
 
     assert.deepEqual(result, { succeeded: 0, failures: [], chargeLimitReached: true });
 });
+
+test('does not misreport an unconfirmed charge as an exhausted charge limit', async () => {
+    const result = await runPriceInsightsBatch(
+        [{ location: 'Berlin', index: 0 }],
+        { get: async () => response('Berlin') },
+        {
+            isPayPerEvent: () => true,
+            async pushData() {
+                return { chargedCount: 0, eventChargeLimitReached: false };
+            },
+        },
+    );
+
+    assert.deepEqual(result, {
+        succeeded: 0,
+        failures: [{
+            location: 'Berlin',
+            message: 'Apify did not confirm a charged dataset write',
+            status: null,
+        }],
+        chargeLimitReached: false,
+    });
+});
