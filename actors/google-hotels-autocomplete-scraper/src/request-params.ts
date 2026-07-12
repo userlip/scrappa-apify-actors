@@ -63,7 +63,11 @@ function readQueries(value: unknown, field: string): unknown[] {
 }
 
 function normalizeQueries(input: GoogleHotelsAutocompleteInput): string[] {
-    const candidates = [...readQueries(input.queries, 'queries'), ...readQueries(input.q, 'q')];
+    const candidates = readQueries(input.queries, 'queries');
+    const singularQuery = cleanOptionalString(input.q, 'q', MAX_QUERY_LENGTH);
+    if (singularQuery !== undefined) {
+        candidates.push(singularQuery);
+    }
     const queries: string[] = [];
     const seen = new Set<string>();
 
@@ -93,8 +97,8 @@ function normalizeQueries(input: GoogleHotelsAutocompleteInput): string[] {
 export function buildGoogleHotelsAutocompleteRequest(
     input: GoogleHotelsAutocompleteInput,
 ): GoogleHotelsAutocompleteRequest {
-    const type = cleanOptionalString(input.type, 'type', 20)?.toLowerCase();
-    if (type !== undefined && !SUGGESTION_TYPES.has(type)) {
+    const type = cleanOptionalString(input.type, 'type', 20)?.toLowerCase() ?? 'all';
+    if (!SUGGESTION_TYPES.has(type)) {
         throw new Error('type must be one of: location, hotel, all');
     }
 
@@ -106,7 +110,7 @@ export function buildGoogleHotelsAutocompleteRequest(
     if (gl !== undefined) commonParams.gl = gl;
     if (hl !== undefined) commonParams.hl = hl;
     if (currency !== undefined) commonParams.currency = currency;
-    if (type !== undefined) commonParams.type = type;
+    commonParams.type = type;
 
     return { queries: normalizeQueries(input), commonParams };
 }

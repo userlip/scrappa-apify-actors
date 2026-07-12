@@ -158,6 +158,7 @@ export class ScrappaClient {
         try {
             bodyText = await response.text();
         } catch (error) {
+            // Preserve abort identity so send() can convert a body-read timeout consistently.
             if (error instanceof Error && error.name === 'AbortError') throw error;
             return { message: fallback, retryable: false };
         }
