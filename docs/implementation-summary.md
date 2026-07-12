@@ -6,13 +6,14 @@ Added `actors/google-finance-indices-scraper` on `feat/google-finance-indices-sc
 - Supports a JSON array or CSV batch input, normalizes and deduplicates up to 50 symbols, and validates `hl`/`gl`.
 - Emits at most one canonical dataset item per returned index and charges `index-result` only after a successful save. Case-insensitive upstream matching, output-ID deduplication, unmatched-row rejection, and charge-limit handling avoid duplicate or invalid charges.
 - When no `indices` are supplied, retains every unique valid default result returned by Scrappa; retries timeouts, transient transport failures, and HTTP 408/429/500/502/503/504 while failing fast for other client errors.
-- Regression coverage verifies default-response saving, 429 retries, non-retryable 4xx behavior, direct/nested response containers, numeric aliases, stable IDs, and locale provenance.
+- The three-attempt policy uses 30-second request timeouts and 250 ms incremental backoff (90.75 seconds worst case), preserving a 20-second finalization reserve inside the 120-second Actor limit. A regression test binds this policy to the published runtime metadata.
+- Regression coverage verifies default-response saving, 429 retries, non-retryable 4xx behavior, direct/nested response containers, numeric aliases, stable IDs, locale provenance, and retry-budget safety.
 - Listing documentation covers S&P 500, Dow, NASDAQ, custom symbols, pricing ($0.00025/result), and the direct Scrappa API path.
 
 Validated locally from the actor directory:
 
 ```text
-npm test                 # 10 passing
+npm test                 # 11 passing
 npm run typecheck        # passing
 npx apify-cli validate-schema  # input and dataset schemas valid
 jq empty .actor/actor.json .actor/input_schema.json
