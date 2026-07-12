@@ -17,4 +17,6 @@ jq empty .actor/actor.json .actor/input_schema.json
 git diff --check main...HEAD
 ```
 
+The Apify input-schema validator accepts the `json`-editor string-or-array union but rejects `items` and `maxItems` on that flexible field. Element typing and the 50-symbol cap are therefore enforced by the existing runtime normalizer, with a schema regression test covering both published forms.
+
 Deployment, secret configuration, Apify pricing activation, publication, and live smoke verification remain release-stage work; no credentials were available locally and no external state was changed.
