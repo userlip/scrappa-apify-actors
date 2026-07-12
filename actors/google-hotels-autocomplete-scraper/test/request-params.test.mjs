@@ -35,3 +35,11 @@ test('requires a query and validates localization fields', () => {
     assert.throws(() => buildGoogleHotelsAutocompleteRequest({ q: 'Berlin', gl: 'germany' }), /2-letter code/);
     assert.throws(() => buildGoogleHotelsAutocompleteRequest({ q: 'Berlin', type: 'places' }), /location, hotel, all/);
 });
+
+test('rejects more than 100 unique queries', () => {
+    const queries = Array.from({ length: 101 }, (_, index) => `query ${index}`);
+    assert.throws(
+        () => buildGoogleHotelsAutocompleteRequest({ queries }),
+        /maximum of 100 unique queries/,
+    );
+});

@@ -13,6 +13,22 @@ interface ScrappaError {
     errors?: Record<string, string[]>;
 }
 
+const RETRYABLE_HTTP_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
+
+export class ScrappaHttpError extends Error {
+    constructor(public readonly status: number, message: string) {
+        super(`Scrappa API error (${status}): ${message}`);
+        this.name = 'ScrappaHttpError';
+    }
+}
+
+export class ScrappaConnectionError extends Error {
+    constructor(options?: ErrorOptions) {
+        super('Scrappa API connection failed', options);
+        this.name = 'ScrappaConnectionError';
+    }
+}
+
 export class ScrappaTimeoutError extends Error {
     constructor(timeoutMs: number, options?: ErrorOptions) {
         super(`Scrappa API request timed out after ${timeoutMs}ms`, options);
@@ -25,12 +41,9 @@ export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() 
 }
 
 export function isRetryableScrappaError(error: unknown): boolean {
-    if (error instanceof ScrappaTimeoutError) {
-        return true;
-    }
-
-    return error instanceof Error
-        && /Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message);
+    return error instanceof ScrappaTimeoutError
+        || error instanceof ScrappaConnectionError
+        || (error instanceof ScrappaHttpError && RETRYABLE_HTTP_STATUSES.has(error.status));
 }
 
 export class ScrappaClient {
@@ -83,17 +96,10 @@ export class ScrappaClient {
         const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
         try {
-            const response = await fetch(url, {
-                headers: {
-                    'X-API-Key': this.apiKey,
-                    Accept: 'application/json',
-                    'User-Agent': 'thescrappa-google-hotels-autocomplete-scraper/1.0',
-                },
-                signal: controller.signal,
-            });
+            const response = await this.fetchResponse(url, controller.signal);
 
             if (!response.ok) {
-                throw new Error(`Scrappa API error (${response.status}): ${await this.readErrorMessage(response)}`);
+                throw new ScrappaHttpError(response.status, await this.readErrorMessage(response));
             }
 
             return await response.json() as T;
@@ -104,6 +110,25 @@ export class ScrappaClient {
             throw error;
         } finally {
             clearTimeout(timeoutId);
+        }
+    }
+
+    private async fetchResponse(url: URL, signal: AbortSignal): Promise<Response> {
+        try {
+            return await fetch(url, {
+                headers: {
+                    'X-API-Key': this.apiKey,
+                    Accept: 'application/json',
+                    'User-Agent': 'thescrappa-google-hotels-autocomplete-scraper/1.0',
+                },
+                signal,
+            });
+        } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw error;
+            }
+
+            throw new ScrappaConnectionError({ cause: error });
         }
     }
 

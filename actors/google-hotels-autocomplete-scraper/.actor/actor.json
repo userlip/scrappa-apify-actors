@@ -18,13 +18,14 @@
         "suggestions": {
           "title": "Hotel Suggestions",
           "transformation": {
-            "fields": ["position", "value", "type", "property_token", "thumbnail", "scrappa_google_hotels_link", "source_query", "request_gl", "request_hl", "request_currency", "request_type", "response_time_ms"]
+            "fields": ["position", "value", "autocomplete_suggestion", "type", "property_token", "thumbnail", "scrappa_google_hotels_link", "source_query", "request_gl", "request_hl", "request_currency", "request_type", "response_time_ms"]
           },
           "display": {
             "component": "table",
             "properties": {
               "position": { "label": "#", "format": "number" },
               "value": { "label": "Suggestion", "format": "text" },
+              "autocomplete_suggestion": { "label": "Normalized Suggestion", "format": "text" },
               "type": { "label": "Type", "format": "text" },
               "property_token": { "label": "Property Token", "format": "text" },
               "thumbnail": { "label": "Thumbnail", "format": "image" },
