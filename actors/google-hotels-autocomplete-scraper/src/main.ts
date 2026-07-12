@@ -30,7 +30,8 @@ async function main(): Promise<void> {
 
         const request = buildGoogleHotelsAutocompleteRequest(input);
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const { isPayPerEvent } = Actor.getChargingManager().getPricingInfo();
+        const chargingManager = Actor.getChargingManager();
+        const { isPayPerEvent } = chargingManager.getPricingInfo();
         const failures: QueryFailure[] = [];
         let completedQueries = 0;
         let suggestionCount = 0;
@@ -58,9 +59,19 @@ async function main(): Promise<void> {
                 }
 
                 if (isPayPerEvent) {
-                    const result = await Actor.pushData(items, RESULT_CHARGE_EVENT);
-                    savedSuggestionCount += result.chargedCount;
-                    if (result.eventChargeLimitReached && result.chargedCount < items.length) {
+                    const chargeableCount = chargingManager.calculateMaxEventChargeCountWithinLimit(
+                        RESULT_CHARGE_EVENT,
+                    );
+                    const itemsToSave = items.slice(0, chargeableCount);
+                    if (itemsToSave.length === 0) {
+                        chargeLimitReached = true;
+                        console.log(`Charge limit reached after saving ${savedSuggestionCount} suggestion result(s)`);
+                        break;
+                    }
+
+                    const result = await Actor.pushData(itemsToSave, RESULT_CHARGE_EVENT);
+                    savedSuggestionCount += itemsToSave.length;
+                    if (itemsToSave.length < items.length || result.eventChargeLimitReached) {
                         chargeLimitReached = true;
                         console.log(`Charge limit reached after saving ${savedSuggestionCount} suggestion result(s)`);
                         break;
