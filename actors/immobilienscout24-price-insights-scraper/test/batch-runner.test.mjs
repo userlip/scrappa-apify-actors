@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PRICE_INSIGHT_RESULT_EVENT, runPriceInsightsBatch } from '../dist/batch-runner.js';
-import { ScrappaApiError } from '../dist/shared/index.js';
+const batchRunnerPath = process.env.TEST_SOURCE === 'src' ? '../src/batch-runner.ts' : '../dist/batch-runner.js';
+const sharedPath = process.env.TEST_SOURCE === 'src' ? '../src/shared/index.ts' : '../dist/shared/index.js';
+const { PRICE_INSIGHT_RESULT_EVENT, runPriceInsightsBatch } = await import(batchRunnerPath);
+const { ScrappaApiError } = await import(sharedPath);
 
 const response = (location) => ({
     success: true,
@@ -62,13 +64,11 @@ test('writes successful snapshots without an event on non-PPE builds', async () 
     assert.equal(calls[0].eventName, undefined);
 });
 
-test('stops before fetching another location when the charge limit is reached', async () => {
+test('stops writing after a charged result reaches the event limit', async () => {
     const fetched = [];
+    let writes = 0;
     const result = await runPriceInsightsBatch(
-        [
-            { location: 'Berlin', index: 0 },
-            { location: 'Munich', index: 1 },
-        ],
+        [{ location: 'Berlin', index: 0 }, { location: 'Munich', index: 1 }],
         {
             async get(_endpoint, params) {
                 fetched.push(params.location);
@@ -78,13 +78,31 @@ test('stops before fetching another location when the charge limit is reached', 
         {
             isPayPerEvent: () => true,
             async pushData() {
+                writes += 1;
                 return { chargedCount: 1, eventChargeLimitReached: true };
             },
         },
     );
 
     assert.deepEqual(result, { succeeded: 1, failures: [], chargeLimitReached: true });
-    assert.deepEqual(fetched, ['Berlin']);
+    assert.deepEqual(fetched, ['Berlin', 'Munich']);
+    assert.equal(writes, 1);
+});
+
+test('does not convert dataset or charging failures into location failures', async () => {
+    await assert.rejects(
+        runPriceInsightsBatch(
+            [{ location: 'Berlin', index: 0 }],
+            { get: async () => response('Berlin') },
+            {
+                isPayPerEvent: () => true,
+                async pushData() {
+                    throw new Error('dataset unavailable');
+                },
+            },
+        ),
+        /dataset unavailable/,
+    );
 });
 
 test('does not count an item that cannot be saved within the charge limit', async () => {
@@ -102,7 +120,7 @@ test('does not count an item that cannot be saved within the charge limit', asyn
     assert.deepEqual(result, { succeeded: 0, failures: [], chargeLimitReached: true });
 });
 
-test('does not misreport an unconfirmed charge as an exhausted charge limit', async () => {
+test('reports an unconfirmed charge without mislabeling it as a charge limit', async () => {
     const result = await runPriceInsightsBatch(
         [{ location: 'Berlin', index: 0 }],
         { get: async () => response('Berlin') },
@@ -123,4 +141,31 @@ test('does not misreport an unconfirmed charge as an exhausted charge limit', as
         }],
         chargeLimitReached: false,
     });
+});
+
+test('fetches concurrently but writes results in input order', async () => {
+    const resolvers = new Map();
+    const writes = [];
+    const processing = runPriceInsightsBatch(
+        [{ location: 'Berlin', index: 0 }, { location: 'Munich', index: 1 }],
+        {
+            get(_endpoint, params) {
+                return new Promise((resolve) => resolvers.set(params.location, resolve));
+            },
+        },
+        {
+            isPayPerEvent: () => false,
+            async pushData(item) {
+                writes.push(item.request_location);
+                return { chargedCount: 0, eventChargeLimitReached: false };
+            },
+        },
+    );
+
+    await new Promise((resolve) => setImmediate(resolve));
+    resolvers.get('Munich')(response('Munich'));
+    resolvers.get('Berlin')(response('Berlin'));
+    await processing;
+
+    assert.deepEqual(writes, ['Berlin', 'Munich']);
 });

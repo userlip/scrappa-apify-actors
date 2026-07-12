@@ -10,7 +10,7 @@
   "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
   "resources": { "memoryMbytes": 128 },
-  "defaultRunOptions": { "timeoutSecs": 180 },
+  "defaultRunOptions": { "timeoutSecs": 300 },
   "storages": {
     "dataset": {
       "actorSpecification": 1,

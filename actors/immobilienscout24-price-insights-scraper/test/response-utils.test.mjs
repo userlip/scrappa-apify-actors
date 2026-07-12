@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildPriceInsightItem } from '../dist/response-utils.js';
+const modulePath = process.env.TEST_SOURCE === 'src' ? '../src/response-utils.ts' : '../dist/response-utils.js';
+const { buildPriceInsightItem } = await import(modulePath);
 
 const completeResponse = {
     success: true,
@@ -35,6 +36,12 @@ test('does not map incomplete responses', () => {
 
 test('does not map non-positive price benchmarks', () => {
     const prices = { ...completeResponse.prices, apartment_rent_per_m2: 0 };
+
+    assert.equal(buildPriceInsightItem({ ...completeResponse, prices }, { location: 'Berlin', index: 0 }), null);
+});
+
+test('does not coerce unsupported price benchmark types', () => {
+    const prices = { ...completeResponse.prices, apartment_rent_per_m2: true };
 
     assert.equal(buildPriceInsightItem({ ...completeResponse, prices }, { location: 'Berlin', index: 0 }), null);
 });

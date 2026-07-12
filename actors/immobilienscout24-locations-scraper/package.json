@@ -1,5 +1,5 @@
 {
-  "name": "immobilienscout24-price-insights-scraper",
+  "name": "immobilienscout24-locations-scraper",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/main.js",
@@ -11,7 +11,9 @@
     "test:dev": "TEST_SOURCE=src tsx --test test/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": { "apify": "^3.2.6" },
+  "dependencies": {
+    "apify": "^3.2.6"
+  },
   "devDependencies": {
     "@types/node": "^20.17.10",
     "tsx": "^4.19.2",

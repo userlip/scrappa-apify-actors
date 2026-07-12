@@ -35,8 +35,8 @@ export class ScrappaApiError extends Error {
     }
 }
 
-export function getRetryDelayMs(attemptNumber: number, jitterMs = Math.random() * 1000): number {
-    return Math.min(1000 * Math.pow(2, attemptNumber) + jitterMs, 10000);
+export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
+    return Math.min(1000 * Math.pow(2, failedAttempt) + jitterMs, 10000);
 }
 
 export function isRetryableScrappaError(error: unknown): boolean {
@@ -44,12 +44,12 @@ export function isRetryableScrappaError(error: unknown): boolean {
         return true;
     }
 
-    if (!(error instanceof Error)) {
-        return false;
+    if (error instanceof ScrappaApiError) {
+        return [408, 429, 500, 502, 503, 504].includes(error.status);
     }
 
-    if (/Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message)) {
-        return true;
+    if (!(error instanceof Error)) {
+        return false;
     }
 
     if (error instanceof TypeError && /fetch failed|network|socket/i.test(error.message)) {

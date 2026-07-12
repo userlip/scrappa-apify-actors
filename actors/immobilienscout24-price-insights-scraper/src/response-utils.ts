@@ -52,6 +52,10 @@ function cleanString(value: unknown): string | null {
 }
 
 function cleanNumber(value: unknown): number | null {
+    if (typeof value !== 'number' && typeof value !== 'string') {
+        return null;
+    }
+
     const number = typeof value === 'string' && value.trim() ? Number(value) : value;
     return typeof number === 'number' && Number.isFinite(number) && number > 0 ? number : null;
 }
