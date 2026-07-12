@@ -36,6 +36,10 @@ async function main(): Promise<void> {
             console.warn(`Price insights unavailable for ${failure.location}: ${failure.message}`);
         }
 
+        if (!result.chargeLimitReached && result.succeeded === 0) {
+            throw new Error(`No price-insights snapshots were resolved for ${requests.length} requested location(s).`);
+        }
+
         const statusMessage = result.chargeLimitReached
             ? `Charge limit reached after ${result.succeeded} successful location snapshot(s).`
             : `Saved ${result.succeeded} of ${requests.length} requested location snapshot(s); ${result.failures.length} failed.`;

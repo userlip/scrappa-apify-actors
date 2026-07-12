@@ -53,5 +53,5 @@ function cleanString(value: unknown): string | null {
 
 function cleanNumber(value: unknown): number | null {
     const number = typeof value === 'string' && value.trim() ? Number(value) : value;
-    return typeof number === 'number' && Number.isFinite(number) ? number : null;
+    return typeof number === 'number' && Number.isFinite(number) && number > 0 ? number : null;
 }

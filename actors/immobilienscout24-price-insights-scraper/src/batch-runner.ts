@@ -54,14 +54,18 @@ export async function runPriceInsightsBatch(
                 continue;
             }
 
+            const payPerEvent = writer.isPayPerEvent();
             const pushResult = await writer.pushData(
                 item,
-                writer.isPayPerEvent() ? PRICE_INSIGHT_RESULT_EVENT : undefined,
+                payPerEvent ? PRICE_INSIGHT_RESULT_EVENT : undefined,
             );
-            if (pushResult.eventChargeLimitReached && pushResult.chargedCount < 1) {
+            if (payPerEvent && pushResult.chargedCount < 1) {
                 return { succeeded, failures, chargeLimitReached: true };
             }
             succeeded += 1;
+            if (payPerEvent && pushResult.eventChargeLimitReached) {
+                return { succeeded, failures, chargeLimitReached: true };
+            }
         } catch (error) {
             failures.push({
                 location: request.location,
