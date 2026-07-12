@@ -1,58 +1,77 @@
-# Testing Report: TikTok Challenge Details Scraper
+# Testing Report: ImmobilienScout24 Price Insights Scraper
 
-Date: 2026-07-11
+Date: 2026-07-13
 
 ## Result
 
 TESTING_PASSED
 
-The focused local suite and the required deployed mixed-batch smoke test passed. The deployed Actor is configured as a thin, batch-first wrapper with an active paid event price and a secret API key.
+The focused test suites, schema checks, deployment build, paid pricing, secret configuration, Berlin/Munich batch smoke run, mixed-failure smoke run, and dataset/charge parity all passed for the new Actor.
 
 ## Local verification
 
-Run from `actors/tiktok-challenge-details-scraper`:
-
 | Check | Result |
 | --- | --- |
-| `npm test` | 18 passed, 0 failed |
+| `npm test` from `actors/immobilienscout24-price-insights-scraper` | 26 passed, 0 failed |
+| `npm run test:dev` | 26 passed, 0 failed |
 | `npm run typecheck` | Passed |
 | `jq empty .actor/actor.json .actor/input_schema.json` | Passed |
-| `npm audit --omit=dev --package-lock-only --json` | 0 vulnerabilities |
+| `npx apify-cli validate-schema` | Input and dataset schemas passed |
+| `npm run test:audit-health` | 17 passed, 0 failed |
+| `npm run test:audit-secrets` | 19 passed, 0 failed |
+| `npm run test:audit-pricing` | 14 passed, 0 failed |
 | `git diff --check main...HEAD` | Passed |
 
-The focused tests cover name/ID normalization and deduplication, the combined 100-entity limit, partial upstream failures, response mapping, canonical-result deduplication, recoverable short saves, and one event charge per saved dataset item.
+The tests cover array, CSV, and singular input normalization; trimming and case-insensitive deduplication; the 100-location limit; bounded concurrency; endpoint and retry parameters; complete response mapping; partial failures; and charge-confirmed dataset writes.
 
-## Deployed verification
+## Deployment and configuration
 
-Actor: `bEajaru9WVbLA0YBh` (`tiktok-challenge-details-scraper`)
+Actor: `gw1ZWMNQMBu0dGUnz` (`immobilienscout24-price-insights-scraper`)
 
-- Actor metadata confirms the title **TikTok Hashtag & Challenge Details Scraper**, `128` MB memory, and a `120`-second timeout.
-- Version `1.0` has `SCRAPPA_API_KEY` configured as a secret (value not inspected or recorded).
-- Active `PAY_PER_EVENT` pricing began at `2026-07-11T18:02:19.820Z`. The primary `challenge-detail-result` event is priced at USD `$0.00025`.
-- Build `1.0.6` (`NfNCbykxUqynIQ4nT`) succeeded.
+- Build `1.0.9`, ID `BC4VS1JHWLSqLyDls`: `SUCCEEDED`.
+- Default run profile: 128 MB memory, 300-second timeout.
+- Version `1.0` has `SCRAPPA_API_KEY` configured as a secret.
+- Input schema on the deployed build accepts array-or-comma-separated `locations` and singular `location` compatibility input.
+- Active pricing is `PAY_PER_EVENT` at `$0.0005` for the primary `price-insight-result` event.
 
-Mixed smoke run: `EpVbStwLx5gJzk8Xk`
+The first source push warned that this container had no local secret and removed the remote version’s secret metadata. The existing Scrappa Apify key was restored from the configured Scrappa dashboard key and the Actor was rebuilt; the final configuration above was re-verified before smoke testing.
 
-```json
-{
-  "challenge_names": ["booktok"],
-  "challenge_ids": ["1622962893630470", "not-a-valid-id"]
-}
-```
+## Live smoke verification
 
-| Assertion | Evidence |
-| --- | --- |
-| Run terminal status | `SUCCEEDED` in 4.35 seconds |
-| Invalid ID behavior | Log reports it was omitted during normalization; it was not attempted or charged |
-| Dataset output | Exactly one BookTok row, canonical ID `1622962893630470` |
-| Summary behavior | `requested: 2`, `attempted: 2`, `saved: 1`, `failed: 0`; the ID lookup is `duplicate` and explicitly uncharged |
-| Billing behavior | `chargedEventCounts.challenge-detail-result: 1` and `DATASET_WRITES: 1` |
+### Berlin and Munich batch
 
-The live result therefore satisfies the required one saved item and one paid event for the duplicate canonical BookTok lookup, while retaining the malformed ID as an uncharged per-entity normalization warning.
+Run: `PKs7fmAHPsPpPVhsh`
 
-## Evidence sources
+Dataset: `8LDNdmOH7v5df1MZt`
 
-- Authenticated Apify actor, version, build, run, dataset, key-value-store, and log API responses.
-- Local actor source at `actors/tiktok-challenge-details-scraper`.
+- Input: `{"locations":["Berlin","Munich"]}`
+- Terminal status: `SUCCEEDED`.
+- Dataset: exactly 2 rows, both complete EUR snapshots with all four benchmarks.
+- Resolved locations: Berlin and München.
+- `chargedEventCounts.price-insight-result`: `2`.
+- Dataset writes: `2`.
+- Default key-value store contained only `INPUT`; no per-item `OUTPUT` records were written.
 
-No source changes were made during testing.
+### Mixed valid/invalid batch
+
+Run: `h4gumcKUWI1YRBABi`
+
+Dataset: `d7efboksQTr8Mw5M8`
+
+- Input: one valid Berlin location and one deliberately invalid location.
+- Terminal status: `SUCCEEDED`.
+- Status message: `Saved 1 of 2 requested location snapshot(s); 1 failed.`
+- Dataset: exactly 1 Berlin row.
+- Invalid location: logged as `Bad Request`, omitted from the dataset, and not charged.
+- `chargedEventCounts.price-insight-result`: `1`.
+- Dataset writes: `1`.
+
+The live results therefore confirm one dataset item and one charge per successful location, with partial failures isolated and uncharged.
+
+## Portfolio audit context
+
+- Secret audit: 92 actors checked, 92 secret-present, 0 missing, 0 non-secret, 0 errors.
+- Pricing audit: 92 actors checked, 92 active paid pricing, 0 overdue, 0 missing, 0 future-only, 0 errors.
+- Health audit: the new Actor is `OK` with five recent `SUCCEEDED` runs and a successful latest build. The portfolio-wide command remains non-zero because the unrelated `tiktok-challenge-posts-scraper` (`CVaJEgPjl3jWKbm71`) has a failed latest run; this does not affect the tested Actor.
+
+No source code changes were made during testing. The deployment and secret restoration were operational release actions for the reviewed branch.
