@@ -20,6 +20,25 @@ export interface BatchSummary {
     outcomes: Array<{ symbol: string; status: string; error?: string }>;
 }
 
+function requestedSymbolForRow(
+    row: Record<string, unknown>,
+    symbol: string,
+    requested: Set<string>,
+): string | null {
+    if (requested.has(symbol)) {
+        return symbol;
+    }
+
+    const exchange = canonicalSymbol(row.exchange);
+    const exchangeQualified = exchange ? `${exchange}:${symbol}` : null;
+    if (exchangeQualified && requested.has(exchangeQualified)) {
+        return exchangeQualified;
+    }
+
+    const fullSymbol = canonicalSymbol(row.full_symbol);
+    return fullSymbol && requested.has(fullSymbol) ? fullSymbol : null;
+}
+
 export async function runIndicesBatch(
     requested: string[],
     params: { hl: string; gl: string },
@@ -61,7 +80,11 @@ export async function runIndicesBatch(
     for (const row of rows) {
         const sourceSymbol = canonicalSymbol(row.symbol);
 
-        if (!sourceSymbol || (filterRequestedSymbols && !wanted.has(sourceSymbol))) {
+        const requestedSymbol = sourceSymbol
+            ? requestedSymbolForRow(row, sourceSymbol, wanted)
+            : null;
+
+        if (!sourceSymbol || (filterRequestedSymbols && !requestedSymbol)) {
             failed += 1;
             outcomes.push({
                 symbol: sourceSymbol ?? 'unknown',
@@ -71,11 +94,11 @@ export async function runIndicesBatch(
             continue;
         }
 
-        const item = mapIndexRow(row, sourceSymbol, params);
+        const item = mapIndexRow(row, requestedSymbol ?? sourceSymbol, params);
         if (!item) {
             failed += 1;
             outcomes.push({
-                symbol: sourceSymbol,
+                symbol: requestedSymbol ?? sourceSymbol,
                 status: 'failed',
                 error: 'Scrappa returned an index without a canonical symbol',
             });
@@ -85,7 +108,7 @@ export async function runIndicesBatch(
         if (seen.has(item.id)) {
             duplicate += 1;
             outcomes.push({
-                symbol: sourceSymbol,
+                symbol: requestedSymbol ?? sourceSymbol,
                 status: 'duplicate',
                 error: `Duplicate index ${item.id}; result was not saved or charged`,
             });
@@ -106,7 +129,7 @@ export async function runIndicesBatch(
         if (result.savedCount === 1) {
             seen.add(item.id);
             saved += 1;
-            outcomes.push({ symbol: sourceSymbol, status: 'saved' });
+            outcomes.push({ symbol: requestedSymbol ?? sourceSymbol, status: 'saved' });
         } else {
             failed += 1;
             outcomes.push({

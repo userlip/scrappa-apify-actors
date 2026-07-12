@@ -26,6 +26,24 @@ test('saves lowercase upstream symbol once for normalized requested input', asyn
     assert.equal(writes[0].symbol, '.INX');
 });
 
+test('matches an exchange-qualified requested symbol against Scrappa response fields', async () => {
+    const writes = [];
+    const summary = await runIndicesBatch(['INDEXSP:.INX'], { hl: 'en', gl: 'us' }, {
+        getCapacity: () => Infinity,
+        fetch: async () => ({
+            data: [{ symbol: '.INX', exchange: 'INDEXSP', name: 'S&P 500' }],
+        }),
+        save: async (item) => {
+            writes.push(item);
+            return { savedCount: 1, chargeLimitReached: false };
+        },
+    });
+
+    assert.equal(summary.saved, 1);
+    assert.equal(summary.failed, 0);
+    assert.equal(writes[0].requested_symbol, 'INDEXSP:.INX');
+});
+
 test('deduplicates rows and never charges mismatched symbols', async () => {
     let saves = 0;
     const summary = await runIndicesBatch(['.INX'], { hl: 'en', gl: 'us' }, {
