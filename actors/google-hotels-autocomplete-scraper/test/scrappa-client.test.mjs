@@ -67,6 +67,28 @@ test('preserves structured API errors in a typed HTTP error', async (context) =>
     );
 });
 
+test('joins base URLs and endpoint paths with one separator', async (context) => {
+    const originalFetch = globalThis.fetch;
+    context.after(() => { globalThis.fetch = originalFetch; });
+    const requestedUrls = [];
+    globalThis.fetch = async (url) => {
+        requestedUrls.push(String(url));
+        return Response.json({ suggestions: [] });
+    };
+
+    for (const [baseUrl, endpoint] of [
+        ['http://localhost:3000/api', '/google-hotels/autocomplete'],
+        ['http://localhost:3000/api/', '/google-hotels/autocomplete'],
+        ['http://localhost:3000/api', 'google-hotels/autocomplete'],
+        ['http://localhost:3000/api/', 'google-hotels/autocomplete'],
+    ]) {
+        const client = new ScrappaClient({ apiKey: 'test-key', baseUrl });
+        await client.get(endpoint);
+    }
+
+    assert.deepEqual(requestedUrls, Array(4).fill('http://localhost:3000/api/google-hotels/autocomplete'));
+});
+
 test('wraps rejected fetch calls as retryable connection errors', async (context) => {
     const originalFetch = globalThis.fetch;
     context.after(() => { globalThis.fetch = originalFetch; });
