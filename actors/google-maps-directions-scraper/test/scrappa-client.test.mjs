@@ -16,12 +16,12 @@ test('builds the Scrappa directions request with only defined parameters', async
 
     try {
         const client = new ScrappaClient({ apiKey: 'test-key', baseUrl: 'https://example.test/api' });
-        await client.get('/google-maps-directions', { origin: 'A', destination: 'B', mode: 'driving', hl: 'en', gl: '' });
+        await client.get('/maps/directions', { origin: 'A', destination: 'B', mode: 'driving', hl: 'en', gl: '' });
     } finally {
         globalThis.fetch = originalFetch;
     }
 
-    assert.equal(captured.url, 'https://example.test/api/google-maps-directions?origin=A&destination=B&mode=driving&hl=en');
+    assert.equal(captured.url, 'https://example.test/api/maps/directions?origin=A&destination=B&mode=driving&hl=en');
     assert.equal(captured.options.headers['X-API-Key'], 'test-key');
 });
 
@@ -46,7 +46,7 @@ test('retries a transient Scrappa response and succeeds on the next attempt', as
 
     try {
         const client = new ScrappaClient({ apiKey: 'test-key', baseUrl: 'https://example.test/api', retryDelayMs: 0 });
-        const response = await client.get('/google-maps-directions', { origin: 'A', destination: 'B' }, { attempts: 2 });
+        const response = await client.get('/maps/directions', { origin: 'A', destination: 'B' }, { attempts: 2 });
         assert.deepEqual(response, { status: 'OK', directions: [{ distance: 1 }] });
     } finally {
         globalThis.fetch = originalFetch;

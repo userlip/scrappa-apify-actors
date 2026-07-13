@@ -6,6 +6,11 @@ export interface ScrappaConfig {
     retryDelayMs?: number;
 }
 
+export interface ScrappaRequestOptions {
+    attempts?: number;
+    deadlineAt?: number;
+}
+
 export class ScrappaTimeoutError extends Error {
     constructor(timeoutMs: number, options?: ErrorOptions) {
         super(`Scrappa API request timed out after ${timeoutMs}ms`, options);
@@ -50,29 +55,48 @@ export class ScrappaClient {
         this.retryDelayMs = config.retryDelayMs;
     }
 
-    async get<T>(endpoint: string, params: Record<string, string>, options: { attempts?: number } = {}): Promise<T> {
+    async get<T>(endpoint: string, params: Record<string, string>, options: ScrappaRequestOptions = {}): Promise<T> {
         const attempts = Math.max(1, options.attempts ?? 1);
         let lastError: unknown;
 
         for (let attempt = 1; attempt <= attempts; attempt += 1) {
+            const remainingMs = this.getRemainingMs(options.deadlineAt);
+            if (remainingMs <= 0) {
+                throw lastError ?? new ScrappaTimeoutError(0);
+            }
+
             try {
-                return await this.send<T>(endpoint, params);
+                return await this.send<T>(endpoint, params, Math.min(this.timeoutMs, remainingMs));
             } catch (error) {
                 lastError = error;
                 if (attempt >= attempts || !isRetryableScrappaError(error)) {
                     break;
                 }
 
-                const delayMs = this.retryDelayMs ?? getRetryDelayMs(attempt);
-                console.warn(`Scrappa directions request failed. Retrying attempt ${attempt + 1}/${attempts} in ${delayMs}ms.`);
-                await new Promise((resolve) => setTimeout(resolve, delayMs));
+                const remainingAfterFailureMs = this.getRemainingMs(options.deadlineAt);
+                if (remainingAfterFailureMs <= 0) {
+                    break;
+                }
+
+                const delayMs = Math.min(
+                    this.retryDelayMs ?? getRetryDelayMs(attempt),
+                    remainingAfterFailureMs,
+                );
+                if (delayMs > 0) {
+                    console.warn(`Scrappa directions request failed. Retrying attempt ${attempt + 1}/${attempts} in ${delayMs}ms.`);
+                    await new Promise((resolve) => setTimeout(resolve, delayMs));
+                }
             }
         }
 
         throw lastError;
     }
 
-    private async send<T>(endpoint: string, params: Record<string, string>): Promise<T> {
+    private getRemainingMs(deadlineAt?: number): number {
+        return deadlineAt === undefined ? this.timeoutMs : Math.max(0, deadlineAt - Date.now());
+    }
+
+    private async send<T>(endpoint: string, params: Record<string, string>, timeoutMs: number): Promise<T> {
         const url = new URL(`${this.baseUrl}${endpoint}`);
         for (const [key, value] of Object.entries(params)) {
             if (value !== undefined && value !== null && value !== '') {
@@ -81,7 +105,7 @@ export class ScrappaClient {
         }
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
         try {
             if (this.debug) {
                 console.log(`[Scrappa] GET ${url.toString()}`);
@@ -103,7 +127,7 @@ export class ScrappaClient {
             return await response.json() as T;
         } catch (error) {
             if (error instanceof Error && error.name === 'AbortError') {
-                throw new ScrappaTimeoutError(this.timeoutMs, { cause: error });
+                throw new ScrappaTimeoutError(timeoutMs, { cause: error });
             }
             throw error;
         } finally {

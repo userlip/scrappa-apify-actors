@@ -2,7 +2,7 @@
 
 Compare Google Maps route alternatives through Scrappa. Use driving, walking, cycling, or transit directions for travel planning, delivery estimates, commute comparisons, and logistics workflows.
 
-This is a thin, paid Apify wrapper around Scrappa's `google-maps-directions` endpoint. Scraping runs on Scrappa infrastructure; one Apify run can process a batch of route requests.
+This is a thin, paid Apify wrapper around Scrappa's Maps Directions endpoint (`/api/maps/directions`). Scraping runs on Scrappa infrastructure; one Apify run can process a batch of route requests.
 
 ## Features
 
@@ -67,4 +67,4 @@ Optional response fields are preserved when Scrappa returns them; missing mode-s
 
 ## Direct API
 
-For higher-volume routing, recurring logistics workflows, and direct API access, upgrade to Scrappa at https://scrappa.co. The underlying endpoint is `google-maps-directions`.
+For higher-volume routing, recurring logistics workflows, and direct API access, upgrade to Scrappa at https://scrappa.co. The underlying endpoint is `/api/maps/directions`.

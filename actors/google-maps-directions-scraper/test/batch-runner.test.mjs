@@ -38,8 +38,9 @@ test('continues after one route failure and accounts for alternatives and charge
     const result = await runDirectionsBatch(requests, client, output);
 
     assert.equal(calls.length, 2);
-    assert.equal(calls[0].endpoint, '/google-maps-directions');
+    assert.equal(calls[0].endpoint, '/maps/directions');
     assert.equal(calls[0].options.attempts, 3);
+    assert.equal(typeof calls[0].options.deadlineAt, 'number');
     assert.equal(result.requested, 2);
     assert.equal(result.succeeded, 1);
     assert.equal(result.failed, 1);
@@ -47,6 +48,38 @@ test('continues after one route failure and accounts for alternatives and charge
     assert.equal(result.charged, 2);
     assert.equal(output.rows.length, 2);
     assert.equal(result.failures[0].requestIndex, 0);
+});
+
+test('bounds a worst-case batch at the shared deadline and summarizes remaining routes', async () => {
+    const batchRequests = Array.from({ length: 10 }, (_, index) => ({
+        origin: `Origin ${index}`,
+        destination: `Destination ${index}`,
+        mode: 'driving',
+        hl: 'en',
+        params: { origin: `Origin ${index}`, destination: `Destination ${index}`, mode: 'driving', hl: 'en' },
+        index,
+    }));
+    const calls = [];
+    let currentTime = 0;
+    const client = {
+        async get(endpoint, params, options) {
+            calls.push({ endpoint, params, options });
+            currentTime = 100;
+            throw new Error('Scrappa request timed out');
+        },
+    };
+
+    const result = await runDirectionsBatch(batchRequests, client, writer(), {
+        maxDurationMs: 100,
+        now: () => currentTime,
+    });
+
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].options.deadlineAt, 100);
+    assert.equal(result.requested, 10);
+    assert.equal(result.succeeded, 0);
+    assert.equal(result.failed, 10);
+    assert.match(result.failures[1].message, /deadline reached/);
 });
 
 test('stops at a charge refusal without charging later rows', async () => {
