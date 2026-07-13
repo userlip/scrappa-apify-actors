@@ -38,4 +38,4 @@ The focused tests cover unlimited PPE capacity, bounded concurrency, maximum-bat
 
 ## Outcome
 
-PR created and awaiting green CI/review completion.
+PR #283 is open with green CI and review checks; no merge was performed.
