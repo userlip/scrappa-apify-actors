@@ -126,12 +126,16 @@ export async function runIndicesBatch(
         const hasOutcome = outcomes.some((outcome) => outcome.symbol === symbol);
 
         if (!hasOutcome) {
-            failed += 1;
             outcomes.push({
                 symbol,
-                status: 'failed',
-                error: 'Scrappa returned no matching index result',
+                status: limited ? 'not_attempted' : 'failed',
+                error: limited
+                    ? 'Charge limit reached'
+                    : 'Scrappa returned no matching index result',
             });
+            if (!limited) {
+                failed += 1;
+            }
         }
     }
 

@@ -1,41 +1,57 @@
-# PR Nudging Report: Vinted User Profile Runtime Safety
+# PR Nudging Report: Google Finance Indices Scraper
 
 Date: 2026-07-13
 
 ## Pull request
 
-- Branch: `fix/vinted-user-profile-runtime-safety`
-- Base: `origin/main`, which contains the merged Vinted User Profile Actor from PR #281
-- PR: [#283 — fix: harden Vinted profile batch runtime and billing](https://github.com/userlip/scrappa-apify-actors/pull/283)
+- Branch: `fix/google-finance-indices-charge-limit-tests`
+- Base: `main` (`origin/main` at `75df757`)
+- Commits: `cf9f260` and `4e0fd68`
+- PR: [#284 — fix: finalize Google Finance indices billing boundary](https://github.com/userlip/scrappa-apify-actors/pull/284)
 - Merge: not performed in this stage
 
-## Scope
+## Scope reviewed
 
-This follow-up carries the two post-merge safety fixes for the public `thescrappa/vinted-user-profile-scraper` Actor:
+The branch finalizes the new `actors/google-finance-indices-scraper` Actor's
+Apify billing boundary:
 
-- Bound batches to eight concurrent Scrappa calls, include retry-delay time in the runtime budget, cap waves by available PPE capacity, and retain a 60-second margin under the 600-second Actor timeout.
-- Preserve unlimited PPE capacity and drain sibling workers after an actor-level Scrappa authentication failure before rethrowing, without writing or charging delayed sibling results.
+- Removes the unnecessary `OUTPUT` key-value-store write; returned indices are
+  available only as dataset items.
+- Stops safely at the PAY_PER_EVENT capacity limit, retaining and charging an
+  accepted final dataset item exactly once.
+- Marks unattempted requested symbols correctly when the charge limit stops the
+  batch, without treating them as upstream failures.
+- Adds regression coverage for exhausted capacity, a refused dataset write, an
+  accepted final write that raises the limit flag, and charge-event behavior.
 
-## Validation before push
+The Actor remains a small batch-first wrapper around Scrappa's Google Finance
+indices endpoint, with one dataset item and `index-result` event per accepted
+result.
 
-From `actors/vinted-user-profile-scraper`:
+## Verification before PR
 
-- `npm test` — 22 passed, 0 failed.
-- `npm run test:dev` — 22 passed, 0 failed.
+Testing reported the following successful checks from
+`actors/google-finance-indices-scraper`:
+
+- `npm test` — 16 passed, 0 failed.
 - `npm run typecheck` — passed.
-- `npx --yes apify-cli validate-schema` — input and embedded dataset schemas passed.
-- `git diff --check origin/main..HEAD` and `git diff --check` — passed.
+- `jq empty .actor/actor.json .actor/input_schema.json` — passed.
+- `npx apify-cli validate-schema` — input and embedded dataset schemas passed.
+- `npm audit --omit=dev --audit-level=high` — 0 vulnerabilities.
+- `git diff --check 34b516e^..4e0fd68` and `git diff --check origin/main...HEAD` — passed.
 
-The focused tests cover unlimited PPE capacity, bounded concurrency, maximum-batch runtime alignment, auth-failure draining, exact endpoint behavior, and successful-save/charge semantics. Existing testing and release evidence records successful deployed multi-profile and mixed-success smoke runs, active `$0.0005` `user-profile-result` pricing, the `SCRAPPA_API_KEY` secret, and dataset-to-charge parity.
+No remote CI run existed before branch push. PR-stage review found no
+additional actionable issue in the changed source files; the open PR is now
+being monitored for checks and review feedback.
 
-## CI and review monitoring
+## Release gates retained for downstream stage
 
-- Actor Tests workflow run `29261462378`: all matrix jobs passed.
-- Claude review: passed with no blocking findings.
-- Cubic review: passed with no actionable findings.
-- Socket Security Project Report and Pull Request Alerts: passed.
-- No implementation changes or review fixes were required during PR nudging.
+Apify deployment, active or earliest-scheduled `$0.00025` PAY_PER_EVENT
+pricing for `index-result`, a multi-index smoke run, dataset-to-event parity,
+and portfolio audits need the authorized release environment. They are not
+performed by this PR stage; `docs/release-verification.md` records the access
+boundary.
 
 ## Outcome
 
-PR #283 is open with green CI and review checks; no merge was performed.
+The branch is ready to push and open for CI/review. This stage does not merge.
