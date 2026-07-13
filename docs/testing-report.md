@@ -1,77 +1,94 @@
-# Testing Report: ImmobilienScout24 Price Insights Scraper
+# Testing Report: Google Maps Directions Scraper
 
 Date: 2026-07-13
+
+## Verification refresh
+
+Fresh local verification completed at 2026-07-13T14:35:46Z from
+`actors/google-maps-directions-scraper`. No application source changes were
+made during this testing stage.
+
+| Check | Result |
+| --- | --- |
+| `npm test` | 16 passed, 0 failed |
+| `npm run typecheck` | Passed |
+| `jq empty .actor/actor.json .actor/input_schema.json` | Passed |
+| `npx apify-cli validate-schema` | Input and dataset schemas passed |
+| `npm audit --omit=dev --audit-level=high` | 0 vulnerabilities |
+| `git diff --check origin/main...HEAD` | Passed |
 
 ## Result
 
 TESTING_PASSED
 
-The focused test suites, schema checks, deployment build, paid pricing, secret configuration, Berlin/Munich batch smoke run, mixed-failure smoke run, and dataset/charge parity all passed for the new Actor.
+Testing passed. Local verification, deployment configuration, paid pricing, a two-route live smoke run, and a mixed-success/no-charge smoke run all passed after restoring the missing deployed secret.
 
 ## Local verification
 
+All commands were run from `actors/google-maps-directions-scraper`:
+
 | Check | Result |
 | --- | --- |
-| `npm test` from `actors/immobilienscout24-price-insights-scraper` | 26 passed, 0 failed |
-| `npm run test:dev` | 26 passed, 0 failed |
+| `npm test` | 16 passed, 0 failed |
 | `npm run typecheck` | Passed |
 | `jq empty .actor/actor.json .actor/input_schema.json` | Passed |
 | `npx apify-cli validate-schema` | Input and dataset schemas passed |
-| `npm run test:audit-health` | 17 passed, 0 failed |
-| `npm run test:audit-secrets` | 19 passed, 0 failed |
-| `npm run test:audit-pricing` | 14 passed, 0 failed |
-| `git diff --check main...HEAD` | Passed |
+| `npm audit --omit=dev --audit-level=high` | 0 vulnerabilities |
 
-The tests cover array, CSV, and singular input normalization; trimming and case-insensitive deduplication; the 100-location limit; bounded concurrency; endpoint and retry parameters; complete response mapping; partial failures; and charge-confirmed dataset writes.
+The focused tests include the synthetic `apify-default-dataset-item` charge regression: a PPE writer response with `chargedCount: 2` is normalized to one `route-result` charge for one stored route row.
 
-## Deployment and configuration
+## Deployment and release gates
 
-Actor: `gw1ZWMNQMBu0dGUnz` (`immobilienscout24-price-insights-scraper`)
+Actor: `ZF8jFdzF15k49AZQh` (`google-maps-directions-scraper`)
 
-- Build `1.0.9`, ID `BC4VS1JHWLSqLyDls`: `SUCCEEDED`.
-- Default run profile: 128 MB memory, 300-second timeout.
-- Version `1.0` has `SCRAPPA_API_KEY` configured as a secret.
-- Input schema on the deployed build accepts array-or-comma-separated `locations` and singular `location` compatibility input.
-- Active pricing is `PAY_PER_EVENT` at `$0.0005` for the primary `price-insight-result` event.
+- Public: `true`.
+- Active `PAY_PER_EVENT` pricing is API-verified through `pricingInfos` at `$0.0005` for `route-result` (`startedAt: 2026-07-13T12:10:04.000Z`).
+- Actor default run profile is API-verified at 128 MB memory and 300 seconds timeout.
+- Version `1.0` has `SCRAPPA_API_KEY` configured as a secret; the API returned a secret value hash, not the value.
+- Build `1.0.5`, ID `WyXaXBr5ncpnhxIpl`, finished `SUCCEEDED` at `2026-07-13T13:19:45.013Z`.
 
-The first source push warned that this container had no local secret and removed the remote version’s secret metadata. The existing Scrappa Apify key was restored from the configured Scrappa dashboard key and the Actor was rebuilt; the final configuration above was re-verified before smoke testing.
+The first post-review smoke run (`NUlezwj5rcaC7b7ck`) failed before network work because the deployed runtime lacked `SCRAPPA_API_KEY`; it produced zero dataset rows and zero charges. The secret was restored from the configured local secret store, version `1.0` was rebuilt, and all subsequent live checks used build `1.0.5`.
 
-## Live smoke verification
+## Live two-route smoke verification
 
-### Berlin and Munich batch
+Run: `X3G3VmrqE91coTP8B`
 
-Run: `PKs7fmAHPsPpPVhsh`
+Dataset: `H7S7YVb70euFiVuZS`
 
-Dataset: `8LDNdmOH7v5df1MZt`
-
-- Input: `{"locations":["Berlin","Munich"]}`
+- Input contained two distinct requests in one run: Berlin Hauptbahnhof → Brandenburg Gate walking and driving.
 - Terminal status: `SUCCEEDED`.
-- Dataset: exactly 2 rows, both complete EUR snapshots with all four benchmarks.
-- Resolved locations: Berlin and München.
-- `chargedEventCounts.price-insight-result`: `2`.
-- Dataset writes: `2`.
-- Default key-value store contained only `INPUT`; no per-item `OUTPUT` records were written.
+- Six dataset rows were stored: three walking alternatives and three driving alternatives.
+- Final API `chargedEventCounts.route-result`: 6.
+- Dataset rows and `route-result` charges matched: 6 = 6.
+- Log summary reported `requested: 2`, `succeeded: 2`, `failed: 0`, `alternativesSaved: 6`, and `charged: 6`.
 
-### Mixed valid/invalid batch
+## Mixed-failure and charge-parity verification
 
-Run: `h4gumcKUWI1YRBABi`
+Run: `NwhoCso1d0soax99d`
 
-Dataset: `d7efboksQTr8Mw5M8`
+Dataset: `52vk0XK01jUMqvTHJ`
 
-- Input: one valid Berlin location and one deliberately invalid location.
+- Input contained one valid Berlin walking request and one deliberately invalid place pair.
 - Terminal status: `SUCCEEDED`.
-- Status message: `Saved 1 of 2 requested location snapshot(s); 1 failed.`
-- Dataset: exactly 1 Berlin row.
-- Invalid location: logged as `Bad Request`, omitted from the dataset, and not charged.
-- `chargedEventCounts.price-insight-result`: `1`.
-- Dataset writes: `1`.
+- The valid request produced three dataset rows.
+- The invalid request produced one logged failure with `NO_ROUTES_FOUND`, no dataset rows, and no charge.
+- Final API `chargedEventCounts.route-result`: 3.
+- Dataset rows and `route-result` charges matched: 3 = 3.
+- Log summary reported `requested: 2`, `succeeded: 1`, `failed: 1`, `alternativesSaved: 3`, and `charged: 3`.
 
-The live results therefore confirm one dataset item and one charge per successful location, with partial failures isolated and uncharged.
+No per-item key-value-store writes were observed; the successful smoke run recorded one key-value-store write for the run-level output path and six dataset writes for six monetized rows.
 
-## Portfolio audit context
+## Reproduction commands
 
-- Secret audit: 92 actors checked, 92 secret-present, 0 missing, 0 non-secret, 0 errors.
-- Pricing audit: 92 actors checked, 92 active paid pricing, 0 overdue, 0 missing, 0 future-only, 0 errors.
-- Health audit: the new Actor is `OK` with five recent `SUCCEEDED` runs and a successful latest build. The portfolio-wide command remains non-zero because the unrelated `tiktok-challenge-posts-scraper` (`CVaJEgPjl3jWKbm71`) has a failed latest run; this does not affect the tested Actor.
+Local:
 
-No source code changes were made during testing. The deployment and secret restoration were operational release actions for the reviewed branch.
+```text
+cd actors/google-maps-directions-scraper
+npm test
+npm run typecheck
+jq empty .actor/actor.json .actor/input_schema.json
+npx apify-cli validate-schema
+npm audit --omit=dev --audit-level=high
+```
+
+Live runs were started through the Apify API for actor `ZF8jFdzF15k49AZQh` with the two-route and mixed-failure JSON inputs described above. Run and dataset IDs are recorded in this report for API/log inspection.
