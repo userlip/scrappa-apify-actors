@@ -12,6 +12,8 @@ The Actor continues to write one dataset item per successfully saved, unique ind
 
 Added focused regression coverage for the PAY_PER_EVENT boundary: zero charge capacity does not fetch or write; a refused chargeable write is neither saved nor charged; and a final successful charged write is retained exactly once while later rows are not attempted. Direct `saveIndex` tests now cover both non-PPE dataset writes and accepted/refused PPE outcomes.
 
+Added `actors/google-finance-indices-scraper/.actor/README.md` for the Apify marketplace listing. It names the Actor, documents batch input and S&P 500, Dow, NASDAQ, and custom-symbol use cases, explains the upstream matching caveat, and states the dataset-only `$0.00025` `index-result` charging model and direct Scrappa API upgrade path.
+
 ## Verification
 
 From `actors/google-finance-indices-scraper`:
