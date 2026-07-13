@@ -25,7 +25,7 @@ Scrappa's configured endpoint search and live call for user `255914028` in `DE` 
 From `actors/vinted-user-profile-scraper`:
 
 ```text
-npm test                              # 13 passing tests
+npm test                              # 23 passing tests
 npm run typecheck                     # passes
 npx --yes apify-cli validate-schema   # input and embedded dataset schemas pass
 git diff --check                      # passes
@@ -39,12 +39,14 @@ The runtime-budget finding was addressed without reducing the 100-ID batch contr
 - Production requests use two attempts with a 15-second timeout; the retry-delay upper bound is included in the runtime calculation.
 - PPE capacity is checked before each wave and the wave size is capped by available charge capacity, so unattempted IDs are not fetched after capacity is exhausted.
 - A 60-second safety margin keeps the calculated worst-case maximum batch runtime below the 600-second Actor timeout.
-- Added regression coverage for the maximum supported batch, bounded concurrency, and the runtime-budget calculation.
+- Unbounded PPE capacity (`Infinity`) is preserved so an uncapped actor can fetch and charge profiles normally.
+- Wave workers settle with `Promise.allSettled()`; an observed actor-level auth failure is rethrown only after the wave drains, and delayed siblings skip dataset/charge side effects.
+- Added regression coverage for unlimited charging, actor-level failure draining, maximum batch size, bounded concurrency, and the runtime-budget calculation.
 
 Rework verification:
 
 ```text
-npm test                              # 20 passing tests
+npm test                              # 23 passing tests
 npm run typecheck                     # passes
 npx --yes apify-cli validate-schema   # input and embedded dataset schemas pass
 git diff --check                      # passes

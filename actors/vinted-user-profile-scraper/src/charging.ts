@@ -26,6 +26,10 @@ export function getVintedUserProfileAvailableChargeCount(
     }
 
     const available = chargingManager.calculateMaxEventChargeCountWithinLimit(VINTED_USER_PROFILE_RESULT_CHARGE_EVENT);
+    if (available === Number.POSITIVE_INFINITY) {
+        return available;
+    }
+
     return Number.isFinite(available) ? Math.max(0, Math.floor(available)) : 0;
 }
 

@@ -39,6 +39,10 @@ export interface VintedUserProfileRunSummary {
     statusMessage: string | null;
 }
 
+interface ProfileBatchState {
+    actorLevelFailure: unknown | null;
+}
+
 export async function runVintedUserProfiles(options: VintedUserProfileRunOptions): Promise<VintedUserProfileRunSummary> {
     const { actor, client, requests, attempts } = options;
     let succeeded = 0;
@@ -68,9 +72,27 @@ export async function runVintedUserProfiles(options: VintedUserProfileRunOptions
         );
         const batch = requests.slice(nextRequestOffset, nextRequestOffset + batchSize);
         nextRequestOffset += batch.length;
+        const batchState: ProfileBatchState = { actorLevelFailure: null };
 
-        const results = await Promise.all(batch.map((request) => processVintedUserProfile({ actor, client, request, attempts })));
-        for (const result of results) {
+        const results = await Promise.allSettled(
+            batch.map((request) => processVintedUserProfile({ actor, client, request, attempts, batchState })),
+        );
+        const actorLevelFailure = results.find(
+            (result): result is PromiseRejectedResult => result.status === 'rejected' && isActorLevelScrappaFailure(result.reason),
+        );
+        if (batchState.actorLevelFailure !== null) {
+            throw batchState.actorLevelFailure;
+        }
+        if (actorLevelFailure !== undefined) {
+            throw actorLevelFailure.reason;
+        }
+
+        for (const settledResult of results) {
+            if (settledResult.status === 'rejected') {
+                throw settledResult.reason;
+            }
+
+            const result = settledResult.value;
             succeeded += result.succeeded;
             failed += result.failed;
             statusMessage ??= result.statusMessage;
@@ -85,14 +107,24 @@ async function processVintedUserProfile(options: {
     client: VintedUserProfileClient;
     request: VintedUserProfileRequest;
     attempts: number;
+    batchState: ProfileBatchState;
 }): Promise<{ succeeded: number; failed: number; statusMessage: string | null }> {
-    const { actor, client, request, attempts } = options;
+    const { actor, client, request, attempts, batchState } = options;
     console.log(`Fetching Vinted user profile ${request.userId} in ${String(request.params.country)}`);
 
     try {
         const response = await client.get<VintedUserProfileResponse>('/vinted/user-profile', request.params, { attempts });
         const profile = getVintedUserProfile(response);
         const item = buildVintedUserProfileDatasetItem(profile, request, response);
+
+        // An auth failure in a sibling worker makes the run fail at actor level.
+        // Do not create a dataset row or charge another result once that failure
+        // has been observed; Promise.allSettled() still drains this worker.
+        if (batchState.actorLevelFailure !== null) {
+            console.warn(`Skipping Vinted user profile request ${request.index + 1} after an actor-level failure.`);
+            return { succeeded: 0, failed: 1, statusMessage: null };
+        }
+
         const pushResult = await pushSuccessfulVintedUserProfile(actor, item, request.index);
 
         if (pushResult.saved) {
@@ -114,6 +146,7 @@ async function processVintedUserProfile(options: {
         return { succeeded: 0, failed: 1, statusMessage: null };
     } catch (error) {
         if (isActorLevelScrappaFailure(error)) {
+            batchState.actorLevelFailure ??= error;
             throw error;
         }
 

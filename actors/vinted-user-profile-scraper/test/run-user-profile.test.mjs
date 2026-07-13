@@ -5,6 +5,7 @@ const sourceDirectory = process.env.TEST_SOURCE === 'src' ? 'src' : 'dist';
 const { runVintedUserProfiles } = await import(`../${sourceDirectory}/run-user-profile.js`);
 const { MAX_USER_IDS_PER_RUN } = await import(`../${sourceDirectory}/request-params.js`);
 const { PROFILE_REQUEST_CONCURRENCY } = await import(`../${sourceDirectory}/runtime-budget.js`);
+const { ScrappaAuthError } = await import(`../${sourceDirectory}/shared/scrappa-client.js`);
 
 function requests(ids) {
     return ids.map((userId, index) => ({ userId, params: { user_id: userId, country: 'DE' }, index }));
@@ -80,6 +81,51 @@ test('does not fetch after PPE capacity is exhausted', async () => {
     assert.equal(calls, 1);
     assert.equal(summary.succeeded, 1);
     assert.match(summary.statusMessage, /before fetching/);
+});
+
+test('fetches and charges under an unbounded PPE capacity', async () => {
+    const actor = actorStub(Number.POSITIVE_INFINITY);
+    let calls = 0;
+    const client = {
+        async get() {
+            calls += 1;
+            return { success: true, data: { user: { id: 1, login: 'user-1', profile_url: 'https://www.vinted.de/member/1' } } };
+        },
+    };
+
+    const summary = await runVintedUserProfiles({ actor, client, requests: requests(['1']), attempts: 1 });
+    assert.deepEqual(summary, { requested: 1, succeeded: 1, failed: 0, statusMessage: null });
+    assert.equal(calls, 1);
+    assert.equal(actor.pushes.length, 1);
+    assert.equal(actor.pushes[0].eventName, 'user-profile-result');
+});
+
+test('drains sibling workers before rethrowing an actor-level failure', async () => {
+    const actor = actorStub(10);
+    let authFailureObserved = false;
+    const client = {
+        async get(endpoint, params) {
+            if (params.user_id === 'auth-failure') {
+                authFailureObserved = true;
+                throw new ScrappaAuthError(401, 'Invalid API key');
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 25));
+            assert.equal(authFailureObserved, true);
+            return { success: true, data: { user: { id: 2, login: 'user-2', profile_url: 'https://www.vinted.de/member/2' } } };
+        },
+    };
+
+    await assert.rejects(
+        runVintedUserProfiles({
+            actor,
+            client,
+            requests: requests(['auth-failure', 'delayed-success']),
+            attempts: 1,
+        }),
+        (error) => error instanceof ScrappaAuthError,
+    );
+    assert.equal(actor.pushes.length, 0);
 });
 
 test('processes the maximum supported batch with bounded concurrency', async () => {
