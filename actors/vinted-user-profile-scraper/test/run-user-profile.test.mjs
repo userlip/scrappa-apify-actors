@@ -8,7 +8,7 @@ function requests(ids) {
     return ids.map((userId, index) => ({ userId, params: { user_id: userId, country: 'DE' }, index }));
 }
 
-function actorStub(maxCharges = 10) {
+function actorStub(maxCharges = 10, pushResult = { chargedCount: 1 }) {
     let saved = 0;
     const pushes = [];
     return {
@@ -20,7 +20,7 @@ function actorStub(maxCharges = 10) {
         pushData: async (item, eventName) => {
             pushes.push({ item, eventName });
             saved += 1;
-            return { chargedCount: 1 };
+            return pushResult;
         },
     };
 }
@@ -50,6 +50,18 @@ test('continues after an unresolved profile and charges only later successes', a
     assert.equal(actor.pushes[0].eventName, 'user-profile-result');
     assert.equal(actor.pushes[0].item.request_user_id, '255914028');
     assert.deepEqual(actor.pushes.map(({ item }) => item.request_user_id), ['255914028']);
+});
+
+test('counts an uncharged result without a limit status as a failed request', async () => {
+    const actor = actorStub(10, { chargedCount: 0 });
+    const client = {
+        async get() {
+            return { success: true, data: { user: { id: 1, login: 'user-1', profile_url: 'https://www.vinted.de/member/1' } } };
+        },
+    };
+
+    const summary = await runVintedUserProfiles({ actor, client, requests: requests(['1']), attempts: 1 });
+    assert.deepEqual(summary, { requested: 1, succeeded: 0, failed: 1, statusMessage: null });
 });
 
 test('does not fetch after PPE capacity is exhausted', async () => {

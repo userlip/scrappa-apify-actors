@@ -41,3 +41,10 @@ test('does not treat an uncharged PPE push as a saved result', async () => {
     assert.equal(result.saved, false);
     assert.match(result.statusMessage, /before saving/);
 });
+
+test('reports when the final saved PPE result also reaches the charge limit', async () => {
+    const actor = actorStub({ pushResult: { chargedCount: 1, eventChargeLimitReached: true } });
+    const result = await charging.pushSuccessfulVintedUserProfile(actor, { id: 1 }, 0);
+    assert.equal(result.saved, true);
+    assert.match(result.statusMessage, /after saving/);
+});

@@ -5,7 +5,7 @@ import {
 } from './request-params.js';
 import type { VintedUserProfileInput } from './request-params.js';
 import { runVintedUserProfiles } from './run-user-profile.js';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
@@ -45,11 +45,8 @@ async function main(): Promise<void> {
         }
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
-        const message = error instanceof ScrappaTimeoutError
-            ? `${rawMessage}. The Vinted user profile request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try fewer IDs or run the request again.`
-            : rawMessage;
-        console.error('Actor failed: ' + message);
-        await Actor.fail(message);
+        console.error('Actor failed: ' + rawMessage);
+        await Actor.fail(rawMessage);
         return;
     }
 

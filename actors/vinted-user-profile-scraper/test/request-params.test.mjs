@@ -28,6 +28,7 @@ test('accepts a safe numeric singular ID and defaults country to FR', () => {
 test('rejects empty, malformed, unsupported, and over-limit input', () => {
     assert.throws(() => buildVintedUserProfileRequests({}), /at least one/);
     assert.throws(() => buildVintedUserProfileRequests({ user_ids: '123,not-a-user' }), /numeric/);
+    assert.throws(() => buildVintedUserProfileRequests({ user_id: '0' }), /numeric/);
     assert.throws(() => buildVintedUserProfileRequests({ user_id: '123', country: 'GB' }), /country must be one of/);
     assert.throws(() => buildVintedUserProfileRequests({ user_ids: Array.from({ length: 101 }, (_, index) => String(index + 1)) }), /at most 100/);
 });

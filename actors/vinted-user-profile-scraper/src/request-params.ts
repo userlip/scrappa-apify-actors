@@ -54,7 +54,7 @@ function cleanCountry(value: unknown): string {
 
 function cleanUserId(value: unknown, field: string): string | undefined {
     if (typeof value === 'number') {
-        if (!Number.isSafeInteger(value) || value < 0) {
+        if (!Number.isSafeInteger(value) || value <= 0) {
             throw new Error(`${field} must be a numeric Vinted user ID or safe integer`);
         }
 
@@ -66,7 +66,7 @@ function cleanUserId(value: unknown, field: string): string | undefined {
         return undefined;
     }
 
-    if (!/^\d+$/.test(userId)) {
+    if (!/^[1-9]\d*$/.test(userId)) {
         throw new Error(`${field} must be a numeric Vinted user ID; received "${userId}"`);
     }
 

@@ -14,9 +14,13 @@ interface ScrappaError {
     errors?: Record<string, string[]>;
 }
 
+interface ScrappaTimeoutErrorOptions extends ErrorOptions {
+    message?: string;
+}
+
 export class ScrappaTimeoutError extends Error {
-    constructor(timeoutMs: number, options?: ErrorOptions) {
-        super(`Scrappa API request timed out after ${timeoutMs}ms`, options);
+    constructor(timeoutMs: number, options?: ScrappaTimeoutErrorOptions) {
+        super(options?.message ?? `Scrappa API request timed out after ${timeoutMs}ms`, options);
         this.name = 'ScrappaTimeoutError';
     }
 }
@@ -102,6 +106,10 @@ export class ScrappaClient {
         const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
         try {
+            if (this.debug) {
+                console.log(`[Scrappa] GET ${url.toString()}`);
+            }
+
             const response = await fetch(url.toString(), {
                 method: 'GET',
                 headers: {
@@ -140,7 +148,11 @@ export class ScrappaClient {
         let bodyText: string;
         try {
             bodyText = await response.text();
-        } catch {
+        } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw error;
+            }
+
             return fallback;
         }
 

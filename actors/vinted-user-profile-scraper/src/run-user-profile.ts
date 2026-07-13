@@ -8,6 +8,7 @@ import {
     pushSuccessfulVintedUserProfile,
 } from './charging.js';
 import { isActorLevelScrappaFailure } from './failures.js';
+import { ScrappaTimeoutError } from './shared/scrappa-client.js';
 import type { VintedUserProfileRequest } from './request-params.js';
 
 export interface VintedUserProfileClient {
@@ -66,6 +67,9 @@ export async function runVintedUserProfiles(options: VintedUserProfileRunOptions
             if (pushResult.saved) {
                 succeeded += 1;
                 console.log(`Saved Vinted user profile result ${request.index + 1}`);
+            } else if (!pushResult.statusMessage) {
+                failed += 1;
+                console.warn(`Vinted user profile request ${request.index + 1} was not saved or charged.`);
             }
 
             if (pushResult.statusMessage) {
@@ -83,7 +87,10 @@ export async function runVintedUserProfiles(options: VintedUserProfileRunOptions
                 throw error;
             }
             failed += 1;
-            const message = error instanceof Error ? error.message : String(error);
+            const rawMessage = error instanceof Error ? error.message : String(error);
+            const message = error instanceof ScrappaTimeoutError
+                ? `${rawMessage}. Try fewer IDs or run the request again.`
+                : rawMessage;
             console.warn(`Vinted user profile request ${request.index + 1} failed: ${message}`);
         }
     }

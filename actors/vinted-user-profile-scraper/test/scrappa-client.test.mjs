@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const sourceDirectory = process.env.TEST_SOURCE === 'src' ? 'src' : 'dist';
-const { ScrappaAuthError, ScrappaClient } = await import(`../${sourceDirectory}/shared/scrappa-client.js`);
+const { ScrappaAuthError, ScrappaClient, ScrappaTimeoutError } = await import(`../${sourceDirectory}/shared/scrappa-client.js`);
 
 test('calls only the configured Scrappa endpoint and retries transient failures', async () => {
     const originalFetch = globalThis.fetch;
@@ -57,6 +57,28 @@ test('classifies authentication failures without retrying or parsing message tex
             },
         );
         assert.equal(calls, 1);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test('wraps an abort while reading an error response as a timeout', async () => {
+    const originalFetch = globalThis.fetch;
+    const abortError = new DOMException('body read aborted', 'AbortError');
+
+    globalThis.fetch = async () => ({
+        ok: false,
+        status: 503,
+        statusText: 'Unavailable',
+        text: async () => { throw abortError; },
+    });
+
+    try {
+        const client = new ScrappaClient({ apiKey: 'test-key', baseUrl: 'https://scrappa.test/api' });
+        await assert.rejects(
+            client.get('/vinted/user-profile', { user_id: '255914028' }),
+            (error) => error instanceof ScrappaTimeoutError,
+        );
     } finally {
         globalThis.fetch = originalFetch;
     }

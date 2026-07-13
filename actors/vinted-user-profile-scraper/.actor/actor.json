@@ -49,7 +49,7 @@
               "neutral_feedback_count": { "label": "Neutral", "format": "number" },
               "negative_feedback_count": { "label": "Negative", "format": "number" },
               "bundle_discount_enabled": { "label": "Bundle Discounts", "format": "boolean" },
-              "bundle_discounts": { "label": "Bundle Tiers", "format": "text" },
+              "bundle_discounts": { "label": "Bundle Tiers", "format": "array" },
               "item_count": { "label": "Active Items", "format": "number" },
               "total_items_count": { "label": "Total Items", "format": "number" },
               "followers_count": { "label": "Followers", "format": "number" },
@@ -67,7 +67,7 @@
               "request_index": { "label": "Request Index", "format": "number" },
               "request_success": { "label": "Success", "format": "boolean" },
               "scrappa_duration_ms": { "label": "Scrappa Duration (ms)", "format": "number" },
-              "scrappa_scraped_at": { "label": "Scraped At", "format": "text" }
+              "scrappa_scraped_at": { "label": "Scraped At", "format": "date" }
             }
           }
         }

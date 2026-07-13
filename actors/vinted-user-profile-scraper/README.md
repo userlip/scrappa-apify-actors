@@ -32,12 +32,12 @@ The Actor trims and deduplicates IDs in input order, validates numeric IDs and c
 }
 ```
 
-The Actor API also accepts:
+The Actor API also accepts a comma-separated batch string in `user_ids`:
 
 ```json
 {
-  "user_id": "255914028, 123456789",
-  "country": "de"
+  "user_ids": "255914028, 123456789",
+  "country": "DE"
 }
 ```
 
