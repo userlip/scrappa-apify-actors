@@ -1,0 +1,71 @@
+- generic [ref=f3e3]:
+  - complementary [ref=f3e4]:
+    - generic [ref=f3e5]:
+      - link [ref=f3e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img "Scrappa" [ref=f3e7]
+      - button "Close navigation" [ref=f3e8] [cursor=pointer]
+    - navigation [ref=f3e12]:
+      - link "Overview" [ref=f3e13] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard
+      - link "API keys" [ref=f3e23] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/api-keys
+      - link "Playground" [ref=f3e28] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/playground
+      - link "Credits" [ref=f3e36] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/credits
+      - link "Invoices" [ref=f3e43] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/invoices
+      - link "Workflows" [ref=f3e51] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflows
+      - link "Workflow runs" [ref=f3e60] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflow-runs
+      - link "Profile" [ref=f3e67] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/profile
+      - link "Docs" [ref=f3e75] [cursor=pointer]:
+        - /url: https://scrappa.co/docs
+      - link "OpenAPI" [ref=f3e83] [cursor=pointer]:
+        - /url: https://scrappa.co/docs/api
+  - generic [ref=f3e91]:
+    - banner [ref=f3e92]:
+      - generic [ref=f3e93]:
+        - button "Open navigation" [ref=f3e94] [cursor=pointer]
+        - heading "Create API key" [level=1] [ref=f3e96]
+      - generic [ref=f3e97]:
+        - link "Admin" [ref=f3e98] [cursor=pointer]:
+          - /url: /admin
+        - link "Back to API keys" [ref=f3e101] [cursor=pointer]:
+          - /url: https://scrappa.co/dashboard/api-keys
+        - group "Theme" [ref=f3e102]:
+          - button "Light mode" [pressed] [ref=f3e103] [cursor=pointer]
+          - button "Dark mode" [ref=f3e110] [cursor=pointer]
+          - button "System theme" [ref=f3e113] [cursor=pointer]
+        - button "S" [ref=f3e117] [cursor=pointer]
+    - main [ref=f3e122]:
+      - generic [ref=f3e123]:
+        - generic [ref=f3e124]:
+          - heading "Create API key" [level=3] [ref=f3e126]
+          - generic [ref=f3e128]:
+            - generic [ref=f3e129]:
+              - text: API key name
+              - textbox "API key name" [ref=f3e130]:
+                - /placeholder: Production key
+            - generic [ref=f3e131]:
+              - generic [ref=f3e132]:
+                - text: Credit alert threshold
+                - spinbutton "Credit alert threshold" [ref=f3e133]
+              - generic [ref=f3e134]:
+                - text: Alert period
+                - combobox "Alert period" [ref=f3e135]:
+                  - option "Not set" [selected]
+                  - option "Day"
+                  - option "Week"
+                  - option "Month"
+            - generic [ref=f3e136]:
+              - button "Create API key" [ref=f3e137] [cursor=pointer]
+              - link "Cancel" [ref=f3e138] [cursor=pointer]:
+                - /url: /dashboard/api-keys
+        - generic [ref=f3e140]:
+          - paragraph [ref=f3e141]: Copy the token on the next screen.
+          - paragraph [ref=f3e142]: Scrappa shows each new API token once. After you confirm it is saved, the token is hidden permanently.
+          - paragraph [ref=f3e143]: Credit alerts are optional and can be changed later.

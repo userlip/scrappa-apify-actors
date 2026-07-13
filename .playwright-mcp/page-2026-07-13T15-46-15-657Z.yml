@@ -1,0 +1,61 @@
+- generic [ref=f3e144]:
+  - complementary [ref=f3e145]:
+    - generic [ref=f3e146]:
+      - link [ref=f3e147] [cursor=pointer]:
+        - /url: /dashboard
+        - img "Scrappa" [ref=f3e148]
+      - button "Close navigation" [ref=f3e149] [cursor=pointer]
+    - navigation [ref=f3e153]:
+      - link "Overview" [ref=f3e154] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard
+      - link "API keys" [ref=f3e164] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/api-keys
+      - link "Playground" [ref=f3e169] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/playground
+      - link "Credits" [ref=f3e177] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/credits
+      - link "Invoices" [ref=f3e184] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/invoices
+      - link "Workflows" [ref=f3e192] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflows
+      - link "Workflow runs" [ref=f3e201] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflow-runs
+      - link "Profile" [ref=f3e208] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/profile
+      - link "Docs" [ref=f3e216] [cursor=pointer]:
+        - /url: https://scrappa.co/docs
+      - link "OpenAPI" [ref=f3e224] [cursor=pointer]:
+        - /url: https://scrappa.co/docs/api
+  - generic [ref=f3e232]:
+    - banner [ref=f3e233]:
+      - generic [ref=f3e234]:
+        - button "Open navigation" [ref=f3e235] [cursor=pointer]
+        - heading "Save your API key" [level=1] [ref=f3e237]
+      - generic [ref=f3e238]:
+        - link "Admin" [ref=f3e239] [cursor=pointer]:
+          - /url: /admin
+        - link "Back to API keys" [ref=f3e242] [cursor=pointer]:
+          - /url: https://scrappa.co/dashboard/api-keys
+        - group "Theme" [ref=f3e243]:
+          - button "Light mode" [pressed] [ref=f3e244] [cursor=pointer]
+          - button "Dark mode" [ref=f3e251] [cursor=pointer]
+          - button "System theme" [ref=f3e254] [cursor=pointer]
+        - button "S" [ref=f3e258] [cursor=pointer]
+    - main [ref=f3e263]:
+      - generic [ref=f3e264]:
+        - generic [ref=f3e265]:
+          - heading "Apify Vinted User Profile" [level=3] [ref=f3e267]
+          - generic [ref=f3e269]:
+            - generic [ref=f3e270]:
+              - text: API token
+              - textbox "API token" [ref=f3e271]: eyJpdiI6Iko2bWd3QXcxUUU5WVNaYUp4aHpvQ1E9PSIsInZhbHVlIjoid3VtM1ZaZzF4dW05OUdnMFVQb0I0TjVDQ3Nnc2pMdEw5cmhXUGhZc0dVTG10K1JoaWpaemRlbVE5ZVFMUiswbCIsIm1hYyI6IjU3NmU2MjMzN2EzOWM4NDYwNmQ4NDFjN2M3ODFjMTcyM2RiMzhiMTcxODVmNzQ2MmJhMWVlYmNmN2FjMjkxZjYiLCJ0YWciOiIifQ==
+            - button "Copy token" [ref=f3e273] [cursor=pointer]
+            - generic [ref=f3e277]:
+              - checkbox "I have saved this key in a secure location." [checked] [active] [ref=f3e278]
+              - checkbox [checked]
+              - generic [ref=f3e279]: I have saved this key in a secure location.
+            - button "I've saved it - continue" [ref=f3e280] [cursor=pointer]
+        - generic [ref=f3e282]:
+          - paragraph [ref=f3e283]: This is the only reveal.
+          - paragraph [ref=f3e284]: After you confirm the key is saved, Scrappa will hide the token permanently. If it is lost later, create a replacement and delete this key.
+          - paragraph [ref=f3e285]: Continue to Playground after saving to make the first authenticated request.

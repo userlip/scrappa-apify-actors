@@ -1,0 +1,80 @@
+- generic [ref=f2e3]:
+  - complementary [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - link [ref=f2e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img "Scrappa" [ref=f2e7]
+      - button "Close navigation" [ref=f2e8] [cursor=pointer]
+    - navigation [ref=f2e12]:
+      - link "Overview" [ref=f2e13] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard
+      - link "API keys" [ref=f2e23] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/api-keys
+      - link "Playground" [ref=f2e28] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/playground
+      - link "Credits" [ref=f2e36] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/credits
+      - link "Invoices" [ref=f2e43] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/invoices
+      - link "Workflows" [ref=f2e51] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflows
+      - link "Workflow runs" [ref=f2e60] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflow-runs
+      - link "Profile" [ref=f2e67] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/profile
+      - link "Docs" [ref=f2e75] [cursor=pointer]:
+        - /url: https://scrappa.co/docs
+      - link "OpenAPI" [ref=f2e83] [cursor=pointer]:
+        - /url: https://scrappa.co/docs/api
+  - generic [ref=f2e91]:
+    - banner [ref=f2e92]:
+      - generic [ref=f2e93]:
+        - button "Open navigation" [ref=f2e94] [cursor=pointer]
+        - heading "Edit API key" [level=1] [ref=f2e96]
+      - generic [ref=f2e97]:
+        - link "Admin" [ref=f2e98] [cursor=pointer]:
+          - /url: /admin
+        - link "Back to API keys" [ref=f2e101] [cursor=pointer]:
+          - /url: https://scrappa.co/dashboard/api-keys
+        - group "Theme" [ref=f2e102]:
+          - button "Light mode" [pressed] [ref=f2e103] [cursor=pointer]
+          - button "Dark mode" [ref=f2e110] [cursor=pointer]
+          - button "System theme" [ref=f2e113] [cursor=pointer]
+        - button "S" [ref=f2e117] [cursor=pointer]
+    - main [ref=f2e122]:
+      - generic [ref=f2e123]:
+        - generic [ref=f2e124]:
+          - heading "Save API key" [level=3] [ref=f2e126]
+          - generic [ref=f2e128]:
+            - generic [ref=f2e129]:
+              - text: API key name
+              - textbox "API key name" [ref=f2e130]:
+                - /placeholder: Production key
+                - text: Apify
+            - generic [ref=f2e131]:
+              - generic [ref=f2e132]:
+                - text: Credit alert threshold
+                - spinbutton "Credit alert threshold" [ref=f2e133]
+              - generic [ref=f2e134]:
+                - text: Alert period
+                - combobox "Alert period" [ref=f2e135]:
+                  - option "Not set" [selected]
+                  - option "Day"
+                  - option "Week"
+                  - option "Month"
+            - generic [ref=f2e136]:
+              - button "Save API key" [ref=f2e137] [cursor=pointer]
+              - link "Cancel" [ref=f2e138] [cursor=pointer]:
+                - /url: /dashboard/api-keys
+        - generic [ref=f2e139]:
+          - generic [ref=f2e140]:
+            - heading "Token access" [level=3] [ref=f2e142]
+            - generic [ref=f2e143]:
+              - paragraph [ref=f2e144]: The token was shown once at creation and cannot be retrieved from this page.
+              - link "Endpoint rate limits" [ref=f2e145] [cursor=pointer]:
+                - /url: https://scrappa.co/dashboard/api-keys/51/rate-limits
+          - generic [ref=f2e146]:
+            - heading "Delete key" [level=3] [ref=f2e148]
+            - generic [ref=f2e149]:
+              - paragraph [ref=f2e150]: Deleting this key immediately stops requests that use its token.
+              - button "Delete API key" [ref=f2e151] [cursor=pointer]

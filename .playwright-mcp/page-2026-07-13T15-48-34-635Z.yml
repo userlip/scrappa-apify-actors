@@ -1,0 +1,758 @@
+- generic [ref=f4e2]:
+  - generic [ref=f4e3]:
+    - link "Skip to content" [ref=f4e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=f4e6]:
+      - heading "Navigation Menu" [level=2] [ref=f4e7]
+      - generic [ref=f4e9]:
+        - button "Toggle navigation" [ref=f4e11] [cursor=pointer]
+        - link "Homepage" [ref=f4e17] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f4e20]:
+          - link "Sign in" [ref=f4e21] [cursor=pointer]:
+            - /url: /login?return_to=https%3A%2F%2Fgithub.com%2Fuserlip%2Fscrappa-apify-actors%2Factions%3Fquery%3Dbranch%253Amain
+          - button "Appearance settings" [ref=f4e24] [cursor=pointer]
+  - main [ref=f4e28]:
+    - generic [ref=f4e29]:
+      - generic [ref=f4e30]:
+        - generic [ref=f4e32]:
+          - link "userlip" [ref=f4e36] [cursor=pointer]:
+            - /url: /userlip
+          - generic [ref=f4e37]: /
+          - strong [ref=f4e38]:
+            - link "scrappa-apify-actors" [ref=f4e39] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors
+          - generic [ref=f4e40]: Public
+        - generic [ref=f4e41]:
+          - list:
+            - listitem [ref=f4e42]:
+              - link "You must be signed in to change notification settings" [ref=f4e43] [cursor=pointer]:
+                - /url: /login?return_to=%2Fuserlip%2Fscrappa-apify-actors
+                - text: Notifications
+            - listitem [ref=f4e46]:
+              - link "Fork 0" [ref=f4e47] [cursor=pointer]:
+                - /url: /login?return_to=%2Fuserlip%2Fscrappa-apify-actors
+                - text: Fork
+                - generic "0" [ref=f4e50]
+            - listitem [ref=f4e51]:
+              - link "You must be signed in to star a repository" [ref=f4e53] [cursor=pointer]:
+                - /url: /login?return_to=%2Fuserlip%2Fscrappa-apify-actors
+                - text: Star
+                - generic "0 users starred this repository" [ref=f4e56]: "0"
+      - navigation "Repository" [ref=f4e57]:
+        - list [ref=f4e58]:
+          - listitem [ref=f4e59]:
+            - link "Code" [ref=f4e60] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors
+          - listitem [ref=f4e64]:
+            - link "Issues" [ref=f4e65] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/issues
+          - listitem [ref=f4e70]:
+            - link "Pull requests 29" [ref=f4e71] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/pulls
+              - generic [ref=f4e74]: Pull requests
+              - generic "29" [ref=f4e75]
+          - listitem [ref=f4e76]:
+            - link "Actions" [ref=f4e77] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/actions
+          - listitem [ref=f4e81]:
+            - link "Projects" [ref=f4e82] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/projects
+          - listitem [ref=f4e86]
+          - listitem [ref=f4e87]
+        - button "Additional navigation options" [ref=f4e91] [cursor=pointer]
+    - generic [ref=f4e93]:
+      - 'heading "Actions: userlip/scrappa-apify-actors" [level=1] [ref=f4e94]'
+      - generic [ref=f4e97]:
+        - generic [ref=f4e98]:
+          - heading "Actions" [level=2] [ref=f4e100]
+          - navigation "Actions Workflows" [ref=f4e104]:
+            - list [ref=f4e106]:
+              - listitem [ref=f4e107]:
+                - link "All workflows" [ref=f4e108] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/actions
+              - listitem [ref=f4e110]
+              - listitem [ref=f4e111]:
+                - list "Workflows" [ref=f4e115]:
+                  - listitem [ref=f4e116]:
+                    - link "Actor Tests" [ref=f4e117] [cursor=pointer]:
+                      - /url: /userlip/scrappa-apify-actors/actions/workflows/actor-tests.yml
+                  - listitem [ref=f4e119]:
+                    - link "Claude Code Review" [ref=f4e120] [cursor=pointer]:
+                      - /url: /userlip/scrappa-apify-actors/actions/workflows/claude-code-review.yml
+                  - listitem [ref=f4e122]:
+                    - link "Dependabot Updates" [ref=f4e123] [cursor=pointer]:
+                      - /url: /userlip/scrappa-apify-actors/actions/workflows/dependabot/dependabot-updates
+              - listitem [ref=f4e125]
+              - listitem [ref=f4e126]:
+                - generic [ref=f4e129]:
+                  - heading "Management" [level=3] [ref=f4e131]
+                  - list "Management" [ref=f4e132]:
+                    - listitem [ref=f4e133]:
+                      - link "Caches" [ref=f4e134] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/actions/caches
+        - generic [ref=f4e138]:
+          - generic [ref=f4e139]:
+            - generic [ref=f4e140]:
+              - heading "All workflows" [level=2] [ref=f4e142]
+              - search [ref=f4e148]:
+                - combobox "Filter workflow runs" [ref=f4e149]: branch:main
+                - button "Clear filters" [ref=f4e150] [cursor=pointer]
+            - generic [ref=f4e153]: Showing runs from all workflows
+          - strong [ref=f4e156]: 462 workflow run results
+          - generic [ref=f4e157]:
+            - generic [ref=f4e159]:
+              - button "Workflow" [ref=f4e163] [cursor=pointer]
+              - button "Event" [ref=f4e169] [cursor=pointer]
+              - button "Status" [ref=f4e175] [cursor=pointer]
+              - button "Branch" [ref=f4e181] [cursor=pointer]
+              - button "Actor" [ref=f4e187] [cursor=pointer]
+            - generic [ref=f4e190]:
+              - generic [ref=f4e192]:
+                - generic [ref=f4e193]:
+                  - 'link "currently running: Run 1258 of Actor Tests. Merge pull request #283 from userlip/fix/vinted-user-profile-runtime-…" [ref=f4e194] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29263241687
+                    - img "currently running:" [ref=f4e197]
+                    - generic [ref=f4e201]: "Merge pull request #283 from userlip/fix/vinted-user-profile-runtime-…"
+                  - generic [ref=f4e202]:
+                    - text: "Actor Tests #1258:"
+                    - generic [ref=f4e203]:
+                      - text: Commit
+                      - link "75df757" [ref=f4e204] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/75df757806fee6a3f4e00c4b505842e02bb1e338
+                      - text: pushed by
+                      - link "userlip" [ref=f4e205] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e207] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e209]:
+                  - generic [ref=f4e210]:
+                    - generic "Jul 13, 2026, 5:40 PM GMT+2" [ref=f4e215]: 7 minutes ago
+                    - generic [ref=f4e216]: In progress
+                  - group [ref=f4e220]:
+                    - img "Show options" [ref=f4e222] [cursor=pointer]
+              - generic [ref=f4e225]:
+                - generic [ref=f4e226]:
+                  - 'link "completed successfully: Run 1254 of Actor Tests. Merge pull request #282 from userlip/release/google-maps-directions-s…" [ref=f4e227] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29261254001
+                    - img "completed successfully:" [ref=f4e229]
+                    - generic [ref=f4e231]: "Merge pull request #282 from userlip/release/google-maps-directions-s…"
+                  - generic [ref=f4e232]:
+                    - text: "Actor Tests #1254:"
+                    - generic [ref=f4e233]:
+                      - text: Commit
+                      - link "f7eb0f5" [ref=f4e234] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/f7eb0f54429e492f405e928cd9cad2a6eb027c3d
+                      - text: pushed by
+                      - link "userlip" [ref=f4e235] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e237] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e239]:
+                  - generic [ref=f4e240]:
+                    - generic "Jul 13, 2026, 5:12 PM GMT+2" [ref=f4e245]: 36 minutes ago
+                    - generic [ref=f4e246]:
+                      - img "Run duration" [ref=f4e247]
+                      - text: 8m 46s
+                  - group [ref=f4e250]:
+                    - img "Show options" [ref=f4e252] [cursor=pointer]
+              - generic [ref=f4e255]:
+                - generic [ref=f4e256]:
+                  - 'link "completed successfully: Run 1252 of Actor Tests. feat: add Vinted user profile scraper (#281)" [ref=f4e257] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29253448269
+                    - img "completed successfully:" [ref=f4e259]
+                    - generic [ref=f4e261]: "feat: add Vinted user profile scraper (#281)"
+                  - generic [ref=f4e262]:
+                    - text: "Actor Tests #1252:"
+                    - generic [ref=f4e263]:
+                      - text: Commit
+                      - link "fc47f7e" [ref=f4e264] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/fc47f7ea120cceb0f9e87bda40f654edf490cc01
+                      - text: pushed by
+                      - link "userlip" [ref=f4e265] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e267] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e269]:
+                  - generic [ref=f4e270]:
+                    - generic "Jul 13, 2026, 3:21 PM GMT+2" [ref=f4e275]: Today at 3:21 PM
+                    - generic [ref=f4e276]:
+                      - img "Run duration" [ref=f4e277]
+                      - text: 23s
+                  - group [ref=f4e280]:
+                    - img "Show options" [ref=f4e282] [cursor=pointer]
+              - generic [ref=f4e285]:
+                - generic [ref=f4e286]:
+                  - 'link "completed successfully: Run 1246 of Actor Tests. fix: batch Instagram user info lookups" [ref=f4e287] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29246503922
+                    - img "completed successfully:" [ref=f4e289]
+                    - generic [ref=f4e291]: "fix: batch Instagram user info lookups"
+                  - generic [ref=f4e292]:
+                    - text: "Actor Tests #1246:"
+                    - generic [ref=f4e293]:
+                      - text: Commit
+                      - link "87a7c70" [ref=f4e294] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/87a7c70ffed22eb871766c5c3885727b23f1be7c
+                      - text: pushed by
+                      - link "userlip" [ref=f4e295] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e297] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e299]:
+                  - generic [ref=f4e300]:
+                    - generic "Jul 13, 2026, 1:30 PM GMT+2" [ref=f4e305]: Today at 1:30 PM
+                    - generic [ref=f4e306]:
+                      - img "Run duration" [ref=f4e307]
+                      - text: 10m 51s
+                  - group [ref=f4e310]:
+                    - img "Show options" [ref=f4e312] [cursor=pointer]
+              - generic [ref=f4e315]:
+                - generic [ref=f4e316]:
+                  - 'link "completed successfully: Run 1245 of Actor Tests. Merge pull request #280: release: verify ImmobilienScout24 price insi…" [ref=f4e317] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29213965942
+                    - img "completed successfully:" [ref=f4e319]
+                    - generic [ref=f4e321]: "Merge pull request #280: release: verify ImmobilienScout24 price insi…"
+                  - generic [ref=f4e322]:
+                    - text: "Actor Tests #1245:"
+                    - generic [ref=f4e323]:
+                      - text: Commit
+                      - link "1a4cce2" [ref=f4e324] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/1a4cce237479a33b1e32bed92ef4482c04bbb46a
+                      - text: pushed by
+                      - link "userlip" [ref=f4e325] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e327] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e329]:
+                  - generic [ref=f4e330]:
+                    - generic "Jul 13, 2026, 1:45 AM GMT+2" [ref=f4e335]: Jul 13, 1:45 AM GMT+2
+                    - generic [ref=f4e336]:
+                      - img "Run duration" [ref=f4e337]
+                      - text: 1m 41s
+                  - group [ref=f4e340]:
+                    - img "Show options" [ref=f4e342] [cursor=pointer]
+              - generic [ref=f4e345]:
+                - generic [ref=f4e346]:
+                  - 'link "completed successfully: Run 1241 of Actor Tests. Add paid Google Finance indices scraper (#273)" [ref=f4e347] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29212058030
+                    - img "completed successfully:" [ref=f4e349]
+                    - generic [ref=f4e351]: Add paid Google Finance indices scraper (#273)
+                  - generic [ref=f4e352]:
+                    - text: "Actor Tests #1241:"
+                    - generic [ref=f4e353]:
+                      - text: Commit
+                      - link "3c0ffaa" [ref=f4e354] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/3c0ffaa617902edd257288544a10d838fe4a1df1
+                      - text: pushed by
+                      - link "userlip" [ref=f4e355] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e357] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e359]:
+                  - generic [ref=f4e360]:
+                    - generic "Jul 13, 2026, 12:42 AM GMT+2" [ref=f4e365]: Jul 13, 12:42 AM GMT+2
+                    - generic [ref=f4e366]:
+                      - img "Run duration" [ref=f4e367]
+                      - text: 3m 40s
+                  - group [ref=f4e370]:
+                    - img "Show options" [ref=f4e372] [cursor=pointer]
+              - generic [ref=f4e375]:
+                - generic [ref=f4e376]:
+                  - 'link "failed: Run 1239 of Actor Tests. Merge pull request #276 from userlip/feat/google-hotels-autocomplete-…" [ref=f4e377] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29208867047
+                    - img "failed:" [ref=f4e379]
+                    - generic [ref=f4e381]: "Merge pull request #276 from userlip/feat/google-hotels-autocomplete-…"
+                  - generic [ref=f4e382]:
+                    - text: "Actor Tests #1239:"
+                    - generic [ref=f4e383]:
+                      - text: Commit
+                      - link "7ccb485" [ref=f4e384] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/7ccb485bfacd7e280b83058d87c49d786e4a7b12
+                      - text: pushed by
+                      - link "userlip" [ref=f4e385] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e387] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e389]:
+                  - generic [ref=f4e390]:
+                    - generic "Jul 12, 2026, 11:02 PM GMT+2" [ref=f4e395]: Jul 12, 11:02 PM GMT+2
+                    - generic [ref=f4e396]:
+                      - img "Run duration" [ref=f4e397]
+                      - text: 21m 25s
+                  - group [ref=f4e400]:
+                    - img "Show options" [ref=f4e402] [cursor=pointer]
+              - generic [ref=f4e405]:
+                - generic [ref=f4e406]:
+                  - 'link "completed successfully: Run 1235 of Actor Tests. Merge pull request #278 from userlip/fix/google-hotels-autocomplete-e…" [ref=f4e407] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29207573160
+                    - img "completed successfully:" [ref=f4e409]
+                    - generic [ref=f4e411]: "Merge pull request #278 from userlip/fix/google-hotels-autocomplete-e…"
+                  - generic [ref=f4e412]:
+                    - text: "Actor Tests #1235:"
+                    - generic [ref=f4e413]:
+                      - text: Commit
+                      - link "0408483" [ref=f4e414] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/040848396c27b3dc810d1d1edae87d2fcae37c30
+                      - text: pushed by
+                      - link "userlip" [ref=f4e415] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e417] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e419]:
+                  - generic [ref=f4e420]:
+                    - generic "Jul 12, 2026, 10:21 PM GMT+2" [ref=f4e425]: Jul 12, 10:21 PM GMT+2
+                    - generic [ref=f4e426]:
+                      - img "Run duration" [ref=f4e427]
+                      - text: 5m 11s
+                  - group [ref=f4e430]:
+                    - img "Show options" [ref=f4e432] [cursor=pointer]
+              - generic [ref=f4e435]:
+                - generic [ref=f4e436]:
+                  - 'link "cancelled: Run 1233 of Actor Tests. Merge pull request #277 from userlip/chore/import-google-hotels-autoc…" [ref=f4e437] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29207530367
+                    - img "cancelled:" [ref=f4e439]
+                    - generic [ref=f4e441]: "Merge pull request #277 from userlip/chore/import-google-hotels-autoc…"
+                  - generic [ref=f4e442]:
+                    - text: "Actor Tests #1233:"
+                    - generic [ref=f4e443]:
+                      - text: Commit
+                      - link "162653b" [ref=f4e444] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/162653b695710658f1325dff298e0fb919929811
+                      - text: pushed by
+                      - link "userlip" [ref=f4e445] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e447] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e449]:
+                  - generic [ref=f4e450]:
+                    - generic "Jul 12, 2026, 10:20 PM GMT+2" [ref=f4e455]: Jul 12, 10:20 PM GMT+2
+                    - generic [ref=f4e456]:
+                      - img "Run duration" [ref=f4e457]
+                      - text: 1m 26s
+                  - group [ref=f4e460]:
+                    - img "Show options" [ref=f4e462] [cursor=pointer]
+              - generic [ref=f4e465]:
+                - generic [ref=f4e466]:
+                  - 'link "completed successfully: Run 1230 of Actor Tests. Merge pull request #275 from userlip/feat/immobilienscout24-locations…" [ref=f4e467] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29207246358
+                    - img "completed successfully:" [ref=f4e469]
+                    - generic [ref=f4e471]: "Merge pull request #275 from userlip/feat/immobilienscout24-locations…"
+                  - generic [ref=f4e472]:
+                    - text: "Actor Tests #1230:"
+                    - generic [ref=f4e473]:
+                      - text: Commit
+                      - link "b0391de" [ref=f4e474] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/b0391de4c56326905f566902ddf6c177ce64cd6c
+                      - text: pushed by
+                      - link "userlip" [ref=f4e475] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e477] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e479]:
+                  - generic [ref=f4e480]:
+                    - generic "Jul 12, 2026, 10:11 PM GMT+2" [ref=f4e485]: Jul 12, 10:11 PM GMT+2
+                    - generic [ref=f4e486]:
+                      - img "Run duration" [ref=f4e487]
+                      - text: 1m 29s
+                  - group [ref=f4e490]:
+                    - img "Show options" [ref=f4e492] [cursor=pointer]
+              - generic [ref=f4e495]:
+                - generic [ref=f4e496]:
+                  - 'link "completed successfully: Run 1224 of Actor Tests. Add ImmobilienScout24 Price Insights Actor (#274)" [ref=f4e497] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29205804651
+                    - img "completed successfully:" [ref=f4e499]
+                    - generic [ref=f4e501]: Add ImmobilienScout24 Price Insights Actor (#274)
+                  - generic [ref=f4e502]:
+                    - text: "Actor Tests #1224:"
+                    - generic [ref=f4e503]:
+                      - text: Commit
+                      - link "e54244b" [ref=f4e504] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/e54244bb9257b625e48dae3804a522ebeafb62b2
+                      - text: pushed by
+                      - link "userlip" [ref=f4e505] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e507] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e509]:
+                  - generic [ref=f4e510]:
+                    - generic "Jul 12, 2026, 9:26 PM GMT+2" [ref=f4e515]: Jul 12, 9:26 PM GMT+2
+                    - generic [ref=f4e516]:
+                      - img "Run duration" [ref=f4e517]
+                      - text: 42s
+                  - group [ref=f4e520]:
+                    - img "Show options" [ref=f4e522] [cursor=pointer]
+              - generic [ref=f4e525]:
+                - generic [ref=f4e526]:
+                  - 'link "completed successfully: Run 1216 of Actor Tests. Merge pull request #272 from userlip/fix/tiktok-challenge-details-inp…" [ref=f4e527] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29163680237
+                    - img "completed successfully:" [ref=f4e529]
+                    - generic [ref=f4e531]: "Merge pull request #272 from userlip/fix/tiktok-challenge-details-inp…"
+                  - generic [ref=f4e532]:
+                    - text: "Actor Tests #1216:"
+                    - generic [ref=f4e533]:
+                      - text: Commit
+                      - link "f4c26b1" [ref=f4e534] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/f4c26b18f68b11354bef6f074aea6f9a5df35f01
+                      - text: pushed by
+                      - link "userlip" [ref=f4e535] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e537] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e539]:
+                  - generic [ref=f4e540]:
+                    - generic "Jul 11, 2026, 8:33 PM GMT+2" [ref=f4e545]: Jul 11, 8:33 PM GMT+2
+                    - generic [ref=f4e546]:
+                      - img "Run duration" [ref=f4e547]
+                      - text: 1m 39s
+                  - group [ref=f4e550]:
+                    - img "Show options" [ref=f4e552] [cursor=pointer]
+              - generic [ref=f4e555]:
+                - generic [ref=f4e556]:
+                  - 'link "cancelled: Run 1215 of Actor Tests. Add paid TikTok challenge posts scraper (#270)" [ref=f4e557] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29163604345
+                    - img "cancelled:" [ref=f4e559]
+                    - generic [ref=f4e561]: Add paid TikTok challenge posts scraper (#270)
+                  - generic [ref=f4e562]:
+                    - text: "Actor Tests #1215:"
+                    - generic [ref=f4e563]:
+                      - text: Commit
+                      - link "6e3a07a" [ref=f4e564] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/6e3a07aa6eb9d543927c46c065a11ea141cbcd59
+                      - text: pushed by
+                      - link "userlip" [ref=f4e565] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e567] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e569]:
+                  - generic [ref=f4e570]:
+                    - generic "Jul 11, 2026, 8:31 PM GMT+2" [ref=f4e575]: Jul 11, 8:31 PM GMT+2
+                    - generic [ref=f4e576]:
+                      - img "Run duration" [ref=f4e577]
+                      - text: 2m 27s
+                  - group [ref=f4e580]:
+                    - img "Show options" [ref=f4e582] [cursor=pointer]
+              - generic [ref=f4e585]:
+                - generic [ref=f4e586]:
+                  - 'link "completed successfully: Run 1198 of Actor Tests. feat: add TikTok challenge details scraper" [ref=f4e587] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29159822247
+                    - img "completed successfully:" [ref=f4e589]
+                    - generic [ref=f4e591]: "feat: add TikTok challenge details scraper"
+                  - generic [ref=f4e592]:
+                    - text: "Actor Tests #1198:"
+                    - generic [ref=f4e593]:
+                      - text: Commit
+                      - link "0999ab7" [ref=f4e594] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/0999ab7bf432fae7f9dc466890ccd2b244d136df
+                      - text: pushed by
+                      - link "userlip" [ref=f4e595] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e597] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e599]:
+                  - generic [ref=f4e600]:
+                    - generic "Jul 11, 2026, 6:27 PM GMT+2" [ref=f4e605]: Jul 11, 6:27 PM GMT+2
+                    - generic [ref=f4e606]:
+                      - img "Run duration" [ref=f4e607]
+                      - text: 1m 59s
+                  - group [ref=f4e610]:
+                    - img "Show options" [ref=f4e612] [cursor=pointer]
+              - generic [ref=f4e615]:
+                - generic [ref=f4e616]:
+                  - 'link "failed: Run 1191 of Actor Tests. Merge pull request #269 from userlip/fix/kununu-quality-test-prefill" [ref=f4e617] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29150270079
+                    - img "failed:" [ref=f4e619]
+                    - generic [ref=f4e621]: "Merge pull request #269 from userlip/fix/kununu-quality-test-prefill"
+                  - generic [ref=f4e622]:
+                    - text: "Actor Tests #1191:"
+                    - generic [ref=f4e623]:
+                      - text: Commit
+                      - link "913e3fc" [ref=f4e624] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/913e3fc0557a892ad2741b228a8d9245d8f11fbb
+                      - text: pushed by
+                      - link "userlip" [ref=f4e625] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e627] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e629]:
+                  - generic [ref=f4e630]:
+                    - generic "Jul 11, 2026, 1:00 PM GMT+2" [ref=f4e635]: Jul 11, 1:00 PM GMT+2
+                    - generic [ref=f4e636]:
+                      - img "Run duration" [ref=f4e637]
+                      - text: 1h 5m 28s
+                  - group [ref=f4e640]:
+                    - img "Show options" [ref=f4e642] [cursor=pointer]
+              - generic [ref=f4e645]:
+                - generic [ref=f4e646]:
+                  - 'link "cancelled: Run 1189 of Actor Tests. Merge pull request #267 from userlip/fix/apify-quality-test-relative-…" [ref=f4e647] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29150100710
+                    - img "cancelled:" [ref=f4e649]
+                    - generic [ref=f4e651]: "Merge pull request #267 from userlip/fix/apify-quality-test-relative-…"
+                  - generic [ref=f4e652]:
+                    - text: "Actor Tests #1189:"
+                    - generic [ref=f4e653]:
+                      - text: Commit
+                      - link "863ea96" [ref=f4e654] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/863ea967968c65f6389238dba69f6967589e1465
+                      - text: pushed by
+                      - link "userlip" [ref=f4e655] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e657] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e659]:
+                  - generic [ref=f4e660]:
+                    - generic "Jul 11, 2026, 12:54 PM GMT+2" [ref=f4e665]: Jul 11, 12:54 PM GMT+2
+                    - generic [ref=f4e666]:
+                      - img "Run duration" [ref=f4e667]
+                      - text: 7m 7s
+                  - group [ref=f4e670]:
+                    - img "Show options" [ref=f4e672] [cursor=pointer]
+              - generic [ref=f4e675]:
+                - generic [ref=f4e676]:
+                  - 'link "failed: Run 1181 of Actor Tests. Add Kleinanzeigen listing details scraper (#265)" [ref=f4e677] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29090877119
+                    - img "failed:" [ref=f4e679]
+                    - generic [ref=f4e681]: Add Kleinanzeigen listing details scraper (#265)
+                  - generic [ref=f4e682]:
+                    - text: "Actor Tests #1181:"
+                    - generic [ref=f4e683]:
+                      - text: Commit
+                      - link "29e6aa6" [ref=f4e684] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/29e6aa6664875fe5c86fb737e105f13d7da4b74a
+                      - text: pushed by
+                      - link "userlip" [ref=f4e685] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e687] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e689]:
+                  - generic [ref=f4e690]:
+                    - generic "Jul 10, 2026, 1:54 PM GMT+2" [ref=f4e695]: Jul 10, 1:54 PM GMT+2
+                    - generic [ref=f4e696]:
+                      - img "Run duration" [ref=f4e697]
+                      - text: 17m 30s
+                  - group [ref=f4e700]:
+                    - img "Show options" [ref=f4e702] [cursor=pointer]
+              - generic [ref=f4e705]:
+                - generic [ref=f4e706]:
+                  - 'link "completed successfully: Run 1174 of Actor Tests. Merge pull request #264 from userlip/fix/vinted-item-details-audit-ov…" [ref=f4e707] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29018169064
+                    - img "completed successfully:" [ref=f4e709]
+                    - generic [ref=f4e711]: "Merge pull request #264 from userlip/fix/vinted-item-details-audit-ov…"
+                  - generic [ref=f4e712]:
+                    - text: "Actor Tests #1174:"
+                    - generic [ref=f4e713]:
+                      - text: Commit
+                      - link "2e3d733" [ref=f4e714] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/2e3d733c162e7c492718c94d44ff2b09884ab136
+                      - text: pushed by
+                      - link "userlip" [ref=f4e715] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e717] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e719]:
+                  - generic [ref=f4e720]:
+                    - generic "Jul 9, 2026, 2:26 PM GMT+2" [ref=f4e725]: Jul 9, 2:26 PM GMT+2
+                    - generic [ref=f4e726]:
+                      - img "Run duration" [ref=f4e727]
+                      - text: 1m 29s
+                  - group [ref=f4e730]:
+                    - img "Show options" [ref=f4e732] [cursor=pointer]
+              - generic [ref=f4e735]:
+                - generic [ref=f4e736]:
+                  - 'link "completed successfully: Run 1169 of Actor Tests. Merge pull request #260 from userlip/feat/vinted-item-details-scraper" [ref=f4e737] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/29011264007
+                    - img "completed successfully:" [ref=f4e739]
+                    - generic [ref=f4e741]: "Merge pull request #260 from userlip/feat/vinted-item-details-scraper"
+                  - generic [ref=f4e742]:
+                    - text: "Actor Tests #1169:"
+                    - generic [ref=f4e743]:
+                      - text: Commit
+                      - link "85c1599" [ref=f4e744] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/85c1599303b0b271b7f391ad77c25006f739c01d
+                      - text: pushed by
+                      - link "userlip" [ref=f4e745] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e747] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e749]:
+                  - generic [ref=f4e750]:
+                    - generic "Jul 9, 2026, 12:20 PM GMT+2" [ref=f4e755]: Jul 9, 12:20 PM GMT+2
+                    - generic [ref=f4e756]:
+                      - img "Run duration" [ref=f4e757]
+                      - text: 21m 28s
+                  - group [ref=f4e760]:
+                    - img "Show options" [ref=f4e762] [cursor=pointer]
+              - generic [ref=f4e765]:
+                - generic [ref=f4e766]:
+                  - 'link "completed successfully: Run 1168 of Actor Tests. Add Jameda reviews Apify actor (#261)" [ref=f4e767] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/28999697723
+                    - img "completed successfully:" [ref=f4e769]
+                    - generic [ref=f4e771]: Add Jameda reviews Apify actor (#261)
+                  - generic [ref=f4e772]:
+                    - text: "Actor Tests #1168:"
+                    - generic [ref=f4e773]:
+                      - text: Commit
+                      - link "659904a" [ref=f4e774] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/659904a819505d976091b9650132dbfc6983beca
+                      - text: pushed by
+                      - link "userlip" [ref=f4e775] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e777] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e779]:
+                  - generic [ref=f4e780]:
+                    - generic "Jul 9, 2026, 8:49 AM GMT+2" [ref=f4e785]: Jul 9, 8:49 AM GMT+2
+                    - generic [ref=f4e786]:
+                      - img "Run duration" [ref=f4e787]
+                      - text: 6m 21s
+                  - group [ref=f4e790]:
+                    - img "Show options" [ref=f4e792] [cursor=pointer]
+              - generic [ref=f4e795]:
+                - generic [ref=f4e796]:
+                  - 'link "completed successfully: Run 1167 of Actor Tests. [codex] Add Vinted user items actor (#262)" [ref=f4e797] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/28999565910
+                    - img "completed successfully:" [ref=f4e799]
+                    - generic [ref=f4e801]: "[codex] Add Vinted user items actor (#262)"
+                  - generic [ref=f4e802]:
+                    - text: "Actor Tests #1167:"
+                    - generic [ref=f4e803]:
+                      - text: Commit
+                      - link "6a97ca3" [ref=f4e804] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/6a97ca32be5a70bb18cf56aae6370ee07b49427b
+                      - text: pushed by
+                      - link "userlip" [ref=f4e805] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e807] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e809]:
+                  - generic [ref=f4e810]:
+                    - generic "Jul 9, 2026, 8:46 AM GMT+2" [ref=f4e815]: Jul 9, 8:46 AM GMT+2
+                    - generic [ref=f4e816]:
+                      - img "Run duration" [ref=f4e817]
+                      - text: 6m 10s
+                  - group [ref=f4e820]:
+                    - img "Show options" [ref=f4e822] [cursor=pointer]
+              - generic [ref=f4e825]:
+                - generic [ref=f4e826]:
+                  - 'link "completed successfully: Run 1166 of Actor Tests. Merge pull request #263 from userlip/codex/kununu-jobs-scraper" [ref=f4e827] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/28999079412
+                    - img "completed successfully:" [ref=f4e829]
+                    - generic [ref=f4e831]: "Merge pull request #263 from userlip/codex/kununu-jobs-scraper"
+                  - generic [ref=f4e832]:
+                    - text: "Actor Tests #1166:"
+                    - generic [ref=f4e833]:
+                      - text: Commit
+                      - link "6d74056" [ref=f4e834] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/6d74056a05f6aef038afacb562a65b112a0461ed
+                      - text: pushed by
+                      - link "userlip" [ref=f4e835] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e837] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e839]:
+                  - generic [ref=f4e840]:
+                    - generic "Jul 9, 2026, 8:35 AM GMT+2" [ref=f4e845]: Jul 9, 8:35 AM GMT+2
+                    - generic [ref=f4e846]:
+                      - img "Run duration" [ref=f4e847]
+                      - text: 8m 30s
+                  - group [ref=f4e850]:
+                    - img "Show options" [ref=f4e852] [cursor=pointer]
+              - generic [ref=f4e855]:
+                - generic [ref=f4e856]:
+                  - 'link "completed successfully: Run 1124 of Actor Tests. Merge pull request #255 from userlip/jameda-doctor-details-scraper" [ref=f4e857] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/27897412051
+                    - img "completed successfully:" [ref=f4e859]
+                    - generic [ref=f4e861]: "Merge pull request #255 from userlip/jameda-doctor-details-scraper"
+                  - generic [ref=f4e862]:
+                    - text: "Actor Tests #1124:"
+                    - generic [ref=f4e863]:
+                      - text: Commit
+                      - link "33a401c" [ref=f4e864] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/33a401c425ce21a26039f6175f945a66abe901c8
+                      - text: pushed by
+                      - link "userlip" [ref=f4e865] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e867] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e869]:
+                  - generic [ref=f4e870]:
+                    - generic "Jun 21, 2026, 9:34 AM GMT+2" [ref=f4e875]: Jun 21, 9:34 AM GMT+2
+                    - generic [ref=f4e876]:
+                      - img "Run duration" [ref=f4e877]
+                      - text: 7m 38s
+                  - group [ref=f4e880]:
+                    - img "Show options" [ref=f4e882] [cursor=pointer]
+              - generic [ref=f4e885]:
+                - generic [ref=f4e886]:
+                  - 'link "completed successfully: Run 1117 of Actor Tests. Add TikTok challenge search actor" [ref=f4e887] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/27834145347
+                    - img "completed successfully:" [ref=f4e889]
+                    - generic [ref=f4e891]: Add TikTok challenge search actor
+                  - generic [ref=f4e892]:
+                    - text: "Actor Tests #1117:"
+                    - generic [ref=f4e893]:
+                      - text: Commit
+                      - link "ae281b0" [ref=f4e894] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/ae281b02e62b23d6e240eb14de5315a86f82f352
+                      - text: pushed by
+                      - link "userlip" [ref=f4e895] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e897] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e899]:
+                  - generic [ref=f4e900]:
+                    - generic "Jun 19, 2026, 5:20 PM GMT+2" [ref=f4e905]: Jun 19, 5:20 PM GMT+2
+                    - generic [ref=f4e906]:
+                      - img "Run duration" [ref=f4e907]
+                      - text: 28s
+                  - group [ref=f4e910]:
+                    - img "Show options" [ref=f4e912] [cursor=pointer]
+              - generic [ref=f4e915]:
+                - generic [ref=f4e916]:
+                  - 'link "completed successfully: Run 1111 of Actor Tests. Merge pull request #248 from userlip/add-linkedin-job-details-scraper" [ref=f4e917] [cursor=pointer]':
+                    - /url: /userlip/scrappa-apify-actors/actions/runs/27766460073
+                    - img "completed successfully:" [ref=f4e919]
+                    - generic [ref=f4e921]: "Merge pull request #248 from userlip/add-linkedin-job-details-scraper"
+                  - generic [ref=f4e922]:
+                    - text: "Actor Tests #1111:"
+                    - generic [ref=f4e923]:
+                      - text: Commit
+                      - link "6570484" [ref=f4e924] [cursor=pointer]:
+                        - /url: /userlip/scrappa-apify-actors/commit/657048456c14e573dd4274def65e96347340ece1
+                      - text: pushed by
+                      - link "userlip" [ref=f4e925] [cursor=pointer]:
+                        - /url: /userlip
+                - link "main" [ref=f4e927] [cursor=pointer]:
+                  - /url: /userlip/scrappa-apify-actors/tree/refs/heads/main
+                - generic [ref=f4e929]:
+                  - generic [ref=f4e930]:
+                    - generic "Jun 18, 2026, 4:26 PM GMT+2" [ref=f4e935]: Jun 18, 4:26 PM GMT+2
+                    - generic [ref=f4e936]:
+                      - img "Run duration" [ref=f4e937]
+                      - text: 59s
+                  - group [ref=f4e940]:
+                    - img "Show options" [ref=f4e942] [cursor=pointer]
+          - navigation "Pagination" [ref=f4e946]:
+            - generic "Previous page" [ref=f4e947]: Previous
+            - emphasis [ref=f4e948] [cursor=pointer]: "1"
+            - link "Page 2" [ref=f4e949] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/actions?page=2&query=branch%3Amain
+              - text: "2"
+            - link "Page 3" [ref=f4e950] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/actions?page=3&query=branch%3Amain
+              - text: "3"
+            - link "Page 4" [ref=f4e951] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/actions?page=4&query=branch%3Amain
+              - text: "4"
+            - link "Page 5" [ref=f4e952] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/actions?page=5&query=branch%3Amain
+              - text: "5"
+            - generic [ref=f4e953]: …
+            - link "Page 18" [ref=f4e954] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/actions?page=18&query=branch%3Amain
+              - text: "18"
+            - link "Page 19" [ref=f4e955] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/actions?page=19&query=branch%3Amain
+              - text: "19"
+            - link "Next page" [ref=f4e956] [cursor=pointer]:
+              - /url: /userlip/scrappa-apify-actors/actions?page=2&query=branch%3Amain
+              - text: Next

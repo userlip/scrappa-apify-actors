@@ -1,0 +1,230 @@
+- generic [ref=f1e3]:
+  - complementary [ref=f1e4]:
+    - generic [ref=f1e5]:
+      - link [ref=f1e6] [cursor=pointer]:
+        - /url: /dashboard
+        - img "Scrappa" [ref=f1e7]
+      - button "Close navigation" [ref=f1e8] [cursor=pointer]
+    - navigation [ref=f1e12]:
+      - link "Overview" [ref=f1e13] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard
+      - link "API keys" [ref=f1e23] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/api-keys
+      - link "Playground" [ref=f1e28] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/playground
+      - link "Credits" [ref=f1e36] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/credits
+      - link "Invoices" [ref=f1e43] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/invoices
+      - link "Workflows" [ref=f1e51] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflows
+      - link "Workflow runs" [ref=f1e60] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflow-runs
+      - link "Profile" [ref=f1e67] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/profile
+      - link "Docs" [ref=f1e75] [cursor=pointer]:
+        - /url: https://scrappa.co/docs
+      - link "OpenAPI" [ref=f1e83] [cursor=pointer]:
+        - /url: https://scrappa.co/docs/api
+  - generic [ref=f1e91]:
+    - banner [ref=f1e92]:
+      - generic [ref=f1e93]:
+        - button "Open navigation" [ref=f1e94] [cursor=pointer]
+        - heading "API keys" [level=1] [ref=f1e96]
+      - generic [ref=f1e97]:
+        - link "Admin" [ref=f1e98] [cursor=pointer]:
+          - /url: /admin
+        - link "Create API key" [ref=f1e101] [cursor=pointer]:
+          - /url: https://scrappa.co/dashboard/api-keys/create
+        - link "Open Playground" [ref=f1e102] [cursor=pointer]:
+          - /url: https://scrappa.co/dashboard/playground
+        - group "Theme" [ref=f1e103]:
+          - button "Light mode" [pressed] [ref=f1e104] [cursor=pointer]
+          - button "Dark mode" [ref=f1e111] [cursor=pointer]
+          - button "System theme" [ref=f1e114] [cursor=pointer]
+        - button "S" [ref=f1e118] [cursor=pointer]
+    - main [ref=f1e123]:
+      - generic [ref=f1e125]:
+        - generic [ref=f1e126]: 13 unsaved keys still need confirmation.
+        - link "Continue saving newest key" [ref=f1e127] [cursor=pointer]:
+          - /url: https://scrappa.co/dashboard/api-keys/1021/reveal
+      - generic [ref=f1e128]:
+        - generic [ref=f1e129]:
+          - heading "API keys" [level=3] [ref=f1e130]
+          - link "Create API key" [ref=f1e131] [cursor=pointer]:
+            - /url: /dashboard/api-keys/create
+        - table [ref=f1e134]:
+          - rowgroup [ref=f1e135]:
+            - row [ref=f1e136]:
+              - columnheader "Name" [ref=f1e137]
+              - columnheader "Status" [ref=f1e138]
+              - columnheader "Alert" [ref=f1e139]
+              - columnheader "Rate limits" [ref=f1e140]
+              - columnheader "Created" [ref=f1e141]
+              - columnheader "Actions" [ref=f1e142]
+          - rowgroup [ref=f1e143]:
+            - row [ref=f1e144]:
+              - cell "Zapier Integration" [ref=f1e145]
+              - cell "Saved" [ref=f1e149]
+              - cell "Not set" [ref=f1e151]
+              - cell "0" [ref=f1e152]
+              - cell "May 17, 2026" [ref=f1e153]
+              - cell [ref=f1e154]:
+                - generic [ref=f1e155]:
+                  - link "Edit" [ref=f1e156] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/1022/edit
+                  - button "Delete Zapier Integration" [ref=f1e161] [cursor=pointer]
+            - row [ref=f1e165]:
+              - cell "Checkybot" [ref=f1e166]
+              - cell "Needs saving" [ref=f1e170]
+              - cell "Not set" [ref=f1e172]
+              - cell "0" [ref=f1e173]
+              - cell "May 17, 2026" [ref=f1e174]
+              - cell [ref=f1e175]:
+                - generic [ref=f1e176]:
+                  - link "Reveal" [ref=f1e177] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/1021/reveal
+                  - button "Delete Checkybot" [ref=f1e182] [cursor=pointer]
+            - row [ref=f1e186]:
+              - cell "Zapier" [ref=f1e187]
+              - cell "Needs saving" [ref=f1e191]
+              - cell "Not set" [ref=f1e193]
+              - cell "0" [ref=f1e194]
+              - cell "May 17, 2026" [ref=f1e195]
+              - cell [ref=f1e196]:
+                - generic [ref=f1e197]:
+                  - link "Reveal" [ref=f1e198] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/1020/reveal
+                  - button "Delete Zapier" [ref=f1e203] [cursor=pointer]
+            - row [ref=f1e207]:
+              - cell "Codex staging unsaved recovery verify 2026-05-07" [ref=f1e208]
+              - cell "Needs saving" [ref=f1e212]
+              - cell "Not set" [ref=f1e214]
+              - cell "0" [ref=f1e215]
+              - cell "May 7, 2026" [ref=f1e216]
+              - cell [ref=f1e217]:
+                - generic [ref=f1e218]:
+                  - link "Reveal" [ref=f1e219] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/977/reveal
+                  - button "Delete Codex staging unsaved recovery verify 2026-05-07" [ref=f1e224] [cursor=pointer]
+            - row [ref=f1e228]:
+              - cell "Clemens" [ref=f1e229]
+              - cell "Needs saving" [ref=f1e233]
+              - cell "Not set" [ref=f1e235]
+              - cell "0" [ref=f1e236]
+              - cell "Apr 23, 2026" [ref=f1e237]
+              - cell [ref=f1e238]:
+                - generic [ref=f1e239]:
+                  - link "Reveal" [ref=f1e240] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/914/reveal
+                  - button "Delete Clemens" [ref=f1e245] [cursor=pointer]
+            - row [ref=f1e249]:
+              - cell "GitHub CI" [ref=f1e250]
+              - cell "Needs saving" [ref=f1e254]
+              - cell "Not set" [ref=f1e256]
+              - cell "0" [ref=f1e257]
+              - cell "Apr 23, 2026" [ref=f1e258]
+              - cell [ref=f1e259]:
+                - generic [ref=f1e260]:
+                  - link "Reveal" [ref=f1e261] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/906/reveal
+                  - button "Delete GitHub CI" [ref=f1e266] [cursor=pointer]
+            - row [ref=f1e270]:
+              - cell "Socialint" [ref=f1e271]
+              - cell "Needs saving" [ref=f1e275]
+              - cell "Not set" [ref=f1e277]
+              - cell "0" [ref=f1e278]
+              - cell "Mar 10, 2026" [ref=f1e279]
+              - cell [ref=f1e280]:
+                - generic [ref=f1e281]:
+                  - link "Reveal" [ref=f1e282] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/697/reveal
+                  - button "Delete Socialint" [ref=f1e287] [cursor=pointer]
+            - row [ref=f1e291]:
+              - cell "Stockmemo" [ref=f1e292]
+              - cell "Needs saving" [ref=f1e296]
+              - cell "Not set" [ref=f1e298]
+              - cell "0" [ref=f1e299]
+              - cell "Feb 19, 2026" [ref=f1e300]
+              - cell [ref=f1e301]:
+                - generic [ref=f1e302]:
+                  - link "Reveal" [ref=f1e303] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/625/reveal
+                  - button "Delete Stockmemo" [ref=f1e308] [cursor=pointer]
+            - row [ref=f1e312]:
+              - cell "Testing" [ref=f1e313]
+              - cell "Needs saving" [ref=f1e317]
+              - cell "Not set" [ref=f1e319]
+              - cell "0" [ref=f1e320]
+              - cell "Feb 3, 2026" [ref=f1e321]
+              - cell [ref=f1e322]:
+                - generic [ref=f1e323]:
+                  - link "Reveal" [ref=f1e324] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/162/reveal
+                  - button "Delete Testing" [ref=f1e329] [cursor=pointer]
+            - row [ref=f1e333]:
+              - cell "Clawdbot" [ref=f1e334]
+              - cell "Needs saving" [ref=f1e338]
+              - cell "Not set" [ref=f1e340]
+              - cell "0" [ref=f1e341]
+              - cell "Jan 25, 2026" [ref=f1e342]
+              - cell [ref=f1e343]:
+                - generic [ref=f1e344]:
+                  - link "Reveal" [ref=f1e345] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/114/reveal
+                  - button "Delete Clawdbot" [ref=f1e350] [cursor=pointer]
+            - row [ref=f1e354]:
+              - cell "Apify" [ref=f1e355]
+              - cell "Saved" [ref=f1e359]
+              - cell "Not set" [ref=f1e361]
+              - cell "0" [ref=f1e362]
+              - cell "Dec 20, 2025" [ref=f1e363]
+              - cell [ref=f1e364]:
+                - generic [ref=f1e365]:
+                  - link "Edit" [ref=f1e366] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/51/edit
+                  - button "Delete Apify" [ref=f1e371] [cursor=pointer]
+            - row [ref=f1e375]:
+              - cell "RapidAPI" [ref=f1e376]
+              - cell "Needs saving" [ref=f1e380]
+              - cell "Not set" [ref=f1e382]
+              - cell "0" [ref=f1e383]
+              - cell "Nov 10, 2025" [ref=f1e384]
+              - cell [ref=f1e385]:
+                - generic [ref=f1e386]:
+                  - link "Reveal" [ref=f1e387] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/35/reveal
+                  - button "Delete RapidAPI" [ref=f1e392] [cursor=pointer]
+            - row [ref=f1e396]:
+              - cell "RezensionsHeld" [ref=f1e397]
+              - cell "Needs saving" [ref=f1e401]
+              - cell "Not set" [ref=f1e403]
+              - cell "0" [ref=f1e404]
+              - cell "Nov 6, 2025" [ref=f1e405]
+              - cell [ref=f1e406]:
+                - generic [ref=f1e407]:
+                  - link "Reveal" [ref=f1e408] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/33/reveal
+                  - button "Delete RezensionsHeld" [ref=f1e413] [cursor=pointer]
+            - row [ref=f1e417]:
+              - cell "KULI" [ref=f1e418]
+              - cell "Needs saving" [ref=f1e422]
+              - cell "50000 credits / month" [ref=f1e424]
+              - cell "0" [ref=f1e425]
+              - cell "Aug 5, 2025" [ref=f1e426]
+              - cell [ref=f1e427]:
+                - generic [ref=f1e428]:
+                  - link "Reveal" [ref=f1e429] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/20/reveal
+                  - button "Delete KULI" [ref=f1e434] [cursor=pointer]
+            - row [ref=f1e438]:
+              - cell "Main" [ref=f1e439]
+              - cell "Needs saving" [ref=f1e443]
+              - cell "Not set" [ref=f1e445]
+              - cell "0" [ref=f1e446]
+              - cell "Apr 24, 2025" [ref=f1e447]
+              - cell [ref=f1e448]:
+                - generic [ref=f1e449]:
+                  - link "Reveal" [ref=f1e450] [cursor=pointer]:
+                    - /url: https://scrappa.co/dashboard/api-keys/7/reveal
+                  - button "Delete Main" [ref=f1e455] [cursor=pointer]

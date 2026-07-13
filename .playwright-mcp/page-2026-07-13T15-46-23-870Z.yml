@@ -1,0 +1,364 @@
+- generic [ref=f3e286]:
+  - complementary [ref=f3e287]:
+    - generic [ref=f3e288]:
+      - link [ref=f3e289] [cursor=pointer]:
+        - /url: /dashboard
+        - img "Scrappa" [ref=f3e290]
+      - button "Close navigation" [ref=f3e291] [cursor=pointer]
+    - navigation [ref=f3e295]:
+      - link "Overview" [ref=f3e296] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard
+      - link "API keys" [ref=f3e306] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/api-keys
+      - link "Playground" [ref=f3e314] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/playground
+      - link "Credits" [ref=f3e319] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/credits
+      - link "Invoices" [ref=f3e326] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/invoices
+      - link "Workflows" [ref=f3e334] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflows
+      - link "Workflow runs" [ref=f3e343] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/workflow-runs
+      - link "Profile" [ref=f3e350] [cursor=pointer]:
+        - /url: https://scrappa.co/dashboard/profile
+      - link "Docs" [ref=f3e358] [cursor=pointer]:
+        - /url: https://scrappa.co/docs
+      - link "OpenAPI" [ref=f3e366] [cursor=pointer]:
+        - /url: https://scrappa.co/docs/api
+  - generic [ref=f3e374]:
+    - banner [ref=f3e375]:
+      - generic [ref=f3e376]:
+        - button "Open navigation" [ref=f3e377] [cursor=pointer]
+        - heading "Playground" [level=1] [ref=f3e379]
+      - generic [ref=f3e380]:
+        - link "Admin" [ref=f3e381] [cursor=pointer]:
+          - /url: /admin
+        - link "Create API key" [ref=f3e384] [cursor=pointer]:
+          - /url: https://scrappa.co/dashboard/api-keys/create
+        - link "API docs" [ref=f3e385] [cursor=pointer]:
+          - /url: https://scrappa.co/docs
+        - group "Theme" [ref=f3e386]:
+          - button "Light mode" [pressed] [ref=f3e387] [cursor=pointer]
+          - button "Dark mode" [ref=f3e394] [cursor=pointer]
+          - button "System theme" [ref=f3e397] [cursor=pointer]
+        - button "S" [ref=f3e401] [cursor=pointer]
+    - main [ref=f3e406]:
+      - generic [ref=f3e407]:
+        - generic [ref=f3e408]:
+          - generic [ref=f3e410]:
+            - generic [ref=f3e411]:
+              - heading "Request builder" [level=3] [ref=f3e412]
+              - paragraph [ref=f3e413]: Autocomplete
+            - generic [ref=f3e414]: 988,597,644 credits
+          - generic [ref=f3e415]:
+            - generic [ref=f3e416]:
+              - generic [ref=f3e417]:
+                - paragraph [ref=f3e418]: Authentication
+                - link "Manage key" [ref=f3e419] [cursor=pointer]:
+                  - /url: https://scrappa.co/dashboard/api-keys/1903/edit
+              - generic [ref=f3e420]: API key
+              - combobox "API key" [ref=f3e421]:
+                - option "Apify Vinted User Profile (Saved)" [selected]
+                - option "Zapier Integration (Saved)"
+                - option "Apify (Saved)"
+                - option "Checkybot (Needs saving)"
+                - option "Zapier (Needs saving)"
+                - option "Codex staging unsaved recovery verify 2026-05-07 (Needs saving)"
+                - option "Clemens (Needs saving)"
+                - option "GitHub CI (Needs saving)"
+                - option "Socialint (Needs saving)"
+                - option "Stockmemo (Needs saving)"
+                - option "Testing (Needs saving)"
+                - option "Clawdbot (Needs saving)"
+                - option "RapidAPI (Needs saving)"
+                - option "RezensionsHeld (Needs saving)"
+                - option "KULI (Needs saving)"
+                - option "Main (Needs saving)"
+            - generic [ref=f3e422]:
+              - paragraph [ref=f3e423]: Endpoint
+              - generic [ref=f3e424]:
+                - textbox [ref=f3e426]:
+                  - /placeholder: Search endpoints
+                - combobox "Filter endpoint family" [ref=f3e427]:
+                  - option "All families" [selected]
+                  - option "Arbeitsagentur Jobs API"
+                  - option "Bing Search API"
+                  - option "Booking.com API"
+                  - option "Domain Availability API"
+                  - option "Google Finance API"
+                  - option "Google Flights API"
+                  - option "Google Hotels API"
+                  - option "Google Images API"
+                  - option "Google Jobs API"
+                  - option "Google Maps API"
+                  - option "Google News API"
+                  - option "Google Patents API"
+                  - option "Google Play API"
+                  - option "Google Search API"
+                  - option "Google Translate API"
+                  - option "Google Trends API"
+                  - option "Google Videos API"
+                  - option "Immobilienscout24 API"
+                  - option "Immowelt API"
+                  - option "Indeed Jobs API"
+                  - option "Instagram API"
+                  - option "Jameda API"
+                  - option "Kleinanzeigen API"
+                  - option "Kununu API"
+                  - option "LinkedIn API"
+                  - option "Pinterest API"
+                  - option "Realestate.com.au API"
+                  - option "Redfin API"
+                  - option "SimilarWeb API"
+                  - option "Startpage Search API"
+                  - option "Stepstone Jobs API"
+                  - option "TikTok API"
+                  - option "TikTok API"
+                  - option "TrustedShops API"
+                  - option "Trustpilot API"
+                  - option "Vinted API"
+                  - option "Web Scraper API"
+                  - option "Web Scraper API"
+                  - option "WLW API"
+                  - option "YouTube API"
+              - combobox "Select endpoint" [ref=f3e428]:
+                - option "Autocomplete - Google Maps API" [selected]
+                - option "Advanced Search - Google Maps API"
+                - option "Simple Search - Google Maps API"
+                - option "Google Search - Google Search API"
+                - option "Google Translate API - Google Translate API"
+                - option "Google Images - Google Images API"
+                - option "Google Reviews API - Google Maps API"
+                - option "YouTube Video Info - YouTube API"
+                - option "Business Details - Google Maps API"
+                - option "Kununu Search - Kununu API"
+                - option "Kununu Reviews - Kununu API"
+                - option "Kununu Profiles - Kununu API"
+                - option "Kununu Industries - Kununu API"
+                - option "Kununu Company Details - Kununu API"
+                - option "Trustpilot Categories - Trustpilot API"
+                - option "Trustpilot Businesses - Trustpilot API"
+                - option "Trustpilot Countries - Trustpilot API"
+                - option "Trustpilot Company Search - Trustpilot API"
+                - option "Trustpilot Company Details - Trustpilot API"
+                - option "Trustpilot Company Reviews - Trustpilot API"
+                - option "YouTube Channel Info - YouTube API"
+                - option "YouTube Search - YouTube API"
+                - option "YouTube Suggestions - YouTube API"
+                - option "YouTube Comments - YouTube API"
+                - option "YouTube Related Videos - YouTube API"
+                - option "YouTube Video Chapters - YouTube API"
+                - option "YouTube Trending - YouTube API"
+                - option "YouTube Channel Videos - YouTube API"
+                - option "YouTube Channel Playlists - YouTube API"
+                - option "YouTube Channel Community - YouTube API"
+                - option "YouTube Playlist - YouTube API"
+                - option "Google Jobs Search - Google Jobs API"
+                - option "Google Videos - Google Videos API"
+                - option "Google News - Google News API"
+                - option "LinkedIn Profile - LinkedIn API"
+                - option "LinkedIn Company - LinkedIn API"
+                - option "LinkedIn Post - LinkedIn API"
+                - option "Search (Light) - Google Search API"
+                - option "LinkedIn Search - LinkedIn API"
+                - option "Search Autocomplete - Google Search API"
+                - option "Photos - Google Maps API"
+                - option "Property Search - Immobilienscout24 API"
+                - option "Property Details - Immobilienscout24 API"
+                - option "Location Autocomplete - Immobilienscout24 API"
+                - option "Price Insights - Immobilienscout24 API"
+                - option "Search Items - Vinted API"
+                - option "Get Filters - Vinted API"
+                - option "Search Suggestions - Vinted API"
+                - option "Vinted API Item Details - Vinted API"
+                - option "Item Shipping - Vinted API"
+                - option "Similar Items - Vinted API"
+                - option "User Profile - Vinted API"
+                - option "User Items - Vinted API"
+                - option "Categories - Vinted API"
+                - option "One-Way Flight Search - Google Flights API"
+                - option "Round-Trip Flight Search - Google Flights API"
+                - option "Date Range Search - Google Flights API"
+                - option "Airlines List - Google Flights API"
+                - option "Airports List - Google Flights API"
+                - option "Booking Details - Google Flights API"
+                - option "Directions - Google Maps API"
+                - option "Indeed Jobs API - Indeed Jobs API"
+                - option "TrustedShops Markets - TrustedShops API"
+                - option "TrustedShops Search - TrustedShops API"
+                - option "TrustedShops Reviews - TrustedShops API"
+                - option "TrustedShops Shop Profile - TrustedShops API"
+                - option "SimilarWeb Traffic - SimilarWeb API"
+                - option "Redfin Search - Redfin API"
+                - option "Redfin Home Valuation (AVM) - Redfin API"
+                - option "Redfin Property - Redfin API"
+                - option "Redfin Locations - Redfin API"
+                - option "Kleinanzeigen Search - Kleinanzeigen API"
+                - option "Kleinanzeigen Details - Kleinanzeigen API"
+                - option "Kleinanzeigen Shipping Options - Kleinanzeigen API"
+                - option "Google Hotels Search - Google Hotels API"
+                - option "Google Hotels Autocomplete - Google Hotels API"
+                - option "Single Review - Google Maps API"
+                - option "Pinterest Search - Pinterest API"
+                - option "Instagram Profile API - Instagram API"
+                - option "Instagram Post - Instagram API"
+                - option "Jameda Search - Jameda API"
+                - option "Jameda Doctor Details - Jameda API"
+                - option "Jameda Doctor Reviews - Jameda API"
+                - option "Jameda Location Autocomplete - Jameda API"
+                - option "Jameda Service Autocomplete - Jameda API"
+                - option "Search Financial Instruments - Google Finance API"
+                - option "Get Complete Stock Quote - Google Finance API"
+                - option "Google Finance Historical Data API - Google Finance API"
+                - option "Get Market Indices - Google Finance API"
+                - option "Get Intraday Graph Data - Google Finance API"
+                - option "Get Markets Overview - Google Finance API"
+                - option "Business Info - Google Maps API"
+                - option "TrustedShops Categories - TrustedShops API"
+                - option "TrustedShops Category Shops - TrustedShops API"
+                - option "LinkedIn Jobs Search - LinkedIn API"
+                - option "Job Search - Arbeitsagentur Jobs API"
+                - option "Location Search - Arbeitsagentur Jobs API"
+                - option "Google Trends Interest Over Time - Google Trends API"
+                - option "Google Trends Related Queries - Google Trends API"
+                - option "Google Trends Autocomplete - Google Trends API"
+                - option "Instagram User Posts - Instagram API"
+                - option "Jobs Search - Stepstone Jobs API"
+                - option "Jobs Autosuggest - Stepstone Jobs API"
+                - option "Ad Details - TikTok API"
+                - option "Challenge Details - TikTok API"
+                - option "Challenge Posts - TikTok API"
+                - option "Challenge Search - TikTok API"
+                - option "Collection Details - TikTok API"
+                - option "Collection Posts - TikTok API"
+                - option "Comment List - TikTok API"
+                - option "Comment Replies - TikTok API"
+                - option "Feed By Region - TikTok API"
+                - option "Feed Search - TikTok API"
+                - option "Music Details - TikTok API"
+                - option "Music Posts - TikTok API"
+                - option "Playlist Details - TikTok API"
+                - option "Playlist Posts - TikTok API"
+                - option "Regions - TikTok API"
+                - option "Similar Users - TikTok API"
+                - option "TikTok Video - TikTok API"
+                - option "User Collections - TikTok API"
+                - option "User Favorites - TikTok API"
+                - option "TikTok User Followers - TikTok API"
+                - option "User Following - TikTok API"
+                - option "User Playlists - TikTok API"
+                - option "User Posts - TikTok API"
+                - option "User Profile - TikTok API"
+                - option "TikTok User Search API - TikTok API"
+                - option "User Story - TikTok API"
+                - option "Impressum Extraction - Web Scraper API"
+                - option "Web Scraper - Web Scraper API"
+                - option "Google Patents Search - Google Patents API"
+                - option "Google Patents Details - Google Patents API"
+                - option "Immowelt Search API Documentation - Immowelt API"
+                - option "Location Autocomplete - Immowelt API"
+                - option "Property Details - Immowelt API"
+                - option "Search Count - Immowelt API"
+                - option "Places Data - Immowelt API"
+                - option "Places Hierarchy - Immowelt API"
+                - option "WLW Search - WLW API"
+                - option "Job Detail - Arbeitsagentur Jobs API"
+                - option "Kununu Jobs - Kununu API"
+                - option "Kununu Job Detail - Kununu API"
+                - option "Startpage Search API - Startpage Search API"
+                - option "Countries - Vinted API"
+                - option "Booking.com Search - Booking.com API"
+                - option "Booking.com Hotel - Booking.com API"
+                - option "Google Search Advanced - Google Search API"
+                - option "Booking.com Destinations - Booking.com API"
+                - option "Booking.com Search by URL - Booking.com API"
+                - option "Booking.com Review Scores - Booking.com API"
+                - option "Booking.com Photos - Booking.com API"
+                - option "Booking.com Facilities - Booking.com API"
+                - option "Booking.com Rooms - Booking.com API"
+                - option "Booking.com Prices - Booking.com API"
+                - option "Booking.com Bulk Prices - Booking.com API"
+                - option "Domain Availability - Domain Availability API"
+                - option "Realestate.com.au Locations - Realestate.com.au API"
+                - option "Realestate.com.au Autocomplete - Realestate.com.au API"
+                - option "Realestate.com.au Search - Realestate.com.au API"
+                - option "Realestate.com.au Property - Realestate.com.au API"
+                - option "Realestate.com.au Agents - Realestate.com.au API"
+                - option "Realestate.com.au Agent Profile - Realestate.com.au API"
+                - option "Realestate.com.au Agency Profile - Realestate.com.au API"
+                - option "Realestate.com.au Suburb Profile - Realestate.com.au API"
+                - option "Realestate.com.au Sales Events - Realestate.com.au API"
+                - option "LinkedIn Job - LinkedIn API"
+                - option "Google Play Product - Google Play API"
+                - option "Bing Search API - Bing Search API"
+                - option "Booking.com Reviews - Booking.com API"
+                - option "Google Play Product - Google Play API"
+                - option "Google Play Apps Product - Google Play API"
+                - option "Google Play Audiobooks Product - Google Play API"
+                - option "Google Play Books Product - Google Play API"
+                - option "Google Play Movies Product - Google Play API"
+                - option "Google Play Product Reviews - Google Play API"
+                - option "Google Play TV Product - Google Play API"
+                - option "YouTube Locales - YouTube API"
+                - option "YouTube Video Transcript - YouTube API"
+              - generic [ref=f3e429]:
+                - generic [ref=f3e430]:
+                  - generic [ref=f3e431]:
+                    - paragraph [ref=f3e432]: Autocomplete
+                    - paragraph [ref=f3e433]: Get place suggestions as you type
+                  - generic [ref=f3e434]: GET
+                - generic [ref=f3e435]:
+                  - generic [ref=f3e436]: Google Maps API
+                  - generic [ref=f3e437]: autocomplete
+                  - generic [ref=f3e438]: 1 credit / request
+            - generic [ref=f3e439]:
+              - generic [ref=f3e440]:
+                - generic [ref=f3e441]:
+                  - paragraph [ref=f3e442]: Required parameters
+                  - generic [ref=f3e443]: "1"
+                - generic [ref=f3e445]:
+                  - generic [ref=f3e446]:
+                    - text: Query (q)
+                    - generic [ref=f3e447]: Required
+                  - textbox "Query (q) Required The partial search term to get autocomplete suggestions for. Accepts both \"q\" (consistent with Google Hotels) and \"query\"." [ref=f3e448]:
+                    - /placeholder: q
+                    - text: bakery
+                  - generic [ref=f3e449]: The partial search term to get autocomplete suggestions for. Accepts both "q" (consistent with Google Hotels) and "query".
+              - group [ref=f3e450]:
+                - generic "Optional parameters 4" [ref=f3e451] [cursor=pointer]:
+                  - text: Optional parameters
+                  - generic [ref=f3e452]: "4"
+            - generic [ref=f3e453]:
+              - generic [ref=f3e454]:
+                - button "Run request" [ref=f3e455] [cursor=pointer]
+                - button "Sample values" [ref=f3e458] [cursor=pointer]
+                - link "Open docs" [ref=f3e459] [cursor=pointer]:
+                  - /url: https://scrappa.co/docs/google-maps-api/autocomplete
+              - generic [ref=f3e460]:
+                - generic [ref=f3e461]:
+                  - generic [ref=f3e462]: URL
+                  - generic [ref=f3e463]: /api/maps/autocomplete?q=bakery
+                - generic [ref=f3e464]:
+                  - generic [ref=f3e465]: API key
+                  - generic [ref=f3e466]: Apify Vinted User Profile (Saved)
+                - generic [ref=f3e467]:
+                  - generic [ref=f3e468]: Credits
+                  - generic [ref=f3e469]: 1 credit / request
+                - generic [ref=f3e470]:
+                  - generic [ref=f3e471]: Parameters
+                  - generic [ref=f3e472]: 1 set
+        - generic [ref=f3e473]:
+          - generic [ref=f3e475]:
+            - generic [ref=f3e476]:
+              - heading "Playground" [level=3] [ref=f3e477]
+              - paragraph [ref=f3e478]: /api/maps/autocomplete?q=bakery
+            - generic [ref=f3e479]:
+              - button "Response" [ref=f3e480] [cursor=pointer]
+              - button "Request" [ref=f3e481] [cursor=pointer]
+              - button "Code" [ref=f3e482] [cursor=pointer]
+          - generic [ref=f3e484]:
+            - generic [ref=f3e485]:
+              - paragraph [ref=f3e486]: Response body
+              - button "Copy" [disabled] [ref=f3e487]
+            - generic [ref=f3e491]: Run a request to see the JSON response.

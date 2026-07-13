@@ -1,0 +1,38 @@
+- generic [ref=e1]:
+  - main [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img "Scrappa logo" [ref=e8]
+        - heading "Sign in" [level=1] [ref=e9]
+        - paragraph [ref=e10]:
+          - text: or
+          - link "sign up for an account" [ref=e11] [cursor=pointer]:
+            - /url: https://scrappa.co/dashboard/filament/register
+      - generic [ref=e12]:
+        - generic [ref=e15]:
+          - generic [ref=e19]:
+            - generic [ref=e22]:
+              - generic [ref=e26]:
+                - text: Email address
+                - superscript [ref=e27]: "*"
+              - textbox "Email address*" [active] [ref=e31]
+            - generic [ref=e34]:
+              - generic [ref=e36]:
+                - generic [ref=e38]:
+                  - text: Password
+                  - superscript [ref=e39]: "*"
+                - link "Forgot password?" [ref=e44] [cursor=pointer]:
+                  - /url: https://scrappa.co/dashboard/filament/password-reset/request
+              - generic [ref=e46]:
+                - textbox "Password*" [ref=e48]
+                - button "Show password" [ref=e51] [cursor=pointer]
+            - generic [ref=e60]:
+              - checkbox "Remember me" [ref=e61]
+              - generic [ref=e62]: Remember me
+          - button "Sign in" [ref=e68] [cursor=pointer]
+        - generic [ref=e71]:
+          - paragraph [ref=e74]: Or log in via
+          - link "Continue with Google" [ref=e76] [cursor=pointer]:
+            - /url: https://scrappa.co/dashboard/filament/oauth/google
+  - generic:
+    - status
