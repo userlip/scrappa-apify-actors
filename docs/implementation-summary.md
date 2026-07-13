@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-Branch: `release/google-finance-indices-dataset-only`
+Branch: `fix/google-finance-indices-charge-limit-tests`
 
 ## Change completed
 
@@ -10,12 +10,14 @@ Removed the unnecessary `OUTPUT` key-value-store write from `actors/google-finan
 
 The Actor continues to write one dataset item per successfully saved, unique index and to charge only successful `index-result` dataset writes. The compact batch summary remains in logs, avoiding an extra storage operation in this thin Scrappa wrapper.
 
+Added focused regression coverage for the PAY_PER_EVENT boundary: zero charge capacity does not fetch or write; a refused chargeable write is neither saved nor charged; and a final successful charged write is retained exactly once while later rows are not attempted. Direct `saveIndex` tests now cover both non-PPE dataset writes and accepted/refused PPE outcomes.
+
 ## Verification
 
 From `actors/google-finance-indices-scraper`:
 
 ```text
-npm test                              # 12 passing tests
+npm test                              # focused Actor tests pass
 npm run typecheck                     # passes
 npx apify-cli validate-schema         # input and embedded dataset schemas pass
 jq empty .actor/actor.json .actor/input_schema.json  # passes
