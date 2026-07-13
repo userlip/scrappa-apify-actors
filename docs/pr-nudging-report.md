@@ -5,7 +5,7 @@ Date: 2026-07-13
 ## Pull request
 
 - Branch: `feat/vinted-user-profile-scraper`
-- PR: to be created after this report commit
+- PR: pending creation from the pushed branch
 - Merge: not performed in this stage
 
 ## Validation before push
