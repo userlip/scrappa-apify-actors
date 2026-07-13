@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 const sourceDirectory = process.env.TEST_SOURCE === 'src' ? 'src' : 'dist';
 const { runVintedUserProfiles } = await import(`../${sourceDirectory}/run-user-profile.js`);
+const { MAX_USER_IDS_PER_RUN } = await import(`../${sourceDirectory}/request-params.js`);
+const { PROFILE_REQUEST_CONCURRENCY } = await import(`../${sourceDirectory}/runtime-budget.js`);
 
 function requests(ids) {
     return ids.map((userId, index) => ({ userId, params: { user_id: userId, country: 'DE' }, index }));
@@ -78,4 +80,49 @@ test('does not fetch after PPE capacity is exhausted', async () => {
     assert.equal(calls, 1);
     assert.equal(summary.succeeded, 1);
     assert.match(summary.statusMessage, /before fetching/);
+});
+
+test('processes the maximum supported batch with bounded concurrency', async () => {
+    const actor = actorStub(MAX_USER_IDS_PER_RUN);
+    const ids = Array.from({ length: MAX_USER_IDS_PER_RUN }, (_, index) => String(index + 1));
+    let calls = 0;
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const client = {
+        async get(endpoint, params) {
+            assert.equal(endpoint, '/vinted/user-profile');
+            calls += 1;
+            inFlight += 1;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+            await new Promise((resolve) => setImmediate(resolve));
+            inFlight -= 1;
+            return {
+                success: true,
+                data: {
+                    user: {
+                        id: Number(params.user_id),
+                        login: `user-${params.user_id}`,
+                        profile_url: `https://www.vinted.de/member/${params.user_id}`,
+                    },
+                },
+            };
+        },
+    };
+
+    const summary = await runVintedUserProfiles({
+        actor,
+        client,
+        requests: requests(ids),
+        attempts: 2,
+    });
+
+    assert.deepEqual(summary, {
+        requested: MAX_USER_IDS_PER_RUN,
+        succeeded: MAX_USER_IDS_PER_RUN,
+        failed: 0,
+        statusMessage: null,
+    });
+    assert.equal(calls, MAX_USER_IDS_PER_RUN);
+    assert.equal(actor.pushes.length, MAX_USER_IDS_PER_RUN);
+    assert.ok(maxInFlight <= PROFILE_REQUEST_CONCURRENCY);
 });

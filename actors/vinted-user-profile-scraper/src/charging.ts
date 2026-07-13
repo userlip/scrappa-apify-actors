@@ -17,6 +17,18 @@ interface ActorLike {
     pushData(data: unknown, eventName?: string): Promise<ChargeResult | void>;
 }
 
+export function getVintedUserProfileAvailableChargeCount(
+    actor: Pick<ActorLike, 'getChargingManager'>,
+): number | null {
+    const chargingManager = actor.getChargingManager();
+    if (!chargingManager.getPricingInfo().isPayPerEvent) {
+        return null;
+    }
+
+    const available = chargingManager.calculateMaxEventChargeCountWithinLimit(VINTED_USER_PROFILE_RESULT_CHARGE_EVENT);
+    return Number.isFinite(available) ? Math.max(0, Math.floor(available)) : 0;
+}
+
 export interface PushVintedUserProfileResult {
     saved: boolean;
     statusMessage: string | null;
@@ -29,12 +41,12 @@ export function getVintedUserProfileChargeLimitStatus(
     savedProfiles: number,
     requestIndex: number,
 ): string | null {
-    const chargingManager = actor.getChargingManager();
-    if (!chargingManager.getPricingInfo().isPayPerEvent) {
+    const available = getVintedUserProfileAvailableChargeCount(actor);
+    if (available === null) {
         return null;
     }
 
-    if (chargingManager.calculateMaxEventChargeCountWithinLimit(VINTED_USER_PROFILE_RESULT_CHARGE_EVENT) > 0) {
+    if (available > 0) {
         return null;
     }
 

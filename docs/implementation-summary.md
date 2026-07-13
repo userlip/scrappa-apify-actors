@@ -31,4 +31,23 @@ npx --yes apify-cli validate-schema   # input and embedded dataset schemas pass
 git diff --check                      # passes
 ```
 
+## Code-review rework
+
+The runtime-budget finding was addressed without reducing the 100-ID batch contract:
+
+- Scrappa calls now run in waves of at most eight concurrent requests.
+- Production requests use two attempts with a 15-second timeout; the retry-delay upper bound is included in the runtime calculation.
+- PPE capacity is checked before each wave and the wave size is capped by available charge capacity, so unattempted IDs are not fetched after capacity is exhausted.
+- A 60-second safety margin keeps the calculated worst-case maximum batch runtime below the 600-second Actor timeout.
+- Added regression coverage for the maximum supported batch, bounded concurrency, and the runtime-budget calculation.
+
+Rework verification:
+
+```text
+npm test                              # 20 passing tests
+npm run typecheck                     # passes
+npx --yes apify-cli validate-schema   # input and embedded dataset schemas pass
+git diff --check                      # passes
+```
+
 Apify deployment, secret audit, public visibility, paid pricing activation/API verification, and live multi-ID charge-parity smoke runs were verified downstream: Actor `0z7FbFWBw77KVoabS`, build `EjLoh2HagHQAvZcjv` (`1.0.2`), active `$0.0005` `user-profile-result` pricing, and successful two-profile and mixed-success runs. This branch is now tracked by PR #281; no merge is performed in the PR stage.
