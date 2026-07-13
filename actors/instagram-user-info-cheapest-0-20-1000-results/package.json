@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "node ./src/main.js",
-    "test": "node --check ./src/main.js"
+    "test": "node --check ./src/main.js && node --test ./test/*.test.mjs"
   },
   "author": "Scrappa",
   "license": "ISC"

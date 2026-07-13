@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "instagram-user-info-cheapest-0-20-1000-results",
   "title": "Instagram User Info | Cheapest $0.20/1k results",
-  "description": "Get Instagram user profile data including biography, follower counts, verification status, profile picture, and related public profile fields by username.",
+  "description": "Get public Instagram profile data for up to 100 usernames per run, including biography, follower counts, verification status, and profile pictures.",
   "version": "0.0",
   "buildTag": "latest",
   "meta": {
@@ -13,6 +13,7 @@
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
+  "defaultMemoryMbytes": 128,
   "defaultRunOptions": {
     "timeoutSecs": 120
   },
