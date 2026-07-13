@@ -139,6 +139,24 @@ test('fetches every requested symbol separately and aggregates only matching row
     assert.equal(writes.some((item) => item.symbol === '.RUT'), false);
 });
 
+test('processes every fetched response when capacity truncates a batch', async () => {
+    const writes = [];
+    const summary = await runIndicesBatch(['.INX', '.DJI', '.IXIC'], { hl: 'en', gl: 'us' }, {
+        getCapacity: () => 2,
+        fetch: async (symbol) => ({ data: [{ symbol, exchange: 'INDEX' }] }),
+        save: async (item) => { writes.push(item); return { savedCount: 1, chargeLimitReached: false }; },
+    });
+
+    assert.equal(summary.attempted, 2);
+    assert.equal(summary.saved, 2);
+    assert.equal(summary.charged, 2);
+    assert.equal(summary.charge_limit_reached, true);
+    assert.deepEqual(writes.map((item) => item.symbol), ['.INX', '.DJI']);
+    assert.deepEqual(summary.outcomes.find((outcome) => outcome.symbol === '.IXIC'), {
+        symbol: '.IXIC', status: 'not_attempted', error: 'Charge limit reached',
+    });
+});
+
 test('continues after one single-symbol request fails and never charges it', async () => {
     const fetches = [];
     const writes = [];
@@ -198,6 +216,17 @@ test('saves and charges each unique default result when no indices are requested
     assert.equal(summary.duplicate, 1);
     assert.equal(summary.failed, 0);
     assert.deepEqual(writes.map((item) => item.requested_symbol), ['.INX', '.DJI']);
+});
+
+test('handles the indices response container for a requested symbol', async () => {
+    const summary = await runIndicesBatch(['.INX'], { hl: 'en', gl: 'us' }, {
+        getCapacity: () => Infinity,
+        fetch: async () => ({ indices: [{ symbol: '.INX', exchange: 'INDEXSP' }] }),
+        save: async () => ({ savedCount: 1, chargeLimitReached: false }),
+    });
+
+    assert.equal(summary.saved, 1);
+    assert.equal(summary.charged, 1);
 });
 
 test('propagates an exhausted upstream request failure to the Actor failure handler', async () => {

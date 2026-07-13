@@ -29,7 +29,7 @@ export async function runIndicesBatch(
     let saved = 0;
     let duplicate = 0;
     let failed = 0;
-    let limited = false;
+    let chargeLimitReached = false;
     const seen = new Set<string>();
 
     if (dependencies.getCapacity() <= 0) {
@@ -51,15 +51,15 @@ export async function runIndicesBatch(
 
     // The upstream endpoint currently accepts a symbol but returns only one
     // row for a comma-separated list. Fetch each requested symbol in the same
-    // Actor run. All requests begin together: at most three can consume their
-    // 90-second retry budgets before the 20-second shutdown reserve.
+    // Actor run. Requests run concurrently, so the longest single 90-second
+    // retry budget remains below the 20-second shutdown reserve.
     const symbolsToFetch = requested.length > 0 ? requested : [undefined];
     const capacity = dependencies.getCapacity();
     const fetchCount = Number.isFinite(capacity)
         ? Math.min(symbolsToFetch.length, Math.max(0, Math.floor(capacity)))
         : symbolsToFetch.length;
     const fetchedSymbols = symbolsToFetch.slice(0, fetchCount);
-    limited = fetchedSymbols.length < symbolsToFetch.length;
+    const fetchLimited = fetchedSymbols.length < symbolsToFetch.length;
 
     // An exhausted Scrappa request is an Actor-level failure. Keep this
     // rejection intact so main() invokes Actor.fail() instead of publishing a
@@ -129,7 +129,7 @@ export async function runIndicesBatch(
             }
 
             if (dependencies.getCapacity() <= 0) {
-                limited = true;
+                chargeLimitReached = true;
                 outcomes.push({
                     symbol: sourceSymbol,
                     status: 'not_attempted',
@@ -153,12 +153,12 @@ export async function runIndicesBatch(
             }
 
             if (result.chargeLimitReached) {
-                limited = true;
+                chargeLimitReached = true;
                 break;
             }
         }
 
-        if (limited) {
+        if (chargeLimitReached) {
             break;
         }
     }
@@ -169,12 +169,12 @@ export async function runIndicesBatch(
         if (!hasOutcome) {
             outcomes.push({
                 symbol,
-                status: limited ? 'not_attempted' : 'failed',
-                error: limited
+                status: (chargeLimitReached || fetchLimited) ? 'not_attempted' : 'failed',
+                error: (chargeLimitReached || fetchLimited)
                     ? 'Charge limit reached'
                     : 'Scrappa returned no matching index result',
             });
-            if (!limited) {
+            if (!chargeLimitReached && !fetchLimited) {
                 failed += 1;
             }
         }
@@ -187,7 +187,7 @@ export async function runIndicesBatch(
         duplicate,
         failed,
         charged: saved,
-        charge_limit_reached: limited,
+        charge_limit_reached: chargeLimitReached || fetchLimited,
         outcomes,
     };
 }

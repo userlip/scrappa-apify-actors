@@ -7,7 +7,7 @@ Date: 2026-07-13
 - Branch: `fix/google-finance-indices-batch-runner`
 - Base: `main` (`origin/main` at `09d6661`)
 - Changes: `d47c279` and `08a6475`
-- PR: pending creation
+- PR: [#285 — fix: batch Google Finance index lookups](https://github.com/userlip/scrappa-apify-actors/pull/285)
 - Merge: not performed in this stage
 
 ## Scope
@@ -39,8 +39,22 @@ test-coverage, or repository-convention findings.
 
 ## CI and review status
 
-To be updated after PR creation and GitHub checks complete. No merge was
-performed in this stage.
+The initial GitHub workflows passed: the 22-job Actor Tests matrix and the
+automated Claude review both completed successfully. Cubic then reported one
+valid correctness issue: a capacity-truncated batch could stop processing
+responses that had already been fetched. This was fixed with separate
+fetch-truncation and mid-processing charge-limit state, with a regression test
+that confirms two already-fetched symbols are both saved at capacity two.
+
+The review also requested `maxItems` for the union `string | array` input.
+Apify's input-schema validator rejects that keyword for a union property, so
+the supported CSV-or-array contract remains validated by `normalizeIndices`;
+the test suite covers its strict three-symbol limit. A schema containing the
+proposed keyword was rejected by `npx apify-cli validate-schema` and was not
+shipped.
+
+The corrective commit has been locally verified and will be pushed for
+re-review. No merge was performed in this stage.
 
 ## Downstream release gates
 
