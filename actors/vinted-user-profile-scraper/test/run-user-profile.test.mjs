@@ -34,18 +34,22 @@ test('continues after an unresolved profile and charges only later successes', a
             if (params.user_id === 'bad') {
                 return { success: false, message: 'User not found' };
             }
-            return { success: true, data: { user: { id: Number(params.user_id), login: `user-${params.user_id}` } } };
+            if (params.user_id === 'sparse') {
+                return { success: true, data: { user: { id: 42 } } };
+            }
+            return { success: true, data: { user: { id: Number(params.user_id), login: `user-${params.user_id}`, profile_url: `https://www.vinted.de/member/${params.user_id}` } } };
         },
     };
 
     // The runner receives already-normalized requests; the bad ID represents a
     // valid numeric request whose public profile cannot be resolved upstream.
-    const summary = await runVintedUserProfiles({ actor, client, requests: requests(['bad', '255914028']), attempts: 1 });
-    assert.deepEqual(summary, { requested: 2, succeeded: 1, failed: 1, statusMessage: null });
-    assert.deepEqual(calls.map((call) => call.endpoint), ['/vinted/user-profile', '/vinted/user-profile']);
+    const summary = await runVintedUserProfiles({ actor, client, requests: requests(['bad', 'sparse', '255914028']), attempts: 1 });
+    assert.deepEqual(summary, { requested: 3, succeeded: 1, failed: 2, statusMessage: null });
+    assert.deepEqual(calls.map((call) => call.endpoint), ['/vinted/user-profile', '/vinted/user-profile', '/vinted/user-profile']);
     assert.equal(actor.pushes.length, 1);
     assert.equal(actor.pushes[0].eventName, 'user-profile-result');
     assert.equal(actor.pushes[0].item.request_user_id, '255914028');
+    assert.deepEqual(actor.pushes.map(({ item }) => item.request_user_id), ['255914028']);
 });
 
 test('does not fetch after PPE capacity is exhausted', async () => {
@@ -54,7 +58,7 @@ test('does not fetch after PPE capacity is exhausted', async () => {
     const client = {
         async get() {
             calls += 1;
-            return { success: true, data: { user: { id: calls, login: `user-${calls}` } } };
+            return { success: true, data: { user: { id: calls, login: `user-${calls}`, profile_url: `https://www.vinted.de/member/${calls}` } } };
         },
     };
 

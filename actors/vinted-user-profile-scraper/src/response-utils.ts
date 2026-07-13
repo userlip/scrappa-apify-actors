@@ -68,7 +68,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function isProfile(value: unknown): value is VintedUserProfile {
+function isProfileCandidate(value: unknown): value is VintedUserProfile {
     if (!isRecord(value)) {
         return false;
     }
@@ -85,6 +85,23 @@ function nonEmptyString(value: unknown): string | null {
     return normalized === '' ? null : normalized;
 }
 
+function hasValidProfileIdentity(value: unknown): boolean {
+    if (typeof value === 'number') {
+        return Number.isSafeInteger(value) && value > 0;
+    }
+
+    const normalized = nonEmptyString(value);
+    return normalized !== null && /^[1-9]\d*$/.test(normalized);
+}
+
+function isResolvedProfile(profile: VintedUserProfile): boolean {
+    const hasPublicMarker = nonEmptyString(profile.profile_url) ?? nonEmptyString(profile.path);
+
+    return hasValidProfileIdentity(profile.id)
+        && nonEmptyString(profile.login) !== null
+        && hasPublicMarker !== null;
+}
+
 function responseFailureMessage(response: VintedUserProfileResponse): string {
     const dataMessage = isRecord(response.data) ? nonEmptyString(response.data.message) : null;
     const message = nonEmptyString(response.message) ?? dataMessage;
@@ -99,7 +116,10 @@ export function getVintedUserProfile(response: VintedUserProfileResponse): Vinte
     }
 
     const data = isRecord(response.data) ? response.data : undefined;
-    const profile = response.user ?? (isProfile(data?.user) ? data.user : undefined) ?? (isProfile(data) ? data : undefined) ?? (isProfile(response) ? response : undefined);
+    const profile = (isProfileCandidate(response.user) ? response.user : undefined)
+        ?? (isProfileCandidate(data?.user) ? data.user : undefined)
+        ?? (isProfileCandidate(data) ? data : undefined)
+        ?? (isProfileCandidate(response) ? response : undefined);
 
     if (!profile) {
         throw new Error('Scrappa response did not include Vinted user profile details');
@@ -113,7 +133,7 @@ export function getVintedUserProfile(response: VintedUserProfileResponse): Vinte
         throw new Error('Vinted user profile is banned or unavailable');
     }
 
-    if (profile.id === undefined && !nonEmptyString(profile.login)) {
+    if (!isResolvedProfile(profile)) {
         throw new Error('Scrappa response included an incomplete Vinted user profile');
     }
 

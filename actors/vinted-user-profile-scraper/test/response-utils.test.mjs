@@ -65,4 +65,7 @@ test('supports a direct profile envelope and rejects failed or unresolved profil
     assert.throws(() => getVintedUserProfile({ success: false, message: 'User not found', status_code: 404 }), /User not found/);
     assert.throws(() => getVintedUserProfile({ success: true, data: { user: { id: 42, can_view_profile: false } } }), /private or unavailable/);
     assert.throws(() => getVintedUserProfile({ success: true, data: { user: {} } }), /did not include/);
+    assert.throws(() => getVintedUserProfile({ success: true, data: { user: { id: null, login: 'missing-id', profile_url: 'https://www.vinted.de/member/missing-id' } } }), /incomplete/);
+    assert.throws(() => getVintedUserProfile({ success: true, data: { user: { id: 42 } } }), /incomplete/);
+    assert.throws(() => getVintedUserProfile({ success: true, data: { user: { id: 42, login: 'sparse' } } }), /incomplete/);
 });

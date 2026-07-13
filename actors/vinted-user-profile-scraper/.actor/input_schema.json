@@ -15,15 +15,9 @@
     },
     "user_ids": {
       "title": "User IDs",
-      "type": "array",
-      "description": "Batch of Vinted user IDs. A comma-separated string is also accepted by the Actor API. Maximum 100 unique IDs per run.",
-      "editor": "stringList",
-      "maxItems": 100,
-      "items": {
-        "type": "string",
-        "pattern": "^\\d+$",
-        "maxLength": 32
-      }
+      "description": "Batch of Vinted user IDs as an array or comma-separated string. The Actor validates numeric IDs and enforces a maximum of 100 unique IDs per run.",
+      "editor": "json",
+      "type": ["array", "string"]
     },
     "country": {
       "title": "Country",
