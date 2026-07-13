@@ -53,8 +53,13 @@ the test suite covers its strict three-symbol limit. A schema containing the
 proposed keyword was rejected by `npx apify-cli validate-schema` and was not
 shipped.
 
-The corrective commit has been locally verified and will be pushed for
-re-review. No merge was performed in this stage.
+Corrective commit `f43a34c` was pushed and verified with `npm test` (20
+passing), typecheck, schema validation, production dependency audit, and diff
+checks. The fresh 22-job GitHub Actor Tests matrix and refreshed automated
+review both completed successfully. The review confirmed that `maxItems` is
+technically infeasible for the union contract and that runtime enforcement is
+the appropriate supported control. No blocking review feedback remains; no
+merge was performed in this stage.
 
 ## Downstream release gates
 
@@ -65,4 +70,4 @@ pricing, health, secret, and source-parity audits.
 
 ## Outcome
 
-PR monitoring in progress; no merge performed.
+PR is ready for downstream merge/deploy; no merge performed in this stage.
