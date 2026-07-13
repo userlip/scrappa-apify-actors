@@ -1,5 +1,3 @@
-Testing passed for `google-maps-directions-scraper`.
+Revised intake brief is ready at `docs/source-document.md`.
 
-The local test/build/schema/audit gates passed. Actor `ZF8jFdzF15k49AZQh` is public, paid at `$0.0005` per `route-result`, configured for 128 MB and 300 seconds, and has the Scrappa secret retained. Build `1.0.5` succeeded. Two-route smoke `X3G3VmrqE91coTP8B` produced 6 rows and 6 charges with `charged: 6`; mixed-failure smoke `NwhoCso1d0soax99d` produced 3 rows and 3 charges while recording one failed request with no charge.
-
-Detailed evidence: `docs/testing-report.md`.
+It incorporates the testing return: local verification passed, but live verification is blocked by the unavailable/unusable Apify `SCRAPPA_API_KEY`. Downstream release recovery must re-provision the secret, build corrected commit `6b59204`, and rerun the two-route and mixed-failure dataset/`route-result` charge-parity smoke checks. No application code was edited in intake.
