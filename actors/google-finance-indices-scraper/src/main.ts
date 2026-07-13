@@ -35,7 +35,10 @@ async function main(): Promise<void> {
             getCapacity: () => manager.getPricingInfo().isPayPerEvent
                 ? manager.calculateMaxEventChargeCountWithinLimit(INDEX_RESULT_CHARGE_EVENT)
                 : Infinity,
-            fetch: () => client.get<GoogleFinanceIndicesResponse>('/google-finance/indices', params),
+            fetch: (symbol) => client.get<GoogleFinanceIndicesResponse>('/google-finance/indices', {
+                ...params,
+                ...(symbol === undefined ? {} : { indices: symbol }),
+            }),
             save: (item) => saveIndex(item, manager, Actor, INDEX_RESULT_CHARGE_EVENT),
         });
 

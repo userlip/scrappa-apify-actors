@@ -10,7 +10,7 @@ S&P 500, Dow, and NASDAQ in one run:
 { "indices": [".INX", ".DJI", ".IXIC"], "hl": "en", "gl": "us" }
 ```
 
-CSV input is also supported: `{ "indices": ".INX,.DJI,.IXIC" }`. Symbols are trimmed, uppercased, and deduplicated (maximum 50). Custom symbols can be requested, but upstream matching may return no row or a different index; mismatches are logged and never billed.
+CSV input is also supported: `{ "indices": ".INX,.DJI,.IXIC" }`. Symbols are trimmed, uppercased, and deduplicated (maximum 3). Scrappa currently returns one row per request, so each requested symbol is fetched concurrently within this one Actor run. Custom symbols can be requested, but upstream matching may return no row or a different index; mismatches are logged and never billed.
 
 ## Output
 

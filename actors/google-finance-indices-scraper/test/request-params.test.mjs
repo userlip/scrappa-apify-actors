@@ -9,7 +9,7 @@ test('normalizes CSV and array symbols in first-seen order', () => {
 });
 
 test('enforces cap and locale', () => {
-    const tooManySymbols = Array.from({ length: 51 }, (_, index) => `.I${index}`);
+    const tooManySymbols = Array.from({ length: 4 }, (_, index) => `.I${index}`);
 
     assert.throws(() => normalizeIndices(tooManySymbols), /maximum/);
     assert.deepEqual(

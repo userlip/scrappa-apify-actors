@@ -110,6 +110,59 @@ test('saves lowercase upstream symbol once for normalized requested input', asyn
     assert.equal(writes[0].symbol, '.INX');
 });
 
+test('fetches every requested symbol separately and aggregates only matching rows', async () => {
+    const fetches = [];
+    const writes = [];
+    const responses = {
+        '.INX': { data: [{ symbol: '.INX', exchange: 'INDEXSP' }] },
+        '.DJI': { data: [{ symbol: '.DJI', exchange: 'INDEXDJX' }] },
+        '.IXIC': { data: [
+            { symbol: '.IXIC', exchange: 'INDEXNASDAQ' },
+            { symbol: '.RUT', exchange: 'INDEXRUSSELL' },
+        ] },
+    };
+    const summary = await runIndicesBatch(['.INX', '.DJI', '.IXIC'], { hl: 'en', gl: 'us' }, {
+        getCapacity: () => Infinity,
+        fetch: async (symbol) => {
+            fetches.push(symbol);
+            return responses[symbol];
+        },
+        save: async (item) => { writes.push(item); return { savedCount: 1, chargeLimitReached: false }; },
+    });
+
+    assert.deepEqual(fetches, ['.INX', '.DJI', '.IXIC']);
+    assert.equal(summary.attempted, 3);
+    assert.equal(summary.saved, 3);
+    assert.equal(summary.charged, 3);
+    assert.equal(summary.failed, 1);
+    assert.deepEqual(writes.map((item) => item.symbol), ['.INX', '.DJI', '.IXIC']);
+    assert.equal(writes.some((item) => item.symbol === '.RUT'), false);
+});
+
+test('continues after one single-symbol request fails and never charges it', async () => {
+    const fetches = [];
+    const writes = [];
+    const summary = await runIndicesBatch(['.INX', '.DJI', '.IXIC'], { hl: 'en', gl: 'us' }, {
+        getCapacity: () => Infinity,
+        fetch: async (symbol) => {
+            fetches.push(symbol);
+            if (symbol === '.DJI') throw new Error('Scrappa request failed after retries');
+            return { data: [{ symbol, exchange: 'INDEX' }] };
+        },
+        save: async (item) => { writes.push(item); return { savedCount: 1, chargeLimitReached: false }; },
+    });
+
+    assert.deepEqual(fetches, ['.INX', '.DJI', '.IXIC']);
+    assert.equal(summary.attempted, 3);
+    assert.equal(summary.saved, 2);
+    assert.equal(summary.charged, 2);
+    assert.equal(summary.failed, 1);
+    assert.deepEqual(writes.map((item) => item.symbol), ['.INX', '.IXIC']);
+    assert.deepEqual(summary.outcomes.find((outcome) => outcome.symbol === '.DJI'), {
+        symbol: '.DJI', status: 'failed', error: 'Scrappa request failed after retries',
+    });
+});
+
 test('deduplicates rows and never charges mismatched symbols', async () => {
     let saves = 0;
     const summary = await runIndicesBatch(['.INX'], { hl: 'en', gl: 'us' }, {

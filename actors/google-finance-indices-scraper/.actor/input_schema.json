@@ -7,7 +7,7 @@
     "indices": {
       "title": "Index symbols",
       "type": ["string", "array"],
-      "description": "A comma-separated list or JSON array of up to 50 symbols, for example .INX, .DJI, .IXIC.",
+      "description": "A comma-separated list or JSON array of up to 3 symbols, for example .INX, .DJI, .IXIC.",
       "editor": "json"
     },
     "hl": { "title": "Language", "type": "string", "description": "Google Finance language code, such as en or de.", "editor": "textfield", "default": "en" },

@@ -10,7 +10,9 @@ export interface IndicesParams {
     gl: string;
 }
 
-export const MAX_INDICES = 50;
+// Scrappa's indices endpoint currently returns one result for a request. Keep
+// all single-symbol requests concurrent within the 120-second Actor budget.
+export const MAX_INDICES = 3;
 
 export function normalizeIndices(value: unknown): string[] {
     let values: unknown[];

@@ -10,17 +10,17 @@ Fetch Google Finance index quotes for market research, dashboards, watchlists, a
 
 ## Batch input
 
-Pass up to 50 symbols as a JSON array, or as a comma-separated string. Symbols are trimmed, uppercased, and deduplicated, so a symbol is saved at most once per run.
+Pass up to three symbols as a JSON array, or as a comma-separated string. Scrappa currently returns one index row per request, so the actor fetches each requested symbol concurrently within this one Apify run. Symbols are trimmed, uppercased, and deduplicated, so a symbol is saved at most once per run.
 
 ```json
 {
-  "indices": [".INX", ".DJI", ".IXIC", ".FTSE"],
+  "indices": [".INX", ".DJI", ".IXIC"],
   "hl": "en",
   "gl": "us"
 }
 ```
 
-`.INX`, `.DJI`, and `.IXIC` cover the S&P 500, Dow, and NASDAQ Composite. `.FTSE` illustrates a custom symbol; custom symbols are supported, but Google Finance's upstream matching can return no row or a different index. The actor logs mismatches and does not charge for them.
+`.INX`, `.DJI`, and `.IXIC` cover the S&P 500, Dow, and NASDAQ Composite. Custom symbols are supported, but Google Finance's upstream matching can return no row or a different index. The actor logs mismatches and does not charge for them.
 
 ## Output and pricing
 
