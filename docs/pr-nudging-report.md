@@ -5,20 +5,20 @@ Date: 2026-07-13
 ## Pull request
 
 - Branch: `feat/vinted-user-profile-scraper`
-- PR: pending creation from the pushed branch
+- PR: [#281 — feat: add Vinted user profile scraper](https://github.com/userlip/scrappa-apify-actors/pull/281)
 - Merge: not performed in this stage
 
 ## Validation before push
 
 From `actors/vinted-user-profile-scraper`:
 
-- `npm test` — 12 passed, 0 failed.
+- `npm test` — 16 passed, 0 failed.
 - `npm run typecheck` — passed.
 - `npx --yes apify-cli validate-schema` — input and embedded dataset schemas passed.
 - `git diff --check origin/main...HEAD` — passed.
 - `git diff --check` — passed.
 
-The focused tests cover singular, array, CSV, trimming, deduplication, country normalization, validation limits, response mapping, unresolved profiles, partial failures, transient retries, exact endpoint selection, PPE event naming, charge-capacity handling, and successful-save semantics.
+The focused tests cover singular, array, CSV, trimming, deduplication, country normalization, positive-ID validation, response mapping, unresolved profiles, partial failures, transient retries, auth classification, abort-to-timeout wrapping, exact endpoint selection, PPE event naming, charge-capacity handling, saved/uncharged edge cases, and successful-save semantics.
 
 ## Release evidence
 
@@ -33,8 +33,13 @@ Two-profile batch `ROx2hd3RNGGtwBmkH` produced two dataset rows and two charges.
 
 ## CI and review monitoring
 
-CI and review status will be recorded here after the PR is created. Actionable feedback will be addressed only when it is within this scoped Actor change; broader implementation changes will be returned to implementation. No merge is permitted in this stage.
+- All repository Actor Tests passed.
+- Claude review passed after three rounds; all substantive findings were addressed in `e6049db`, `51111e4`, and `0390bc6`.
+- Cubic review passed after the scoped follow-up fixes.
+- Socket Project Report passed; Socket Pull Request Alerts was skipped/neutral due to the dependency-scan configuration.
+- Remaining reviewer observations are non-blocking follow-ups: spot-check Apify Console rendering for the union-typed `user_ids` field, consider shared Vinted input helpers, and add low-level network-error retry tests in a later maintenance change.
+- No merge was performed in this stage.
 
 ## Outcome
 
-The tested implementation is ready for PR review and downstream merge/deploy handling.
+The tested implementation is in PR #281 with green CI and approving reviews, ready for downstream merge/deploy handling.
