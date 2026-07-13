@@ -59,3 +59,22 @@ The Scrappa endpoint contract was checked before implementation. Apify deploymen
 - Added a regression test covering the aggregate `{ chargedCount: 2 }` response; the batch summary now reports one charge for one saved route row while preserving charge-limit handling.
 
 Unrelated pre-existing `.codegraph/`, `docs/source-document.md`, and `handoff.md` changes were preserved and are not part of this implementation.
+
+## Release-rework handoff
+
+The revised intake scope did not require another source change. The corrected
+implementation is present at commit `6b59204` (a descendant of the endpoint
+and deadline fix), and local verification was rerun after intake returned the
+release for recovery:
+
+- `npm test` — 16 passing tests, including the aggregate `chargedCount: 2`
+  regression.
+- `npm run typecheck` — passed.
+- `jq empty .actor/actor.json .actor/input_schema.json` — passed.
+- `npx apify-cli validate-schema` — input and dataset schemas passed.
+- `npm audit --omit=dev --audit-level=high` — 0 vulnerabilities.
+
+The remaining work is operational release recovery: restore the configured
+Apify `SCRAPPA_API_KEY` secret, build this corrected source, and rerun the
+two-route and mixed-failure live charge-parity checks. No secret, deployment,
+pricing, or live-run evidence is asserted by this implementation handoff.
