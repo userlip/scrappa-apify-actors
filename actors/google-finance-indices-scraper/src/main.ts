@@ -39,8 +39,6 @@ async function main(): Promise<void> {
             save: (item) => saveIndex(item, manager, Actor, INDEX_RESULT_CHARGE_EVENT),
         });
 
-        const store = await Actor.openKeyValueStore();
-        await store.setValue('OUTPUT', summary);
         console.log('Google Finance indices completed:', JSON.stringify(summary));
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);

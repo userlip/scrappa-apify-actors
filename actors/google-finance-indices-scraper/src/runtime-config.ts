@@ -1,6 +1,6 @@
 /**
  * Keep retries inside the Actor's 120-second run limit. The reserved time
- * covers dataset writes, the compact OUTPUT summary, and graceful shutdown.
+ * covers dataset writes and graceful shutdown.
  */
 export const ACTOR_TIMEOUT_SECONDS = 120;
 export const REQUEST_TIMEOUT_MS = 30_000;
