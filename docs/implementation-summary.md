@@ -1,49 +1,34 @@
-# Implementation Summary: ImmobilienScout24 Price Insights Scraper
+# Implementation Summary: Vinted User Profile Scraper
 
 Date: 2026-07-13
-Branch: `feat/immobilienscout24-price-insights-scraper`
+
+Branch: `feat/vinted-user-profile-scraper`
 
 ## Change completed
 
-- Corrected the `locations` input metadata to support the actor's documented array-or-comma-separated-string contract using Apify's supported union field type.
-- Expanded the Actor description to target property-market benchmarking, rent-vs-buy research, recurring city comparisons, and the Scrappa direct API upgrade path.
-- Added package description metadata for the thin Scrappa wrapper.
-- Added focused regression coverage for request limits, endpoint and retry parameter shape, bounded concurrency, every required response field, and existing partial-failure/charging behavior.
+Added `actors/vinted-user-profile-scraper`, a thin, batch-first Actor backed only by Scrappa's `/vinted/user-profile` endpoint.
 
-The existing implementation remains a thin wrapper around Scrappa's `/immobilienscout24/price-insights` endpoint. It normalizes and deduplicates up to 100 locations, fetches them in bounded batches, writes one complete dataset item per successful snapshot, and uses only the confirmed `price-insight-result` PAY_PER_EVENT charge for successful PPE writes. It does not write per-item `OUTPUT` records or scrape ImmobilienScout24 directly.
+- Accepts singular `user_id`, array or comma-separated `user_ids`, and optional case-normalized `country`.
+- Trims, validates, deduplicates, and bounds batches at 100 IDs before network work.
+- Processes requests in one run, continues after profile-level failures, and writes exactly one dataset item for each resolved public profile.
+- Charges successful PPE writes only with `user-profile-result`; failed or unresolved profiles are logged without dataset/error rows or charges.
+- Checks PPE capacity before each fetch and avoids all per-profile key-value-store writes.
+- Maps the confirmed `success.data.user` envelope, preserving raw public fields and exposing normalized reputation, feedback, bundle, inventory, activity, verification, business, location, URL, and request metadata.
+- Includes 128 MB runtime metadata, secret reference, input/dataset schemas, marketplace README examples, package/build files, and focused tests.
 
-## Files changed
+## Contract evidence
 
-- `actors/immobilienscout24-price-insights-scraper/.actor/actor.json`
-- `actors/immobilienscout24-price-insights-scraper/.actor/input_schema.json`
-- `actors/immobilienscout24-price-insights-scraper/package.json`
-- `actors/immobilienscout24-price-insights-scraper/package-lock.json`
-- `actors/immobilienscout24-price-insights-scraper/test/batch-runner.test.mjs`
-- `actors/immobilienscout24-price-insights-scraper/test/request-params.test.mjs`
-- `actors/immobilienscout24-price-insights-scraper/test/response-utils.test.mjs`
+Scrappa's configured endpoint search and live call for user `255914028` in `DE` confirmed the endpoint name, `user_id`/`country` parameters, and the `success.data.user` response fields used by the mapper, including login, reputation, feedback sentiment, bundle discounts, item counts, activity, verification, business/holiday status, location, and profile URL.
 
 ## Local verification
 
-From `actors/immobilienscout24-price-insights-scraper`:
+From `actors/vinted-user-profile-scraper`:
 
 ```text
-npm test                                  # 26 passing tests
-npm run typecheck                         # passes
-jq empty .actor/actor.json .actor/input_schema.json
-npx apify-cli validate-schema             # input and dataset schemas pass
-git diff --check                          # passes
+npm test                              # 13 passing tests
+npm run typecheck                     # passes
+npx --yes apify-cli validate-schema   # input and embedded dataset schemas pass
+git diff --check                      # passes
 ```
 
-Repository audit test suites also pass:
-
-```text
-npm run test:audit-health                 # 17 passing tests
-npm run test:audit-secrets                # 19 passing tests
-npm run test:audit-pricing                # 14 passing tests
-```
-
-The live audit commands and Apify deployment/smoke verification were not run because this implementation container has no `APIFY_TOKEN`/`APIFY_API_TOKEN`. Secret configuration, successful build, paid pricing activation/API verification, and Berlin/Munich plus mixed-failure smoke runs remain downstream release gates.
-
-## Handoff
-
-Changes are local only. No push or PR was created. The branch is ready for downstream code review, testing, deployment, monetization verification, and live charge-parity checks.
+Apify deployment, secret audit, public visibility, paid pricing activation/API verification, and live multi-ID charge-parity smoke runs were verified downstream: Actor `0z7FbFWBw77KVoabS`, build `EjLoh2HagHQAvZcjv` (`1.0.2`), active `$0.0005` `user-profile-result` pricing, and successful two-profile and mixed-success runs. This branch is now tracked by PR #281; no merge is performed in the PR stage.
