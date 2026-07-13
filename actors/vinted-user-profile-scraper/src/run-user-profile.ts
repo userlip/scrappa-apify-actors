@@ -89,7 +89,7 @@ export async function runVintedUserProfiles(options: VintedUserProfileRunOptions
             failed += 1;
             const rawMessage = error instanceof Error ? error.message : String(error);
             const message = error instanceof ScrappaTimeoutError
-                ? `${rawMessage}. Try fewer IDs or run the request again.`
+                ? `${rawMessage}. Run the request again or check Scrappa availability.`
                 : rawMessage;
             console.warn(`Vinted user profile request ${request.index + 1} failed: ${message}`);
         }
