@@ -38,7 +38,7 @@ Created `actors/google-maps-directions-scraper` as a thin, batch-first Apify wra
 From `actors/google-maps-directions-scraper`:
 
 ```text
-npm test                                  # 15 passing tests
+npm test                                  # 16 passing tests
 npm run typecheck                         # passes
 jq empty .actor/actor.json .actor/input_schema.json
 npx apify-cli validate-schema             # input and dataset schemas pass
@@ -52,5 +52,10 @@ The Scrappa endpoint contract was checked before implementation. Apify deploymen
 - Corrected the runtime client path to `/maps/directions`, which resolves to Scrappa's `/api/maps/directions` route under the configured base URL.
 - Added a shared 240-second deadline to the sequential batch. Each request attempt is capped by the remaining deadline, and routes left after deadline exhaustion are recorded as failures without further network calls.
 - Added coverage for the corrected endpoint and worst-case batch deadline behavior.
+
+## Testing rework
+
+- Normalized the per-row `charged` count in `src/charged-save.ts` so Apify's aggregate `pushData` result cannot count the synthetic default-dataset event as a second `route-result` charge.
+- Added a regression test covering the aggregate `{ chargedCount: 2 }` response; the batch summary now reports one charge for one saved route row while preserving charge-limit handling.
 
 Unrelated pre-existing `.codegraph/`, `docs/source-document.md`, and `handoff.md` changes were preserved and are not part of this implementation.

@@ -51,7 +51,10 @@ export function createChargedRouteWriter(
             }
 
             const result = await dataset.pushData(item, ROUTE_RESULT_CHARGE_EVENT);
-            const chargedCount = result?.chargedCount ?? 0;
+            // Apify aggregates the explicit route-result charge with the
+            // synthetic default-dataset-item charge for this write. Each
+            // call stores one row, so only one route-result can be charged.
+            const chargedCount = Math.min(result?.chargedCount ?? 0, 1);
             return {
                 saved: chargedCount >= 1,
                 chargedCount,
