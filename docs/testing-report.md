@@ -2,6 +2,21 @@
 
 Date: 2026-07-13
 
+## Verification refresh
+
+Fresh local verification completed at 2026-07-13T14:35:46Z from
+`actors/google-maps-directions-scraper`. No application source changes were
+made during this testing stage.
+
+| Check | Result |
+| --- | --- |
+| `npm test` | 16 passed, 0 failed |
+| `npm run typecheck` | Passed |
+| `jq empty .actor/actor.json .actor/input_schema.json` | Passed |
+| `npx apify-cli validate-schema` | Input and dataset schemas passed |
+| `npm audit --omit=dev --audit-level=high` | 0 vulnerabilities |
+| `git diff --check origin/main...HEAD` | Passed |
+
 ## Result
 
 TESTING_PASSED

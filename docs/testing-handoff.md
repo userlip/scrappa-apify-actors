@@ -2,6 +2,10 @@
 
 Testing passed for `google-maps-directions-scraper`.
 
+Fresh local verification at 2026-07-13T14:35:46Z also passed: 16 tests,
+TypeScript typecheck, JSON/Apify schema validation, high-severity dependency
+audit, and `git diff --check`.
+
 - Local `npm test`: 16 passing; TypeScript, schema validation, and high-severity dependency audit passed.
 - Deployed Actor `ZF8jFdzF15k49AZQh` is public, uses 128 MB/300 seconds, retains `SCRAPPA_API_KEY` as a secret, and has active `$0.0005` `route-result` pricing.
 - Build `1.0.5` (`WyXaXBr5ncpnhxIpl`) succeeded.
