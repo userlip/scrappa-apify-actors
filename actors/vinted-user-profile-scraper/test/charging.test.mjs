@@ -35,6 +35,12 @@ test('checks charge capacity before fetching and reports exhausted capacity', ()
     );
 });
 
+test('preserves unbounded PPE charge capacity', () => {
+    const actor = actorStub({ remaining: Number.POSITIVE_INFINITY });
+    assert.equal(charging.getVintedUserProfileAvailableChargeCount(actor), Number.POSITIVE_INFINITY);
+    assert.equal(charging.getVintedUserProfileChargeLimitStatus(actor, 0, 0), null);
+});
+
 test('does not treat an uncharged PPE push as a saved result', async () => {
     const actor = actorStub({ pushResult: { chargedCount: 0, eventChargeLimitReached: true } });
     const result = await charging.pushSuccessfulVintedUserProfile(actor, { id: 1 }, 0);
