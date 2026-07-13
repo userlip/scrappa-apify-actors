@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-Branch: `feat/vinted-user-profile-scraper`
+Branch: `fix/vinted-user-profile-runtime-safety`
 
 ## Change completed
 
@@ -52,4 +52,4 @@ npx --yes apify-cli validate-schema   # input and embedded dataset schemas pass
 git diff --check                      # passes
 ```
 
-Apify deployment, secret audit, public visibility, paid pricing activation/API verification, and live multi-ID charge-parity smoke runs were verified downstream: Actor `0z7FbFWBw77KVoabS`, build `EjLoh2HagHQAvZcjv` (`1.0.2`), active `$0.0005` `user-profile-result` pricing, and successful two-profile and mixed-success runs. This branch is now tracked by PR #281; no merge is performed in the PR stage.
+Apify deployment, secret audit, public visibility, paid pricing activation/API verification, and live multi-ID charge-parity smoke runs were verified downstream: Actor `0z7FbFWBw77KVoabS`, build `EjLoh2HagHQAvZcjv` (`1.0.2`), active `$0.0005` `user-profile-result` pricing, and successful two-profile and mixed-success runs. This follow-up branch contains only the runtime-safety fixes after PR #281; no merge is performed in the PR stage.

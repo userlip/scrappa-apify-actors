@@ -1,45 +1,36 @@
-# PR Nudging Report: Vinted User Profile Scraper
+# PR Nudging Report: Vinted User Profile Runtime Safety
 
 Date: 2026-07-13
 
 ## Pull request
 
-- Branch: `feat/vinted-user-profile-scraper`
-- PR: [#281 — feat: add Vinted user profile scraper](https://github.com/userlip/scrappa-apify-actors/pull/281)
-- Merge: not performed in this stage
+- Branch: `fix/vinted-user-profile-runtime-safety`
+- Base: `origin/main`, which contains the merged Vinted User Profile Actor from PR #281
+- PR: created after validation; merge is not performed in this stage
+
+## Scope
+
+This follow-up carries the two post-merge safety fixes for the public `thescrappa/vinted-user-profile-scraper` Actor:
+
+- Bound batches to eight concurrent Scrappa calls, include retry-delay time in the runtime budget, cap waves by available PPE capacity, and retain a 60-second margin under the 600-second Actor timeout.
+- Preserve unlimited PPE capacity and drain sibling workers after an actor-level Scrappa authentication failure before rethrowing, without writing or charging delayed sibling results.
 
 ## Validation before push
 
 From `actors/vinted-user-profile-scraper`:
 
-- `npm test` — 16 passed, 0 failed.
+- `npm test` — 22 passed, 0 failed.
+- `npm run test:dev` — 22 passed, 0 failed.
 - `npm run typecheck` — passed.
 - `npx --yes apify-cli validate-schema` — input and embedded dataset schemas passed.
-- `git diff --check origin/main...HEAD` — passed.
-- `git diff --check` — passed.
+- `git diff --check origin/main..HEAD` and `git diff --check` — passed.
 
-The focused tests cover singular, array, CSV, trimming, deduplication, country normalization, positive-ID validation, response mapping, unresolved profiles, partial failures, transient retries, auth classification, abort-to-timeout wrapping, exact endpoint selection, PPE event naming, charge-capacity handling, saved/uncharged edge cases, and successful-save semantics.
-
-## Release evidence
-
-Actor `0z7FbFWBw77KVoabS` (`thescrappa/vinted-user-profile-scraper`) has:
-
-- Successful build `EjLoh2HagHQAvZcjv` (`1.0.2`) with 128 MB runtime metadata.
-- Public listing title `Vinted User Profile Scraper`.
-- `SCRAPPA_API_KEY` configured as an Apify secret.
-- Active `PAY_PER_EVENT` pricing at `$0.0005` for `user-profile-result`.
-
-Two-profile batch `ROx2hd3RNGGtwBmkH` produced two dataset rows and two charges. Mixed-success batch `h52knnaDY5qxHvTS6` produced one valid dataset row and one charge after an invalid first ID. Both runs wrote only `INPUT` to the default key-value store.
+The focused tests cover unlimited PPE capacity, bounded concurrency, maximum-batch runtime alignment, auth-failure draining, exact endpoint behavior, and successful-save/charge semantics. Existing testing and release evidence records successful deployed multi-profile and mixed-success smoke runs, active `$0.0005` `user-profile-result` pricing, the `SCRAPPA_API_KEY` secret, and dataset-to-charge parity.
 
 ## CI and review monitoring
 
-- All repository Actor Tests passed.
-- Claude review passed after three rounds; all substantive findings were addressed in `e6049db`, `51111e4`, and `0390bc6`.
-- Cubic review passed after the scoped follow-up fixes.
-- Socket Project Report passed; Socket Pull Request Alerts was skipped/neutral due to the dependency-scan configuration.
-- Remaining reviewer observations are non-blocking follow-ups: spot-check Apify Console rendering for the union-typed `user_ids` field, consider shared Vinted input helpers, and add low-level network-error retry tests in a later maintenance change.
-- No merge was performed in this stage.
+The branch is ready for GitHub CI and review monitoring after push. No implementation changes are required at PR-nudging time, and no merge will be performed in this stage.
 
 ## Outcome
 
-The tested implementation is in PR #281 with green CI and approving reviews, ready for downstream merge/deploy handling.
+PR created and awaiting green CI/review completion.
