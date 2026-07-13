@@ -1,0 +1,77 @@
+{
+  "actorSpecification": 1,
+  "name": "vinted-user-profile-scraper",
+  "title": "Vinted User Profile Scraper",
+  "description": "Research public Vinted seller identity, reputation, activity, verification, bundle discounts, and marketplace trust signals through Scrappa. Batch seller IDs in one run, then scale up with the Scrappa direct API.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 600
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "profiles": {
+          "title": "Vinted User Profiles",
+          "transformation": {
+            "fields": [
+              "id", "login", "country_code", "city", "feedback_count", "feedback_reputation",
+              "positive_feedback_count", "neutral_feedback_count", "negative_feedback_count",
+              "bundle_discount_enabled", "bundle_discounts", "item_count", "total_items_count",
+              "followers_count", "following_count", "last_activity", "is_email_verified",
+              "is_facebook_verified", "is_google_verified", "business", "is_on_holiday",
+              "is_account_banned", "profile_url", "request_user_id", "request_country",
+              "request_index", "request_success", "scrappa_duration_ms", "scrappa_scraped_at"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": { "label": "User ID", "format": "text" },
+              "login": { "label": "Login", "format": "text" },
+              "country_code": { "label": "Country", "format": "text" },
+              "city": { "label": "City", "format": "text" },
+              "feedback_count": { "label": "Feedback", "format": "number" },
+              "feedback_reputation": { "label": "Reputation", "format": "number" },
+              "positive_feedback_count": { "label": "Positive", "format": "number" },
+              "neutral_feedback_count": { "label": "Neutral", "format": "number" },
+              "negative_feedback_count": { "label": "Negative", "format": "number" },
+              "bundle_discount_enabled": { "label": "Bundle Discounts", "format": "boolean" },
+              "bundle_discounts": { "label": "Bundle Tiers", "format": "array" },
+              "item_count": { "label": "Active Items", "format": "number" },
+              "total_items_count": { "label": "Total Items", "format": "number" },
+              "followers_count": { "label": "Followers", "format": "number" },
+              "following_count": { "label": "Following", "format": "number" },
+              "last_activity": { "label": "Last Activity", "format": "text" },
+              "is_email_verified": { "label": "Email Verified", "format": "boolean" },
+              "is_facebook_verified": { "label": "Facebook Verified", "format": "boolean" },
+              "is_google_verified": { "label": "Google Verified", "format": "boolean" },
+              "business": { "label": "Business", "format": "boolean" },
+              "is_on_holiday": { "label": "On Holiday", "format": "boolean" },
+              "is_account_banned": { "label": "Banned", "format": "boolean" },
+              "profile_url": { "label": "Profile URL", "format": "link" },
+              "request_user_id": { "label": "Requested ID", "format": "text" },
+              "request_country": { "label": "Requested Country", "format": "text" },
+              "request_index": { "label": "Request Index", "format": "number" },
+              "request_success": { "label": "Success", "format": "boolean" },
+              "scrappa_duration_ms": { "label": "Scrappa Duration (ms)", "format": "number" },
+              "scrappa_scraped_at": { "label": "Scraped At", "format": "date" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

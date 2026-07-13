@@ -2,7 +2,7 @@
 
 Extract public Instagram profile information by username. This Actor is built for profile lookups, creator research, lead enrichment, competitor monitoring, and quick checks of public Instagram account metadata.
 
-No Instagram login, cookies, proxy setup, or browser session is required. Provide a username and the Actor returns the available public profile fields to an Apify dataset. The Actor uses a Scrappa API key configured as the `SCRAPPA_API_KEY` environment variable; set this secret if you fork or self-deploy the Actor.
+No Instagram login, cookies, proxy setup, or browser session is required. Provide up to 100 usernames and the Actor returns one dataset item for each processed username. The Actor uses a Scrappa API key configured as the `SCRAPPA_API_KEY` environment variable; set this secret if you fork or self-deploy the Actor.
 
 ## What It Does
 
@@ -15,19 +15,20 @@ Private accounts can still return public metadata that is visible without loggin
 
 ## Input
 
-Use one Instagram username per run.
+Use the `usernames` list to process up to 100 Instagram accounts in one run. This shares Actor startup and storage overhead across the whole batch. The legacy `username` field remains available for existing integrations.
 
 ### Input Fields
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `username` | String | Yes | Instagram username to look up. Use a handle such as `natgeo`; an optional leading `@` is normalized automatically. |
+| `usernames` | Array of strings | Recommended | Up to 100 Instagram usernames. Duplicate handles are fetched once. |
+| `username` | String | No | Backward-compatible single username. An optional leading `@` is normalized automatically. |
 
 ## Example Input
 
 ```json
 {
-  "username": "natgeo"
+  "usernames": ["natgeo", "instagram"]
 }
 ```
 
@@ -35,7 +36,7 @@ You can enter the username with or without the `@` symbol. For example, `natgeo`
 
 ## Output
 
-Each run saves one profile object to the default Apify dataset. The exact fields can vary depending on what Instagram returns for the profile, but common fields include:
+Each processed username saves one profile object to the default Apify dataset. A batch of 100 usernames therefore produces 100 dataset items. The exact fields can vary depending on what Instagram returns for the profile, but common fields include:
 
 | Field | Description |
 | --- | --- |
@@ -100,7 +101,7 @@ That makes it simple to run in Apify tasks, schedules, and API workflows. It als
 ## Recommended Workflow
 
 1. Prepare a list of Instagram usernames from your CRM, spreadsheet, research workflow, or another Apify Actor.
-2. Run this Actor once per username to fetch the public profile record.
+2. Run this Actor once for the complete list (up to 100 usernames per run).
 3. Export the dataset as JSON when you need full raw fields, or CSV/Excel when you need spreadsheet-friendly profile columns.
 4. Join the exported profile data with your existing leads, creator lists, competitor trackers, or enrichment pipeline.
 
@@ -109,7 +110,7 @@ That makes it simple to run in Apify tasks, schedules, and API workflows. It als
 - Use exact Instagram usernames instead of display names or profile URLs.
 - Keep both `username` and any exported account ID fields in downstream systems so you can deduplicate profile records later.
 - Re-run important profiles periodically if you monitor follower count, biography, verification, or business-account changes.
-- For high-volume enrichment across many usernames, use Apify tasks or API calls to schedule repeat runs.
+- For high-volume enrichment, fill each run with up to 100 usernames before scheduling another run.
 
 ## Pricing
 
@@ -117,7 +118,7 @@ $0.20 per 1,000 results. No Instagram login required. Requires `SCRAPPA_API_KEY`
 
 ## Notes and limits
 
-- Run one username per Actor run.
+- Process up to 100 unique usernames per Actor run; batching is recommended to minimize run overhead.
 - Usernames are normalized before lookup, so a leading `@` is removed automatically.
 - Availability of some fields depends on the public data returned for that profile.
 - If Instagram or the upstream profile source does not expose a field for a profile, it may be missing or null in the dataset item.

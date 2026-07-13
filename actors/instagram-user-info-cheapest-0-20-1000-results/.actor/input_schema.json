@@ -1,17 +1,32 @@
 {
   "title": "Instagram User Info",
-  "description": "Fetch public Instagram profile information for one username.",
+  "description": "Fetch public Instagram profile information for up to 100 usernames in one cost-efficient run.",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
+    "usernames": {
+      "title": "Instagram usernames",
+      "type": "array",
+      "description": "Recommended. Process multiple usernames in one Actor run so startup and storage overhead are shared across results. Duplicates are fetched once.",
+      "editor": "stringList",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "prefill": ["natgeo", "instagram"],
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 31,
+        "pattern": "^@?[a-zA-Z0-9._-]{1,30}$"
+      }
+    },
     "username": {
-      "title": "Instagram username",
+      "title": "Legacy single Instagram username",
       "type": "string",
-      "description": "Instagram username without the @ symbol.",
+      "description": "Backward-compatible single username. Prefer usernames for normal usage, especially when processing more than one profile.",
       "editor": "textfield",
       "prefill": "natgeo",
       "pattern": "^@?[a-zA-Z0-9._-]{1,30}$"
     }
-  },
-  "required": ["username"]
+  }
 }

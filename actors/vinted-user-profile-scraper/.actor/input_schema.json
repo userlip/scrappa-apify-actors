@@ -1,0 +1,32 @@
+{
+  "title": "Vinted User Profile Scraper",
+  "description": "Fetch public profile, reputation, activity, and trust fields for one or more Vinted user IDs through Scrappa.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "user_id": {
+      "title": "User ID",
+      "type": "string",
+      "description": "Single Vinted user ID. Use user_ids for batches; both fields can be combined.",
+      "editor": "textfield",
+      "pattern": "^\\d+$",
+      "maxLength": 32,
+      "prefill": "255914028"
+    },
+    "user_ids": {
+      "title": "User IDs",
+      "description": "Batch of Vinted user IDs as an array or comma-separated string. The Actor validates numeric IDs and enforces a maximum of 100 unique IDs per run.",
+      "editor": "json",
+      "type": ["array", "string"]
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Vinted country market. Defaults to FR.",
+      "editor": "select",
+      "enum": ["FR", "DE", "ES", "IT", "NL", "BE", "AT", "PL", "CZ", "LT", "LU", "SK", "HU", "RO", "PT", "SE", "DK", "FI", "US"],
+      "enumTitles": ["France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Austria", "Poland", "Czech Republic", "Lithuania", "Luxembourg", "Slovakia", "Hungary", "Romania", "Portugal", "Sweden", "Denmark", "Finland", "United States"],
+      "default": "FR"
+    }
+  }
+}
