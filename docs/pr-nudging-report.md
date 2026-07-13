@@ -6,7 +6,8 @@ Date: 2026-07-13
 
 - Branch: `fix/vinted-user-profile-runtime-safety`
 - Base: `origin/main`, which contains the merged Vinted User Profile Actor from PR #281
-- PR: created after validation; merge is not performed in this stage
+- PR: [#283 — fix: harden Vinted profile batch runtime and billing](https://github.com/userlip/scrappa-apify-actors/pull/283)
+- Merge: not performed in this stage
 
 ## Scope
 
@@ -29,7 +30,11 @@ The focused tests cover unlimited PPE capacity, bounded concurrency, maximum-bat
 
 ## CI and review monitoring
 
-The branch is ready for GitHub CI and review monitoring after push. No implementation changes are required at PR-nudging time, and no merge will be performed in this stage.
+- Actor Tests workflow run `29261462378`: all matrix jobs passed.
+- Claude review: passed with no blocking findings.
+- Cubic review: passed with no actionable findings.
+- Socket Security Project Report and Pull Request Alerts: passed.
+- No implementation changes or review fixes were required during PR nudging.
 
 ## Outcome
 
