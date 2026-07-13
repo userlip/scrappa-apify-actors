@@ -1,7 +1,5 @@
-export function isActorLevelScrappaFailure(error: unknown): boolean {
-    if (!(error instanceof Error)) {
-        return false;
-    }
+import { ScrappaAuthError } from './shared/scrappa-client.js';
 
-    return /Scrappa API error \((?:401|403)\)/.test(error.message);
+export function isActorLevelScrappaFailure(error: unknown): boolean {
+    return error instanceof ScrappaAuthError;
 }

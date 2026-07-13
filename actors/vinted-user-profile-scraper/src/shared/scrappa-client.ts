@@ -21,6 +21,16 @@ export class ScrappaTimeoutError extends Error {
     }
 }
 
+export class ScrappaAuthError extends Error {
+    readonly status: 401 | 403;
+
+    constructor(status: 401 | 403, message: string, options?: ErrorOptions) {
+        super(`Scrappa API error (${status}): ${message}`, options);
+        this.name = 'ScrappaAuthError';
+        this.status = status;
+    }
+}
+
 export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
     return Math.min(1000 * Math.pow(2, failedAttempt) + jitterMs, 10000);
 }
@@ -103,7 +113,11 @@ export class ScrappaClient {
             });
 
             if (!response.ok) {
-                throw new Error(`Scrappa API error (${response.status}): ${await this.readErrorMessage(response)}`);
+                const message = await this.readErrorMessage(response);
+                if (response.status === 401 || response.status === 403) {
+                    throw new ScrappaAuthError(response.status, message);
+                }
+                throw new Error(`Scrappa API error (${response.status}): ${message}`);
             }
 
             return await response.json() as T;

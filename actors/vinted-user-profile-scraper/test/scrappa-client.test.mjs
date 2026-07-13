@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const sourceDirectory = process.env.TEST_SOURCE === 'src' ? 'src' : 'dist';
-const { ScrappaClient } = await import(`../${sourceDirectory}/shared/scrappa-client.js`);
+const { ScrappaAuthError, ScrappaClient } = await import(`../${sourceDirectory}/shared/scrappa-client.js`);
 
 test('calls only the configured Scrappa endpoint and retries transient failures', async () => {
     const originalFetch = globalThis.fetch;
@@ -33,5 +33,31 @@ test('calls only the configured Scrappa endpoint and retries transient failures'
     } finally {
         globalThis.fetch = originalFetch;
         Math.random = originalRandom;
+    }
+});
+
+test('classifies authentication failures without retrying or parsing message text', async () => {
+    const originalFetch = globalThis.fetch;
+    let calls = 0;
+
+    globalThis.fetch = async () => {
+        calls += 1;
+        return Response.json({ message: 'credentials rejected' }, { status: 401 });
+    };
+
+    try {
+        const client = new ScrappaClient({ apiKey: 'test-key', baseUrl: 'https://scrappa.test/api' });
+        await assert.rejects(
+            client.get('/vinted/user-profile', { user_id: '255914028' }, { attempts: 3 }),
+            (error) => {
+                assert.ok(error instanceof ScrappaAuthError);
+                assert.equal(error.status, 401);
+                assert.match(error.message, /credentials rejected/);
+                return true;
+            },
+        );
+        assert.equal(calls, 1);
+    } finally {
+        globalThis.fetch = originalFetch;
     }
 });

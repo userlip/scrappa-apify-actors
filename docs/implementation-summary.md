@@ -25,7 +25,7 @@ Scrappa's configured endpoint search and live call for user `255914028` in `DE` 
 From `actors/vinted-user-profile-scraper`:
 
 ```text
-npm test                              # 12 passing tests
+npm test                              # 13 passing tests
 npm run typecheck                     # passes
 npx --yes apify-cli validate-schema   # input and embedded dataset schemas pass
 git diff --check                      # passes
