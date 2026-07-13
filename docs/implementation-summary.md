@@ -1,49 +1,50 @@
-# Implementation Summary: ImmobilienScout24 Price Insights Scraper
+# Implementation Summary: Google Maps Directions Scraper
 
 Date: 2026-07-13
-Branch: `feat/immobilienscout24-price-insights-scraper`
+Branch: `feat/google-maps-directions-scraper`
 
 ## Change completed
 
-- Corrected the `locations` input metadata to support the actor's documented array-or-comma-separated-string contract using Apify's supported union field type.
-- Expanded the Actor description to target property-market benchmarking, rent-vs-buy research, recurring city comparisons, and the Scrappa direct API upgrade path.
-- Added package description metadata for the thin Scrappa wrapper.
-- Added focused regression coverage for request limits, endpoint and retry parameter shape, bounded concurrency, every required response field, and existing partial-failure/charging behavior.
+Created `actors/google-maps-directions-scraper` as a thin, batch-first Apify wrapper around Scrappa's `/google-maps-directions` endpoint.
 
-The existing implementation remains a thin wrapper around Scrappa's `/immobilienscout24/price-insights` endpoint. It normalizes and deduplicates up to 100 locations, fetches them in bounded batches, writes one complete dataset item per successful snapshot, and uses only the confirmed `price-insight-result` PAY_PER_EVENT charge for successful PPE writes. It does not write per-item `OUTPUT` records or scrape ImmobilienScout24 directly.
+- Accepts preferred `routes[]` input plus singular `origin`/`destination` compatibility fields.
+- Trims and canonicalizes route values, deduplicates equivalent requests, applies defaults, and rejects malformed or over-limit input before network work.
+- Processes up to 10 unique requests sequentially in one run and continues after individual request failures.
+- Extracts multiple route alternatives, preserves the raw alternative payload, adds stable request/alternative indexes and normalized request metadata, and derives step coordinates when present.
+- Writes one dataset item per successfully stored route alternative through the `route-result` event; failed, empty, malformed, and charge-refused results are not monetizable rows.
+- Uses a retrying Scrappa client, 128 MB memory, a 300-second wrapper timeout, and no per-item key-value-store writes.
+- Documents driving, walking, cycling/bicycling, and transit comparisons, partial failures, `$0.0005` per successful route alternative pricing, and the Scrappa direct API upgrade path.
 
-## Files changed
+## Files added
 
-- `actors/immobilienscout24-price-insights-scraper/.actor/actor.json`
-- `actors/immobilienscout24-price-insights-scraper/.actor/input_schema.json`
-- `actors/immobilienscout24-price-insights-scraper/package.json`
-- `actors/immobilienscout24-price-insights-scraper/package-lock.json`
-- `actors/immobilienscout24-price-insights-scraper/test/batch-runner.test.mjs`
-- `actors/immobilienscout24-price-insights-scraper/test/request-params.test.mjs`
-- `actors/immobilienscout24-price-insights-scraper/test/response-utils.test.mjs`
+- `actors/google-maps-directions-scraper/.actor/actor.json`
+- `actors/google-maps-directions-scraper/.actor/input_schema.json`
+- `actors/google-maps-directions-scraper/.actor/Dockerfile`
+- `actors/google-maps-directions-scraper/.actor/README.md`
+- `actors/google-maps-directions-scraper/src/request-params.ts`
+- `actors/google-maps-directions-scraper/src/response-utils.ts`
+- `actors/google-maps-directions-scraper/src/batch-runner.ts`
+- `actors/google-maps-directions-scraper/src/charged-save.ts`
+- `actors/google-maps-directions-scraper/src/main.ts`
+- `actors/google-maps-directions-scraper/src/shared/scrappa-client.ts`
+- `actors/google-maps-directions-scraper/src/shared/index.ts`
+- `actors/google-maps-directions-scraper/test/*.test.mjs`
+- `actors/google-maps-directions-scraper/package.json`
+- `actors/google-maps-directions-scraper/package-lock.json`
+- `actors/google-maps-directions-scraper/tsconfig.json`
 
 ## Local verification
 
-From `actors/immobilienscout24-price-insights-scraper`:
+From `actors/google-maps-directions-scraper`:
 
 ```text
-npm test                                  # 26 passing tests
+npm test                                  # 14 passing tests
 npm run typecheck                         # passes
 jq empty .actor/actor.json .actor/input_schema.json
 npx apify-cli validate-schema             # input and dataset schemas pass
 git diff --check                          # passes
 ```
 
-Repository audit test suites also pass:
+The Scrappa endpoint contract was checked before implementation. Apify deployment, secret retention, paid-pricing activation/API verification, build publication, and two-route live smoke verification remain downstream release gates for the deployment/testing nodes. No push or PR was created in this implementation stage.
 
-```text
-npm run test:audit-health                 # 17 passing tests
-npm run test:audit-secrets                # 19 passing tests
-npm run test:audit-pricing                # 14 passing tests
-```
-
-The live audit commands and Apify deployment/smoke verification were not run because this implementation container has no `APIFY_TOKEN`/`APIFY_API_TOKEN`. Secret configuration, successful build, paid pricing activation/API verification, and Berlin/Munich plus mixed-failure smoke runs remain downstream release gates.
-
-## Handoff
-
-Changes are local only. No push or PR was created. The branch is ready for downstream code review, testing, deployment, monetization verification, and live charge-parity checks.
+Unrelated pre-existing `.codegraph/`, `docs/source-document.md`, and `handoff.md` changes were preserved and are not part of this implementation.

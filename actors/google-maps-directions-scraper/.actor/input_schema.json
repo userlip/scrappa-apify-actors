@@ -1,0 +1,65 @@
+{
+  "title": "Google Maps Directions Scraper",
+  "description": "Compare route alternatives for one or more origin and destination pairs. Maximum 10 unique routes per run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "routes": {
+      "title": "Routes",
+      "type": "array",
+      "description": "Preferred batch input. One request is created for each route object; duplicate requests are processed once. Maximum 10 route requests per run.",
+      "editor": "json",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": ["origin", "destination"],
+        "properties": {
+          "origin": { "title": "Origin", "description": "Starting address, place name, or coordinates.", "type": "string", "editor": "textfield", "minLength": 1, "maxLength": 200 },
+          "destination": { "title": "Destination", "description": "Ending address, place name, or coordinates.", "type": "string", "editor": "textfield", "minLength": 1, "maxLength": 200 },
+          "mode": { "title": "Mode", "description": "Travel mode: driving, walking, bicycling/cycling, or transit.", "type": "string", "editor": "select", "enum": ["driving", "walking", "bicycling", "cycling", "transit"], "default": "driving" },
+          "hl": { "title": "Language", "description": "Language code for route labels, such as en or de-DE.", "type": "string", "editor": "textfield", "pattern": "^[a-zA-Z]{2}(?:-[a-zA-Z]{2})?$", "maxLength": 5, "default": "en" },
+          "gl": { "title": "Region", "description": "Two-letter country or region code for geo-filtering.", "type": "string", "editor": "textfield", "pattern": "^[a-zA-Z]{2}$", "maxLength": 2 }
+        }
+      }
+    },
+    "origin": {
+      "title": "Origin (compatibility)",
+      "type": "string",
+      "editor": "textfield",
+      "description": "Singular compatibility input. Use routes for batches.",
+      "maxLength": 200
+    },
+    "destination": {
+      "title": "Destination (compatibility)",
+      "type": "string",
+      "editor": "textfield",
+      "description": "Singular compatibility input. Use routes for batches.",
+      "maxLength": 200
+    },
+    "mode": {
+      "title": "Mode (compatibility)",
+      "description": "Travel mode: driving, walking, bicycling/cycling, or transit.",
+      "type": "string",
+      "editor": "select",
+      "enum": ["driving", "walking", "bicycling", "cycling", "transit"],
+      "default": "driving"
+    },
+    "hl": {
+      "title": "Language (compatibility)",
+      "description": "Language code for route labels, such as en or de-DE.",
+      "type": "string",
+      "editor": "textfield",
+      "pattern": "^[a-zA-Z]{2}(?:-[a-zA-Z]{2})?$",
+      "maxLength": 5,
+      "default": "en"
+    },
+    "gl": {
+      "title": "Region (compatibility)",
+      "description": "Two-letter country or region code for geo-filtering.",
+      "type": "string",
+      "editor": "textfield",
+      "pattern": "^[a-zA-Z]{2}$",
+      "maxLength": 2
+    }
+  }
+}

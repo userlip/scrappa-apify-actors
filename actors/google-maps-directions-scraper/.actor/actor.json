@@ -1,0 +1,72 @@
+{
+  "actorSpecification": 1,
+  "name": "google-maps-directions-scraper",
+  "title": "Google Maps Directions Scraper",
+  "description": "Compare driving, walking, cycling, and transit routes between locations through Scrappa. Process up to 10 route requests in one run and receive one dataset row per returned route alternative.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "icon": "🗺️",
+  "meta": {
+    "templateId": "ts-start"
+  },
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "resources": {
+    "memoryMbytes": 128
+  },
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "routes": {
+          "title": "Google Maps Route Alternatives",
+          "transformation": {
+            "fields": [
+              "alternative_index",
+              "request_index",
+              "request_origin",
+              "request_destination",
+              "request_mode",
+              "request_hl",
+              "request_gl",
+              "travel_mode",
+              "via",
+              "distance",
+              "duration",
+              "formatted_distance",
+              "formatted_duration",
+              "step_coordinates",
+              "trips"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "alternative_index": { "label": "Alternative", "format": "number" },
+              "request_index": { "label": "Request", "format": "number" },
+              "request_origin": { "label": "Origin", "format": "text" },
+              "request_destination": { "label": "Destination", "format": "text" },
+              "request_mode": { "label": "Requested mode", "format": "text" },
+              "request_hl": { "label": "Language", "format": "text" },
+              "request_gl": { "label": "Region", "format": "text" },
+              "travel_mode": { "label": "Travel mode", "format": "text" },
+              "via": { "label": "Via", "format": "text" },
+              "distance": { "label": "Distance (m)", "format": "number" },
+              "duration": { "label": "Duration (s)", "format": "number" },
+              "formatted_distance": { "label": "Distance", "format": "text" },
+              "formatted_duration": { "label": "Duration", "format": "text" },
+              "step_coordinates": { "label": "Step coordinates", "format": "array" },
+              "trips": { "label": "Trips", "format": "array" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
