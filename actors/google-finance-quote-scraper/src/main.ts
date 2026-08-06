@@ -1,5 +1,6 @@
 import { Actor } from 'apify';
-import { fetchQuoteWithFallback } from './quote-fetch.js';
+import { fetchQuoteWithFallback, fetchSearchQuoteFallback } from './quote-fetch.js';
+import type { QuoteFetchResult } from './quote-fetch.js';
 import { buildGoogleFinanceQuoteParams, describeGoogleFinanceQuoteRequest } from './request-params.js';
 import type { GoogleFinanceQuoteInput } from './request-params.js';
 import { buildQuoteDatasetItem, hasMeaningfulQuoteData } from './response-utils.js';
@@ -11,6 +12,10 @@ const QUOTE_RESULT_CHARGE_EVENT = 'quote-result';
 
 function isScrappaUpstreamFailure(error: unknown): error is ScrappaHttpError {
     return error instanceof ScrappaHttpError && error.status >= 500 && error.status <= 599;
+}
+
+function isRetryableScrappaFallbackFailure(error: unknown): error is ScrappaHttpError {
+    return error instanceof ScrappaHttpError && [408, 429, 500, 502, 503, 504].includes(error.status);
 }
 
 function describeUnknownError(error: unknown): string {
@@ -35,9 +40,26 @@ function describeUnknownError(error: unknown): string {
     return `Non-Error thrown (${typeof error}): ${String(error)}`;
 }
 
+function buildSearchFallbackHttpError(error: ScrappaHttpError, params: Record<string, unknown>): ScrappaHttpError {
+    const contextualError = new ScrappaHttpError(
+        error.status,
+        `Google Finance search fallback failed for ${describeGoogleFinanceQuoteRequest(params)}: ${error.details}`,
+    );
+    contextualError.stack = error.stack;
+    return contextualError;
+}
+
 async function exitWithoutQuoteResult(statusMessage: string): Promise<void> {
     console.warn(statusMessage);
     await Actor.exit({ statusMessage });
+}
+
+async function exitAfterSearchFallbackError(error: ScrappaHttpError | ScrappaTimeoutError): Promise<void> {
+    const statusMessage = error instanceof ScrappaHttpError
+        ? `Scrappa quote response was empty and the Google Finance search fallback returned ${error.status}; no dataset item was written or charged. Try the run again later.`
+        : `Scrappa quote response was empty and the Google Finance search fallback timed out. No dataset item was written or charged. Try the run again later.`;
+
+    await exitWithoutQuoteResult(statusMessage);
 }
 
 async function main(): Promise<void> {
@@ -58,14 +80,42 @@ async function main(): Promise<void> {
         console.log(`Fetching Google Finance quote for ${describeGoogleFinanceQuoteRequest(params)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const fetchResult = await fetchQuoteWithFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
-        const { response } = fetchResult;
+        let fetchResult = await fetchQuoteWithFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
+        let { response } = fetchResult;
 
         if (!hasMeaningfulQuoteData(response)) {
-            await exitWithoutQuoteResult(
-                `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}; no dataset item was written or charged.`,
+            console.warn(
+                `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}; trying Google Finance search fallback.`,
             );
-            return;
+
+            let fallbackResult: QuoteFetchResult | null = null;
+            try {
+                fallbackResult = await fetchSearchQuoteFallback(client, params, SCRAPPA_MAX_ATTEMPTS);
+            } catch (error) {
+                if (isRetryableScrappaFallbackFailure(error) || error instanceof ScrappaTimeoutError) {
+                    await exitAfterSearchFallbackError(error);
+                    return;
+                }
+
+                if (error instanceof ScrappaHttpError) {
+                    throw buildSearchFallbackHttpError(error, params);
+                }
+
+                throw new Error(
+                    `Google Finance search fallback failed for ${describeGoogleFinanceQuoteRequest(params)}: ${describeUnknownError(error)}`,
+                    error instanceof Error ? { cause: error } : undefined,
+                );
+            }
+
+            if (!fallbackResult || !hasMeaningfulQuoteData(fallbackResult.response)) {
+                await exitWithoutQuoteResult(
+                    `Scrappa returned no usable Google Finance quote data for ${describeGoogleFinanceQuoteRequest(params)}, and the search fallback returned no usable quote output; no dataset item was written or charged.`,
+                );
+                return;
+            }
+
+            fetchResult = fallbackResult;
+            response = fallbackResult.response;
         }
 
         const item: Record<string, unknown> = {
