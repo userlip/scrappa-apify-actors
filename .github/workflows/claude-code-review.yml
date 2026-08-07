@@ -200,10 +200,6 @@ jobs:
         run: |
           set -euo pipefail
           : "${RUNNER_MANAGER_URL:?RUNNER_MANAGER_URL is required}"
-          cleanup_codex_files() {
-            rm -rf "${RUNNER_TEMP}/codex-primary" "${RUNNER_TEMP}/codex-backup" "${RUNNER_TEMP}/codex-review-context"
-          }
-          trap cleanup_codex_files EXIT
 
           oidc_response="$(curl -fsSL \
             -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
@@ -227,6 +223,7 @@ jobs:
           subagent_model="$(jq -er '.subagent_model // ""' <<< "$broker_response")"
           effort_level="$(jq -er '.effort_level // ""' <<< "$broker_response")"
           review_prompt="$(jq -er '.review_prompt // ""' <<< "$broker_response")"
+          skills_b64="$(jq -er '(.skills // []) | @base64' <<< "$broker_response")"
           base_url="$(jq -er '.base_url // ""' <<< "$broker_response")"
           display_name="$(jq -er '.display_name // ""' <<< "$broker_response")"
           codex_account_uuid="$(jq -er '.codex_account_uuid // ""' <<< "$broker_response")"
@@ -241,6 +238,7 @@ jobs:
           backup_subagent_model="$(jq -er '.backup.subagent_model // ""' <<< "$broker_response")"
           backup_effort_level="$(jq -er '.backup.effort_level // ""' <<< "$broker_response")"
           backup_review_prompt="$(jq -er '.backup.review_prompt // ""' <<< "$broker_response")"
+          backup_skills_b64="$(jq -er '(.backup.skills // []) | @base64' <<< "$broker_response")"
           backup_base_url="$(jq -er '.backup.base_url // ""' <<< "$broker_response")"
           backup_display_name="$(jq -er '.backup.display_name // ""' <<< "$broker_response")"
           backup_codex_account_uuid="$(jq -er '.backup.codex_account_uuid // ""' <<< "$broker_response")"
@@ -379,6 +377,7 @@ jobs:
             echo "default_haiku_model=${default_haiku_model}"
             echo "subagent_model=${subagent_model}"
             echo "effort_level=${effort_level}"
+            echo "skills_b64=${skills_b64}"
             echo "codex_account_uuid=${codex_account_uuid}"
             echo "codex_lease_token=${codex_lease_token}"
             echo "backup_token=${backup_token}"
@@ -393,6 +392,7 @@ jobs:
             echo "backup_default_haiku_model=${backup_default_haiku_model}"
             echo "backup_subagent_model=${backup_subagent_model}"
             echo "backup_effort_level=${backup_effort_level}"
+            echo "backup_skills_b64=${backup_skills_b64}"
             echo "backup_codex_account_uuid=${backup_codex_account_uuid}"
             echo "backup_codex_lease_token=${backup_codex_lease_token}"
             if [[ -n "$model" ]]; then
@@ -515,6 +515,7 @@ jobs:
           CODEX_AUTH_JSON: ${{ steps.ai-config.outputs.token }}
           CODEX_MODEL: ${{ steps.ai-config.outputs.model }}
           CODEX_EFFORT: ${{ steps.ai-config.outputs.effort_level }}
+          CODEX_SKILLS_B64: ${{ steps.ai-config.outputs.skills_b64 }}
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
@@ -526,9 +527,41 @@ jobs:
           fi
 
           export CODEX_HOME="${RUNNER_TEMP}/codex-primary"
+          skills_home="${RUNNER_TEMP}/codex-primary-home"
+          git_global_config="${HOME}/.gitconfig"
           install -d -m 0700 "$CODEX_HOME"
+          install -d -m 0700 "$skills_home"
           printf '%s' "$CODEX_AUTH_JSON" > "$CODEX_HOME/auth.json"
           chmod 0600 "$CODEX_HOME/auth.json"
+
+          configured_skill_mentions=''
+          if ! skills_json="$(printf '%s' "${CODEX_SKILLS_B64:-W10=}" | base64 --decode 2>/dev/null)" || ! jq -e 'type == "array"' <<< "$skills_json" >/dev/null; then
+            echo "::warning::Ignoring malformed Codex skills configuration."
+            skills_json='[]'
+          fi
+          while IFS= read -r encoded_skill; do
+            skill_json="$(printf '%s' "$encoded_skill" | base64 --decode)"
+            if ! skill_name="$(jq -er '.name | select(test("^[a-z0-9][a-z0-9-]{0,63}$"))' <<< "$skill_json")" \
+              || ! skill_description="$(jq -er '.description | select(type == "string" and length > 0)' <<< "$skill_json")" \
+              || ! skill_instructions="$(jq -er '.instructions | select(type == "string" and length > 0)' <<< "$skill_json")"; then
+              echo "::warning::Skipping malformed Codex skill."
+              continue
+            fi
+            skill_directory="$skills_home/.agents/skills/$skill_name"
+            install -d -m 0700 "$skill_directory"
+            {
+              echo '---'
+              printf 'name: %s\n' "$skill_name"
+              printf 'description: %s\n' "$(jq -rn --arg value "$skill_description" '$value | @json')"
+              echo '---'
+              echo
+              printf '%s\n' "$skill_instructions"
+            } > "$skill_directory/SKILL.md"
+            chmod 0600 "$skill_directory/SKILL.md"
+            printf -v skill_mention '$%s' "$skill_name"
+            [[ -z "$configured_skill_mentions" ]] || configured_skill_mentions+=', '
+            configured_skill_mentions+="$skill_mention"
+          done < <(jq -r '.[] | @base64' <<< "$skills_json")
 
           prompt_file="${RUNNER_TEMP}/codex-review-prompt.txt"
           result_file="${RUNNER_TEMP}/codex-review-result.md"
@@ -539,6 +572,7 @@ jobs:
             printf 'PR NUMBER: %s\n\n' "${{ github.event.pull_request.number }}"
             printf '%s\n' "$REVIEW_PROMPT"
           } > "$prompt_file"
+          [[ -z "$configured_skill_mentions" ]] || printf '\nUse these configured skills when applicable: %s\n' "$configured_skill_mentions" >> "$prompt_file"
 
           codex_args=(
             exec
@@ -573,7 +607,7 @@ jobs:
             : > "$result_file"
             : > "$events_file"
             : > "$error_file"
-            timeout 900 codex "${codex_args[@]}" < "$prompt_file" > "$events_file" 2> "$error_file"
+            GIT_CONFIG_GLOBAL="$git_global_config" HOME="$skills_home" timeout 900 codex "${codex_args[@]}" < "$prompt_file" > "$events_file" 2> "$error_file"
           }
 
           if ! run_codex; then
@@ -1088,6 +1122,7 @@ jobs:
           CODEX_AUTH_JSON: ${{ steps.ai-config.outputs.backup_token }}
           CODEX_MODEL: ${{ steps.ai-config.outputs.backup_model }}
           CODEX_EFFORT: ${{ steps.ai-config.outputs.backup_effort_level }}
+          CODEX_SKILLS_B64: ${{ steps.ai-config.outputs.backup_skills_b64 }}
           REVIEW_PROMPT: ${{ env.BACKUP_REVIEW_PROMPT }}
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -1100,9 +1135,41 @@ jobs:
           fi
 
           export CODEX_HOME="${RUNNER_TEMP}/codex-backup"
+          skills_home="${RUNNER_TEMP}/codex-backup-home"
+          git_global_config="${HOME}/.gitconfig"
           install -d -m 0700 "$CODEX_HOME"
+          install -d -m 0700 "$skills_home"
           printf '%s' "$CODEX_AUTH_JSON" > "$CODEX_HOME/auth.json"
           chmod 0600 "$CODEX_HOME/auth.json"
+
+          configured_skill_mentions=''
+          if ! skills_json="$(printf '%s' "${CODEX_SKILLS_B64:-W10=}" | base64 --decode 2>/dev/null)" || ! jq -e 'type == "array"' <<< "$skills_json" >/dev/null; then
+            echo "::warning::Ignoring malformed Codex skills configuration."
+            skills_json='[]'
+          fi
+          while IFS= read -r encoded_skill; do
+            skill_json="$(printf '%s' "$encoded_skill" | base64 --decode)"
+            if ! skill_name="$(jq -er '.name | select(test("^[a-z0-9][a-z0-9-]{0,63}$"))' <<< "$skill_json")" \
+              || ! skill_description="$(jq -er '.description | select(type == "string" and length > 0)' <<< "$skill_json")" \
+              || ! skill_instructions="$(jq -er '.instructions | select(type == "string" and length > 0)' <<< "$skill_json")"; then
+              echo "::warning::Skipping malformed Codex skill."
+              continue
+            fi
+            skill_directory="$skills_home/.agents/skills/$skill_name"
+            install -d -m 0700 "$skill_directory"
+            {
+              echo '---'
+              printf 'name: %s\n' "$skill_name"
+              printf 'description: %s\n' "$(jq -rn --arg value "$skill_description" '$value | @json')"
+              echo '---'
+              echo
+              printf '%s\n' "$skill_instructions"
+            } > "$skill_directory/SKILL.md"
+            chmod 0600 "$skill_directory/SKILL.md"
+            printf -v skill_mention '$%s' "$skill_name"
+            [[ -z "$configured_skill_mentions" ]] || configured_skill_mentions+=', '
+            configured_skill_mentions+="$skill_mention"
+          done < <(jq -r '.[] | @base64' <<< "$skills_json")
 
           prompt_file="${RUNNER_TEMP}/codex-review-backup-prompt.txt"
           result_file="${RUNNER_TEMP}/codex-review-backup-result.md"
@@ -1114,6 +1181,7 @@ jobs:
             printf 'The primary review backend failed. Continue the automated review with this backup Codex account.\n\n'
             printf '%s\n' "$REVIEW_PROMPT"
           } > "$prompt_file"
+          [[ -z "$configured_skill_mentions" ]] || printf '\nUse these configured skills when applicable: %s\n' "$configured_skill_mentions" >> "$prompt_file"
 
           codex_args=(exec --ephemeral --ignore-user-config --ignore-rules --sandbox read-only -c 'approval_policy="never"' --json -o "$result_file")
           [[ -n "$CODEX_MODEL" ]] && codex_args+=(-m "$CODEX_MODEL")
@@ -1134,7 +1202,7 @@ jobs:
             codex_args+=(-)
           fi
 
-          if ! timeout 900 codex "${codex_args[@]}" < "$prompt_file" > "$events_file" 2> "$error_file"; then
+          if ! GIT_CONFIG_GLOBAL="$git_global_config" HOME="$skills_home" timeout 900 codex "${codex_args[@]}" < "$prompt_file" > "$events_file" 2> "$error_file"; then
             echo "::error::Backup Codex review failed."
             tail -c 4000 "$error_file" || true
             exit 1
@@ -1333,6 +1401,18 @@ jobs:
           complete_codex_lease "$PRIMARY_ACCOUNT_UUID" "$PRIMARY_LEASE_TOKEN" "$PRIMARY_AUTH_JSON" "${RUNNER_TEMP}/codex-primary" || completion_failed=1
           complete_codex_lease "$BACKUP_ACCOUNT_UUID" "$BACKUP_LEASE_TOKEN" "$BACKUP_AUTH_JSON" "${RUNNER_TEMP}/codex-backup" || completion_failed=1
           exit "$completion_failed"
+
+      - name: Clean up Codex review files
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          rm -rf \
+            "${RUNNER_TEMP}/codex-primary" \
+            "${RUNNER_TEMP}/codex-primary-home" \
+            "${RUNNER_TEMP}/codex-backup" \
+            "${RUNNER_TEMP}/codex-backup-home" \
+            "${RUNNER_TEMP}/codex-review-context"
+          find "${RUNNER_TEMP}" -maxdepth 1 -type f -name 'codex-lease-*.json' -delete
 
       - name: Warn when AI review is unavailable
         if: ${{ steps.ensure-jq.outcome == 'failure' || steps.review-workflow.outcome == 'failure' || steps.ai-config.outcome == 'failure' || steps.claude-review-backup.outputs.available == 'false' || (steps.ai-config.outputs.backup_token_type == 'CODEX_AUTH_JSON' && steps.codex-review-backup.outcome == 'failure') || (steps.ai-config.outputs.backup_token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review-backup-oauth-result.outcome == 'failure') || ((steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_API_KEY' || steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_AUTH_TOKEN') && steps.claude-review-backup-custom-result.outcome == 'failure') }}
