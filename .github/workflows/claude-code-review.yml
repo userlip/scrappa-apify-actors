@@ -1,4 +1,4 @@
-# Managed reviewer workflow version: 2026.08.08.3
+# Managed reviewer workflow version: 2026.08.08.5
 name: Claude Code Review
 
 on:
@@ -27,138 +27,8 @@ env:
     Use repository-provided tools, MCP servers, generated guidelines, and relevant skills when they are available. Consult current framework documentation before making version-sensitive recommendations.
 
 jobs:
-  dependency-validation:
-    if: ${{ github.event.pull_request.head.repo.id == github.event.pull_request.base.repo.id }}
-    runs-on: [self-hosted, ci, github-actions]
-    timeout-minutes: 20
-    permissions:
-      contents: read
-    outputs:
-      result: ${{ steps.validate.outputs.result }}
-
-    steps:
-      - name: Checkout pull request merge without persisted credentials
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-
-          git init "$GITHUB_WORKSPACE"
-          cd "$GITHUB_WORKSPACE"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
-          echo "::add-mask::${auth_header}"
-          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"
-          git checkout --force --detach FETCH_HEAD
-          git remote remove origin
-          git clean -ffdx
-
-      - name: Install locked dependencies and run available project checks
-        id: validate
-        shell: bash
-        run: |
-          set -uo pipefail
-
-          github_output_file="$GITHUB_OUTPUT"
-          github_step_summary_file="$GITHUB_STEP_SUMMARY"
-          unset GITHUB_ENV GITHUB_OUTPUT GITHUB_PATH GITHUB_STEP_SUMMARY
-          results=()
-
-          run_check() {
-            local label="$1"
-            shift
-
-            if timeout 900 "$@"; then
-              results+=("${label} passed")
-            else
-              results+=("${label} failed")
-              echo "::warning::${label} failed. The reviewer will use this as validation context."
-            fi
-          }
-
-          if [[ -f composer.json && -f composer.lock ]]; then
-            if command -v composer >/dev/null 2>&1; then
-              if composer install --no-interaction --prefer-dist --no-progress --no-ansi; then
-                results+=("Composer install passed")
-
-                if jq -e '.scripts.test | type == "string" or type == "array"' composer.json >/dev/null 2>&1; then
-                  run_check "Composer test" composer run-script test --no-interaction --no-ansi
-                elif [[ -f artisan && (-x vendor/bin/pest || -x vendor/bin/phpunit) ]]; then
-                  run_check "Laravel test" php artisan test
-                fi
-              else
-                results+=("Composer install failed")
-                echo "::warning::Composer install failed."
-              fi
-            else
-              results+=("Composer unavailable")
-            fi
-          fi
-
-          if [[ -f package.json ]]; then
-            package_runner=''
-            install_passed=false
-
-            if [[ -f pnpm-lock.yaml ]] && command -v corepack >/dev/null 2>&1; then
-              package_runner='pnpm'
-              if corepack pnpm install --frozen-lockfile; then install_passed=true; fi
-            elif [[ -f yarn.lock ]] && command -v corepack >/dev/null 2>&1; then
-              package_runner='yarn'
-              if corepack yarn install --immutable || corepack yarn install --frozen-lockfile; then install_passed=true; fi
-            elif [[ -f package-lock.json ]] && command -v npm >/dev/null 2>&1; then
-              package_runner='npm'
-              if npm ci; then install_passed=true; fi
-            fi
-
-            if [[ -n "$package_runner" && "$install_passed" == true ]]; then
-              results+=("${package_runner} install passed")
-
-              if jq -e '.scripts.test | type == "string" and test("Error: no test specified") | not' package.json >/dev/null 2>&1; then
-                if [[ "$package_runner" == pnpm ]]; then
-                  run_check "pnpm test" corepack pnpm test
-                elif [[ "$package_runner" == yarn ]]; then
-                  run_check "yarn test" corepack yarn test
-                else
-                  run_check "npm test" npm test
-                fi
-              fi
-
-              if jq -e '.scripts.build | type == "string"' package.json >/dev/null 2>&1; then
-                if [[ "$package_runner" == pnpm ]]; then
-                  run_check "pnpm build" corepack pnpm run build
-                elif [[ "$package_runner" == yarn ]]; then
-                  run_check "yarn build" corepack yarn build
-                else
-                  run_check "npm build" npm run build
-                fi
-              fi
-            elif [[ -n "$package_runner" ]]; then
-              results+=("${package_runner} install failed")
-              echo "::warning::${package_runner} install failed."
-            elif [[ -f pnpm-lock.yaml || -f yarn.lock || -f package-lock.json ]]; then
-              results+=("Node package manager unavailable")
-            fi
-          fi
-
-          if [[ ${#results[@]} -eq 0 ]]; then
-            result='No supported locked dependencies or project checks detected'
-          else
-            result="$(printf '%s; ' "${results[@]}")"
-            result="${result%; }"
-          fi
-
-          echo "result=$result" >> "$github_output_file"
-          echo "### Isolated dependency validation" >> "$github_step_summary_file"
-          echo "$result" >> "$github_step_summary_file"
-
   claude-review:
-    needs: dependency-validation
-    if: ${{ always() }}
     runs-on: [self-hosted, ci, github-actions]
-    env:
-      DEPENDENCY_VALIDATION_RESULT: ${{ needs.dependency-validation.outputs.result }}
 
     steps:
       - name: Checkout pull request merge
@@ -578,10 +448,9 @@ jobs:
           [[ -n "$review_prompt" ]] || review_prompt="$REVIEW_PROMPT"
           [[ -n "$backup_review_prompt" ]] || backup_review_prompt="$review_prompt"
           review_validation_instruction='Your final response MUST start with exactly REVIEW_STATUS: complete or REVIEW_STATUS: blocked. Use complete only after successfully inspecting the repository and prepared pull request context. Use blocked when required evidence could not be read.'
-          dependency_validation_result="${DEPENDENCY_VALIDATION_RESULT:-Not available or skipped}"
-          dependency_validation_instruction="Dependency installation and executable tests are intentionally isolated from this privileged read-only reviewer. Isolated validation result: ${dependency_validation_result}. Do not install dependencies in the reviewer job. Missing local vendor or node_modules directories are expected and are not an access failure or a review finding. Use the prepared check results and mention unavailable runtime validation only briefly when it materially limits confidence."
-          printf -v review_prompt '%s\n\n%s\n\n%s' "$review_prompt" "$dependency_validation_instruction" "$review_validation_instruction"
-          printf -v backup_review_prompt '%s\n\n%s\n\n%s' "$backup_review_prompt" "$dependency_validation_instruction" "$review_validation_instruction"
+          review_execution_instruction='Do not install dependencies or run full project test or build suites in the reviewer job. Use the prepared GitHub check results as CI evidence. Missing local vendor or node_modules directories are expected and are not an access failure or a review finding. You may run fast, read-only syntax or static inspection commands when they do not execute pull request code.'
+          printf -v review_prompt '%s\n\n%s\n\n%s' "$review_prompt" "$review_execution_instruction" "$review_validation_instruction"
+          printf -v backup_review_prompt '%s\n\n%s\n\n%s' "$backup_review_prompt" "$review_execution_instruction" "$review_validation_instruction"
           review_prompt_delimiter="REVIEW_PROMPT_$(openssl rand -hex 16)"
           backup_review_prompt_delimiter="BACKUP_REVIEW_PROMPT_$(openssl rand -hex 16)"
           {
@@ -964,18 +833,31 @@ jobs:
             GIT_CONFIG_GLOBAL="$git_global_config" HOME="$skills_home" timeout 900 codex "${codex_args[@]}" < "$prompt_file" > "$events_file" 2> "$error_file"
           }
 
+          show_codex_failure() {
+            if [[ -s "$error_file" ]]; then
+              tail -c 4000 "$error_file" || true
+            fi
+
+            structured_error="$(jq -r 'select(.type == "error" or .type == "turn.failed") | .message // (.error | if type == "object" then .message else . end) // empty' "$events_file" 2>/dev/null | tail -c 4000)"
+            if [[ -n "$structured_error" ]]; then
+              printf '%s\n' "$structured_error"
+            elif [[ ! -s "$error_file" ]]; then
+              echo 'Codex exited without a structured error message.'
+            fi
+          }
+
           if ! run_codex; then
             printf '\nThe first Codex review attempt failed. Retry the review from the existing checkout and context.\n' >> "$prompt_file"
             if ! run_codex; then
               echo "::error::Codex review failed twice."
-              tail -c 4000 "$error_file" || true
+              show_codex_failure
               exit 1
             fi
           fi
 
           if [[ ! -s "$result_file" ]] || ! jq -e 'select(.type == "turn.completed")' "$events_file" >/dev/null; then
             echo "::error::Codex did not produce a completed review result."
-            tail -c 4000 "$error_file" || true
+            show_codex_failure
             exit 1
           fi
 
@@ -1641,14 +1523,28 @@ jobs:
           fi
           codex_args+=(-)
 
+          show_codex_backup_failure() {
+            if [[ -s "$error_file" ]]; then
+              tail -c 4000 "$error_file" || true
+            fi
+
+            structured_error="$(jq -r 'select(.type == "error" or .type == "turn.failed") | .message // (.error | if type == "object" then .message else . end) // empty' "$events_file" 2>/dev/null | tail -c 4000)"
+            if [[ -n "$structured_error" ]]; then
+              printf '%s\n' "$structured_error"
+            elif [[ ! -s "$error_file" ]]; then
+              echo 'Backup Codex exited without a structured error message.'
+            fi
+          }
+
           if ! GIT_CONFIG_GLOBAL="$git_global_config" HOME="$skills_home" timeout 900 codex "${codex_args[@]}" < "$prompt_file" > "$events_file" 2> "$error_file"; then
             echo "::error::Backup Codex review failed."
-            tail -c 4000 "$error_file" || true
+            show_codex_backup_failure
             exit 1
           fi
 
           if [[ ! -s "$result_file" ]] || ! jq -e 'select(.type == "turn.completed")' "$events_file" >/dev/null; then
             echo "::error::Backup Codex did not produce a completed review result."
+            show_codex_backup_failure
             exit 1
           fi
 
