@@ -6,7 +6,6 @@ import {
     buildLinkedInProfileFailureItem,
     buildLinkedInProfileOutput,
     isRecoverableLinkedInProfileError,
-    shouldPublishLinkedInProfileResult,
 } from '../dist/results.js';
 import { ScrappaApiError } from '../dist/shared/index.js';
 
@@ -96,9 +95,4 @@ test('isRecoverableLinkedInProfileError only downgrades not-found API errors', (
     assert.equal(isRecoverableLinkedInProfileError(new ScrappaApiError(401, 'Unauthorized')), false);
     assert.equal(isRecoverableLinkedInProfileError(new ScrappaApiError(500, 'Unavailable')), false);
     assert.equal(isRecoverableLinkedInProfileError(new Error('timeout')), false);
-});
-
-test('only successful results are published to the billable default dataset', () => {
-    assert.equal(shouldPublishLinkedInProfileResult({ success: true, input_url: 'valid' }), true);
-    assert.equal(shouldPublishLinkedInProfileResult({ success: false, input_url: 'missing' }), false);
 });

@@ -146,7 +146,3 @@ export function isRecoverableLinkedInProfileError(error: unknown): boolean {
     // should fail the run so Scrappa or Apify reliability issues are visible.
     return error instanceof ScrappaApiError && error.status === 404;
 }
-
-export function shouldPublishLinkedInProfileResult(result: LinkedInProfileResult): boolean {
-    return result.success === true;
-}
