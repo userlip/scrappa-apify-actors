@@ -123,7 +123,7 @@ export function buildLinkedInProfileFailureItem(
         url: normalizedUrl,
         error: message,
         error_type: error instanceof ScrappaApiError ? 'scrappa_api_error' : 'error',
-        message: statusCode === 404 ? 'Profile not found' : message,
+        message: statusCode === 404 ? 'Profile not found or not publicly accessible' : message,
         status_code: statusCode,
     };
 }

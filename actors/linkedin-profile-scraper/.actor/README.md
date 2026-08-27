@@ -83,6 +83,8 @@ Each profile is saved to the dataset with main fields:
 
 For legacy single-URL runs, the complete response is saved to the `OUTPUT` key with all profile data. Batch runs use the dataset as the primary result channel and write a small summary to `OUTPUT`.
 
+Failed or unavailable profiles are not written to the default dataset, so they are not charged as results. For a single URL, the structured failure is stored in `OUTPUT`; batch failures are also stored in the `FAILURES` key.
+
 ## Example Input
 
 ```json

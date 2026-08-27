@@ -66,7 +66,7 @@ test('buildLinkedInProfileFailureItem emits per-item Scrappa error metadata', ()
             url: 'https://www.linkedin.com/in/missing-profile',
             error: 'Scrappa API error (404): Not found',
             error_type: 'scrappa_api_error',
-            message: 'Profile not found',
+            message: 'Profile not found or not publicly accessible',
             status_code: 404,
         },
     );

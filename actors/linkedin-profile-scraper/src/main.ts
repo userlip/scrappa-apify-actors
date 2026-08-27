@@ -1,11 +1,11 @@
 import { Actor } from 'apify';
 import { ScrappaClient } from './shared/index.js';
 import { getInputUrls, type LinkedInProfileInput } from './input.js';
+import { publishLinkedInProfileResults } from './publication.js';
 import { buildLinkedInProfileParams } from './request-params.js';
 import {
     buildLinkedInProfileDatasetItem,
     buildLinkedInProfileFailureItem,
-    buildLinkedInProfileOutput,
     isRecoverableLinkedInProfileError,
     type LinkedInProfileResponse,
     type LinkedInProfileResult,
@@ -28,9 +28,7 @@ async function main(): Promise<void> {
         }
 
         const client = new ScrappaClient({ apiKey });
-        let firstResult: LinkedInProfileResult | undefined;
-        let succeeded = 0;
-        let failed = 0;
+        const results: LinkedInProfileResult[] = [];
 
         console.log(`Scraping ${urls.length} LinkedIn profile URL${urls.length === 1 ? '' : 's'}`);
 
@@ -43,9 +41,7 @@ async function main(): Promise<void> {
                     new Error(request.validation_error ?? 'Invalid LinkedIn profile URL'),
                     inputUrl,
                 );
-                await Actor.pushData(result);
-                firstResult ??= result;
-                failed += 1;
+                results.push(result);
                 continue;
             }
 
@@ -78,36 +74,17 @@ async function main(): Promise<void> {
                 console.warn('Profile scraping returned success: false' + (result.message ? ` (${result.message})` : ''));
             }
 
-            await Actor.pushData(result);
-            firstResult ??= result;
-
-            if (result.success) {
-                succeeded += 1;
-            } else {
-                failed += 1;
-            }
+            results.push(result);
         }
 
-        if (urls.length === 1 && firstResult) {
-            const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', buildLinkedInProfileOutput(firstResult));
-        } else {
-            const store = await Actor.openKeyValueStore();
-            await store.setValue('OUTPUT', {
-                requested: urls.length,
-                succeeded,
-                failed,
-            });
-        }
+        const store = await Actor.openKeyValueStore();
+        const summary = await publishLinkedInProfileResults(results, {
+            pushData: (result) => Actor.pushData(result),
+            setValue: (key, value) => store.setValue(key, value),
+        });
 
         // Log summary
         console.log('LinkedIn profile scraping completed');
-
-        const summary = {
-            requested: urls.length,
-            succeeded,
-            failed,
-        };
 
         console.log('Profile summary:', JSON.stringify(summary, null, 2));
 
