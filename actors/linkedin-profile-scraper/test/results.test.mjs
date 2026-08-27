@@ -6,6 +6,7 @@ import {
     buildLinkedInProfileFailureItem,
     buildLinkedInProfileOutput,
     isRecoverableLinkedInProfileError,
+    shouldPublishLinkedInProfileResult,
 } from '../dist/results.js';
 import { ScrappaApiError } from '../dist/shared/index.js';
 
@@ -66,7 +67,7 @@ test('buildLinkedInProfileFailureItem emits per-item Scrappa error metadata', ()
             url: 'https://www.linkedin.com/in/missing-profile',
             error: 'Scrappa API error (404): Not found',
             error_type: 'scrappa_api_error',
-            message: 'Profile not found',
+            message: 'Profile not found or not publicly accessible',
             status_code: 404,
         },
     );
@@ -95,4 +96,9 @@ test('isRecoverableLinkedInProfileError only downgrades not-found API errors', (
     assert.equal(isRecoverableLinkedInProfileError(new ScrappaApiError(401, 'Unauthorized')), false);
     assert.equal(isRecoverableLinkedInProfileError(new ScrappaApiError(500, 'Unavailable')), false);
     assert.equal(isRecoverableLinkedInProfileError(new Error('timeout')), false);
+});
+
+test('only successful results are published to the billable default dataset', () => {
+    assert.equal(shouldPublishLinkedInProfileResult({ success: true, input_url: 'valid' }), true);
+    assert.equal(shouldPublishLinkedInProfileResult({ success: false, input_url: 'missing' }), false);
 });

@@ -123,7 +123,7 @@ export function buildLinkedInProfileFailureItem(
         url: normalizedUrl,
         error: message,
         error_type: error instanceof ScrappaApiError ? 'scrappa_api_error' : 'error',
-        message: statusCode === 404 ? 'Profile not found' : message,
+        message: statusCode === 404 ? 'Profile not found or not publicly accessible' : message,
         status_code: statusCode,
     };
 }
@@ -145,4 +145,8 @@ export function isRecoverableLinkedInProfileError(error: unknown): boolean {
     // Keep only true per-profile misses recoverable. Auth, rate limit, and server errors
     // should fail the run so Scrappa or Apify reliability issues are visible.
     return error instanceof ScrappaApiError && error.status === 404;
+}
+
+export function shouldPublishLinkedInProfileResult(result: LinkedInProfileResult): boolean {
+    return result.success === true;
 }

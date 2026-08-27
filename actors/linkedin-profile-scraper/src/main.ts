@@ -7,6 +7,7 @@ import {
     buildLinkedInProfileFailureItem,
     buildLinkedInProfileOutput,
     isRecoverableLinkedInProfileError,
+    shouldPublishLinkedInProfileResult,
     type LinkedInProfileResponse,
     type LinkedInProfileResult,
 } from './results.js';
@@ -29,6 +30,7 @@ async function main(): Promise<void> {
 
         const client = new ScrappaClient({ apiKey });
         let firstResult: LinkedInProfileResult | undefined;
+        const failures: LinkedInProfileResult[] = [];
         let succeeded = 0;
         let failed = 0;
 
@@ -43,7 +45,7 @@ async function main(): Promise<void> {
                     new Error(request.validation_error ?? 'Invalid LinkedIn profile URL'),
                     inputUrl,
                 );
-                await Actor.pushData(result);
+                failures.push(result);
                 firstResult ??= result;
                 failed += 1;
                 continue;
@@ -78,7 +80,11 @@ async function main(): Promise<void> {
                 console.warn('Profile scraping returned success: false' + (result.message ? ` (${result.message})` : ''));
             }
 
-            await Actor.pushData(result);
+            if (shouldPublishLinkedInProfileResult(result)) {
+                await Actor.pushData(result);
+            } else {
+                failures.push(result);
+            }
             firstResult ??= result;
 
             if (result.success) {
@@ -88,16 +94,20 @@ async function main(): Promise<void> {
             }
         }
 
+        const store = await Actor.openKeyValueStore();
+
         if (urls.length === 1 && firstResult) {
-            const store = await Actor.openKeyValueStore();
             await store.setValue('OUTPUT', buildLinkedInProfileOutput(firstResult));
         } else {
-            const store = await Actor.openKeyValueStore();
             await store.setValue('OUTPUT', {
                 requested: urls.length,
                 succeeded,
                 failed,
             });
+        }
+
+        if (failures.length > 0) {
+            await store.setValue('FAILURES', failures);
         }
 
         // Log summary
