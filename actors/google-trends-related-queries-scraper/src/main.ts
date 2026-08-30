@@ -8,10 +8,15 @@ import {
 import type { GoogleTrendsRelatedQueriesInput } from './request-params.js';
 import { buildRelatedDatasetItems } from './response-utils.js';
 import type { GoogleTrendsRelatedResponse } from './response-utils.js';
+import {
+    AUTOCOMPLETE_MAX_ATTEMPTS,
+    AUTOCOMPLETE_REQUEST_TIMEOUT_MS,
+    RELATED_MAX_ATTEMPTS,
+    RELATED_MAX_RETRY_DELAY_MS,
+    RELATED_REQUEST_TIMEOUT_MS,
+} from './runtime-config.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
-const SCRAPPA_MAX_ATTEMPTS = 3;
 const RELATED_RESULT_CHARGE_EVENT = 'related-result';
 
 async function main(): Promise<void> {
@@ -31,10 +36,14 @@ async function main(): Promise<void> {
         const params = buildGoogleTrendsRelatedQueriesParams(input);
         const includeAutocomplete = shouldIncludeAutocomplete(input);
         console.log(`Fetching Google Trends related queries for ${describeGoogleTrendsRelatedQueriesRequest(params)}`);
-        const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
+        const client = new ScrappaClient({
+            apiKey,
+            timeoutMs: RELATED_REQUEST_TIMEOUT_MS,
+            maxRetryDelayMs: RELATED_MAX_RETRY_DELAY_MS,
+        });
 
         const response = await client.get<GoogleTrendsRelatedResponse>('/google-trends/related', params, {
-            attempts: SCRAPPA_MAX_ATTEMPTS,
+            attempts: RELATED_MAX_ATTEMPTS,
         });
         const datasetItems = buildRelatedDatasetItems(response, params);
 
@@ -60,7 +69,11 @@ async function main(): Promise<void> {
         }
 
         const autocompleteSummary = includeAutocomplete
-            ? await fetchAutocompleteSummary(client, params, SCRAPPA_MAX_ATTEMPTS)
+            ? await fetchAutocompleteSummary(
+                new ScrappaClient({ apiKey, timeoutMs: AUTOCOMPLETE_REQUEST_TIMEOUT_MS }),
+                params,
+                AUTOCOMPLETE_MAX_ATTEMPTS,
+            )
             : { response: null, error: null };
 
         const store = await Actor.openKeyValueStore();
@@ -84,7 +97,7 @@ async function main(): Promise<void> {
     } catch (error) {
         const rawMessage = error instanceof Error ? error.message : String(error);
         const message = error instanceof ScrappaTimeoutError
-            ? `${rawMessage}. The Google Trends related queries request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try a shorter time range, a more specific keyword, or run the request again.`
+            ? `${rawMessage}. The Google Trends related queries request exceeded the ${RELATED_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try a shorter time range, a more specific keyword, or run the request again.`
             : rawMessage;
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
