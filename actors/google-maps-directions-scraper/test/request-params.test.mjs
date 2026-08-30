@@ -47,6 +47,25 @@ test('normalizes, deduplicates, and indexes a route batch in first-seen order', 
     ]);
 });
 
+test('prefers an explicit route batch over schema-injected compatibility defaults', () => {
+    const requests = buildDirectionsRequests({
+        routes: [
+            { origin: 'Berlin Hauptbahnhof', destination: 'Brandenburg Gate', mode: 'walking' },
+            { origin: 'Berlin Hauptbahnhof', destination: 'Brandenburg Gate', mode: 'driving' },
+        ],
+        origin: 'Times Square, New York, NY',
+        destination: 'Central Park, New York, NY',
+        mode: 'driving',
+        hl: 'en',
+    });
+
+    assert.equal(requests.length, 2);
+    assert.deepEqual(requests.map(({ origin, destination, mode }) => ({ origin, destination, mode })), [
+        { origin: 'Berlin Hauptbahnhof', destination: 'Brandenburg Gate', mode: 'walking' },
+        { origin: 'Berlin Hauptbahnhof', destination: 'Brandenburg Gate', mode: 'driving' },
+    ]);
+});
+
 test('rejects malformed, incomplete, and over-limit input before network work', () => {
     assert.throws(() => buildDirectionsRequests({}), /Provide at least one route/);
     assert.throws(() => buildDirectionsRequests({ origin: 'A' }), /provided together/);

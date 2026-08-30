@@ -27,14 +27,18 @@
       "type": "string",
       "editor": "textfield",
       "description": "Singular compatibility input. Use routes for batches.",
-      "maxLength": 200
+      "maxLength": 200,
+      "default": "Times Square, New York, NY",
+      "prefill": "Times Square, New York, NY"
     },
     "destination": {
       "title": "Destination (compatibility)",
       "type": "string",
       "editor": "textfield",
       "description": "Singular compatibility input. Use routes for batches.",
-      "maxLength": 200
+      "maxLength": 200,
+      "default": "Central Park, New York, NY",
+      "prefill": "Central Park, New York, NY"
     },
     "mode": {
       "title": "Mode (compatibility)",

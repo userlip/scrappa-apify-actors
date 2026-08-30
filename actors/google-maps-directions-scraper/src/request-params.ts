@@ -104,20 +104,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function getRouteInputs(input: DirectionsInput): DirectionsRouteInput[] {
     const routeInputs: DirectionsRouteInput[] = [];
-    const hasSingular = input.origin !== undefined || input.destination !== undefined;
-
-    if (hasSingular) {
-        if (input.origin === undefined || input.destination === undefined) {
-            throw new Error('origin and destination must be provided together');
-        }
-        routeInputs.push({
-            origin: input.origin,
-            destination: input.destination,
-            mode: input.mode,
-            hl: input.hl,
-            gl: input.gl,
-        });
-    }
 
     if (input.routes !== undefined) {
         if (!Array.isArray(input.routes)) {
@@ -129,6 +115,24 @@ function getRouteInputs(input: DirectionsInput): DirectionsRouteInput[] {
                 throw new Error(`routes[${index}] must be an object`);
             }
             routeInputs.push(route);
+        });
+    }
+
+    if (routeInputs.length > 0) {
+        return routeInputs;
+    }
+
+    const hasSingular = input.origin !== undefined || input.destination !== undefined;
+    if (hasSingular) {
+        if (input.origin === undefined || input.destination === undefined) {
+            throw new Error('origin and destination must be provided together');
+        }
+        routeInputs.push({
+            origin: input.origin,
+            destination: input.destination,
+            mode: input.mode,
+            hl: input.hl,
+            gl: input.gl,
         });
     }
 
