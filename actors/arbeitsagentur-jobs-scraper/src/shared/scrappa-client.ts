@@ -2,6 +2,7 @@ export interface ScrappaConfig {
     apiKey: string;
     baseUrl?: string;
     debug?: boolean;
+    maxRetryDelayMs?: number;
     timeoutMs?: number;
 }
 
@@ -25,8 +26,25 @@ export class ScrappaTimeoutError extends Error {
     }
 }
 
-export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
-    return Math.min(1000 * Math.pow(2, failedAttempt) + jitterMs, 10000);
+export class ScrappaApiError extends Error {
+    constructor(
+        public readonly statusCode: number,
+        message: string,
+        public readonly retryAfterMs?: number,
+    ) {
+        super(`Scrappa API error (${statusCode}): ${message}`);
+        this.name = 'ScrappaApiError';
+    }
+}
+
+export function getRetryDelayMs(
+    failedAttempt: number,
+    jitterMs = Math.random() * 1000,
+    retryAfterMs?: number,
+    maxRetryDelayMs = 60000,
+): number {
+    const exponentialDelayMs = 1000 * Math.pow(2, failedAttempt) + jitterMs;
+    return Math.min(Math.max(exponentialDelayMs, retryAfterMs ?? 0), maxRetryDelayMs);
 }
 
 export function isRetryableScrappaError(error: unknown): boolean {
@@ -34,23 +52,25 @@ export function isRetryableScrappaError(error: unknown): boolean {
         return true;
     }
 
-    if (!(error instanceof Error)) {
-        return false;
+    if (error instanceof ScrappaApiError) {
+        return [408, 429, 500, 502, 503, 504].includes(error.statusCode);
     }
 
-    return /Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message);
+    return false;
 }
 
 export class ScrappaClient {
     private apiKey: string;
     private baseUrl: string;
     private debug: boolean;
+    private maxRetryDelayMs: number;
     private timeoutMs: number;
 
     constructor(config: ScrappaConfig) {
         this.apiKey = config.apiKey;
         this.baseUrl = config.baseUrl ?? 'https://scrappa.co/api';
         this.debug = config.debug ?? false;
+        this.maxRetryDelayMs = config.maxRetryDelayMs ?? 60000;
         this.timeoutMs = config.timeoutMs ?? 60000;
     }
 
@@ -90,7 +110,8 @@ export class ScrappaClient {
                     break;
                 }
 
-                const delayMs = getRetryDelayMs(attempt);
+                const retryAfterMs = error instanceof ScrappaApiError ? error.retryAfterMs : undefined;
+                const delayMs = getRetryDelayMs(attempt, undefined, retryAfterMs, this.maxRetryDelayMs);
                 console.warn(`Scrappa API request failed (${this.describeError(error)}). Retrying attempt ${attempt + 1}/${attempts} in ${delayMs}ms.`);
                 await new Promise((resolve) => setTimeout(resolve, delayMs));
             }
@@ -152,7 +173,8 @@ export class ScrappaClient {
             if (!response.ok) {
                 const errorMessage = await this.readErrorMessage(response);
 
-                throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
+                const retryAfterMs = this.parseRetryAfterMs(response.headers.get('Retry-After'));
+                throw new ScrappaApiError(response.status, errorMessage, retryAfterMs);
             }
 
             return await response.json() as T;
@@ -174,13 +196,35 @@ export class ScrappaClient {
         return String(error);
     }
 
+    private parseRetryAfterMs(retryAfter: string | null): number | undefined {
+        if (retryAfter === null) {
+            return undefined;
+        }
+
+        const seconds = Number(retryAfter);
+        if (Number.isFinite(seconds) && seconds >= 0) {
+            return seconds * 1000;
+        }
+
+        const retryAt = Date.parse(retryAfter);
+        if (Number.isNaN(retryAt)) {
+            return undefined;
+        }
+
+        return Math.max(0, retryAt - Date.now());
+    }
+
     private async readErrorMessage(response: Response): Promise<string> {
         const fallback = response.statusText || `HTTP ${response.status}`;
 
         let bodyText: string;
         try {
             bodyText = await response.text();
-        } catch {
+        } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw error;
+            }
+
             return fallback;
         }
 
