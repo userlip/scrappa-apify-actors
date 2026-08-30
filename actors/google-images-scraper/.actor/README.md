@@ -7,13 +7,17 @@ Search Google Images and export dataset-ready image metadata for product researc
 - Image result title, source website, source page URL, thumbnail URL, and original image URL
 - Original image width and height when Google exposes dimensions
 - Filters for size, type, color, aspect ratio, safe search, language, country, and time-based `tbs`
+- Batch input for up to 50 deduplicated searches in one Actor run
 - Full Scrappa response saved to key-value store record `OUTPUT`
 
 ## Input
 
 ```json
 {
-  "q": "coffee product photography",
+  "queries": [
+    "coffee product photography",
+    "tea product photography"
+  ],
   "page": 1,
   "hl": "en",
   "gl": "us",
@@ -24,6 +28,10 @@ Search Google Images and export dataset-ready image metadata for product researc
   "safe": "active"
 }
 ```
+
+Use `queries` for normal and higher-volume usage so Actor startup and storage
+overhead are shared by all searches in the batch. The legacy `q` field remains
+supported for existing integrations that submit one query per run.
 
 ## Output
 
