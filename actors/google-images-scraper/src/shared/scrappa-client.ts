@@ -5,10 +5,48 @@ export interface ScrappaConfig {
     timeoutMs?: number;
 }
 
+interface ScrappaRequestOptions {
+    attempts?: number;
+    retryDelayMs?: (failedAttempt: number) => number;
+}
+
 export interface ScrappaError {
     status: number;
     message: string;
     errors?: Record<string, string[]>;
+}
+
+export class ScrappaHttpError extends Error {
+    constructor(public readonly status: number, details: string) {
+        super(`Scrappa API error (${status}): ${details}`);
+        this.name = 'ScrappaHttpError';
+    }
+}
+
+export class ScrappaConnectionError extends Error {
+    constructor(options?: ErrorOptions) {
+        super('Scrappa API connection failed', options);
+        this.name = 'ScrappaConnectionError';
+    }
+}
+
+export class ScrappaTimeoutError extends Error {
+    constructor(timeoutMs: number, options?: ErrorOptions) {
+        super(`Scrappa API request timed out after ${timeoutMs}ms`, options);
+        this.name = 'ScrappaTimeoutError';
+    }
+}
+
+const RETRYABLE_HTTP_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
+
+export function isRetryableScrappaError(error: unknown): boolean {
+    return error instanceof ScrappaTimeoutError
+        || error instanceof ScrappaConnectionError
+        || (error instanceof ScrappaHttpError && RETRYABLE_HTTP_STATUSES.has(error.status));
+}
+
+export function getRetryDelayMs(failedAttempt: number, jitterMs = Math.random() * 1000): number {
+    return Math.min(1000 * Math.pow(2, failedAttempt) + jitterMs, 10000);
 }
 
 export class ScrappaClient {
@@ -24,8 +62,31 @@ export class ScrappaClient {
         this.timeoutMs = config.timeoutMs ?? 60000;
     }
 
-    async get<T>(endpoint: string, params: Record<string, unknown> = {}): Promise<T> {
-        return this.request<T>('GET', endpoint, params);
+    async get<T>(
+        endpoint: string,
+        params: Record<string, unknown> = {},
+        options: ScrappaRequestOptions = {},
+    ): Promise<T> {
+        const attempts = Math.max(1, options.attempts ?? 1);
+        let lastError: unknown;
+
+        for (let attempt = 1; attempt <= attempts; attempt++) {
+            try {
+                return await this.request<T>('GET', endpoint, params);
+            } catch (error) {
+                lastError = error;
+                if (attempt >= attempts || !isRetryableScrappaError(error)) {
+                    break;
+                }
+
+                const delayMs = options.retryDelayMs?.(attempt) ?? getRetryDelayMs(attempt);
+                const message = error instanceof Error ? error.message : String(error);
+                console.warn(`Scrappa API request failed (${message}). Retrying attempt ${attempt + 1}/${attempts} in ${delayMs}ms.`);
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
+            }
+        }
+
+        throw lastError;
     }
 
     async post<T>(endpoint: string, body: Record<string, unknown> = {}): Promise<T> {
@@ -72,10 +133,19 @@ export class ScrappaClient {
         const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
         try {
-            const response = await fetch(url.toString(), {
-                ...options,
-                signal: controller.signal,
-            });
+            let response: Response;
+            try {
+                response = await fetch(url.toString(), {
+                    ...options,
+                    signal: controller.signal,
+                });
+            } catch (error) {
+                if (error instanceof Error && error.name === 'AbortError') {
+                    throw new ScrappaTimeoutError(this.timeoutMs, { cause: error });
+                }
+
+                throw new ScrappaConnectionError({ cause: error });
+            }
 
             if (!response.ok) {
                 let errorMessage: string;
@@ -98,13 +168,13 @@ export class ScrappaClient {
                     errorMessage = await responseClone.text() || `HTTP ${response.status}`;
                 }
 
-                throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
+                throw new ScrappaHttpError(response.status, errorMessage);
             }
 
             return response.json() as Promise<T>;
         } catch (error) {
             if (error instanceof Error && error.name === 'AbortError') {
-                throw new Error(`Scrappa API request timed out after ${this.timeoutMs}ms`);
+                throw new ScrappaTimeoutError(this.timeoutMs, { cause: error });
             }
             throw error;
         } finally {

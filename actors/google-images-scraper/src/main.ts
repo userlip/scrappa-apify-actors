@@ -5,7 +5,8 @@ import { enrichResult, extractImageResults } from './response-utils.js';
 import type { GoogleImagesResponse } from './response-utils.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
+const SCRAPPA_REQUEST_ATTEMPTS = 2;
 const BATCH_CONCURRENCY = 5;
 
 interface GoogleImagesRequestSummary {
@@ -25,7 +26,9 @@ async function runGoogleImagesRequest(
     params: Record<string, unknown>,
 ): Promise<GoogleImagesRequestResult> {
     console.log(`Fetching Google Images for ${describeGoogleImagesRequest(params)}`);
-    const response = await client.get<GoogleImagesResponse>('/images', params);
+    const response = await client.get<GoogleImagesResponse>('/images', params, {
+        attempts: SCRAPPA_REQUEST_ATTEMPTS,
+    });
     const imageResults = extractImageResults(response);
     const datasetItems = imageResults.map((result) => enrichResult(result, params));
 

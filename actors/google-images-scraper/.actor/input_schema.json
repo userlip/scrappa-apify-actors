@@ -12,8 +12,7 @@
       "minItems": 1,
       "maxItems": 50,
       "prefill": [
-        "coffee product photography",
-        "espresso machine"
+        "coffee product photography"
       ],
       "items": {
         "type": "string",
@@ -25,8 +24,7 @@
       "title": "Legacy Search Query",
       "type": "string",
       "description": "Backward-compatible single keyword or phrase to search in Google Images. Prefer Search Queries for normal usage, especially when running more than one keyword.",
-      "editor": "textfield",
-      "prefill": "coffee product photography"
+      "editor": "textfield"
     },
     "page": {
       "title": "Page",

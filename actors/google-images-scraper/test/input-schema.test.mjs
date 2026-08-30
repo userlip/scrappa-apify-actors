@@ -11,3 +11,8 @@ test('input schema supports batch queries before legacy q', () => {
     assert.equal(schema.properties.queries.minItems, 1);
     assert.deepEqual(Object.keys(schema.properties).slice(0, 2), ['queries', 'q']);
 });
+
+test('prefilled QA input performs one request', () => {
+    assert.deepEqual(schema.properties.queries.prefill, ['coffee product photography']);
+    assert.equal(schema.properties.q.prefill, undefined);
+});
