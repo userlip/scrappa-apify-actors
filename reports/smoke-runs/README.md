@@ -4,6 +4,7 @@ Chronological evidence reports for Apify actor smoke runs. Run smoke checks befo
 
 | Date | Report | Scope |
 | --- | --- | --- |
+| 2026-08-30 | [Google Trends Related Queries QA recovery](./2026-08-30-google-trends-related-queries-qa-recovery.md) | Retry hardening, deployment, and exact-prefill cloud verification for `google-trends-related-queries-scraper` (`hoF0Qgm3S0wAfpY8y`) after three consecutive QA failures. |
 | 2026-07-01 | [TrustedShops Reviews paid activation gate](./2026-07-01-trustedshops-reviews-paid-activation.md) | Scheduled post-activation verification for public actor `trustedshops-reviews-scraper` (`L5tTNPlxeCTlFUUjl`) after its `PAY_PER_EVENT` `review-result` pricing starts on 2026-07-01. |
 | 2026-06-20 | [Booking Search stability gate](./2026-06-20-booking-search-stability-gate.md) | Three fresh `booking-search-scraper` (`BehWN3LEvBxhEiJDF`) runs passed with clean logs and dataset output before clearing `UNDER_MAINTENANCE`. |
 | 2026-06-20 | [Google Trends Autocomplete post-activation smoke run](./2026-06-20-google-trends-autocomplete-post-activation.md) | Public paid actor `google-trends-autocomplete-scraper` (`x4NPccdc4xbJZ2r6c`) verified after `PAY_PER_EVENT` activation with run `CSAByfk3493uHtVRO`, 5 dataset rows, and 5 `suggestion-result` charge events. |

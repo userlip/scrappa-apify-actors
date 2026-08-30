@@ -11,11 +11,13 @@ import {
 
 const originalFetch = globalThis.fetch;
 const originalRandom = Math.random;
+const originalSetTimeout = globalThis.setTimeout;
 const originalWarn = console.warn;
 
 test.afterEach(() => {
     globalThis.fetch = originalFetch;
     Math.random = originalRandom;
+    globalThis.setTimeout = originalSetTimeout;
     console.warn = originalWarn;
 });
 
@@ -166,6 +168,52 @@ test('retries retryable Scrappa API responses before returning success', async (
 
     assert.deepEqual(response, { ok: true });
     assert.equal(calls.length, 2);
+});
+
+test('honors and caps Retry-After during the retry flow', async () => {
+    const calls = [];
+    const scheduledRetryDelays = [];
+    console.warn = () => {};
+    globalThis.fetch = async (url, options) => {
+        calls.push({ url, options });
+        if (calls.length === 1) {
+            return new Response(JSON.stringify({ message: 'temporarily busy' }), {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Retry-After': '60',
+                },
+            });
+        }
+
+        return new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    };
+    globalThis.setTimeout = (callback, delay, ...args) => {
+        if (delay === 30000) {
+            scheduledRetryDelays.push(delay);
+            queueMicrotask(() => callback(...args));
+            return 0;
+        }
+
+        return originalSetTimeout(callback, delay, ...args);
+    };
+
+    const client = new ScrappaClient({
+        apiKey: 'test-key',
+        baseUrl: 'https://scrappa.test/api',
+        maxRetryDelayMs: 30000,
+        timeoutMs: 1000,
+    });
+
+    const response = await client.get('/retry-after', {}, { attempts: 2 });
+
+    assert.deepEqual(response, { ok: true });
+    assert.equal(calls.length, 2);
+    assert.deepEqual(scheduledRetryDelays, [30000]);
 });
 
 test('uses status text when an error response body cannot be read', async () => {

@@ -2,7 +2,7 @@
 
 Apify automated QA run `do3gFalO7vWaRyNrT` failed on build `VGqaWARXwacoY3RdM` after the prefilled request received three Scrappa HTTP 503 responses. The Actor retried after roughly 2.9 and 4.5 seconds, ignoring the upstream recovery window, and exited after 31 seconds without dataset rows.
 
-The deployed client now preserves Scrappa response status and `Retry-After` metadata. The Actor makes four attempts, caps each retry delay at 30 seconds, uses a 35-second request timeout, and has a 240-second run timeout. This keeps the full retry path below Apify's five-minute QA limit.
+The deployed client now preserves Scrappa response status and `Retry-After` metadata. The primary request makes four attempts, caps each retry delay at 20 seconds, and uses a 30-second request timeout. Optional autocomplete gets one non-fatal 15-second attempt. With a 30-second completion reserve, the combined worst-case budget is 225 seconds inside the Actor's 240-second timeout and Apify's five-minute QA limit.
 
 ## Verification
 
