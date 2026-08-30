@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+    ScrappaApiError,
     ScrappaClient,
     ScrappaTimeoutError,
     getRetryDelayMs,
@@ -20,24 +21,54 @@ test.afterEach(() => {
 
 test('classifies retryable Scrappa API errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);
-    assert.equal(isRetryableScrappaError(new Error('Scrappa API error (408): Timeout')), true);
-    assert.equal(isRetryableScrappaError(new Error('Scrappa API error (429): Too Many Requests')), true);
-    assert.equal(isRetryableScrappaError(new Error('Scrappa API error (500): Server Error')), true);
-    assert.equal(isRetryableScrappaError(new Error('Scrappa API error (503): Service Unavailable')), true);
+    assert.equal(isRetryableScrappaError(new ScrappaApiError(408, 'Timeout')), true);
+    assert.equal(isRetryableScrappaError(new ScrappaApiError(429, 'Too Many Requests')), true);
+    assert.equal(isRetryableScrappaError(new ScrappaApiError(500, 'Server Error')), true);
+    assert.equal(isRetryableScrappaError(new ScrappaApiError(503, 'Service Unavailable')), true);
 });
 
 test('does not retry validation, auth, or unrelated errors', () => {
-    assert.equal(isRetryableScrappaError(new Error('Scrappa API error (400): Bad Request')), false);
-    assert.equal(isRetryableScrappaError(new Error('Scrappa API error (401): Unauthorized')), false);
-    assert.equal(isRetryableScrappaError(new Error('Scrappa API error (422): Validation failed')), false);
+    assert.equal(isRetryableScrappaError(new ScrappaApiError(400, 'Bad Request')), false);
+    assert.equal(isRetryableScrappaError(new ScrappaApiError(401, 'Unauthorized')), false);
+    assert.equal(isRetryableScrappaError(new ScrappaApiError(422, 'Validation failed')), false);
     assert.equal(isRetryableScrappaError(new Error('network failed')), false);
-    assert.equal(isRetryableScrappaError('Scrappa API error (500): Server Error'), false);
+    assert.equal(isRetryableScrappaError(new Error('Scrappa API error (500): Server Error')), false);
 });
 
 test('calculates capped exponential retry delay', () => {
     assert.equal(getRetryDelayMs(1, 0), 2000);
     assert.equal(getRetryDelayMs(2, 250), 4250);
-    assert.equal(getRetryDelayMs(10, 0), 10000);
+    assert.equal(getRetryDelayMs(10, 0), 60000);
+    assert.equal(getRetryDelayMs(1, 0, 30000), 30000);
+    assert.equal(getRetryDelayMs(1, 0, 60000, 30000), 30000);
+});
+
+test('preserves Retry-After metadata on Scrappa API errors', async () => {
+    globalThis.fetch = async () => new Response(JSON.stringify({ message: 'temporarily busy' }), {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': '60',
+        },
+    });
+
+    const client = new ScrappaClient({
+        apiKey: 'test-key',
+        baseUrl: 'https://scrappa.test/api',
+        timeoutMs: 1000,
+    });
+
+    await assert.rejects(
+        () => client.get('/temporarily-busy'),
+        (error) => {
+            assert.equal(error instanceof ScrappaApiError, true);
+            assert.equal(error.statusCode, 503);
+            assert.equal(error.retryAfterMs, 60000);
+            assert.equal(error.message, 'Scrappa API error (503): temporarily busy');
+            return true;
+        },
+    );
 });
 
 test('sends GET requests with cleaned query parameters and API headers', async () => {
@@ -142,6 +173,7 @@ test('uses status text when an error response body cannot be read', async () => 
         ok: false,
         status: 500,
         statusText: 'Server Error',
+        headers: new Headers(),
         text: async () => {
             throw new Error('body stream failed');
         },

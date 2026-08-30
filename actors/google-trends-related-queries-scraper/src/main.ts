@@ -10,8 +10,9 @@ import { buildRelatedDatasetItems } from './response-utils.js';
 import type { GoogleTrendsRelatedResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
-const SCRAPPA_MAX_ATTEMPTS = 3;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 35000;
+const SCRAPPA_MAX_ATTEMPTS = 4;
+const SCRAPPA_MAX_RETRY_DELAY_MS = 30000;
 const RELATED_RESULT_CHARGE_EVENT = 'related-result';
 
 async function main(): Promise<void> {
@@ -31,7 +32,11 @@ async function main(): Promise<void> {
         const params = buildGoogleTrendsRelatedQueriesParams(input);
         const includeAutocomplete = shouldIncludeAutocomplete(input);
         console.log(`Fetching Google Trends related queries for ${describeGoogleTrendsRelatedQueriesRequest(params)}`);
-        const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
+        const client = new ScrappaClient({
+            apiKey,
+            timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS,
+            maxRetryDelayMs: SCRAPPA_MAX_RETRY_DELAY_MS,
+        });
 
         const response = await client.get<GoogleTrendsRelatedResponse>('/google-trends/related', params, {
             attempts: SCRAPPA_MAX_ATTEMPTS,
