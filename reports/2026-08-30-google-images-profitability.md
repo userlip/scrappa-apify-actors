@@ -22,9 +22,9 @@ The live Actor's stored default options were also corrected from 3,600 seconds t
 
 - `npm test`: 14/14 tests passed, including transient retry, non-retryable 400, batch input, validation, and response-shape coverage.
 - `apify validate-schema .actor/input_schema.json`: passed.
-- Deployment: build `1.0.4` (`TEsdfb1VUKdze64px`) succeeded and received the `latest` tag.
-- Production smoke: run `BoUmlyTITDCHce8DU` succeeded on build `1.0.4` in `9.363s`, used 128 MB with `45,924,352` peak bytes, stored 100 clean dataset rows, and recorded 100 `apify-default-dataset-item` charges.
-- Finalized smoke platform cost: `$0.0006718067`.
-- Lowest-tier event revenue check: at the `$0.00020` GOLD-and-above result price, 100 rows produce `$0.020`; the developer share before cost is `$0.016`, leaving approximately `$0.015328` profit and a `76.64%` margin on gross revenue for the representative run. At the FREE-tier `$0.00030` price, the same run leaves approximately `$0.023328` profit and a `77.76%` margin.
+- Deployment: final build `1.0.5` (`LJwRpNUEYupnGjSJj`) succeeded and received the `latest` tag.
+- Production smoke: run `4Qg1XCXgGELlcNe06` succeeded on build `1.0.5` in `9.193s`, used 128 MB with `52,031,488` peak bytes, stored 100 clean dataset rows, and recorded 100 `apify-default-dataset-item` charges.
+- Finalized smoke platform cost: `$0.0006758049`.
+- Lowest-tier event revenue check: at the `$0.00020` GOLD-and-above result price, 100 rows produce `$0.020`; the developer share before cost is `$0.016`, leaving approximately `$0.015324` profit and a `76.62%` margin on gross revenue for the representative run. At the FREE-tier `$0.00030` price, the same run leaves approximately `$0.023324` profit and a `77.75%` margin.
 
 The smoke proves profitable successful execution. The bounded retry policy and the September 5 synthetic start event address the unbilled failure/startup path that drove the August 14 loss. Profitability should be rechecked after the start event activates because Apify does not expose renter-owned individual run records to the Actor owner through the normal run-list API.
