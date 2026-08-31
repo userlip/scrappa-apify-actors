@@ -30,3 +30,5 @@ The actor now calls `/search-light` and adds `site:linkedin.com/jobs/view/` to t
 - Validation dataset: `jTi85kofyLcbqDFuA`, 10 items; every item URL matched `https://www.linkedin.com/jobs/view/`.
 
 The deployed validation is comfortably below Apify's five-minute automated QA limit.
+
+The `UNDER_MAINTENANCE` notice was cleared after deployment. A final post-reactivation run, `kdsc4WnReotvjPFqV`, succeeded in 2.904 seconds with 10 LinkedIn job URLs. The actor is public, active, and not deprecated.
