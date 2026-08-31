@@ -5,6 +5,8 @@ import {
     buildLinkedInJobsSearchParams,
     DEFAULT_LINKEDIN_JOBS_SEARCH_INPUT,
     DEFAULT_LINKEDIN_JOBS_SEARCH_QUERY,
+    LINKEDIN_JOBS_SEARCH_ENDPOINT,
+    LINKEDIN_JOBS_SITE_QUERY,
     normalizeLinkedInJobsSearchInput,
 } from '../dist/search-params.js';
 
@@ -25,7 +27,7 @@ test('forwards LinkedIn jobs search parameters', () => {
             rights: 'cc_publicdomain',
         }),
         {
-            query: 'software engineer berlin',
+            query: `${LINKEDIN_JOBS_SITE_QUERY} software engineer berlin`,
             num: 20,
             page: 2,
             hl: 'en',
@@ -43,8 +45,12 @@ test('forwards LinkedIn jobs search parameters', () => {
 
 test('filters undefined values from LinkedIn jobs search parameters', () => {
     assert.deepEqual(buildLinkedInJobsSearchParams({ query: 'cto', start: undefined, gl: undefined }), {
-        query: 'cto',
+        query: `${LINKEDIN_JOBS_SITE_QUERY} cto`,
     });
+});
+
+test('omits the constrained query when no query is provided', () => {
+    assert.deepEqual(buildLinkedInJobsSearchParams({ num: 10 }), { num: 10 });
 });
 
 test('uses the default query when input is empty', () => {
@@ -82,3 +88,4 @@ test('preserves explicit query and applies default targeting', () => {
 });
 
 assert.equal(DEFAULT_LINKEDIN_JOBS_SEARCH_QUERY, DEFAULT_LINKEDIN_JOBS_SEARCH_INPUT.query);
+assert.equal(LINKEDIN_JOBS_SEARCH_ENDPOINT, '/search-light');

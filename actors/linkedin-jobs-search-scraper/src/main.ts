@@ -2,6 +2,7 @@ import { Actor } from 'apify';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 import {
     buildLinkedInJobsSearchParams,
+    LINKEDIN_JOBS_SEARCH_ENDPOINT,
     normalizeLinkedInJobsSearchInput,
 } from './search-params.js';
 import type { LinkedInJobsSearchInput } from './search-params.js';
@@ -31,7 +32,7 @@ try {
 
     const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
     const response = await client.get<LinkedInJobsSearchResponse>(
-        '/linkedin/jobs/search',
+        LINKEDIN_JOBS_SEARCH_ENDPOINT,
         buildLinkedInJobsSearchParams(input),
         { attempts: SCRAPPA_MAX_ATTEMPTS }
     );

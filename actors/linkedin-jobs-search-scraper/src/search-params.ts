@@ -15,6 +15,8 @@ export interface LinkedInJobsSearchInput {
 }
 
 export const DEFAULT_LINKEDIN_JOBS_SEARCH_QUERY = 'software engineer remote';
+export const LINKEDIN_JOBS_SITE_QUERY = 'site:linkedin.com/jobs/view/';
+export const LINKEDIN_JOBS_SEARCH_ENDPOINT = '/search-light';
 
 export const DEFAULT_LINKEDIN_JOBS_SEARCH_INPUT: LinkedInJobsSearchInput = {
     query: DEFAULT_LINKEDIN_JOBS_SEARCH_QUERY,
@@ -71,7 +73,7 @@ export function normalizeLinkedInJobsSearchInput(input?: LinkedInJobsSearchInput
 export function buildLinkedInJobsSearchParams(input: LinkedInJobsSearchInput): Record<string, unknown> {
     const params: Record<string, unknown> = {};
     const entries: [keyof LinkedInJobsSearchInput, unknown][] = [
-        ['query', input.query],
+        ['query', input.query ? `${LINKEDIN_JOBS_SITE_QUERY} ${input.query}` : undefined],
         ['num', input.num],
         ['page', input.page],
         ['start', input.start],
