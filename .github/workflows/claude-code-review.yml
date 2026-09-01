@@ -1,9 +1,13 @@
-# Managed reviewer workflow version: 2026.08.08.5
+# Managed reviewer workflow version: 2026.09.01.1
 name: Claude Code Review
 
 on:
   pull_request_target:
     types: [opened, synchronize, ready_for_review, reopened]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -52,7 +56,28 @@ jobs:
           fi
           git config --local --unset-all http.https://github.com/.extraheader || true
           git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_header}"
-          if ! git fetch --no-tags --prune origin "refs/pull/${{ github.event.pull_request.number }}/merge"; then
+          fetch_with_retries() {
+            local ref="$1"
+            local depth="$2"
+            local max_attempts=3
+            local retry_delay
+
+            for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+              if timeout --signal=TERM 120s git -c http.version=HTTP/1.1 fetch --depth="$depth" --no-tags --prune origin "$ref"; then
+                return 0
+              fi
+
+              if [[ "$attempt" == "$max_attempts" ]]; then
+                return 1
+              fi
+
+              retry_delay=$((attempt * 5))
+              echo "::warning::Git fetch attempt ${attempt}/${max_attempts} failed; retrying in ${retry_delay}s."
+              sleep "$retry_delay"
+            done
+          }
+
+          if ! fetch_with_retries "refs/pull/${{ github.event.pull_request.number }}/merge" 2; then
             pull_request_response="$(mktemp)"
             if ! pull_request_status="$(curl -sSL \
               -o "$pull_request_response" \
@@ -73,7 +98,7 @@ jobs:
             fi
 
             rm -f "$pull_request_response"
-            echo "::error::Unable to fetch the pull request merge ref while the pull request is still open or its state could not be confirmed (HTTP ${pull_request_status})."
+            echo "::error::Unable to fetch the pull request merge ref after 3 attempts while the pull request is still open or its state could not be confirmed (HTTP ${pull_request_status})."
             exit 1
           fi
 
@@ -100,7 +125,32 @@ jobs:
             git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           fi
           git config --local --unset-all http.https://github.com/.extraheader || true
-          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --no-tags --prune origin "${{ github.event.pull_request.base.sha }}"
+          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth_header}"
+          fetch_with_retries() {
+            local ref="$1"
+            local depth="$2"
+            local max_attempts=3
+            local retry_delay
+
+            for ((attempt = 1; attempt <= max_attempts; attempt++)); do
+              if timeout --signal=TERM 120s git -c http.version=HTTP/1.1 fetch --depth="$depth" --no-tags --prune origin "$ref"; then
+                return 0
+              fi
+
+              if [[ "$attempt" == "$max_attempts" ]]; then
+                return 1
+              fi
+
+              retry_delay=$((attempt * 5))
+              echo "::warning::Git fetch attempt ${attempt}/${max_attempts} failed; retrying in ${retry_delay}s."
+              sleep "$retry_delay"
+            done
+          }
+
+          if ! fetch_with_retries "${{ github.event.pull_request.base.sha }}" 1; then
+            echo "::error::Unable to fetch the trusted pull request base after 3 attempts."
+            exit 1
+          fi
           git checkout --force --detach "${{ github.event.pull_request.base.sha }}"
           git clean -ffdx
 
@@ -583,7 +633,7 @@ jobs:
         shell: bash
         run: echo "Skipping Claude Code Review because this PR changes the review workflow."
 
-      - name: Install Laravel Boost for Claude Code
+      - name: Configure existing Laravel Boost for Claude Code
         if: ${{ github.event.pull_request.head.repo.id == github.event.pull_request.base.repo.id && steps.review-workflow.outputs.changed != 'true' && steps.ai-config.outcome == 'success' && steps.ai-config.outputs.token_type != 'CODEX_AUTH_JSON' }}
         id: laravel-boost
         continue-on-error: true
@@ -591,7 +641,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [[ ! -f composer.json || ! -f artisan ]]; then
+          if [[ ! -f composer.json || ! -f artisan || ! -f vendor/autoload.php ]]; then
             echo "enabled=false" >> "$GITHUB_OUTPUT"
             echo "claude_args=" >> "$GITHUB_OUTPUT"
             exit 0
@@ -605,13 +655,11 @@ jobs:
 
           trap cleanup_laravel_boost_changes EXIT
 
-          if ! command -v composer >/dev/null 2>&1; then
-            echo "::error::composer is required to install Laravel Boost for Claude Code."
-            exit 1
-          fi
-
           if ! composer show laravel/boost >/dev/null 2>&1; then
-            composer require laravel/boost --dev --no-interaction --no-progress --no-ansi
+            echo "::notice::Laravel Boost is not present in the checked-out dependencies; continuing without Boost."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "claude_args=" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           if ! APP_ENV=local APP_DEBUG=true php artisan list --raw | awk '{ print $1 }' | grep -qx 'boost:install'; then
@@ -811,7 +859,6 @@ jobs:
           [[ -n "$CODEX_EFFORT" ]] && codex_args+=(-c "model_reasoning_effort=\"${CODEX_EFFORT}\"")
 
           if [[ "${{ github.event.pull_request.head.repo.id }}" == "${{ github.event.pull_request.base.repo.id }}" ]]; then
-            git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.sha }}"
             printf '\nReview the changes in the current checkout against base commit %s.\n' "${{ github.event.pull_request.base.sha }}" >> "$prompt_file"
           else
             context_dir="${RUNNER_TEMP}/codex-review-context"
@@ -1048,8 +1095,8 @@ jobs:
           fi
 
           if ! command -v claude >/dev/null 2>&1; then
-            curl -fsSL https://claude.ai/install.sh | bash
-            export PATH="${HOME}/.local/bin:${HOME}/.npm-global/bin:${PATH}"
+            echo "::error::Claude Code is missing from the configured runner image."
+            exit 1
           fi
 
           prompt_file="$(mktemp)"
@@ -1211,8 +1258,8 @@ jobs:
           fi
 
           if ! command -v claude >/dev/null 2>&1; then
-            curl -fsSL https://claude.ai/install.sh | bash
-            export PATH="${HOME}/.local/bin:${HOME}/.npm-global/bin:${PATH}"
+            echo "::error::Claude Code is missing from the configured runner image."
+            exit 1
           fi
 
           prompt_file="$(mktemp)"
@@ -1509,7 +1556,6 @@ jobs:
           [[ -n "$CODEX_EFFORT" ]] && codex_args+=(-c "model_reasoning_effort=\"${CODEX_EFFORT}\"")
 
           if [[ "${{ github.event.pull_request.head.repo.id }}" == "${{ github.event.pull_request.base.repo.id }}" ]]; then
-            git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.sha }}"
             printf '\nReview the changes in the current checkout against base commit %s.\n' "${{ github.event.pull_request.base.sha }}" >> "$prompt_file"
           else
             context_dir="${RUNNER_TEMP}/codex-review-context"
