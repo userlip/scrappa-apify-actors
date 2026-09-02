@@ -21,8 +21,6 @@ export const INDEX_MARKETS = [
     'asia-pacific',
 ] as const;
 
-const DEFAULT_TREND: typeof MARKET_TRENDS[number] = 'gainers';
-
 function cleanString(value: unknown, field: string, maxLength: number): string | undefined {
     if (value === undefined || value === null || value === '') {
         return undefined;
@@ -100,9 +98,7 @@ function cleanIndexMarket(value: unknown): typeof INDEX_MARKETS[number] | undefi
 }
 
 export function buildGoogleFinanceMarketsParams(input: GoogleFinanceMarketsInput): Record<string, unknown> {
-    const params: Record<string, unknown> = {
-        trend: DEFAULT_TREND,
-    };
+    const params: Record<string, unknown> = {};
 
     const trend = cleanTrend(input.trend);
     const indexMarket = cleanIndexMarket(input.index_market);

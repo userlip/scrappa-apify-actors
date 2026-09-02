@@ -7,11 +7,11 @@
     "trend": {
       "title": "Trend",
       "type": "string",
-      "description": "Google Finance market trend view.",
+      "description": "Optional Google Finance trend view. Leave as Market overview for the broad markets page.",
       "editor": "select",
-      "enum": ["gainers", "losers", "most-active", "indexes", "climate-leaders", "cryptocurrencies", "currencies"],
-      "enumTitles": ["Gainers", "Losers", "Most active", "Indexes", "Climate leaders", "Cryptocurrencies", "Currencies"],
-      "default": "gainers"
+      "enum": ["", "gainers", "losers", "most-active", "indexes", "climate-leaders", "cryptocurrencies", "currencies"],
+      "enumTitles": ["Market overview", "Gainers", "Losers", "Most active", "Indexes", "Climate leaders", "Cryptocurrencies", "Currencies"],
+      "default": ""
     },
     "index_market": {
       "title": "Index Market",

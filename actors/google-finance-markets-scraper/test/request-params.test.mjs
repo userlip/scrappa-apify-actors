@@ -3,14 +3,13 @@ import test from 'node:test';
 
 import { buildGoogleFinanceMarketsParams, describeGoogleFinanceMarketsRequest } from '../dist/request-params.js';
 
-test('builds default params for a gainers trend request', () => {
+test('builds default params for the markets overview request', () => {
     assert.deepEqual(
         buildGoogleFinanceMarketsParams({
             hl: 'EN',
             gl: 'US',
         }),
         {
-            trend: 'gainers',
             hl: 'en',
             gl: 'us',
         },
@@ -59,9 +58,7 @@ test('ignores stale index market filters unless trend is indexes', () => {
         buildGoogleFinanceMarketsParams({
             index_market: 'americas',
         }),
-        {
-            trend: 'gainers',
-        },
+        {},
     );
 });
 
