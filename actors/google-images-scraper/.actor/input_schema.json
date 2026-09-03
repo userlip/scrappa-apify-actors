@@ -12,7 +12,7 @@
       "minItems": 1,
       "maxItems": 50,
       "prefill": [
-        "coffee product photography"
+        "coffee"
       ],
       "items": {
         "type": "string",

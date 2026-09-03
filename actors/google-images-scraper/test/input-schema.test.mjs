@@ -12,7 +12,11 @@ test('input schema supports batch queries before legacy q', () => {
     assert.deepEqual(Object.keys(schema.properties).slice(0, 2), ['queries', 'q']);
 });
 
-test('prefilled QA input performs one request', () => {
-    assert.deepEqual(schema.properties.queries.prefill, ['coffee product photography']);
+test('prefilled QA input uses the monitored Google Images request', () => {
+    assert.deepEqual(schema.properties.queries.prefill, ['coffee']);
     assert.equal(schema.properties.q.prefill, undefined);
+    assert.equal(schema.properties.page.default, 1);
+    assert.equal(schema.properties.hl.default, 'en');
+    assert.equal(schema.properties.gl.default, 'us');
+    assert.equal(schema.properties.safe.default, 'active');
 });
