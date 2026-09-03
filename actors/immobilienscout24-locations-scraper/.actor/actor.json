@@ -26,7 +26,7 @@
         "locations": {
           "title": "Location matches",
           "transformation": {
-            "fields": ["geocode", "name", "type", "source_query"]
+            "fields": ["geocode", "name", "type", "source_query", "is_cached"]
           },
           "display": {
             "component": "table",
@@ -34,7 +34,8 @@
               "geocode": { "label": "Geocode", "format": "text" },
               "name": { "label": "Location", "format": "text" },
               "type": { "label": "Type", "format": "text" },
-              "source_query": { "label": "Source query", "format": "text" }
+              "source_query": { "label": "Source query", "format": "text" },
+              "is_cached": { "label": "Cached fallback", "format": "boolean" }
             }
           }
         }

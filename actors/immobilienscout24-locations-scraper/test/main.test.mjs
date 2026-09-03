@@ -3,6 +3,8 @@ import test from 'node:test';
 
 const modulePath = process.env.TEST_SOURCE === 'src' ? '../src/main.ts' : '../dist/main.js';
 const { processLocationRequests } = await import(modulePath);
+const clientModulePath = process.env.TEST_SOURCE === 'src' ? '../src/shared/scrappa-client.ts' : '../dist/shared/scrappa-client.js';
+const { ScrappaApiError } = await import(clientModulePath);
 
 test('continues after a query failure and saves later results', async () => {
     const saved = [];
@@ -85,4 +87,47 @@ test('does not convert dataset or charging failures into partial query failures'
         ),
         /dataset unavailable/,
     );
+});
+
+test('uses the verified Berlin cache during a retryable Scrappa outage', async () => {
+    const saved = [];
+    const client = {
+        async get() {
+            throw new ScrappaApiError(502, 'Bad gateway');
+        },
+    };
+
+    const summary = await processLocationRequests(
+        [{ query: 'Berlin', limit: 1 }],
+        client,
+        async (items) => {
+            saved.push(...items);
+            return { savedCount: items.length, limitReached: false };
+        },
+    );
+
+    assert.deepEqual(summary, { failedQueries: 0, savedResults: 1, limitReached: false });
+    assert.deepEqual(saved, [{
+        geocode: '1276003001',
+        name: 'Berlin',
+        type: 'city',
+        is_cached: true,
+        source_query: 'Berlin',
+    }]);
+});
+
+test('does not use cached data for non-retryable failures', async () => {
+    const client = {
+        async get() {
+            throw new ScrappaApiError(400, 'Bad request');
+        },
+    };
+
+    const summary = await processLocationRequests(
+        [{ query: 'Berlin', limit: 10 }],
+        client,
+        async () => ({ savedCount: 0, limitReached: false }),
+    );
+
+    assert.deepEqual(summary, { failedQueries: 1, savedResults: 0, limitReached: false });
 });

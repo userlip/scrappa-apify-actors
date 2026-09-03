@@ -9,7 +9,7 @@
       "type": "array",
       "description": "Batch-first list of up to 100 city, district, or postal-code queries.",
       "editor": "stringList",
-      "prefill": ["Berlin", "Hamburg"],
+      "prefill": ["Berlin"],
       "default": ["Berlin"],
       "minItems": 1,
       "maxItems": 100,

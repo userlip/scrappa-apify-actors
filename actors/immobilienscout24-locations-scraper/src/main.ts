@@ -1,10 +1,17 @@
 import { pathToFileURL } from 'node:url';
 import { Actor } from 'apify';
+import { getFallbackLocations } from './fallback-locations.js';
 import { buildLocationRequests } from './input.js';
 import type { LocationsInput, LocationsRequest } from './input.js';
 import { buildUniqueLocationItems } from './locations.js';
 import type { LocationDatasetItem, LocationsResponse } from './locations.js';
-import { describeError, ScrappaApiError, ScrappaClient, ScrappaTimeoutError } from './shared/scrappa-client.js';
+import {
+    describeError,
+    isRetryableScrappaError,
+    ScrappaApiError,
+    ScrappaClient,
+    ScrappaTimeoutError,
+} from './shared/scrappa-client.js';
 
 const REQUEST_TIMEOUT_MS = 10000;
 const MAX_ATTEMPTS = 2;
@@ -118,6 +125,14 @@ async function fetchLocations(client: LocationsClient, request: LocationsRequest
         }, MAX_ATTEMPTS);
         return { request, response };
     } catch (error) {
+        if (isRetryableScrappaError(error)) {
+            const fallbackResponse = getFallbackLocations(request.query, request.limit);
+            if (fallbackResponse) {
+                console.warn(`Using cached ImmobilienScout24 locations for “${request.query}” after Scrappa became unavailable.`);
+                return { request, response: fallbackResponse };
+            }
+        }
+
         return { request, error };
     }
 }

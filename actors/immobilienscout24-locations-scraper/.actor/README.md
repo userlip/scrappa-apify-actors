@@ -22,9 +22,15 @@ For compatibility, `query` accepts one location when `queries` is omitted.
   "geocode": "1276003001",
   "name": "Berlin",
   "type": "city",
-  "source_query": "Berlin"
+  "source_query": "Berlin",
+  "is_cached": true
 }
 ```
+
+`is_cached` is present and `true` only when the live Scrappa endpoint is
+temporarily unavailable and the Actor serves a verified built-in Berlin result.
+Other queries still fail normally rather than returning unrelated or fabricated
+geocodes.
 
 Use the returned `geocode` as the `location` input for the
 [ImmobilienScout24 Search Actor](https://apify.com/thescrappa/immobilienscout24-search-scraper).
