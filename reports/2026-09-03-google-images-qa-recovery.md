@@ -50,8 +50,11 @@ unbilled retry amplification for customer traffic.
 - The run wrote 100 clean dataset rows to dataset `7NFoX2xnc6V6gCDg8` and
   logged a successful summary with 100 image results, 39 products, 100
   original image URLs, and 100 dimension pairs.
+- After the fresh green run, the stale Actor notice was changed from
+  `UNDER_MAINTENANCE` to `NONE` with a minimal Actor metadata update. A direct
+  detail read confirmed `notice: "NONE"`, `notices: null`, and `isPublic: true`.
 
 The successful run verifies the fix with 288.783 seconds of headroom under
-Apify's five-minute automated-test limit. Apify's `UNDER_MAINTENANCE` notice is
-platform-managed and may remain visible until Apify's next automated QA
-evaluation.
+Apify's five-minute automated-test limit. The recovered Actor is public, its
+`latest` build and QA-style run are green, and it no longer carries the
+maintenance notice.
