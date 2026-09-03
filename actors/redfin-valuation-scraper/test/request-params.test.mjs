@@ -98,10 +98,14 @@ test('extracts Redfin IDs from URLs where possible', () => {
 test('input schema exposes batch fields', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
     assert.equal(schema.required, undefined);
+    assert.equal(schema.properties.property_id.default, 194191988);
+    assert.equal(schema.properties.url.prefill, undefined);
     assert.equal(schema.properties.property_ids.type, 'array');
     assert.equal(schema.properties.property_ids.maxItems, 50);
+    assert.equal(schema.properties.property_ids.prefill, undefined);
     assert.equal(schema.properties.properties.type, 'array');
     assert.equal(schema.properties.properties.maxItems, 50);
+    assert.equal(schema.properties.properties.prefill, undefined);
 });
 
 test('validates Redfin valuation inputs', () => {

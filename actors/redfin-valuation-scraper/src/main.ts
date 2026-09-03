@@ -1,4 +1,5 @@
 import { Actor } from 'apify';
+import { getTransientRedfinValuationStatus, isTransientRedfinValuationError } from './availability-errors.js';
 import { actorChargingApi, getChargeLimitStatus, pushChargedValuation, REDFIN_VALUATION_RESULT_CHARGE_EVENT } from './charging.js';
 import { buildRedfinValuationRequests, describeRedfinValuationRequest } from './request-params.js';
 import type { RedfinValuationInput } from './request-params.js';
@@ -9,7 +10,7 @@ import {
     hasMeaningfulValuationData,
 } from './response-utils.js';
 import type { RedfinValuationResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaHttpError, ScrappaTimeoutError } from './shared/index.js';
+import { ScrappaClient, ScrappaHttpError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
 const SCRAPPA_MAX_ATTEMPTS = 3;
@@ -139,10 +140,14 @@ async function main(): Promise<void> {
             status_message: statusMessage,
         }));
     } catch (error) {
-        const rawMessage = error instanceof Error ? error.message : String(error);
-        const message = error instanceof ScrappaTimeoutError
-            ? `${rawMessage}. The Redfin valuation request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try fewer batched properties or run the request again.`
-            : rawMessage;
+        if (isTransientRedfinValuationError(error)) {
+            const statusMessage = getTransientRedfinValuationStatus(error);
+            console.warn(statusMessage);
+            await Actor.exit({ statusMessage });
+            return;
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
         console.error('Actor failed: ' + message);
         await Actor.fail(message);
         return;

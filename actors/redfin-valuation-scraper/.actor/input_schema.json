@@ -24,7 +24,6 @@
       "type": "string",
       "description": "Optional Redfin property URL. The actor extracts the property ID from URLs containing /home/{property_id}.",
       "editor": "textfield",
-      "prefill": "https://www.redfin.com/home/194191988",
       "maxLength": 2000
     },
     "property_ids": {
@@ -36,8 +35,7 @@
       "items": {
         "type": "integer",
         "minimum": 1
-      },
-      "prefill": [194191988]
+      }
     },
     "properties": {
       "title": "Batch Properties",
@@ -67,10 +65,7 @@
             "maxLength": 2000
           }
         }
-      },
-      "prefill": [
-        { "property_id": 194191988 }
-      ]
+      }
     }
   }
 }
