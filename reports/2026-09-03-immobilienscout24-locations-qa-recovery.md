@@ -51,6 +51,8 @@ Local checks:
 - `npm audit --omit=dev --audit-level=high`: 0 vulnerabilities.
 - Exact prefilled-input run: succeeded in 5.262 seconds and wrote two cached
   Berlin rows while Scrappa continued to return 502.
+- GitHub Actions run `33796208373`: all 23 Actor matrix jobs passed, including
+  the newly added ImmobilienScout24 locations job.
 
 Deployment and live validation:
 
