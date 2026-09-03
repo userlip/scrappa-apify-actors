@@ -56,9 +56,10 @@ Local checks:
 
 Deployment and live validation:
 
-- Build `1.0.8` (`vNU7oSDBSHHFs15aE`): `SUCCEEDED` and tagged `latest`.
-- QA-style run `IcVf5wuua0IWac6vd`: `SUCCEEDED` in 6.967 seconds.
-- Dataset `PRkd07Ve019Sb42lF`: two non-empty, valid rows for Berlin and Berlin
+- Final redeploy build `1.0.9` (`2h0LP1vy73fSSyQFv`): `SUCCEEDED` and tagged
+  `latest`.
+- Final QA-style run `k8PMw95SnZf2ONzDo`: `SUCCEEDED` in 6.018 seconds.
+- Dataset `C5MbhWJpOAHDtSdJ7`: two non-empty, valid rows for Berlin and Berlin
   Mitte, both marked `is_cached: true`.
 - `chargedEventCounts.location-result`: 2, matching the two dataset rows.
 - Actor remains public with 128 MB memory and a 300-second timeout.
