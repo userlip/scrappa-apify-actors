@@ -21,7 +21,7 @@ Use one Instagram post per run. The recommended input is a full post URL:
 
 ```json
 {
-  "url": "https://www.instagram.com/p/DUBtwxGEqz2/"
+  "url": "https://www.instagram.com/instagram/p/Dc30nJeRKKz/"
 }
 ```
 
@@ -29,7 +29,7 @@ You can also provide the shortcode directly:
 
 ```json
 {
-  "shortcode": "DUBtwxGEqz2"
+  "shortcode": "Dc30nJeRKKz"
 }
 ```
 
@@ -40,7 +40,7 @@ The legacy `media_id` field is still accepted for compatibility and is treated a
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `url` | String | Yes, unless `shortcode` or `media_id` is provided | Full Instagram post URL. Recommended format: `https://www.instagram.com/username/p/SHORTCODE/`. |
-| `shortcode` | String | Yes, unless `url` or `media_id` is provided | Instagram post shortcode, such as `DUBtwxGEqz2`. |
+| `shortcode` | String | Yes, unless `url` or `media_id` is provided | Instagram post shortcode, such as `Dc30nJeRKKz`. |
 | `media_id` | String | No | Legacy input alias. Treated as the Instagram post shortcode for older integrations. |
 
 ## Tested Input
@@ -49,11 +49,11 @@ This README is based on a successful Apify run tested with:
 
 ```json
 {
-  "url": "https://www.instagram.com/p/DUBtwxGEqz2/"
+  "url": "https://www.instagram.com/instagram/p/Dc30nJeRKKz/"
 }
 ```
 
-The run returned one dataset item for shortcode `DUBtwxGEqz2` with caption, media, author, permalink, and post metadata.
+The run returned one dataset item for shortcode `Dc30nJeRKKz` with caption, media, author, permalink, and post metadata.
 
 ## Output
 
@@ -179,3 +179,11 @@ Start with this Actor when you want Apify storage, scheduling, and no-code expor
 - Availability of likes, views, media URLs, collaborators, and tagged users depends on public data returned for the post.
 - This Actor does not require or accept Instagram credentials.
 - This Actor does not access private post content or bypass Instagram restrictions.
+
+## Availability and retries
+
+If the single-post lookup is temporarily unavailable, URLs containing the account username enable a fallback through Scrappa's recent user posts. Only a post with the exact requested shortcode is returned; unrelated posts and upstream errors are never published as results. Older posts outside the recent feed still depend on the single-post lookup. Available fields may differ between these upstream sources.
+
+Each attempt has a shared 60-second deadline across both endpoints. Two retries wait 5 and 15 seconds, for a maximum request-and-wait budget of 200 seconds. The default run uses 128 MB and a 300-second timeout.
+
+The input form and automated QA use the prefilled example URL. No URL default is injected into API inputs, so explicit `shortcode` and `media_id` requests keep their intended target. Refresh the prefill if the example leaves the account's recent feed while the single-post endpoint remains unavailable.
