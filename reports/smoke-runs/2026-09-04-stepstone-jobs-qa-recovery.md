@@ -31,4 +31,6 @@ The same request and alternative queries reproduced 503 during investigation. A 
 - Dataset `gITn6NbOR6WbhIuXD` has 25 rows, matching 25 charged `apify-default-dataset-item` events. `OUTPUT.success` is true and all 25 jobs have titles and URLs.
 - The actor's maintenance notice is now `NONE`; automated testing remains enabled.
 
-The standard backend rollout is still proceeding through the remaining origins. A final uncached verification will follow completion.
+- Repeat run `222Nof2iSPP1pt6h9`, started more than five minutes after the first scrape, succeeded with 25 jobs in 4.084 seconds. Dataset `LBHVLp6jvS4XGZ7ab` contains 25 rows and billing again records 25 result events.
+
+The standard sequential backend rollout completed successfully at release `85af2d32402954a899992f03a5f4844364eb7b38`. All five configured origins passed queue checks and exact-release verification; a final read from the load balancer returned HTTP 200 from every origin's readiness endpoint. Main-2 required a restart of its existing Scrappa Horizon daemon after deployment. A concurrent deployment temporarily delayed the final readiness check; no deployment locks were bypassed.
