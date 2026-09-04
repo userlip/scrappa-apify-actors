@@ -32,6 +32,15 @@ The Actor is a thin wrapper around Scrappa's `immobilienscout24-price-insights` 
 
 Unavailable or invalid locations are logged and skipped while the rest of the batch continues. Failed locations create no dataset item and no charge.
 
+The prefilled example uses Berlin only to keep the default run small. Batch input remains supported.
+
+## Validation
+
+Run `npm test` and `npm run typecheck` locally. Before deploying, run
+`SCRAPPA_API_KEY=... npm run test:integration` with a valid key supplied through
+your environment. This checks the actual schema prefill against the live Scrappa
+API and requires complete price snapshots within Apify's five-minute QA limit.
+
 ## Pricing
 
 The Actor uses Apify pay-per-event pricing with `price-insight-result` at **$0.0005 per successful location snapshot** ($0.50 per 1,000). Only successfully saved snapshots are charged.

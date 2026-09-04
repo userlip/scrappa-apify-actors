@@ -31,6 +31,7 @@ jobs:
           - path: actors/google-maps-business-details-scraper
           - path: actors/google-news-scraper
           - path: actors/immobilienscout24-locations-scraper
+          - path: actors/immobilienscout24-price-insights-scraper
           - path: actors/instagram-post-info-cheapest-0-20-1000-results
           - path: actors/instagram-user-info-cheapest-0-20-1000-results
           - path: actors/instagram-user-posts-cheapest-0-20-1000-results

@@ -9,7 +9,7 @@
       "description": "German cities, districts, postal codes, or ImmobilienScout24 geocodes. Use an array or comma-separated text to batch locations in one run and reduce overhead.",
       "type": ["array", "string"],
       "editor": "json",
-      "prefill": ["Berlin", "Munich"],
+      "prefill": ["Berlin"],
       "example": ["Berlin", "Munich"]
     },
     "location": {
