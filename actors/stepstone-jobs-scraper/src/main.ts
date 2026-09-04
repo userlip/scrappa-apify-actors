@@ -12,8 +12,7 @@ import {
 } from './stepstone-response.js';
 import type { StepstoneJobsResponse } from './stepstone-response.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
-const SCRAPPA_MAX_ATTEMPTS = 3;
+import { JOBS_REQUEST_TIMEOUT_MS, JOBS_MAX_ATTEMPTS, JOBS_MAX_RETRY_DELAY_MS } from './runtime-config.js';
 
 await Actor.init();
 
@@ -30,11 +29,11 @@ try {
 
     console.log(`Searching Stepstone Jobs for: "${input.query}"`);
 
-    const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
+    const client = new ScrappaClient({ apiKey, timeoutMs: JOBS_REQUEST_TIMEOUT_MS, maxRetryDelayMs: JOBS_MAX_RETRY_DELAY_MS });
     const response = await client.get<StepstoneJobsResponse>(
         '/stepstone/jobs',
         buildStepstoneJobsParams(input),
-        { attempts: SCRAPPA_MAX_ATTEMPTS }
+        { attempts: JOBS_MAX_ATTEMPTS }
     );
     const jobs = getStepstoneJobs(response);
     const datasetJobs = jobs.map(toStepstoneDatasetJob);
@@ -73,7 +72,7 @@ try {
 } catch (error) {
     const rawMessage = error instanceof Error ? error.message : String(error);
     const message = error instanceof ScrappaTimeoutError
-        ? `${rawMessage}. The Stepstone Jobs request exceeded the ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try again or refine the query.`
+        ? `${rawMessage}. The Stepstone Jobs request exceeded the ${JOBS_REQUEST_TIMEOUT_MS / 1000}s Scrappa API timeout. Try again or refine the query.`
         : rawMessage;
     console.error('Actor failed: ' + message);
     await Actor.fail(message);
