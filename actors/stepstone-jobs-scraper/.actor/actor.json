@@ -18,11 +18,13 @@
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
-    "timeoutSecs": 300
+    "timeoutSecs": 240
   },
   "storages": {
     "dataset": {
