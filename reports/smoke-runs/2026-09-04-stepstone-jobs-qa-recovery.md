@@ -26,4 +26,9 @@ The same request and alternative queries reproduced 503 during investigation. A 
 - Backend: 66 Stepstone service/controller tests passed (210 assertions); Pint passed. GitHub CI was queued at release time, including earlier unrelated runs.
 - Candidate Apify build `UhjsSGAFwTkSnxaPc` (`1.0.15`) succeeded. All 18 live source files match the local actor; the configured secret remains present.
 
-Deployment and final cloud-run verification are pending the existing production rollout completing its origin readiness checks.
+- Candidate run `3djoYiAIAogITq9KP` succeeded with 25 jobs in 4.490 seconds.
+- Published `latest` run `MCMoGdsgaWwXUfvTq` used build `1.0.15` and the exact original QA input with normal actor defaults (128 MB, 240 seconds). It succeeded from `2026-09-04T20:48:37.624Z` to `2026-09-04T20:48:41.182Z` (3.409 seconds reported runtime).
+- Dataset `gITn6NbOR6WbhIuXD` has 25 rows, matching 25 charged `apify-default-dataset-item` events. `OUTPUT.success` is true and all 25 jobs have titles and URLs.
+- The actor's maintenance notice is now `NONE`; automated testing remains enabled.
+
+The standard backend rollout is still proceeding through the remaining origins. A final uncached verification will follow completion.
