@@ -9,7 +9,8 @@
         "templateId": "js-start"
     },
     "defaultRunOptions": {
-        "timeoutSecs": 3300
+        "timeoutSecs": 300,
+        "memoryMbytes": 128
     },
     "input": "./input_schema.json",
     "dockerfile": "./Dockerfile",
@@ -18,5 +19,10 @@
     },
     "storages": {
         "dataset": "./dataset_schema.json"
+    },
+    "minMemoryMbytes": 128,
+    "maxMemoryMbytes": 128,
+    "resources": {
+        "memoryMbytes": 128
     }
 }

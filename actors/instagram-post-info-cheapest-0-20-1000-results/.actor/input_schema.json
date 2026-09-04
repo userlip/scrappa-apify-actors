@@ -6,9 +6,10 @@
     "url": {
       "title": "Instagram post URL or shortcode",
       "type": "string",
-      "description": "The full Instagram post URL, or the Instagram shortcode. Recommended URL format: https://www.instagram.com/p/DUBtwxGEqz2/",
+      "description": "Full Instagram post URL or shortcode. Include the username to enable an exact-match fallback through the account’s recent posts, for example https://www.instagram.com/instagram/p/Dc30nJeRKKz/.",
       "minLength": 1,
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "https://www.instagram.com/instagram/p/Dc30nJeRKKz/"
     },
     "shortcode": {
       "title": "Instagram post shortcode",

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
     DEFAULT_RETRY_DELAYS_MS,
+    REQUEST_TIMEOUT_MS,
     getResponseMessage,
     getResponseStatus,
     hasExplicitNonRetryableResponse,
@@ -11,8 +12,10 @@ import {
     requestWithRetries,
 } from '../src/retry.js';
 
-test('uses extended cooldown delays for Instagram rate limits', () => {
-    assert.deepEqual(DEFAULT_RETRY_DELAYS_MS, [30000, 90000, 180000, 300000, 600000, 900000]);
+test('bounds requests and retry waits below the five-minute QA limit', () => {
+    const requestBudget = (DEFAULT_RETRY_DELAYS_MS.length + 1) * REQUEST_TIMEOUT_MS;
+    const waitBudget = DEFAULT_RETRY_DELAYS_MS.reduce((sum, delay) => sum + delay, 0);
+    assert.ok(requestBudget + waitBudget <= 240000);
 });
 
 test('gets response messages with message before error fallback', () => {
