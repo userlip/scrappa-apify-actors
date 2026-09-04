@@ -35,16 +35,20 @@
     "departure_date": {
       "title": "Departure Date",
       "type": "string",
-      "description": "Departure date in YYYY-MM-DD format.",
+      "description": "Departure date in YYYY-MM-DD format or relative to the run date, such as 45 days.",
       "editor": "datepicker",
-      "prefill": "2026-09-15"
+      "dateType": "absoluteOrRelative",
+      "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$|^(\\d+)\\s*(day|week|month|year)s?$",
+      "prefill": "45 days"
     },
     "return_date": {
       "title": "Return Date",
       "type": "string",
-      "description": "Return date in YYYY-MM-DD format. Required when Trip Type is Round-trip.",
+      "description": "Return date in YYYY-MM-DD format or relative to the run date. Required when Trip Type is Round-trip.",
       "editor": "datepicker",
-      "prefill": "2026-09-22"
+      "dateType": "absoluteOrRelative",
+      "pattern": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$|^(\\d+)\\s*(day|week|month|year)s?$",
+      "prefill": "52 days"
     },
     "adults": {
       "title": "Adults",

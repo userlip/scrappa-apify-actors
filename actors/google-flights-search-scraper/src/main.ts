@@ -5,8 +5,8 @@ import { buildFlightDatasetItems, getFlights } from './response-utils.js';
 import type { GoogleFlightsSearchResponse } from './response-utils.js';
 import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 90000;
-const SCRAPPA_MAX_ATTEMPTS = 3;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
+const SCRAPPA_MAX_ATTEMPTS = 5;
 const FLIGHT_RESULT_CHARGE_EVENT = 'flight-result';
 
 async function main(): Promise<void> {

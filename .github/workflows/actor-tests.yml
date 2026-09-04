@@ -25,6 +25,7 @@ jobs:
       matrix:
         actor:
           - path: actors/google-images-scraper
+          - path: actors/google-flights-search-scraper
           - path: actors/google-hotels-search-scraper
           - path: actors/google-jobs-scraper
           - path: actors/google-maps-business-details-scraper

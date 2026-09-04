@@ -99,10 +99,34 @@ function cleanAirportCode(value: unknown, field: string): string {
     return code;
 }
 
-function cleanDate(value: unknown, field: string): string {
-    const date = cleanRequiredString(value, field, 10);
+function cleanDate(value: unknown, field: string, now: Date): string {
+    const date = cleanRequiredString(value, field, 20);
+
+    const relativeDate = date.match(/^(\d+)\s*(day|week|month|year)s?$/i);
+    if (relativeDate) {
+        const amount = Number(relativeDate[1]);
+        const unit = relativeDate[2].toLowerCase();
+        const resolved = new Date(Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate(),
+        ));
+
+        if (unit === 'day') {
+            resolved.setUTCDate(resolved.getUTCDate() + amount);
+        } else if (unit === 'week') {
+            resolved.setUTCDate(resolved.getUTCDate() + amount * 7);
+        } else if (unit === 'month') {
+            resolved.setUTCMonth(resolved.getUTCMonth() + amount);
+        } else {
+            resolved.setUTCFullYear(resolved.getUTCFullYear() + amount);
+        }
+
+        return resolved.toISOString().slice(0, 10);
+    }
+
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        throw new Error(`${field} must be in YYYY-MM-DD format`);
+        throw new Error(`${field} must be in YYYY-MM-DD format or a relative date such as 45 days`);
     }
 
     const parsed = new Date(`${date}T00:00:00Z`);
@@ -223,7 +247,7 @@ function addIfDefined(params: Record<string, unknown>, key: string, value: unkno
     }
 }
 
-export function buildGoogleFlightsRequest(input: GoogleFlightsSearchInput): GoogleFlightsRequest {
+export function buildGoogleFlightsRequest(input: GoogleFlightsSearchInput, now = new Date()): GoogleFlightsRequest {
     const tripType = cleanTripType(input.trip_type);
     const origin = cleanAirportCode(input.origin, 'origin');
     const destination = cleanAirportCode(input.destination, 'destination');
@@ -231,8 +255,8 @@ export function buildGoogleFlightsRequest(input: GoogleFlightsSearchInput): Goog
         throw new Error('destination must be different from origin');
     }
 
-    const departureDate = cleanDate(input.departure_date, 'departure_date');
-    const returnDate = tripType === 'round_trip' ? cleanDate(input.return_date, 'return_date') : undefined;
+    const departureDate = cleanDate(input.departure_date, 'departure_date', now);
+    const returnDate = tripType === 'round_trip' ? cleanDate(input.return_date, 'return_date', now) : undefined;
     if (returnDate !== undefined && returnDate <= departureDate) {
         throw new Error('return_date must be after departure_date');
     }

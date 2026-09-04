@@ -80,6 +80,30 @@ test('builds params for a default one-way search', () => {
     );
 });
 
+test('resolves relative QA dates from the run date', () => {
+    const now = new Date('2026-09-04T23:59:59Z');
+
+    assert.deepEqual(
+        buildGoogleFlightsRequest({
+            trip_type: 'round_trip',
+            origin: 'JFK',
+            destination: 'LAX',
+            departure_date: '45 days',
+            return_date: '52 days',
+        }, now),
+        {
+            endpoint: '/flights/round-trip',
+            tripType: 'round_trip',
+            params: {
+                origin: 'JFK',
+                destination: 'LAX',
+                departure_date: '2026-10-19',
+                return_date: '2026-10-26',
+            },
+        },
+    );
+});
+
 test('requires valid route and date controls', () => {
     assert.throws(
         () => buildGoogleFlightsRequest({ origin: 'JF', destination: 'LAX', departure_date: '2026-09-15' }),
@@ -100,6 +124,10 @@ test('requires valid route and date controls', () => {
     assert.throws(
         () => buildGoogleFlightsRequest({ origin: 'JFK', destination: 'LAX', departure_date: '2026-02-30' }),
         /departure_date must be a valid calendar date/,
+    );
+    assert.throws(
+        () => buildGoogleFlightsRequest({ origin: 'JFK', destination: 'LAX', departure_date: 'next Tuesday' }),
+        /departure_date must be in YYYY-MM-DD format or a relative date/,
     );
 });
 
