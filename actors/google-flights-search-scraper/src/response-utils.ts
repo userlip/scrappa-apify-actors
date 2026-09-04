@@ -32,6 +32,33 @@ export interface FlightResult {
     [key: string]: unknown;
 }
 
+export function buildUnavailableSearchResponse(
+    params: Record<string, unknown>,
+    tripType: TripType,
+    message: string,
+    attempts: number,
+    responseTimeMs: number,
+): GoogleFlightsSearchResponse {
+    return {
+        flights: [],
+        search_metadata: {
+            origin: params.origin,
+            destination: params.destination,
+            departure_date: params.departure_date,
+            return_date: params.return_date ?? null,
+            trip_type: tripType,
+            upstream_available: false,
+            attempts,
+            response_time_ms: responseTimeMs,
+        },
+        warning: {
+            code: 'UPSTREAM_TEMPORARILY_UNAVAILABLE',
+            message,
+            retryable: true,
+        },
+    };
+}
+
 function firstString(...values: unknown[]): string | null {
     for (const value of values) {
         if (typeof value === 'string' && value.trim() !== '') {

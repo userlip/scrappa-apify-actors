@@ -1,9 +1,9 @@
 import { Actor } from 'apify';
 import { buildGoogleFlightsRequest, describeGoogleFlightsRequest } from './request-params.js';
 import type { GoogleFlightsSearchInput } from './request-params.js';
-import { buildFlightDatasetItems, getFlights } from './response-utils.js';
+import { buildFlightDatasetItems, buildUnavailableSearchResponse, getFlights } from './response-utils.js';
 import type { GoogleFlightsSearchResponse } from './response-utils.js';
-import { ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
+import { isRetryableScrappaError, ScrappaClient, ScrappaTimeoutError } from './shared/index.js';
 
 const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
 const SCRAPPA_MAX_ATTEMPTS = 5;
@@ -27,9 +27,39 @@ async function main(): Promise<void> {
         console.log(`Searching Google Flights for ${describeGoogleFlightsRequest(request)}`);
 
         const client = new ScrappaClient({ apiKey, timeoutMs: SCRAPPA_REQUEST_TIMEOUT_MS });
-        const response = await client.get<GoogleFlightsSearchResponse>(request.endpoint, request.params, {
-            attempts: SCRAPPA_MAX_ATTEMPTS,
-        });
+        const searchStartedAt = Date.now();
+        let response: GoogleFlightsSearchResponse;
+
+        try {
+            response = await client.get<GoogleFlightsSearchResponse>(request.endpoint, request.params, {
+                attempts: SCRAPPA_MAX_ATTEMPTS,
+            });
+        } catch (error) {
+            if (!isRetryableScrappaError(error)) {
+                throw error;
+            }
+
+            const message = error instanceof Error ? error.message : String(error);
+            const unavailableResponse = buildUnavailableSearchResponse(
+                request.params,
+                request.tripType,
+                message,
+                SCRAPPA_MAX_ATTEMPTS,
+                Date.now() - searchStartedAt,
+            );
+            const store = await Actor.openKeyValueStore();
+            await store.setValue('OUTPUT', unavailableResponse);
+
+            const statusMessage = `Google Flights is temporarily unavailable after ${SCRAPPA_MAX_ATTEMPTS} attempts. No results were saved; retry this run later.`;
+            console.warn(statusMessage, JSON.stringify({
+                origin: request.params.origin,
+                destination: request.params.destination,
+                departure_date: request.params.departure_date,
+                retryable: true,
+            }));
+            await Actor.exit({ statusMessage });
+            return;
+        }
 
         const items = buildFlightDatasetItems(response, request.params, request.tripType);
         const flights = getFlights(response);

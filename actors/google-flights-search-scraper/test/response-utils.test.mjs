@@ -1,7 +1,44 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildFlightDatasetItems, getFlights } from '../dist/response-utils.js';
+import {
+    buildFlightDatasetItems,
+    buildUnavailableSearchResponse,
+    getFlights,
+} from '../dist/response-utils.js';
+
+test('builds a transparent empty response for exhausted retryable outages', () => {
+    const response = buildUnavailableSearchResponse(
+        {
+            origin: 'JFK',
+            destination: 'LAX',
+            departure_date: '2026-10-19',
+        },
+        'one_way',
+        'Scrappa API error (503): Service Unavailable',
+        5,
+        32100,
+    );
+
+    assert.deepEqual(response, {
+        flights: [],
+        search_metadata: {
+            origin: 'JFK',
+            destination: 'LAX',
+            departure_date: '2026-10-19',
+            return_date: null,
+            trip_type: 'one_way',
+            upstream_available: false,
+            attempts: 5,
+            response_time_ms: 32100,
+        },
+        warning: {
+            code: 'UPSTREAM_TEMPORARILY_UNAVAILABLE',
+            message: 'Scrappa API error (503): Service Unavailable',
+            retryable: true,
+        },
+    });
+});
 
 test('extracts flights from the Scrappa response', () => {
     const flights = [{ price: 123 }];

@@ -11,6 +11,8 @@ Search Google Flights one-way and round-trip fares for travel pricing, route mon
 - Search metadata and the full Scrappa response in key-value store record `OUTPUT`
 - Optional baggage enrichment for the cheapest returned flight
 
+If Scrappa or Google Flights remains temporarily unavailable after the actor's bounded retries, the run completes without charging for results. The dataset stays empty and `OUTPUT` contains an `UPSTREAM_TEMPORARILY_UNAVAILABLE` warning so callers can retry later without confusing an outage with a valid no-results search.
+
 ## Input
 
 ```json
