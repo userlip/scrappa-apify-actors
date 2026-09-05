@@ -22,4 +22,21 @@ The prefill, batching, price-point billing, retry limits, 128 MB memory setting,
 - Upstream: 20 parser tests and 7 intraday controller tests passed; Pint passed.
 - Full captured AAPL response: `valid_graph`, 391 points after the parser fix (zero before).
 - Actor: 13 tests and TypeScript typecheck passed.
-- Live build/run verification: pending upstream deployment.
+- Backend PR #5930 merged as `913868fc9e17ea8a065207027349b75cb58a85c6`; all 15 CI checks passed after retrying a missing-Docker runner and an unrelated deployment-script timing test.
+- Actor PR #304: all 29 checks passed for the implementation commit.
+- Published Apify build: `1.0.3` (`7CsGkRguSHzXkO9WO`), tagged `latest`.
+
+| Run | Build selection | Status | Start-to-finish time | Dataset items |
+| --- | --- | --- | --- | --- |
+| [ZqrArsY3CZqFcZic1](https://console.apify.com/view/runs/ZqrArsY3CZqFcZic1) | Candidate `qa-repair` | SUCCEEDED | 10.053 seconds | 391 |
+| [8nK8CvXhcaRR0R4Sv](https://console.apify.com/view/runs/8nK8CvXhcaRR0R4Sv) | Published `latest` | SUCCEEDED | 32.835 seconds | 391 |
+
+Both runs used the exact failed-QA input, derived from the deployed schema's prefill/defaults and compared with the original INPUT record. Every returned item had symbol AAPL, exchange NASDAQ, a numeric price, and a parseable timestamp. Both OUTPUT summaries reported one succeeded request, zero failures/no-data requests, and 391 graph points matching the dataset. The published-run dataset is `EsUS3BzSaaF0p11IK`.
+
+After successful verification, the maintenance notice was cleared and read back as `null`. Automatic testing remains enabled. The temporary candidate tag was removed; `latest` points to the verified build.
+
+## Rollout notes
+
+An early candidate run, [HiGTbjfhDfM0k4SLm](https://console.apify.com/view/runs/HiGTbjfhDfM0k4SLm), still returned 503 during the partial backend rollout. It is not counted as a successful verification.
+
+The initial guarded rollout updated four origins, then stopped because the production branch advanced. The subsequent release `26ca2278d166969bd0002f7bf8a27af622465f4f` includes this fix and the independently merged PR #5931, with all 15 checks green. Its already-running guarded rollout updated all five origins before the successful actor runs. That separate rollout was still checking origin readiness at the time of actor verification; no parallel deployment or manual readiness override was started by this repair.
