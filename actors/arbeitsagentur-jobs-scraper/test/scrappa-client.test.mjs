@@ -106,3 +106,32 @@ test('honors and caps Retry-After during a retry', async () => {
     assert.equal(callCount, 2);
     assert.deepEqual(retryDelays, [20000]);
 });
+
+for (const recovers of [true, false]) {
+    test(`spaces headerless 503 retries across a minute; recovers=${recovers}`, async () => {
+        let calls = 0;
+        const delays = [];
+        console.warn = () => {};
+        globalThis.fetch = async () => {
+            calls += 1;
+            return recovers && calls === 4
+                ? new Response(JSON.stringify({ success: true }))
+                : new Response('Service Unavailable', { status: 503 });
+        };
+        globalThis.setTimeout = (callback, delay, ...args) => {
+            if (delay === 1000) return originalSetTimeout(callback, delay, ...args);
+            delays.push(delay);
+            queueMicrotask(() => callback(...args));
+            return 0;
+        };
+        const client = new ScrappaClient({ apiKey: 'test-key', timeoutMs: 1000, maxRetryDelayMs: 20000 });
+        const request = client.get('/arbeitsagentur/jobs', {}, { attempts: 4 });
+        if (recovers) {
+            assert.deepEqual(await request, { success: true });
+        } else {
+            await assert.rejects(request, (error) => error instanceof ScrappaApiError && error.statusCode === 503);
+        }
+        assert.equal(calls, 4);
+        assert.deepEqual(delays, [20000, 20000, 20000]);
+    });
+}

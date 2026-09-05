@@ -110,7 +110,9 @@ export class ScrappaClient {
                     break;
                 }
 
-                const retryAfterMs = error instanceof ScrappaApiError ? error.retryAfterMs : undefined;
+                const retryAfterMs = error instanceof ScrappaApiError
+                    ? error.retryAfterMs ?? (error.statusCode === 503 ? 20000 : undefined)
+                    : undefined;
                 const delayMs = getRetryDelayMs(attempt, undefined, retryAfterMs, this.maxRetryDelayMs);
                 console.warn(`Scrappa API request failed (${this.describeError(error)}). Retrying attempt ${attempt + 1}/${attempts} in ${delayMs}ms.`);
                 await new Promise((resolve) => setTimeout(resolve, delayMs));
