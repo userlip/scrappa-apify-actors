@@ -123,3 +123,21 @@ test('calculates deterministic retry delay with bounded backoff', () => {
     assert.equal(getRetryDelayMs(2, 500), 4500);
     assert.equal(getRetryDelayMs(20, 0), 10000);
 });
+
+
+test('reports the upstream intraday error instead of only the HTTP status text', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => new Response(JSON.stringify({
+        error: 'Intraday data is temporarily unavailable. Please retry.',
+        code: 'SERVICE_ERROR',
+        status: 503,
+    }), { status: 503, statusText: 'Service Unavailable' });
+
+    try {
+        const client = new ScrappaClient({ apiKey: 'test-key', baseUrl: 'https://example.test/api' });
+        await assert.rejects(() => client.get('/google-finance/intraday'),
+            /Scrappa API error \(503\): Intraday data is temporarily unavailable\. Please retry\./);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
