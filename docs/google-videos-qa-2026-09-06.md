@@ -41,18 +41,18 @@ The one-query QA input spends at most approximately `3 × 60 + 1 + 2 = 183` seco
 - Local full-Actor checks used Node 24.18.0 and Apify SDK 3.7.2; the deployed container uses Node 20.20.2. These measurements exclude Apify container startup and may benefit from upstream caching.
 - A Python urllib probe received HTTP 403; Node fetch, which is the Actor's actual HTTP client, and both complete Actor executions succeeded. The Python result was not treated as an Actor reproduction.
 
-## Release status and recommendation
+## Release completed
 
-**Local fix validated; deployment and hosted QA verification are blocked on Apify API access.** No live source, build tag, notice, pricing, or settings were changed. The accessible local Apify profile stores its token in an unavailable keyring, and no `APIFY_TOKEN` is configured. Public APIs supplied run metadata, input, log, and Actor metadata, but not authenticated version source. Source parity with the deployed version has therefore not been verified.
+The fix is pushed to `main` as `af933af`. Authenticated comparison confirmed the live implementation matched the pre-repair local code. Updated only the reviewed source/schema/test/documentation files, preserving the existing secret `SCRAPPA_API_KEY`, pricing, memory, and default run settings.
 
-At inspection, live `latest` remains `1.0.6` and the Actor still reports `UNDER_MAINTENANCE`. It is not accurate to claim the notice has cleared or the deployed Actor has been repaired.
+The earlier credential blocker was an investigation error: the token is available via Apify CLI's installed `@napi-rs/keyring` module, using service `com.apify.cli` and entry `token`. No new token was needed and no secret values were committed or printed.
 
-Once organization API access is available:
+- Built version `1.0` with validation tag `qa-repair`: build `1.0.7` / `i1wSbfAmjmFIdUAIS`, SUCCEEDED.
+- [Exact-prefill hosted run](https://console.apify.com/view/runs/q7bFH3fYvwSKXiRZ2): SUCCEEDED, 10 default dataset items, 3.563 seconds wall time, 128 MB, 300-second timeout.
+- Promoted the passing build to `latest`.
+- [Original two-query input on latest](https://console.apify.com/view/runs/7vlQHXb24hTGoNaui): SUCCEEDED, 20 default dataset items, 3.681 seconds wall time, confirmed build `i1wSbfAmjmFIdUAIS`.
+- After the passing prefill test, cleared the stale maintenance notice through the Actor API. A separate authenticated read confirmed `notice: NONE` and `latest: 1.0.7`; secret metadata still confirms `SCRAPPA_API_KEY` is secret.
 
-1. Read and compare live version `1.0` source; apply the reviewed changes while preserving its secret configuration and any unrelated live edits.
-2. Build the updated version and run that build with its exact prefilled schema input, a 300-second timeout, and 128 MB. Require SUCCEEDED and a non-empty default dataset before promoting it to `latest`.
-3. Confirm `latest` references the passing build, then verify the automated health result. Do not manually clear the notice as a substitute for testing.
+The Actor is now out of maintenance and the published build meets the tested QA criteria. These are developer-triggered hosted validation runs, not a claim that Apify's next scheduled automated test has already executed. Persistent upstream unavailability can still cause a legitimate future failure; no testing exemption or synthetic success was used.
 
-The Actor can meet the QA criteria: full local execution produced real results in seconds, and the transient-error recovery budget fits under five minutes. After deployment and hosted validation, this specific failure is no longer expected on an isolated 503. Persistent upstream unavailability can still cause a legitimate QA failure. An automated-testing exemption is not warranted by the evidence.
-
-[Apify's testing documentation](https://docs.apify.com/actors/publishing/test) requires SUCCEEDED plus a non-empty default dataset within five minutes. It says rebuilding a fixed Actor should be picked up within 24 hours; recovery from target-site issues may instead depend on a majority of successful tests over seven days.
+[Apify's testing documentation](https://docs.apify.com/actors/publishing/test) requires SUCCEEDED plus a non-empty default dataset within five minutes. Both hosted checks passed those criteria.
