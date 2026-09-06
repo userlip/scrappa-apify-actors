@@ -25,7 +25,21 @@ export class ScrappaClient {
     }
 
     async get<T>(endpoint: string, params: Record<string, unknown> = {}): Promise<T> {
-        return this.request<T>('GET', endpoint, params);
+        for (let attempt = 1; ; attempt++) {
+            try {
+                return await this.request<T>('GET', endpoint, params);
+            } catch (error) {
+                const retryable = error instanceof Error && (
+                    /Scrappa API error \((408|429|500|502|503|504)\)/.test(error.message)
+                    || error.message.startsWith('Scrappa API request timed out')
+                    || (error instanceof TypeError && error.message === 'fetch failed')
+                );
+                if (!retryable || attempt === 3) throw error;
+
+                console.warn(`Transient Scrappa API failure; retrying attempt ${attempt + 1}/3`);
+                await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+            }
+        }
     }
 
     async post<T>(endpoint: string, body: Record<string, unknown> = {}): Promise<T> {
@@ -100,7 +114,7 @@ export class ScrappaClient {
                 throw new Error(`Scrappa API error (${response.status}): ${errorMessage}`);
             }
 
-            return response.json() as Promise<T>;
+            return await response.json() as T;
         } catch (error) {
             if (error instanceof Error && error.name === 'AbortError') {
                 throw new Error(`Scrappa API request timed out after ${this.timeoutMs}ms`);

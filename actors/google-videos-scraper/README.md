@@ -46,4 +46,8 @@ Each item in `video_results` is saved to the default dataset with request metada
 }
 ```
 
-For legacy single-query runs, the complete Scrappa response is saved to key-value store record `OUTPUT`, including `found_in_videos`, `short_videos`, `related_searches`, `pagination`, and `scrappa_pagination` when returned. Batch runs use the dataset as the primary result channel and write a compact request summary plus raw responses to `OUTPUT`.
+For single-query runs, the complete Scrappa response is saved to key-value store record `OUTPUT`, including `found_in_videos`, `short_videos`, `related_searches`, `pagination`, and `scrappa_pagination` when returned. Batch runs use the dataset as the primary result channel and write a compact request summary to `OUTPUT`.
+
+The prefilled example runs one query. Batch input still supports up to ten distinct queries. Transient API failures are retried up to three total attempts per query, with 1- and 2-second delays. Each attempt has a 60-second timeout covering the response body, so the prefilled request has a maximum API wait of approximately 183 seconds, leaving room for startup and storage within Apify's five-minute QA limit. Persistent upstream failures still fail the Actor.
+
+See [the September 2026 QA investigation](../../docs/google-videos-qa-2026-09-06.md) for validation results and deployment status.

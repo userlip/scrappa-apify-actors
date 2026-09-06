@@ -12,8 +12,7 @@
       "minItems": 1,
       "maxItems": 10,
       "prefill": [
-        "coffee brewing tutorial",
-        "espresso machine review"
+        "coffee brewing tutorial"
       ],
       "items": {
         "type": "string",
@@ -25,8 +24,7 @@
       "title": "Legacy Search Query",
       "type": "string",
       "description": "Backward-compatible single keyword or phrase to search in Google Videos. Prefer Search Queries for normal usage, especially when running more than one keyword.",
-      "editor": "textfield",
-      "prefill": "coffee brewing tutorial"
+      "editor": "textfield"
     },
     "page": {
       "title": "Page",
