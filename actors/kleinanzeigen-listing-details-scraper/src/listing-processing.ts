@@ -73,6 +73,7 @@ export async function processKleinanzeigenListingDetails(
     actor: ActorLike,
     listings: KleinanzeigenDetailsPlanItem[],
     fetchListing: (adId: string) => Promise<KleinanzeigenDetailsResponse>,
+    maxResults = Infinity,
 ): Promise<ListingDetailsProcessingResult> {
     const failures: ListingDetailsProcessingResult['failures'] = [];
     let savedCount = 0;
@@ -94,6 +95,7 @@ export async function processKleinanzeigenListingDetails(
                 buildKleinanzeigenDetailsDatasetItem(detail, listing.adId, listing.index),
             );
             if (saveResult.saved) savedCount++;
+            if (savedCount >= maxResults) break;
             if (!saveResult.saved || saveResult.chargeLimitReached) {
                 statusMessage = `Charge limit reached after saving ${savedCount} Kleinanzeigen listing detail result(s).`;
                 break;

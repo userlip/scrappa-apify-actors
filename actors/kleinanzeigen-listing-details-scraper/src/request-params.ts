@@ -1,4 +1,5 @@
 export interface KleinanzeigenDetailsInput {
+    query?: unknown;
     ad_id?: unknown;
     ad_ids?: unknown;
 }
@@ -48,4 +49,26 @@ export function buildKleinanzeigenDetailsPlan(input: KleinanzeigenDetailsInput =
 
 export function describeKleinanzeigenDetailsRequest(plan: KleinanzeigenDetailsPlan): string {
     return plan.listings.length === 1 ? `listing ${plan.listings[0]?.adId}` : `${plan.listings.length} Kleinanzeigen listings`;
+}
+
+export function getDiscoveryQuery(input: KleinanzeigenDetailsInput): string | undefined {
+    if (input.query !== undefined && (typeof input.query !== 'string' || !input.query.trim())) {
+        throw new Error('query must be a non-empty string');
+    }
+    if (input.ad_id !== undefined || input.ad_ids !== undefined) {
+        buildKleinanzeigenDetailsPlan(input);
+        return undefined;
+    }
+    return typeof input.query === 'string' ? input.query.trim() : undefined;
+}
+
+export function planDiscoveredListings(response: { data?: unknown }): KleinanzeigenDetailsPlan {
+    if (!Array.isArray(response.data)) throw new Error('Search response did not contain a listing array');
+    const ids = response.data.flatMap((listing: unknown) => {
+        if (!listing || typeof listing !== 'object' || !('id' in listing)) return [];
+        const id = listing.id;
+        return (typeof id === 'string' && /^\d+$/.test(id))
+            || (typeof id === 'number' && Number.isSafeInteger(id) && id >= 0) ? [String(id)] : [];
+    });
+    return buildKleinanzeigenDetailsPlan({ ad_ids: [...new Set(ids)].slice(0, 3) });
 }

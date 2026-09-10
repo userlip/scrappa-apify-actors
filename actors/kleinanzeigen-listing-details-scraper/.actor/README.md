@@ -6,7 +6,9 @@ The Actor uses the paid `listing-detail-result` event at the proposed rate of **
 
 ## Input
 
-Use `ad_id`, `ad_ids`, or both. IDs are trimmed, deduplicated in first-seen order, and processed sequentially.
+The prefilled `query: "fahrrad"` searches current listings and saves one successful detail, trying up to three distinct IDs. This avoids an example ad expiring. Discovery makes at most four Scrappa requests, each with a 60-second timeout and no retries (240 seconds of HTTP work plus Actor overhead). Search rows themselves are never saved or charged.
+
+Use `ad_id`, `ad_ids`, or both to fetch specific listings; these take priority over `query`. IDs are trimmed, deduplicated in first-seen order, and processed sequentially.
 
 ```json
 {
@@ -17,7 +19,7 @@ Use `ad_id`, `ad_ids`, or both. IDs are trimmed, deduplicated in first-seen orde
 
 ## Output
 
-Each successful listing becomes one dataset item. Unavailable or malformed individual listings are reported in the aggregate `OUTPUT` record and do not stop later IDs.
+Each successful listing becomes one dataset item. Unavailable or malformed individual listings are reported in the aggregate `OUTPUT` record and do not stop later IDs. A run where every attempted detail fails ends as FAILED after writing OUTPUT.
 
 ```json
 {

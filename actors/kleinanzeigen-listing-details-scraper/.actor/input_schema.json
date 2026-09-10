@@ -4,7 +4,28 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
-    "ad_id": { "title": "Listing Ad ID", "type": "string", "description": "A single Kleinanzeigen listing ID. It can be combined with ad_ids.", "editor": "textfield", "prefill": "3451021120" },
-    "ad_ids": { "title": "Listing Ad IDs", "type": "array", "description": "Optional batch of up to 100 listing IDs. Duplicate IDs are fetched once in first-seen order.", "editor": "json", "maxItems": 100, "items": { "type": "string" }, "prefill": ["3451021120"] }
+    "ad_id": {
+      "title": "Listing Ad ID",
+      "type": "string",
+      "description": "A single Kleinanzeigen listing ID. It can be combined with ad_ids.",
+      "editor": "textfield"
+    },
+    "ad_ids": {
+      "title": "Listing Ad IDs",
+      "type": "array",
+      "description": "Optional batch of up to 100 listing IDs. Duplicate IDs are fetched once in first-seen order.",
+      "editor": "json",
+      "maxItems": 100,
+      "items": {
+        "type": "string"
+      }
+    },
+    "query": {
+      "title": "Find a current listing",
+      "type": "string",
+      "description": "When no ad_id or ad_ids is supplied, search this query and save the first successful listing detail (up to three candidates). Explicit IDs take priority.",
+      "editor": "textfield",
+      "prefill": "fahrrad"
+    }
   }
 }
