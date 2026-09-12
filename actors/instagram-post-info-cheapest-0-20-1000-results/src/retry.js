@@ -12,7 +12,8 @@ const COOLDOWN_AUTH_MESSAGE_PATTERNS = [
     /unauthorized/i,
 ];
 
-export const DEFAULT_RETRY_DELAYS_MS = [30000, 90000, 180000, 300000, 600000, 900000];
+export const REQUEST_TIMEOUT_MS = 60000;
+export const DEFAULT_RETRY_DELAYS_MS = [5000, 15000];
 
 export function sleep(ms) {
     return new Promise((resolve) => {

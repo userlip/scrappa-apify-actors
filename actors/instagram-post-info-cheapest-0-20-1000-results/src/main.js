@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { Actor } from 'apify';
 import { resolveInstagramPostInput } from './input.js';
+import { fetchPost } from './post.js';
 import {
     getResponseStatus,
     getResponseMessage,
@@ -22,34 +23,12 @@ try {
     const input = await Actor.getInput();
     const { identifier, params } = resolveInstagramPostInput(input);
 
-    const apiUrl = 'https://scrappa.co/api/instagram/post';
-
     let sawRateLimitDuringRequest = false;
     let nextRetryReason = 'transient failure';
 
-    const response = await requestWithRetries(async () => {
-        const scrappaResponse = await axios.get(apiUrl, {
-            params,
-            headers: {
-                'X-API-Key': apiKey,
-                Accept: 'application/json',
-            },
-            timeout: 60000,
-        });
-
-        if (scrappaResponse.data?.success === false) {
-            const error = new Error(
-                `Scrappa Instagram Post API returned an error response: ${getResponseMessage(scrappaResponse.data)}`,
-            );
-            error.response = {
-                status: scrappaResponse.data?.status_code,
-                data: scrappaResponse.data,
-            };
-            throw error;
-        }
-
-        return scrappaResponse;
-    }, {
+    const response = await requestWithRetries(() => fetchPost(axios.get, params, apiKey, () => {
+        console.warn('Single-post lookup unavailable; checking the account feed for the exact shortcode.');
+    }), {
         shouldRetry: (error) => {
             if (isTransientScrappaError(error)) {
                 if (isRateLimitScrappaError(error)) {

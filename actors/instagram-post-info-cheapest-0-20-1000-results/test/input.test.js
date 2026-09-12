@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { resolveInstagramPostInput } from '../src/input.js';
 
 test('uses a non-empty URL when provided', () => {
@@ -64,4 +65,15 @@ test('rejects null input with the expected validation error', () => {
         () => resolveInstagramPostInput(null),
         /Instagram post URL or shortcode is required/,
     );
+});
+
+
+test('QA prefill is a usable account-qualified post without overriding shortcode inputs', () => {
+    const schema = JSON.parse(readFileSync(new URL('../.actor/input_schema.json', import.meta.url)));
+    const prefill = Object.fromEntries(Object.entries(schema.properties)
+        .filter(([, property]) => 'prefill' in property)
+        .map(([key, property]) => [key, property.prefill]));
+    assert.match(resolveInstagramPostInput(prefill).params.url, /instagram\.com\/instagram\/p\/[^/]+\//);
+    assert.equal(schema.properties.url.default, undefined);
+    assert.deepEqual(resolveInstagramPostInput({ shortcode: 'CUSTOM_POST' }).params, { shortcode: 'CUSTOM_POST' });
 });
