@@ -16,7 +16,7 @@ Validation:
 
 The new prefill currently succeeds through the primary endpoint. Like other fixed Instagram examples, it can become unavailable and may require refreshing later. The Store README's old tested-input section describes a historical run, not current availability.
 
-## Recurrence — 2026-09-17 (local repair; deployment blocked)
+## Recurrence — 2026-09-17 (deployed and verified)
 
 Reported automated test run `cRJlw4rdIqtUVyLcv` started at `2026-09-16T23:04:50.182Z` on build `0.0.38` and failed after 14.261 seconds. Its input was the `DdHNbqDJusb` prefill above. The log shows a failed single-post lookup followed by an account-feed fallback returning HTTP 403, `Instagram requires login to access this resource`. This was not a timeout.
 
@@ -24,6 +24,8 @@ The unchanged actor reproduced the failure against the live API in 8.917 seconds
 
 Validation used `npm start` with input constructed from the updated schema's `prefill` fields, the configured Scrappa API key, and isolated local Crawlee storage. It exited 0 in 6.520 seconds, returned exactly one successful dataset item for `DdUYPr8Piav`, and wrote an identical `OUTPUT` record. The same candidate also succeeded in an earlier 2.450-second live run. All 36 existing actor tests passed with `npm test`.
 
-Cloud deployment and the remaining three-day QA history could not be verified: the actor runs endpoint requires authentication (HTTP 401), the saved Apify CLI keyring contains no retrievable token, no Apify token is configured in this workspace, and the browser console is signed out. A final public actor read still reports `UNDER_MAINTENANCE` and latest build `0.0.38` (`hVIjeKP3vFRkE6plD`). No cloud settings or maintenance notice were changed.
+After organization credentials were supplied, `apify login` authenticated as TheScrappa and `apify push nfdzs1z0cRIU1Bfhw -w 120` deployed build `0.0.39` (`X3jYTIbT8oAc9837S`), tagged `latest`. The deployed runtime source matched the existing repository runtime; `SCRAPPA_API_KEY` remained configured as a secret.
 
-To finish after restoring Apify access: inspect the three daily QA runs, push/rebuild this actor, run the deployed schema prefill with a 300-second limit, and verify `SUCCEEDED` plus a non-empty dataset for the requested shortcode before confirming maintenance recovery. Apify's automated tests normally pick up a repaired build within 24 hours: https://docs.apify.com/actors/publishing/test.
+Cloud verification constructed input from the deployed schema's `prefill` fields and ran with 128 MB and a 300-second timeout. Run https://console.apify.com/view/runs/bnlynUjgqCp8eINhb succeeded in 5.430 seconds on build `0.0.39`, returning one successful dataset item for the exact shortcode `DdUYPr8Piav` and an identical `OUTPUT` record. After this verification, the maintenance notice was cleared; a separate actor read confirmed `notice: NONE` and latest build `0.0.39`.
+
+Historical QA visibility limitation: authenticated API history and the organization Console expose only four organization-owned runs, including this validation, not Apify's separate automated test account. The notification-linked run above was inspected directly, but the other two daily QA failures could not be enumerated from those histories. The reported three-day sequence therefore remains uncorroborated beyond the supplied notification. Apify's next automatic QA test remains independent of this successful manual cloud validation: https://docs.apify.com/actors/publishing/test.
