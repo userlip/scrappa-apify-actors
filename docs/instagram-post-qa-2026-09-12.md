@@ -15,3 +15,15 @@ Validation:
 - Cleared the maintenance notice after successful prefill verification; a separate read confirmed `notice: NONE`, latest `0.0.38`, and the secret API key metadata retained. Default runtime remains 128 MB / 300 seconds.
 
 The new prefill currently succeeds through the primary endpoint. Like other fixed Instagram examples, it can become unavailable and may require refreshing later. The Store README's old tested-input section describes a historical run, not current availability.
+
+## Recurrence — 2026-09-17 (local repair; deployment blocked)
+
+Reported automated test run `cRJlw4rdIqtUVyLcv` started at `2026-09-16T23:04:50.182Z` on build `0.0.38` and failed after 14.261 seconds. Its input was the `DdHNbqDJusb` prefill above. The log shows a failed single-post lookup followed by an account-feed fallback returning HTTP 403, `Instagram requires login to access this resource`. This was not a timeout.
+
+The unchanged actor reproduced the failure against the live API in 8.917 seconds (exit 1). A separate successful account-feed request returned 12 posts without `DdHNbqDJusb`; the direct lookup returned `instagram_login_required`. The schema prefill and recommended example now use `https://www.instagram.com/instagram/p/DdUYPr8Piav/`, a post present in that feed. No runtime code, input precedence, retries, exact-match fallback, or output contract changed. This sample refresh does not repair Instagram login restrictions for arbitrary older posts, and a fixed sample can become unavailable again.
+
+Validation used `npm start` with input constructed from the updated schema's `prefill` fields, the configured Scrappa API key, and isolated local Crawlee storage. It exited 0 in 6.520 seconds, returned exactly one successful dataset item for `DdUYPr8Piav`, and wrote an identical `OUTPUT` record. The same candidate also succeeded in an earlier 2.450-second live run. All 36 existing actor tests passed with `npm test`.
+
+Cloud deployment and the remaining three-day QA history could not be verified: the actor runs endpoint requires authentication (HTTP 401), the saved Apify CLI keyring contains no retrievable token, no Apify token is configured in this workspace, and the browser console is signed out. A final public actor read still reports `UNDER_MAINTENANCE` and latest build `0.0.38` (`hVIjeKP3vFRkE6plD`). No cloud settings or maintenance notice were changed.
+
+To finish after restoring Apify access: inspect the three daily QA runs, push/rebuild this actor, run the deployed schema prefill with a 300-second limit, and verify `SUCCEEDED` plus a non-empty dataset for the requested shortcode before confirming maintenance recovery. Apify's automated tests normally pick up a repaired build within 24 hours: https://docs.apify.com/actors/publishing/test.
