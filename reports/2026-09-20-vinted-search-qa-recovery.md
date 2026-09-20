@@ -36,11 +36,11 @@ Automated testing was not disabled. No skip-test request is warranted: the prefi
 - Live Scrappa `/vinted/search` with that QA input succeeded: 24 listings, pagination `total_pages=40` / `total_entries=960`, first item id `10074812221` (`Shoe Nike 38`).
 - The original FR + `relevance` query also succeeded during this investigation, which supports treating the QA 404 as transient rather than a permanently invalid prefill. The schema prefill still follows the documented DE example so QA no longer depends on France catalog stability.
 
-## Outstanding platform steps
+## Deployed validation — 2026-09-20
 
-This session does not have an Apify API token, so the actor was not rebuilt or run on the Apify platform. After credentials are available:
+- Git: `6f0da4b` on `userlip/scrappa-apify-actors` `main`.
+- Production build `1.0.12` (`Wi0kWAmUK8bEjyEw1`) succeeded and is tagged `latest`.
+- QA-style cloud run [`XRKsmAR9Qq2FWEK54`](https://console.apify.com/view/runs/XRKsmAR9Qq2FWEK54) used the schema-derived input (`nike shoes` / DE / `newest_first` / page 1 / 24 per page / 1 page), 128 MB, and a 300-second timeout. Status `SUCCEEDED` in **41.367 seconds** on build `1.0.12`. Dataset has **24** rows; `item-result` charges are **24**. First saved listing id `10075302724` (`Nike schuhe in schwarz und weiß`) with `request_country=DE`.
+- Actor notice cleared with `{"notice":"NONE"}`. A follow-up read returned `notice: "NONE"`, `notices: null`, `isPublic: true`, `isDeprecated: false`, latest `1.0.12`. `SCRAPPA_API_KEY` remains configured as a secret.
 
-1. Deploy from `actors/vinted-search-scraper` and promote the build to `latest`.
-2. Run with the schema-derived QA input, 128 MB, and a 300-second timeout.
-3. Confirm `SUCCEEDED`, a non-empty default dataset, and `item-result` charges matching saved rows.
-4. Apify's automated checker should pick up the rebuilt actor within 24 hours. A manual cloud run is not itself an automated QA pass. Do not claim the Store badge is healthy until that check (or an explicit notice read of `NONE`) is observed.
+Apify's separate daily automated QA is still independent of this successful org-owned run and should pick up build `1.0.12` within 24 hours: https://docs.apify.com/platform/actors/publishing/test
