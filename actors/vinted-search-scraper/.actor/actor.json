@@ -6,7 +6,8 @@
   "version": "1.0",
   "buildTag": "latest",
   "meta": {
-    "templateId": "ts-start"
+    "templateId": "ts-start",
+    "generatedBy": "Cursor with Grok 4.6"
   },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
@@ -14,10 +15,10 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
-    "timeoutSecs": 420
+    "timeoutSecs": 300
   },
   "storages": {
     "dataset": {

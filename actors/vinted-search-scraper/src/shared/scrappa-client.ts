@@ -38,7 +38,7 @@ export function isRetryableScrappaError(error: unknown): boolean {
         return false;
     }
 
-    if (/Scrappa API error \((?:408|429|500|502|503|504)\)/.test(error.message)) {
+    if (/Scrappa API error \((?:404|408|429|500|502|503|504)\)/.test(error.message)) {
         return true;
     }
 

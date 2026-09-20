@@ -148,6 +148,18 @@ test('validates country, sorting, filters, price, and pagination bounds', () => 
     );
 });
 
+function schemaDerivedQaInput(schema) {
+    const input = {};
+    for (const [name, property] of Object.entries(schema.properties)) {
+        if (Object.hasOwn(property, 'prefill')) {
+            input[name] = property.prefill;
+        } else if (Object.hasOwn(property, 'default')) {
+            input[name] = property.default;
+        }
+    }
+    return input;
+}
+
 test('input schema matches the Vinted search contract', async () => {
     const schema = JSON.parse(await readFile(new URL('../.actor/input_schema.json', import.meta.url), 'utf8'));
 
@@ -159,4 +171,24 @@ test('input schema matches the Vinted search contract', async () => {
     assert.equal(schema.properties.page.maximum, 999);
     assert.equal(schema.properties.per_page.maximum, 100);
     assert.equal(schema.properties.max_pages.maximum, 20);
+    assert.equal(schema.properties.country.default, 'FR');
+    assert.equal(schema.properties.order.default, 'relevance');
+    assert.deepEqual(schemaDerivedQaInput(schema), {
+        query: 'nike shoes',
+        country: 'DE',
+        page: 1,
+        per_page: 24,
+        max_pages: 1,
+        order: 'newest_first',
+    });
+
+    const qaPlan = buildVintedSearchPlan(schemaDerivedQaInput(schema));
+    assert.deepEqual(qaPlan.baseParams, {
+        country: 'DE',
+        per_page: 24,
+        query: 'nike shoes',
+        order: 'newest_first',
+    });
+    assert.equal(qaPlan.startPage, 1);
+    assert.equal(qaPlan.maxPages, 1);
 });

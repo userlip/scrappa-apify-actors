@@ -20,6 +20,10 @@ test('retries timeout, transient API, and fetch transport errors', () => {
     assert.equal(isRetryableScrappaError(new ScrappaTimeoutError(1000)), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (429): Too many requests')), true);
     assert.equal(isRetryableScrappaError(new Error('Scrappa API error (503): Service unavailable')), true);
+    assert.equal(
+        isRetryableScrappaError(new Error('Scrappa API error (404): The Vinted API returned an error. Please try again.')),
+        true,
+    );
     assert.equal(isRetryableScrappaError(new TypeError('fetch failed')), true);
     assert.equal(
         isRetryableScrappaError(new TypeError('request failed', {

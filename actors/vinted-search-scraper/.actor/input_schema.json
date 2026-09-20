@@ -19,7 +19,8 @@
       "editor": "select",
       "enum": ["FR", "DE", "ES", "IT", "NL", "BE", "AT", "PL", "CZ", "LT", "LU", "SK", "HU", "RO", "PT", "SE", "DK", "FI", "US"],
       "enumTitles": ["France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Austria", "Poland", "Czech Republic", "Lithuania", "Luxembourg", "Slovakia", "Hungary", "Romania", "Portugal", "Sweden", "Denmark", "Finland", "United States"],
-      "default": "FR"
+      "default": "FR",
+      "prefill": "DE"
     },
     "page": {
       "title": "Start Page",
@@ -55,7 +56,8 @@
       "editor": "select",
       "enum": ["relevance", "newest_first", "price_low_to_high", "price_high_to_low"],
       "enumTitles": ["Relevance", "Newest First", "Price Low to High", "Price High to Low"],
-      "default": "relevance"
+      "default": "relevance",
+      "prefill": "newest_first"
     },
     "catalog_ids": {
       "title": "Catalog IDs",
