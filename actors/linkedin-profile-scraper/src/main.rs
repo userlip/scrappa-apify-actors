@@ -189,20 +189,29 @@ impl ApifyClient {
 
     async fn run_dataset_capacity(&self, requested: usize) -> Result<usize> {
         let url = self.endpoint(&["v2", "actor-runs", &self.actor_run_id])?;
-        let response = self
-            .http
-            .get(url)
-            .bearer_auth(&self.token)
-            .header(header::ACCEPT, "application/json")
-            .send()
-            .await
-            .context("Apify run pricing request failed")?;
-        let response = require_apify_success(response, "run pricing request").await?;
-        let run = response
-            .json::<Value>()
-            .await
-            .context("Apify run pricing response was not valid JSON")?;
-        affordable_dataset_items(&run, requested)
+        let mut retry_count = 0;
+        loop {
+            let response = self
+                .http
+                .get(url.clone())
+                .bearer_auth(&self.token)
+                .header(header::ACCEPT, "application/json")
+                .send()
+                .await
+                .context("Apify run pricing request failed")?;
+            if let Some(delay) = apify_retry_delay("GET", response.status(), retry_count) {
+                drop(response);
+                tokio::time::sleep(delay).await;
+                retry_count += 1;
+                continue;
+            }
+            let response = require_apify_success(response, "run pricing request").await?;
+            let run = response
+                .json::<Value>()
+                .await
+                .context("Apify run pricing response was not valid JSON")?;
+            return affordable_dataset_items(&run, requested);
+        }
     }
 
     async fn put_record(&self, key: &str, value: &Value) -> Result<()> {
@@ -977,6 +986,22 @@ mod tests {
         assert!(run_request.contains("Bearer test-token"));
         assert!(requests[1].starts_with(b"POST /v2/datasets/dataset/items HTTP/1.1\r\n"));
         assert_eq!(mock_request_body(&requests[1]), rows[0]);
+    }
+
+    #[tokio::test]
+    async fn transient_pricing_error_retries_before_dataset_publication() {
+        let (base_url, server) = start_apify_mock(vec![
+            (503, json!({"message":"temporary"})),
+            (200, mock_priced_run(0.0003, json!({}))),
+        ])
+        .await;
+        let apify = mock_apify_client(base_url);
+        assert_eq!(apify.run_dataset_capacity(2).await.unwrap(), 1);
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 2);
+        assert!(requests
+            .iter()
+            .all(|request| request.starts_with(b"GET /v2/actor-runs/test-run")));
     }
 
     #[tokio::test]

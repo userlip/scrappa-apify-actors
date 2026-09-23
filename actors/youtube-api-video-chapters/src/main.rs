@@ -184,7 +184,6 @@ fn affordable_dataset_items(run_response: &Value) -> Result<usize> {
         }
     }
     let dataset_item_price = dataset_item_price
-        .filter(|price| *price > 0.0)
         .context("Default dataset-item charge-event price is missing or invalid")?;
 
     let charged_counts = run
@@ -196,6 +195,9 @@ fn affordable_dataset_items(run_response: &Value) -> Result<usize> {
         let count = count
             .as_u64()
             .with_context(|| format!("Actor run charged event count is invalid for {name}"))?;
+        if count == 0 {
+            continue;
+        }
         let price = events
             .get(name)
             .and_then(|event| event.get("eventPriceUsd"))
@@ -215,6 +217,9 @@ fn affordable_dataset_items(run_response: &Value) -> Result<usize> {
         .and_then(Value::as_f64)
         .filter(|limit| limit.is_finite() && *limit >= 0.0)
         .context("Actor run maxTotalChargeUsd is missing or invalid")?;
+    if dataset_item_price == 0.0 {
+        return Ok(usize::MAX);
+    }
     let remaining_charge = max_total_charge - charged_total;
     if remaining_charge <= 0.0 {
         return Ok(0);
@@ -341,14 +346,9 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let mut failure_count = 0;
     for id in &ids {
         let remaining = dataset_capacity.saturating_sub(saved_count);
-        let attempt = async {
-            let data = fetch_chapters(client, config, id).await?;
-            push_dataset_row(client, config, data, remaining).await
-        }
-        .await;
-        match attempt {
-            Ok(saved) => {
-                saved_count += saved;
+        match fetch_chapters(client, config, id).await {
+            Ok(data) => {
+                saved_count += push_dataset_row(client, config, data, remaining).await?;
                 success_count += 1;
             }
             Err(error) => {
@@ -572,28 +572,26 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn dataset_write_failure_becomes_a_row_and_next_video_continues() {
+    async fn dataset_write_failure_aborts_without_a_duplicate_failure_row() {
         let (base_url, server) = mock_server(vec![
             ("200 OK", r#"{"ids":"vid1,vid2"}"#),
             ("200 OK", GENEROUS_RUN),
             ("200 OK", r#"{"chapters":[{"title":"First"}]}"#),
             ("503 Service Unavailable", "dataset unavailable"),
-            ("201 Created", ""),
-            ("200 OK", r#"{"chapters":[{"title":"Second"}]}"#),
-            ("201 Created", ""),
         ]);
-        run_actor(&Client::new(), &test_config(base_url))
+        let error = run_actor(&Client::new(), &test_config(base_url))
             .await
-            .unwrap();
+            .unwrap_err();
+        assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = server.join().unwrap();
-        assert_eq!(requests.len(), 7);
-        let failure: Value =
-            serde_json::from_str(requests[4].split_once("\r\n\r\n").unwrap().1).unwrap();
-        assert_eq!(failure["id"], "vid1");
-        assert_eq!(failure["success"], false);
-        let success: Value =
-            serde_json::from_str(requests[6].split_once("\r\n\r\n").unwrap().1).unwrap();
-        assert_eq!(success["chapters"][0]["title"], "Second");
+        assert_eq!(requests.len(), 4);
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.starts_with("POST "))
+                .count(),
+            1
+        );
     }
 
     #[tokio::test]
@@ -657,6 +655,15 @@ mod tests {
         let posted_rows: Value =
             serde_json::from_str(requests[3].split_once("\r\n\r\n").unwrap().1).unwrap();
         assert_eq!(posted_rows, json!([{ "row": 1 }]));
+    }
+
+    #[test]
+    fn zero_priced_dataset_items_are_affordable_at_zero_budget() {
+        let mut run: Value = serde_json::from_str(GENEROUS_RUN).unwrap();
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            [DEFAULT_DATASET_ITEM_EVENT]["eventPriceUsd"] = json!(0.0);
+        run["data"]["options"]["maxTotalChargeUsd"] = json!(0.0);
+        assert_eq!(affordable_dataset_items(&run).unwrap(), usize::MAX);
     }
 
     #[tokio::test]

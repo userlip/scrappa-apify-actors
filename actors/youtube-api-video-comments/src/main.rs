@@ -290,6 +290,9 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         let count = count
             .as_u64()
             .ok_or_else(|| anyhow!("Invalid charged event count"))?;
+        if count == 0 {
+            continue;
+        }
         let price = events
             .get(event_name)
             .and_then(|event| event.get("eventPriceUsd"))
@@ -848,7 +851,7 @@ mod tests {
 
     #[test]
     fn pricing_capacity_includes_all_charged_event_types() {
-        let run = json!({"data": {
+        let mut run = json!({"data": {
             "pricingInfo": {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": {
                 "apify-default-dataset-item": {"eventPriceUsd": 0.0003},
                 "apify-actor-start": {"eventPriceUsd": 0.00005}
@@ -856,6 +859,7 @@ mod tests {
             "options": {"maxTotalChargeUsd": 0.00035},
             "chargedEventCounts": {"apify-default-dataset-item": 0, "apify-actor-start": 1}
         }});
+        run["data"]["chargedEventCounts"]["unpriced-event"] = json!(0);
         assert_eq!(affordable_dataset_items(&run, 2).unwrap(), 1);
     }
 

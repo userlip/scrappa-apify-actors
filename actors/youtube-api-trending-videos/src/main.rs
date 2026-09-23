@@ -243,6 +243,7 @@ async fn run_dataset_capacity(
     )?;
     let response = client
         .get(url)
+        .timeout(REQUEST_TIMEOUT)
         .bearer_auth(&config.apify_token)
         .send()
         .await
