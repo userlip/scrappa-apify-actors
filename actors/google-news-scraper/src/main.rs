@@ -618,24 +618,29 @@ async fn run_actor(http: &Client, config: &Config) -> Result<()> {
     for params in &param_list {
         let request_description = describe_google_news_request(params);
         println!("Fetching Google News for {request_description}");
-        let request_result: Result<(Value, usize, usize, usize)> = async {
+        let request_result: Result<(Value, Vec<Value>, usize, usize)> = async {
             let response = fetch_google_news(http, config, params).await?;
             let news_results = response_items(&response, "news_results")?;
-            total_news_results += news_results.len();
-            let news_count = news_results.len();
             let story_count = array_or_string_length(response.get("stories"));
             let related_search_count = array_or_string_length(response.get("related_searches"));
             let enriched_results = news_results
                 .iter()
                 .map(|result| enrich_result(result, params))
                 .collect::<Result<Vec<_>>>()?;
-            apify.push_dataset_items(&enriched_results).await?;
-            Ok((response, news_count, story_count, related_search_count))
+            Ok((
+                response,
+                enriched_results,
+                story_count,
+                related_search_count,
+            ))
         }
         .await;
 
         match request_result {
-            Ok((response, news_count, story_count, related_search_count)) => {
+            Ok((response, enriched_results, story_count, related_search_count)) => {
+                apify.push_dataset_items(&enriched_results).await?;
+                let news_count = enriched_results.len();
+                total_news_results += news_count;
                 if keep_raw_response {
                     single_response = Some(response);
                 }
@@ -1017,6 +1022,21 @@ mod tests {
             assert_eq!(request.headers["x-api-key"], "scrappa-test-key");
             assert!(!request.headers.contains_key("authorization"));
         }
+    }
+
+    #[tokio::test]
+    async fn multi_query_dataset_failure_stops_without_claiming_success() {
+        let server = MockServer::start(vec![
+            mock_response(200, json!({"queries": ["one", "two"]})),
+            mock_response(200, json!({"news_results": [{"title": "First"}]})),
+            mock_response(503, json!({"message": "storage unavailable"})),
+        ]);
+        let config = test_config(&server.base_url);
+        let error = run_actor(&Client::new(), &config).await.unwrap_err();
+        assert!(error.to_string().contains("503"));
+        let requests = server.finish();
+        assert_eq!(requests.len(), 3);
+        assert_eq!(requests[2].method, "POST");
     }
 
     #[tokio::test]

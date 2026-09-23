@@ -112,8 +112,8 @@ fn build_hashtag_search_url(
     let hashtag = input
         .get("hashtag")
         .and_then(Value::as_str)
-        .filter(|hashtag| !hashtag.is_empty())
-        .ok_or_else(|| anyhow!("Search query \"hashtag\" not provided. Please provide a value for \"searchHashtag\" in the input."))?;
+        .filter(|hashtag| !hashtag.trim().is_empty())
+        .ok_or_else(|| anyhow!("Search query \"hashtag\" not provided. Please provide a value for \"hashtag\" in the input."))?;
 
     for filter_name in ["contentType", "features"] {
         if nonblank_string(input.get(filter_name)).is_some() {
@@ -499,6 +499,18 @@ mod tests {
             url.as_str(),
             "https://scrappa.co/api/youtube/search?query=%23rust+%26+systems&type=video&order=viewCount&limit=20&continuation=next+page"
         );
+    }
+
+    #[test]
+    fn blank_hashtag_names_the_actual_input_field() {
+        let error = build_hashtag_search_url(
+            &json!({"hashtag": "   "}),
+            &base_url(),
+            utc("2026-05-27T12:00:00.000Z"),
+        )
+        .unwrap_err();
+        assert!(error.to_string().contains("\"hashtag\""));
+        assert!(!error.to_string().contains("searchHashtag"));
     }
 
     #[test]

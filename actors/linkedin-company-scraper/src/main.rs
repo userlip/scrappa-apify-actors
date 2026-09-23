@@ -62,7 +62,10 @@ async fn run() -> Result<()> {
     let apify_base = env_or_default("APIFY_API_PUBLIC_BASE_URL", "https://api.apify.com");
     let scrappa_base = env_or_default("SCRAPPA_API_BASE_URL", "https://scrappa.co/api");
 
-    let apify_client = Client::new();
+    let apify_client = Client::builder()
+        .timeout(Duration::from_secs(60))
+        .build()
+        .context("Could not create Apify HTTP client")?;
     let scrappa_client = Client::builder()
         .timeout(SCRAPPA_TIMEOUT)
         .build()
@@ -138,7 +141,7 @@ async fn run() -> Result<()> {
                 .await
                 {
                     Ok(response) => {
-                        build_dataset_item(response, &request.input_url, normalized_url)
+                        build_dataset_item(response, &request.input_url, normalized_url)?
                     }
                     Err(ScrappaError::Api {
                         status: 404,
@@ -430,14 +433,17 @@ fn scrappa_error_message(status: u16, body: &str) -> String {
     message
 }
 
-fn build_dataset_item(response: Value, input_url: &str, normalized_url: &str) -> Value {
-    let mut item = response.as_object().cloned().unwrap_or_else(Map::new);
+fn build_dataset_item(response: Value, input_url: &str, normalized_url: &str) -> Result<Value> {
+    let mut item = response
+        .as_object()
+        .ok_or_else(|| anyhow!("Scrappa company response must be an object"))?
+        .clone();
     if item.get("url").is_none_or(Value::is_null) {
         item.insert("url".to_owned(), json!(normalized_url));
     }
     item.insert("input_url".to_owned(), json!(input_url));
     item.insert("normalized_url".to_owned(), json!(normalized_url));
-    Value::Object(item)
+    Ok(Value::Object(item))
 }
 
 fn build_failure_item(
@@ -644,7 +650,8 @@ mod tests {
             json!({"success": true, "name": "Microsoft", "followers": 1}),
             "linkedin.com/company/microsoft",
             "https://www.linkedin.com/company/microsoft",
-        );
+        )
+        .unwrap();
         assert_eq!(
             item,
             json!({
@@ -656,6 +663,18 @@ mod tests {
                 "normalized_url": "https://www.linkedin.com/company/microsoft",
             })
         );
+    }
+
+    #[test]
+    fn malformed_company_response_does_not_publish_metadata_only() {
+        for response in [Value::Null, json!([{"name": "invalid"}]), json!("invalid")] {
+            assert!(build_dataset_item(
+                response,
+                "input",
+                "https://www.linkedin.com/company/example"
+            )
+            .is_err());
+        }
     }
 
     #[test]

@@ -67,7 +67,7 @@ impl Config {
             apify_token: required_env("APIFY_TOKEN")?,
             key_value_store_id: required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID")?,
             dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID")?,
-            input_key: required_env("ACTOR_INPUT_KEY")?,
+            input_key: env_or_default("ACTOR_INPUT_KEY", "INPUT"),
             scrappa_api_base: env_or_default("SCRAPPA_API_BASE_URL", SCRAPPA_API_DEFAULT),
             scrappa_api_key,
         })

@@ -20,7 +20,7 @@ Fetch details for multiple YouTube videos in one run. The Actor accepts comma-se
 
 One dataset item is stored per video returned by the API. Fields depend on the current Scrappa YouTube response and typically include video identifiers, title, channel metadata, thumbnails, duration, view counts, and publish metadata.
 
-The prefilled input fetches two public videos for Apify's daily QA. Transient upstream errors (including 504 Gateway Timeout) and connection failures are retried up to three attempts, with a 60-second limit per request. Other 4xx responses, invalid input, and successful responses without a `videos` array fail immediately. The Actor has a five-minute overall timeout.
+The prefilled input fetches two public videos for Apify's daily QA. Transient upstream errors (including 408 Request Timeout, rate-limit 429, and 504 Gateway Timeout) and connection failures before a response are retried up to three attempts, with a 60-second limit per request. Other 4xx responses, invalid input, and successful responses without a `videos` array fail immediately. The Actor has a five-minute overall timeout.
 
 ## Runtime
 

@@ -8,3 +8,4 @@ storage/
 .vscode
 .zed
 .git
+node_modules/

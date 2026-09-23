@@ -1,6 +1,7 @@
 use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::Value;
+use std::time::Duration;
 
 pub struct ApifyClient {
     client: Client,
@@ -11,7 +12,10 @@ pub struct ApifyClient {
 impl ApifyClient {
     pub fn new(base_url: &str, token: String) -> Result<Self> {
         Ok(Self {
-            client: Client::new(),
+            client: Client::builder()
+                .timeout(Duration::from_secs(60))
+                .build()
+                .context("Could not create Apify HTTP client")?,
             base_url: Url::parse(base_url)
                 .context("APIFY_API_PUBLIC_BASE_URL must be a valid URL")?,
             token,

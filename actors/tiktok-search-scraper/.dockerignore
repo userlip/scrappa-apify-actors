@@ -5,3 +5,4 @@ storage
 .env
 .env.*
 .git
+node_modules/

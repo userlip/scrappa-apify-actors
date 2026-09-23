@@ -12,3 +12,4 @@ storage
 target
 # git folder
 .git
+node_modules/

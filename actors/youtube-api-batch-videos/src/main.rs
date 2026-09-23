@@ -156,7 +156,10 @@ async fn fetch_batch_videos(client: &Client, url: &Url) -> Result<Vec<Value>> {
                 "Scrappa API request failed with {} {reason}",
                 status.as_u16()
             );
-            let retryable = status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error();
+            let retryable = matches!(
+                status,
+                StatusCode::REQUEST_TIMEOUT | StatusCode::TOO_MANY_REQUESTS
+            ) || status.is_server_error();
             if attempt == MAX_ATTEMPTS || !retryable {
                 bail!(message);
             }
@@ -512,6 +515,23 @@ mod tests {
             .iter()
             .filter(|request| request.starts_with("GET /videos/"))
             .all(|request| !has_test_bearer_token(request)));
+    }
+
+    #[tokio::test]
+    async fn retries_a_transient_408_before_saving_videos() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"ids":"video"}"#),
+            response(408, "{}"),
+            response(200, r#"{"videos":[{"id":"video"}]}"#),
+            response(201, "{}"),
+        ]);
+        run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap();
+        let requests = server.requests();
+        assert_eq!(requests.len(), 4);
+        assert_eq!(request_parts(&requests[1]).1, request_parts(&requests[2]).1);
+        assert_eq!(request_parts(&requests[3]).0, "POST");
     }
 
     #[tokio::test]

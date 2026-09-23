@@ -11,3 +11,4 @@ storage
 
 # Repository metadata
 .git
+node_modules/

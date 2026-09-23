@@ -4,3 +4,4 @@ crawlee_storage/
 storage/
 .env
 .env.*
+node_modules/

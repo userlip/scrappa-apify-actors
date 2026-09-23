@@ -140,7 +140,7 @@ fn format_api_error(status: StatusCode, body: &str) -> String {
             if body.is_empty() {
                 format!("HTTP {status_code}")
             } else {
-                body.to_owned()
+                body.chars().take(500).collect()
             }
         }
         Ok(_) => format!("HTTP {status_code}"),
@@ -155,5 +155,20 @@ fn is_truthy(value: &Value) -> bool {
         Value::Number(value) => value.as_f64().is_some_and(|number| number != 0.0),
         Value::String(value) => !value.is_empty(),
         Value::Array(_) | Value::Object(_) => true,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn plain_text_error_is_bounded_without_losing_status() {
+        let message = format_api_error(StatusCode::BAD_GATEWAY, &"x".repeat(5_000));
+        assert!(message.starts_with("Scrappa API error (502): "));
+        assert_eq!(
+            message.chars().count(),
+            "Scrappa API error (502): ".len() + 500
+        );
     }
 }

@@ -12,4 +12,5 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY --from=builder /app/target/release/linkedin-company-scraper /usr/local/bin/linkedin-company-scraper
+USER 1000:1000
 CMD ["/usr/local/bin/linkedin-company-scraper"]
