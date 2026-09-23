@@ -95,6 +95,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Install Rust 1.90
+        uses: dtolnay/rust-toolchain@1.90.0
+
       - name: Run Rust actor tests
         working-directory: ${{ matrix.actor }}
-        run: docker run --rm -v "$PWD:/work" -w /work rust:1.90 cargo test --locked
+        run: cargo test --locked
