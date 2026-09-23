@@ -1,9 +1,15 @@
-FROM apify/actor-node:20
+FROM rust:1.90-slim-bookworm AS builder
 
-COPY --chown=myuser:myuser . ./
+WORKDIR /app
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+RUN cargo build --release --locked
 
-RUN npm install --include=dev \
-    && npm run build \
-    && npm prune --omit=dev
+FROM debian:bookworm-slim
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-CMD npm run start
+WORKDIR /app
+COPY --from=builder /app/target/release/linkedin-company-scraper /usr/local/bin/linkedin-company-scraper
+CMD ["/usr/local/bin/linkedin-company-scraper"]

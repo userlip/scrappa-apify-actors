@@ -4,7 +4,7 @@
 .vscode
 .zed
 dist
-node_modules
+target
 apify_storage
 storage/*
 !storage/key_value_stores

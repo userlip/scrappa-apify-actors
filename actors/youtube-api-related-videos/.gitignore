@@ -1,11 +1,10 @@
-# This file tells Git which files shouldn't be added to source control
 .DS_Store
 .idea
 .vscode
 .zed
-dist
-node_modules
-apify_storage
+target/
+apify_storage/
+crawlee_storage/
 storage/*
 !storage/key_value_stores
 storage/key_value_stores/*

@@ -2,7 +2,7 @@
 
 Fetch YouTube channel about details by channel ID through the Scrappa YouTube API.
 
-This actor is a thin Apify wrapper around Scrappa's YouTube API. Scraping runs on Scrappa infrastructure; Apify handles input validation, run orchestration, and dataset output.
+This actor calls Scrappa's YouTube API for each requested channel, maps its response to the legacy channel-about-details shape, and writes successful results and per-channel errors to the Apify dataset.
 
 Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
 
@@ -18,7 +18,7 @@ Provide one or more YouTube channel IDs. Use `ids` for normal batch runs so one 
 
 ## Output
 
-One dataset item per channel about/details object returned by Scrappa.
+One normalized dataset item is written per channel. Failed requests also emit `{ "id", "error", "success": false }` rows; the actor run fails when every channel request fails or a dataset write itself fails.
 
 ## Endpoint
 

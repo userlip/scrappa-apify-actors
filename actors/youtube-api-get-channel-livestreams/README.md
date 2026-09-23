@@ -8,7 +8,7 @@ Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
 
 ## Input
 
-Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the legacy `id` field still works for a single channel. Optional pagination and filter fields are passed through to Scrappa when present.
+Provide one or more YouTube channel IDs. Use `ids` for batch runs; the legacy `id` field still works. A `continuation` token is only valid for one channel. The actor follows continuation tokens for at most 10 pages per channel, stopping once it has at least 10 livestreams or the API has no next page. `sort` is passed to Scrappa.
 
 ```json
 {
@@ -19,7 +19,7 @@ Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the le
 
 ## Output
 
-One dataset item per livestream video returned by Scrappa.
+One dataset item per livestream video found on scanned pages. The next continuation token, when available, is logged for a subsequent run.
 
 ## Endpoint
 

@@ -1,12 +1,8 @@
 # YouTube API Get Channel Details
 
-Fetch YouTube channel profile details from Scrappa's YouTube API and save the result to the Apify default dataset.
+Fetch YouTube channel details from Scrappa's YouTube API and save the result to the Apify default dataset.
 
-Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
-
-## Input
-
-Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the legacy `id` field still works for a single channel.
+Set `SCRAPPA_API_KEY` as an Actor secret before running. The actor accepts the batch `ids` field and the legacy single-channel `id` field; if both are provided, unique IDs are processed in order with `ids` first.
 
 ```json
 {
@@ -14,41 +10,12 @@ Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the le
 }
 ```
 
-## Output
-
-The actor saves the channel details returned by Scrappa to the default dataset. A typical result includes fields such as:
-
-```json
-{
-    "id": "UCJZv4d5rbIKd4QHMPkcABCw",
-    "name": "Kevin Powell",
-    "description": "Helping you learn how to make the web...",
-    "thumbnail": "https://yt3.googleusercontent.com/...",
-    "banner": "https://yt3.googleusercontent.com/...",
-    "subscriberCount": "1M subscribers 1.1K videos",
-    "videoCount": "Unavailable",
-    "viewCount": "Unavailable",
-    "country": "Unavailable",
-    "joinedDate": "Unavailable",
-    "verified": false
-}
-```
-
-The API may include additional channel metadata depending on YouTube availability.
+Scrappa's response rows are written to the default dataset in response order. A failed channel produces one error row with its ID and error message; the actor continues through the batch and fails the run only if every channel fails.
 
 ## Local Development
 
-Install dependencies and run the actor with a local Apify input file:
+Build and run with the Rust toolchain. The actor reads input from the Apify default key-value store and writes results to the default dataset using the `ACTOR_DEFAULT_KEY_VALUE_STORE_ID`, `ACTOR_DEFAULT_DATASET_ID`, `ACTOR_INPUT_KEY`, and `APIFY_TOKEN` runtime variables. `APIFY_API_PUBLIC_BASE_URL` and `SCRAPPA_API_BASE_URL` can be overridden for local API mocks.
 
 ```bash
-npm install
-mkdir -p storage/key_value_stores/default
-printf '{"id":"UCJZv4d5rbIKd4QHMPkcABCw"}' > storage/key_value_stores/default/INPUT.json
-npm start
-```
-
-Run the lightweight syntax check:
-
-```bash
-npm test
+cargo run --locked
 ```

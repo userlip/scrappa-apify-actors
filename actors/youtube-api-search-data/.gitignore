@@ -2,6 +2,6 @@
 .idea
 .vscode
 .zed
-node_modules
+target
 apify_storage
 storage

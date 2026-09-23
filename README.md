@@ -36,6 +36,8 @@ cd actors/google-search
 pnpm start:dev
 ```
 
+Rust actors have their own `Cargo.toml` and `.actor/Dockerfile`. From the actor directory, run `cargo test --locked` and `docker build -f .actor/Dockerfile .` before publishing. Apify supplies `ACTOR_DEFAULT_KEY_VALUE_STORE_ID`, `ACTOR_DEFAULT_DATASET_ID`, `ACTOR_INPUT_KEY`, and `APIFY_TOKEN` at runtime; a Git push does not deploy source-file Actors. Build a candidate and smoke-test it in Apify before promoting it to `latest`; verify dataset rows, charged-event counts, `OUTPUT`/`FAILURES` records, and low spend limits against the old build. Do not deploy further ports until that billing parity is established.
+
 ### Auditing scheduled pricing activation
 
 Public actors must have active `pricingInfo` or `currentPricingInfo` once scheduled paid pricing takes effect. Run the live Apify pricing audit with an organization token:

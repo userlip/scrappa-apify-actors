@@ -29,26 +29,15 @@ jobs:
           - path: actors/google-hotels-search-scraper
           - path: actors/google-jobs-scraper
           - path: actors/google-maps-business-details-scraper
-          - path: actors/google-news-scraper
           - path: actors/immobilienscout24-locations-scraper
           - path: actors/immobilienscout24-price-insights-scraper
           - path: actors/instagram-post-info-cheapest-0-20-1000-results
           - path: actors/instagram-user-info-cheapest-0-20-1000-results
           - path: actors/instagram-user-posts-cheapest-0-20-1000-results
-          - path: actors/linkedin-post-scraper
           - path: actors/linkedin-search-scraper
           - path: actors/redfin-property-details-scraper
           - path: actors/tiktok-comments-scraper
           - path: actors/tiktok-profile-scraper
-          - path: actors/tiktok-search-scraper
-          - path: actors/youtube-api-batch-videos
-          - path: actors/youtube-api-channel-podcasts
-          - path: actors/youtube-api-channel-videos
-          - path: actors/youtube-api-get-video-details
-          - path: actors/youtube-api-related-videos
-          - path: actors/youtube-api-search-data
-          - path: actors/youtube-api-search-suggestions
-          - path: actors/youtube-api-video-comments
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -67,3 +56,45 @@ jobs:
       - name: Run tests
         working-directory: ${{ matrix.actor.path }}
         run: npm test
+
+  test-rust-actors:
+    runs-on: [self-hosted, ci, github-actions]
+    strategy:
+      fail-fast: false
+      matrix:
+        actor:
+          - actors/youtube-api-batch-videos
+          - actors/linkedin-company-scraper
+          - actors/linkedin-profile-scraper
+          - actors/trustpilot-company-reviews-scraper
+          - actors/youtube-api-video-comments
+          - actors/youtube-api-related-videos
+          - actors/youtube-api-search-data
+          - actors/youtube-api-search-suggestions
+          - actors/youtube-api-get-video-details
+          - actors/youtube-api-channel-videos
+          - actors/youtube-transcript-scraper
+          - actors/youtube-api-trending-videos
+          - actors/youtube-api-video-chapters
+          - actors/youtube-api-search-by-category
+          - actors/youtube-api-hashtags
+          - actors/youtube-api-playlists
+          - actors/youtube-api-get-channel-shorts
+          - actors/youtube-api-get-channel-statistics
+          - actors/youtube-api-get-playlists-details
+          - actors/youtube-api-get-channel-community
+          - actors/youtube-api-get-channel-details
+          - actors/youtube-api-get-channel-livestreams
+          - actors/youtube-api-get-channel-playlists
+          - actors/youtube-api-get-channel-about-details
+          - actors/youtube-api-channel-podcasts
+          - actors/google-news-scraper
+          - actors/tiktok-search-scraper
+          - actors/linkedin-post-scraper
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run Rust actor tests
+        working-directory: ${{ matrix.actor }}
+        run: docker run --rm -v "$PWD:/work" -w /work rust:1.90 cargo test --locked
