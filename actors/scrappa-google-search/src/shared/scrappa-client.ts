@@ -1,3 +1,5 @@
+import { setTimeout as delay } from 'node:timers/promises';
+
 export interface ScrappaConfig {
     apiKey: string;
     baseUrl?: string;
@@ -25,7 +27,21 @@ export class ScrappaClient {
     }
 
     async get<T>(endpoint: string, params: Record<string, unknown> = {}): Promise<T> {
-        return this.request<T>('GET', endpoint, params);
+        for (let attempt = 1; ; attempt++) {
+            try {
+                return await this.request<T>('GET', endpoint, params);
+            } catch (error) {
+                const retryable = error instanceof Error && (
+                    /Scrappa API error \((408|429|500|502|503|504)\)/.test(error.message)
+                    || error.message.startsWith('Scrappa API request timed out')
+                    || (error instanceof TypeError && error.message === 'fetch failed')
+                );
+                if (!retryable || attempt === 3) throw error;
+
+                console.warn(`Transient Scrappa API failure; retrying attempt ${attempt + 1}/3`);
+                await delay(attempt * 1000);
+            }
+        }
     }
 
     async post<T>(endpoint: string, body: Record<string, unknown> = {}): Promise<T> {
