@@ -30,7 +30,7 @@ Scrape public LinkedIn posts and articles without login. Extract content, author
 
 ### Dataset (Post Data)
 
-Each post is saved to the dataset with the following structure:
+Post results are flattened into the dataset row shape below, up to the run's `maxTotalChargeUsd` budget. A 404 response produces a failure row only when budget remains.
 
 ```json
 {
@@ -108,7 +108,7 @@ The complete response is saved to the `OUTPUT` key, including nested author obje
 
 ## Pricing
 
-$0.30 per 1,000 results. No additional API keys or LinkedIn login required.
+$0.30 per 1,000 dataset rows written. 404 failure rows count toward this charge and the run's spending limit. No additional API keys or LinkedIn login required.
 
 ## Support
 

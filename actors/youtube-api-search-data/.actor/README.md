@@ -1,6 +1,6 @@
 # YouTube API Search Data
 
-Search YouTube for videos, channels, playlists, movies, live streams, and filtered result sets. The Actor returns one dataset item per YouTube search result, so you can export results to JSON, CSV, Excel, or connect them to downstream Apify integrations.
+Search YouTube for videos, channels, playlists, movies, live streams, and filtered result sets. The Actor saves affordable results as one dataset item per result, subject to the run's spending limit, so you can export results to JSON, CSV, Excel, or connect them to downstream Apify integrations.
 
 ## What You Can Get
 
@@ -88,7 +88,7 @@ When the API returns a next-page token, the Actor logs it as `Continuation token
 
 ## Output
 
-Each YouTube search result is saved as one dataset item. Fields vary by result type, but video results commonly include:
+Each affordable YouTube search result is saved as one dataset item. When the run's spending limit leaves room for fewer rows, later results are omitted. Fields vary by result type, but video results commonly include:
 
 ```json
 {

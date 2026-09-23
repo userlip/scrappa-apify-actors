@@ -4,10 +4,8 @@
     "title": "YouTube API Playlists",
     "description": "Search YouTube playlists by query through the Scrappa YouTube API.",
     "version": "0.0",
-    "meta": {
-        "templateId": "js-start"
-    },
+    "buildTag": "latest",
     "input": "./input_schema.json",
     "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "./Dockerfile"
 }

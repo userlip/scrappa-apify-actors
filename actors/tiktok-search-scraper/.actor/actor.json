@@ -5,9 +5,6 @@
   "description": "Search TikTok videos by keyword, hashtag, product, brand, or creator niche. Extract captions, engagement metrics, author metadata, timestamps, pagination cursors, and raw TikTok video fields through Scrappa.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

@@ -50,24 +50,6 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
-  actors/youtube-api-batch-videos:
-    dependencies:
-      apify:
-        specifier: ^3.4.2
-        version: 3.5.2
-
-  actors/youtube-api-get-video-details:
-    dependencies:
-      apify:
-        specifier: ^3.4.2
-        version: 3.5.2
-
-  actors/youtube-api-video-comments:
-    dependencies:
-      apify:
-        specifier: ^3.4.2
-        version: 3.5.2
-
   shared:
     dependencies:
       apify:

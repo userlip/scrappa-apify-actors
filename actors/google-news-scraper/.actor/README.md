@@ -7,7 +7,7 @@ Scrape Google News results for media monitoring, market research, brand tracking
 - News article title, link, source, snippet, dates, thumbnails, and story tokens
 - Keyword search with country, language, sort, and pagination controls
 - Topic, publication, section, story, and Knowledge Graph token support
-- Full Scrappa response saved to key-value store record `OUTPUT`
+- Full Scrappa response saved to key-value store record `OUTPUT` for a single request; multi-request runs save per-request summaries and counts in `OUTPUT`. Article rows are in the dataset.
 
 ## Input
 

@@ -8,8 +8,8 @@ apify_storage
 crawlee_storage
 storage
 
-# installed files
-node_modules
-
+# Rust build output
+target
 # git folder
 .git
+node_modules/

@@ -5,9 +5,6 @@
   "description": "Scrape public LinkedIn posts and articles. Get content, author info, reactions, comments, and related articles. No LinkedIn login required.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

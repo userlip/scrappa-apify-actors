@@ -33,11 +33,11 @@ When the API returns a next-page token, the Actor logs it as `Continuation token
 
 ## Output
 
-The Actor stores one dataset item per top-level comment returned by the API. Fields typically include the comment text, author metadata, like counts, publish time, reply counts, and embedded replies when available.
+The Actor stores up to one dataset item per top-level comment returned by the API. When the run's `maxTotalChargeUsd` limit leaves capacity for fewer items, only the affordable prefix is stored. Fields typically include the comment text, author metadata, like counts, publish time, reply counts, and embedded replies when available; embedded replies remain part of their top-level comment item.
 
 ## Pricing
 
-$0.30 per 1,000 results. No additional API keys required.
+$0.30 per 1,000 top-level comment results. The run's spending limit is shared with all charged events, including events charged before comment storage. The Scrappa API key must be configured in Actor settings.
 
 ## Support
 

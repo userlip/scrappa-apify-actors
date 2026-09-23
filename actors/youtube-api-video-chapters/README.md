@@ -18,7 +18,7 @@ Provide one or more YouTube video IDs. Use `ids` for batch runs; the legacy `id`
 
 ## Output
 
-One dataset item per video ID. Successful items contain the video chapters object returned by Scrappa. Failed items contain the video ID and error message so valid IDs in the same batch are still processed.
+Successful response objects are written as one dataset item per video ID; top-level response arrays may produce multiple items and are trimmed to the run's remaining dataset-item capacity. Failed requests produce per-video error items while capacity remains. The actor continues fetching every ID after the budget is exhausted but skips further dataset writes.
 
 ## Endpoint
 

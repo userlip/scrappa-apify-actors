@@ -18,7 +18,7 @@ Fetch detailed metadata for a single YouTube video by video ID. The Actor calls 
 
 ## Output
 
-The Actor stores the video details object returned by the API. Fields depend on the current Scrappa YouTube response, and typically include the video ID, title, channel details, thumbnails, duration, engagement counts, description, and publish metadata.
+The Actor saves the response returned by the API subject to the run's `maxTotalChargeUsd` limit. An object counts as one dataset item; an array counts one item per element and is saved in original order only up to the remaining affordable item capacity. Charges already recorded for other priced events in the run reduce that capacity; if no capacity remains, no items are written.
 
 ## Pricing
 

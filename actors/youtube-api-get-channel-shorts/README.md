@@ -8,7 +8,7 @@ Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
 
 ## Input
 
-Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the legacy `id` field still works for a single channel. Optional pagination and filter fields are passed through to Scrappa when present.
+Provide one or more YouTube channel IDs. `ids` and the legacy `id` field are combined and deduplicated; `continuation` can only be used for a single channel. Optional `sort` is passed through to Scrappa. The actor scans at most 10 pages per channel and stops once it has at least 10 Shorts; the final page may bring the count above 10.
 
 ```json
 {
@@ -19,7 +19,7 @@ Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the le
 
 ## Output
 
-One dataset item per Shorts video returned by Scrappa.
+One dataset row per detected Short, kept in Scrappa page order, up to the run's pay-per-event spending limit; Shorts beyond the remaining budget are not saved.
 
 ## Endpoint
 

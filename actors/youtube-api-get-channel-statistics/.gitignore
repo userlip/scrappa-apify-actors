@@ -3,8 +3,8 @@
 .idea
 .vscode
 .zed
+target/
 dist
-node_modules
 apify_storage
 storage/*
 !storage/key_value_stores

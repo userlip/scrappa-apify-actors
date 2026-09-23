@@ -1,13 +1,11 @@
 {
-    "actorSpecification": 1,
-    "name": "youtube-api-hashtags",
-    "title": "YouTube API Hashtags",
-    "description": "Search YouTube videos by hashtag through the Scrappa YouTube API.",
-    "version": "0.0",
-    "meta": {
-        "templateId": "js-start"
-    },
-    "input": "./input_schema.json",
-    "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
-    "dockerfile": "../Dockerfile"
+  "actorSpecification": 1,
+  "name": "youtube-api-hashtags",
+  "title": "YouTube API Hashtags",
+  "description": "Search YouTube videos by hashtag through the Scrappa YouTube API.",
+  "version": "0.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
+  "dockerfile": "./Dockerfile"
 }

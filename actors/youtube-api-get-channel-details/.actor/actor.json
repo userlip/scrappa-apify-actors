@@ -4,10 +4,8 @@
     "title": "YouTube API Get Channel Details",
     "description": "Fetch YouTube channel details by channel ID.",
     "version": "0.0",
-    "meta": {
-        "templateId": "js-start"
-    },
-    "input": "./input_schema.json",
+    "buildTag": "latest",
     "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
-    "dockerfile": "../Dockerfile"
+    "input": "./input_schema.json",
+    "dockerfile": "./Dockerfile"
 }

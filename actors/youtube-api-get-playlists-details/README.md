@@ -18,7 +18,7 @@ Fetch detailed metadata and videos for a single YouTube playlist by playlist ID.
 
 ## Output
 
-The Actor stores the playlist details object returned by the API. Fields depend on the current Scrappa YouTube response, and typically include the playlist ID, title, channel details, thumbnails, video count, videos, description, and continuation token when more videos are available.
+The Actor saves playlist detail results from the API to the default Apify dataset in their original order, limited to the rows allowed by the run's `PAY_PER_EVENT` spending limit. A response array may be trimmed to fit the remaining budget. Before a non-empty dataset write, missing or invalid run pricing metadata fails the Actor rather than writing rows.
 
 ## Pricing
 

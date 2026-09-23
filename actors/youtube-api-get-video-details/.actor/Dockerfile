@@ -1,27 +1,15 @@
-# Specify the base Docker image. You can read more about
-# the available images at https://docs.apify.com/sdk/js/docs/guides/docker-images
-# You can also use any other image from Docker Hub.
-FROM apify/actor-node:22
+FROM rust:1.90-slim-bookworm AS builder
+WORKDIR /app
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src && printf 'fn main() {}\n' > src/main.rs && cargo build --release --locked && rm src/main.rs
+COPY src ./src
+# Cleaning the warm-up package prevents Cargo from shipping its no-op binary instead of src.
+RUN cargo clean --release -p youtube-api-get-video-details && cargo build --release --locked
 
-# Copy just package.json and package-lock.json
-# to speed up the build using Docker layer cache.
-COPY --chown=myuser:myuser package*.json ./
-
-# Install NPM packages, skip optional and development dependencies to
-# keep the image small. Avoid logging too much and print the dependency
-# tree for debugging
-RUN npm --quiet set progress=false \
-    && npm ci --omit=dev --omit=optional \
-    && echo "Node.js version:" \
-    && node --version \
-    && echo "NPM version:" \
-    && npm --version \
-    && rm -r ~/.npm
-
-# Next, copy the remaining files and directories with the source code.
-# Since we do this after NPM install, quick build will be really fast
-# for most source file changes.
-COPY --chown=myuser:myuser . ./
-
-# Run the image.
-CMD npm start --silent
+FROM debian:bookworm-slim AS runtime
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/target/release/youtube-api-get-video-details /usr/local/bin/youtube-api-get-video-details
+USER 1000:1000
+ENTRYPOINT ["/usr/local/bin/youtube-api-get-video-details"]

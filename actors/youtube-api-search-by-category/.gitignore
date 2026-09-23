@@ -2,8 +2,6 @@
 .idea
 .vscode
 .zed
-dist
-node_modules
 apify_storage
 storage/*
 !storage/key_value_stores
@@ -11,3 +9,6 @@ storage/key_value_stores/*
 !storage/key_value_stores/default
 storage/key_value_stores/default/*
 !storage/key_value_stores/default/INPUT.json
+target/
+.env
+.env.*

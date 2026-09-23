@@ -1,19 +1,18 @@
-# configurations
-.idea
-.vscode
-.zed
+# Rust and container build outputs
+target/
 
-# crawlee and apify storage folders
+# Apify local storage
 apify_storage
 crawlee_storage
 storage
-
-# installed files
-node_modules
 
 # local environment files
 .env
 .env.*
 
-# git folder
+# editor and git files
+.idea
+.vscode
+.zed
 .git
+node_modules/

@@ -1,15 +1,14 @@
-# configurations
+# Editor configuration
 .idea
 .vscode
 .zed
 
-# crawlee and apify storage folders
+# Build output and local actor storage
+target
 apify_storage
 crawlee_storage
 storage
 
-# installed files
-node_modules
-
-# git folder
+# Repository metadata
 .git
+node_modules/

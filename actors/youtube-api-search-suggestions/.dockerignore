@@ -3,13 +3,12 @@
 .vscode
 .zed
 
-# crawlee and apify storage folders
+# local storage
 apify_storage
-crawlee_storage
 storage
 
-# installed files
-node_modules
+# Rust build output
+target/
 
 # local environment files
 .env
@@ -17,3 +16,4 @@ node_modules
 
 # git folder
 .git
+node_modules/

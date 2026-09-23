@@ -3,6 +3,7 @@
 .idea
 .vscode
 .zed
+/target
 dist
 node_modules
 apify_storage
