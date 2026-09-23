@@ -20,6 +20,8 @@ Fetch details for multiple YouTube videos in one run. The Actor accepts comma-se
 
 The Actor stores one dataset item per video returned by the API. Fields depend on the current Scrappa YouTube response, and typically include video identifiers, title, channel metadata, thumbnails, duration, view counts, and publish metadata.
 
+The prefilled input fetches two public videos for Apify's daily QA. Transient upstream errors (including 504 Gateway Timeout) and connection failures are retried up to three times, with a 60-second limit per request; invalid input fails immediately. The default dataset must contain returned videos for QA to pass.
+
 ## Pricing
 
 $0.30 per 1,000 results. No additional API keys required.

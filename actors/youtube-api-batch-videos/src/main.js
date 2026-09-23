@@ -1,12 +1,11 @@
 import { Actor } from 'apify';
 import { buildBatchVideosUrl } from './videos-url.js';
-
-const SCRAPPA_REQUEST_TIMEOUT_MS = 60000;
+import { fetchBatchVideos, REQUEST_TIMEOUT_MS } from './fetch-videos.js';
 
 function errorMessage(error) {
     const rawMessage = error instanceof Error ? error.message : String(error);
     if (rawMessage.includes('aborted')) {
-        return `Scrappa API request timed out after ${SCRAPPA_REQUEST_TIMEOUT_MS / 1000}s`;
+        return `Scrappa API request timed out after ${REQUEST_TIMEOUT_MS / 1000}s`;
     }
 
     return rawMessage;
@@ -18,15 +17,7 @@ Actor.main(async () => {
         const apiUrl = buildBatchVideosUrl(input);
 
         console.log(`Fetching from: ${apiUrl}`);
-        const response = await fetch(apiUrl, {
-            signal: AbortSignal.timeout(SCRAPPA_REQUEST_TIMEOUT_MS),
-        });
-        if (!response.ok) {
-            throw new Error(`Scrappa API request failed with ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const videos = data?.videos ?? [];
+        const videos = await fetchBatchVideos(apiUrl);
 
         await Actor.pushData(videos);
         console.log(`Successfully fetched ${videos.length} batch video(s) for ids: ${input.ids}`);
