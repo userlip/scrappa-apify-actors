@@ -14,7 +14,7 @@ Extract comprehensive public LinkedIn profile data without login. Get profession
 - **Projects** - Professional projects and contributions
 - **Recommendations** - Endorsements from colleagues and clients
 - **Similar Profiles** - LinkedIn's suggestions for similar professionals
-- **Batch Input** - Process many profile URLs in one Apify run and write one dataset item per profile
+- **Batch Input** - Process many profile URLs in one Apify run and write one dataset item per successful profile when spending allowance permits
 - **Caching** - Optional caching to reduce costs and improve speed
 
 ## Input
@@ -30,7 +30,7 @@ Extract comprehensive public LinkedIn profile data without login. Get profession
 
 ### Dataset (Profile Data)
 
-Each profile is saved to the dataset with main fields:
+Each successful profile that fits the run's remaining spending allowance is saved to the default dataset, in input order:
 
 ```json
 {
@@ -82,6 +82,8 @@ Each profile is saved to the dataset with main fields:
 ### Key-Value Store
 
 For legacy single-URL runs, the complete response is saved to the `OUTPUT` key with all profile data. Batch runs use the dataset as the primary result channel and write a small summary to `OUTPUT`.
+
+Batch `OUTPUT.succeeded` counts successful scrapes, even when the spending cap prevents some rows from being written; the console summary reports the separate `saved` count. The actor checks the run's pay-per-event pricing before posting dataset rows and fails closed if required pricing data is missing or invalid.
 
 Failed or unavailable profiles are not written to the default dataset, so they are not charged as results. For a single URL, the structured failure is stored in `OUTPUT`; batch failures are also stored in the `FAILURES` key.
 
@@ -141,7 +143,7 @@ Failed or unavailable profiles are not written to the default dataset, so they a
 
 ## Pricing
 
-$0.30 per 1,000 results. No LinkedIn login or additional API keys required.
+$0.30 per 1,000 results. No LinkedIn login or additional API keys required. Dataset writes use the run's resolved per-item event price and respect its numeric `maxTotalChargeUsd`; successful results beyond the remaining allowance are not added to the default dataset.
 
 Put multiple profile URLs in `urls` when you have a list. This keeps Apify run startup and storage overhead shared across many results while Scrappa does the actual scraping work.
 

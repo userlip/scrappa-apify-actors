@@ -61,6 +61,10 @@ async fn run() -> Result<()> {
         "SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings.",
     )?;
     let api_token = required_env("APIFY_TOKEN", "APIFY_TOKEN environment variable is not set")?;
+    let actor_run_id = required_env(
+        "ACTOR_RUN_ID",
+        "ACTOR_RUN_ID environment variable is not set",
+    )?;
     let store_id = required_env(
         "ACTOR_DEFAULT_KEY_VALUE_STORE_ID",
         "ACTOR_DEFAULT_KEY_VALUE_STORE_ID environment variable is not set",
@@ -93,6 +97,8 @@ async fn run() -> Result<()> {
     let scrappa = scrappa::ScrappaClient::new(api_key, scrappa_api_base)?;
     let mut responses = Vec::new();
     let mut reviews_extracted = 0;
+    // Charged-event counts can lag dataset POSTs, so retain this initial capacity locally.
+    let mut dataset_budget = None;
     for offset in 0..plan.max_pages {
         let page = plan.start_page + offset;
         let params = page_params(&plan, page);
@@ -109,7 +115,15 @@ async fn run() -> Result<()> {
                 .iter()
                 .map(|(review, source)| enrich_review(review, &params, &response, source))
                 .collect::<Result<Vec<_>>>()?;
-            apify.push_data(&dataset_id, &rows).await?;
+            if dataset_budget.is_none() {
+                dataset_budget = Some(apify.dataset_item_budget(&actor_run_id).await?);
+            }
+            let remaining_budget = dataset_budget
+                .as_mut()
+                .context("Dataset item budget was not initialized")?;
+            apify
+                .push_data(&dataset_id, &rows, remaining_budget)
+                .await?;
             reviews_extracted += rows.len();
             println!("Found {} reviews on page {page}", rows.len());
         }

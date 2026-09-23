@@ -19,7 +19,7 @@ Provide one or more YouTube channel IDs. Use `ids` for batch runs; the legacy `i
 
 ## Output
 
-One dataset item per livestream video found on scanned pages. The next continuation token, when available, is logged for a subsequent run.
+One dataset item is saved for each livestream found within the run's remaining pay-per-event spending limit. Before the first dataset write, the actor reads the Apify run's resolved event prices and charged-event counts, then skips rows that exceed `maxTotalChargeUsd`. The next continuation token, when available, is logged for a subsequent run.
 
 ## Endpoint
 

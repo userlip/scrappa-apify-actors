@@ -14,6 +14,7 @@ struct ActorConfig {
     scrappa_api_base_url: Url,
     default_key_value_store_id: String,
     default_dataset_id: String,
+    actor_run_id: String,
     input_key: String,
     apify_token: String,
     scrappa_api_key: String,
@@ -26,6 +27,7 @@ impl ActorConfig {
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
             default_key_value_store_id: required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID")?,
             default_dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID")?,
+            actor_run_id: required_env("ACTOR_RUN_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
             scrappa_api_key: required_env("SCRAPPA_API_KEY")?,
@@ -294,10 +296,108 @@ async fn fetch_scrappa_json(client: &Client, config: &ActorConfig, url: &Url) ->
         )
     })?
 }
+struct DatasetBudget {
+    capacity: Option<usize>,
+    saved_items: usize,
+}
 
-async fn push_dataset_items(client: &Client, config: &ActorConfig, items: &[Value]) -> Result<()> {
+async fn run_dataset_capacity(client: &Client, config: &ActorConfig) -> Result<usize> {
+    let url = endpoint_url(
+        &config.apify_api_base_url,
+        &["v2", "actor-runs", &config.actor_run_id],
+    )?;
+    let response = client
+        .get(url)
+        .bearer_auth(&config.apify_token)
+        .send()
+        .await
+        .context("Apify run pricing request failed")?;
+    let run = response_json(response, "Apify run pricing request").await?;
+    affordable_dataset_items(&run)
+}
+
+fn affordable_dataset_items(run: &Value) -> Result<usize> {
+    let data = run
+        .get("data")
+        .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+    if data
+        .pointer("/pricingInfo/pricingModel")
+        .and_then(Value::as_str)
+        != Some("PAY_PER_EVENT")
+    {
+        bail!("Apify run is not configured for pay-per-event pricing");
+    }
+    let events = data
+        .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
+    let item_price = events
+        .get("apify-default-dataset-item")
+        .and_then(|event| event.get("eventPriceUsd"))
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
+    let max_charge = data
+        .pointer("/options/maxTotalChargeUsd")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+
+    let counts = data
+        .get("chargedEventCounts")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide charged event counts"))?;
+    let mut spent = 0.0;
+    for (event_name, count) in counts {
+        let count = count
+            .as_u64()
+            .ok_or_else(|| anyhow!("Invalid charged event count"))?;
+        if count == 0 {
+            continue;
+        }
+        let price = events
+            .get(event_name)
+            .and_then(|event| event.get("eventPriceUsd"))
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Missing price for charged event {event_name}"))?;
+        if !price.is_finite() || price < 0.0 {
+            bail!("Invalid price for charged event {event_name}");
+        }
+        spent += price * count as f64;
+    }
+    if !spent.is_finite() {
+        bail!("Apify run returned invalid charged totals");
+    }
+    if item_price == 0.0 {
+        return Ok(usize::MAX);
+    }
+    let tolerance = f64::EPSILON * max_charge.max(1.0);
+    Ok(((max_charge - spent + tolerance) / item_price)
+        .floor()
+        .max(0.0) as usize)
+}
+
+async fn push_dataset_items(
+    client: &Client,
+    config: &ActorConfig,
+    items: &[Value],
+    budget: &mut DatasetBudget,
+) -> Result<usize> {
     if items.is_empty() {
-        return Ok(());
+        return Ok(0);
+    }
+    let capacity = match budget.capacity {
+        Some(capacity) => capacity,
+        None => {
+            let capacity = run_dataset_capacity(client, config).await?;
+            budget.capacity = Some(capacity);
+            capacity
+        }
+    };
+    let items = &items[..items.len().min(capacity.saturating_sub(budget.saved_items))];
+    if items.is_empty() {
+        return Ok(0);
     }
 
     let url = endpoint_url(
@@ -325,7 +425,8 @@ async fn push_dataset_items(client: &Client, config: &ActorConfig, items: &[Valu
             status.as_u16()
         );
     }
-    Ok(())
+    budget.saved_items += items.len();
+    Ok(items.len())
 }
 
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
@@ -336,14 +437,18 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     }
     assert_continuation_matches_batch(&input, &ids)?;
 
+    let mut budget = DatasetBudget {
+        capacity: None,
+        saved_items: 0,
+    };
     for id in &ids {
         let url = build_channel_podcasts_url(&input, id, &config.scrappa_api_base_url)?;
         println!("Fetching from: {url}");
         let response_data = fetch_scrappa_json(client, config, &url).await?;
         let videos = podcast_videos(&response_data)?;
-        push_dataset_items(client, config, &videos).await?;
+        let saved = push_dataset_items(client, config, &videos, &mut budget).await?;
         println!(
-            "Successfully fetched {} podcast video(s) for channel id: {id}",
+            "Successfully fetched {} podcast video(s) for channel id: {id}; saved {saved}",
             videos.len()
         );
 
@@ -480,12 +585,46 @@ mod tests {
         );
     }
 
+    fn podcast_response() -> String {
+        json!({"videos": [
+            {"id": "first", "isPodcast": true},
+            {"id": "second", "isPodcast": true}
+        ]})
+        .to_string()
+    }
+
+    fn pricing_response(max_charge: f64, item_price: f64, charged_events: Value) -> String {
+        json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": item_price},
+                        "other-event": {"eventPriceUsd": 0.0003}
+                    }}
+                },
+                "chargedEventCounts": charged_events,
+                "options": {"maxTotalChargeUsd": max_charge}
+            }
+        })
+        .to_string()
+    }
+
+    fn posted_dataset_rows(requests: &[String]) -> Vec<Value> {
+        requests
+            .iter()
+            .filter(|request| request.starts_with("POST /v2/datasets/dataset/items "))
+            .map(|request| serde_json::from_str(request.split("\r\n\r\n").nth(1).unwrap()).unwrap())
+            .collect()
+    }
+
     #[tokio::test]
     async fn reads_apify_input_calls_scrappa_and_writes_matching_rows() {
         let input = json!({"ids": "UC1, UC2", "id": "UC2,UC3", "sort": "newest"});
         let replies = vec![
             (200, input.to_string()),
             (200, json!({"videos": [{"id": "one", "isPodcast": true}, {"id": "not-podcast"}], "continuation": "next"}).to_string()),
+            (200, pricing_response(0.001, 0.0003, json!({}))),
             (201, String::new()),
             (200, json!({"videos": [{"id": "two", "badges": ["Podcast"]}]}).to_string()),
             (201, String::new()),
@@ -497,9 +636,16 @@ mod tests {
 
         run_actor(&Client::new(), &config).await.unwrap();
         let requests = server.join().unwrap();
-        assert_eq!(requests.len(), 7);
+        assert_eq!(requests.len(), 8);
         assert!(requests[0].starts_with("GET /v2/key-value-stores/key-store/records/INPUT "));
         assert!(requests[0]
+            .to_ascii_lowercase()
+            .contains("authorization: bearer apify-test"));
+        let pricing_request = requests
+            .iter()
+            .find(|request| request.starts_with("GET /v2/actor-runs/test-run "))
+            .unwrap();
+        assert!(pricing_request
             .to_ascii_lowercase()
             .contains("authorization: bearer apify-test"));
 
@@ -517,24 +663,209 @@ mod tests {
                 .to_ascii_lowercase()
                 .contains("accept: application/json"));
         }
-
-        let writes: Vec<_> = requests
-            .iter()
-            .filter(|request| request.starts_with("POST /v2/datasets/dataset/items "))
-            .collect();
-        assert_eq!(writes.len(), 3);
-        let rows: Vec<Value> = writes
-            .iter()
-            .map(|request| serde_json::from_str(request.split("\r\n\r\n").nth(1).unwrap()).unwrap())
-            .collect();
         assert_eq!(
-            rows,
+            posted_dataset_rows(&requests),
             vec![
                 json!([{"id": "one", "isPodcast": true}]),
                 json!([{"id": "two", "badges": ["Podcast"]}]),
                 json!([{"id": "three", "type": "podcast episode"}])
             ]
         );
+    }
+    #[tokio::test]
+    async fn caps_two_podcast_rows_at_one_dataset_event() {
+        let (api_base, server) = mock_server(vec![
+            (200, json!({"id": "UC1"}).to_string()),
+            (200, podcast_response()),
+            (200, pricing_response(0.0003, 0.0003, json!({}))),
+            (201, String::new()),
+        ]);
+        let config = test_config(&api_base, "key-store", "dataset");
+
+        run_actor(&Client::new(), &config).await.unwrap();
+        let requests = server.join().unwrap();
+        assert!(requests[2].starts_with("GET /v2/actor-runs/test-run "));
+        assert!(requests[2]
+            .to_ascii_lowercase()
+            .contains("authorization: bearer apify-test"));
+        assert_eq!(
+            posted_dataset_rows(&requests),
+            vec![json!([{"id": "first", "isPodcast": true}])]
+        );
+    }
+
+    #[tokio::test]
+    async fn zero_remaining_budget_posts_no_dataset_rows() {
+        for pricing in [
+            pricing_response(0.0, 0.0003, json!({})),
+            pricing_response(0.0003, 0.0003, json!({"other-event": 1})),
+        ] {
+            let (api_base, server) = mock_server(vec![
+                (200, json!({"id": "UC1"}).to_string()),
+                (200, podcast_response()),
+                (200, pricing),
+            ]);
+            let config = test_config(&api_base, "key-store", "dataset");
+
+            run_actor(&Client::new(), &config).await.unwrap();
+            let requests = server.join().unwrap();
+            assert_eq!(requests.len(), 3);
+            assert!(posted_dataset_rows(&requests).is_empty());
+        }
+    }
+
+    #[tokio::test]
+    async fn normal_numeric_budget_posts_all_rows() {
+        let (api_base, server) = mock_server(vec![
+            (200, json!({"id": "UC1"}).to_string()),
+            (200, podcast_response()),
+            (200, pricing_response(4.506432, 0.0003, json!({}))),
+            (201, String::new()),
+        ]);
+        let config = test_config(&api_base, "key-store", "dataset");
+
+        run_actor(&Client::new(), &config).await.unwrap();
+        let requests = server.join().unwrap();
+        assert_eq!(
+            posted_dataset_rows(&requests),
+            vec![json!([
+                {"id": "first", "isPodcast": true},
+                {"id": "second", "isPodcast": true}
+            ])]
+        );
+    }
+
+    #[tokio::test]
+    async fn zero_price_event_has_no_dataset_row_cap() {
+        let (api_base, server) = mock_server(vec![
+            (200, json!({"id": "UC1"}).to_string()),
+            (200, podcast_response()),
+            (200, pricing_response(0.0, 0.0, json!({}))),
+            (201, String::new()),
+        ]);
+        let config = test_config(&api_base, "key-store", "dataset");
+
+        run_actor(&Client::new(), &config).await.unwrap();
+        let requests = server.join().unwrap();
+        assert_eq!(
+            posted_dataset_rows(&requests),
+            vec![json!([
+                {"id": "first", "isPodcast": true},
+                {"id": "second", "isPodcast": true}
+            ])]
+        );
+    }
+
+    #[tokio::test]
+    async fn multiple_channel_writes_share_the_initial_budget_snapshot() {
+        let (api_base, server) = mock_server(vec![
+            (200, json!({"ids": "UC1,UC2"}).to_string()),
+            (
+                200,
+                json!({"videos": [{"id": "first", "isPodcast": true}]}).to_string(),
+            ),
+            (200, pricing_response(0.0003, 0.0003, json!({}))),
+            (201, String::new()),
+            (
+                200,
+                json!({"videos": [{"id": "second", "isPodcast": true}]}).to_string(),
+            ),
+        ]);
+        let config = test_config(&api_base, "key-store", "dataset");
+
+        run_actor(&Client::new(), &config).await.unwrap();
+        let requests = server.join().unwrap();
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.starts_with("GET /v2/actor-runs/test-run "))
+                .count(),
+            1
+        );
+        assert_eq!(
+            posted_dataset_rows(&requests),
+            vec![json!([{"id": "first", "isPodcast": true}])]
+        );
+    }
+
+    #[tokio::test]
+    async fn missing_dataset_event_price_fails_before_any_dataset_write() {
+        let missing_price = json!({"data": {
+            "pricingInfo": {
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {}}
+            },
+            "chargedEventCounts": {},
+            "options": {"maxTotalChargeUsd": 1.0}
+        }});
+        let (api_base, server) = mock_server(vec![
+            (200, json!({"id": "UC1"}).to_string()),
+            (200, podcast_response()),
+            (200, missing_price.to_string()),
+        ]);
+        let config = test_config(&api_base, "key-store", "dataset");
+
+        let error = run_actor(&Client::new(), &config).await.unwrap_err();
+        assert!(error.to_string().contains("dataset item price"));
+        let requests = server.join().unwrap();
+        assert!(posted_dataset_rows(&requests).is_empty());
+    }
+
+    #[tokio::test]
+    async fn missing_or_null_spending_limit_fails_before_any_dataset_write() {
+        for spending_limit in [None, Some(Value::Null)] {
+            let mut invalid_pricing = json!({"data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.0003}
+                    }}
+                },
+                "chargedEventCounts": {},
+                "options": {}
+            }});
+            if let Some(spending_limit) = spending_limit {
+                invalid_pricing["data"]["options"]["maxTotalChargeUsd"] = spending_limit;
+            }
+            let (api_base, server) = mock_server(vec![
+                (200, json!({"id": "UC1"}).to_string()),
+                (200, podcast_response()),
+                (200, invalid_pricing.to_string()),
+            ]);
+            let config = test_config(&api_base, "key-store", "dataset");
+
+            let error = run_actor(&Client::new(), &config).await.unwrap_err();
+            assert!(error.to_string().contains("spending limit"));
+            let requests = server.join().unwrap();
+            assert!(posted_dataset_rows(&requests).is_empty());
+        }
+    }
+
+    #[test]
+    fn missing_charged_counts_fail_closed() {
+        let mut run: Value =
+            serde_json::from_str(&pricing_response(1.0, 0.0003, json!({}))).unwrap();
+        run["data"]
+            .as_object_mut()
+            .unwrap()
+            .remove("chargedEventCounts");
+        assert!(affordable_dataset_items(&run).is_err());
+    }
+
+    #[tokio::test]
+    async fn dataset_write_failure_is_propagated() {
+        let (api_base, server) = mock_server(vec![
+            (200, json!({"id": "UC1"}).to_string()),
+            (200, podcast_response()),
+            (200, pricing_response(4.506432, 0.0003, json!({}))),
+            (503, "storage unavailable".to_owned()),
+        ]);
+        let config = test_config(&api_base, "key-store", "dataset");
+
+        let error = run_actor(&Client::new(), &config).await.unwrap_err();
+        assert!(error.to_string().contains("Apify dataset write failed"));
+        let requests = server.join().unwrap();
+        assert_eq!(posted_dataset_rows(&requests).len(), 1);
     }
 
     #[tokio::test]
@@ -559,6 +890,7 @@ mod tests {
             scrappa_api_base_url: api_base.join("api/youtube/channel-videos").unwrap(),
             default_key_value_store_id: store_id.to_owned(),
             default_dataset_id: dataset_id.to_owned(),
+            actor_run_id: "test-run".to_owned(),
             input_key: "INPUT".to_owned(),
             apify_token: "apify-test".to_owned(),
             scrappa_api_key: "scrappa-test".to_owned(),

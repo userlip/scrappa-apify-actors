@@ -232,25 +232,27 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         bail!("Apify run returned invalid charging values");
     }
 
+    let counts = data
+        .get("chargedEventCounts")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide charged event counts"))?;
     let mut spent = 0.0;
-    if let Some(counts) = data.get("chargedEventCounts").and_then(Value::as_object) {
-        for (event_name, count) in counts {
-            let count = count
-                .as_u64()
-                .ok_or_else(|| anyhow!("Invalid charged event count"))?;
-            if count == 0 {
-                continue;
-            }
-            let price = events
-                .get(event_name)
-                .and_then(|event| event.get("eventPriceUsd"))
-                .and_then(Value::as_f64)
-                .ok_or_else(|| anyhow!("Missing price for charged event {event_name}"))?;
-            if !price.is_finite() || price < 0.0 {
-                bail!("Invalid price for charged event {event_name}");
-            }
-            spent += price * count as f64;
+    for (event_name, count) in counts {
+        let count = count
+            .as_u64()
+            .ok_or_else(|| anyhow!("Invalid charged event count"))?;
+        if count == 0 {
+            continue;
         }
+        let price = events
+            .get(event_name)
+            .and_then(|event| event.get("eventPriceUsd"))
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Missing price for charged event {event_name}"))?;
+        if !price.is_finite() || price < 0.0 {
+            bail!("Invalid price for charged event {event_name}");
+        }
+        spent += price * count as f64;
     }
     if !spent.is_finite() {
         bail!("Apify run returned invalid charged totals");
@@ -691,6 +693,12 @@ mod tests {
         }});
         assert_eq!(affordable_dataset_items(&run, 2).unwrap(), 1);
         assert!(affordable_dataset_items(&serde_json::json!({"data": {}}), 1).is_err());
+        let mut missing_counts = run.clone();
+        missing_counts["data"]
+            .as_object_mut()
+            .unwrap()
+            .remove("chargedEventCounts");
+        assert!(affordable_dataset_items(&missing_counts, 2).is_err());
     }
 
     #[tokio::test]

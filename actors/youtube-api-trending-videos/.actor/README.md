@@ -30,7 +30,7 @@ Apify select fields are arrays in JSON input. Use a single selected value in eac
 
 ## Output
 
-Each trending video is saved as one dataset item:
+Each affordable trending video is saved as one dataset item. If the remaining pay-per-event run budget cannot cover all videos, only the first affordable videos are saved.
 
 ```json
 {

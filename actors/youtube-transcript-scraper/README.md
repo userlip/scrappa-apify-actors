@@ -25,7 +25,7 @@ Extract transcript segments and full transcript text for a YouTube video by vide
 
 ## Output
 
-The Actor stores one dataset item per video. Each item includes the full transcript text, timed transcript segments, returned language metadata, and language availability arrays. The full Scrappa response is also stored in the key-value store as `OUTPUT`.
+The Actor stores one dataset item for the video when the run's remaining pay-per-event spending limit can cover it; otherwise, it skips the dataset item. Each stored item includes the full transcript text, timed transcript segments, returned language metadata, and language availability arrays. The full Scrappa response is also stored in the key-value store as `OUTPUT`.
 
 Typical dataset fields:
 

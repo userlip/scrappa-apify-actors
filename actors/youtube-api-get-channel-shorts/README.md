@@ -19,7 +19,7 @@ Provide one or more YouTube channel IDs. `ids` and the legacy `id` field are com
 
 ## Output
 
-One dataset row per detected Short, kept in Scrappa page order.
+One dataset row per detected Short, kept in Scrappa page order, up to the run's pay-per-event spending limit; Shorts beyond the remaining budget are not saved.
 
 ## Endpoint
 

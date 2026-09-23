@@ -18,7 +18,7 @@ Provide one or more YouTube channel IDs. Use `ids` for normal batch runs; the le
 
 ## Output
 
-One dataset item per channel playlist returned by Scrappa.
+Each returned playlist is a dataset item while the run's pay-per-event spending limit has capacity; remaining playlists are skipped once that limit is exhausted.
 
 ## Endpoint
 

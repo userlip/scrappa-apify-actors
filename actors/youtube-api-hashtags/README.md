@@ -20,7 +20,7 @@ Provide a hashtag, with or without `#`. Optional pagination, sort, duration, and
 
 ## Output
 
-One dataset item per hashtag search result returned by Scrappa.
+The actor saves as many returned results as the run's pay-per-event spending limit allows, up to one dataset item per result. It reads run pricing before writing and fails without publishing results if that lookup fails.
 
 ## Endpoint
 

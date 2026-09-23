@@ -20,7 +20,7 @@ Provide a playlist search query. Optional pagination and filter fields are passe
 
 ## Output
 
-One dataset item per playlist search result returned by Scrappa.
+The actor writes an affordable prefix of Scrappa's playlist results in API order. Before posting, it reads the Apify run's resolved pay-per-event prices, existing charged-event counts, and numeric spending limit; if the pricing metadata is unavailable or invalid, the actor fails without writing dataset rows.
 
 ## Endpoint
 

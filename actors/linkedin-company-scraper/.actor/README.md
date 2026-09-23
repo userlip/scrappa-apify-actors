@@ -69,7 +69,7 @@ Cache is useful for repeated enrichment jobs, QA runs, marketplace tests, and wo
 
 ## Output Fields
 
-Each successful company scrape is pushed to the default Apify dataset. For legacy single-URL runs, the same company response is also saved in the key-value store under `OUTPUT`; batch runs write a small summary to `OUTPUT`.
+Each company result is pushed to the default Apify dataset while the run's pay-per-event spending limit allows. If capacity is exhausted, later dataset rows are skipped. For legacy single-URL runs, the result is also saved in the key-value store under `OUTPUT`; batch runs write a small summary to `OUTPUT`.
 
 | Field | Type | Description |
 | --- | --- | --- |

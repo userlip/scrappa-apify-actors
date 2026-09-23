@@ -24,7 +24,7 @@ Set `SCRAPPA_API_KEY` as an Actor secret before running this wrapper.
 
 ## Output
 
-The Actor stores one dataset item per podcast video returned by the API. Fields depend on the current Scrappa YouTube response and typically include the video ID, title, URL, thumbnails, duration, view count, and publish metadata.
+The Actor stores one dataset item per podcast video returned by the API, subject to the run's Apify pay-per-event spending limit. If the budget covers only part of a response, it saves the earliest rows first, and the output log reports both fetched and saved counts. Fields depend on the current Scrappa YouTube response and typically include the video ID, title, URL, thumbnails, duration, view count, and publish metadata.
 
 Podcast filtering is applied after Scrappa returns the channel videos page. If a channel has many regular uploads before older podcast content, use a continuation token to keep paging through results.
 

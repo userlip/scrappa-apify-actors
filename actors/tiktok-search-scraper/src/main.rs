@@ -13,6 +13,7 @@ struct ActorConfig {
     scrappa_api_base_url: Url,
     default_key_value_store_id: String,
     default_dataset_id: String,
+    actor_run_id: String,
     input_key: String,
     apify_token: String,
     scrappa_api_key: String,
@@ -30,6 +31,7 @@ impl ActorConfig {
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
             default_key_value_store_id: required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID")?,
             default_dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID")?,
+            actor_run_id: required_env("ACTOR_RUN_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
             scrappa_api_key,
@@ -548,13 +550,121 @@ fn enrich_video(video: &Value, params: &SearchParams) -> Value {
     Value::Object(row)
 }
 
+#[derive(Default)]
+struct DatasetBudget {
+    run: Option<Value>,
+    saved_rows: usize,
+}
+
+impl DatasetBudget {
+    async fn capacity(
+        &mut self,
+        client: &reqwest::Client,
+        config: &ActorConfig,
+        requested: usize,
+    ) -> Result<usize> {
+        if self.run.is_none() {
+            let url = endpoint_url(
+                &config.apify_api_base_url,
+                &["v2", "actor-runs", &config.actor_run_id],
+            )?;
+            let response = client
+                .get(url)
+                .bearer_auth(&config.apify_token)
+                .send()
+                .await
+                .context("Apify run pricing request failed")?;
+            self.run = Some(response_json(response, "Apify run pricing request").await?);
+        }
+        let run = self
+            .run
+            .as_ref()
+            .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+        affordable_dataset_items(run, requested, self.saved_rows)
+    }
+}
+
+// maxItems is for pay-per-result; PPE dataset writes consume the run's event budget.
+fn affordable_dataset_items(
+    run: &Value,
+    requested: usize,
+    locally_saved_rows: usize,
+) -> Result<usize> {
+    let data = run
+        .get("data")
+        .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+    if data
+        .pointer("/pricingInfo/pricingModel")
+        .and_then(Value::as_str)
+        != Some("PAY_PER_EVENT")
+    {
+        bail!("Apify run is not configured for pay-per-event pricing");
+    }
+    let events = data
+        .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
+    let item_price = events
+        .get("apify-default-dataset-item")
+        .and_then(|event| event.get("eventPriceUsd"))
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
+    let max_charge = data
+        .pointer("/options/maxTotalChargeUsd")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+
+    let counts = data
+        .get("chargedEventCounts")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide charged event counts"))?;
+    let mut spent = 0.0;
+    for (event_name, count) in counts {
+        let count = count
+            .as_u64()
+            .ok_or_else(|| anyhow!("Invalid charged event count"))?;
+        if count == 0 {
+            continue;
+        }
+        let price = events
+            .get(event_name)
+            .and_then(|event| event.get("eventPriceUsd"))
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Missing price for charged event {event_name}"))?;
+        if !price.is_finite() || price < 0.0 {
+            bail!("Invalid price for charged event {event_name}");
+        }
+        spent += price * count as f64;
+    }
+    spent += item_price * locally_saved_rows as f64;
+    if !spent.is_finite() {
+        bail!("Apify run returned invalid charged totals");
+    }
+    if item_price == 0.0 {
+        return Ok(requested);
+    }
+    let tolerance = f64::EPSILON * max_charge.max(1.0);
+    Ok((1..=requested)
+        .take_while(|count| spent + *count as f64 * item_price <= max_charge + tolerance)
+        .count())
+}
+
 async fn push_dataset_items(
     client: &reqwest::Client,
     config: &ActorConfig,
+    budget: &mut DatasetBudget,
     rows: &[Value],
-) -> Result<()> {
+) -> Result<usize> {
     if rows.is_empty() {
-        return Ok(());
+        return Ok(0);
+    }
+    let limit = budget.capacity(client, config, rows.len()).await?;
+    let rows = &rows[..rows.len().min(limit)];
+    if rows.is_empty() {
+        return Ok(0);
     }
     let url = endpoint_url(
         &config.apify_api_base_url,
@@ -567,7 +677,9 @@ async fn push_dataset_items(
         .send()
         .await
         .context("Apify dataset write failed")?;
-    ensure_success(response, "Apify dataset write").await
+    ensure_success(response, "Apify dataset write").await?;
+    budget.saved_rows += rows.len();
+    Ok(rows.len())
 }
 
 async fn put_output(client: &reqwest::Client, config: &ActorConfig, output: &Value) -> Result<()> {
@@ -625,16 +737,22 @@ async fn run_actor(client: &reqwest::Client, config: &ActorConfig) -> Result<()>
     let data = response.get("data");
     let videos = extract_videos(data);
     let (has_next_page, next_cursor) = extract_pagination(data);
-    if videos.is_empty() {
+    let mut dataset_budget = DatasetBudget::default();
+    let videos_saved = if videos.is_empty() {
         println!("No TikTok videos found for this search");
+        0
     } else {
         let rows = videos
             .iter()
             .map(|video| enrich_video(video, &params))
             .collect::<Vec<_>>();
-        push_dataset_items(client, config, &rows).await?;
-        println!("Found {} TikTok search results", videos.len());
-    }
+        let saved = push_dataset_items(client, config, &mut dataset_budget, &rows).await?;
+        println!(
+            "Found {} TikTok search results; saved {saved}",
+            videos.len()
+        );
+        saved
+    };
 
     put_output(client, config, &response).await?;
     let processed_time = response
@@ -647,6 +765,7 @@ async fn run_actor(client: &reqwest::Client, config: &ActorConfig) -> Result<()>
         "Results summary: {}",
         json!({
             "videos_extracted": videos.len(),
+            "videos_saved": videos_saved,
             "has_next_page": has_next_page,
             "next_cursor": next_cursor,
             "processed_time": processed_time,
@@ -698,6 +817,7 @@ mod tests {
                 .unwrap(),
             default_key_value_store_id: "store-test".to_owned(),
             default_dataset_id: "dataset-test".to_owned(),
+            actor_run_id: "run-test".to_owned(),
             input_key: "INPUT".to_owned(),
             apify_token: "test-apify-token".to_owned(),
             scrappa_api_key: "test-scrappa-key".to_owned(),
@@ -871,6 +991,72 @@ mod tests {
         .unwrap();
     }
 
+    fn start_mock_server(
+        responses: Vec<(String, String)>,
+    ) -> (
+        std::net::SocketAddr,
+        thread::JoinHandle<Vec<CapturedRequest>>,
+    ) {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = thread::spawn(move || {
+            let mut requests = Vec::new();
+            for (status, body) in responses {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream
+                    .set_read_timeout(Some(Duration::from_secs(2)))
+                    .unwrap();
+                requests.push(read_request(&mut stream));
+                mock_response(&mut stream, &status, &body);
+            }
+            requests
+        });
+        (address, server)
+    }
+
+    fn pricing_body(max_charge: f64, counts: Value) -> String {
+        json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.0003},
+                        "other-event": {"eventPriceUsd": 0.0001}
+                    }}
+                },
+                "options": {"maxTotalChargeUsd": max_charge},
+                "chargedEventCounts": counts
+            }
+        })
+        .to_string()
+    }
+
+    fn actor_responses(
+        run_status: &str,
+        run_body: &str,
+        dataset_status: Option<&str>,
+        include_output: bool,
+    ) -> Vec<(String, String)> {
+        let mut responses = vec![
+            (
+                "200 OK".to_owned(),
+                r#"{"keywords":"basketball"}"#.to_owned(),
+            ),
+            (
+                "200 OK".to_owned(),
+                r#"{"code":0,"data":{"videos":[{"aweme_id":"1"},{"aweme_id":"2"}],"hasMore":true,"cursor":"next"},"processed_time":99}"#.to_owned(),
+            ),
+            (run_status.to_owned(), run_body.to_owned()),
+        ];
+        if let Some(status) = dataset_status {
+            responses.push((status.to_owned(), "{}".to_owned()));
+        }
+        if include_output {
+            responses.push(("201 Created".to_owned(), String::new()));
+        }
+        responses
+    }
+
     #[tokio::test]
     async fn actor_uses_cloud_storage_and_preserves_output_and_dataset_rows() {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
@@ -884,6 +1070,10 @@ mod tests {
                 (
                     "200 OK",
                     r#"{"code":0,"data":{"videos":[{"aweme_id":"1","desc":"clip","request_keywords":"old"}],"hasMore":true,"cursor":"100"},"processed_time":99,"raw":"retained"}"#,
+                ),
+                (
+                    "200 OK",
+                    r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0003}}}},"options":{"maxTotalChargeUsd":1},"chargedEventCounts":{"apify-default-dataset-item":0}}}"#,
                 ),
                 ("201 Created", ""),
                 ("201 Created", ""),
@@ -903,17 +1093,20 @@ mod tests {
         run_actor(&reqwest::Client::new(), &config).await.unwrap();
         let requests = server.join().unwrap();
 
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
         assert!(requests[0]
             .method_and_path
             .starts_with("GET /v2/key-value-stores/store-test/records/INPUT "));
         assert!(requests[2]
             .method_and_path
-            .starts_with("POST /v2/datasets/dataset-test/items "));
+            .starts_with("GET /v2/actor-runs/run-test "));
         assert!(requests[3]
             .method_and_path
+            .starts_with("POST /v2/datasets/dataset-test/items "));
+        assert!(requests[4]
+            .method_and_path
             .starts_with("PUT /v2/key-value-stores/store-test/records/OUTPUT "));
-        for index in [0, 2, 3] {
+        for index in [0, 2, 3, 4] {
             assert_eq!(
                 requests[index]
                     .headers
@@ -944,7 +1137,7 @@ mod tests {
         assert_eq!(query["publish_time"], "7");
         assert_eq!(query["sort_type"], "1");
 
-        let dataset: Value = serde_json::from_str(&requests[2].body).unwrap();
+        let dataset: Value = serde_json::from_str(&requests[3].body).unwrap();
         assert_eq!(dataset.as_array().unwrap().len(), 1);
         assert_eq!(dataset[0]["aweme_id"], "1");
         assert_eq!(dataset[0]["request_keywords"], "basketball");
@@ -953,7 +1146,7 @@ mod tests {
         assert_eq!(dataset[0]["request_cursor"], "0");
         assert_eq!(dataset[0]["request_publish_time"], 7);
         assert_eq!(dataset[0]["request_sort_type"], 1);
-        let output: Value = serde_json::from_str(&requests[3].body).unwrap();
+        let output: Value = serde_json::from_str(&requests[4].body).unwrap();
         assert_eq!(
             output,
             value(
@@ -962,6 +1155,148 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn one_result_budget_trims_two_videos_and_keeps_raw_output() {
+        let run = pricing_body(
+            0.0006,
+            json!({"apify-default-dataset-item": 0, "other-event": 3}),
+        );
+        let (address, server) =
+            start_mock_server(actor_responses("200 OK", &run, Some("201 Created"), true));
+        run_actor(&reqwest::Client::new(), &request_config(address))
+            .await
+            .unwrap();
+        let requests = server.join().unwrap();
+
+        assert_eq!(requests.len(), 5);
+        assert!(requests[2]
+            .method_and_path
+            .starts_with("GET /v2/actor-runs/run-test "));
+        let rows: Value = serde_json::from_str(&requests[3].body).unwrap();
+        assert_eq!(rows.as_array().unwrap().len(), 1);
+        assert_eq!(rows[0]["aweme_id"], "1");
+        let output: Value = serde_json::from_str(&requests[4].body).unwrap();
+        assert_eq!(output["data"]["videos"].as_array().unwrap().len(), 2);
+        assert_eq!(output["data"]["videos"][0]["aweme_id"], "1");
+    }
+
+    #[tokio::test]
+    async fn zero_budget_skips_dataset_post_but_still_saves_output() {
+        let run = pricing_body(0.0, json!({}));
+        let (address, server) = start_mock_server(actor_responses("200 OK", &run, None, true));
+        run_actor(&reqwest::Client::new(), &request_config(address))
+            .await
+            .unwrap();
+        let requests = server.join().unwrap();
+
+        assert_eq!(requests.len(), 4);
+        assert!(requests
+            .iter()
+            .all(|request| !request.method_and_path.contains("/v2/datasets/")));
+        assert!(requests[3]
+            .method_and_path
+            .starts_with("PUT /v2/key-value-stores/store-test/records/OUTPUT "));
+    }
+
+    #[tokio::test]
+    async fn generous_numeric_budget_saves_all_video_rows_in_order() {
+        let run = pricing_body(1.0, json!({}));
+        let (address, server) =
+            start_mock_server(actor_responses("200 OK", &run, Some("201 Created"), true));
+        run_actor(&reqwest::Client::new(), &request_config(address))
+            .await
+            .unwrap();
+        let requests = server.join().unwrap();
+
+        let rows: Value = serde_json::from_str(&requests[3].body).unwrap();
+        assert_eq!(rows.as_array().unwrap().len(), 2);
+        assert_eq!(rows[0]["aweme_id"], "1");
+        assert_eq!(rows[1]["aweme_id"], "2");
+    }
+
+    #[tokio::test]
+    async fn invalid_spending_limit_fails_before_any_dataset_or_output_write() {
+        let run = json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.0003}
+                    }}
+                },
+                "options": {"maxTotalChargeUsd": null},
+                "chargedEventCounts": {}
+            }
+        })
+        .to_string();
+        let (address, server) = start_mock_server(actor_responses("200 OK", &run, None, false));
+        let error = run_actor(&reqwest::Client::new(), &request_config(address))
+            .await
+            .unwrap_err();
+        let requests = server.join().unwrap();
+
+        assert!(error.to_string().contains("spending limit"));
+        assert_eq!(requests.len(), 3);
+        assert!(requests
+            .iter()
+            .all(|request| !request.method_and_path.contains("/v2/datasets/")
+                && !request.method_and_path.contains("/records/OUTPUT")));
+    }
+
+    #[tokio::test]
+    async fn dataset_storage_error_fails_without_writing_output() {
+        let run = pricing_body(1.0, json!({}));
+        let (address, server) = start_mock_server(actor_responses(
+            "200 OK",
+            &run,
+            Some("500 Internal Server Error"),
+            false,
+        ));
+        let error = run_actor(&reqwest::Client::new(), &request_config(address))
+            .await
+            .unwrap_err();
+        let requests = server.join().unwrap();
+
+        assert!(error.to_string().contains("Apify dataset write failed"));
+        assert_eq!(requests.len(), 4);
+        assert!(requests
+            .iter()
+            .all(|request| !request.method_and_path.contains("/records/OUTPUT")));
+    }
+
+    #[tokio::test]
+    async fn local_saved_rows_prevent_a_lagging_run_snapshot_from_overspending() {
+        let run = pricing_body(0.0003, json!({}));
+        let (address, server) = start_mock_server(vec![
+            ("200 OK".to_owned(), run),
+            ("201 Created".to_owned(), String::new()),
+        ]);
+        let config = request_config(address);
+        let client = reqwest::Client::new();
+        let rows = [json!({"aweme_id":"1"}), json!({"aweme_id":"2"})];
+        let mut budget = DatasetBudget::default();
+
+        assert_eq!(
+            push_dataset_items(&client, &config, &mut budget, &rows)
+                .await
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            push_dataset_items(&client, &config, &mut budget, &rows[1..])
+                .await
+                .unwrap(),
+            0
+        );
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 2);
+        assert!(requests[0]
+            .method_and_path
+            .starts_with("GET /v2/actor-runs/run-test "));
+        let saved: Value = serde_json::from_str(&requests[1].body).unwrap();
+        assert_eq!(saved.as_array().unwrap().len(), 1);
+        assert_eq!(saved[0]["aweme_id"], "1");
+    }
     #[tokio::test]
     async fn missing_apify_input_record_404_is_treated_as_no_input() {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();

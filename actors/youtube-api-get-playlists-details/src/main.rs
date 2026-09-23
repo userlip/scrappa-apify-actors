@@ -13,6 +13,7 @@ struct ActorConfig {
     scrappa_api_base_url: Url,
     default_key_value_store_id: String,
     default_dataset_id: String,
+    actor_run_id: String,
     input_key: String,
     apify_token: String,
 }
@@ -24,6 +25,7 @@ impl ActorConfig {
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
             default_key_value_store_id: required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID")?,
             default_dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID")?,
+            actor_run_id: required_env("ACTOR_RUN_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
         })
@@ -158,9 +160,96 @@ fn dataset_item_count(data: &Value) -> usize {
     data.as_array().map_or(1, Vec::len)
 }
 
-async fn push_dataset_data(client: &Client, config: &ActorConfig, data: &Value) -> Result<()> {
-    if data.as_array().is_some_and(Vec::is_empty) {
-        return Ok(());
+async fn run_dataset_capacity(
+    client: &Client,
+    config: &ActorConfig,
+    requested: usize,
+) -> Result<usize> {
+    let url = endpoint_url(
+        &config.apify_api_base_url,
+        &["v2", "actor-runs", &config.actor_run_id],
+    )?;
+    let response = client
+        .get(url)
+        .bearer_auth(&config.apify_token)
+        .send()
+        .await
+        .context("Apify run pricing request failed")?;
+    let run = response_json(response, "Apify run pricing request").await?;
+    affordable_dataset_items(&run, requested)
+}
+
+fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
+    let data = run
+        .get("data")
+        .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+    if data
+        .pointer("/pricingInfo/pricingModel")
+        .and_then(Value::as_str)
+        != Some("PAY_PER_EVENT")
+    {
+        bail!("Apify run is not configured for pay-per-event pricing");
+    }
+    let events = data
+        .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
+    let item_price = events
+        .get("apify-default-dataset-item")
+        .and_then(|event| event.get("eventPriceUsd"))
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
+    let max_charge = data
+        .pointer("/options/maxTotalChargeUsd")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+
+    let counts = data
+        .get("chargedEventCounts")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide charged event counts"))?;
+    let mut spent = 0.0;
+    for (event_name, count) in counts {
+        let count = count
+            .as_u64()
+            .ok_or_else(|| anyhow!("Invalid charged event count for {event_name}"))?;
+        if count == 0 {
+            continue;
+        }
+        let price = events
+            .get(event_name)
+            .and_then(|event| event.get("eventPriceUsd"))
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Missing price for charged event {event_name}"))?;
+        if !price.is_finite() || price < 0.0 {
+            bail!("Invalid price for charged event {event_name}");
+        }
+        spent += price * count as f64;
+    }
+    if !spent.is_finite() {
+        bail!("Apify run returned invalid charged totals");
+    }
+    if item_price == 0.0 {
+        return Ok(requested);
+    }
+    let tolerance = f64::EPSILON * max_charge.max(1.0);
+    Ok((1..=requested)
+        .take_while(|count| spent + *count as f64 * item_price <= max_charge + tolerance)
+        .count())
+}
+
+async fn push_dataset_data(client: &Client, config: &ActorConfig, data: &Value) -> Result<usize> {
+    let requested = dataset_item_count(data);
+    if requested == 0 {
+        return Ok(0);
+    }
+    let capacity = run_dataset_capacity(client, config, requested).await?;
+    let saved_rows = requested.min(capacity);
+    if saved_rows == 0 {
+        return Ok(0);
     }
 
     let url = endpoint_url(
@@ -169,7 +258,7 @@ async fn push_dataset_data(client: &Client, config: &ActorConfig, data: &Value) 
     )?;
     let request = client.post(url).bearer_auth(&config.apify_token);
     let request = if let Some(items) = data.as_array() {
-        request.json(items)
+        request.json(&items[..saved_rows])
     } else {
         request.json(&[data])
     };
@@ -188,7 +277,7 @@ async fn push_dataset_data(client: &Client, config: &ActorConfig, data: &Value) 
             status.as_u16()
         );
     }
-    Ok(())
+    Ok(saved_rows)
 }
 
 fn is_truthy(value: &Value) -> bool {
@@ -207,9 +296,9 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     println!("Fetching from: {}", request.url);
 
     let data = fetch_playlist_details(client, &request.url).await?;
-    push_dataset_data(client, config, &data).await?;
+    let saved_rows = push_dataset_data(client, config, &data).await?;
     println!(
-        "Successfully fetched {} playlist detail result(s) for id: {}",
+        "Successfully fetched {} playlist detail result(s) for id: {} (saved {saved_rows})",
         dataset_item_count(&data),
         request.id
     );
@@ -363,12 +452,44 @@ mod tests {
         }
     }
 
+    fn pricing_response(max_charge: f64, charged_dataset_items: u64) -> MockResponse {
+        response(
+            200,
+            &serde_json::json!({
+                "data": {
+                    "pricingInfo": {
+                        "pricingModel": "PAY_PER_EVENT",
+                        "pricingPerEvent": {"actorChargeEvents": {
+                            "apify-default-dataset-item": {"eventPriceUsd": 0.0003},
+                            "apify-actor-start": {"eventPriceUsd": 0.00005}
+                        }}
+                    },
+                    "options": {"maxTotalChargeUsd": max_charge},
+                    "chargedEventCounts": {
+                        "apify-default-dataset-item": charged_dataset_items,
+                        "apify-actor-start": 1
+                    }
+                }
+            })
+            .to_string(),
+        )
+    }
+
+    fn run_input() -> MockResponse {
+        response(200, r#"{"id":"playlist-id"}"#)
+    }
+
+    fn playlist_rows() -> MockResponse {
+        response(200, r#"[{"id":"first"},{"id":"second"}]"#)
+    }
+
     fn config(base_url: &Url) -> ActorConfig {
         ActorConfig {
             apify_api_base_url: base_url.clone(),
             scrappa_api_base_url: base_url.join("playlists").unwrap(),
             default_key_value_store_id: "test-store".to_owned(),
             default_dataset_id: "test-dataset".to_owned(),
+            actor_run_id: "test-run".to_owned(),
             input_key: "INPUT".to_owned(),
             apify_token: "test-token-not-a-real-credential".to_owned(),
         }
@@ -477,15 +598,22 @@ mod tests {
 
     #[tokio::test]
     async fn writes_a_single_playlist_object_as_one_dataset_row() {
-        let server = MockServer::start(vec![response(201, r#"{"ok":true}"#)]);
+        let server = MockServer::start(vec![
+            pricing_response(1.0, 0),
+            response(201, r#"{"ok":true}"#),
+        ]);
         let config = config(&server.base_url);
         let data = serde_json::json!({"id": "one"});
 
-        push_dataset_data(&client(), &config, &data).await.unwrap();
+        assert_eq!(
+            push_dataset_data(&client(), &config, &data).await.unwrap(),
+            1
+        );
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 1);
-        let (_, _, body) = request_parts(&requests[0]);
+        assert_eq!(requests.len(), 2);
+        assert_eq!(request_parts(&requests[0]).1, "/v2/actor-runs/test-run");
+        let (_, _, body) = request_parts(&requests[1]);
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),
             serde_json::json!([{"id":"one"}])
@@ -497,10 +625,12 @@ mod tests {
         let server = MockServer::start(Vec::new());
         let config = config(&server.base_url);
 
-        push_dataset_data(&client(), &config, &serde_json::json!([]))
-            .await
-            .unwrap();
-
+        assert_eq!(
+            push_dataset_data(&client(), &config, &serde_json::json!([]))
+                .await
+                .unwrap(),
+            0
+        );
         assert!(server.requests().is_empty());
     }
 
@@ -509,6 +639,7 @@ mod tests {
         let server = MockServer::start(vec![
             response(200, r#"{"id":"playlist id/with spaces"}"#),
             response(200, r#"[{"id":"first"},{"id":"second"}]"#),
+            pricing_response(1.0, 0),
             response(201, r#"{"ok":true}"#),
         ]);
         let config = config(&server.base_url);
@@ -516,27 +647,27 @@ mod tests {
         run_actor(&client(), &config).await.unwrap();
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 3);
+        assert_eq!(requests.len(), 4);
         let (method, path, _) = request_parts(&requests[0]);
-        assert_eq!(method, "GET");
-        assert_eq!(path, "/v2/key-value-stores/test-store/records/INPUT");
+        assert_eq!(
+            (method, path),
+            ("GET", "/v2/key-value-stores/test-store/records/INPUT")
+        );
         assert!(has_test_bearer_token(&requests[0]));
-
         let (method, path, _) = request_parts(&requests[1]);
-        assert_eq!(method, "GET");
-        assert_eq!(path, "/playlists?id=playlist+id%2Fwith+spaces");
+        assert_eq!(
+            (method, path),
+            ("GET", "/playlists?id=playlist+id%2Fwith+spaces")
+        );
         assert!(!has_test_bearer_token(&requests[1]));
-
-        let (method, path, body) = request_parts(&requests[2]);
-        assert_eq!(method, "POST");
-        assert_eq!(path, "/v2/datasets/test-dataset/items");
+        assert_eq!(request_parts(&requests[2]).1, "/v2/actor-runs/test-run");
         assert!(has_test_bearer_token(&requests[2]));
+        let (method, path, body) = request_parts(&requests[3]);
+        assert_eq!((method, path), ("POST", "/v2/datasets/test-dataset/items"));
+        assert!(has_test_bearer_token(&requests[3]));
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),
-            serde_json::json!([
-                {"id":"first"},
-                {"id":"second"}
-            ])
+            serde_json::json!([{"id":"first"},{"id":"second"}])
         );
     }
 
@@ -546,13 +677,132 @@ mod tests {
             response(200, r#"{"id":"playlist-id"}"#),
             response(429, r#"{"error":"rate limited"}"#),
         ]);
-        let config = config(&server.base_url);
-
-        let error = run_actor(&client(), &config).await.unwrap_err();
-
+        let error = run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap_err();
         assert!(
             format!("{error:#}").contains("Scrappa API request failed with 429 Too Many Requests")
         );
         assert_eq!(server.requests().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn spending_budget_trims_two_playlist_rows_to_one() {
+        let server = MockServer::start(vec![
+            run_input(),
+            playlist_rows(),
+            pricing_response(0.00065, 1),
+            response(201, "{}"),
+        ]);
+        run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap();
+        let requests = server.requests();
+        assert_eq!(requests.len(), 4);
+        let (_, _, body) = request_parts(&requests[3]);
+        assert_eq!(
+            serde_json::from_str::<Value>(body).unwrap(),
+            serde_json::json!([{"id":"first"}])
+        );
+    }
+
+    #[tokio::test]
+    async fn zero_spending_budget_skips_the_dataset_post() {
+        let server = MockServer::start(vec![
+            run_input(),
+            playlist_rows(),
+            pricing_response(0.00005, 0),
+        ]);
+        run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap();
+        let requests = server.requests();
+        assert_eq!(requests.len(), 3);
+        assert!(requests
+            .iter()
+            .all(|request| !request.starts_with("POST /v2/datasets/")));
+    }
+
+    #[tokio::test]
+    async fn sufficient_spending_budget_writes_all_playlist_rows() {
+        let server = MockServer::start(vec![
+            run_input(),
+            playlist_rows(),
+            pricing_response(4.506432, 0),
+            response(201, "{}"),
+        ]);
+        run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap();
+        let requests = server.requests();
+        assert_eq!(requests.len(), 4);
+        let (_, _, body) = request_parts(&requests[3]);
+        assert_eq!(
+            serde_json::from_str::<Value>(body).unwrap(),
+            serde_json::json!([{"id":"first"},{"id":"second"}])
+        );
+    }
+
+    #[tokio::test]
+    async fn pricing_lookup_failure_does_not_post_dataset_rows() {
+        let server = MockServer::start(vec![run_input(), playlist_rows(), response(500, "{}")]);
+        let error = run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap_err();
+        assert!(format!("{error:#}").contains("Apify run pricing request failed"));
+        let requests = server.requests();
+        assert_eq!(requests.len(), 3);
+        assert!(requests
+            .iter()
+            .all(|request| !request.starts_with("POST /v2/datasets/")));
+    }
+
+    #[tokio::test]
+    async fn missing_pricing_fails_closed_without_posting_dataset_rows() {
+        let server = MockServer::start(vec![run_input(), playlist_rows(), response(200, "{}")]);
+        let error = run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap_err();
+        assert!(format!("{error:#}").contains("Apify run pricing is missing"));
+        assert!(server
+            .requests()
+            .iter()
+            .all(|request| !request.starts_with("POST /v2/datasets/")));
+    }
+
+    #[tokio::test]
+    async fn missing_numeric_run_limit_fails_closed_without_posting_rows() {
+        let metadata = serde_json::json!({"data": {
+            "pricingInfo": {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": {
+                "apify-default-dataset-item": {"eventPriceUsd": 0.0003},
+                "apify-actor-start": {"eventPriceUsd": 0.00005}
+            }}},
+            "options": {},
+            "chargedEventCounts": {"apify-actor-start": 1}
+        }}).to_string();
+        let server =
+            MockServer::start(vec![run_input(), playlist_rows(), response(200, &metadata)]);
+        let error = run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap_err();
+        assert!(format!("{error:#}").contains("Apify run did not provide the spending limit"));
+        assert!(server
+            .requests()
+            .iter()
+            .all(|request| !request.starts_with("POST /v2/datasets/")));
+    }
+
+    #[tokio::test]
+    async fn dataset_storage_failure_is_reported() {
+        let server = MockServer::start(vec![
+            run_input(),
+            playlist_rows(),
+            pricing_response(1.0, 0),
+            response(500, "{}"),
+        ]);
+        let error = run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap_err();
+        assert!(format!("{error:#}").contains("Apify dataset write failed with 500"));
     }
 }

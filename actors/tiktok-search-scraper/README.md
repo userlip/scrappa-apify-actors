@@ -37,7 +37,7 @@ Search TikTok videos by keyword, hashtag, product, brand, topic, or creator nich
 
 ## Output
 
-Each TikTok video result is saved as one dataset item:
+Each TikTok video result that fits the run's remaining spend budget is saved as one dataset item. Rows beyond the budget are omitted from the dataset.
 
 ```json
 {
@@ -64,7 +64,9 @@ The full API response, including pagination metadata, is saved to `OUTPUT`.
 
 ## Pricing
 
-This actor is intended to be published with paid per-result pricing. Confirm active paid pricing or earliest allowed scheduled paid pricing in Apify before publication.
+Configure this actor with Apify pay-per-event pricing for default dataset items. Before posting rows, the actor reads the run's event prices, charged event counts, and numeric `maxTotalChargeUsd`, then saves only the rows that fit the remaining budget. Other priced events already charged in the run reduce the number of available video rows. Missing or invalid pricing data stops the run before dataset rows are published.
+
+The Scrappa search happens before the budget check, so a run with no remaining Apify dataset-item budget may still consume a Scrappa API request. When the search succeeds, the raw response is still saved to `OUTPUT` even if the budget allows no video rows.
 
 ## Support
 

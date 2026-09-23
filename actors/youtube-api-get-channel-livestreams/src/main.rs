@@ -15,6 +15,7 @@ struct ActorConfig {
     scrappa_api_base_url: Url,
     default_key_value_store_id: String,
     default_dataset_id: String,
+    actor_run_id: String,
     input_key: String,
     apify_token: String,
     scrappa_api_key: String,
@@ -27,6 +28,7 @@ impl ActorConfig {
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
             default_key_value_store_id: required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID")?,
             default_dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID")?,
+            actor_run_id: required_env("ACTOR_RUN_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
             scrappa_api_key: env::var("SCRAPPA_API_KEY").ok().filter(|key| !key.is_empty()).ok_or_else(|| {
@@ -34,6 +36,112 @@ impl ActorConfig {
             })?,
         })
     }
+}
+
+struct DatasetBudget {
+    item_price_usd: f64,
+    charged_usd: f64,
+    max_total_charge_usd: f64,
+    locally_saved_rows: usize,
+}
+
+impl DatasetBudget {
+    fn from_run(run: &Value) -> Result<Self> {
+        let data = run
+            .get("data")
+            .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+        if data
+            .pointer("/pricingInfo/pricingModel")
+            .and_then(Value::as_str)
+            != Some("PAY_PER_EVENT")
+        {
+            bail!("Apify run is not configured for pay-per-event pricing");
+        }
+
+        let events = data
+            .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
+            .and_then(Value::as_object)
+            .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
+        let item_price_usd = events
+            .get("apify-default-dataset-item")
+            .and_then(|event| event.get("eventPriceUsd"))
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
+        let max_total_charge_usd = data
+            .pointer("/options/maxTotalChargeUsd")
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+        if !item_price_usd.is_finite()
+            || item_price_usd < 0.0
+            || !max_total_charge_usd.is_finite()
+            || max_total_charge_usd < 0.0
+        {
+            bail!("Apify run returned invalid charging values");
+        }
+
+        let counts = data
+            .get("chargedEventCounts")
+            .and_then(Value::as_object)
+            .ok_or_else(|| anyhow!("Apify run did not provide charged event counts"))?;
+        let mut charged_usd = 0.0;
+        for (event_name, count) in counts {
+            let count = count
+                .as_u64()
+                .ok_or_else(|| anyhow!("Invalid charged event count for {event_name}"))?;
+            if count == 0 {
+                continue;
+            }
+            let price = events
+                .get(event_name)
+                .and_then(|event| event.get("eventPriceUsd"))
+                .and_then(Value::as_f64)
+                .ok_or_else(|| anyhow!("Missing price for charged event {event_name}"))?;
+            if !price.is_finite() || price < 0.0 {
+                bail!("Invalid price for charged event {event_name}");
+            }
+            charged_usd += price * count as f64;
+        }
+        if !charged_usd.is_finite() {
+            bail!("Apify run returned invalid charged totals");
+        }
+
+        Ok(Self {
+            item_price_usd,
+            charged_usd,
+            max_total_charge_usd,
+            locally_saved_rows: 0,
+        })
+    }
+
+    fn affordable_items(&self, requested: usize) -> Result<usize> {
+        if self.item_price_usd == 0.0 {
+            return Ok(requested);
+        }
+        let spent = self.charged_usd + self.item_price_usd * self.locally_saved_rows as f64;
+        if !spent.is_finite() {
+            bail!("Apify run returned invalid charged totals");
+        }
+        let tolerance = f64::EPSILON * self.max_total_charge_usd.max(1.0);
+        Ok((1..=requested)
+            .take_while(|count| {
+                spent + *count as f64 * self.item_price_usd <= self.max_total_charge_usd + tolerance
+            })
+            .count())
+    }
+}
+
+async fn run_dataset_budget(client: &Client, config: &ActorConfig) -> Result<DatasetBudget> {
+    let url = endpoint_url(
+        &config.apify_api_base_url,
+        &["v2", "actor-runs", &config.actor_run_id],
+    )?;
+    let response = client
+        .get(url)
+        .bearer_auth(&config.apify_token)
+        .send()
+        .await
+        .context("Apify run pricing request failed")?;
+    DatasetBudget::from_run(&response_json(response, "Apify run pricing request").await?)
 }
 
 fn required_env(name: &str) -> Result<String> {
@@ -323,10 +431,28 @@ async fn collect_filtered_channel_videos(
     Ok((videos, next_continuation))
 }
 
-async fn push_dataset_items(client: &Client, config: &ActorConfig, videos: &[Value]) -> Result<()> {
+async fn push_dataset_items(
+    client: &Client,
+    config: &ActorConfig,
+    dataset_budget: &mut Option<DatasetBudget>,
+    videos: &[Value],
+) -> Result<usize> {
     if videos.is_empty() {
-        return Ok(());
+        return Ok(0);
     }
+    if dataset_budget.is_none() {
+        *dataset_budget = Some(run_dataset_budget(client, config).await?);
+    }
+    let budget = dataset_budget.as_mut().expect("dataset budget initialized");
+    let saved = budget.affordable_items(videos.len())?;
+    if saved == 0 {
+        return Ok(0);
+    }
+    let next_saved_rows = budget
+        .locally_saved_rows
+        .checked_add(saved)
+        .ok_or_else(|| anyhow!("Local dataset row count overflowed"))?;
+
     let url = endpoint_url(
         &config.apify_api_base_url,
         &["v2", "datasets", &config.default_dataset_id, "items"],
@@ -334,13 +460,14 @@ async fn push_dataset_items(client: &Client, config: &ActorConfig, videos: &[Val
     let response = client
         .post(url)
         .bearer_auth(&config.apify_token)
-        .json(videos)
+        .json(&videos[..saved])
         .send()
         .await
         .context("Apify dataset write failed")?;
-    ensure_success(response, "Apify dataset write").await
+    ensure_success(response, "Apify dataset write").await?;
+    budget.locally_saved_rows = next_saved_rows;
+    Ok(saved)
 }
-
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let input = get_input(client, config).await?;
     let ids = get_channel_ids(&input);
@@ -349,13 +476,14 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     }
     assert_continuation_matches_batch(&input, &ids)?;
 
+    let mut dataset_budget = None;
     for id in ids {
         let (videos, continuation) =
             collect_filtered_channel_videos(client, config, &input, &id).await?;
-        push_dataset_items(client, config, &videos).await?;
+        let saved = push_dataset_items(client, config, &mut dataset_budget, &videos).await?;
         println!(
-            "Successfully fetched {} videos for query: {id}",
-            videos.len()
+            "Successfully fetched {} videos for query: {id}; saved {saved} to the default dataset",
+            videos.len(),
         );
         if js_truthy(&continuation) {
             println!(
@@ -526,6 +654,7 @@ mod tests {
             scrappa_api_base_url: server.scrappa_url(),
             default_key_value_store_id: "test-store".to_owned(),
             default_dataset_id: "test-dataset".to_owned(),
+            actor_run_id: "test-run".to_owned(),
             input_key: "CUSTOM_INPUT".to_owned(),
             apify_token: "test-token-not-a-real-credential".to_owned(),
             scrappa_api_key: "test-scrappa-key".to_owned(),
@@ -537,6 +666,29 @@ mod tests {
             status,
             body: body.to_owned(),
         }
+    }
+    fn pricing_response(max_charge: f64, charged_counts: Value) -> MockResponse {
+        response(
+            200,
+            &json!({
+                "data": {
+                    "pricingInfo": {
+                        "pricingModel": "PAY_PER_EVENT",
+                        "pricingPerEvent": {"actorChargeEvents": {
+                            "apify-default-dataset-item": {"eventPriceUsd": 0.0003},
+                            "synthetic-other-event": {"eventPriceUsd": 0.0001}
+                        }}
+                    },
+                    "options": {"maxTotalChargeUsd": max_charge},
+                    "chargedEventCounts": charged_counts
+                }
+            })
+            .to_string(),
+        )
+    }
+
+    fn two_live_rows() -> &'static str {
+        r#"{"videos":[{"id":"live-1","type":"live"},{"id":"live-2","type":"livestream"}]}"#
     }
 
     fn request_target(request: &str) -> &str {
@@ -615,6 +767,10 @@ mod tests {
                 r#"{"videos":[{"id":"live-2","isLive":true}],"pagination":{"continuationToken":"page 3"}}"#,
             ),
             response(200, r#"{"videos":[{"id":"not-live","isLive":"true"}]}"#),
+            pricing_response(
+                1.0,
+                json!({"apify-default-dataset-item": 0, "synthetic-other-event": 0}),
+            ),
             response(201, "{}"),
             response(
                 200,
@@ -626,7 +782,7 @@ mod tests {
         run_actor(&Client::new(), &config).await.unwrap();
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 7);
+        assert_eq!(requests.len(), 8);
         assert!(request_target(&requests[0])
             .starts_with("/v2/key-value-stores/test-store/records/CUSTOM_INPUT"));
         assert_eq!(
@@ -641,19 +797,164 @@ mod tests {
         assert!(request_target(&requests[2])
             .contains("channel_id=UC1&sort=popular&continuation=page+2"));
         assert!(request_target(&requests[3]).contains("continuation=page+3"));
-        assert!(request_target(&requests[5]).contains("channel_id=UC2&sort=popular"));
+        assert_eq!(request_target(&requests[4]), "/v2/actor-runs/test-run");
         assert_eq!(
             header_value(&requests[4], "authorization"),
             Some("Bearer test-token-not-a-real-credential")
         );
         assert_eq!(
-            request_body(&requests[4]),
-            json!([{"id":"live-1","type":"LiVe"},{"id":"live-2","isLive":true}])
+            request_body(&requests[5]),
+            json!([
+                {"id":"live-1","type":"LiVe"},
+                {"id":"live-2","isLive":true}
+            ])
         );
+        assert!(request_target(&requests[6]).contains("channel_id=UC2&sort=popular"));
         assert_eq!(
-            request_body(&requests[6]),
+            request_body(&requests[7]),
             json!([{"id":"live-3","videoType":"livestream"}])
         );
+    }
+
+    #[tokio::test]
+    async fn cap_one_posts_only_the_first_row_and_counts_other_charges() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"id":"UC1"}"#),
+            response(200, two_live_rows()),
+            pricing_response(
+                0.0006,
+                json!({"apify-default-dataset-item": 0, "synthetic-other-event": 1}),
+            ),
+            response(201, "{}"),
+        ]);
+        let config = test_config(&server);
+
+        run_actor(&Client::new(), &config).await.unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 4);
+        assert_eq!(request_target(&requests[2]), "/v2/actor-runs/test-run");
+        assert_eq!(
+            request_body(&requests[3]),
+            json!([{"id":"live-1","type":"live"}])
+        );
+    }
+
+    #[tokio::test]
+    async fn zero_budget_skips_dataset_post() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"id":"UC1"}"#),
+            response(200, two_live_rows()),
+            pricing_response(
+                0.0,
+                json!({"apify-default-dataset-item": 0, "synthetic-other-event": 0}),
+            ),
+        ]);
+        let config = test_config(&server);
+
+        run_actor(&Client::new(), &config).await.unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 3);
+        assert!(requests
+            .iter()
+            .all(|request| !request_target(request).starts_with("/v2/datasets/")));
+    }
+
+    #[tokio::test]
+    async fn generous_numeric_budget_posts_all_rows() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"id":"UC1"}"#),
+            response(200, two_live_rows()),
+            pricing_response(
+                1.0,
+                json!({"apify-default-dataset-item": 0, "synthetic-other-event": 0}),
+            ),
+            response(201, "{}"),
+        ]);
+        let config = test_config(&server);
+
+        run_actor(&Client::new(), &config).await.unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 4);
+        assert_eq!(
+            request_body(&requests[3]),
+            json!([
+                {"id":"live-1","type":"live"},
+                {"id":"live-2","type":"livestream"}
+            ])
+        );
+    }
+
+    #[tokio::test]
+    async fn local_saved_rows_prevent_overspend_across_channel_writes() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"ids":"UC1,UC2"}"#),
+            response(200, r#"{"videos":[{"id":"live-1","type":"live"}]}"#),
+            pricing_response(
+                0.0003,
+                json!({"apify-default-dataset-item": 0, "synthetic-other-event": 0}),
+            ),
+            response(201, "{}"),
+            response(200, r#"{"videos":[{"id":"live-2","type":"live"}]}"#),
+        ]);
+        let config = test_config(&server);
+
+        run_actor(&Client::new(), &config).await.unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 5);
+        assert_eq!(
+            request_body(&requests[3]),
+            json!([{"id":"live-1","type":"live"}])
+        );
+        assert!(!request_target(&requests[4]).starts_with("/v2/datasets/"));
+    }
+
+    #[tokio::test]
+    async fn missing_dataset_event_price_fails_before_any_dataset_post() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"id":"UC1"}"#),
+            response(200, two_live_rows()),
+            response(
+                200,
+                r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{}}},"options":{"maxTotalChargeUsd":1.0},"chargedEventCounts":{}}}"#,
+            ),
+        ]);
+        let config = test_config(&server);
+
+        let error = run_actor(&Client::new(), &config).await.unwrap_err();
+
+        assert!(error.to_string().contains("dataset item price"));
+        let requests = server.requests();
+        assert_eq!(requests.len(), 3);
+        assert!(requests
+            .iter()
+            .all(|request| !request_target(request).starts_with("/v2/datasets/")));
+    }
+
+    #[tokio::test]
+    async fn dataset_storage_errors_fail_the_actor() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"id":"UC1"}"#),
+            response(200, two_live_rows()),
+            pricing_response(
+                1.0,
+                json!({"apify-default-dataset-item": 0, "synthetic-other-event": 0}),
+            ),
+            response(500, "storage failed"),
+        ]);
+        let config = test_config(&server);
+
+        let error = run_actor(&Client::new(), &config).await.unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("Apify dataset write failed with 500"));
+        let requests = server.requests();
+        assert_eq!(requests.len(), 4);
+        assert!(request_target(&requests[3]).starts_with("/v2/datasets/test-dataset/items"));
     }
 
     #[tokio::test]

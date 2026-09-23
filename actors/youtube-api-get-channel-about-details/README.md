@@ -18,7 +18,7 @@ Provide one or more YouTube channel IDs. Use `ids` for normal batch runs so one 
 
 ## Output
 
-One normalized dataset item is written per channel. Failed requests also emit `{ "id", "error", "success": false }` rows; the actor run fails when every channel request fails or a dataset write itself fails.
+The actor attempts one normalized dataset item per channel. For pay-per-event runs, each successful or error row consumes a default-dataset-item event against the run's total spending limit, and charges already recorded for other events reduce the remaining row allowance. When no row is affordable, remaining channels are still fetched but their rows are skipped, so the dataset may contain fewer items than input channels. Missing or invalid run pricing fails before channel requests; dataset write failures fail the actor.
 
 ## Endpoint
 

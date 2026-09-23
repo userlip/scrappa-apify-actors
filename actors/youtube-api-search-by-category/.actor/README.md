@@ -75,7 +75,7 @@ When the API returns a next-page token, the Actor logs it as `Continuation token
 
 ## Output
 
-Each result is saved as one dataset item. Fields vary by YouTube result, but video results commonly include:
+Each result that fits the Actor run's remaining spending limit is saved as one dataset item. Results are written in their original order, and any rows over the limit are not saved. Fields vary by YouTube result, but video results commonly include:
 
 ```json
 {
@@ -107,7 +107,7 @@ Each result is saved as one dataset item. Fields vary by YouTube result, but vid
 
 ## Pricing
 
-$0.30 per 1,000 results. No additional API keys required.
+$0.30 per 1,000 dataset items. The Actor trims dataset writes to the run's remaining pay-per-event spending limit; charges for other priced events in the same run reduce the number of video items that fit. No additional API keys are required.
 
 ## Support
 

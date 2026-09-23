@@ -46,6 +46,7 @@ fn is_recoverable_linkedin_profile_error(error: &anyhow::Error) -> bool {
 struct Config {
     apify_api_base: String,
     apify_token: String,
+    actor_run_id: String,
     key_value_store_id: String,
     dataset_id: String,
     input_key: String,
@@ -65,6 +66,7 @@ impl Config {
         Ok(Self {
             apify_api_base: env_or_default("APIFY_API_PUBLIC_BASE_URL", APIFY_API_DEFAULT),
             apify_token: required_env("APIFY_TOKEN")?,
+            actor_run_id: required_env("ACTOR_RUN_ID")?,
             key_value_store_id: required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID")?,
             dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID")?,
             input_key: env_or_default("ACTOR_INPUT_KEY", "INPUT"),
@@ -92,6 +94,7 @@ struct ApifyClient {
     http: Client,
     base_url: String,
     token: String,
+    actor_run_id: String,
     key_value_store_id: String,
     dataset_id: String,
     input_key: String,
@@ -103,6 +106,7 @@ impl ApifyClient {
             http,
             base_url: config.apify_api_base.clone(),
             token: config.apify_token.clone(),
+            actor_run_id: config.actor_run_id.clone(),
             key_value_store_id: config.key_value_store_id.clone(),
             dataset_id: config.dataset_id.clone(),
             input_key: config.input_key.clone(),
@@ -166,6 +170,41 @@ impl ApifyClient {
         Ok(())
     }
 
+    async fn push_dataset_items(&self, items: &[&Value]) -> Result<usize> {
+        if items.is_empty() {
+            return Ok(0);
+        }
+
+        let capacity = self.run_dataset_capacity(items.len()).await?;
+        let mut saved = 0;
+        for item in items {
+            if saved == capacity {
+                break;
+            }
+            self.push_dataset_item(item).await?;
+            saved += 1;
+        }
+        Ok(saved)
+    }
+
+    async fn run_dataset_capacity(&self, requested: usize) -> Result<usize> {
+        let url = self.endpoint(&["v2", "actor-runs", &self.actor_run_id])?;
+        let response = self
+            .http
+            .get(url)
+            .bearer_auth(&self.token)
+            .header(header::ACCEPT, "application/json")
+            .send()
+            .await
+            .context("Apify run pricing request failed")?;
+        let response = require_apify_success(response, "run pricing request").await?;
+        let run = response
+            .json::<Value>()
+            .await
+            .context("Apify run pricing response was not valid JSON")?;
+        affordable_dataset_items(&run, requested)
+    }
+
     async fn put_record(&self, key: &str, value: &Value) -> Result<()> {
         let url = self.endpoint(&[
             "v2",
@@ -197,6 +236,70 @@ impl ApifyClient {
             return Ok(());
         }
     }
+}
+
+fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
+    let data = run
+        .get("data")
+        .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+    if data
+        .pointer("/pricingInfo/pricingModel")
+        .and_then(Value::as_str)
+        != Some("PAY_PER_EVENT")
+    {
+        bail!("Apify run is not configured for pay-per-event pricing");
+    }
+
+    let events = data
+        .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
+    let item_price = events
+        .get("apify-default-dataset-item")
+        .and_then(|event| event.get("eventPriceUsd"))
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
+    let max_charge = data
+        .pointer("/options/maxTotalChargeUsd")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+
+    let counts = data
+        .get("chargedEventCounts")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide charged event counts"))?;
+    let mut spent = 0.0;
+    for (event_name, count) in counts {
+        let count = count
+            .as_u64()
+            .ok_or_else(|| anyhow!("Invalid charged event count for {event_name}"))?;
+        if count == 0 {
+            continue;
+        }
+        let price = events
+            .get(event_name)
+            .and_then(|event| event.get("eventPriceUsd"))
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Missing price for charged event {event_name}"))?;
+        if !price.is_finite() || price < 0.0 {
+            bail!("Invalid price for charged event {event_name}");
+        }
+        spent += price * count as f64;
+    }
+    if !spent.is_finite() {
+        bail!("Apify run returned invalid charged totals");
+    }
+    if item_price == 0.0 {
+        return Ok(requested);
+    }
+
+    let tolerance = f64::EPSILON * max_charge.max(1.0);
+    Ok((1..=requested)
+        .take_while(|count| spent + *count as f64 * item_price <= max_charge + tolerance)
+        .count())
 }
 
 async fn require_apify_success(response: Response, operation: &str) -> Result<Response> {
@@ -706,9 +809,9 @@ async fn run() -> Result<()> {
     }
 
     let publication = plan_publication(&results);
-    for result in &publication.successful_results {
-        apify.push_dataset_item(result).await?;
-    }
+    let saved = apify
+        .push_dataset_items(&publication.successful_results)
+        .await?;
     apify.put_record("OUTPUT", &publication.output).await?;
     if !publication.failures.is_empty() {
         let failures = Value::Array(
@@ -727,6 +830,7 @@ async fn run() -> Result<()> {
         serde_json::to_string_pretty(&json!({
             "requested": results.len(),
             "succeeded": publication.successful_results.len(),
+            "saved": saved,
             "failed": publication.failures.len(),
         }))?
     );
@@ -746,7 +850,213 @@ async fn main() -> ExitCode {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
+
+    async fn start_apify_mock(
+        responses: Vec<(u16, Value)>,
+    ) -> (String, tokio::task::JoinHandle<Vec<Vec<u8>>>) {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move {
+            let mut requests = Vec::new();
+            for (status, response_body) in responses {
+                let (mut stream, _) = listener.accept().await.unwrap();
+                let mut request = Vec::new();
+                let mut chunk = [0; 2048];
+                loop {
+                    let read = stream.read(&mut chunk).await.unwrap();
+                    if read == 0 {
+                        break;
+                    }
+                    request.extend_from_slice(&chunk[..read]);
+                    let Some(body_start) = request
+                        .windows(4)
+                        .position(|window| window == b"\r\n\r\n")
+                        .map(|position| position + 4)
+                    else {
+                        continue;
+                    };
+                    let headers = std::str::from_utf8(&request[..body_start]).unwrap();
+                    let content_length = headers
+                        .lines()
+                        .find_map(|line| {
+                            let (name, value) = line.split_once(':')?;
+                            name.eq_ignore_ascii_case("content-length")
+                                .then(|| value.trim().parse::<usize>().unwrap_or_default())
+                        })
+                        .unwrap_or_default();
+                    if request.len() >= body_start + content_length {
+                        break;
+                    }
+                }
+
+                let response_body = serde_json::to_vec(&response_body).unwrap();
+                let reason = match status {
+                    200 => "OK",
+                    503 => "Service Unavailable",
+                    _ => "Bad Request",
+                };
+                let headers = format!(
+                    "HTTP/1.1 {status} {reason}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                    response_body.len()
+                );
+                stream.write_all(headers.as_bytes()).await.unwrap();
+                stream.write_all(&response_body).await.unwrap();
+                requests.push(request);
+            }
+            requests
+        });
+        (format!("http://{address}"), server)
+    }
+
+    fn mock_apify_client(base_url: String) -> ApifyClient {
+        let config = Config {
+            apify_api_base: base_url,
+            apify_token: "test-token".to_owned(),
+            actor_run_id: "test-run".to_owned(),
+            key_value_store_id: "store".to_owned(),
+            dataset_id: "dataset".to_owned(),
+            input_key: "INPUT".to_owned(),
+            scrappa_api_base: SCRAPPA_API_DEFAULT.to_owned(),
+            scrappa_api_key: "test-key".to_owned(),
+        };
+        let http = Client::builder()
+            .timeout(Duration::from_secs(3))
+            .build()
+            .unwrap();
+        ApifyClient::new(http, &config)
+    }
+
+    fn mock_priced_run(max_total_charge: f64, charged_event_counts: Value) -> Value {
+        json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {
+                        "actorChargeEvents": {
+                            "apify-default-dataset-item": {"eventPriceUsd": 0.0003},
+                            "other-event": {"eventPriceUsd": 0.0002}
+                        }
+                    }
+                },
+                "chargedEventCounts": charged_event_counts,
+                "options": {"maxTotalChargeUsd": max_total_charge}
+            }
+        })
+    }
+
+    fn mock_request_body(request: &[u8]) -> Value {
+        let body_start = request
+            .windows(4)
+            .position(|window| window == b"\r\n\r\n")
+            .map(|position| position + 4)
+            .unwrap();
+        serde_json::from_slice(&request[body_start..]).unwrap()
+    }
+
+    #[tokio::test]
+    async fn dataset_spending_cap_posts_only_the_affordable_first_result() {
+        let (base_url, server) = start_apify_mock(vec![
+            (200, mock_priced_run(0.0006, json!({"other-event": 1}))),
+            (200, Value::Null),
+        ])
+        .await;
+        let apify = mock_apify_client(base_url);
+        let rows = [json!({"profile": "first"}), json!({"profile": "second"})];
+        let items: Vec<_> = rows.iter().collect();
+
+        assert_eq!(apify.push_dataset_items(&items).await.unwrap(), 1);
+
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 2);
+        let run_request = String::from_utf8_lossy(&requests[0]);
+        assert!(run_request.starts_with("GET /v2/actor-runs/test-run HTTP/1.1\r\n"));
+        assert!(run_request.contains("Bearer test-token"));
+        assert!(requests[1].starts_with(b"POST /v2/datasets/dataset/items HTTP/1.1\r\n"));
+        assert_eq!(mock_request_body(&requests[1]), rows[0]);
+    }
+
+    #[tokio::test]
+    async fn zero_spending_capacity_posts_no_dataset_rows() {
+        let (base_url, server) =
+            start_apify_mock(vec![(200, mock_priced_run(0.0, json!({})))]).await;
+        let apify = mock_apify_client(base_url);
+        let rows = [json!({"profile": "first"}), json!({"profile": "second"})];
+        let items: Vec<_> = rows.iter().collect();
+
+        assert_eq!(apify.push_dataset_items(&items).await.unwrap(), 0);
+
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 1);
+        assert!(requests[0].starts_with(b"GET /v2/actor-runs/test-run HTTP/1.1\r\n"));
+    }
+
+    #[tokio::test]
+    async fn normal_numeric_spending_limit_posts_every_dataset_row() {
+        let (base_url, server) = start_apify_mock(vec![
+            (200, mock_priced_run(4.506432, json!({"other-event": 1}))),
+            (200, Value::Null),
+            (200, Value::Null),
+        ])
+        .await;
+        let apify = mock_apify_client(base_url);
+        let rows = [json!({"profile": "first"}), json!({"profile": "second"})];
+        let items: Vec<_> = rows.iter().collect();
+
+        assert_eq!(apify.push_dataset_items(&items).await.unwrap(), 2);
+
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 3);
+        assert_eq!(mock_request_body(&requests[1]), rows[0]);
+        assert_eq!(mock_request_body(&requests[2]), rows[1]);
+    }
+
+    #[tokio::test]
+    async fn missing_run_pricing_fails_before_any_dataset_post() {
+        let invalid_run = json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {}}
+                },
+                "chargedEventCounts": {},
+                "options": {"maxTotalChargeUsd": 4.506432}
+            }
+        });
+        let (base_url, server) = start_apify_mock(vec![(200, invalid_run)]).await;
+        let apify = mock_apify_client(base_url);
+        let rows = [json!({"profile": "first"}), json!({"profile": "second"})];
+        let items: Vec<_> = rows.iter().collect();
+
+        let error = apify.push_dataset_items(&items).await.unwrap_err();
+        assert!(error.to_string().contains("dataset item price"));
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 1);
+        assert!(requests[0].starts_with(b"GET /v2/actor-runs/test-run HTTP/1.1\r\n"));
+    }
+
+    #[tokio::test]
+    async fn dataset_storage_error_stops_remaining_posts() {
+        let (base_url, server) = start_apify_mock(vec![
+            (200, mock_priced_run(4.506432, json!({}))),
+            (503, json!("Unavailable")),
+        ])
+        .await;
+        let apify = mock_apify_client(base_url);
+        let rows = [json!({"profile": "first"}), json!({"profile": "second"})];
+        let items: Vec<_> = rows.iter().collect();
+
+        let error = apify.push_dataset_items(&items).await.unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("Apify dataset item publication failed (503)"));
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 2);
+        assert!(requests[1].starts_with(b"POST /v2/datasets/dataset/items HTTP/1.1\r\n"));
+    }
 
     #[test]
     fn normalizes_profile_urls_and_strips_tracking_and_extra_paths() {
@@ -993,6 +1303,7 @@ mod tests {
         let config = Config {
             apify_api_base: format!("http://{address}"),
             apify_token: "test-token".to_owned(),
+            actor_run_id: "test-run".to_owned(),
             key_value_store_id: "store".to_owned(),
             dataset_id: "dataset".to_owned(),
             input_key: "INPUT".to_owned(),

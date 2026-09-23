@@ -15,6 +15,7 @@ struct ActorConfig {
     default_key_value_store_id: String,
     default_dataset_id: String,
     input_key: String,
+    actor_run_id: String,
     apify_token: String,
 }
 
@@ -26,6 +27,7 @@ impl ActorConfig {
             default_key_value_store_id: required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID")?,
             default_dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
+            actor_run_id: required_env("ACTOR_RUN_ID")?,
             apify_token: required_env("APIFY_TOKEN")?,
         })
     }
@@ -230,9 +232,102 @@ async fn fetch_trending(client: &Client, url: &Url) -> Result<Value> {
     })?
 }
 
-async fn push_dataset_items(client: &Client, config: &ActorConfig, items: &[Value]) -> Result<()> {
+async fn run_dataset_capacity(
+    client: &Client,
+    config: &ActorConfig,
+    requested: usize,
+) -> Result<usize> {
+    let url = endpoint_url(
+        &config.apify_api_base_url,
+        &["v2", "actor-runs", &config.actor_run_id],
+    )?;
+    let response = client
+        .get(url)
+        .bearer_auth(&config.apify_token)
+        .send()
+        .await
+        .context("Apify run pricing request failed")?;
+    let run = response_json(response, "Apify run pricing request").await?;
+    affordable_dataset_items(&run, requested)
+}
+
+fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
+    let data = run
+        .get("data")
+        .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+    if data
+        .pointer("/pricingInfo/pricingModel")
+        .and_then(Value::as_str)
+        != Some("PAY_PER_EVENT")
+    {
+        bail!("Apify run is not configured for pay-per-event pricing");
+    }
+
+    let events = data
+        .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
+    let item_price = events
+        .get("apify-default-dataset-item")
+        .and_then(|event| event.get("eventPriceUsd"))
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
+    let max_charge = data
+        .pointer("/options/maxTotalChargeUsd")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+
+    let counts = data
+        .get("chargedEventCounts")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run did not provide charged event counts"))?;
+    let mut spent = 0.0;
+    for (event_name, count) in counts {
+        let count = count
+            .as_u64()
+            .ok_or_else(|| anyhow!("Invalid charged event count for {event_name}"))?;
+        if count == 0 {
+            continue;
+        }
+        let price = events
+            .get(event_name)
+            .and_then(|event| event.get("eventPriceUsd"))
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Missing price for charged event {event_name}"))?;
+        if !price.is_finite() || price < 0.0 {
+            bail!("Invalid price for charged event {event_name}");
+        }
+        spent += price * count as f64;
+    }
+    if !spent.is_finite() {
+        bail!("Apify run returned invalid charged totals");
+    }
+    if item_price == 0.0 {
+        return Ok(requested);
+    }
+
+    let tolerance = f64::EPSILON * max_charge.max(1.0);
+    Ok((1..=requested)
+        .take_while(|count| spent + *count as f64 * item_price <= max_charge + tolerance)
+        .count())
+}
+
+async fn push_dataset_items(
+    client: &Client,
+    config: &ActorConfig,
+    items: &[Value],
+) -> Result<usize> {
     if items.is_empty() {
-        return Ok(());
+        return Ok(0);
+    }
+
+    let capacity = run_dataset_capacity(client, config, items.len()).await?;
+    let items = &items[..items.len().min(capacity)];
+    if items.is_empty() {
+        return Ok(0);
     }
 
     let url = endpoint_url(
@@ -260,7 +355,7 @@ async fn push_dataset_items(client: &Client, config: &ActorConfig, items: &[Valu
             status.as_u16()
         );
     }
-    Ok(())
+    Ok(items.len())
 }
 
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
@@ -270,10 +365,11 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
 
     let data = fetch_trending(client, &url).await?;
     let videos = trending_videos_to_dataset_items(&data);
-    push_dataset_items(client, config, videos).await?;
+    let saved = push_dataset_items(client, config, videos).await?;
     println!(
-        "Successfully fetched {} trending video(s) for category: {}",
+        "Successfully fetched {} trending video(s) and saved {} for category: {}",
         videos.len(),
+        saved,
         category.as_deref().unwrap_or("default")
     );
 
@@ -321,9 +417,15 @@ mod tests {
             default_key_value_store_id: "store-id".to_owned(),
             default_dataset_id: "dataset-id".to_owned(),
             input_key: "INPUT".to_owned(),
+            actor_run_id: "run-id".to_owned(),
             apify_token: "test-token".to_owned(),
         }
     }
+    const INPUT_RESPONSE: &str = r#"{"category":["music"],"type":["now"]}"#;
+    const TWO_VIDEOS_RESPONSE: &str = r#"{"results":[{"id":"one","extra":{"preserved":true}},{"id":"two"}],"pagination":{"continuationToken":"next"}}"#;
+    const RUN_ONE_ROW_CAP: &str = r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0001},"other-event":{"eventPriceUsd":0.0001}}}},"chargedEventCounts":{"other-event":1},"options":{"maxTotalChargeUsd":0.00025}}}"#;
+    const RUN_ZERO_ROW_CAP: &str = r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0001},"other-event":{"eventPriceUsd":0.0001}}}},"chargedEventCounts":{"other-event":1},"options":{"maxTotalChargeUsd":0.00015}}}"#;
+    const RUN_NORMAL_BUDGET: &str = r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0001},"other-event":{"eventPriceUsd":0.0001}}}},"chargedEventCounts":{"other-event":1},"options":{"maxTotalChargeUsd":1.0}}}"#;
 
     fn mock_server(
         responses: Vec<(&'static str, &'static str)>,
@@ -456,11 +558,9 @@ mod tests {
     #[tokio::test]
     async fn fetches_and_stores_exact_items_with_expected_auth_and_headers() {
         let (base_url, server) = mock_server(vec![
-            ("200 OK", r#"{"category":["music"],"type":["now"]}"#),
-            (
-                "200 OK",
-                r#"{"results":[{"id":"one","extra":{"preserved":true}},{"id":"two"}],"pagination":{"continuationToken":"next"}}"#,
-            ),
+            ("200 OK", INPUT_RESPONSE),
+            ("200 OK", TWO_VIDEOS_RESPONSE),
+            ("200 OK", RUN_NORMAL_BUDGET),
             ("201 Created", ""),
         ]);
         let client = Client::new();
@@ -478,10 +578,14 @@ mod tests {
         assert!(scrappa_request.contains("accept: application/json"));
         assert!(!scrappa_request.contains("authorization:"));
 
-        let dataset_request = requests[2].to_ascii_lowercase();
+        let pricing_request = requests[2].to_ascii_lowercase();
+        assert!(pricing_request.starts_with("get /v2/actor-runs/run-id http/1.1"));
+        assert!(pricing_request.contains("authorization: bearer test-token"));
+
+        let dataset_request = requests[3].to_ascii_lowercase();
         assert!(dataset_request.starts_with("post /v2/datasets/dataset-id/items http/1.1"));
         assert!(dataset_request.contains("authorization: bearer test-token"));
-        let body = requests[2].split_once("\r\n\r\n").unwrap().1;
+        let body = requests[3].split_once("\r\n\r\n").unwrap().1;
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),
             json!([
@@ -489,6 +593,118 @@ mod tests {
                 { "id": "two" }
             ])
         );
+    }
+
+    #[tokio::test]
+    async fn one_result_budget_posts_only_the_first_video() {
+        let (base_url, server) = mock_server(vec![
+            ("200 OK", INPUT_RESPONSE),
+            ("200 OK", TWO_VIDEOS_RESPONSE),
+            ("200 OK", RUN_ONE_ROW_CAP),
+            ("201 Created", ""),
+        ]);
+        run_actor(&Client::new(), &test_config(base_url))
+            .await
+            .unwrap();
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 4);
+        let body = requests[3].split_once("\r\n\r\n").unwrap().1;
+        assert_eq!(
+            serde_json::from_str::<Value>(body).unwrap(),
+            json!([{ "id": "one", "extra": { "preserved": true } }])
+        );
+    }
+
+    #[tokio::test]
+    async fn zero_result_budget_skips_the_dataset_post() {
+        let (base_url, server) = mock_server(vec![
+            ("200 OK", INPUT_RESPONSE),
+            ("200 OK", TWO_VIDEOS_RESPONSE),
+            ("200 OK", RUN_ZERO_ROW_CAP),
+        ]);
+        run_actor(&Client::new(), &test_config(base_url))
+            .await
+            .unwrap();
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 3);
+        assert!(requests[2]
+            .to_ascii_lowercase()
+            .starts_with("get /v2/actor-runs/run-id http/1.1"));
+    }
+
+    #[tokio::test]
+    async fn pricing_lookup_failure_never_posts_dataset_rows() {
+        let (base_url, server) = mock_server(vec![
+            ("200 OK", INPUT_RESPONSE),
+            ("200 OK", TWO_VIDEOS_RESPONSE),
+            ("503 Service Unavailable", "pricing unavailable"),
+        ]);
+        let error = run_actor(&Client::new(), &test_config(base_url))
+            .await
+            .unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("Apify run pricing request failed"));
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 3);
+        assert!(requests[2]
+            .to_ascii_lowercase()
+            .starts_with("get /v2/actor-runs/run-id http/1.1"));
+    }
+
+    #[tokio::test]
+    async fn invalid_pricing_metadata_never_posts_dataset_rows() {
+        let (base_url, server) = mock_server(vec![
+            ("200 OK", INPUT_RESPONSE),
+            ("200 OK", TWO_VIDEOS_RESPONSE),
+            (
+                "200 OK",
+                r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT"},"chargedEventCounts":{},"options":{"maxTotalChargeUsd":1.0}}}"#,
+            ),
+        ]);
+        let error = run_actor(&Client::new(), &test_config(base_url))
+            .await
+            .unwrap_err();
+        assert!(error.to_string().contains("did not provide event prices"));
+        assert_eq!(server.join().unwrap().len(), 3);
+    }
+
+    #[tokio::test]
+    async fn missing_spending_limit_never_posts_dataset_rows() {
+        let (base_url, server) = mock_server(vec![
+            ("200 OK", INPUT_RESPONSE),
+            ("200 OK", TWO_VIDEOS_RESPONSE),
+            (
+                "200 OK",
+                r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0001}}}},"chargedEventCounts":{},"options":{}}}"#,
+            ),
+        ]);
+        let error = run_actor(&Client::new(), &test_config(base_url))
+            .await
+            .unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("did not provide the spending limit"));
+        assert_eq!(server.join().unwrap().len(), 3);
+    }
+
+    #[tokio::test]
+    async fn dataset_write_failure_is_returned() {
+        let (base_url, server) = mock_server(vec![
+            ("200 OK", INPUT_RESPONSE),
+            ("200 OK", TWO_VIDEOS_RESPONSE),
+            ("200 OK", RUN_NORMAL_BUDGET),
+            ("503 Service Unavailable", "dataset unavailable"),
+        ]);
+        let error = run_actor(&Client::new(), &test_config(base_url))
+            .await
+            .unwrap_err();
+        assert!(error.to_string().contains("Apify dataset write failed"));
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 4);
+        assert!(requests[3]
+            .to_ascii_lowercase()
+            .starts_with("post /v2/datasets/dataset-id/items http/1.1"));
     }
 
     #[tokio::test]

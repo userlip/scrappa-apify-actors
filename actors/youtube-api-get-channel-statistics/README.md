@@ -18,7 +18,9 @@ Provide one or more YouTube channel IDs. Use `ids` for normal batch runs so one 
 
 ## Output
 
-One dataset item per channel statistics object returned by Scrappa.
+One dataset item per channel statistics object returned by Scrappa; failed channel requests add an error item. Rows are saved in response order up to the Apify run's default-dataset-item spending limit, and later rows are omitted when it is exhausted.
+
+This preflight limits default-dataset-item charges, not Scrappa API requests. Since those API requests finish before the budget lookup, they may still occur when no dataset rows can be saved.
 
 ## Endpoint
 
