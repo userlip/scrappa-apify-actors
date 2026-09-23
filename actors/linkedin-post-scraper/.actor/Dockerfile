@@ -3,7 +3,7 @@ WORKDIR /build
 COPY Cargo.toml Cargo.lock ./
 RUN mkdir src && printf 'fn main() {}\n' > src/main.rs && cargo build --release --locked && rm src/main.rs
 COPY src ./src
-RUN cargo build --release --locked
+RUN cargo clean --release -p linkedin-post-scraper && cargo build --release --locked
 
 FROM debian:bookworm-slim
 RUN apt-get update \
