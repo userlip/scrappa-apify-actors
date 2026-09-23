@@ -1,4 +1,4 @@
-use std::{env, process::ExitCode};
+use std::{env, process::ExitCode, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Response, StatusCode};
@@ -369,7 +369,11 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
 async fn main() -> ExitCode {
     let result = async {
         let config = ActorConfig::from_env()?;
-        run_actor(&Client::new(), &config).await
+        let client = Client::builder()
+            .timeout(Duration::from_secs(60))
+            .build()
+            .context("Could not create Actor HTTP client")?;
+        run_actor(&client, &config).await
     }
     .await;
     match result {

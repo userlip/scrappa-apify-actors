@@ -166,7 +166,11 @@ async fn fetch_chapters(client: &Client, config: &ActorConfig, id: &str) -> Resu
             bail!("Request failed with status code {}", status.as_u16());
         }
         let body = response.text().await.map_err(scrappa_request_error)?;
-        Ok(serde_json::from_str(&body).unwrap_or(Value::String(body)))
+        let data: Value = serde_json::from_str(&body).context("Scrappa API returned invalid JSON")?;
+        if !data.is_object() && !data.is_array() {
+            bail!("Scrappa API returned invalid chapter data");
+        }
+        Ok(data)
     };
 
     timeout(REQUEST_TIMEOUT, request).await.map_err(|_| {
@@ -466,6 +470,23 @@ mod tests {
         let success: Value =
             serde_json::from_str(requests[5].split_once("\r\n\r\n").unwrap().1).unwrap();
         assert_eq!(success["chapters"][0]["title"], "Second");
+    }
+
+    #[tokio::test]
+    async fn malformed_chapters_become_a_failure_row_before_next_video() {
+        let (base_url, server) = mock_server(vec![
+            ("200 OK", r#"{"ids":"vid1,vid2"}"#),
+            ("200 OK", "not JSON"),
+            ("201 Created", ""),
+            ("200 OK", r#"{"chapters":[{"title":"Second"}]}"#),
+            ("201 Created", ""),
+        ]);
+        run_actor(&Client::new(), &test_config(base_url)).await.unwrap();
+        let requests = server.join().unwrap();
+        let failure: Value = serde_json::from_str(requests[2].split_once("\r\n\r\n").unwrap().1).unwrap();
+        assert_eq!(failure["id"], "vid1");
+        assert_eq!(failure["success"], false);
+        assert_eq!(requests.len(), 5);
     }
 
     #[tokio::test]

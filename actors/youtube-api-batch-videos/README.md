@@ -26,7 +26,7 @@ The prefilled input fetches two public videos for Apify's daily QA. Transient up
 
 The Rust binary reads the `INPUT` record from the default key-value store and posts the returned video array to the default dataset. Apify creates one dataset item per array element. It uses `ACTOR_DEFAULT_KEY_VALUE_STORE_ID`, `ACTOR_DEFAULT_DATASET_ID`, `ACTOR_INPUT_KEY` (defaults to `INPUT`), and `APIFY_TOKEN` (Bearer authentication). Storage and upstream errors are reported by a nonzero process exit; failed writes are not treated as success.
 
-`APIFY_API_PUBLIC_BASE_URL` may override `https://api.apify.com`, and `SCRAPPA_API_BASE_URL` may override `https://ytapi.scrappa.co` for local mock endpoints. The Rust tests exercise both services through loopback HTTP mocks and use only a dummy token, so no Apify credentials or live API calls are needed: run `cargo test --locked` from this directory. These test-only mock settings do not alter cloud behavior.
+`APIFY_API_PUBLIC_BASE_URL` may override `https://api.apify.com`, and `SCRAPPA_API_BASE_URL` may override `https://ytapi.scrappa.co`. The Rust tests exercise both services through loopback HTTP mocks and use only a dummy token: run `cargo test --locked` from this directory. Leave these overrides unset in live Apify runs unless redirecting the corresponding traffic is intentional.
 
 ## Pricing
 
