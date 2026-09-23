@@ -3,6 +3,7 @@ WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 RUN mkdir src && printf 'fn main() {}\n' > src/main.rs && cargo build --release --locked && rm src/main.rs
 COPY src ./src
+# Cleaning the warm-up package prevents Cargo from shipping its no-op binary instead of src.
 RUN cargo clean --release -p youtube-api-trending-videos && cargo build --release --locked
 
 FROM debian:bookworm-slim AS runtime
