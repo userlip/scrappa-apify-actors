@@ -5,7 +5,7 @@ import { enrichResult, extractImageResults } from './response-utils.js';
 import type { GoogleImagesResponse } from './response-utils.js';
 import { ScrappaClient } from './shared/scrappa-client.js';
 
-const SCRAPPA_REQUEST_TIMEOUT_MS = 30000;
+const SCRAPPA_REQUEST_TIMEOUT_MS = 120000;
 const SCRAPPA_REQUEST_ATTEMPTS = 2;
 const BATCH_CONCURRENCY = 5;
 
