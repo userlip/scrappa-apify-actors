@@ -340,12 +340,17 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => return Ok(requested),
+        Some(value) => value
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?,
+    };
     if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
+    }
+    if max_charge == 0.0 {
+        return Ok(requested);
     }
 
     let counts = data
@@ -691,8 +696,8 @@ mod tests {
         }
     }
 
-    fn pricing_response(max_charge: f64, actor_start_charged: u64) -> String {
-        json!({
+    fn pricing_run(max_charge: Option<Value>, actor_start_charged: u64) -> Value {
+        let mut run = json!({
             "data": {
                 "pricingInfo": {
                     "pricingModel": "PAY_PER_EVENT",
@@ -701,11 +706,18 @@ mod tests {
                         "apify-actor-start": {"eventPriceUsd": 0.0001}
                     }}
                 },
-                "options": {"maxTotalChargeUsd": max_charge},
+                "options": {},
                 "chargedEventCounts": {"apify-actor-start": actor_start_charged}
             }
-        })
-        .to_string()
+        });
+        if let Some(max_charge) = max_charge {
+            run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
+        }
+        run
+    }
+
+    fn pricing_response(max_charge: Option<Value>, actor_start_charged: u64) -> String {
+        pricing_run(max_charge, actor_start_charged).to_string()
     }
 
     fn request_parts(request: &str) -> (&str, &str, &str) {
@@ -780,7 +792,7 @@ mod tests {
             response(200, input.to_string()),
             response(503, ""),
             response(200, full_response.to_string()),
-            response(200, pricing_response(0.00045, 1)),
+            response(200, pricing_response(Some(json!(0.00045)), 1)),
             response(201, ""),
             response(200, ""),
         ]);
@@ -875,6 +887,60 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn actor_saves_all_results_with_missing_null_or_zero_spending_limit() {
+        let input = json!({"query": "restaurants"});
+        let full_response = json!({
+            "organic_results": [
+                {"position": 1, "title": "First", "link": "https://one.test"},
+                {"position": 2, "title": "Second", "link": "https://two.test"}
+            ],
+            "related_searches": [{"query": "pizza"}]
+        });
+
+        for (case, max_charge) in [
+            ("missing", None),
+            ("null", Some(Value::Null)),
+            ("zero", Some(json!(0))),
+        ] {
+            let server = MockServer::start(vec![
+                response(200, input.to_string()),
+                response(200, full_response.to_string()),
+                response(200, pricing_response(max_charge, 1)),
+                response(201, ""),
+                response(200, ""),
+            ]);
+            let config = config(&server.base_url);
+            let http = Client::new();
+
+            run_actor(&http, &config).await.unwrap();
+
+            let requests = server.requests();
+            assert_eq!(requests.len(), 5, "{case}");
+            assert!(
+                requests[3].starts_with("POST /v2/datasets/test-dataset/items HTTP/1.1"),
+                "{case}"
+            );
+            let (_, _, dataset_body) = request_parts(&requests[3]);
+            assert_eq!(
+                serde_json::from_str::<Value>(dataset_body).unwrap(),
+                full_response["organic_results"],
+                "{case}"
+            );
+            assert!(
+                requests[4]
+                    .starts_with("PUT /v2/key-value-stores/test-store/records/OUTPUT HTTP/1.1"),
+                "{case}"
+            );
+            let (_, _, output_body) = request_parts(&requests[4]);
+            assert_eq!(
+                serde_json::from_str::<Value>(output_body).unwrap(),
+                full_response,
+                "{case}"
+            );
+        }
+    }
+
+    #[tokio::test]
     async fn permanent_scrappa_errors_are_not_retried_and_keep_validation_details() {
         let server = MockServer::start(vec![response(
             422,
@@ -901,21 +967,24 @@ mod tests {
 
     #[test]
     fn pay_per_event_capacity_accounts_for_other_charged_events() {
+        let run = pricing_run(Some(json!(0.00075)), 1);
+
+        assert_eq!(affordable_dataset_items(&run, 10).unwrap(), 2);
+    }
+
+    #[test]
+    fn non_ppe_runs_keep_the_existing_pricing_error_even_without_a_spending_limit() {
         let run = json!({
             "data": {
-                "pricingInfo": {
-                    "pricingModel": "PAY_PER_EVENT",
-                    "pricingPerEvent": {"actorChargeEvents": {
-                        "apify-default-dataset-item": {"eventPriceUsd": 0.0003},
-                        "apify-actor-start": {"eventPriceUsd": 0.0001}
-                    }}
-                },
-                "options": {"maxTotalChargeUsd": 0.00075},
-                "chargedEventCounts": {"apify-actor-start": 1}
+                "pricingInfo": {"pricingModel": "PRICE_PER_DATASET_ITEM"},
+                "options": {}
             }
         });
 
-        assert_eq!(affordable_dataset_items(&run, 10).unwrap(), 2);
+        assert_eq!(
+            affordable_dataset_items(&run, 10).unwrap_err().to_string(),
+            "Apify run is not configured for pay-per-event pricing"
+        );
     }
 
     #[test]
