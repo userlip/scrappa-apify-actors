@@ -251,7 +251,7 @@ fn transient_retry_rules_keep_non_retryable_and_auth_responses_terminal() {
 }
 
 #[test]
-fn affordable_dataset_items_account_for_all_event_charges() {
+fn positive_spending_limit_accounts_for_all_event_charges() {
     assert_eq!(
         affordable_dataset_items(&run_pricing(0.0006, 1), 1).unwrap(),
         1
@@ -261,6 +261,28 @@ fn affordable_dataset_items_account_for_all_event_charges() {
         0
     );
     assert!(affordable_dataset_items(&json!({"data": {}}), 1).is_err());
+}
+
+#[test]
+fn free_pricing_allows_requested_dataset_items() {
+    let run = json!({"data": {"pricingInfo": {"pricingModel": "FREE"}}});
+    assert_eq!(affordable_dataset_items(&run, 1).unwrap(), 1);
+}
+
+#[test]
+fn missing_null_and_zero_spending_limits_are_unbounded() {
+    let mut run = run_pricing(0.0001, 100);
+    run["data"]["options"]
+        .as_object_mut()
+        .unwrap()
+        .remove("maxTotalChargeUsd");
+    assert_eq!(affordable_dataset_items(&run, 1).unwrap(), 1);
+
+    for max_charge in [Value::Null, json!(0)] {
+        let mut run = run_pricing(0.0001, 100);
+        run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
+        assert_eq!(affordable_dataset_items(&run, 1).unwrap(), 1);
+    }
 }
 
 #[tokio::test]
@@ -518,6 +540,43 @@ async fn actor_publishes_raw_response_to_dataset_and_output_store() {
             .headers
             .to_ascii_lowercase()
             .contains("authorization: bearer test-apify-token")));
+}
+
+#[tokio::test]
+async fn actor_publishes_dataset_item_for_free_and_unbounded_ppe_runs() {
+    let free_run = json!({"data": {"pricingInfo": {"pricingModel": "FREE"}}});
+    let mut ppe_without_limit = run_pricing(1.0, 0);
+    ppe_without_limit["data"]["options"]
+        .as_object_mut()
+        .unwrap()
+        .remove("maxTotalChargeUsd");
+    let mut ppe_null_limit = run_pricing(1.0, 0);
+    ppe_null_limit["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+    let ppe_zero_limit = run_pricing(1.0, 0);
+
+    for run in [free_run, ppe_without_limit, ppe_null_limit, ppe_zero_limit] {
+        let output = json!({"success": true, "data": {"shortcode": "CODE"}});
+        let (base_url, server) = start_mock_server(vec![
+            MockResponse::json(200, json!({"shortcode": "CODE"})),
+            MockResponse::json(200, output.clone()),
+            MockResponse::json(201, json!({})),
+            MockResponse::json(200, run),
+            MockResponse::json(201, json!({})),
+        ])
+        .await;
+
+        run_actor_with_config(config(base_url)).await.unwrap();
+
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 5);
+        assert!(requests[2].path.ends_with("/records/OUTPUT"));
+        assert_eq!(requests[3].path, "/v2/actor-runs/run-1");
+        assert_eq!(requests[4].path, "/v2/datasets/dataset-1/items");
+        assert_eq!(
+            serde_json::from_str::<Value>(&requests[4].body).unwrap(),
+            output
+        );
+    }
 }
 
 #[tokio::test]

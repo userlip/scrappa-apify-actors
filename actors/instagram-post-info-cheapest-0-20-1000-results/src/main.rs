@@ -566,14 +566,22 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-    if data
+    let pricing_model = data
         .pointer("/pricingInfo/pricingModel")
         .and_then(Value::as_str)
-        != Some("PAY_PER_EVENT")
-    {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        .ok_or_else(|| anyhow!("Apify run pricing model is missing"))?;
+    if pricing_model != "PAY_PER_EVENT" {
+        return Ok(requested);
     }
 
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => return Ok(requested),
+        Some(value) => match value.as_f64() {
+            Some(0.0) => return Ok(requested),
+            Some(max_charge) => max_charge,
+            None => bail!("Apify run did not provide a valid spending limit"),
+        },
+    };
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
@@ -583,10 +591,6 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
     if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
