@@ -852,8 +852,8 @@ impl ApifyClient<'_> {
                 charge_limit_reached,
             });
         }
-        self.charge_points(charge_count, budget).await?;
         self.store_dataset_items(&items[..charge_count]).await?;
+        self.charge_points(charge_count, budget).await?;
         Ok(DatasetPushResult {
             saved_count: charge_count,
             charge_limit_reached,
@@ -1055,10 +1055,111 @@ mod tests {
     use super::*;
     use std::{
         io::{Read, Write},
-        net::TcpListener,
+        net::{TcpListener, TcpStream},
         sync::mpsc,
         thread,
     };
+
+    fn read_http_request(stream: &mut TcpStream) -> Vec<u8> {
+        let mut request = Vec::new();
+        let mut byte = [0; 1];
+        while !request.windows(4).any(|window| window == b"\r\n\r\n") {
+            stream.read_exact(&mut byte).unwrap();
+            request.push(byte[0]);
+        }
+
+        let headers = String::from_utf8_lossy(&request);
+        let content_length = headers
+            .lines()
+            .find_map(|line| {
+                let (name, value) = line.split_once(':')?;
+                name.eq_ignore_ascii_case("content-length")
+                    .then(|| value.trim().parse::<usize>().unwrap())
+            })
+            .unwrap_or(0);
+        let body_start = request.len();
+        request.resize(body_start + content_length, 0);
+        stream.read_exact(&mut request[body_start..]).unwrap();
+        request
+    }
+
+    fn mock_apify_server(
+        responses: Vec<(u16, &'static str, String)>,
+    ) -> (Url, thread::JoinHandle<Vec<Vec<u8>>>) {
+        let listener = TcpListener::bind(("127.0.0.1", 0)).unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = thread::spawn(move || {
+            responses
+                .into_iter()
+                .map(|(status, reason, body)| {
+                    let (mut stream, _) = listener.accept().unwrap();
+                    let request = read_http_request(&mut stream);
+                    write!(
+                        stream,
+                        "HTTP/1.1 {status} {reason}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                        body.len(),
+                        body
+                    )
+                    .unwrap();
+                    request
+                })
+                .collect()
+        });
+        (Url::parse(&format!("http://{address}")).unwrap(), server)
+    }
+
+    fn test_apify_config(api_base_url: Url) -> Config {
+        Config {
+            apify_api_base_url: api_base_url,
+            scrappa_api_base_url: Url::parse(SCRAPPA_API_DEFAULT).unwrap(),
+            apify_token: "test-apify-token".to_owned(),
+            key_value_store_id: "test-store".to_owned(),
+            dataset_id: "test-dataset".to_owned(),
+            actor_run_id: "test-run".to_owned(),
+            input_key: "INPUT".to_owned(),
+            scrappa_api_key: "test-scrappa-key".to_owned(),
+        }
+    }
+
+    fn intraday_pricing_response() -> String {
+        json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": { "actorChargeEvents": {
+                        "intraday-price-point": { "eventPriceUsd": 0.2 },
+                        "another-event": { "eventPriceUsd": 0.1 }
+                    }}
+                },
+                "chargedEventCounts": {
+                    "intraday-price-point": 1,
+                    "another-event": 1
+                },
+                "options": { "maxTotalChargeUsd": 0.75 }
+            }
+        })
+        .to_string()
+    }
+
+    fn request_path(request: &[u8]) -> &str {
+        std::str::from_utf8(request)
+            .unwrap()
+            .lines()
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .nth(1)
+            .unwrap()
+    }
+
+    fn request_body(request: &[u8]) -> Value {
+        let body_start = request
+            .windows(4)
+            .position(|window| window == b"\r\n\r\n")
+            .map(|position| position + 4)
+            .unwrap();
+        serde_json::from_slice(&request[body_start..]).unwrap()
+    }
 
     #[test]
     fn builds_normalized_requests_for_symbol_batches() {
@@ -1132,6 +1233,123 @@ mod tests {
         assert_eq!(
             describe_intraday_request(params.as_object().unwrap()),
             "AAPL:NASDAQ (hl=en, gl=us)"
+        );
+    }
+
+    #[tokio::test]
+    async fn failed_dataset_write_does_not_charge_or_retry_the_append() {
+        let (api_base_url, server) = mock_apify_server(vec![
+            (200, "OK", intraday_pricing_response()),
+            (
+                503,
+                "Service Unavailable",
+                r#"{"error":"temporary dataset failure"}"#.to_owned(),
+            ),
+        ]);
+        let http = Client::new();
+        let config = test_apify_config(api_base_url);
+        let mut apify = ApifyClient {
+            http: &http,
+            config: &config,
+            charge_sequence: 0,
+        };
+        let items = [json!({ "price": 198.42 }), json!({ "price": 199.01 })];
+        let mut budget = ChargeBudget::default();
+
+        let error = match apify.push_dataset_items(&items, &mut budget).await {
+            Ok(_) => panic!("failed dataset write unexpectedly succeeded"),
+            Err(error) => error,
+        };
+
+        assert!(error
+            .to_string()
+            .contains("Apify dataset write failed with 503 Service Unavailable"));
+        assert_eq!(budget.confirmed_point_charges, 0);
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(request_path(&requests[0]), "/v2/actor-runs/test-run");
+        assert_eq!(
+            request_path(&requests[1]),
+            "/v2/datasets/test-dataset/items"
+        );
+    }
+
+    #[tokio::test]
+    async fn successful_dataset_write_is_charged_after_saving_affordable_points() {
+        let (api_base_url, server) = mock_apify_server(vec![
+            (200, "OK", intraday_pricing_response()),
+            (201, "Created", String::new()),
+            (200, "OK", String::new()),
+        ]);
+        let http = Client::new();
+        let config = test_apify_config(api_base_url);
+        let mut apify = ApifyClient {
+            http: &http,
+            config: &config,
+            charge_sequence: 0,
+        };
+        let items = [
+            json!({ "price": 198.42 }),
+            json!({ "price": 199.01 }),
+            json!({ "price": 199.5 }),
+        ];
+        let mut budget = ChargeBudget::default();
+
+        let result = apify.push_dataset_items(&items, &mut budget).await.unwrap();
+
+        assert_eq!(result.saved_count, 2);
+        assert!(result.charge_limit_reached);
+        assert_eq!(budget.confirmed_point_charges, 2);
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 3);
+        assert_eq!(request_path(&requests[0]), "/v2/actor-runs/test-run");
+        assert_eq!(
+            request_path(&requests[1]),
+            "/v2/datasets/test-dataset/items"
+        );
+        assert_eq!(
+            request_body(&requests[1]),
+            json!([{ "price": 198.42 }, { "price": 199.01 }])
+        );
+        assert_eq!(request_path(&requests[2]), "/v2/actor-runs/test-run/charge");
+        assert_eq!(
+            request_body(&requests[2]),
+            json!({ "eventName": "intraday-price-point", "count": 2 })
+        );
+    }
+
+    #[tokio::test]
+    async fn non_pay_per_event_dataset_write_skips_custom_charging() {
+        let (api_base_url, server) = mock_apify_server(vec![
+            (
+                200,
+                "OK",
+                json!({ "data": { "pricingInfo": { "pricingModel": "PRICE_PER_DATASET_ITEM" } } })
+                    .to_string(),
+            ),
+            (201, "Created", String::new()),
+        ]);
+        let http = Client::new();
+        let config = test_apify_config(api_base_url);
+        let mut apify = ApifyClient {
+            http: &http,
+            config: &config,
+            charge_sequence: 0,
+        };
+        let items = [json!({ "price": 198.42 })];
+        let mut budget = ChargeBudget::default();
+
+        let result = apify.push_dataset_items(&items, &mut budget).await.unwrap();
+
+        assert_eq!(result.saved_count, 1);
+        assert!(!result.charge_limit_reached);
+        assert_eq!(budget.confirmed_point_charges, 0);
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(request_path(&requests[0]), "/v2/actor-runs/test-run");
+        assert_eq!(
+            request_path(&requests[1]),
+            "/v2/datasets/test-dataset/items"
         );
     }
 
