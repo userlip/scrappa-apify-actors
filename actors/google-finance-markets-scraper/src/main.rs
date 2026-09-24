@@ -106,28 +106,26 @@ async fn run_actor() -> Result<()> {
         .await?;
     let dataset_items = build_markets_dataset_items(&response, &params);
 
-    if !dataset_items.is_empty() {
-        let charge_result = actor
-            .push_data(&dataset_items, MARKET_ITEM_CHARGE_EVENT)
-            .await?;
-        if charge_result.event_charge_limit_reached
-            && charge_result.charged_count < dataset_items.len()
-        {
-            let status_message = "Charge limit reached before saving all Google Finance market items; OUTPUT was not written.";
-            println!(
-                "{status_message} {}",
-                json!({
-                    "event": MARKET_ITEM_CHARGE_EVENT,
-                    "charged_count": charge_result.charged_count,
-                    "requested_count": dataset_items.len()
-                })
-            );
-            if let Err(error) = actor.set_terminal_status_message(status_message).await {
-                eprintln!("Unable to set terminal status message: {error:#}");
-            }
-            return Ok(());
+    let charge_result = actor
+        .push_data(&dataset_items, MARKET_ITEM_CHARGE_EVENT)
+        .await?;
+    if charge_result.event_charge_limit_reached && charge_result.charged_count < dataset_items.len()
+    {
+        let status_message = "Charge limit reached before saving all Google Finance market items; OUTPUT was not written.";
+        println!(
+            "{status_message} {}",
+            json!({
+                "event": MARKET_ITEM_CHARGE_EVENT,
+                "charged_count": charge_result.charged_count,
+                "requested_count": dataset_items.len()
+            })
+        );
+        if let Err(error) = actor.set_terminal_status_message(status_message).await {
+            eprintln!("Unable to set terminal status message: {error:#}");
         }
-    } else {
+        return Ok(());
+    }
+    if dataset_items.is_empty() {
         println!("No Google Finance market items found for this request");
     }
 

@@ -24,6 +24,11 @@ pub struct PushResult {
     pub event_charge_limit_reached: bool,
 }
 
+struct DatasetState {
+    item_count: usize,
+    items: Vec<Value>,
+}
+
 impl ApifyClient {
     pub fn new(
         http: Client,
@@ -68,30 +73,96 @@ impl ApifyClient {
     }
 
     pub async fn push_data(&self, items: &[Value], event_name: &str) -> Result<PushResult> {
+        let mut run = self.get_run().await?;
+        let dataset = self.get_dataset_state(items.len()).await?;
+        if dataset.item_count > items.len() {
+            bail!(
+                "Apify dataset contains {} rows but the Scrappa response has only {}",
+                dataset.item_count,
+                items.len()
+            );
+        }
+        if dataset.items != items[..dataset.item_count] {
+            bail!("Apify dataset rows do not match the Scrappa response prefix");
+        }
+
         if items.is_empty() {
+            if is_pay_per_event(&run) && charged_event_count(&run, event_name)? > 0 {
+                bail!("Apify has charged for {event_name} events but the Scrappa response has no rows");
+            }
             return Ok(PushResult {
                 charged_count: 0,
                 event_charge_limit_reached: false,
             });
         }
 
-        let run = self.get_run().await?;
         if !is_pay_per_event(&run) {
-            self.write_dataset_items(items).await?;
+            if dataset.item_count < items.len() {
+                self.write_dataset_items(&items[dataset.item_count..])
+                    .await?;
+            }
             return Ok(PushResult {
                 charged_count: items.len(),
                 event_charge_limit_reached: false,
             });
         }
 
-        let limit = affordable_event_items(&run, event_name, items.len())?;
+        let mut dataset_count = dataset.item_count;
+        let mut charged_count = charged_event_count(&run, event_name)?;
+        if charged_count > items.len() {
+            bail!(
+                "Apify has charged for {charged_count} {event_name} events but the Scrappa response has only {} rows",
+                items.len()
+            );
+        }
+
+        let mut refresh_run = false;
+        if dataset_count > charged_count {
+            let uncharged_count = dataset_count - charged_count;
+            let affordable = affordable_event_charges(&run, event_name, uncharged_count)?;
+            if affordable > 0 {
+                let range_end = charged_count + affordable;
+                self.charge_event(event_name, charged_count, range_end)
+                    .await?;
+                charged_count = range_end;
+                refresh_run = true;
+            }
+            if charged_count < dataset_count {
+                return Ok(PushResult {
+                    charged_count,
+                    event_charge_limit_reached: true,
+                });
+            }
+        }
+
+        if charged_count > dataset_count {
+            self.write_dataset_items(&items[dataset_count..charged_count])
+                .await?;
+            dataset_count = charged_count;
+            refresh_run = true;
+        }
+
+        if dataset_count == items.len() {
+            return Ok(PushResult {
+                charged_count: dataset_count,
+                event_charge_limit_reached: false,
+            });
+        }
+
+        if refresh_run {
+            run = self.get_run().await?;
+        }
+        let limit = affordable_event_items(&run, event_name, items.len() - dataset_count)?;
         if limit > 0 {
-            self.write_dataset_items(&items[..limit]).await?;
-            self.charge_event(event_name, limit).await?;
+            let range_end = dataset_count + limit;
+            self.charge_event(event_name, dataset_count, range_end)
+                .await?;
+            self.write_dataset_items(&items[dataset_count..range_end])
+                .await?;
         }
         Ok(PushResult {
-            charged_count: limit,
-            event_charge_limit_reached: limit < items.len(),
+            charged_count: dataset_count + limit,
+            event_charge_limit_reached: limit < items.len() - dataset_count,
         })
     }
 
@@ -146,9 +217,50 @@ impl ApifyClient {
         response_json(response, "Apify run pricing request").await
     }
 
-    async fn charge_event(&self, event_name: &str, count: usize) -> Result<()> {
+    async fn get_dataset_state(&self, requested_items: usize) -> Result<DatasetState> {
+        let mut url = self.endpoint(&["v2", "datasets", &self.dataset_id, "items"])?;
+        url.query_pairs_mut()
+            .append_pair("limit", &requested_items.max(1).to_string());
+        let response = self
+            .http
+            .get(url)
+            .bearer_auth(&self.token)
+            .header(header::ACCEPT, "application/json")
+            .send()
+            .await
+            .context("Apify dataset read failed")?;
+        if !response.status().is_success() {
+            let _ = response_json(response, "Apify dataset read").await?;
+            bail!("Apify dataset read unexpectedly succeeded with an error status");
+        }
+        let item_count = response
+            .headers()
+            .get("x-apify-pagination-total")
+            .context("Apify dataset read did not include its total item count")?
+            .to_str()
+            .context("Apify dataset read returned an invalid item count")?
+            .parse::<usize>()
+            .context("Apify dataset read returned an invalid item count")?;
+        let value = response_json(response, "Apify dataset read").await?;
+        let items = value
+            .as_array()
+            .context("Apify dataset read returned a non-array body")?
+            .clone();
+        if items.len() > item_count {
+            bail!("Apify dataset read returned more rows than its total item count");
+        }
+        Ok(DatasetState { item_count, items })
+    }
+
+    async fn charge_event(
+        &self,
+        event_name: &str,
+        range_start: usize,
+        range_end: usize,
+    ) -> Result<()> {
+        let count = range_end - range_start;
         let url = self.endpoint(&["v2", "actor-runs", &self.run_id, "charge"])?;
-        let idempotency_key = format!("{}-{event_name}-{count}", self.run_id);
+        let idempotency_key = format!("{}-{event_name}-{range_start}-{range_end}", self.run_id);
         let response = self
             .http
             .post(url)
@@ -193,6 +305,36 @@ pub fn is_pay_per_event(run: &Value) -> bool {
 }
 
 pub fn affordable_event_items(run: &Value, event_name: &str, requested: usize) -> Result<usize> {
+    affordable_event_count(run, event_name, requested, true)
+}
+
+fn affordable_event_charges(run: &Value, event_name: &str, requested: usize) -> Result<usize> {
+    affordable_event_count(run, event_name, requested, false)
+}
+
+fn charged_event_count(run: &Value, event_name: &str) -> Result<usize> {
+    let data = run
+        .get("data")
+        .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+    let Some(value) = data
+        .get("chargedEventCounts")
+        .and_then(Value::as_object)
+        .and_then(|counts| counts.get(event_name))
+    else {
+        return Ok(0);
+    };
+    let count = value
+        .as_u64()
+        .ok_or_else(|| anyhow!("Invalid charged event count for {event_name}"))?;
+    usize::try_from(count).context("Apify returned a charged event count that is too large")
+}
+
+fn affordable_event_count(
+    run: &Value,
+    event_name: &str,
+    requested: usize,
+    include_dataset_item_charge: bool,
+) -> Result<usize> {
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
@@ -208,7 +350,11 @@ pub fn affordable_event_items(run: &Value, event_name: &str, requested: usize) -
         .and_then(Value::as_object)
         .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
     let market_event_price = event_price(events, event_name)?;
-    let dataset_item_price = optional_event_price(events, DATASET_ITEM_EVENT)?;
+    let dataset_item_price = if include_dataset_item_charge {
+        optional_event_price(events, DATASET_ITEM_EVENT)?
+    } else {
+        0.0
+    };
     let max_charge = data
         .pointer("/options/maxTotalChargeUsd")
         .filter(|value| !value.is_null())
@@ -428,6 +574,7 @@ mod tests {
         let run = json!({ "data": { "pricingInfo": { "pricingModel": "PAY_PER_RESULT" } } });
         let server = MockServer::start(vec![
             MockResponse::json(200, &run.to_string()),
+            empty_dataset(),
             MockResponse::json(201, ""),
         ]);
         let client = test_client(&server.base_url());
@@ -441,50 +588,96 @@ mod tests {
             }
         );
         let requests = server.join();
-        assert_eq!(requests.len(), 2);
+        assert_eq!(requests.len(), 3);
         assert_eq!(requests[0].target, "/v2/actor-runs/test-run");
-        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
+        assert_eq!(requests[1].method, "GET");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items?limit=2");
+        assert_eq!(requests[2].target, "/v2/datasets/dataset-id/items");
         assert_eq!(
-            serde_json::from_str::<Value>(&requests[1].body).unwrap(),
+            serde_json::from_str::<Value>(&requests[2].body).unwrap(),
             json!(items)
         );
     }
 
     #[tokio::test]
-    async fn does_not_charge_market_event_when_dataset_write_fails() {
-        let run = run(json!(2.0), json!({}), prices());
+    async fn rejects_an_empty_scrappa_response_when_dataset_rows_already_exist() {
+        let run = json!({ "data": { "pricingInfo": { "pricingModel": "PAY_PER_RESULT" } } });
         let server = MockServer::start(vec![
             MockResponse::json(200, &run.to_string()),
+            MockResponse::json(200, r#"[{"position":1}]"#)
+                .with_header("X-Apify-Pagination-Total", "1"),
+        ]);
+        let client = test_client(&server.base_url());
+
+        let error = client
+            .push_data(&[], "market-item")
+            .await
+            .unwrap_err()
+            .to_string();
+
+        assert!(error.contains("dataset contains 1 rows"));
+        let requests = server.join();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(requests[1].method, "GET");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items?limit=1");
+    }
+
+    #[tokio::test]
+    async fn resumes_a_charged_range_after_dataset_write_failure() {
+        let uncharged_run = run(json!(2.0), json!({}), prices());
+        let charged_run = run(json!(2.0), json!({ "market-item": 1 }), prices());
+        let server = MockServer::start(vec![
+            MockResponse::json(200, &uncharged_run.to_string()),
+            empty_dataset(),
+            MockResponse::json(200, ""),
             MockResponse::json(500, r#"{"error":"dataset unavailable"}"#),
+            MockResponse::json(200, &charged_run.to_string()),
+            empty_dataset(),
+            MockResponse::json(201, ""),
         ]);
         let client = test_client(&server.base_url());
         let items = vec![json!({ "position": 1 })];
 
         assert!(client.push_data(&items, "market-item").await.is_err());
+        let result = client.push_data(&items, "market-item").await.unwrap();
+        assert_eq!(
+            result,
+            PushResult {
+                charged_count: 1,
+                event_charge_limit_reached: false
+            }
+        );
 
         let requests = server.join();
-        assert_eq!(requests.len(), 2);
-        assert_eq!(requests[1].method, "POST");
-        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
-        assert!(requests
-            .iter()
-            .all(|request| request.target != "/v2/actor-runs/test-run/charge"));
+        assert_eq!(requests.len(), 7);
+        assert_eq!(requests[2].target, "/v2/actor-runs/test-run/charge");
+        assert_eq!(
+            requests[2].headers["idempotency-key"],
+            "test-run-market-item-0-1"
+        );
+        assert_eq!(requests[3].method, "POST");
+        assert_eq!(requests[3].target, "/v2/datasets/dataset-id/items");
+        assert_eq!(requests[3].body, r#"[{"position":1}]"#);
+        assert_eq!(requests[6].method, "POST");
+        assert_eq!(requests[6].target, "/v2/datasets/dataset-id/items");
+        assert_eq!(requests[6].body, r#"[{"position":1}]"#);
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.target == "/v2/actor-runs/test-run/charge")
+                .count(),
+            1
+        );
     }
 
     #[tokio::test]
-    async fn writes_affordable_rows_before_charging_market_event() {
-        let run = run(
-            json!(2.0),
-            json!({
-                "apify-actor-start": 1,
-                "apify-default-dataset-item": 1
-            }),
-            prices(),
-        );
+    async fn charges_the_affordable_range_before_writing_dataset_items() {
+        let run = run(json!(1.7), json!({ "apify-actor-start": 1 }), prices());
         let server = MockServer::start(vec![
             MockResponse::json(200, &run.to_string()),
-            MockResponse::json(201, ""),
+            empty_dataset(),
             MockResponse::json(200, ""),
+            MockResponse::json(201, ""),
         ]);
         let client = test_client(&server.base_url());
         let items = (1..=6)
@@ -499,11 +692,22 @@ mod tests {
             }
         );
         let requests = server.join();
-        assert_eq!(requests.len(), 3);
-        assert_eq!(requests[1].method, "POST");
-        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
+        assert_eq!(requests.len(), 4);
+        assert_eq!(requests[1].method, "GET");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items?limit=6");
+        assert_eq!(requests[2].target, "/v2/actor-runs/test-run/charge");
         assert_eq!(
-            serde_json::from_str::<Value>(&requests[1].body).unwrap(),
+            serde_json::from_str::<Value>(&requests[2].body).unwrap(),
+            json!({ "eventName": "market-item", "count": 4 })
+        );
+        assert_eq!(
+            requests[2].headers["idempotency-key"],
+            "test-run-market-item-0-4"
+        );
+        assert_eq!(requests[3].method, "POST");
+        assert_eq!(requests[3].target, "/v2/datasets/dataset-id/items");
+        assert_eq!(
+            serde_json::from_str::<Value>(&requests[3].body).unwrap(),
             json!([
                 { "position": 1 },
                 { "position": 2 },
@@ -511,12 +715,108 @@ mod tests {
                 { "position": 4 }
             ])
         );
+    }
+
+    #[tokio::test]
+    async fn resumes_rows_written_before_market_event_charge_after_restart() {
+        let run = run(
+            json!(2.0),
+            json!({
+                "apify-actor-start": 1,
+                "apify-default-dataset-item": 4
+            }),
+            prices(),
+        );
+        let server = MockServer::start(vec![
+            MockResponse::json(200, &run.to_string()),
+            MockResponse::json(
+                200,
+                r#"[{"position":1},{"position":2},{"position":3},{"position":4}]"#,
+            )
+            .with_header("X-Apify-Pagination-Total", "4"),
+            MockResponse::json(200, ""),
+        ]);
+        let client = test_client(&server.base_url());
+        let items = (1..=4)
+            .map(|position| json!({ "position": position }))
+            .collect::<Vec<_>>();
+
+        let result = client.push_data(&items, "market-item").await.unwrap();
+
+        assert_eq!(
+            result,
+            PushResult {
+                charged_count: 4,
+                event_charge_limit_reached: false
+            }
+        );
+        let requests = server.join();
+        assert_eq!(requests.len(), 3);
+        assert_eq!(requests[0].target, "/v2/actor-runs/test-run");
+        assert_eq!(requests[1].method, "GET");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items?limit=4");
         assert_eq!(requests[2].target, "/v2/actor-runs/test-run/charge");
         assert_eq!(
             serde_json::from_str::<Value>(&requests[2].body).unwrap(),
             json!({ "eventName": "market-item", "count": 4 })
         );
-        assert_eq!(requests[2].headers["idempotency-key"], "test-run-market-item-4");
+        assert_eq!(
+            requests[2].headers["idempotency-key"],
+            "test-run-market-item-0-4"
+        );
+        assert!(requests.iter().all(|request| {
+            !(request.method == "POST" && request.target == "/v2/datasets/dataset-id/items")
+        }));
+    }
+
+    #[tokio::test]
+    async fn charges_affordable_part_of_an_existing_unbilled_range() {
+        let run = run(
+            json!(1.5),
+            json!({
+                "apify-actor-start": 1,
+                "apify-default-dataset-item": 4
+            }),
+            prices(),
+        );
+        let existing_items = (1..=4)
+            .map(|position| json!({ "position": position }))
+            .collect::<Vec<_>>();
+        let server = MockServer::start(vec![
+            MockResponse::json(200, &run.to_string()),
+            MockResponse::json(200, &serde_json::to_string(&existing_items).unwrap())
+                .with_header("X-Apify-Pagination-Total", "4"),
+            MockResponse::json(200, ""),
+        ]);
+        let client = test_client(&server.base_url());
+
+        let result = client
+            .push_data(&existing_items, "market-item")
+            .await
+            .unwrap();
+
+        assert_eq!(
+            result,
+            PushResult {
+                charged_count: 2,
+                event_charge_limit_reached: true
+            }
+        );
+        let requests = server.join();
+        assert_eq!(requests.len(), 3);
+        assert_eq!(requests[2].target, "/v2/actor-runs/test-run/charge");
+        assert_eq!(
+            serde_json::from_str::<Value>(&requests[2].body).unwrap(),
+            json!({ "eventName": "market-item", "count": 2 })
+        );
+        assert_eq!(
+            requests[2].headers["idempotency-key"],
+            "test-run-market-item-0-2"
+        );
+    }
+
+    fn empty_dataset() -> MockResponse {
+        MockResponse::json(200, "[]").with_header("X-Apify-Pagination-Total", "0")
     }
 
     #[tokio::test]
