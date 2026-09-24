@@ -102,13 +102,7 @@ impl PpeBudget {
         } else {
             self.max_charges_by_price(item_price)
         };
-        if max_count >= requested {
-            requested
-        } else if max_count == 0 && self.total_charged_amount() <= self.max_total_charge_usd {
-            1
-        } else {
-            max_count.min(requested)
-        }
+        max_count.min(requested)
     }
 
     pub fn finish_dataset_push(
@@ -118,7 +112,7 @@ impl PpeBudget {
     ) -> PushResult {
         if !self.is_pay_per_event {
             return PushResult {
-                saved_count: requested_items,
+                saved_count: saved_items,
                 status_message: None,
             };
         }
@@ -136,15 +130,12 @@ impl PpeBudget {
             .entry(DEFAULT_DATASET_ITEM_EVENT.into())
             .or_default() += count;
 
-        // Actor.pushData() reports the combined count for the custom event and the
-        // default-dataset event. Preserve the JavaScript actor's saved-count behavior.
-        let charged_count = saved_items.saturating_mul(2);
         let limit_reached = [BUSINESS_RESULT_CHARGE_EVENT, DEFAULT_DATASET_ITEM_EVENT]
             .into_iter()
             .any(|event| {
                 self.max_charges_by_price(self.event_prices.get(event).copied().unwrap_or(0.0)) == 0
             });
-        self.limit_reached_result(charged_count, requested_items, limit_reached)
+        self.limit_reached_result(saved_items, requested_items, limit_reached)
     }
 
     pub fn should_charge_business_result(&self) -> bool {
@@ -153,7 +144,7 @@ impl PpeBudget {
 
     fn limit_reached_result(
         &self,
-        charged_count: usize,
+        saved_items: usize,
         requested_items: usize,
         limit_reached: bool,
     ) -> PushResult {
@@ -163,7 +154,7 @@ impl PpeBudget {
                 status_message: None,
             };
         }
-        let saved_count = charged_count.min(requested_items);
+        let saved_count = saved_items.min(requested_items);
         PushResult {
             saved_count,
             status_message: Some(format!(
@@ -220,8 +211,8 @@ mod tests {
         let rows = budget.dataset_item_limit(4);
         assert_eq!(rows, 2);
         assert_eq!(budget.finish_dataset_push(rows, 4), PushResult {
-            saved_count: 4,
-            status_message: Some("Charge limit reached after saving 4 of 4 Trustpilot business results on the current page.".into())
+            saved_count: 2,
+            status_message: Some("Charge limit reached after saving 2 of 4 Trustpilot business results on the current page.".into())
         });
     }
 
@@ -230,7 +221,8 @@ mod tests {
         let mut budget = PpeBudget::from_run(&run(json!(0.15), json!({}))).unwrap();
         assert_eq!(budget.dataset_item_limit(2), 1);
         let result = budget.finish_dataset_push(1, 2);
-        assert!(result.status_message.unwrap().contains("saving 2 of 2"));
+        assert_eq!(result.saved_count, 1);
+        assert!(result.status_message.unwrap().contains("saving 1 of 2"));
     }
 
     #[test]
@@ -241,22 +233,28 @@ mod tests {
         assert!(!budget.is_pay_per_event);
         assert_eq!(budget.dataset_item_limit(5), 5);
         assert_eq!(
-            budget.finish_dataset_push(5, 5),
+            budget.finish_dataset_push(4, 5),
             PushResult {
-                saved_count: 5,
+                saved_count: 4,
                 status_message: None
             }
         );
     }
 
     #[test]
-    fn accounts_for_prior_events_and_treats_zero_limit_as_unlimited() {
-        let budget = PpeBudget::from_run(&run(
+    fn declines_unaffordable_rows_after_prior_charges_and_treats_zero_limit_as_unlimited() {
+        let mut budget = PpeBudget::from_run(&run(
             json!(0.25),
             json!({"business-result":1,"apify-default-dataset-item":1}),
         ))
         .unwrap();
-        assert_eq!(budget.dataset_item_limit(5), 1);
+        assert_eq!(budget.dataset_item_limit(5), 0);
+        let result = budget.finish_dataset_push(0, 5);
+        assert_eq!(result.saved_count, 0);
+        assert_eq!(
+            result.status_message.as_deref(),
+            Some("Charge limit reached after saving 0 of 5 Trustpilot business results on the current page.")
+        );
         let unlimited = PpeBudget::from_run(&run(json!(0), json!({}))).unwrap();
         assert_eq!(unlimited.dataset_item_limit(5), 5);
     }

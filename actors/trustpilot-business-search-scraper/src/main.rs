@@ -107,19 +107,24 @@ async fn run(config: &ActorConfig) -> Result<()> {
         }
 
         let item_limit = budget.dataset_item_limit(businesses.len());
-        apify
-            .push_dataset_items(&config.dataset_id, &businesses[..item_limit])
-            .await?;
-        if budget.is_pay_per_event && item_limit > 0 && budget.should_charge_business_result() {
+        let charged_item_count = if budget.is_pay_per_event
+            && item_limit > 0
+            && budget.should_charge_business_result()
+        {
             apify
                 .charge_event(
                     &config.actor_run_id,
                     BUSINESS_RESULT_CHARGE_EVENT,
                     item_limit,
                 )
-                .await?;
-        }
-        let push_result = budget.finish_dataset_push(item_limit, businesses.len());
+                .await?
+        } else {
+            item_limit
+        };
+        apify
+            .push_dataset_items(&config.dataset_id, &businesses[..charged_item_count])
+            .await?;
+        let push_result = budget.finish_dataset_push(charged_item_count, businesses.len());
         saved_businesses += push_result.saved_count;
         println!(
             "Found {} business result(s) on page {page}; saved {}",
