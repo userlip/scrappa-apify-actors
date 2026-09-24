@@ -276,15 +276,18 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         bail!("Apify run returned invalid charging values");
     }
 
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .or_else(|| {
-            env::var("ACTOR_MAX_TOTAL_CHARGE_USD")
-                .ok()
-                .and_then(|value| value.parse::<f64>().ok())
-        })
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+    let Some(max_charge_value) = data.pointer("/options/maxTotalChargeUsd") else {
+        return Ok(requested);
+    };
+    if max_charge_value.is_null() {
+        return Ok(requested);
+    }
+    let max_charge = max_charge_value
+        .as_f64()
+        .ok_or_else(|| anyhow!("Apify run returned invalid charging values"))?;
+    if max_charge == 0.0 {
+        return Ok(requested);
+    }
     if !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
@@ -337,7 +340,8 @@ mod tests {
                     "pricingModel": "PAY_PER_EVENT",
                     "pricingPerEvent": { "actorChargeEvents": {
                         "apify-default-dataset-item": { "eventPriceUsd": 0.1 },
-                        "apify-actor-start": { "eventPriceUsd": 0.05 }
+                        "apify-actor-start": { "eventPriceUsd": 0.05 },
+                        "custom-patent-event": { "eventPriceUsd": 0.03 }
                     }}
                 },
                 "options": { "maxTotalChargeUsd": max_charge },
@@ -360,6 +364,42 @@ mod tests {
             affordable_dataset_items(&priced_run(0.04, json!({"apify-actor-start":1})), 5).unwrap(),
             0
         );
+        assert_eq!(
+            affordable_dataset_items(
+                &priced_run(
+                    0.26,
+                    json!({"apify-actor-start":1,"custom-patent-event":1})
+                ),
+                5
+            )
+            .unwrap(),
+            1
+        );
+    }
+
+    #[test]
+    fn treats_zero_max_total_charge_as_unbounded() {
+        assert_eq!(
+            affordable_dataset_items(&priced_run(0.0, json!({"apify-actor-start":1})), 5)
+                .unwrap(),
+            5
+        );
+    }
+
+    #[test]
+    fn treats_missing_or_null_max_total_charge_as_unbounded() {
+        let mut omitted_limit = priced_run(0.0, json!({"apify-actor-start":1}));
+        omitted_limit["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+
+        let mut null_limit = priced_run(0.0, json!({"apify-actor-start":1}));
+        null_limit["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+
+        for run in [&omitted_limit, &null_limit] {
+            assert_eq!(affordable_dataset_items(run, 5).unwrap(), 5);
+        }
     }
 
     #[test]
