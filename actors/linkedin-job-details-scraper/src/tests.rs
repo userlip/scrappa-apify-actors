@@ -306,6 +306,40 @@ fn ppe_budget_includes_custom_and_default_dataset_item_charges() {
 }
 
 #[test]
+fn ppe_zero_missing_and_null_limits_are_unbounded_but_positive_limits_are_preserved() {
+    let zero_limit = PricingState::from_run(&ppe_run(0.0, json!({}))).unwrap();
+    assert_eq!(zero_limit.max_total_charge_usd, f64::INFINITY);
+    assert_eq!(zero_limit.max_charges_for_price(0.0012), None);
+
+    let mut missing_limit = ppe_run(1.0, json!({}));
+    missing_limit["data"]["options"]
+        .as_object_mut()
+        .unwrap()
+        .remove("maxTotalChargeUsd");
+    let missing_limit = PricingState::from_run(&missing_limit).unwrap();
+    assert_eq!(missing_limit.max_total_charge_usd, f64::INFINITY);
+
+    let mut null_limit = ppe_run(1.0, json!({}));
+    null_limit["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+    let null_limit = PricingState::from_run(&null_limit).unwrap();
+    assert_eq!(null_limit.max_total_charge_usd, f64::INFINITY);
+
+    let positive_limit = PricingState::from_run(&ppe_run(0.0012, json!({}))).unwrap();
+    assert_eq!(positive_limit.max_total_charge_usd, 0.0012);
+    assert_eq!(positive_limit.item_limit(Some(JOB_RESULT_CHARGE_EVENT)), 1);
+
+    let already_charged = PricingState::from_run(&ppe_run(
+        0.0012,
+        json!({
+            "job-result": 1,
+            "apify-default-dataset-item": 1
+        }),
+    ))
+    .unwrap();
+    assert_eq!(already_charged.total_charged_amount(), 0.0012);
+}
+
+#[test]
 fn tiered_ppe_budget_uses_a_conservative_price_for_each_event() {
     let run = tiered_ppe_run(0.0012, json!({}));
     let pricing = PricingState::from_run(&run).unwrap();
@@ -508,6 +542,57 @@ async fn actor_run_preserves_auth_batch_results_dataset_output_and_success_charg
     assert!(requests
         .iter()
         .all(|request| { !request_line(request).starts_with("PUT /v2/actor-runs/test-run ") }));
+}
+
+#[tokio::test]
+async fn actor_run_treats_zero_ppe_limit_as_unbounded_for_batch_results() {
+    let input = json!({
+        "urls": [
+            "linkedin.com/jobs/view/first",
+            "linkedin.com/jobs/view/second"
+        ]
+    });
+    let (base, server) = start_actor_mock(input, ppe_run(0.0, json!({})), 9).await;
+    let http = Client::builder().timeout(REQUEST_TIMEOUT).build().unwrap();
+    let config = mock_config(&base);
+    let apify = ApifyClient::new(http.clone(), &config.apify);
+
+    let status_message = run(&config, &apify, http).await.unwrap();
+    assert_eq!(status_message, None);
+
+    let requests = server.await.unwrap();
+    assert_eq!(requests.len(), 9);
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request_line(request).contains("GET /api/linkedin/job?"))
+            .count(),
+        2
+    );
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request_line(request).starts_with("POST /v2/datasets/test-dataset/items "))
+            .count(),
+        2
+    );
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request_line(request).starts_with("POST /v2/actor-runs/test-run/charge "))
+            .count(),
+        2
+    );
+    let output = requests
+        .iter()
+        .find(|request| {
+            request_line(request).starts_with("PUT /v2/key-value-stores/test-store/records/OUTPUT")
+        })
+        .unwrap();
+    assert_eq!(
+        request_body(output),
+        json!({ "requested": 2, "succeeded": 2, "failed": 0 })
+    );
 }
 
 #[tokio::test]

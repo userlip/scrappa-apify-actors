@@ -68,6 +68,12 @@ impl PricingState {
         if max_total_charge_usd.is_nan() || max_total_charge_usd < 0.0 {
             bail!("Apify run returned an invalid spending limit");
         }
+        // Apify's SDK resolves its default zero spending limit to no limit.
+        let max_total_charge_usd = if max_total_charge_usd == 0.0 {
+            f64::INFINITY
+        } else {
+            max_total_charge_usd
+        };
 
         Ok(Self {
             is_pay_per_event,
