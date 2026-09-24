@@ -57,7 +57,7 @@ class LocalApis(BaseHTTPRequestHandler):
                         },
                     },
                     "chargedEventCounts": {},
-                    "options": {"maxTotalChargeUsd": 0.001},
+                    "options": {"maxTotalChargeUsd": 0},
                 },
             })
         if self.path.startswith("/api/immobilienscout24/price-insights?"):
@@ -165,6 +165,10 @@ def main():
     require(len(charge_calls) == 1, "expected exactly one PPE charge")
     require(charge_calls[0]["body"] == {"eventName": RESULT_EVENT, "count": 1}, "PPE event mismatch")
     require(charge_calls[0]["headers"].get("idempotency-key") == "smoke-run-price-insight-result-0", "charge idempotency key missing")
+    require(
+        LocalApis.captured.index(dataset_writes[0]) < LocalApis.captured.index(charge_calls[0]),
+        "dataset result was not written before its PPE charge",
+    )
     require(len(status_updates) == 1, "terminal run status was not written")
     require(status_updates[0]["body"]["statusMessage"] == "Saved 1 of 1 requested location snapshot(s); 0 failed.", "unexpected terminal status")
     require(len(scrappa_calls) == 1, "expected one Scrappa request")

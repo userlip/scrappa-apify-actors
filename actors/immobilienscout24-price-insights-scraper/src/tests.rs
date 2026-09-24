@@ -10,7 +10,7 @@ const RESULT_EVENT: &str = "price-insight-result";
 struct Fixture {
     input: Value,
     ppe: bool,
-    max_charge: f64,
+    max_charge: Option<Value>,
     charged_counts: Value,
     failed_locations: Vec<String>,
     incomplete_locations: Vec<String>,
@@ -21,7 +21,7 @@ impl Fixture {
         Self {
             input,
             ppe: true,
-            max_charge: 1.0,
+            max_charge: Some(json!(1.0)),
             charged_counts: json!({}),
             failed_locations: Vec::new(),
             incomplete_locations: Vec::new(),
@@ -41,11 +41,15 @@ impl Fixture {
         } else {
             json!({"pricingModel": "FREE"})
         };
+        let mut options = json!({});
+        if let Some(max_charge) = &self.max_charge {
+            options["maxTotalChargeUsd"] = max_charge.clone();
+        }
         json!({
             "data": {
                 "pricingInfo": pricing_info,
                 "chargedEventCounts": self.charged_counts,
-                "options": {"maxTotalChargeUsd": self.max_charge}
+                "options": options
             }
         })
     }
@@ -140,7 +144,7 @@ async fn reads_the_prefilled_input_and_preserves_auth_and_dataset_output() {
     );
 
     let mut fixture = Fixture::new(json!({"locations": ["Berlin"]}));
-    fixture.max_charge = 0.001;
+    fixture.max_charge = Some(json!(0.0));
     let (server, apify, scrappa) = fixture.start();
     let status = run_actor_with_clients(&apify, &scrappa).await.unwrap();
     apify.set_terminal_status(&status).await.unwrap();
@@ -208,6 +212,21 @@ async fn reads_the_prefilled_input_and_preserves_auth_and_dataset_output() {
         charges[0].header("idempotency-key"),
         Some("test-run-price-insight-result-0")
     );
+    let dataset_write_index = requests
+        .iter()
+        .position(|request| {
+            request.method == "POST"
+                && request.target.split('?').next() == Some("/v2/datasets/test-dataset/items")
+        })
+        .unwrap();
+    let charge_index = requests
+        .iter()
+        .position(|request| {
+            request.method == "POST"
+                && request.target.split('?').next() == Some("/v2/actor-runs/test-run/charge")
+        })
+        .unwrap();
+    assert!(dataset_write_index < charge_index);
 
     let status_updates = matching(&requests, "PUT", "/v2/actor-runs/test-run");
     assert_eq!(status_updates.len(), 1);
@@ -221,7 +240,7 @@ async fn reads_the_prefilled_input_and_preserves_auth_and_dataset_output() {
 #[tokio::test]
 async fn keeps_locations_ordered_and_continues_after_upstream_errors() {
     let mut fixture = Fixture::new(json!({"locations": ["Berlin", "Nowhere", "Munich"]}));
-    fixture.max_charge = 0.01;
+    fixture.max_charge = Some(json!(0.01));
     fixture.failed_locations = vec!["Nowhere".to_owned()];
     let (server, apify, scrappa) = fixture.start();
 
@@ -253,7 +272,7 @@ async fn keeps_locations_ordered_and_continues_after_upstream_errors() {
 #[tokio::test]
 async fn stops_dataset_writes_when_the_last_charge_uses_the_run_budget() {
     let mut fixture = Fixture::new(json!({"locations": ["Berlin", "Munich"]}));
-    fixture.max_charge = 0.0005;
+    fixture.max_charge = Some(json!(0.0005));
     let (server, apify, scrappa) = fixture.start();
 
     let status = run_actor_with_clients(&apify, &scrappa).await.unwrap();
@@ -278,9 +297,10 @@ async fn stops_dataset_writes_when_the_last_charge_uses_the_run_budget() {
 }
 
 #[tokio::test]
-async fn exhausted_budget_returns_charge_limit_without_writing_or_charging() {
+async fn exhausted_positive_budget_returns_charge_limit_without_writing_or_charging() {
     let mut fixture = Fixture::new(json!({"location": "Berlin"}));
-    fixture.max_charge = 0.0;
+    fixture.max_charge = Some(json!(0.0005));
+    fixture.charged_counts = json!({RESULT_EVENT: 1});
     let (server, apify, scrappa) = fixture.start();
 
     let status = run_actor_with_clients(&apify, &scrappa).await.unwrap();

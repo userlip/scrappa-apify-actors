@@ -260,10 +260,17 @@ impl ActorPricing {
 
         let max_total_charge_usd = match run.pointer("/options/maxTotalChargeUsd") {
             None | Some(Value::Null) => f64::INFINITY,
-            Some(value) => value
-                .as_f64()
-                .filter(|limit| limit.is_finite() && *limit >= 0.0)
-                .context("Apify run returned an invalid spending limit")?,
+            Some(value) => {
+                let limit = value
+                    .as_f64()
+                    .filter(|limit| limit.is_finite() && *limit >= 0.0)
+                    .context("Apify run returned an invalid spending limit")?;
+                if limit == 0.0 {
+                    f64::INFINITY
+                } else {
+                    limit
+                }
+            }
         };
         let charged_counts = run
             .get("chargedEventCounts")
@@ -381,17 +388,21 @@ mod tests {
     use super::*;
     use serde_json::json;
 
-    fn run(prices: Value, counts: Value, limit: Value) -> Value {
-        json!({
+    fn run(prices: Value, counts: Value, limit: Option<Value>) -> Value {
+        let mut run = json!({
             "data": {
                 "pricingInfo": {
                     "pricingModel": "PAY_PER_EVENT",
                     "pricingPerEvent": { "actorChargeEvents": prices }
                 },
                 "chargedEventCounts": counts,
-                "options": { "maxTotalChargeUsd": limit }
+                "options": {}
             }
-        })
+        });
+        if let Some(limit) = limit {
+            run["data"]["options"]["maxTotalChargeUsd"] = limit;
+        }
+        run
     }
 
     #[test]
@@ -399,7 +410,7 @@ mod tests {
         let pricing = ActorPricing::from_run(&run(
             json!({PRICE_INSIGHT_RESULT_EVENT: {"eventPriceUsd": 0.0005}}),
             json!({}),
-            json!(0.001),
+            Some(json!(0.001)),
         ))
         .unwrap();
         assert!(pricing.is_pay_per_event());
@@ -412,7 +423,7 @@ mod tests {
         let pricing = ActorPricing::from_run(&run(
             json!({PRICE_INSIGHT_RESULT_EVENT: {"eventPriceUsd": 0.0005}}),
             json!({PRICE_INSIGHT_RESULT_EVENT: 1}),
-            json!(0.0005),
+            Some(json!(0.0005)),
         ))
         .unwrap();
         assert!(!pricing.can_write_result());
@@ -427,13 +438,52 @@ mod tests {
                 DEFAULT_DATASET_ITEM_EVENT: {"eventPriceUsd": 0.0001}
             }),
             json!({}),
-            json!(0.0005),
+            Some(json!(0.0005)),
         ))
         .unwrap();
         assert!(pricing.can_write_result());
         pricing.record_result_charge();
         assert!(!pricing.can_write_result());
         assert!(pricing.event_limit_reached());
+    }
+
+    #[test]
+    fn treats_zero_total_charge_limit_as_unbounded() {
+        let pricing = ActorPricing::from_run(&run(
+            json!({PRICE_INSIGHT_RESULT_EVENT: {"eventPriceUsd": 0.0005}}),
+            json!({}),
+            Some(json!(0)),
+        ))
+        .unwrap();
+
+        assert!(pricing.can_write_result());
+        assert!(!pricing.event_limit_reached());
+    }
+
+    #[test]
+    fn treats_null_total_charge_limit_as_unbounded() {
+        let pricing = ActorPricing::from_run(&run(
+            json!({PRICE_INSIGHT_RESULT_EVENT: {"eventPriceUsd": 0.0005}}),
+            json!({}),
+            Some(Value::Null),
+        ))
+        .unwrap();
+
+        assert!(pricing.can_write_result());
+        assert!(!pricing.event_limit_reached());
+    }
+
+    #[test]
+    fn treats_missing_total_charge_limit_as_unbounded() {
+        let pricing = ActorPricing::from_run(&run(
+            json!({PRICE_INSIGHT_RESULT_EVENT: {"eventPriceUsd": 0.0005}}),
+            json!({}),
+            None,
+        ))
+        .unwrap();
+
+        assert!(pricing.can_write_result());
+        assert!(!pricing.event_limit_reached());
     }
 
     #[test]
