@@ -145,9 +145,16 @@ fn client() -> reqwest::Client {
 }
 
 fn pricing_run(max_total_charge_usd: Option<f64>, charged_counts: Value) -> Value {
+    pricing_run_with_limit(
+        max_total_charge_usd.map(|limit| json!(limit)),
+        charged_counts,
+    )
+}
+
+fn pricing_run_with_limit(max_total_charge_usd: Option<Value>, charged_counts: Value) -> Value {
     let mut options = json!({});
     if let Some(max_total_charge_usd) = max_total_charge_usd {
-        options["maxTotalChargeUsd"] = json!(max_total_charge_usd);
+        options["maxTotalChargeUsd"] = max_total_charge_usd;
     }
     json!({
         "data": {
@@ -155,7 +162,8 @@ fn pricing_run(max_total_charge_usd: Option<f64>, charged_counts: Value) -> Valu
                 "pricingModel": "PAY_PER_EVENT",
                 "pricingPerEvent": { "actorChargeEvents": {
                     "apify-default-dataset-item": { "eventPriceUsd": 0.0003 },
-                    "apify-actor-start": { "eventPriceUsd": 0.00005 }
+                    "apify-actor-start": { "eventPriceUsd": 0.00005 },
+                    "custom-event": { "eventPriceUsd": 0.0001 }
                 }}
             },
             "options": options,
@@ -360,6 +368,42 @@ fn enforces_the_ppe_budget_and_leaves_non_ppe_runs_unmetered() {
 
     let missing_counts = pricing_run(Some(1.0), Value::Null);
     assert!(affordable_dataset_items(&missing_counts, 1).is_err());
+}
+
+#[test]
+fn treats_zero_missing_and_null_ppe_limits_as_unlimited() {
+    let charged_counts = json!({"apify-actor-start": 1});
+    let cases = [
+        ("zero", Some(json!(0.0))),
+        ("missing", None),
+        ("null", Some(Value::Null)),
+    ];
+    let outcomes = cases.map(|(name, limit)| {
+        (
+            name,
+            affordable_dataset_items(&pricing_run_with_limit(limit, charged_counts.clone()), 1)
+                .map_err(|error| error.to_string()),
+        )
+    });
+
+    assert_eq!(
+        outcomes,
+        [("zero", Ok(1)), ("missing", Ok(1)), ("null", Ok(1))]
+    );
+}
+
+#[test]
+fn counts_prior_dataset_and_custom_event_charges_toward_the_ppe_limit() {
+    let run = pricing_run(
+        Some(0.00065),
+        json!({
+            "apify-default-dataset-item": 1,
+            "apify-actor-start": 1,
+            "custom-event": 1
+        }),
+    );
+
+    assert_eq!(affordable_dataset_items(&run, 1).unwrap(), 0);
 }
 
 #[test]

@@ -761,10 +761,15 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         return Ok(requested);
     }
 
-    let max_total_charge_usd = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+    let max_total_charge_usd = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => return Ok(requested),
+        Some(limit) => limit
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?,
+    };
+    if max_total_charge_usd == 0.0 {
+        return Ok(requested);
+    }
     if !max_total_charge_usd.is_finite() || max_total_charge_usd < 0.0 {
         bail!("Apify run returned an invalid spending limit");
     }
