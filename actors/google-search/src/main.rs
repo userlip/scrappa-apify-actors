@@ -639,7 +639,6 @@ async fn main() {
     let result = async {
         let config = Config::from_env()?;
         let http = Client::builder()
-            .timeout(SCRAPPA_REQUEST_TIMEOUT)
             .build()
             .context("Could not create HTTP client")?;
         run_actor(&http, &config).await
