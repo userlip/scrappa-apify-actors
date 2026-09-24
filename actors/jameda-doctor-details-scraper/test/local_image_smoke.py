@@ -201,8 +201,8 @@ def main():
             {"eventName": "doctor-profile-result", "count": 1},
             "smoke-run-doctor-profile-result-1",
         )], state.charges
-        assert state.ppe_operations == ["charge", "dataset"], state.ppe_operations
-        assert state.ppe_records["PPE_RESULT_0001"]["status"] == "saved", state.ppe_records
+        assert state.ppe_operations == ["dataset", "charge"], state.ppe_operations
+        assert state.ppe_records["PPE_RESULT_0001"]["status"] == "charged", state.ppe_records
         assert state.output["doctors_requested"] == 1, state.output
         assert state.output["doctors_saved"] == 1, state.output
         assert state.output["doctors_failed"] == 0, state.output

@@ -382,6 +382,25 @@ fn accounts_for_custom_dataset_and_other_event_prices_under_budget() {
 }
 
 #[test]
+fn zero_null_and_absent_spending_limits_are_unbounded() {
+    for limit in [Value::Null, json!(0)] {
+        let state = PricingState::from_run(&mock_ppe_run(limit, json!({}))).unwrap();
+        assert!(state.can_save_one_result().unwrap());
+    }
+
+    let mut run = mock_ppe_run(json!(1.0), json!({}));
+    run["data"]["options"]
+        .as_object_mut()
+        .unwrap()
+        .remove("maxTotalChargeUsd");
+    let state = PricingState::from_run(&run).unwrap();
+    assert!(state.can_save_one_result().unwrap());
+
+    let positive_limit = PricingState::from_run(&mock_ppe_run(json!(0.001), json!({}))).unwrap();
+    assert!(!positive_limit.can_save_one_result().unwrap());
+}
+
+#[test]
 fn non_ppe_runs_skip_custom_event_budgeting() {
     let state =
         PricingState::from_run(&json!({"data":{"pricingInfo":{"pricingModel":"FREE"}}})).unwrap();
@@ -530,15 +549,91 @@ async fn spending_limit_skips_dataset_and_custom_event_when_result_does_not_fit(
 }
 
 #[tokio::test]
-async fn charges_before_publishing_and_journals_the_pair() {
-    let items = json!([]).to_string();
+async fn dataset_failure_does_not_charge_the_custom_result_event() {
+    let (base_url, server) = start_mock_server(vec![
+        (200, mock_ppe_run(json!(0.0011), json!({})).to_string()),
+        (404, String::new()),
+        (201, "{}".to_owned()),
+        (400, r#"{"error":"dataset write rejected"}"#.to_owned()),
+        (200, "[]".to_owned()),
+    ])
+    .await;
+    let apify = mock_apify_client(base_url);
+    let mut pricing = None;
+    let error = push_charged_item(
+        &apify,
+        &mut pricing,
+        &json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL}),
+        1,
+        MARKUS_URL,
+        false,
+    )
+    .await
+    .unwrap_err();
+
+    assert!(error
+        .to_string()
+        .contains("dataset item publication failed"));
+    let requests = server.await.unwrap();
+    assert!(!requests.iter().any(|request| request
+        .head
+        .starts_with("POST /v2/actor-runs/test-run/charge")));
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.head.starts_with("POST /v2/datasets/dataset/items"))
+            .count(),
+        1
+    );
+}
+
+#[tokio::test]
+async fn does_not_replay_an_ambiguous_dataset_post_when_recovery_finds_no_row() {
+    let (base_url, server) = start_mock_server(vec![
+        (200, mock_ppe_run(json!(0.0011), json!({})).to_string()),
+        (404, String::new()),
+        (201, "{}".to_owned()),
+        (503, r#"{"error":"dataset response lost"}"#.to_owned()),
+        (200, "[]".to_owned()),
+    ])
+    .await;
+    let apify = mock_apify_client(base_url);
+    let mut pricing = None;
+    let error = push_charged_item(
+        &apify,
+        &mut pricing,
+        &json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL}),
+        1,
+        MARKUS_URL,
+        false,
+    )
+    .await
+    .unwrap_err();
+
+    assert!(error
+        .to_string()
+        .contains("will not be retried to avoid duplicates"));
+    let requests = server.await.unwrap();
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.head.starts_with("POST /v2/datasets/dataset/items"))
+            .count(),
+        1
+    );
+    assert!(!requests.iter().any(|request| request
+        .head
+        .starts_with("POST /v2/actor-runs/test-run/charge")));
+}
+
+#[tokio::test]
+async fn publishes_row_before_charge_and_journals_each_confirmed_step() {
     let (base_url, server) = start_mock_server(vec![
         (200, mock_ppe_run(json!(0.0011), json!({})).to_string()),
         (404, String::new()),
         (201, "{}".to_owned()),
         (201, "{}".to_owned()),
         (201, "{}".to_owned()),
-        (200, items),
         (201, "{}".to_owned()),
         (201, "{}".to_owned()),
     ])
@@ -552,25 +647,23 @@ async fn charges_before_publishing_and_journals_the_pair() {
 
     assert_eq!(result.saved_count, 1);
     let requests = server.await.unwrap();
+    assert_eq!(requests.len(), 7);
     assert!(requests[3]
         .head
-        .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
+        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
     assert!(requests[5]
         .head
-        .starts_with("GET /v2/datasets/dataset/items?format=json&clean=true&limit=1000 HTTP/1.1"));
-    assert!(requests[6]
-        .head
-        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
+        .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
     assert!(
-        requests.iter().position(|request| request
-            .head
-            .starts_with("POST /v2/actor-runs/test-run/charge"))
-            < requests
-                .iter()
-                .position(|request| request.head.starts_with("POST /v2/datasets/dataset/items"))
+        requests
+            .iter()
+            .position(|request| request.head.starts_with("POST /v2/datasets/dataset/items"))
+            < requests.iter().position(|request| request
+                .head
+                .starts_with("POST /v2/actor-runs/test-run/charge"))
     );
     assert_eq!(
-        serde_json::from_str::<Value>(&requests[6].body).unwrap(),
+        serde_json::from_str::<Value>(&requests[3].body).unwrap(),
         item
     );
     assert_eq!(
@@ -579,19 +672,21 @@ async fn charges_before_publishing_and_journals_the_pair() {
     );
     assert_eq!(
         serde_json::from_str::<Value>(&requests[4].body).unwrap()["status"],
-        "charged"
+        "saved"
     );
     assert_eq!(
-        serde_json::from_str::<Value>(&requests[7].body).unwrap()["status"],
-        "saved"
+        serde_json::from_str::<Value>(&requests[6].body).unwrap()["status"],
+        "charged"
     );
 }
 
 #[tokio::test]
-async fn rejected_charge_never_publishes_a_dataset_item() {
+async fn rejected_charge_keeps_the_confirmed_row_recoverable() {
     let (base_url, server) = start_mock_server(vec![
         (200, mock_ppe_run(json!(1.0), json!({})).to_string()),
         (404, String::new()),
+        (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
         (201, "{}".to_owned()),
         (400, r#"{"error":"charge rejected"}"#.to_owned()),
     ])
@@ -611,13 +706,17 @@ async fn rejected_charge_never_publishes_a_dataset_item() {
 
     assert!(error.to_string().contains("event charge failed (400)"));
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 4);
+    assert_eq!(requests.len(), 6);
     assert!(requests[3]
         .head
+        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
+    assert!(requests[5]
+        .head
         .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
-    assert!(!requests
-        .iter()
-        .any(|request| request.head.starts_with("POST /v2/datasets/dataset/items")));
+    assert_eq!(
+        serde_json::from_str::<Value>(&requests[4].body).unwrap()["status"],
+        "saved"
+    );
 }
 
 #[tokio::test]
@@ -627,11 +726,10 @@ async fn recovery_finds_a_row_after_ambiguous_dataset_failure_without_duplicatin
         (200, mock_ppe_run(json!(0.0011), json!({})).to_string()),
         (404, String::new()),
         (201, "{}".to_owned()),
-        (201, "{}".to_owned()),
-        (201, "{}".to_owned()),
-        (200, "[]".to_owned()),
         (503, r#"{"error":"write response lost"}"#.to_owned()),
         (200, json!([item]).to_string()),
+        (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
         (201, "{}".to_owned()),
     ])
     .await;
@@ -659,23 +757,31 @@ async fn recovery_finds_a_row_after_ambiguous_dataset_failure_without_duplicatin
             .count(),
         1
     );
+    assert_eq!(requests.len(), 8);
+    assert!(requests[3]
+        .head
+        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
+    assert!(requests[4]
+        .head
+        .starts_with("GET /v2/datasets/dataset/items?format=json&clean=true&limit=1000 HTTP/1.1"));
+    assert!(requests[6]
+        .head
+        .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
     assert_eq!(
-        requests[8]
-            .head
-            .starts_with("PUT /v2/key-value-stores/store/records/PPE_RESULT_0001"),
-        true
+        serde_json::from_str::<Value>(&requests[5].body).unwrap()["status"],
+        "saved"
     );
     assert_eq!(
-        serde_json::from_str::<Value>(&requests[8].body).unwrap()["status"],
-        "saved"
+        serde_json::from_str::<Value>(&requests[7].body).unwrap()["status"],
+        "charged"
     );
 }
 
 #[tokio::test]
-async fn charged_pending_result_recovers_without_charging_twice() {
+async fn saved_result_recovers_an_already_recorded_charge_without_reposting() {
     let item = json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL});
     let recovery_record = json!({
-        "status":"charged",
+        "status":"saved",
         "doctor_url":MARKUS_URL,
         "item":item,
         "idempotency_key":"test-run-doctor-profile-result-1",
@@ -687,13 +793,13 @@ async fn charged_pending_result_recovers_without_charging_twice() {
     let (base_url, server) = start_mock_server(vec![
         (
             200,
-            mock_ppe_run(json!(0.0011), json!({"doctor-profile-result":1})).to_string(),
+            mock_ppe_run(
+                json!(0.0011),
+                json!({"doctor-profile-result":1,"apify-default-dataset-item":1}),
+            )
+            .to_string(),
         ),
         (200, recovery_record.to_string()),
-        (200, "[]".to_owned()),
-        (201, "{}".to_owned()),
-        (200, "[]".to_owned()),
-        (201, "{}".to_owned()),
         (201, "{}".to_owned()),
     ])
     .await;
@@ -705,15 +811,16 @@ async fn charged_pending_result_recovers_without_charging_twice() {
 
     assert_eq!(result.saved_count, 1);
     let requests = server.await.unwrap();
+    assert_eq!(requests.len(), 3);
     assert!(!requests.iter().any(|request| request
         .head
         .starts_with("POST /v2/actor-runs/test-run/charge")));
+    assert!(!requests
+        .iter()
+        .any(|request| request.head.starts_with("POST /v2/datasets/dataset/items")));
     assert_eq!(
-        requests
-            .iter()
-            .filter(|request| request.head.starts_with("POST /v2/datasets/dataset/items"))
-            .count(),
-        1
+        serde_json::from_str::<Value>(&requests[2].body).unwrap()["status"],
+        "charged"
     );
 }
 
@@ -734,13 +841,12 @@ async fn resumes_a_charged_result_from_its_journal_before_upstream_fetch() {
         (200, recovery_record.to_string()),
         (
             200,
-            mock_ppe_run(json!(0.0011), json!({"doctor-profile-result":1})).to_string(),
+            mock_ppe_run(
+                json!(0.0011),
+                json!({"doctor-profile-result":1,"apify-default-dataset-item":1}),
+            )
+            .to_string(),
         ),
-        (200, "[]".to_owned()),
-        (201, "{}".to_owned()),
-        (200, "[]".to_owned()),
-        (201, "{}".to_owned()),
-        (201, "{}".to_owned()),
     ])
     .await;
     let apify = mock_apify_client(base_url);
@@ -763,7 +869,56 @@ async fn resumes_a_charged_result_from_its_journal_before_upstream_fetch() {
         .starts_with("POST /v2/actor-runs/test-run/charge")));
     assert!(!requests
         .iter()
+        .any(|request| request.head.starts_with("POST /v2/datasets/dataset/items")));
+    assert_eq!(requests.len(), 2);
+    assert!(!requests
+        .iter()
         .any(|request| request.head.starts_with("GET /jameda/doctor-details")));
+}
+
+#[tokio::test]
+async fn pending_recovery_without_a_confirmed_row_fails_without_reposting() {
+    let item = json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL});
+    let recovery_record = json!({
+        "status":"pending",
+        "doctor_url":MARKUS_URL,
+        "item":item,
+        "idempotency_key":"test-run-doctor-profile-result-1",
+        "baseline_event_counts": {
+            "doctor-profile-result":0,
+            "apify-default-dataset-item":0
+        }
+    });
+    let (base_url, server) = start_mock_server(vec![
+        (200, mock_ppe_run(json!(0.0011), json!({})).to_string()),
+        (200, recovery_record.to_string()),
+        (200, "[]".to_owned()),
+    ])
+    .await;
+    let apify = mock_apify_client(base_url);
+    let mut pricing = None;
+    let error = push_charged_item(
+        &apify,
+        &mut pricing,
+        &json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL}),
+        1,
+        MARKUS_URL,
+        false,
+    )
+    .await
+    .unwrap_err();
+
+    assert!(error
+        .to_string()
+        .contains("will not be retried to avoid duplicates"));
+    let requests = server.await.unwrap();
+    assert_eq!(requests.len(), 3);
+    assert!(!requests
+        .iter()
+        .any(|request| request.head.starts_with("POST /v2/datasets/dataset/items")));
+    assert!(!requests.iter().any(|request| request
+        .head
+        .starts_with("POST /v2/actor-runs/test-run/charge")));
 }
 
 #[tokio::test]

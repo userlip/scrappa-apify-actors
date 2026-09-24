@@ -36,6 +36,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
     let mut saved_profiles = 0;
     let mut status_message = None;
     let mut pricing = None;
+    let mut fatal_result_error = false;
 
     for (index, doctor_url) in plan.doctor_urls.iter().enumerate() {
         println!("Fetching Jameda doctor details for {doctor_url}");
@@ -55,6 +56,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
             }
             Ok(None) => {}
             Err(error) => {
+                fatal_result_error = true;
                 let message = error.to_string();
                 failures.push(InputFailure {
                     doctor_url: doctor_url.clone(),
@@ -102,12 +104,13 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
                 }
             }
             Err(error) => {
+                fatal_result_error = true;
                 let message = error.to_string();
                 failures.push(InputFailure {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
-                eprintln!("Failed to fetch Jameda doctor details for {doctor_url}: {message}");
+                eprintln!("Failed to save Jameda doctor details for {doctor_url}: {message}");
                 break;
             }
         }
@@ -129,7 +132,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
     );
     apify.put_record("OUTPUT", &summary).await?;
 
-    println!("Jameda doctor details extraction completed successfully");
+    println!("Jameda doctor details extraction finished");
     println!(
         "Results summary: {}",
         json!({
@@ -151,7 +154,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
 
     Ok(RunOutcome {
         status_message,
-        succeeded: true,
+        succeeded: !fatal_result_error,
     })
 }
 
