@@ -76,14 +76,14 @@ async fn non_ppe_run_preserves_pagination_auth_and_dataset_kv_output() {
 }
 
 #[tokio::test]
-async fn ppe_writes_affordable_rows_then_retries_transient_charge_with_same_key() {
+async fn ppe_charges_before_writing_affordable_rows_and_terminal_status() {
     let server = MockServer::start(vec![
         input_response(json!({"query": "iphone"})),
         ppe_pricing(0.25, 0),
         listing_response(3),
         ppe_pricing(0.25, 0),
-        MockResponse::json(201, json!({})),
         MockResponse::text(503, "temporarily unavailable"),
+        MockResponse::json(201, json!({})),
         MockResponse::json(201, json!({})),
         MockResponse::json(200, json!({})),
         MockResponse::json(200, json!({})),
@@ -118,12 +118,8 @@ async fn ppe_writes_affordable_rows_then_retries_transient_charge_with_same_key(
         json!({"eventName": "listing-result", "count": 1})
     );
     let key = charge[0].headers.get("idempotency-key").unwrap();
-    assert!(key.starts_with("test-run-listing-result-1-"));
-    assert_eq!(
-        charge[1].headers.get("idempotency-key").unwrap(),
-        key,
-        "charge retries must reuse the same idempotency key"
-    );
+    assert_eq!(key, "test-run-listing-result-1");
+    assert_eq!(charge[1].headers.get("idempotency-key").unwrap(), key);
     assert_eq!(charge[1].body, charge[0].body);
     let charge_position = requests
         .iter()
@@ -137,7 +133,7 @@ async fn ppe_writes_affordable_rows_then_retries_transient_charge_with_same_key(
                 .starts_with("/v2/datasets/test-dataset/items")
         })
         .unwrap();
-    assert!(dataset_position < charge_position);
+    assert!(charge_position < dataset_position);
     let dataset = requests_to(&requests, "/v2/datasets/test-dataset/items");
     assert_eq!(
         serde_json::from_str::<Value>(&dataset[0].body)
@@ -155,6 +151,99 @@ async fn ppe_writes_affordable_rows_then_retries_transient_charge_with_same_key(
         output.status_message.unwrap()
     );
     assert_eq!(terminal_body["isStatusMessageTerminal"], true);
+}
+
+#[tokio::test]
+async fn ppe_saves_only_rows_confirmed_by_a_partial_charge() {
+    let server = MockServer::start(vec![
+        input_response(json!({"query": "iphone"})),
+        ppe_pricing(1.0, 0),
+        listing_response(3),
+        ppe_pricing(1.0, 0),
+        MockResponse::json(
+            201,
+            json!({"chargedCount": 2, "eventChargeLimitReached": true}),
+        ),
+        MockResponse::json(201, json!({})),
+        MockResponse::json(200, json!({})),
+        MockResponse::json(200, json!({})),
+    ])
+    .await;
+    let config = test_config(&server.base_url);
+    let client = Client::new();
+    let output = run_actor(&client, &config).await.unwrap();
+
+    assert_eq!(output.value["listings_extracted"], 2);
+    assert!(output
+        .status_message
+        .as_deref()
+        .unwrap()
+        .contains("saving 2 of 3"));
+    assert_eq!(
+        output.value["responses"][0]["response"]["data"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    ApifyClient::new(&client, &config)
+        .set_terminal_status_message(output.status_message.as_deref().unwrap())
+        .await
+        .unwrap();
+
+    let requests = server.finish();
+    let charge = requests_to(&requests, "/v2/actor-runs/test-run/charge");
+    assert_eq!(charge.len(), 1);
+    assert_eq!(
+        serde_json::from_str::<Value>(&charge[0].body).unwrap(),
+        json!({"eventName": "listing-result", "count": 3})
+    );
+    let dataset = requests_to(&requests, "/v2/datasets/test-dataset/items");
+    assert_eq!(dataset.len(), 1);
+    assert_eq!(
+        serde_json::from_str::<Value>(&dataset[0].body)
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    let charge_position = requests
+        .iter()
+        .position(|request| request.target.starts_with("/v2/actor-runs/test-run/charge"))
+        .unwrap();
+    let dataset_position = requests
+        .iter()
+        .position(|request| request.target.starts_with("/v2/datasets/test-dataset/items"))
+        .unwrap();
+    assert!(charge_position < dataset_position);
+}
+
+#[tokio::test]
+async fn ppe_charge_failure_does_not_write_dataset_or_output() {
+    let server = MockServer::start(vec![
+        input_response(json!({"query": "iphone"})),
+        ppe_pricing(1.0, 0),
+        listing_response(1),
+        ppe_pricing(1.0, 0),
+        MockResponse::text(400, "charge rejected"),
+    ])
+    .await;
+    let config = test_config(&server.base_url);
+    let error = run_actor(&Client::new(), &config).await.unwrap_err();
+
+    assert!(error
+        .to_string()
+        .contains("Apify listing-result charge failed with 400"));
+    let requests = server.finish();
+    assert_eq!(
+        requests_to(&requests, "/v2/actor-runs/test-run/charge").len(),
+        1
+    );
+    assert!(requests_to(&requests, "/v2/datasets/test-dataset/items").is_empty());
+    assert!(
+        requests_to(&requests, "/v2/key-value-stores/test-store/records/OUTPUT").is_empty()
+    );
 }
 
 #[tokio::test]
@@ -242,12 +331,13 @@ async fn missing_scrappa_key_fails_before_loading_input() {
 }
 
 #[tokio::test]
-async fn dataset_failure_does_not_charge_or_write_output() {
+async fn dataset_failure_after_charge_does_not_write_output() {
     let server = MockServer::start(vec![
         input_response(json!({"query": "iphone"})),
         ppe_pricing(1.0, 0),
         listing_response(1),
         ppe_pricing(1.0, 0),
+        MockResponse::json(201, json!({})),
         MockResponse::text(500, "dataset unavailable"),
     ])
     .await;
@@ -257,10 +347,22 @@ async fn dataset_failure_does_not_charge_or_write_output() {
         .to_string()
         .contains("Apify dataset write failed with 500"));
     let requests = server.finish();
-    assert!(requests_to(&requests, "/v2/actor-runs/test-run/charge").is_empty());
+    assert_eq!(
+        requests_to(&requests, "/v2/actor-runs/test-run/charge").len(),
+        1
+    );
     assert_eq!(
         requests_to(&requests, "/v2/datasets/test-dataset/items").len(),
         1
     );
+    let charge_position = requests
+        .iter()
+        .position(|request| request.target.starts_with("/v2/actor-runs/test-run/charge"))
+        .unwrap();
+    let dataset_position = requests
+        .iter()
+        .position(|request| request.target.starts_with("/v2/datasets/test-dataset/items"))
+        .unwrap();
+    assert!(charge_position < dataset_position);
     assert!(requests_to(&requests, "/v2/key-value-stores/test-store/records/OUTPUT").is_empty());
 }
