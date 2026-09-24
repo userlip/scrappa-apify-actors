@@ -92,3 +92,7 @@ This Actor is designed for paid, usage-aligned runs. Charge per saved `business-
 ## Notes
 
 Trustpilot search returns public company and category listing data. For higher-volume Trustpilot discovery, details, review monitoring, or direct API access, use Scrappa at https://scrappa.co/api/trustpilot/company-search and https://scrappa.co/api/trustpilot/businesses.
+
+## Local development
+
+Run the focused actor tests with `cargo test --locked`. The actor image builds the Rust binary from this directory's `Cargo.toml` and `Cargo.lock`.
