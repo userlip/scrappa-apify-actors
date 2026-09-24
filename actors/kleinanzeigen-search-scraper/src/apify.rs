@@ -1,4 +1,4 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, StatusCode};
@@ -9,6 +9,8 @@ use crate::config::{endpoint_url, ensure_success, response_json, Config};
 
 pub(crate) const LISTING_RESULT_CHARGE_EVENT: &str = "listing-result";
 const DEFAULT_DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
+const APIFY_MAX_CHARGE_RETRIES: usize = 8;
+const APIFY_CHARGE_RETRY_DELAY: Duration = Duration::from_millis(500);
 
 pub struct ApifyClient<'a> {
     http: &'a Client,
@@ -61,17 +63,40 @@ impl<'a> ApifyClient<'a> {
 
     async fn charge_event(&self, count: usize, idempotency_key: &str) -> Result<()> {
         let url = self.endpoint(&["v2", "actor-runs", &self.config.actor_run_id, "charge"])?;
-        let response = self
-            .authenticated(self.http.post(url))
-            .header("idempotency-key", idempotency_key)
-            .json(&json!({
-                "eventName": LISTING_RESULT_CHARGE_EVENT,
-                "count": count,
-            }))
-            .send()
-            .await
-            .context("Apify listing-result charge request failed")?;
-        ensure_success(response, "Apify listing-result charge").await
+        for retry in 0..=APIFY_MAX_CHARGE_RETRIES {
+            let response = self
+                .authenticated(self.http.post(url.clone()))
+                .header("idempotency-key", idempotency_key)
+                .json(&json!({
+                    "eventName": LISTING_RESULT_CHARGE_EVENT,
+                    "count": count,
+                }))
+                .send()
+                .await;
+
+            match response {
+                Ok(response) if is_retryable_charge_status(response.status()) => {
+                    if retry == APIFY_MAX_CHARGE_RETRIES {
+                        return ensure_success(response, "Apify listing-result charge").await;
+                    }
+                }
+                Ok(response) => {
+                    return ensure_success(response, "Apify listing-result charge").await;
+                }
+                Err(error) if is_retryable_charge_error(&error) => {
+                    if retry == APIFY_MAX_CHARGE_RETRIES {
+                        return Err(error).context("Apify listing-result charge request failed");
+                    }
+                }
+                Err(error) => {
+                    return Err(error).context("Apify listing-result charge request failed");
+                }
+            }
+
+            tokio::time::sleep(charge_retry_delay(retry)).await;
+        }
+
+        unreachable!("the charge retry loop always returns or retries")
     }
 
     async fn push_dataset_items(&self, items: &[Value]) -> Result<()> {
@@ -119,6 +144,18 @@ impl<'a> ApifyClient<'a> {
             .context("Apify run status update failed")?;
         ensure_success(response, "Apify run status update").await
     }
+}
+
+fn is_retryable_charge_status(status: StatusCode) -> bool {
+    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
+}
+
+fn is_retryable_charge_error(error: &reqwest::Error) -> bool {
+    error.is_timeout() || error.is_connect() || error.is_request()
+}
+
+fn charge_retry_delay(retry: usize) -> Duration {
+    APIFY_CHARGE_RETRY_DELAY.saturating_mul(2_u32.saturating_pow(retry as u32))
 }
 
 #[derive(Default)]
