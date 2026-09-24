@@ -262,6 +262,17 @@ mod tests {
     }
 
     #[test]
+    fn extracts_google_business_id_after_a_unicode_maps_path_segment() {
+        let requests = get_business_id_requests(Some(&json!({
+            "business_id": "https://www.google.com/maps/place/Café/data=!4m2!3m1!1s0x123:0x456"
+        })))
+        .unwrap();
+
+        assert_eq!(requests[0].business_id.as_deref(), Some("0x123:0x456"));
+        assert_eq!(requests[0].source, Some("url"));
+    }
+
+    #[test]
     fn decodes_nested_url_encoding_and_deduplicates_normalized_ids() {
         let requests = get_business_id_requests(Some(&json!({
             "business_id": "0xabc:0xdef",
