@@ -5,9 +5,6 @@
   "description": "Search Jameda doctor profiles by specialty, doctor name, and German location, including ratings, review counts, addresses, profile URLs, and images. Supports batching multiple searches in one run.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
