@@ -69,6 +69,10 @@ struct QueryFailure {
 
 async fn run_actor() -> Result<()> {
     let config = ActorConfig::from_env()?;
+    run_actor_with_config(config).await
+}
+
+async fn run_actor_with_config(config: ActorConfig) -> Result<()> {
     let http_client = Client::new();
     let mut apify = ApifyClient::new(
         http_client.clone(),
@@ -146,9 +150,14 @@ async fn run_actor() -> Result<()> {
             PricingMode::PayPerEvent(budget) => {
                 let save_count = match apify.push_charged_dataset_items(budget, &items).await {
                     Ok(save_count) => save_count,
-                    Err(error) => {
+                    Err(apify::ChargedDatasetError::DatasetWrite(error)) => {
                         record_query_failure(&mut failures, query, &format!("{error:#}"));
                         continue;
+                    }
+                    Err(apify::ChargedDatasetError::EventCharge(error)) => {
+                        return Err(error.context(format!(
+                            "Apify event charge failed after publishing suggestion rows for query \"{query}\""
+                        )));
                     }
                 };
                 saved_suggestion_count += save_count;
@@ -225,5 +234,179 @@ async fn main() -> std::process::ExitCode {
             eprintln!("Actor failed: {error:#}");
             std::process::ExitCode::FAILURE
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    use std::{
+        io::{Read, Write},
+        net::{TcpListener, TcpStream},
+        sync::{
+            atomic::{AtomicBool, Ordering},
+            Arc, Mutex,
+        },
+        thread::{self, JoinHandle},
+        time::{Duration, Instant},
+    };
+
+    struct MockServer {
+        base_url: Url,
+        requests: Arc<Mutex<Vec<String>>>,
+        stop: Arc<AtomicBool>,
+        thread: Option<JoinHandle<()>>,
+    }
+
+    impl MockServer {
+        fn start(responses: Vec<(u16, String)>) -> Self {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            listener.set_nonblocking(true).unwrap();
+            let address = listener.local_addr().unwrap();
+            let requests = Arc::new(Mutex::new(Vec::new()));
+            let server_requests = Arc::clone(&requests);
+            let stop = Arc::new(AtomicBool::new(false));
+            let server_stop = Arc::clone(&stop);
+            let thread = thread::spawn(move || {
+                for (status, body) in responses {
+                    let deadline = Instant::now() + Duration::from_secs(10);
+                    let (mut stream, _) = loop {
+                        if server_stop.load(Ordering::Relaxed) {
+                            return;
+                        }
+                        match listener.accept() {
+                            Ok(connection) => break connection,
+                            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                                if Instant::now() >= deadline {
+                                    return;
+                                }
+                                thread::sleep(Duration::from_millis(5));
+                            }
+                            Err(_) => return,
+                        }
+                    };
+                    let request = read_request(&mut stream).unwrap_or_default();
+                    server_requests.lock().unwrap().push(request);
+                    let reason = match status {
+                        200 => "OK",
+                        201 => "Created",
+                        400 => "Bad Request",
+                        500 => "Internal Server Error",
+                        _ => "Mock Response",
+                    };
+                    let response = format!(
+                        "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                        body.len()
+                    );
+                    let _ = stream.write_all(response.as_bytes());
+                }
+            });
+
+            Self {
+                base_url: Url::parse(&format!("http://{address}")).unwrap(),
+                requests,
+                stop,
+                thread: Some(thread),
+            }
+        }
+
+        fn requests(&self) -> Vec<String> {
+            self.requests.lock().unwrap().clone()
+        }
+    }
+
+    impl Drop for MockServer {
+        fn drop(&mut self) {
+            self.stop.store(true, Ordering::Relaxed);
+            if let Some(thread) = self.thread.take() {
+                let _ = thread.join();
+            }
+        }
+    }
+
+    fn read_request(stream: &mut TcpStream) -> std::io::Result<String> {
+        let mut request = Vec::new();
+        let mut buffer = [0; 1024];
+        loop {
+            let count = stream.read(&mut buffer)?;
+            if count == 0 {
+                break;
+            }
+            request.extend_from_slice(&buffer[..count]);
+            let Some(header_end) = request.windows(4).position(|window| window == b"\r\n\r\n")
+            else {
+                continue;
+            };
+            let header_end = header_end + 4;
+            let headers = String::from_utf8_lossy(&request[..header_end]).to_ascii_lowercase();
+            let content_length = headers
+                .lines()
+                .find_map(|line| line.strip_prefix("content-length:"))
+                .and_then(|value| value.trim().parse::<usize>().ok())
+                .unwrap_or(0);
+            if request.len() >= header_end + content_length {
+                break;
+            }
+        }
+        Ok(String::from_utf8_lossy(&request).into_owned())
+    }
+
+    fn config(api_base_url: &Url) -> ActorConfig {
+        let mut scrappa_api_base_url = api_base_url.clone();
+        scrappa_api_base_url.set_path("/api");
+        ActorConfig {
+            api_key: "test-scrappa-key".to_owned(),
+            scrappa_api_base_url,
+            apify_api_base_url: api_base_url.clone(),
+            key_value_store_id: "store-test".to_owned(),
+            dataset_id: "dataset-test".to_owned(),
+            actor_run_id: "run-test".to_owned(),
+            input_key: "INPUT".to_owned(),
+            apify_token: "test-apify-token".to_owned(),
+        }
+    }
+
+    #[tokio::test]
+    async fn charge_failure_after_dataset_write_fails_the_run() {
+        let pricing = json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "hotel-suggestion-result": {"eventPriceUsd": 0.00025}
+                    }}
+                },
+                "options": {"maxTotalChargeUsd": 1.0},
+                "chargedEventCounts": {}
+            }
+        })
+        .to_string();
+        let server = MockServer::start(vec![
+            (200, r#"{"q":"Berlin"}"#.to_owned()),
+            (200, pricing),
+            (
+                200,
+                r#"{"suggestions":[{"position":1,"value":"Berlin hotel","type":"location"}]}"#
+                    .to_owned(),
+            ),
+            (201, "{}".to_owned()),
+            (400, r#"{"error":"charge unavailable"}"#.to_owned()),
+            (200, "{}".to_owned()),
+            (200, r#"{"data":{}}"#.to_owned()),
+        ]);
+
+        let result = run_actor_with_config(config(&server.base_url)).await;
+        let requests = server.requests();
+        assert_eq!(requests.len(), 5);
+        assert!(requests[3].starts_with("POST /v2/datasets/dataset-test/items HTTP/1.1"));
+        assert!(requests[4].starts_with("POST /v2/actor-runs/run-test/charge HTTP/1.1"));
+
+        let error = result.expect_err("a failed charge after publishing rows must fail the run");
+        let message = format!("{error:#}");
+        assert!(
+            message.contains("Apify event charge failed with 400"),
+            "{message}"
+        );
     }
 }
