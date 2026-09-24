@@ -59,7 +59,7 @@ class Handler(BaseHTTPRequestHandler):
                                 }
                             },
                         },
-                        "options": {"maxTotalChargeUsd": 1.0},
+                        "options": {"maxTotalChargeUsd": 0},
                         "chargedEventCounts": {"apify-actor-start": 1},
                     }
                 },

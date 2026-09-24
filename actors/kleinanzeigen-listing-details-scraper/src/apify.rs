@@ -320,10 +320,18 @@ impl ChargingManager {
 
         let max_total_charge_usd = match data.pointer("/options/maxTotalChargeUsd") {
             None | Some(Value::Null) => f64::INFINITY,
-            Some(value) => value
-                .as_f64()
-                .filter(|amount| amount.is_finite() && *amount >= 0.0)
-                .ok_or_else(|| anyhow!("Apify run returned invalid maxTotalChargeUsd"))?,
+            Some(value) => {
+                let amount = value
+                    .as_f64()
+                    .filter(|amount| amount.is_finite() && *amount >= 0.0)
+                    .ok_or_else(|| anyhow!("Apify run returned invalid maxTotalChargeUsd"))?;
+                if amount == 0.0 {
+                    // Apify SDK 3.7.1 uses zero to mean an unbounded total charge.
+                    f64::INFINITY
+                } else {
+                    amount
+                }
+            }
         };
 
         let mut event_prices = HashMap::new();
@@ -495,7 +503,45 @@ mod tests {
     }
 
     #[test]
-    fn calculates_event_capacity_from_existing_spend_and_all_event_prices() {
+    fn treats_zero_missing_and_null_total_charge_caps_as_unlimited() {
+        for options in [
+            json!({"maxTotalChargeUsd": 0}),
+            json!({}),
+            json!({"maxTotalChargeUsd": null}),
+        ] {
+            let manager = charging(json!({
+                "data": {
+                    "pricingInfo": {
+                        "pricingModel": "PAY_PER_EVENT",
+                        "pricingPerEvent": {"actorChargeEvents": {
+                            "listing-detail-result": {"eventPriceUsd": 0.00025},
+                            "apify-default-dataset-item": {"eventPriceUsd": 0.0001},
+                            "apify-actor-start": {"eventPriceUsd": 0.0005}
+                        }}
+                    },
+                    "options": options,
+                    "chargedEventCounts": {"apify-actor-start": 1}
+                }
+            }));
+
+            assert!(manager.max_total_charge_usd.is_infinite());
+            assert_eq!(
+                manager.max_event_charge_count(LISTING_DETAIL_RESULT_CHARGE_EVENT),
+                usize::MAX
+            );
+            assert_eq!(
+                manager.calculate_push_data_count(
+                    LISTING_DETAIL_RESULT_CHARGE_EVENT,
+                    true,
+                    3
+                ),
+                3
+            );
+        }
+    }
+
+    #[test]
+    fn preserves_positive_total_charge_cap_and_combined_event_prices() {
         let manager = charging(json!({
             "data": {
                 "pricingInfo": {
@@ -568,6 +614,10 @@ mod tests {
         assert_eq!(
             manager.max_event_charge_count(LISTING_DETAIL_RESULT_CHARGE_EVENT),
             usize::MAX
+        );
+        assert_eq!(
+            manager.calculate_push_data_count(LISTING_DETAIL_RESULT_CHARGE_EVENT, true, 3),
+            3
         );
     }
 
