@@ -377,10 +377,12 @@ mod tests {
         assert_eq!(apify_requests[4].method, "PUT");
         assert_eq!(apify_requests[4].target, "/v2/actor-runs/run-test");
         let status: Value = serde_json::from_str(&apify_requests[4].body).unwrap();
+        assert_eq!(status["runId"], "run-test");
         assert_eq!(
             status["statusMessage"],
             "Charge limit reached after saving 1/2 Google Patents result(s)."
         );
+        assert_eq!(status["isStatusMessageTerminal"], true);
     }
 
     #[tokio::test]
@@ -406,9 +408,11 @@ mod tests {
         assert!(output["data"]["patents"].as_array().unwrap().is_empty());
         assert_eq!(apify_requests[3].method, "PUT");
         let status: Value = serde_json::from_str(&apify_requests[3].body).unwrap();
+        assert_eq!(status["runId"], "run-test");
         assert_eq!(
             status["statusMessage"],
             "Charge limit reached after saving 0/2 Google Patents result(s)."
         );
+        assert_eq!(status["isStatusMessageTerminal"], true);
     }
 }

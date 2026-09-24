@@ -177,7 +177,11 @@ impl<'a> ApifyClient<'a> {
             .put(url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .json(&json!({ "statusMessage": message }))
+            .json(&json!({
+                "runId": &self.config.actor_run_id,
+                "statusMessage": message,
+                "isStatusMessageTerminal": true,
+            }))
             .send()
             .await
             .context("Apify status message request failed")?;
