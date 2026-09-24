@@ -2,7 +2,7 @@ use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::{Value, json};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     env,
     sync::atomic::{AtomicU64, Ordering},
     time::Duration,
@@ -384,7 +384,8 @@ struct ChargeResult {
 pub struct EventBudget {
     is_pay_per_event: bool,
     max_total_charge_usd: f64,
-    event_prices: HashMap<String, f64>,
+    event_price_upper_bounds: HashMap<String, f64>,
+    configured_events: HashSet<String>,
     charged_counts: HashMap<String, u64>,
 }
 
@@ -396,19 +397,22 @@ impl EventBudget {
             .and_then(|pricing| pricing.get("pricingModel"))
             .and_then(Value::as_str)
             == Some("PAY_PER_EVENT");
-        let mut event_prices = HashMap::new();
+        let mut event_price_upper_bounds = HashMap::new();
+        let mut configured_events = HashSet::new();
         if is_pay_per_event {
             let events = pricing_info
                 .and_then(|pricing| pricing.pointer("/pricingPerEvent/actorChargeEvents"))
                 .and_then(Value::as_object)
                 .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
             for (event_name, event) in events {
-                if let Some(price) = event.get("eventPriceUsd").and_then(Value::as_f64) {
-                    if !price.is_finite() || price < 0.0 {
-                        bail!("Apify run returned invalid price for charged event {event_name}");
-                    }
-                    event_prices.insert(event_name.clone(), price);
-                }
+                let price_upper_bound = event_price_upper_bound(event_name, event)?;
+                event_price_upper_bounds.insert(event_name.clone(), price_upper_bound);
+                configured_events.insert(event_name.clone());
+            }
+            if !configured_events.contains(REVIEW_RESULT_EVENT) {
+                bail!(
+                    "Apify run did not configure the required {REVIEW_RESULT_EVENT} charge event"
+                );
             }
         }
         let max_total_charge_usd = data
@@ -436,7 +440,8 @@ impl EventBudget {
         Ok(Self {
             is_pay_per_event,
             max_total_charge_usd,
-            event_prices,
+            event_price_upper_bounds,
+            configured_events,
             charged_counts,
         })
     }
@@ -449,7 +454,7 @@ impl EventBudget {
         if !self.is_pay_per_event {
             return usize::MAX;
         }
-        let Some(price) = self.event_prices.get(event_name).copied() else {
+        let Some(price) = self.event_price_upper_bounds.get(event_name).copied() else {
             return usize::MAX;
         };
         self.max_charges_by_price(price)
@@ -464,9 +469,13 @@ impl EventBudget {
         if !self.is_pay_per_event {
             return requested;
         }
-        let item_price = self.event_prices.get(event_name).copied().unwrap_or(0.0)
+        let item_price = self
+            .event_price_upper_bounds
+            .get(event_name)
+            .copied()
+            .unwrap_or(0.0)
             + if is_default_dataset {
-                self.event_prices
+                self.event_price_upper_bounds
                     .get(DEFAULT_DATASET_ITEM_EVENT)
                     .copied()
                     .unwrap_or(0.0)
@@ -520,7 +529,11 @@ impl EventBudget {
             .charged_counts
             .iter()
             .map(|(event_name, count)| {
-                self.event_prices.get(event_name).copied().unwrap_or(0.0) * *count as f64
+                self.event_price_upper_bounds
+                    .get(event_name)
+                    .copied()
+                    .unwrap_or(0.0)
+                    * *count as f64
             })
             .sum::<f64>();
         format!("{total:.6}").parse::<f64>().unwrap_or(total)
@@ -561,7 +574,7 @@ impl EventBudget {
             .ok_or_else(|| anyhow!("Charged event count overflowed for {event_name}"))?;
         self.charged_counts.insert(event_name.to_owned(), new_count);
 
-        if !event_name.starts_with("apify-") && self.event_prices.contains_key(event_name) {
+        if !event_name.starts_with("apify-") && self.configured_events.contains(event_name) {
             client.charge_event(event_name, charged_count).await?;
         }
 
@@ -570,6 +583,60 @@ impl EventBudget {
             event_charge_limit_reached: self.max_event_charge_count(event_name) == 0,
         })
     }
+}
+
+fn event_price_upper_bound(event_name: &str, event: &Value) -> Result<f64> {
+    let flat_price = event.get("eventPriceUsd").filter(|price| !price.is_null());
+    let tiered_prices = event
+        .get("eventTieredPricingUsd")
+        .filter(|prices| !prices.is_null());
+
+    match (flat_price, tiered_prices) {
+        (Some(_), Some(_)) => {
+            bail!("Apify run returned both flat and tiered prices for charged event {event_name}")
+        }
+        (Some(price), None) => {
+            let price = price.as_f64().ok_or_else(|| {
+                anyhow!("Apify run returned invalid price for charged event {event_name}")
+            })?;
+            validate_event_price(event_name, None, price)
+        }
+        (None, Some(prices)) => {
+            // The run payload may leave the caller's tier unresolved; cap local budget use at the highest configured tier.
+            let prices = prices.as_object().ok_or_else(|| {
+                anyhow!("Apify run returned invalid tiered prices for charged event {event_name}")
+            })?;
+            let mut upper_bound = None;
+            for (tier, tier_price) in prices {
+                let price = tier_price
+                    .get("tieredEventPriceUsd")
+                    .and_then(Value::as_f64)
+                    .ok_or_else(|| {
+                        anyhow!("Apify run returned invalid tiered price for charged event {event_name} at tier {tier}")
+                    })?;
+                let price = validate_event_price(event_name, Some(tier), price)?;
+                upper_bound = Some(upper_bound.map_or(price, |current: f64| current.max(price)));
+            }
+            upper_bound.ok_or_else(|| {
+                anyhow!(
+                    "Apify run did not provide any tiered prices for charged event {event_name}"
+                )
+            })
+        }
+        (None, None) => {
+            bail!("Apify run did not provide a usable price for charged event {event_name}")
+        }
+    }
+}
+
+fn validate_event_price(event_name: &str, tier: Option<&str>, price: f64) -> Result<f64> {
+    if !price.is_finite() || price < 0.0 {
+        if let Some(tier) = tier {
+            bail!("Apify run returned invalid price for charged event {event_name} at tier {tier}");
+        }
+        bail!("Apify run returned invalid price for charged event {event_name}");
+    }
+    Ok(price)
 }
 
 #[cfg(test)]
@@ -614,6 +681,19 @@ mod tests {
         })
     }
 
+    fn tiered_review_prices() -> Value {
+        json!({
+            "review-result": {
+                "eventTieredPricingUsd": {
+                    "FREE": {"tieredEventPriceUsd": 0.25},
+                    "BRONZE": {"tieredEventPriceUsd": 0.2},
+                    "GOLD": {"tieredEventPriceUsd": 0.15}
+                }
+            },
+            "apify-default-dataset-item": {"eventPriceUsd": 0.05}
+        })
+    }
+
     #[test]
     fn budget_counts_other_charged_events_and_limits_rows_by_review_price() {
         let budget =
@@ -632,6 +712,65 @@ mod tests {
             EventBudget::from_run(&ppe_run(0.7, json!({"other-event": 1}), prices)).unwrap();
         assert_eq!(budget.max_event_charge_count("review-result"), 2);
         assert_eq!(budget.limit_dataset_items("review-result", 4, true), 1);
+    }
+
+    #[tokio::test]
+    async fn tiered_custom_event_is_charged_with_a_conservative_budget() {
+        let server = MockServer::start(vec![response(201, json!({})), response(201, json!({}))]);
+        let client = ApifyClient::new(config(server.base_url.clone())).unwrap();
+        let mut budget =
+            EventBudget::from_run(&ppe_run(0.5, json!({}), tiered_review_prices())).unwrap();
+        let rows = vec![json!({"review_id":"r1"}), json!({"review_id":"r2"})];
+
+        assert_eq!(budget.max_event_charge_count("review-result"), 2);
+        assert_eq!(
+            budget.limit_dataset_items("review-result", rows.len(), true),
+            1
+        );
+        let result = client
+            .push_charged_dataset_items(&mut budget, &rows)
+            .await
+            .unwrap();
+
+        assert_eq!(result.saved_count, 1);
+        let requests = server.requests();
+        assert_eq!(requests.len(), 2);
+        let written_rows: Value = serde_json::from_str(request_parts(&requests[0]).2).unwrap();
+        assert_eq!(written_rows.as_array().unwrap().len(), 1);
+        assert_eq!(
+            serde_json::from_str::<Value>(request_parts(&requests[1]).2).unwrap(),
+            json!({"eventName":"review-result","count":1})
+        );
+    }
+
+    #[test]
+    fn invalid_tiered_event_prices_fail_closed() {
+        let mut prices = tiered_review_prices();
+        prices["review-result"]["eventTieredPricingUsd"]["FREE"]["tieredEventPriceUsd"] =
+            json!(-0.25);
+
+        let error = EventBudget::from_run(&ppe_run(1.0, json!({}), prices)).unwrap_err();
+        assert!(
+            error
+                .to_string()
+                .contains("invalid price for charged event review-result")
+        );
+    }
+
+    #[test]
+    fn missing_required_review_event_fails_closed() {
+        let error = EventBudget::from_run(&ppe_run(
+            1.0,
+            json!({}),
+            json!({"other-event": {"eventPriceUsd": 0.1}}),
+        ))
+        .unwrap_err();
+
+        assert!(
+            error
+                .to_string()
+                .contains("required review-result charge event")
+        );
     }
 
     #[test]
