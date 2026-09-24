@@ -168,7 +168,17 @@ pub fn affordable_dataset_items(
         .and_then(Value::as_str)
         != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        return Ok(requested);
+    }
+
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => return Ok(requested),
+        Some(value) => value
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
+    };
+    if max_charge == 0.0 {
+        return Ok(requested);
     }
 
     let events = data
@@ -180,10 +190,6 @@ pub fn affordable_dataset_items(
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
     if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
@@ -371,15 +377,41 @@ mod tests {
     }
 
     #[test]
-    fn rejects_non_pay_per_event_runs_and_missing_prices() {
+    fn allows_non_pay_per_event_runs_without_event_pricing() {
         let mut budget = DatasetBudget::default();
-        let non_ppe = json!({"data": {"pricingInfo": {"pricingModel": "PRICE_PER_DATASET_ITEM"}}});
-        assert_eq!(
-            affordable_dataset_items(&non_ppe, 1, &mut budget)
-                .unwrap_err()
-                .to_string(),
-            "Apify run is not configured for pay-per-event pricing"
-        );
+        for pricing_model in ["FREE", "PRICE_PER_DATASET_ITEM", "FLAT_PRICE_PER_MONTH"] {
+            let non_ppe = json!({"data": {"pricingInfo": {"pricingModel": pricing_model}}});
+            assert_eq!(
+                affordable_dataset_items(&non_ppe, 3, &mut budget).unwrap(),
+                3,
+                "unexpected item limit for {pricing_model}"
+            );
+        }
+    }
+
+    #[test]
+    fn treats_missing_null_and_zero_ppe_caps_as_unbounded() {
+        for max_charge in [None, Some(Value::Null), Some(json!(0.0))] {
+            let mut run = run(0.0003, 8, 3);
+            if let Some(max_charge) = max_charge {
+                run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
+            } else {
+                run["data"]["options"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("maxTotalChargeUsd");
+            }
+
+            assert_eq!(
+                affordable_dataset_items(&run, 4, &mut DatasetBudget::default()).unwrap(),
+                4
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_missing_dataset_item_price_for_capped_ppe_runs() {
+        let mut budget = DatasetBudget::default();
 
         let mut invalid = run(1.0, 0, 0);
         invalid["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
@@ -427,6 +459,13 @@ mod tests {
     }
 
     async fn mock_api_responses(responses: Vec<Option<u16>>) -> (Url, JoinHandle<Vec<Vec<u8>>>) {
+        mock_api_responses_with_run(responses, run(0.001, 0, 0)).await
+    }
+
+    async fn mock_api_responses_with_run(
+        responses: Vec<Option<u16>>,
+        run_response: Value,
+    ) -> (Url, JoinHandle<Vec<Vec<u8>>>) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let server = tokio::spawn(async move {
@@ -470,7 +509,7 @@ mod tests {
                     _ => "OK",
                 };
                 let body = if is_run_request {
-                    run(0.001, 0, 0).to_string()
+                    run_response.to_string()
                 } else {
                     "{}".to_owned()
                 };
@@ -499,6 +538,37 @@ mod tests {
             input_key: "INPUT".to_owned(),
             scrappa_api_key: "scrappa-key".to_owned(),
         }
+    }
+
+    #[tokio::test]
+    async fn publishes_non_ppe_items_without_custom_event_charges() {
+        let run_response = json!({"data": {"pricingInfo": {"pricingModel": "FREE"}}});
+        let (base_url, server) =
+            mock_api_responses_with_run(vec![Some(200), Some(201)], run_response).await;
+        let config = config_with_apify_base(base_url);
+        let http = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(2))
+            .build()
+            .unwrap();
+        let client = ApifyClient::new(&http, &config);
+        let mut budget = DatasetBudget::default();
+
+        let saved = client
+            .push_dataset_items(
+                &[json!({"name": "Coffee"}), json!({"name": "Bakery"})],
+                &mut budget,
+            )
+            .await
+            .unwrap();
+        assert_eq!(saved, 2);
+        assert_eq!(budget.saved_dataset_items, 2);
+
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 2);
+        assert!(requests[0].starts_with(b"GET /api/v2/actor-runs/run-id"));
+        assert!(requests[1].starts_with(b"POST /api/v2/datasets/dataset-id/items"));
+        assert!(String::from_utf8_lossy(&requests[1]).contains("Coffee"));
+        assert!(String::from_utf8_lossy(&requests[1]).contains("Bakery"));
     }
 
     #[tokio::test]
