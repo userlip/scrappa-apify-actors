@@ -213,7 +213,9 @@ pub(crate) async fn run(
         if let Some(message) = push_result.status_message {
             status_message = Some(message);
         }
-        first_result.get_or_insert_with(|| result.clone());
+        if push_result.saved_count > 0 {
+            first_result.get_or_insert_with(|| result.clone());
+        }
 
         if is_success(&result) {
             succeeded += push_result.saved_count;
@@ -242,14 +244,13 @@ pub(crate) async fn run(
         }
     }
 
-    let output = if urls.len() == 1 {
-        build_output(first_result.as_ref().expect("a URL produces a result"))
-    } else {
-        json!({
+    let output = match (urls.len(), first_result.as_ref()) {
+        (1, Some(result)) => build_output(result),
+        _ => json!({
             "requested": urls.len(),
             "succeeded": succeeded,
             "failed": failed,
-        })
+        }),
     };
     apify.put_record("OUTPUT", &output).await?;
 
