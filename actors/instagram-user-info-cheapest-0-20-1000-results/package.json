@@ -4,6 +4,6 @@
   "private": true,
   "description": "Test adapter for the Rust Instagram User Info actor.",
   "scripts": {
-    "test": "cargo test --locked"
+    "test": "if command -v cargo >/dev/null 2>&1; then cargo test --locked; else docker run --rm -v \"$PWD:/work\" -w /work rust:1.90-slim-bookworm cargo test --locked; fi"
   }
 }
