@@ -139,7 +139,8 @@ impl ApifyClient {
             .post(url)
             .bearer_auth(&self.config.apify_token)
             .json(rows);
-        self.send_unit_request(request, "Apify dataset write").await
+        self.send_unit_request_once(request, "Apify dataset write")
+            .await
     }
 
     async fn charge_event(&self, event_name: &str, idempotency_key: &str) -> Result<()> {
@@ -236,6 +237,21 @@ impl ApifyClient {
         }
 
         unreachable!("the Apify request loop always returns or fails")
+    }
+
+    async fn send_unit_request_once(&self, request: RequestBuilder, operation: &str) -> Result<()> {
+        let request = request
+            .build()
+            .with_context(|| format!("{operation} could not be built"))?;
+        let response = self
+            .client
+            .execute(request)
+            .await
+            .map_err(|error| anyhow!("{operation} failed: {error}"))?;
+        if !response.status().is_success() {
+            return Err(response_error(response, operation).await);
+        }
+        Ok(())
     }
 
     async fn wait_before_retry(&self, attempt: usize) {
@@ -378,14 +394,12 @@ impl RunPricing {
     }
 
     fn total_charged_amount(&self) -> f64 {
-        let total = self
-            .charged_counts
+        self.charged_counts
             .iter()
             .map(|(event_name, count)| {
                 self.prices.get(event_name).copied().unwrap_or(0.0) * *count as f64
             })
-            .sum::<f64>();
-        (total * 1_000_000.0).round() / 1_000_000.0
+            .sum::<f64>()
     }
 
     fn can_push_one_default_result(&self) -> bool {
@@ -396,8 +410,7 @@ impl RunPricing {
                 .get(DEFAULT_DATASET_ITEM_EVENT)
                 .copied()
                 .unwrap_or(0.0);
-        let maximum = self.max_count_by_price(item_price);
-        maximum >= 1 || (maximum == 0 && total <= self.max_total_charge_usd)
+        total + item_price <= self.max_total_charge_usd
     }
 
     fn record_charge(&mut self, event_name: &str) {

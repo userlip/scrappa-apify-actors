@@ -605,6 +605,83 @@ fn ppe_capacity_accounts_for_prior_charges_and_the_custom_event_price() {
     assert_eq!(zero_budget.available_capacity(RESULT_EVENT, 10), 0);
 }
 
+#[tokio::test]
+async fn ppe_does_not_write_when_remaining_budget_cannot_cover_both_row_events() {
+    let server = MockServer::start(|_| (200, String::new())).await;
+    let api = ApifyClient::with_retry_policy(
+        actor_config(server.url.clone()),
+        RetryPolicy {
+            retries: 0,
+            minimum_delay: Duration::ZERO,
+        },
+        Duration::from_secs(2),
+    )
+    .unwrap();
+    let pricing = RunPricing::from_run_response(&json!({
+        "data": {
+            "pricingInfo": {
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "challenge-post-result": {"eventPriceUsd": 0.00025},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.00025},
+                    "other-event": {"eventPriceUsd": 0.0002}
+                }}
+            },
+            "options": {"maxTotalChargeUsd": 0.0005},
+            "chargedEventCounts": {"other-event": 1}
+        }
+    }))
+    .unwrap();
+    assert_eq!(pricing.available_capacity(RESULT_EVENT, 1), 1);
+
+    let mut actor = ApifyActor::new(api, pricing);
+    assert_eq!(
+        actor.push_videos(&[json!({"video_id":"1"})]).await.unwrap(),
+        PushResult {
+            saved: 0,
+            limit_reached: true
+        }
+    );
+    assert!(server.requests().is_empty());
+
+    let rounding_server = MockServer::start(|_| (200, String::new())).await;
+    let api = ApifyClient::with_retry_policy(
+        actor_config(rounding_server.url.clone()),
+        RetryPolicy {
+            retries: 0,
+            minimum_delay: Duration::ZERO,
+        },
+        Duration::from_secs(2),
+    )
+    .unwrap();
+    let pricing = RunPricing::from_run_response(&json!({
+        "data": {
+            "pricingInfo": {
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "challenge-post-result": {"eventPriceUsd": 0.00025},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.00025},
+                    "tiny-event": {"eventPriceUsd": 0.00000002}
+                }}
+            },
+            "options": {"maxTotalChargeUsd": 0.0005},
+            "chargedEventCounts": {"tiny-event": 1}
+        }
+    }))
+    .unwrap();
+    assert_eq!(pricing.available_capacity(RESULT_EVENT, 1), 1);
+
+    let mut actor = ApifyActor::new(api, pricing);
+    assert_eq!(
+        actor.push_videos(&[json!({"video_id":"1"})]).await.unwrap(),
+        PushResult {
+            saved: 0,
+            limit_reached: true
+        }
+    );
+    assert!(rounding_server.requests().is_empty());
+}
+
 #[test]
 fn non_ppe_runs_keep_unbounded_dataset_capacity() {
     let pricing = RunPricing::from_run_response(&json!({
@@ -655,6 +732,10 @@ impl MockServer {
                     };
                     requests.lock().unwrap().push(request.clone());
                     let (status, body) = handler(request);
+                    // The test uses status 0 to simulate a stored request whose response disconnects.
+                    if status == 0 {
+                        return;
+                    }
                     let reason = match status {
                         200 => "OK",
                         201 => "Created",
@@ -910,6 +991,35 @@ async fn ppe_push_stores_then_charges_each_result_once_with_retry_idempotency() 
         .get("authorization")
         .map(String::as_str)
         == Some("Bearer test-apify-token")));
+}
+
+#[tokio::test]
+async fn dataset_write_is_not_retried_after_storage_when_the_response_disconnects() {
+    let stored_rows = Arc::new(AtomicUsize::new(0));
+    let stored_rows_counter = stored_rows.clone();
+    let server = MockServer::start(move |request| {
+        assert_eq!(request.path, "/v2/datasets/dataset-test/items");
+        let rows: Value = serde_json::from_slice(&request.body).unwrap();
+        stored_rows_counter.fetch_add(rows.as_array().unwrap().len(), Ordering::SeqCst);
+        (0, String::new())
+    })
+    .await;
+    let api = ApifyClient::with_retry_policy(
+        actor_config(server.url.clone()),
+        RetryPolicy {
+            retries: 3,
+            minimum_delay: Duration::ZERO,
+        },
+        Duration::from_secs(2),
+    )
+    .unwrap();
+
+    assert!(api
+        .push_dataset_items(&[json!({"video_id":"stored-once"})])
+        .await
+        .is_err());
+    assert_eq!(stored_rows.load(Ordering::SeqCst), 1);
+    assert_eq!(server.requests().len(), 1);
 }
 
 #[tokio::test]
