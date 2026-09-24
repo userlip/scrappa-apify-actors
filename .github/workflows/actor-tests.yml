@@ -33,7 +33,6 @@ jobs:
           - path: actors/immobilienscout24-price-insights-scraper
           - path: actors/instagram-post-info-cheapest-0-20-1000-results
           - path: actors/instagram-user-info-cheapest-0-20-1000-results
-          - path: actors/instagram-user-posts-cheapest-0-20-1000-results
           - path: actors/linkedin-search-scraper
           - path: actors/redfin-property-details-scraper
           - path: actors/tiktok-comments-scraper
@@ -91,6 +90,7 @@ jobs:
           - actors/google-news-scraper
           - actors/tiktok-search-scraper
           - actors/linkedin-post-scraper
+          - actors/instagram-user-posts-cheapest-0-20-1000-results
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
