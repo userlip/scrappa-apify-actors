@@ -409,6 +409,11 @@ impl EventBudget {
                 event_price_upper_bounds.insert(event_name.clone(), price_upper_bound);
                 configured_events.insert(event_name.clone());
             }
+            if !configured_events.contains(REVIEW_RESULT_EVENT) {
+                bail!(
+                    "Apify run did not configure the required {REVIEW_RESULT_EVENT} charge event"
+                );
+            }
         }
         let max_total_charge_usd = data
             .pointer("/options/maxTotalChargeUsd")
@@ -749,6 +754,22 @@ mod tests {
             error
                 .to_string()
                 .contains("invalid price for charged event review-result")
+        );
+    }
+
+    #[test]
+    fn missing_required_review_event_fails_closed() {
+        let error = EventBudget::from_run(&ppe_run(
+            1.0,
+            json!({}),
+            json!({"other-event": {"eventPriceUsd": 0.1}}),
+        ))
+        .unwrap_err();
+
+        assert!(
+            error
+                .to_string()
+                .contains("required review-result charge event")
         );
     }
 
