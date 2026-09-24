@@ -83,9 +83,9 @@ impl ApifyClient {
         actor_run_id: &str,
         event_name: &str,
         count: usize,
-    ) -> Result<()> {
+    ) -> Result<usize> {
         if count == 0 {
-            return Ok(());
+            return Ok(0);
         }
         let response = self
             .request(
@@ -101,7 +101,8 @@ impl ApifyClient {
             .await
             .context("Apify event charge request failed")?;
         successful_response(response, "charge business result events").await?;
-        Ok(())
+        // The REST charge endpoint returns `{}` on success; it does not return the SDK's `chargedCount`.
+        Ok(count)
     }
 
     pub async fn set_terminal_status_message(
