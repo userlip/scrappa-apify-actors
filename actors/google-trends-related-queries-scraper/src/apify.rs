@@ -297,12 +297,11 @@ fn affordable_event_count(run: &Value, requested: usize) -> Result<usize> {
         })?,
         RELATED_RESULT_CHARGE_EVENT,
     )?;
-    let dataset_item_price = event_price(
-        events.get(DATASET_ITEM_CHARGE_EVENT).ok_or_else(|| {
-            anyhow!("Apify run did not provide the {DATASET_ITEM_CHARGE_EVENT} event price")
-        })?,
-        DATASET_ITEM_CHARGE_EVENT,
-    )?;
+    let dataset_item_price = events
+        .get(DATASET_ITEM_CHARGE_EVENT)
+        .map(|event| event_price(event, DATASET_ITEM_CHARGE_EVENT))
+        .transpose()?
+        .unwrap_or(0.0);
     let item_price = related_result_price + dataset_item_price;
     if !item_price.is_finite() {
         bail!("Apify run returned invalid charging values");
@@ -533,6 +532,16 @@ mod tests {
     fn combined_related_and_dataset_item_prices_fit_the_cap() {
         let run = run(json!(0.25), json!({}));
         assert_eq!(affordable_event_count(&run, 5).unwrap(), 1);
+    }
+
+    #[test]
+    fn absent_dataset_item_event_does_not_block_related_results() {
+        let mut run = run(json!(0.25), json!({}));
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            .as_object_mut()
+            .unwrap()
+            .remove(DATASET_ITEM_CHARGE_EVENT);
+        assert_eq!(affordable_event_count(&run, 5).unwrap(), 2);
     }
 
     #[test]
