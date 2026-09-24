@@ -230,12 +230,12 @@ fn affordable_dataset_items(
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-    if data
+    let pricing_model = data
         .pointer("/pricingInfo/pricingModel")
         .and_then(Value::as_str)
-        != Some("PAY_PER_EVENT")
-    {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        .ok_or_else(|| anyhow!("Apify run did not provide the pricing model"))?;
+    if pricing_model != "PAY_PER_EVENT" {
+        return Ok(requested);
     }
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
