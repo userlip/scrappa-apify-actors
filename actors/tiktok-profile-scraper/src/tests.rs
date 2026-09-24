@@ -347,11 +347,15 @@ fn extracts_first_profile_only_and_preserves_no_data() {
 }
 
 #[test]
-fn enforces_the_ppe_budget_and_leaves_non_ppe_runs_unmetered() {
+fn enforces_positive_ppe_spending_limits() {
     let at_limit = pricing_run(Some(0.00035), json!({"apify-actor-start": 1}));
     let below_limit = pricing_run(Some(0.00034), json!({"apify-actor-start": 1}));
     assert_eq!(affordable_dataset_items(&at_limit, 1).unwrap(), 1);
     assert_eq!(affordable_dataset_items(&below_limit, 1).unwrap(), 0);
+}
+
+#[test]
+fn leaves_non_ppe_runs_unmetered_and_handles_free_items() {
     assert_eq!(
         affordable_dataset_items(
             &json!({"data":{"pricingInfo":{"pricingModel":"PRICE_PER_RESULT"}}}),
