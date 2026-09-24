@@ -6,7 +6,6 @@
   "version": "1.0",
   "buildTag": "latest",
   "icon": "🔍",
-  "meta": { "templateId": "ts-start" },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },

@@ -7,7 +7,7 @@ Search for businesses on Google Maps at scale. This actor returns Scrappa Google
 - Search Google Maps by natural-language query.
 - Return each business as a separate Apify dataset item.
 - Include rich fields such as `full_address`, coordinates, `business_id`, `place_id`, `phone_numbers`, `photos_sample`, and `opening_hours` when Google exposes them.
-- Save the complete Scrappa API response to the `OUTPUT` key-value store record.
+- Save the full aliased Scrappa API response to the `OUTPUT` key-value store record, including results outside the dataset spending limit.
 - Use cached Scrappa responses by default for faster repeat runs and lower cost.
 - Retry through advanced search with a configurable zoom level after transient simple-search upstream failures.
 
@@ -71,6 +71,8 @@ The actor pushes every item from the Scrappa `items` response array into the def
 - `current_status`
 
 `address` and `phone` are dataset-friendly aliases added by the actor from `full_address` and `phone_numbers`. The original Scrappa fields are preserved.
+
+On pay-per-event runs, Apify charges `apify-default-dataset-item` for each result written to the default dataset. The actor reads the run's event prices, existing event charges, and `maxTotalChargeUsd`, then writes only the affordable prefix of results. The full Scrappa response remains available in `OUTPUT`.
 
 ## Example Dataset Item
 
