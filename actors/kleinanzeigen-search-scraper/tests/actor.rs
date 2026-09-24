@@ -76,7 +76,7 @@ async fn non_ppe_run_preserves_pagination_auth_and_dataset_kv_output() {
 }
 
 #[tokio::test]
-async fn ppe_charges_only_affordable_rows_before_writing_dataset_and_terminal_status() {
+async fn ppe_writes_only_affordable_rows_before_charging_and_terminal_status() {
     let server = MockServer::start(vec![
         input_response(json!({"query": "iphone"})),
         ppe_pricing(0.25, 0),
@@ -91,18 +91,18 @@ async fn ppe_charges_only_affordable_rows_before_writing_dataset_and_terminal_st
     let config = test_config(&server.base_url);
     let client = Client::new();
     let output = run_actor(&client, &config).await.unwrap();
-    assert_eq!(output.value["listings_extracted"], 2);
+    assert_eq!(output.value["listings_extracted"], 1);
     assert!(output
         .status_message
         .as_deref()
         .unwrap()
-        .contains("saving 2 of 3"));
+        .contains("saving 1 of 3"));
     assert_eq!(
         output.value["responses"][0]["response"]["data"]
             .as_array()
             .unwrap()
             .len(),
-        2
+        1
     );
     ApifyClient::new(&client, &config)
         .set_terminal_status_message(output.status_message.as_deref().unwrap())
@@ -114,7 +114,7 @@ async fn ppe_charges_only_affordable_rows_before_writing_dataset_and_terminal_st
     assert_eq!(charge.len(), 1);
     assert_eq!(
         serde_json::from_str::<Value>(&charge[0].body).unwrap(),
-        json!({"eventName": "listing-result", "count": 2})
+        json!({"eventName": "listing-result", "count": 1})
     );
     let key = charge[0].headers.get("idempotency-key").unwrap();
     assert!(key.starts_with("test-run-listing-result-1-"));
@@ -130,7 +130,7 @@ async fn ppe_charges_only_affordable_rows_before_writing_dataset_and_terminal_st
                 .starts_with("/v2/datasets/test-dataset/items")
         })
         .unwrap();
-    assert!(charge_position < dataset_position);
+    assert!(dataset_position < charge_position);
     let dataset = requests_to(&requests, "/v2/datasets/test-dataset/items");
     assert_eq!(
         serde_json::from_str::<Value>(&dataset[0].body)
@@ -138,7 +138,7 @@ async fn ppe_charges_only_affordable_rows_before_writing_dataset_and_terminal_st
             .as_array()
             .unwrap()
             .len(),
-        2
+        1
     );
     let terminal = requests_to(&requests, "/v2/actor-runs/test-run");
     assert_eq!(terminal.last().unwrap().method, "PUT");
@@ -235,13 +235,12 @@ async fn missing_scrappa_key_fails_before_loading_input() {
 }
 
 #[tokio::test]
-async fn dataset_failure_after_ppe_charge_does_not_write_output() {
+async fn dataset_failure_does_not_charge_or_write_output() {
     let server = MockServer::start(vec![
         input_response(json!({"query": "iphone"})),
         ppe_pricing(1.0, 0),
         listing_response(1),
         ppe_pricing(1.0, 0),
-        MockResponse::json(201, json!({})),
         MockResponse::text(500, "dataset unavailable"),
     ])
     .await;
@@ -251,10 +250,7 @@ async fn dataset_failure_after_ppe_charge_does_not_write_output() {
         .to_string()
         .contains("Apify dataset write failed with 500"));
     let requests = server.finish();
-    assert_eq!(
-        requests_to(&requests, "/v2/actor-runs/test-run/charge").len(),
-        1
-    );
+    assert!(requests_to(&requests, "/v2/actor-runs/test-run/charge").is_empty());
     assert_eq!(
         requests_to(&requests, "/v2/datasets/test-dataset/items").len(),
         1

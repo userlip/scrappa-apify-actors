@@ -8,6 +8,7 @@ use url::Url;
 use crate::config::{endpoint_url, ensure_success, response_json, Config};
 
 pub(crate) const LISTING_RESULT_CHARGE_EVENT: &str = "listing-result";
+const DEFAULT_DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 
 pub struct ApifyClient<'a> {
     http: &'a Client,
@@ -123,6 +124,7 @@ impl<'a> ApifyClient<'a> {
 #[derive(Default)]
 pub(super) struct DatasetBudget {
     initial_listing_results: Option<u64>,
+    initial_default_dataset_items: Option<u64>,
     saved_listing_results: u64,
     charge_attempts: u64,
 }
@@ -152,16 +154,42 @@ pub(super) fn affordable_listing_count(
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the listing-result event price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !listing_result_price.is_finite()
-        || listing_result_price < 0.0
-        || !max_charge.is_finite()
-        || max_charge < 0.0
-    {
+    if !listing_result_price.is_finite() || listing_result_price < 0.0 {
         bail!("Apify run returned invalid charging values");
+    }
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => None,
+        Some(value) => {
+            let max_charge = value
+                .as_f64()
+                .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
+            if !max_charge.is_finite() || max_charge < 0.0 {
+                bail!("Apify run returned invalid charging values");
+            }
+            (max_charge > 0.0).then_some(max_charge)
+        }
+    };
+    let Some(max_charge) = max_charge else {
+        return Ok(requested);
+    };
+
+    let default_dataset_item_price = match event_prices.get(DEFAULT_DATASET_ITEM_CHARGE_EVENT) {
+        Some(event) => event
+            .get("eventPriceUsd")
+            .and_then(Value::as_f64)
+            .ok_or_else(|| {
+                anyhow!(
+                    "Apify run did not provide the {DEFAULT_DATASET_ITEM_CHARGE_EVENT} event price"
+                )
+            })?,
+        None => 0.0,
+    };
+    if !default_dataset_item_price.is_finite() || default_dataset_item_price < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+    let price_per_listing = listing_result_price + default_dataset_item_price;
+    if !price_per_listing.is_finite() {
+        bail!("Apify run returned invalid charged totals");
     }
 
     let charged_counts = data
@@ -177,15 +205,31 @@ pub(super) fn affordable_listing_count(
         })
         .transpose()?
         .unwrap_or(0);
+    let current_default_dataset_items = charged_counts
+        .get(DEFAULT_DATASET_ITEM_CHARGE_EVENT)
+        .map(|count| {
+            count.as_u64().ok_or_else(|| {
+                anyhow!("Invalid charged event count for {DEFAULT_DATASET_ITEM_CHARGE_EVENT}")
+            })
+        })
+        .transpose()?
+        .unwrap_or(0);
     let initial_listing_results = *budget
         .initial_listing_results
         .get_or_insert(current_listing_results);
+    let initial_default_dataset_items = *budget
+        .initial_default_dataset_items
+        .get_or_insert(current_default_dataset_items);
     let local_listing_results = initial_listing_results
         .checked_add(budget.saved_listing_results)
         .ok_or_else(|| anyhow!("Listing result count overflowed"))?;
+    let local_default_dataset_items = initial_default_dataset_items
+        .checked_add(budget.saved_listing_results)
+        .ok_or_else(|| anyhow!("Default dataset item count overflowed"))?;
 
     let mut spent = 0.0;
     let mut saw_listing_result_count = false;
+    let mut saw_default_dataset_item_count = false;
     for (event_name, count) in charged_counts {
         let mut count = count
             .as_u64()
@@ -193,6 +237,9 @@ pub(super) fn affordable_listing_count(
         if event_name == LISTING_RESULT_CHARGE_EVENT {
             saw_listing_result_count = true;
             count = count.max(local_listing_results);
+        } else if event_name == DEFAULT_DATASET_ITEM_CHARGE_EVENT {
+            saw_default_dataset_item_count = true;
+            count = count.max(local_default_dataset_items);
         }
         if count == 0 {
             continue;
@@ -211,16 +258,19 @@ pub(super) fn affordable_listing_count(
     if !saw_listing_result_count && local_listing_results > 0 {
         spent += listing_result_price * local_listing_results as f64;
     }
+    if !saw_default_dataset_item_count && local_default_dataset_items > 0 {
+        spent += default_dataset_item_price * local_default_dataset_items as f64;
+    }
     if !spent.is_finite() {
         bail!("Apify run returned invalid charged totals");
     }
-    if listing_result_price == 0.0 {
+    if price_per_listing == 0.0 {
         return Ok(requested);
     }
 
     let tolerance = f64::EPSILON * max_charge.max(1.0);
     Ok((1..=requested)
-        .take_while(|count| spent + *count as f64 * listing_result_price <= max_charge + tolerance)
+        .take_while(|count| spent + *count as f64 * price_per_listing <= max_charge + tolerance)
         .count())
 }
 
@@ -279,9 +329,9 @@ pub(super) async fn push_charged_listings(
             charge_limit_reached: true,
         });
     }
+    apify.push_dataset_items(&items[..saved_count]).await?;
     let idempotency_key = next_charge_idempotency_key(&apify.config.actor_run_id, budget);
     apify.charge_event(saved_count, &idempotency_key).await?;
-    apify.push_dataset_items(&items[..saved_count]).await?;
     budget.saved_listing_results = budget
         .saved_listing_results
         .checked_add(saved_count as u64)
@@ -312,5 +362,57 @@ mod tests {
         assert_eq!(affordable_listing_count(&run, 5, &mut budget).unwrap(), 1);
         budget.saved_listing_results = 2;
         assert_eq!(affordable_listing_count(&run, 5, &mut budget).unwrap(), 0);
+    }
+
+    #[test]
+    fn missing_null_and_zero_limits_are_unbounded() {
+        let missing = json!({"data": {
+            "pricingInfo": {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": {
+                "listing-result": {"eventPriceUsd": 0.1}
+            }}},
+            "options": {},
+            "chargedEventCounts": {}
+        }});
+        let null = json!({"data": {
+            "pricingInfo": {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": {
+                "listing-result": {"eventPriceUsd": 0.1}
+            }}},
+            "options": {"maxTotalChargeUsd": null},
+            "chargedEventCounts": {}
+        }});
+        let zero = json!({"data": {
+            "pricingInfo": {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": {
+                "listing-result": {"eventPriceUsd": 0.1}
+            }}},
+            "options": {"maxTotalChargeUsd": 0},
+            "chargedEventCounts": {}
+        }});
+        for run in [missing, null, zero] {
+            let mut budget = DatasetBudget::default();
+            assert_eq!(affordable_listing_count(&run, 5, &mut budget).unwrap(), 5);
+        }
+    }
+
+    #[test]
+    fn budgets_listing_and_default_dataset_events_with_prior_counts() {
+        let run = json!({"data": {
+            "pricingInfo": {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": {
+                "listing-result": {"eventPriceUsd": 0.1},
+                "apify-default-dataset-item": {"eventPriceUsd": 0.05},
+                "apify-actor-start": {"eventPriceUsd": 0.05}
+            }}},
+            "options": {"maxTotalChargeUsd": 0.6},
+            "chargedEventCounts": {
+                "listing-result": 1,
+                "apify-default-dataset-item": 1,
+                "apify-actor-start": 1
+            }
+        }});
+        let mut budget = DatasetBudget::default();
+
+        assert_eq!(affordable_listing_count(&run, 5, &mut budget).unwrap(), 2);
+
+        budget.saved_listing_results = 1;
+        assert_eq!(affordable_listing_count(&run, 5, &mut budget).unwrap(), 1);
     }
 }

@@ -182,12 +182,14 @@ pub(super) fn ppe_pricing(max_charge: f64, charged: u64) -> MockResponse {
                 "pricingModel": "PAY_PER_EVENT",
                 "pricingPerEvent": {"actorChargeEvents": {
                     "listing-result": {"eventPriceUsd": 0.1},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.05},
                     "apify-actor-start": {"eventPriceUsd": 0.05}
                 }}
             },
             "options": {"maxTotalChargeUsd": max_charge},
             "chargedEventCounts": {
                 "listing-result": charged,
+                "apify-default-dataset-item": 0,
                 "apify-actor-start": 0
             }
         }}),
