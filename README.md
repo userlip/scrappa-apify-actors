@@ -16,27 +16,20 @@ scrappa-apify-actors/
 
 ## Setup
 
+Each actor under `actors/` is a Rust crate with its own `Cargo.toml`, `Cargo.lock`, and Dockerfile. From an actor directory:
+
 ```bash
-# Install pnpm if you don't have it
-npm install -g pnpm
-
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm build
+cargo test --locked
+docker build -f .actor/Dockerfile .
 ```
+
+The root `package.json` retains operational audit scripts; it is not the build system for the actors.
 
 ## Development
 
 ### Running an actor locally
 
-```bash
-cd actors/google-search
-pnpm start:dev
-```
-
-Rust actors have their own `Cargo.toml` and `.actor/Dockerfile`. From the actor directory, run `cargo test --locked` and `docker build -f .actor/Dockerfile .` before publishing. Apify supplies `ACTOR_DEFAULT_KEY_VALUE_STORE_ID`, `ACTOR_DEFAULT_DATASET_ID`, `ACTOR_INPUT_KEY`, and `APIFY_TOKEN` at runtime; a Git push does not deploy source-file Actors. Build a candidate and smoke-test it in Apify before promoting it to `latest`; verify dataset rows, charged-event counts, `OUTPUT`/`FAILURES` records, and low spend limits against the old build. Do not deploy further ports until that billing parity is established.
+Use the actor's focused Cargo tests or its documented Docker smoke fixture. Live runs require Apify-provided storage IDs and token, plus the Scrappa API key. A Git push does not deploy `SOURCE_FILES` Actors: upload a separate candidate build, exercise the prefilled input within five minutes, verify dataset rows and charged-event counts, then move `latest` to that exact build. Do not disable automated QA to mask failures.
 
 ### Auditing scheduled pricing activation
 
@@ -125,24 +118,13 @@ apify push
 
 ### Updating an actor
 
-```bash
-cd actors/google-search
-pnpm build
-apify push
-```
+From the actor directory, run `cargo test --locked` and build its Docker image before uploading. Push with a candidate build tag, verify its run and dataset, then promote the tested build ID to `latest`. Keep the previous build ID available for rollback.
 
 ## Available Actors
 
-This inventory is aligned to the live `TheScrappa` Apify org as of 2026-07-10T11:22:00.000Z. It lists all 82 live `thescrappa` actors. Actor versions use Apify `SOURCE_FILES`; the live metadata does not indicate a Git-linked Apify source.
+This inventory covers the 106 live `thescrappa` Actors and their 106 local source directories as checked on 2026-09-24. All local Actor runtimes are Rust crates. Actor source versions use Apify `SOURCE_FILES`; a repository merge does not deploy them. The historical rows below retain their original pricing and run observations, not an assertion that those old builds are currently live.
 
-Current coverage in this repository:
-- 82 live `thescrappa` actors in Apify
-- 71 public `thescrappa` actors in Apify according to the pricing and secret audits
-- 82 local actor source directories in this repo; all 82 are represented by live Apify actors
-- 0 live actors missing a local source directory here; `google-search-scraper` is represented by the legacy `actors/google-search` directory
-- Pricing audit: 57 public actors have active paid pricing, 14 public actors have future-only paid pricing scheduled, 0 public actors are missing paid pricing, and 0 public actors have overdue active-pricing gaps.
-- Secret audit: all 70 public actors have `SCRAPPA_API_KEY` configured as a secret on their default Actor version.
-- Run-health notes from the 2026-05-30 audit pass: no latest run failures were returned by the all-actor run sweep; stale Apify `UNDER_MAINTENANCE` notices were cleared for `booking-search-scraper` (`BehWN3LEvBxhEiJDF`), `google-videos-scraper` (`kAdTwn5fkBCGKOQUq`), `google-hotels-search-scraper` (`Kc3rfsV2Hif23mctw`), and `youtube-transcript-scraper` (`ztc698cHC09lkCDYE`) after successful cloud run evidence. Google Hotels smoke run `0kc6kUen9F8Z53MAK` succeeded but logged unknown charge event `hotel-result`; local source now avoids the obsolete explicit charge event and relies on configured default dataset item pricing.
+`google-search-scraper` is represented by the legacy `actors/google-search` directory. The Rust migration used candidate builds and prefilled runs with capped spend; Kununu Reviews stays on its previous live build while Scrappa's upstream Kununu anti-bot 503 persists. Validate pricing and maintenance status against the live Apify API before changing either.
 
 Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
@@ -235,6 +217,31 @@ Use [docs/monetization-activation-checklist.md](docs/monetization-activation-che
 | `actors/youtube-api-video-comments` | `youtube-api-video-comments` | `ZT2Z352FLhgqgtMrg` | YouTube Video Comments Scraper | Local source present; live Apify version uses `SOURCE_FILES` | Scheduled 2026-05-17 (`PAY_PER_EVENT`); verify activation |
 | `actors/youtube-transcript-scraper` | `youtube-transcript-scraper` | `ztc698cHC09lkCDYE` | YouTube Transcript Scraper | Local source present; live Apify version uses `SOURCE_FILES`; smoke run `jwH7cRhoY6OMZp9l8` succeeded with 1 dataset item; stale Apify maintenance notice cleared 2026-05-30 | Scheduled 2026-05-19 (`PAY_PER_EVENT`); verify activation |
 
+
+### Actors added since the historical inventory
+
+| Local directory | Apify actor | Actor ID | Title | Source coverage | Pricing follow-up |
+|---|---|---|---|---|---|
+| `actors/booking-hotel-details-scraper` | `booking-hotel-details-scraper` | `8ZePaJAlap4mdN78V` | Booking.com Hotel Details Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/domain-availability-checker` | `domain-availability-checker` | `h2QanwCb13z8BMesx` | Domain Availability Checker | Rust source present | Verify live pricing before changing it |
+| `actors/google-finance-indices-scraper` | `google-finance-indices-scraper` | `iArTP4r7dSglECf1f` | Google Finance Indices Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/google-hotels-autocomplete-scraper` | `google-hotels-autocomplete-scraper` | `xia6FSMyeuCxEu7cu` | Google Hotels Autocomplete Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/google-translate-scraper` | `google-translate-scraper` | `Ngzco8X5Z5Qz49zvH` | Google Translate Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/immobilienscout24-locations-scraper` | `immobilienscout24-locations-scraper` | `GfUpTPe50dbtzt6Cb` | ImmobilienScout24 Location Autocomplete | Rust source present | Verify live pricing before changing it |
+| `actors/immobilienscout24-price-insights-scraper` | `immobilienscout24-price-insights-scraper` | `gw1ZWMNQMBu0dGUnz` | ImmobilienScout24 Price Insights Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/jameda-doctor-details-scraper` | `jameda-doctor-details-scraper` | `f3yuncFhgFusn3oRI` | Jameda Doctor Details Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/kununu-jobs-scraper` | `kununu-jobs-scraper` | `WlWaDQRQn6Mv5jVdi` | Kununu Jobs Scraper ($0.30/1k results) | Rust source present | Verify live pricing before changing it |
+| `actors/linkedin-job-details-scraper` | `linkedin-job-details-scraper` | `nnhijBaERF1aPtw7J` | LinkedIn Job Details Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/linkedin-search-scraper` | `linkedin-search-scraper` | `jGkqg68Hqx9nWDenM` | LinkedIn Search Scraper ($0.30/1k results) | Rust source present | Verify live pricing before changing it |
+| `actors/startpage-search-scraper` | `startpage-search-scraper` | `YL4VFRD3clscCfOLc` | Startpage Search Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/tiktok-challenge-details-scraper` | `tiktok-challenge-details-scraper` | `bEajaru9WVbLA0YBh` | TikTok Hashtag & Challenge Details Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/tiktok-challenge-posts-scraper` | `tiktok-challenge-posts-scraper` | `CVaJEgPjl3jWKbm71` | TikTok Hashtag Videos Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/tiktok-challenge-search-scraper` | `tiktok-challenge-search-scraper` | `MM5bzu7V8yORRFTqW` | TikTok Challenge Search Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/tiktok-music-posts-scraper` | `tiktok-music-posts-scraper` | `wzEBOBvzGVv5qrpLB` | TikTok Music Posts Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/trustedshops-reviews-scraper` | `trustedshops-reviews-scraper` | `L5tTNPlxeCTlFUUjl` | TrustedShops Reviews Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/trustpilot-company-details-scraper` | `trustpilot-company-details-scraper` | `HUWnflZ9OPGnNujNH` | Trustpilot Company Details Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/vinted-item-details-scraper` | `vinted-item-details-scraper` | `nA0kqXK4aSTiOHpQd` | Vinted Item Details Scraper | Rust source present | Verify live pricing before changing it |
+| `actors/vinted-user-items-scraper` | `vinted-user-items-scraper` | `GLc2eaPsRYtwajL0D` | Vinted User Items Scraper | Rust source present | Verify live pricing before changing it |
 ## API Key
 
 All actors require a Scrappa API key. Get yours at [https://scrappa.co](https://scrappa.co).
