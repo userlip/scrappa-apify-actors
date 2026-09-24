@@ -1,6 +1,6 @@
 # Google Finance Search Scraper
 
-Search Google Finance for ticker and finance instrument discovery before running quote or historical-price lookups. This actor is a thin Scrappa-powered wrapper around Scrappa's `/api/google-finance/search` endpoint: Apify validates input, calls Scrappa, and writes one dataset item per matched finance result.
+Search Google Finance for ticker and finance instrument discovery before running quote or historical-price lookups. This Rust actor is a thin Scrappa-powered wrapper around Scrappa's `/api/google-finance/search` endpoint: Apify validates input, calls Scrappa, and writes one dataset item per matched finance result.
 
 ## What you get
 
@@ -66,6 +66,8 @@ The dataset contains one item per finance search result:
 ```
 
 Queries with no matches are logged as zero-result queries and do not fail the run.
+
+On pay-per-event runs, each saved result is charged as `finance-search-result`. The actor stops at the configured run budget and reports when it saves only part of a query's results.
 
 ## Notes
 
