@@ -58,6 +58,10 @@ Each TikTok hashtag post is saved as one dataset item:
 
 The full API response, including pagination metadata, is saved to `OUTPUT`.
 
+## Pay per event budget
+
+On pay-per-event runs with a positive `maxTotalChargeUsd`, the actor reads event prices and already charged event counts, then writes only the dataset rows that fit the remaining run budget. Non-pay-per-event runs and pay-per-event runs with a zero, null, or missing spending limit are uncapped and write all rows. If a positive cap allows no rows, the actor still stores the successful raw Scrappa response in `OUTPUT`. Invalid or missing pricing data fails a capped pay-per-event run before dataset rows are written.
+
 ## Support
 
 For higher-volume usage or direct API access, use Scrappa at https://scrappa.co.
