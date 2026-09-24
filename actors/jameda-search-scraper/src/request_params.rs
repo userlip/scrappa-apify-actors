@@ -363,10 +363,7 @@ mod tests {
             .unwrap(),
         )
         .unwrap();
-        assert_eq!(
-            schema["anyOf"],
-            json!([{"required":["searches"]},{"required":["q"]}])
-        );
+        assert!(schema.get("anyOf").is_none());
         assert_eq!(
             schema["properties"]["searches"]["prefill"],
             json!([

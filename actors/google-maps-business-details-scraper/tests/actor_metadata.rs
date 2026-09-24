@@ -15,8 +15,7 @@ fn preserves_input_schema_and_prefill() {
     let schema = read_json(".actor/input_schema.json");
 
     assert_eq!(schema["schemaVersion"], 1);
-    assert_eq!(schema["anyOf"][0]["required"][0], "business_ids");
-    assert_eq!(schema["anyOf"][1]["required"][0], "business_id");
+    assert!(schema.get("anyOf").is_none());
     assert_eq!(schema["properties"]["business_ids"]["maxItems"], 10);
     assert_eq!(
         schema["properties"]["business_ids"]["prefill"][0],
