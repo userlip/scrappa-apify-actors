@@ -159,6 +159,12 @@ async fn send_apify_request(
     .await
 }
 
+async fn send_apify_request_once(
+    build_request: impl FnOnce() -> RequestBuilder,
+) -> std::result::Result<Response, reqwest::Error> {
+    build_request().timeout(APIFY_REQUEST_TIMEOUT).send().await
+}
+
 async fn send_request_with_retries(
     mut build_request: impl FnMut() -> RequestBuilder,
     timeout: Duration,
@@ -258,7 +264,7 @@ async fn fetch_suggestions_with_timeout(
 struct DatasetBudget {
     dataset_item_price_usd: f64,
     charged_usd: f64,
-    max_total_charge_usd: f64,
+    max_total_charge_usd: Option<f64>,
 }
 
 impl DatasetBudget {
@@ -283,15 +289,19 @@ impl DatasetBudget {
             .and_then(|event| event.get("eventPriceUsd"))
             .and_then(Value::as_f64)
             .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-        let max_total_charge_usd = data
-            .pointer("/options/maxTotalChargeUsd")
-            .and_then(Value::as_f64)
-            .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-        if !dataset_item_price_usd.is_finite()
-            || dataset_item_price_usd < 0.0
-            || !max_total_charge_usd.is_finite()
-            || max_total_charge_usd < 0.0
-        {
+        let max_total_charge_usd = match data.pointer("/options/maxTotalChargeUsd") {
+            None | Some(Value::Null) => None,
+            Some(value) => {
+                let max_total_charge_usd = value
+                    .as_f64()
+                    .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
+                if !max_total_charge_usd.is_finite() || max_total_charge_usd < 0.0 {
+                    bail!("Apify run returned an invalid spending limit");
+                }
+                (max_total_charge_usd > 0.0).then_some(max_total_charge_usd)
+            }
+        };
+        if !dataset_item_price_usd.is_finite() || dataset_item_price_usd < 0.0 {
             bail!("Apify run returned invalid charging values");
         }
 
@@ -329,14 +339,17 @@ impl DatasetBudget {
     }
 
     fn affordable_items(&self, requested: usize) -> usize {
+        let Some(max_total_charge_usd) = self.max_total_charge_usd else {
+            return requested;
+        };
         if self.dataset_item_price_usd == 0.0 {
             return requested;
         }
-        let tolerance = f64::EPSILON * self.max_total_charge_usd.max(1.0);
+        let tolerance = f64::EPSILON * max_total_charge_usd.max(1.0);
         (1..=requested)
             .take_while(|count| {
                 self.charged_usd + *count as f64 * self.dataset_item_price_usd
-                    <= self.max_total_charge_usd + tolerance
+                    <= max_total_charge_usd + tolerance
             })
             .count()
     }
@@ -378,7 +391,7 @@ async fn push_dataset_items(
         &config.apify_api_base_url,
         &["v2", "datasets", &config.default_dataset_id, "items"],
     )?;
-    let response = send_apify_request(|| {
+    let response = send_apify_request_once(|| {
         client
             .post(url.clone())
             .bearer_auth(&config.apify_token)
@@ -523,6 +536,7 @@ mod tests {
     struct MockResponse {
         status: u16,
         body: String,
+        drop_connection: bool,
     }
 
     struct MockServer {
@@ -640,6 +654,9 @@ mod tests {
     }
 
     fn write_response(stream: &mut TcpStream, response: MockResponse) -> std::io::Result<()> {
+        if response.drop_connection {
+            return Ok(());
+        }
         let reason = match response.status {
             200 => "OK",
             201 => "Created",
@@ -675,6 +692,7 @@ mod tests {
         MockResponse {
             status,
             body: body.to_string(),
+            drop_connection: false,
         }
     }
 
@@ -839,6 +857,90 @@ mod tests {
         assert_eq!(budget.affordable_items(10), 2);
     }
 
+    #[test]
+    fn pay_per_event_budget_treats_missing_null_and_zero_spending_limits_as_unlimited() {
+        let mut run = json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.1}
+                    }}
+                },
+                "chargedEventCounts": {"apify-default-dataset-item": 7}
+            }
+        });
+
+        for options in [
+            json!({}),
+            json!({"maxTotalChargeUsd": null}),
+            json!({"maxTotalChargeUsd": 0}),
+        ] {
+            run["data"]["options"] = options;
+            let budget = DatasetBudget::from_run(&run).unwrap().unwrap();
+
+            assert_eq!(budget.max_total_charge_usd, None);
+            assert_eq!(budget.affordable_items(5), 5);
+        }
+    }
+
+    #[test]
+    fn non_pay_per_event_runs_do_not_require_event_budget_fields() {
+        let run = json!({"data": {"pricingInfo": {"pricingModel": "PAY_PER_RUN"}}});
+
+        assert!(DatasetBudget::from_run(&run).unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn dataset_append_is_not_replayed_when_the_response_is_lost() {
+        let post_attempts = Arc::new(AtomicUsize::new(0));
+        let attempts = Arc::clone(&post_attempts);
+        let apify = MockServer::start(move |request| {
+            match (request.method.as_str(), request.target.as_str()) {
+                ("GET", "/v2/actor-runs/run") => json_response(
+                    200,
+                    json!({"data": {"pricingInfo": {"pricingModel": "PAY_PER_RUN"}}}),
+                ),
+                ("POST", "/v2/datasets/dataset/items") => {
+                    if attempts.fetch_add(1, Ordering::Relaxed) == 0 {
+                        MockResponse {
+                            status: 0,
+                            body: String::new(),
+                            drop_connection: true,
+                        }
+                    } else {
+                        MockResponse {
+                            status: 201,
+                            body: String::new(),
+                            drop_connection: false,
+                        }
+                    }
+                }
+                _ => json_response(400, json!({"message": "Unexpected Apify request"})),
+            }
+        });
+        let config = config(
+            apify.base_url.clone(),
+            Url::parse("https://scrappa.co/api").unwrap(),
+        );
+
+        let error = push_dataset_items(&Client::new(), &config, &[json!({"name": "Times Square"})])
+            .await
+            .unwrap_err();
+
+        assert!(error.to_string().contains("Apify dataset write failed"));
+        let requests = apify.requests();
+        let dataset_requests = requests
+            .iter()
+            .filter(|request| request.method == "POST")
+            .collect::<Vec<_>>();
+        assert_eq!(dataset_requests.len(), 1);
+        assert_eq!(
+            serde_json::from_str::<Value>(&dataset_requests[0].body).unwrap(),
+            json!([{"name": "Times Square"}])
+        );
+    }
+
     #[tokio::test]
     async fn actor_preserves_auth_dataset_rows_output_and_pay_per_event_budget() {
         let apify =
@@ -869,10 +971,12 @@ mod tests {
                     ("POST", "/v2/datasets/dataset/items") => MockResponse {
                         status: 201,
                         body: String::new(),
+                        drop_connection: false,
                     },
                     ("PUT", "/v2/key-value-stores/store/records/OUTPUT") => MockResponse {
                         status: 201,
                         body: String::new(),
+                        drop_connection: false,
                     },
                     _ => json_response(400, json!({"message": "Unexpected Apify request"})),
                 },
@@ -892,6 +996,7 @@ mod tests {
                 MockResponse {
                     status: 200,
                     body: response_text.clone(),
+                    drop_connection: false,
                 }
             } else {
                 json_response(400, json!({"message": "Unexpected Scrappa request"}))
