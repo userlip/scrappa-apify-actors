@@ -364,7 +364,7 @@ impl ChargeBudget {
             return 0;
         }
 
-        let count = ((remaining / price) * 10_000.0).round() / 10_000.0;
+        let count = remaining / price;
         if count >= usize::MAX as f64 {
             usize::MAX
         } else {
@@ -416,6 +416,21 @@ mod tests {
         assert!(pricing.is_pay_per_event());
         assert!(pricing.can_write_result());
         assert!(!pricing.event_limit_reached());
+    }
+
+    #[test]
+    fn does_not_round_up_combined_capacity_below_one_result() {
+        let pricing = ActorPricing::from_run(&run(
+            json!({
+                PRICE_INSIGHT_RESULT_EVENT: {"eventPriceUsd": 0.0004},
+                DEFAULT_DATASET_ITEM_EVENT: {"eventPriceUsd": 0.0001}
+            }),
+            json!({}),
+            Some(json!(0.00049999)),
+        ))
+        .unwrap();
+
+        assert!(!pricing.can_write_result());
     }
 
     #[test]
