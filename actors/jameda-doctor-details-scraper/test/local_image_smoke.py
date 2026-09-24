@@ -18,6 +18,8 @@ class MockState:
     def __init__(self):
         self.dataset_items = []
         self.charges = []
+        self.ppe_records = {}
+        self.ppe_operations = []
         self.output = None
         self.status = None
         self.scrappa_requests = []
@@ -52,6 +54,13 @@ def make_handler(state, is_scrappa):
 
             if parsed.path == "/api/v2/key-value-stores/smoke-store/records/INPUT":
                 return json_response(self, 200, {"doctorUrl": DOCTOR_URL})
+            if parsed.path == "/api/v2/datasets/smoke-dataset/items":
+                return json_response(self, 200, state.dataset_items)
+            if parsed.path.startswith("/api/v2/key-value-stores/smoke-store/records/PPE_RESULT_"):
+                key = parsed.path.rsplit("/", 1)[-1]
+                if key not in state.ppe_records:
+                    return json_response(self, 404, {"message": "record not found"})
+                return json_response(self, 200, state.ppe_records[key])
             if parsed.path == "/api/v2/actor-runs/smoke-run":
                 return json_response(self, 200, {"data": {
                     "pricingInfo": {
@@ -70,9 +79,11 @@ def make_handler(state, is_scrappa):
             body = self.read_body()
             if self.path == "/api/v2/datasets/smoke-dataset/items":
                 state.dataset_items.append(body)
+                state.ppe_operations.append("dataset")
                 return json_response(self, 201, {})
             if self.path == "/api/v2/actor-runs/smoke-run/charge":
                 state.charges.append((body, self.headers.get("Idempotency-Key")))
+                state.ppe_operations.append("charge")
                 return json_response(self, 201, {})
             return json_response(self, 404, {"message": "unknown Apify POST path"})
 
@@ -80,6 +91,10 @@ def make_handler(state, is_scrappa):
             body = self.read_body()
             if self.path == "/api/v2/key-value-stores/smoke-store/records/OUTPUT":
                 state.output = body
+                return json_response(self, 201, {})
+            if self.path.startswith("/api/v2/key-value-stores/smoke-store/records/PPE_RESULT_"):
+                key = self.path.rsplit("/", 1)[-1]
+                state.ppe_records[key] = body
                 return json_response(self, 201, {})
             if self.path == "/api/v2/actor-runs/smoke-run":
                 state.status = body
@@ -186,6 +201,8 @@ def main():
             {"eventName": "doctor-profile-result", "count": 1},
             "smoke-run-doctor-profile-result-1",
         )], state.charges
+        assert state.ppe_operations == ["charge", "dataset"], state.ppe_operations
+        assert state.ppe_records["PPE_RESULT_0001"]["status"] == "saved", state.ppe_records
         assert state.output["doctors_requested"] == 1, state.output
         assert state.output["doctors_saved"] == 1, state.output
         assert state.output["doctors_failed"] == 0, state.output
