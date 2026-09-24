@@ -1,6 +1,6 @@
 # Google Finance Markets Scraper
 
-Scrape Google Finance market movers, trend rows, and finance news for market monitoring, watchlist enrichment, index dashboards, and trading research workflows. The actor wraps Scrappa's `/api/google-finance/markets` endpoint and writes one Apify dataset item per market row or news result.
+Scrape Google Finance market movers, trend rows, and finance news for market monitoring, watchlist enrichment, index dashboards, and trading research workflows. This standalone Rust actor wraps Scrappa's `/api/google-finance/markets` endpoint and writes one Apify dataset item per market row or news result.
 
 ## What you get
 
@@ -87,3 +87,11 @@ Trend responses can also include finance news rows:
 ## Notes
 
 Use `trend` to choose the market view. Trend responses include market rows and may include related finance news. For higher-volume Google Finance data extraction or direct API access, use Scrappa's Google Finance API at `https://scrappa.co/api/google-finance/markets`.
+
+The markets endpoint returns a single response for the selected view, so the actor makes one upstream request per run. Trend result groups, overview sections, and news results in that response are each mapped to dataset rows.
+
+## Development
+
+Run the actor's focused Rust tests with `cargo test --locked` from this directory. Build the local image with `docker build -f .actor/Dockerfile -t google-finance-markets-scraper .`.
+
+The actor reads its input from the default key-value store's `INPUT` record and writes raw upstream JSON to `OUTPUT`. It calls `https://scrappa.co/api/google-finance/markets` with the `X-API-Key` header, retries transient failures up to three attempts, and applies a 60-second timeout to each Scrappa request.
