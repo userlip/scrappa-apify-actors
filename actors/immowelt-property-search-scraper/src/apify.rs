@@ -112,9 +112,9 @@ impl ApifyClient {
             return Ok(0);
         }
 
+        self.write_dataset(dataset_id, &items[..limit]).await?;
         self.charge_event(run_id, PROPERTY_RESULT_EVENT, limit)
             .await?;
-        self.write_dataset(dataset_id, &items[..limit]).await?;
         Ok(limit)
     }
 
@@ -429,7 +429,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn ppe_run_charges_only_rows_that_fit_the_remaining_budget() {
+    async fn ppe_run_writes_and_charges_only_rows_that_fit_the_remaining_budget() {
         let run = pay_per_event_run(0.0005, json!({"apify-actor-start": 1})).to_string();
         let server = MockServer::start(vec![
             response(200, &run),
@@ -450,22 +450,69 @@ mod tests {
         assert_eq!(requests.len(), 3);
         assert_eq!(
             request_line(&requests[1]),
-            "POST /v2/actor-runs/test-run/charge HTTP/1.1"
-        );
-        assert!(header(&requests[1], "idempotency-key").is_some());
-        let charge = serde_json::from_str::<Value>(request_body(&requests[1])).unwrap();
-        assert_eq!(charge, json!({"eventName": "property-result", "count": 1}));
-        assert_eq!(
-            request_line(&requests[2]),
             "POST /v2/datasets/test-dataset/items HTTP/1.1"
         );
         assert_eq!(
-            serde_json::from_str::<Value>(request_body(&requests[2])).unwrap(),
+            request_line(&requests[2]),
+            "POST /v2/actor-runs/test-run/charge HTTP/1.1"
+        );
+        assert!(header(&requests[2], "idempotency-key").is_some());
+        let charge = serde_json::from_str::<Value>(request_body(&requests[2])).unwrap();
+        assert_eq!(charge, json!({"eventName": "property-result", "count": 1}));
+        assert_eq!(
+            serde_json::from_str::<Value>(request_body(&requests[1])).unwrap(),
             json!([{"id": 1}])
         );
         assert!(requests
             .iter()
             .all(|request| has_test_bearer_token(request)));
+    }
+
+    #[tokio::test]
+    async fn ppe_run_does_not_charge_when_dataset_write_fails() {
+        let run = pay_per_event_run(1.0, json!({})).to_string();
+        let server = MockServer::start(vec![
+            response(200, &run),
+            response(500, "dataset write failed"),
+        ]);
+        let client = ApifyClient::new(server.base_url.clone(), "test-token".into()).unwrap();
+
+        assert!(client
+            .push_data("test-run", "test-dataset", &[json!({"id": 1})])
+            .await
+            .is_err());
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(
+            request_line(&requests[1]),
+            "POST /v2/datasets/test-dataset/items HTTP/1.1"
+        );
+        assert!(requests.iter().all(|request| {
+            request_line(request) != "POST /v2/actor-runs/test-run/charge HTTP/1.1"
+        }));
+    }
+
+    #[tokio::test]
+    async fn ppe_run_with_exhausted_budget_does_not_write_or_charge() {
+        let run = pay_per_event_run(0.0001, json!({"apify-actor-start": 1})).to_string();
+        let server = MockServer::start(vec![response(200, &run)]);
+        let client = ApifyClient::new(server.base_url.clone(), "test-token".into()).unwrap();
+
+        assert_eq!(
+            client
+                .push_data("test-run", "test-dataset", &[json!({"id": 1})])
+                .await
+                .unwrap(),
+            0
+        );
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(
+            request_line(&requests[0]),
+            "GET /v2/actor-runs/test-run HTTP/1.1"
+        );
     }
 
     struct MockResponse {
