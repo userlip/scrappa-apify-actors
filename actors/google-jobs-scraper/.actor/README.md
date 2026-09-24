@@ -1,21 +1,13 @@
 # Google Jobs Scraper
 
-Search job listings indexed by Google Jobs through the Scrappa Google Jobs API.
-
-## Features
-
-- Job listings with title, company, location, source, description, and metadata
-- Country, language, Google domain, and encoded-location targeting
-- Google Jobs filter token support
-- Next-page token support for pagination
-- Full raw API response saved to the key-value store
+Search Google Jobs listings through the Scrappa Google Jobs API. The actor forwards the supplied search and pagination parameters, retries transient Scrappa failures, and uses the Scrappa Indeed endpoint as a fallback for a failed first-page Google Jobs request.
 
 ## Input
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `q` | string | Conditionally | Job search query. Required unless `next_page_token` is provided. Defaults to `nurse jobs in Austin` when the actor is started with empty or placeholder input. |
-| `next_page_token` | string | Conditionally | Token from a previous response to fetch the next page. |
+| `q` | string | Conditionally | Job search query. Required unless `next_page_token` is provided. Empty input uses the prefilled `nurse jobs in Austin` search. |
+| `next_page_token` | string | Conditionally | Token from a previous Google Jobs response. |
 | `gl` | string | No | Two-letter country code, for example `us`, `uk`, or `de`. |
 | `hl` | string | No | Two-letter language code, for example `en`, `de`, or `es`. |
 | `google_domain` | string | No | Google domain to query, for example `google.com` or `google.de`. |
@@ -25,44 +17,17 @@ Search job listings indexed by Google Jobs through the Scrappa Google Jobs API.
 
 ## Output
 
-### Dataset
+Each job from the response is written as a separate dataset item. The full upstream response is saved under `OUTPUT` in the default key-value store, including filters and pagination tokens.
 
-Each job in the `jobs` array is saved to the dataset.
+The actor preserves pay-per-event charging for default dataset items and checks the run’s spending limit before writing results. If only part of the response fits the remaining budget, it saves the affordable rows while retaining the full response under `OUTPUT`.
 
-```json
-{
-  "title": "Software Engineer",
-  "company": "Example Corp",
-  "location": "New York, NY",
-  "via": "LinkedIn",
-  "description": "Build and maintain production systems...",
-  "job_id": "example-job-id"
-}
+## Local development
+
+The production actor is Rust. Run its focused tests with `cargo test --locked`. The actor test workflow currently calls `npm test` for this path, so the actor-local npm script delegates to the same Rust tests and uses the Rust 1.90 Docker image when Cargo is not installed.
+
+Build and smoke the production image against local mock services:
+
+```sh
+docker build -t google-jobs-scraper:local -f .actor/Dockerfile .
+python3 test/local_image_smoke.py google-jobs-scraper:local
 ```
-
-### Key-Value Store
-
-The complete Scrappa response is saved to the `OUTPUT` key, including filters and pagination tokens when returned.
-
-```json
-{
-  "jobs": [],
-  "filters": [],
-  "next_page_token": "..."
-}
-```
-
-## Example
-
-```json
-{
-  "q": "nurse jobs in Austin",
-  "gl": "us",
-  "hl": "en",
-  "google_domain": "google.com"
-}
-```
-
-## Support
-
-For issues or questions, contact us through Apify.
