@@ -355,6 +355,64 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn non_pay_per_event_runs_save_all_results_and_preserve_output() {
+        let input = r#"{"q":"coffee"}"#;
+        let response = r#"[
+            {"position":1,"title":"Coffee"},
+            {"position":2,"title":"Beans"},
+            {"position":3,"title":"Cup"}
+        ]"#;
+        let apify_server = MockServer::start(vec![
+            MockResponse {
+                status: 200,
+                body: input.into(),
+            },
+            MockResponse {
+                status: 200,
+                body: r#"{"data":{"pricingInfo":{"pricingModel":"FREE"}}}"#.into(),
+            },
+            MockResponse {
+                status: 201,
+                body: String::new(),
+            },
+            MockResponse {
+                status: 200,
+                body: String::new(),
+            },
+        ]);
+        let scrappa_server = MockServer::start(vec![MockResponse {
+            status: 200,
+            body: response.into(),
+        }]);
+        let apify = ApifyClient::new("test-token", &apify_server.base_url).unwrap();
+        let scrappa = Arc::new(
+            ScrappaClient::with_timeout(
+                "test-key",
+                format!("{}/api", scrappa_server.base_url),
+                1_000,
+            )
+            .unwrap(),
+        );
+
+        run_actor(&apify, scrappa, "store", "dataset", "run", "INPUT")
+            .await
+            .unwrap();
+
+        let apify_requests = apify_server.requests();
+        assert_eq!(apify_requests.len(), 4);
+        let (method, path, body) = request_parts(&apify_requests[2]);
+        assert_eq!((method, path), ("POST", "/v2/datasets/dataset/items"));
+        assert_eq!(serde_json::from_str::<Value>(body).unwrap().as_array().unwrap().len(), 3);
+        let (_, path, body) = request_parts(&apify_requests[3]);
+        assert_eq!(path, "/v2/key-value-stores/store/records/OUTPUT");
+        assert_eq!(serde_json::from_str::<Value>(body).unwrap(), json!([
+            {"position":1,"title":"Coffee"},
+            {"position":2,"title":"Beans"},
+            {"position":3,"title":"Cup"}
+        ]));
+    }
+
+    #[tokio::test]
     async fn batch_runs_write_each_result_and_store_ordered_request_summaries() {
         let apify_server = MockServer::start(vec![
             MockResponse {

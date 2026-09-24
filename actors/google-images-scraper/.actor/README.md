@@ -9,7 +9,8 @@ Search Google Images and export dataset-ready image metadata for product researc
 - Filters for size, type, color, aspect ratio, safe search, language, country, and time-based `tbs`
 - Batch input for up to 50 deduplicated searches in one Actor run
 - Single-query Scrappa response saved to key-value store record `OUTPUT`; batch runs save request summaries there
-- Dataset and single-query output rows are capped to the remaining `PAY_PER_EVENT` budget
+- `PAY_PER_EVENT` dataset rows and single-query output are capped to the remaining combined charge budget
+- Other pricing modes publish all returned dataset items without issuing a custom charge event
 
 ## Input
 

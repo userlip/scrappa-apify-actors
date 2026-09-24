@@ -5,6 +5,7 @@ use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::Value;
 
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
+const PAY_PER_EVENT_PRICING_MODEL: &str = "PAY_PER_EVENT";
 
 pub struct ApifyClient {
     client: Client,
@@ -125,13 +126,27 @@ fn affordable_dataset_items(run: &Value) -> Result<usize> {
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-    if data
+    let pricing_model = data
         .pointer("/pricingInfo/pricingModel")
         .and_then(Value::as_str)
-        != Some("PAY_PER_EVENT")
-    {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+    if pricing_model != PAY_PER_EVENT_PRICING_MODEL {
+        return Ok(usize::MAX);
     }
+
+    let Some(max_charge) = data
+        .pointer("/options/maxTotalChargeUsd")
+        .filter(|value| !value.is_null())
+    else {
+        return Ok(usize::MAX);
+    };
+    let max_charge = max_charge
+        .as_f64()
+        .ok_or_else(|| anyhow!("Apify run returned invalid charging values"))?;
+    if !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
@@ -171,15 +186,6 @@ fn affordable_dataset_items(run: &Value) -> Result<usize> {
         bail!("Apify run returned invalid charged totals");
     }
 
-    let Some(max_charge) = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-    else {
-        return Ok(usize::MAX);
-    };
-    if !max_charge.is_finite() || max_charge < 0.0 {
-        bail!("Apify run returned invalid charging values");
-    }
     if item_price == 0.0 {
         return Ok(usize::MAX);
     }
@@ -319,14 +325,64 @@ mod tests {
     }
 
     #[test]
-    fn refuses_to_write_unbudgeted_rows_for_non_pay_per_event_runs() {
-        let error =
-            affordable_dataset_items(&json!({"data":{"pricingInfo":{"pricingModel":"FREE"}}}))
-                .unwrap_err();
+    fn non_pay_per_event_runs_have_no_dataset_item_budget_limit() {
+        for pricing_model in ["FREE", "FLAT_PRICE_PER_MONTH", "PRICE_PER_DATASET_ITEM"] {
+            let run = json!({"data":{"pricingInfo":{"pricingModel":pricing_model}}});
+            assert_eq!(affordable_dataset_items(&run).unwrap(), usize::MAX);
+        }
+    }
+
+    #[test]
+    fn pay_per_event_dataset_budget_handles_absent_null_zero_and_positive_caps() {
+        let mut run: Value = serde_json::from_str(RUN_INFO).unwrap();
+
+        run.pointer_mut("/data/options")
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+        assert_eq!(affordable_dataset_items(&run).unwrap(), usize::MAX);
+
+        run["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+        assert_eq!(affordable_dataset_items(&run).unwrap(), usize::MAX);
+
+        run["data"]["options"]["maxTotalChargeUsd"] = json!(0.0);
+        assert_eq!(affordable_dataset_items(&run).unwrap(), 0);
+
+        run["data"]["options"]["maxTotalChargeUsd"] = json!(0.21);
+        assert_eq!(affordable_dataset_items(&run).unwrap(), 2);
+    }
+
+    #[tokio::test]
+    async fn writes_unbounded_non_pay_per_event_rows_without_a_custom_charge_request() {
+        let server = MockServer::start(vec![
+            MockResponse {
+                status: 200,
+                body: r#"{"data":{"pricingInfo":{"pricingModel":"FREE"}}}"#.into(),
+            },
+            MockResponse {
+                status: 201,
+                body: String::new(),
+            },
+        ]);
+        let client = ApifyClient::new("test-token", &server.base_url).unwrap();
+        let mut budget = client.dataset_item_budget("run").await.unwrap();
+        assert_eq!(budget, usize::MAX);
+
+        let items = [json!({"id":1}), json!({"id":2}), json!({"id":3})];
         assert_eq!(
-            error.to_string(),
-            "Apify run is not configured for pay-per-event pricing"
+            client
+                .push_data("dataset", &items, &mut budget)
+                .await
+                .unwrap(),
+            items.len()
         );
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 2);
+        let (method, path, body) = request_parts(&requests[1]);
+        assert_eq!((method, path), ("POST", "/v2/datasets/dataset/items"));
+        assert_eq!(serde_json::from_str::<Value>(body).unwrap(), json!(items));
     }
 
     fn request_parts(request: &str) -> (&str, &str, &str) {
