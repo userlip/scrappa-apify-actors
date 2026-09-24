@@ -34,6 +34,7 @@ impl MockServer {
                 let reason = match status {
                     200 => "OK",
                     201 => "Created",
+                    404 => "Not Found",
                     401 => "Unauthorized",
                     429 => "Too Many Requests",
                     500 => "Internal Server Error",
@@ -394,6 +395,7 @@ async fn scrappa_client_retries_transient_status_and_preserves_headers_and_query
 #[tokio::test]
 async fn actor_writes_dataset_and_raw_kv_output_for_non_ppe_runs() {
     let server = MockServer::start(vec![
+        (404, String::new()),
         mock_response(
             200,
             run_response(
@@ -419,29 +421,33 @@ async fn actor_writes_dataset_and_raw_kv_output_for_non_ppe_runs() {
     run_actor(&http, &config).await.unwrap();
 
     let requests = server.finish();
-    assert_eq!(requests.len(), 5);
-    assert_eq!(request_target(&requests[0]), "/v2/actor-runs/test-run");
+    assert_eq!(requests.len(), 6);
     assert_eq!(
-        request_target(&requests[1]),
+        request_target(&requests[0]),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+    assert_eq!(request_target(&requests[1]), "/v2/actor-runs/test-run");
+    assert_eq!(
+        request_target(&requests[2]),
         "/v2/key-value-stores/store-id/records/INPUT"
     );
     assert_eq!(
-        requests[0].headers["authorization"],
+        requests[1].headers["authorization"],
         "Bearer apify-test-token"
     );
     assert_eq!(
-        request_target(&requests[3]),
+        request_target(&requests[4]),
         "/v2/datasets/dataset-id/items"
     );
-    assert_eq!(requests[3].method, "POST");
-    let rows: Value = serde_json::from_str(&requests[3].body).unwrap();
+    assert_eq!(requests[4].method, "POST");
+    let rows: Value = serde_json::from_str(&requests[4].body).unwrap();
     assert_eq!(rows.as_array().unwrap().len(), 2);
     assert_eq!(rows[1]["position"], 2);
     assert_eq!(
-        request_target(&requests[4]),
+        request_target(&requests[5]),
         "/v2/key-value-stores/store-id/records/OUTPUT"
     );
-    let output: Value = serde_json::from_str(&requests[4].body).unwrap();
+    let output: Value = serde_json::from_str(&requests[5].body).unwrap();
     assert_eq!(output["suggestion_count"], 2);
     assert_eq!(output["saved_suggestion_count"], 2);
     assert_eq!(output["charge_limit_reached"], false);
@@ -451,6 +457,7 @@ async fn actor_writes_dataset_and_raw_kv_output_for_non_ppe_runs() {
 #[tokio::test]
 async fn actor_charges_only_saved_rows_and_omits_raw_response_at_budget_limit() {
     let server = MockServer::start(vec![
+        (404, String::new()),
         mock_response(200, ppe_run_body()),
         mock_response(200, json!({ "query": "tesla" })),
         mock_response(
@@ -460,59 +467,101 @@ async fn actor_charges_only_saved_rows_and_omits_raw_response_at_budget_limit() 
                 "suggestions": ["one", "two", "three"],
             }),
         ),
+        (200, String::new()),
         mock_response(201, json!({})),
         (200, String::new()),
+        mock_response(200, json!([])),
         (200, String::new()),
         (200, String::new()),
+        (200, String::new()),
+        mock_response(200, json!({ "status": "completed" })),
     ]);
     let config = test_config(&server.base_url);
     let http = Client::new();
     run_actor(&http, &config).await.unwrap();
 
+    let server_base_url = server.base_url.clone();
     let requests = server.finish();
-    assert_eq!(requests.len(), 7);
+    assert_eq!(requests.len(), 12);
     assert_eq!(
-        request_target(&requests[3]),
+        request_target(&requests[5]),
         "/v2/actor-runs/test-run/charge"
     );
-    assert_eq!(requests[3].method, "POST");
+    assert_eq!(requests[5].method, "POST");
     assert_eq!(
-        requests[3].headers["idempotency-key"],
+        request_target(&requests[4]),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+    let prepared: Value = serde_json::from_str(&requests[4].body).unwrap();
+    assert_eq!(prepared["status"], "prepared");
+    assert_eq!(
+        prepared["limited_dataset_items"].as_array().unwrap().len(),
+        2
+    );
+    assert!(prepared["response"].get("suggestions").is_none());
+    assert_eq!(
+        requests[5].headers["idempotency-key"],
         "google-trends-autocomplete-test-run-suggestions"
     );
-    let charge: Value = serde_json::from_str(&requests[3].body).unwrap();
+    let charge: Value = serde_json::from_str(&requests[5].body).unwrap();
     assert_eq!(
         charge,
         json!({ "eventName": "suggestion-result", "count": 2 })
     );
+    assert_eq!(requests[7].method, "GET");
+    let dataset_url = Url::parse(&format!("{}{}", server_base_url, requests[7].target)).unwrap();
+    assert_eq!(dataset_url.path(), "/v2/datasets/dataset-id/items");
+    let query_value = |key| {
+        dataset_url
+            .query_pairs()
+            .find(|(name, _)| name == key)
+            .unwrap()
+            .1
+            .into_owned()
+    };
+    assert_eq!(query_value("format"), "json");
+    assert_eq!(query_value("offset"), "0");
+    assert_eq!(query_value("limit"), "3");
+    assert_eq!(query_value("clean"), "false");
+    assert_eq!(query_value("desc"), "false");
+    assert_eq!(requests[8].method, "POST");
     assert_eq!(
-        request_target(&requests[4]),
+        request_target(&requests[8]),
         "/v2/datasets/dataset-id/items"
     );
-    let rows: Value = serde_json::from_str(&requests[4].body).unwrap();
+    let rows: Value = serde_json::from_str(&requests[8].body).unwrap();
     assert_eq!(rows.as_array().unwrap().len(), 2);
     assert_eq!(
-        request_target(&requests[5]),
+        request_target(&requests[9]),
         "/v2/key-value-stores/store-id/records/OUTPUT"
     );
-    let output: Value = serde_json::from_str(&requests[5].body).unwrap();
+    let output: Value = serde_json::from_str(&requests[9].body).unwrap();
     assert_eq!(output["suggestion_count"], 3);
     assert_eq!(output["saved_suggestion_count"], 2);
     assert_eq!(output["charge_limit_reached"], true);
     assert_eq!(output["raw_response_omitted"], true);
     assert_eq!(output["raw_response"], Value::Null);
-    assert_eq!(request_target(&requests[6]), "/v2/actor-runs/test-run");
-    let status_message: Value = serde_json::from_str(&requests[6].body).unwrap();
+    assert_eq!(request_target(&requests[10]), "/v2/actor-runs/test-run");
+    let status_message: Value = serde_json::from_str(&requests[10].body).unwrap();
     assert_eq!(status_message["isStatusMessageTerminal"], true);
     assert!(status_message["statusMessage"]
         .as_str()
         .unwrap()
         .contains("Charge limit reached"));
+    assert_eq!(
+        request_target(&requests[11]),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+    assert_eq!(
+        serde_json::from_str::<Value>(&requests[11].body).unwrap(),
+        json!({ "status": "completed" })
+    );
 }
 
 #[tokio::test]
 async fn actor_does_not_write_dataset_when_suggestion_charge_fails() {
     let server = MockServer::start(vec![
+        (404, String::new()),
         mock_response(200, ppe_run_body()),
         mock_response(200, json!({ "query": "tesla" })),
         mock_response(
@@ -522,6 +571,7 @@ async fn actor_does_not_write_dataset_when_suggestion_charge_fails() {
                 "suggestions": ["one", "two", "three"],
             }),
         ),
+        (200, String::new()),
         (500, json!({ "error": "charge failed" }).to_string()),
     ]);
     let config = test_config(&server.base_url);
@@ -533,12 +583,20 @@ async fn actor_does_not_write_dataset_when_suggestion_charge_fails() {
         .contains("suggestion result charge request failed"));
 
     let requests = server.finish();
-    assert_eq!(requests.len(), 4);
+    assert_eq!(requests.len(), 6);
     assert_eq!(
-        request_target(&requests[3]),
+        request_target(&requests[4]),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+    assert_eq!(
+        serde_json::from_str::<Value>(&requests[4].body).unwrap()["status"],
+        "prepared"
+    );
+    assert_eq!(
+        request_target(&requests[5]),
         "/v2/actor-runs/test-run/charge"
     );
-    let charge: Value = serde_json::from_str(&requests[3].body).unwrap();
+    let charge: Value = serde_json::from_str(&requests[5].body).unwrap();
     assert_eq!(
         charge,
         json!({ "eventName": "suggestion-result", "count": 2 })
@@ -546,4 +604,176 @@ async fn actor_does_not_write_dataset_when_suggestion_charge_fails() {
     assert!(requests
         .iter()
         .all(|request| request.target != "/v2/datasets/dataset-id/items"));
+}
+
+#[tokio::test]
+async fn actor_resumes_charged_suggestions_after_dataset_write_failure() {
+    let response = json!({
+        "search_parameters": { "q": "tesla" },
+        "suggestions": ["one", "two"],
+        "response_time_ms": 123,
+    });
+    let saved_items = build_autocomplete_dataset_items(
+        &response,
+        &build_autocomplete_params(&json!({ "query": "tesla" })).unwrap(),
+    );
+    let charged_state = json!({
+        "status": "charged",
+        "charge_count": 2,
+        "suggestion_count": 2,
+        "charge_limit_reached": false,
+        "charge_idempotency_key": "google-trends-autocomplete-test-run-suggestions",
+        "params": { "query": "tesla", "geo": "US", "hl": "en" },
+        "response": response,
+    });
+    let server = MockServer::start(vec![
+        (404, String::new()),
+        mock_response(200, ppe_run_body()),
+        mock_response(200, json!({ "query": "tesla" })),
+        mock_response(200, response.clone()),
+        (200, String::new()),
+        mock_response(201, json!({})),
+        (200, String::new()),
+        mock_response(200, json!([])),
+        (500, json!({ "error": "dataset write failed" }).to_string()),
+        mock_response(200, charged_state),
+        mock_response(200, json!([])),
+        (200, String::new()),
+        (200, String::new()),
+        (200, String::new()),
+        mock_response(200, json!({ "status": "completed" })),
+    ]);
+    let config = test_config(&server.base_url);
+    let http = Client::new();
+
+    let error = run_actor(&http, &config).await.unwrap_err();
+    assert!(error.to_string().contains("Apify dataset write failed"));
+    run_actor(&http, &config).await.unwrap();
+    run_actor(&http, &config).await.unwrap();
+
+    let requests = server.finish();
+    assert_eq!(requests.len(), 15);
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.target == "/v2/actor-runs/test-run/charge")
+            .count(),
+        1
+    );
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| {
+                request.target.split('?').next() == Some("/google-trends/autocomplete")
+            })
+            .count(),
+        1
+    );
+    let dataset_writes = requests
+        .iter()
+        .filter(|request| {
+            request.method == "POST" && request.target == "/v2/datasets/dataset-id/items"
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(dataset_writes.len(), 2);
+    assert_eq!(
+        serde_json::from_str::<Value>(&dataset_writes[0].body).unwrap(),
+        json!(saved_items)
+    );
+    assert_eq!(
+        serde_json::from_str::<Value>(&dataset_writes[1].body).unwrap(),
+        json!(saved_items)
+    );
+    let output_request = requests
+        .iter()
+        .find(|request| {
+            request.method == "PUT"
+                && request.target == "/v2/key-value-stores/store-id/records/OUTPUT"
+        })
+        .unwrap();
+    let output: Value = serde_json::from_str(&output_request.body).unwrap();
+    assert_eq!(output["saved_suggestion_count"], 2);
+    assert_eq!(output["raw_response"]["response_time_ms"], 123);
+    let completion = requests
+        .iter()
+        .rev()
+        .find(|request| {
+            request.method == "PUT"
+                && request.target
+                    == "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+        })
+        .unwrap();
+    assert_eq!(
+        serde_json::from_str::<Value>(&completion.body).unwrap(),
+        json!({ "status": "completed" })
+    );
+    assert_eq!(
+        request_target(requests.last().unwrap()),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+}
+
+#[tokio::test]
+async fn actor_resume_skips_dataset_rows_already_written_before_failure() {
+    let response = json!({ "suggestions": ["one", "two"] });
+    let params = build_autocomplete_params(&json!({ "query": "tesla" })).unwrap();
+    let saved_items = build_autocomplete_dataset_items(&response, &params);
+    let charged_state = json!({
+        "status": "charged",
+        "charge_count": 2,
+        "suggestion_count": 2,
+        "charge_limit_reached": false,
+        "charge_idempotency_key": "google-trends-autocomplete-test-run-suggestions",
+        "params": { "query": "tesla", "geo": "US", "hl": "en" },
+        "response": response.clone(),
+    });
+    let server = MockServer::start(vec![
+        (404, String::new()),
+        mock_response(200, ppe_run_body()),
+        mock_response(200, json!({ "query": "tesla" })),
+        mock_response(200, response),
+        (200, String::new()),
+        mock_response(201, json!({})),
+        (200, String::new()),
+        mock_response(200, json!([])),
+        (
+            500,
+            json!({ "error": "write response was lost" }).to_string(),
+        ),
+        mock_response(200, charged_state),
+        mock_response(200, json!(saved_items.clone())),
+        (200, String::new()),
+        (200, String::new()),
+    ]);
+    let config = test_config(&server.base_url);
+    let http = Client::new();
+
+    assert!(run_actor(&http, &config).await.is_err());
+    run_actor(&http, &config).await.unwrap();
+
+    let requests = server.finish();
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.target == "/v2/actor-runs/test-run/charge")
+            .count(),
+        1
+    );
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| {
+                request.method == "POST" && request.target == "/v2/datasets/dataset-id/items"
+            })
+            .count(),
+        1
+    );
+    let output = requests
+        .iter()
+        .find(|request| request.target == "/v2/key-value-stores/store-id/records/OUTPUT")
+        .unwrap();
+    assert_eq!(
+        serde_json::from_str::<Value>(&output.body).unwrap()["saved_suggestion_count"],
+        2
+    );
 }

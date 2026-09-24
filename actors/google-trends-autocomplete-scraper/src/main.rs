@@ -12,6 +12,7 @@ const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
 const SCRAPPA_USER_AGENT: &str = "thescrappa-google-trends-autocomplete-scraper/1.0";
 const SUGGESTION_RESULT_CHARGE_EVENT: &str = "suggestion-result";
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
+const PPE_RUN_STATE_KEY: &str = "GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE";
 
 struct Config {
     apify_api_base: Url,
@@ -247,6 +248,146 @@ struct ApifyClient<'a> {
     config: &'a Config,
 }
 
+#[derive(Clone, Debug)]
+struct PendingPpeOutput {
+    charged: bool,
+    charge_count: usize,
+    suggestion_count: usize,
+    charge_limit_reached: bool,
+    charge_idempotency_key: String,
+    params: GoogleTrendsAutocompleteParams,
+    response: Value,
+    limited_dataset_items: Option<Vec<Value>>,
+}
+
+enum PpeRunState {
+    Pending(PendingPpeOutput),
+    Completed,
+}
+
+impl PendingPpeOutput {
+    fn new(
+        apify: &ApifyClient<'_>,
+        response: Value,
+        params: GoogleTrendsAutocompleteParams,
+        dataset_items: &[Value],
+        charge_count: usize,
+    ) -> Self {
+        let suggestion_count = dataset_items.len();
+        let charge_limit_reached = charge_count < suggestion_count;
+        let (response, limited_dataset_items) = if charge_limit_reached {
+            let output_metadata = json!({
+                "search_parameters": response.get("search_parameters").filter(|value| !value.is_null()).cloned().unwrap_or(Value::Null),
+                "response_time_ms": response.get("response_time_ms").filter(|value| !value.is_null()).cloned().unwrap_or(Value::Null),
+            });
+            (
+                output_metadata,
+                Some(dataset_items[..charge_count].to_vec()),
+            )
+        } else {
+            (response, None)
+        };
+        Self {
+            charged: false,
+            charge_count,
+            suggestion_count,
+            charge_limit_reached,
+            charge_idempotency_key: apify.charge_idempotency_key(),
+            params,
+            response,
+            limited_dataset_items,
+        }
+    }
+
+    fn to_value(&self) -> Value {
+        json!({
+            "status": if self.charged { "charged" } else { "prepared" },
+            "charge_count": self.charge_count,
+            "suggestion_count": self.suggestion_count,
+            "charge_limit_reached": self.charge_limit_reached,
+            "charge_idempotency_key": self.charge_idempotency_key,
+            "params": {
+                "query": self.params.query,
+                "geo": self.params.geo,
+                "hl": self.params.hl,
+            },
+            "response": self.response,
+            "limited_dataset_items": self.limited_dataset_items,
+        })
+    }
+
+    fn from_value(value: &Value) -> Result<PpeRunState> {
+        let status = value
+            .get("status")
+            .and_then(Value::as_str)
+            .ok_or_else(|| anyhow!("Stored PPE run state has no status"))?;
+        if status == "completed" {
+            return Ok(PpeRunState::Completed);
+        }
+        let charged = match status {
+            "prepared" => false,
+            "charged" => true,
+            _ => bail!("Stored PPE run state has an unknown status"),
+        };
+        let number = |field: &str| -> Result<usize> {
+            value
+                .get(field)
+                .and_then(Value::as_u64)
+                .and_then(|value| usize::try_from(value).ok())
+                .ok_or_else(|| anyhow!("Stored PPE run state has an invalid {field}"))
+        };
+        let parameter = |field: &str| -> Result<String> {
+            value
+                .pointer(&format!("/params/{field}"))
+                .and_then(Value::as_str)
+                .map(str::to_owned)
+                .ok_or_else(|| anyhow!("Stored PPE run state has an invalid {field}"))
+        };
+        let charge_idempotency_key = value
+            .get("charge_idempotency_key")
+            .and_then(Value::as_str)
+            .ok_or_else(|| anyhow!("Stored PPE run state has no charge idempotency key"))?
+            .to_owned();
+        let charge_limit_reached = value
+            .get("charge_limit_reached")
+            .and_then(Value::as_bool)
+            .ok_or_else(|| anyhow!("Stored PPE run state has no charge limit flag"))?;
+        let response = value
+            .get("response")
+            .cloned()
+            .ok_or_else(|| anyhow!("Stored PPE run state has no Scrappa response"))?;
+        let limited_dataset_items = value
+            .get("limited_dataset_items")
+            .and_then(Value::as_array)
+            .cloned();
+        let pending = Self {
+            charged,
+            charge_count: number("charge_count")?,
+            suggestion_count: number("suggestion_count")?,
+            charge_limit_reached,
+            charge_idempotency_key,
+            params: GoogleTrendsAutocompleteParams {
+                query: parameter("query")?,
+                geo: parameter("geo")?,
+                hl: parameter("hl")?,
+            },
+            response,
+            limited_dataset_items,
+        };
+        if pending.charge_count > pending.suggestion_count
+            || pending.charge_limit_reached != (pending.charge_count < pending.suggestion_count)
+            || (pending.charge_limit_reached
+                && pending
+                    .limited_dataset_items
+                    .as_ref()
+                    .is_none_or(|items| items.len() != pending.charge_count))
+        {
+            bail!("Stored PPE run state has inconsistent suggestion counts");
+        }
+        Ok(PpeRunState::Pending(pending))
+    }
+}
+
 impl ApifyClient<'_> {
     fn endpoint(&self, segments: &[&str]) -> Result<Url> {
         let mut path = vec!["v2"];
@@ -274,6 +415,71 @@ impl ApifyClient<'_> {
         }
         let input = response_json(response, "Apify INPUT request").await?;
         Ok((!input.is_null()).then_some(input))
+    }
+
+    async fn get_ppe_run_state(&self) -> Result<Option<Value>> {
+        let url = self.endpoint(&[
+            "key-value-stores",
+            &self.config.key_value_store_id,
+            "records",
+            PPE_RUN_STATE_KEY,
+        ])?;
+        let response = self
+            .http
+            .get(url)
+            .bearer_auth(&self.config.apify_token)
+            .header(header::ACCEPT, "application/json")
+            .send()
+            .await
+            .context("Apify PPE recovery state request failed")?;
+        if response.status() == StatusCode::NOT_FOUND {
+            return Ok(None);
+        }
+        Ok(Some(
+            response_json(response, "Apify PPE recovery state request").await?,
+        ))
+    }
+
+    async fn put_ppe_run_state(&self, state: &Value) -> Result<()> {
+        let url = self.endpoint(&[
+            "key-value-stores",
+            &self.config.key_value_store_id,
+            "records",
+            PPE_RUN_STATE_KEY,
+        ])?;
+        let response = self
+            .http
+            .put(url)
+            .bearer_auth(&self.config.apify_token)
+            .header(header::ACCEPT, "application/json")
+            .json(state)
+            .send()
+            .await
+            .context("Apify PPE recovery state write failed")?;
+        ensure_success(response, "Apify PPE recovery state write").await
+    }
+
+    async fn get_dataset_prefix(&self, limit: usize) -> Result<Vec<Value>> {
+        let mut url = self.endpoint(&["datasets", &self.config.dataset_id, "items"])?;
+        url.query_pairs_mut()
+            .append_pair("format", "json")
+            .append_pair("offset", "0")
+            .append_pair("limit", &limit.to_string())
+            .append_pair("clean", "false")
+            .append_pair("desc", "false");
+        let response = self
+            .http
+            .get(url)
+            .bearer_auth(&self.config.apify_token)
+            .header(header::ACCEPT, "application/json")
+            .send()
+            .await
+            .context("Apify dataset recovery read failed")?;
+        let items = response_json(response, "Apify dataset recovery read").await?;
+        items
+            .as_array()
+            .cloned()
+            .ok_or_else(|| anyhow!("Apify dataset recovery response was not an array"))
     }
 
     async fn get_pricing(&self) -> Result<PricingState> {
@@ -306,7 +512,14 @@ impl ApifyClient<'_> {
         ensure_success(response, "Apify dataset write").await
     }
 
-    async fn charge_suggestions(&self, count: usize) -> Result<()> {
+    fn charge_idempotency_key(&self) -> String {
+        format!(
+            "google-trends-autocomplete-{}-suggestions",
+            self.config.actor_run_id
+        )
+    }
+
+    async fn charge_suggestions(&self, count: usize, idempotency_key: &str) -> Result<()> {
         if count == 0 {
             return Ok(());
         }
@@ -316,13 +529,7 @@ impl ApifyClient<'_> {
             .post(url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .header(
-                "idempotency-key",
-                format!(
-                    "google-trends-autocomplete-{}-suggestions",
-                    self.config.actor_run_id
-                ),
-            )
+            .header("idempotency-key", idempotency_key)
             .json(&json!({
                 "eventName": SUGGESTION_RESULT_CHARGE_EVENT,
                 "count": count,
@@ -769,8 +976,99 @@ fn actor_error_message(error: &anyhow::Error) -> String {
     }
 }
 
+fn autocomplete_output(
+    response: &Value,
+    suggestion_count: usize,
+    saved_suggestion_count: usize,
+    charge_limit_reached: bool,
+) -> Value {
+    json!({
+        "search_parameters": response.get("search_parameters").filter(|value| !value.is_null()).cloned().unwrap_or(Value::Null),
+        "suggestion_count": suggestion_count,
+        "saved_suggestion_count": saved_suggestion_count,
+        "charge_limit_reached": charge_limit_reached,
+        "raw_response_omitted": charge_limit_reached,
+        "response_time_ms": response.get("response_time_ms").filter(|value| !value.is_null()).cloned().unwrap_or(Value::Null),
+        "raw_response": if charge_limit_reached { Value::Null } else { response.clone() },
+    })
+}
+
+async fn finish_pending_ppe_output(
+    apify: &ApifyClient<'_>,
+    pending: &mut PendingPpeOutput,
+) -> Result<()> {
+    if !pending.charged {
+        apify
+            .charge_suggestions(pending.charge_count, &pending.charge_idempotency_key)
+            .await?;
+        pending.charged = true;
+        apify.put_ppe_run_state(&pending.to_value()).await?;
+    }
+
+    let generated_items;
+    let items_to_save = if let Some(items) = pending.limited_dataset_items.as_ref() {
+        items.as_slice()
+    } else {
+        generated_items = build_autocomplete_dataset_items(&pending.response, &pending.params);
+        if generated_items.len() != pending.suggestion_count {
+            bail!("Stored PPE response no longer matches its suggestion count");
+        }
+        &generated_items[..pending.charge_count]
+    };
+    if !items_to_save.is_empty() {
+        let existing = apify
+            .get_dataset_prefix(items_to_save.len().saturating_add(1))
+            .await?;
+        if existing.len() > items_to_save.len()
+            || items_to_save.get(..existing.len()) != Some(existing.as_slice())
+        {
+            bail!("Apify dataset contents do not match the pending PPE results");
+        }
+        apify
+            .push_dataset_items(&items_to_save[existing.len()..])
+            .await?;
+    }
+
+    let output = autocomplete_output(
+        &pending.response,
+        pending.suggestion_count,
+        pending.charge_count,
+        pending.charge_limit_reached,
+    );
+    apify.put_output(&output).await?;
+
+    if pending.charge_limit_reached {
+        let status_message =
+            "Charge limit reached before saving all Google Trends autocomplete suggestion results.";
+        if let Err(error) = apify.set_terminal_status_message(status_message).await {
+            eprintln!("Could not set terminal Actor status message: {error}");
+        }
+    }
+
+    // Keep a compact completion marker so a restarted run cannot repeat the scrape or charge
+    // after the final state write succeeds but its response is lost.
+    apify
+        .put_ppe_run_state(&json!({ "status": "completed" }))
+        .await?;
+    Ok(())
+}
+
 async fn run_actor(http: &Client, config: &Config) -> Result<()> {
     let apify = ApifyClient { http, config };
+    if let Some(state) = apify.get_ppe_run_state().await? {
+        match PendingPpeOutput::from_value(&state)? {
+            PpeRunState::Completed => {
+                println!("Google Trends autocomplete PPE output was already completed");
+                return Ok(());
+            }
+            PpeRunState::Pending(mut pending) => {
+                println!("Resuming saved Google Trends autocomplete PPE output");
+                finish_pending_ppe_output(&apify, &mut pending).await?;
+                return Ok(());
+            }
+        }
+    }
+
     let pricing = apify.get_pricing().await?;
     let input = apify
         .get_input()
@@ -789,56 +1087,43 @@ async fn run_actor(http: &Client, config: &Config) -> Result<()> {
     };
     let response = scrappa.get_autocomplete(&params).await?;
     let dataset_items = build_autocomplete_dataset_items(&response, &params);
-    let mut saved_suggestion_count = 0;
-    let mut charge_limit_reached = false;
+    if pricing.is_pay_per_event && !dataset_items.is_empty() {
+        let allowed_count = pricing.affordable_suggestion_count(dataset_items.len())?;
+        let mut pending =
+            PendingPpeOutput::new(&apify, response, params, &dataset_items, allowed_count);
+        apify.put_ppe_run_state(&pending.to_value()).await?;
+        finish_pending_ppe_output(&apify, &mut pending).await?;
+        if pending.charge_limit_reached {
+            println!(
+                "Charge limit reached before saving all Google Trends autocomplete suggestion results. {}",
+                json!({
+                    "event": SUGGESTION_RESULT_CHARGE_EVENT,
+                    "charged_count": pending.charge_count,
+                    "requested_count": pending.suggestion_count,
+                })
+            );
+            return Ok(());
+        }
+
+        println!("Google Trends autocomplete scraping completed successfully");
+        println!(
+            "Results summary: {}",
+            json!({
+                "suggestion_results": pending.suggestion_count,
+                "response_time_ms": pending.response.get("response_time_ms").filter(|value| !value.is_null()).cloned().unwrap_or(Value::Null),
+            })
+        );
+        return Ok(());
+    }
 
     if !dataset_items.is_empty() {
-        if pricing.is_pay_per_event {
-            let allowed_count = pricing.affordable_suggestion_count(dataset_items.len())?;
-            apify.charge_suggestions(allowed_count).await?;
-            let items_to_save = &dataset_items[..allowed_count];
-            apify.push_dataset_items(items_to_save).await?;
-            saved_suggestion_count = allowed_count;
-            charge_limit_reached = allowed_count < dataset_items.len();
-
-            if charge_limit_reached {
-                let status_message = "Charge limit reached before saving all Google Trends autocomplete suggestion results.";
-                println!(
-                    "{status_message} {}",
-                    json!({
-                        "event": SUGGESTION_RESULT_CHARGE_EVENT,
-                        "charged_count": saved_suggestion_count,
-                        "requested_count": dataset_items.len(),
-                    })
-                );
-            }
-        } else {
-            apify.push_dataset_items(&dataset_items).await?;
-            saved_suggestion_count = dataset_items.len();
-        }
+        apify.push_dataset_items(&dataset_items).await?;
     } else {
         println!("No Google Trends autocomplete suggestions found for this request");
     }
 
-    let output = json!({
-        "search_parameters": response.get("search_parameters").filter(|value| !value.is_null()).cloned().unwrap_or(Value::Null),
-        "suggestion_count": dataset_items.len(),
-        "saved_suggestion_count": saved_suggestion_count,
-        "charge_limit_reached": charge_limit_reached,
-        "raw_response_omitted": charge_limit_reached,
-        "response_time_ms": response.get("response_time_ms").filter(|value| !value.is_null()).cloned().unwrap_or(Value::Null),
-        "raw_response": if charge_limit_reached { Value::Null } else { response.clone() },
-    });
+    let output = autocomplete_output(&response, dataset_items.len(), dataset_items.len(), false);
     apify.put_output(&output).await?;
-
-    if charge_limit_reached {
-        let status_message =
-            "Charge limit reached before saving all Google Trends autocomplete suggestion results.";
-        if let Err(error) = apify.set_terminal_status_message(status_message).await {
-            eprintln!("Could not set terminal Actor status message: {error}");
-        }
-        return Ok(());
-    }
 
     println!("Google Trends autocomplete scraping completed successfully");
     println!(
