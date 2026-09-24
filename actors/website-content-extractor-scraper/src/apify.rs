@@ -9,6 +9,7 @@ const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const INPUT_KEY: &str = "INPUT";
 const OUTPUT_KEY: &str = "OUTPUT";
 pub const URL_RESULT_CHARGE_EVENT: &str = "url-result";
+const DEFAULT_DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 
 pub struct ApifyConfig {
     api_base_url: Url,
@@ -94,6 +95,7 @@ impl ApifyClient {
             is_pay_per_event: true,
             budget: ChargeBudget::new(pricing.charged_event_counts.clone()),
             pricing: Some(pricing),
+            dataset_writes: HashMap::new(),
         })
     }
 
@@ -103,28 +105,70 @@ impl ApifyClient {
         billing: &mut BillingState,
         idempotency_key: &str,
     ) -> Result<DatasetWriteResult> {
+        if let Some(state) = billing.dataset_writes.get(idempotency_key).copied() {
+            return match state {
+                DatasetWriteState::AppendAttempted => {
+                    bail!("Apify dataset write outcome was not confirmed; refusing to replay item {idempotency_key}")
+                }
+                DatasetWriteState::Stored {
+                    custom_charge_pending: false,
+                } => Ok(DatasetWriteResult::Saved),
+                DatasetWriteState::Stored {
+                    custom_charge_pending: true,
+                } => {
+                    self.charge_event(URL_RESULT_CHARGE_EVENT, idempotency_key)
+                        .await?;
+                    billing.budget.record_charge(URL_RESULT_CHARGE_EVENT)?;
+                    billing.dataset_writes.insert(
+                        idempotency_key.to_owned(),
+                        DatasetWriteState::Stored {
+                            custom_charge_pending: false,
+                        },
+                    );
+                    Ok(DatasetWriteResult::Saved)
+                }
+            };
+        }
+
         let success = item.get("success").and_then(Value::as_bool) == Some(true);
-        let should_charge = if billing.is_pay_per_event && success {
+        let should_charge = billing.is_pay_per_event && success;
+        if billing.is_pay_per_event {
             let pricing = billing
                 .pricing
                 .as_ref()
                 .ok_or_else(|| anyhow!("PPE run pricing is missing"))?;
-            billing
-                .budget
-                .can_charge(pricing, URL_RESULT_CHARGE_EVENT)?
-        } else {
-            false
-        };
-        if billing.is_pay_per_event && success && !should_charge {
-            return Ok(DatasetWriteResult::ChargeLimitReached);
+            if !billing.budget.can_save_dataset_item(pricing, success)? {
+                return Ok(DatasetWriteResult::ChargeLimitReached);
+            }
         }
 
+        billing
+            .dataset_writes
+            .insert(idempotency_key.to_owned(), DatasetWriteState::AppendAttempted);
         self.write_dataset_item(item).await?;
+        billing.dataset_writes.insert(
+            idempotency_key.to_owned(),
+            DatasetWriteState::Stored {
+                custom_charge_pending: should_charge,
+            },
+        );
+
+        if billing.is_pay_per_event {
+            billing
+                .budget
+                .record_charge(DEFAULT_DATASET_ITEM_CHARGE_EVENT)?;
+        }
 
         if should_charge {
             self.charge_event(URL_RESULT_CHARGE_EVENT, idempotency_key)
                 .await?;
             billing.budget.record_charge(URL_RESULT_CHARGE_EVENT)?;
+            billing.dataset_writes.insert(
+                idempotency_key.to_owned(),
+                DatasetWriteState::Stored {
+                    custom_charge_pending: false,
+                },
+            );
         }
 
         Ok(DatasetWriteResult::Saved)
@@ -213,6 +257,13 @@ pub struct BillingState {
     is_pay_per_event: bool,
     budget: ChargeBudget,
     pricing: Option<RunPricing>,
+    dataset_writes: HashMap<String, DatasetWriteState>,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum DatasetWriteState {
+    AppendAttempted,
+    Stored { custom_charge_pending: bool },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -235,23 +286,41 @@ impl ChargeBudget {
         }
     }
 
-    fn can_charge(&mut self, pricing: &RunPricing, event_name: &str) -> Result<bool> {
+    fn can_save_dataset_item(&mut self, pricing: &RunPricing, success: bool) -> Result<bool> {
         let initial_event_counts = self
             .initial_event_counts
             .get_or_insert_with(|| pricing.charged_event_counts.clone());
-        let local_event_count = *self.locally_charged.get(event_name).unwrap_or(&0);
-        let initial_event_count = *initial_event_counts.get(event_name).unwrap_or(&0);
-        let expected_event_count = initial_event_count
-            .checked_add(local_event_count)
-            .ok_or_else(|| anyhow!("Charged event count overflowed for {event_name}"))?;
-
         let mut event_counts = pricing.charged_event_counts.clone();
-        for (name, count) in initial_event_counts.iter() {
+        for name in initial_event_counts
+            .keys()
+            .chain(self.locally_charged.keys())
+        {
+            let initial_event_count = *initial_event_counts.get(name).unwrap_or(&0);
+            let local_event_count = *self.locally_charged.get(name).unwrap_or(&0);
+            let expected_event_count = initial_event_count
+                .checked_add(local_event_count)
+                .ok_or_else(|| anyhow!("Charged event count overflowed for {name}"))?;
             let current = event_counts.entry(name.clone()).or_default();
-            *current = (*current).max(*count);
+            *current = (*current).max(expected_event_count);
         }
-        let current_event_count = event_counts.entry(event_name.to_owned()).or_default();
-        *current_event_count = (*current_event_count).max(expected_event_count);
+
+        let mut pending_charges = vec![DEFAULT_DATASET_ITEM_CHARGE_EVENT];
+        if success {
+            pending_charges.push(URL_RESULT_CHARGE_EVENT);
+        }
+        for event_name in pending_charges {
+            let event_price = pricing
+                .event_prices
+                .get(event_name)
+                .ok_or_else(|| anyhow!("Apify run did not provide the {event_name} event price"))?;
+            if !event_price.is_finite() || *event_price < 0.0 {
+                bail!("Invalid price for charged event {event_name}");
+            }
+            let event_count = event_counts.entry(event_name.to_owned()).or_default();
+            *event_count = event_count
+                .checked_add(1)
+                .ok_or_else(|| anyhow!("Charged event count overflowed for {event_name}"))?;
+        }
 
         let mut spent = 0.0;
         for (charged_event, count) in event_counts {
@@ -268,19 +337,14 @@ impl ChargeBudget {
             bail!("Apify run returned invalid charged totals");
         }
 
-        let event_price = pricing
-            .event_prices
-            .get(event_name)
-            .ok_or_else(|| anyhow!("Apify run did not provide the {event_name} event price"))?;
-        if *event_price == 0.0 {
-            return Ok(true);
-        }
-
-        let Some(max_total_charge_usd) = pricing.max_total_charge_usd else {
+        let Some(max_total_charge_usd) = pricing
+            .max_total_charge_usd
+            .filter(|limit| *limit > 0.0)
+        else {
             return Ok(true);
         };
         let tolerance = f64::EPSILON * max_total_charge_usd.max(1.0);
-        Ok(spent + event_price <= max_total_charge_usd + tolerance)
+        Ok(spent <= max_total_charge_usd + tolerance)
     }
 
     fn record_charge(&mut self, event_name: &str) -> Result<()> {
@@ -330,22 +394,18 @@ impl RunPricing {
         }
 
         let max_total_charge_usd = match data.pointer("/options/maxTotalChargeUsd") {
-            Some(value) if !value.is_null() => Some(
-                value
+            Some(value) if !value.is_null() => {
+                let limit = value
                     .as_f64()
-                    .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
-            ),
-            _ => env::var("ACTOR_MAX_TOTAL_CHARGE_USD")
-                .ok()
-                .filter(|value| !value.trim().is_empty())
-                .map(|value| {
-                    value
-                        .parse::<f64>()
-                        .context("ACTOR_MAX_TOTAL_CHARGE_USD is not a number")
-                })
-                .transpose()?,
+                    .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
+                if !limit.is_finite() || limit < 0.0 {
+                    bail!("Apify run returned an invalid spending limit");
+                }
+                (limit > 0.0).then_some(limit)
+            }
+            _ => None,
         };
-        if max_total_charge_usd.is_some_and(|limit| !limit.is_finite() || limit < 0.0) {
+        if max_total_charge_usd.is_some_and(|limit| !limit.is_finite() || limit <= 0.0) {
             bail!("Apify run returned an invalid spending limit");
         }
 
@@ -425,7 +485,7 @@ mod tests {
 
     use super::{
         ApifyClient, ApifyConfig, BillingState, ChargeBudget, DatasetWriteResult, RunPricing,
-        URL_RESULT_CHARGE_EVENT,
+        DEFAULT_DATASET_ITEM_CHARGE_EVENT, URL_RESULT_CHARGE_EVENT,
     };
 
     fn pricing(max_total_charge_usd: f64, counts: Value) -> RunPricing {
@@ -433,6 +493,7 @@ mod tests {
             max_total_charge_usd: Some(max_total_charge_usd),
             event_prices: [
                 ("apify-actor-start".to_owned(), 0.0001),
+                (DEFAULT_DATASET_ITEM_CHARGE_EVENT.to_owned(), 0.0002),
                 (URL_RESULT_CHARGE_EVENT.to_owned(), 0.0002),
             ]
             .into_iter()
@@ -441,7 +502,7 @@ mod tests {
         }
     }
 
-    fn ppe_run() -> Value {
+    fn ppe_run_with(max_total_charge_usd: Value, charged_event_counts: Value) -> Value {
         json!({
             "data": {
                 "pricingInfo": {
@@ -449,14 +510,19 @@ mod tests {
                     "pricingPerEvent": {
                         "actorChargeEvents": {
                             "apify-actor-start": {"eventPriceUsd": 0.0001},
+                            "apify-default-dataset-item": {"eventPriceUsd": 0.0002},
                             "url-result": {"eventPriceUsd": 0.0002}
                         }
                     }
                 },
-                "options": {"maxTotalChargeUsd": 0.0003},
-                "chargedEventCounts": {"apify-actor-start": 1}
+                "options": {"maxTotalChargeUsd": max_total_charge_usd},
+                "chargedEventCounts": charged_event_counts
             }
         })
+    }
+
+    fn ppe_run() -> Value {
+        ppe_run_with(json!(0.0005), json!({"apify-actor-start": 1}))
     }
 
     fn apify_client(base_url: Url) -> ApifyClient {
@@ -473,27 +539,40 @@ mod tests {
 
     #[test]
     fn ppe_budget_counts_startup_charges_and_limits_success_results() {
-        let run_pricing = pricing(0.0004, json!({"apify-actor-start": 1}));
+        let run_pricing = pricing(0.0005, json!({"apify-actor-start": 1}));
         let mut budget = ChargeBudget::new(run_pricing.charged_event_counts.clone());
 
         assert!(budget
-            .can_charge(&run_pricing, URL_RESULT_CHARGE_EVENT)
+            .can_save_dataset_item(&run_pricing, true)
             .unwrap());
+        budget
+            .record_charge(DEFAULT_DATASET_ITEM_CHARGE_EVENT)
+            .unwrap();
         budget.record_charge(URL_RESULT_CHARGE_EVENT).unwrap();
         assert!(!budget
-            .can_charge(&run_pricing, URL_RESULT_CHARGE_EVENT)
+            .can_save_dataset_item(&run_pricing, true)
             .unwrap());
     }
 
     #[test]
     fn ppe_budget_uses_reported_counts_when_the_run_api_catches_up() {
-        let initial = pricing(0.0007, json!({"apify-actor-start": 1}));
+        let initial = pricing(0.0009, json!({"apify-actor-start": 1}));
         let mut budget = ChargeBudget::new(initial.charged_event_counts.clone());
+        budget
+            .record_charge(DEFAULT_DATASET_ITEM_CHARGE_EVENT)
+            .unwrap();
         budget.record_charge(URL_RESULT_CHARGE_EVENT).unwrap();
-        let updated = pricing(0.0007, json!({"apify-actor-start": 1, "url-result": 1}));
+        let updated = pricing(
+            0.0009,
+            json!({
+                "apify-actor-start": 1,
+                "apify-default-dataset-item": 1,
+                "url-result": 1
+            }),
+        );
 
         assert!(budget
-            .can_charge(&updated, URL_RESULT_CHARGE_EVENT)
+            .can_save_dataset_item(&updated, true)
             .unwrap());
     }
 
@@ -501,16 +580,140 @@ mod tests {
     fn ppe_budget_allows_charges_when_the_run_has_no_total_cap() {
         let run_pricing = RunPricing {
             max_total_charge_usd: None,
-            event_prices: [(URL_RESULT_CHARGE_EVENT.to_owned(), 0.0002)]
-                .into_iter()
-                .collect(),
+            event_prices: [
+                (DEFAULT_DATASET_ITEM_CHARGE_EVENT.to_owned(), 0.0002),
+                (URL_RESULT_CHARGE_EVENT.to_owned(), 0.0002),
+            ]
+            .into_iter()
+            .collect(),
             charged_event_counts: HashMap::new(),
         };
         let mut budget = ChargeBudget::new(HashMap::new());
 
         assert!(budget
-            .can_charge(&run_pricing, URL_RESULT_CHARGE_EVENT)
+            .can_save_dataset_item(&run_pricing, true)
             .unwrap());
+    }
+
+    #[tokio::test]
+    async fn combined_cap_counts_configured_event_prices_and_prior_counts_before_append() {
+        let run_body = serde_json::to_string(&ppe_run_with(
+            json!(0.00085),
+            json!({
+                "apify-actor-start": 1,
+                "apify-default-dataset-item": 1,
+                "url-result": 1
+            }),
+        ))
+        .unwrap();
+        let server = start_mock_server(vec![MockResponse::json(200, &run_body)]).await;
+        let client = apify_client(server.base_url());
+        let mut billing = client.get_billing_state().await.unwrap();
+
+        assert_eq!(
+            client
+                .push_dataset_item(
+                    &json!({"success": true, "input_url": "https://example.com"}),
+                    &mut billing,
+                    "test-run:url-result:0",
+                )
+                .await
+                .unwrap(),
+            DatasetWriteResult::ChargeLimitReached
+        );
+
+        let requests = server.requests().await;
+        assert_eq!(requests.len(), 1);
+        assert!(requests[0].starts_with("GET /api/v2/actor-runs/test-run HTTP/1.1"));
+    }
+
+    #[tokio::test]
+    async fn failure_rows_consume_dataset_item_budget_without_custom_charges() {
+        let run_body = serde_json::to_string(&ppe_run_with(
+            json!(0.00055),
+            json!({"apify-actor-start": 1, "apify-default-dataset-item": 1}),
+        ))
+        .unwrap();
+        let server = start_mock_server(vec![
+            MockResponse::json(200, &run_body),
+            MockResponse::text(201, ""),
+            MockResponse::text(201, ""),
+        ])
+        .await;
+        let client = apify_client(server.base_url());
+        let mut billing = client.get_billing_state().await.unwrap();
+        let item = json!({"success": false, "input_url": "https://example.com"});
+
+        assert_eq!(
+            client
+                .push_dataset_item(&item, &mut billing, "test-run:url-result:0")
+                .await
+                .unwrap(),
+            DatasetWriteResult::Saved
+        );
+        assert_eq!(
+            client
+                .push_dataset_item(&item, &mut billing, "test-run:url-result:1")
+                .await
+                .unwrap(),
+            DatasetWriteResult::ChargeLimitReached
+        );
+
+        let requests = server.requests().await;
+        assert_eq!(requests.len(), 2);
+        assert!(requests[1].starts_with("POST /api/v2/datasets/test-dataset/items HTTP/1.1"));
+        assert!(requests
+            .iter()
+            .all(|request| !request.starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1")));
+    }
+
+    #[tokio::test]
+    async fn failed_dataset_write_is_not_replayed_or_custom_charged() {
+        let run_body = serde_json::to_string(&ppe_run()).unwrap();
+        let server = start_mock_server(vec![
+            MockResponse::json(200, &run_body),
+            MockResponse::text(500, "dataset response was lost"),
+            MockResponse::text(201, ""),
+            MockResponse::text(201, ""),
+        ])
+        .await;
+        let client = apify_client(server.base_url());
+        let mut billing = client.get_billing_state().await.unwrap();
+        let item = json!({"success": true, "input_url": "https://example.com"});
+
+        assert!(client
+            .push_dataset_item(&item, &mut billing, "test-run:url-result:0")
+            .await
+            .is_err());
+        assert!(client
+            .push_dataset_item(&item, &mut billing, "test-run:url-result:0")
+            .await
+            .is_err());
+
+        let requests = server.requests().await;
+        assert_eq!(requests.len(), 2);
+        assert!(requests[1].starts_with("POST /api/v2/datasets/test-dataset/items HTTP/1.1"));
+        assert!(requests
+            .iter()
+            .all(|request| !request.starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1")));
+    }
+
+    #[test]
+    fn sdk_unlimited_caps_treat_zero_null_and_missing_as_unlimited() {
+        let mut zero = ppe_run();
+        zero["data"]["options"]["maxTotalChargeUsd"] = json!(0.0);
+        assert_eq!(RunPricing::from_run(&zero).unwrap().max_total_charge_usd, None);
+
+        let mut null = ppe_run();
+        null["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+        assert_eq!(RunPricing::from_run(&null).unwrap().max_total_charge_usd, None);
+
+        let mut missing = ppe_run();
+        missing["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+        assert_eq!(RunPricing::from_run(&missing).unwrap().max_total_charge_usd, None);
     }
 
     #[tokio::test]
@@ -518,10 +721,8 @@ mod tests {
         let run_body = serde_json::to_string(&ppe_run()).unwrap();
         let server = start_mock_server(vec![
             MockResponse::json(200, &run_body),
-            MockResponse::json(200, &run_body),
             MockResponse::text(201, ""),
             MockResponse::text(201, ""),
-            MockResponse::json(200, &run_body),
         ])
         .await;
         let client = apify_client(server.base_url());
