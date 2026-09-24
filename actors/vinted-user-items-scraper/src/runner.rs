@@ -342,6 +342,52 @@ mod tests {
         assert_eq!(status_updates[0].body["isStatusMessageTerminal"], true);
     }
 
+    #[tokio::test]
+    async fn zero_ppe_budget_does_not_write_or_charge_listing_rows() {
+        let server = MockServer::start(vec![json_response(json!({
+            "items": [{"id":"111-1"}]
+        }))])
+        .await;
+        let apify = test_apify_client(&server);
+        let scrappa = ScrappaClient::new("scrappa-key", format!("{}/api", server.base_url));
+        let input = serde_json::from_value(json!({"user_id":"111"})).unwrap();
+        let plan = crate::input::build_plan(&input).unwrap();
+        let mut pricing = test_pricing(0.0);
+
+        let summary = run_actor(&apify, &scrappa, &plan, &mut pricing)
+            .await
+            .unwrap();
+
+        assert_eq!(summary.pages_fetched, 1);
+        assert_eq!(summary.saved_items, 0);
+        assert_eq!(
+            summary.status_message.as_deref(),
+            Some("Charge limit reached after saving 0 of 1 Vinted item(s) for user 111 on page 1.")
+        );
+        let requests = server.requests.lock().unwrap();
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.path == "/api/vinted/user-items")
+                .count(),
+            1
+        );
+        assert!(!requests.iter().any(|request| {
+            request.method == "POST"
+                && (request.path == "/v2/datasets/test-dataset/items"
+                    || request.path == "/v2/actor-runs/test-run/charge")
+        }));
+        let status_update = requests
+            .iter()
+            .find(|request| request.method == "PUT" && request.path == "/v2/actor-runs/test-run")
+            .unwrap();
+        assert_eq!(
+            status_update.body["statusMessage"],
+            summary.status_message.unwrap()
+        );
+        assert_eq!(status_update.body["isStatusMessageTerminal"], true);
+    }
+
     fn test_apify_client(server: &MockServer) -> ApifyClient {
         ApifyClient::new(crate::apify::ActorConfig {
             apify_token: "apify-token".to_owned(),
