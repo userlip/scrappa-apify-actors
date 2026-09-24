@@ -133,8 +133,21 @@ fn affordable_dataset_items(
         .and_then(Value::as_str)
         != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        return Ok(requested);
     }
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => return Ok(requested),
+        Some(value) => value
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?,
+    };
+    if max_charge == 0.0 {
+        return Ok(requested);
+    }
+    if !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
@@ -144,11 +157,7 @@ fn affordable_dataset_items(
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -1367,23 +1376,86 @@ mod tests {
         assert_eq!(enriched["key_moments_count"], 0);
     }
 
+    fn pricing_run(max_charge: Option<Value>, charged_event_counts: Value) -> Value {
+        let mut run = json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.0003},
+                        "apify-actor-start": {"eventPriceUsd": 0.00005},
+                        "custom-event": {"eventPriceUsd": 0.0001}
+                    }}
+                },
+                "options": {},
+                "chargedEventCounts": charged_event_counts
+            }
+        });
+        if let Some(max_charge) = max_charge {
+            run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
+        }
+        run
+    }
+
     #[test]
-    fn pricing_limits_dataset_rows_using_all_charged_events() {
-        let run = json!({"data": {
-            "pricingInfo": {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": {
-                "apify-default-dataset-item": {"eventPriceUsd": 0.0003},
-                "apify-actor-start": {"eventPriceUsd": 0.00005}
-            }}},
-            "options": {"maxTotalChargeUsd": 0.00035},
-            "chargedEventCounts": {"apify-actor-start": 1}
-        }});
+    fn zero_missing_and_null_limits_allow_unbounded_prefill_results() {
+        let cases = [
+            ("zero", Some(json!(0))),
+            ("omitted", None),
+            ("null", Some(Value::Null)),
+        ];
+
+        for (name, max_charge) in cases {
+            let run = pricing_run(max_charge, json!({"apify-actor-start": 1}));
+            assert_eq!(
+                affordable_dataset_items(&run, 3, &mut DatasetBudget::default()).unwrap(),
+                3,
+                "{name} limit should be unbounded"
+            );
+        }
+    }
+
+    #[test]
+    fn positive_limit_keeps_only_the_affordable_prefix_after_custom_charges() {
+        let run = pricing_run(
+            Some(json!(0.00035)),
+            json!({"apify-actor-start": 1}),
+        );
+
         assert_eq!(
             affordable_dataset_items(&run, 3, &mut DatasetBudget::default()).unwrap(),
             1
         );
-        let mut missing_limit = run.clone();
-        missing_limit["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
-        assert!(affordable_dataset_items(&missing_limit, 2, &mut DatasetBudget::default()).is_err());
+    }
+
+    #[test]
+    fn positive_limit_accounts_for_existing_dataset_and_custom_event_charges() {
+        let run = pricing_run(
+            Some(json!(0.00079)),
+            json!({
+                "custom-event": 2,
+                "apify-default-dataset-item": 1
+            }),
+        );
+
+        assert_eq!(
+            affordable_dataset_items(&run, 3, &mut DatasetBudget::default()).unwrap(),
+            0
+        );
+    }
+
+    #[test]
+    fn non_pay_per_event_runs_allow_dataset_rows_without_a_spending_limit() {
+        let run = json!({
+            "data": {
+                "pricingInfo": {"pricingModel": "PAY_PER_ACTOR"}
+            }
+        });
+
+        assert_eq!(
+            affordable_dataset_items(&run, 3, &mut DatasetBudget::default()).unwrap(),
+            3
+        );
     }
 
     #[tokio::test]
