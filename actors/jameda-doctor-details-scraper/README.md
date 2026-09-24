@@ -58,6 +58,12 @@ Each URL can be a full `https://www.jameda.de/...` URL or a Jameda profile path.
 
 The exact fields depend on what is available on the live Jameda profile.
 
+The actor calls Scrappa once per normalized doctor URL. The endpoint returns one profile per request and does not use a pagination cursor. Each successful profile is written to the default dataset and charged as a `doctor-profile-result` event on pay-per-event runs; the run limit includes any default dataset-item charge. A compact request and failure summary is saved to `OUTPUT`.
+
+## Local Development
+
+Run the Rust actor tests from this directory with `cargo test --locked`. Build the Apify image with `docker build -f .actor/Dockerfile -t jameda-doctor-details-scraper .`. Run `python3 test/local_image_smoke.py` to build and exercise the production image against local Apify and Scrappa mocks. The actor reads input from the default key-value store and writes dataset items plus the `OUTPUT` record through the Apify API.
+
 ## Direct API Upgrade
 
 Need higher throughput, lower latency, or direct backend integration? Use the same endpoint through Scrappa directly:
