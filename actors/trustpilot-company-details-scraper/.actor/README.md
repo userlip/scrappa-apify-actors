@@ -71,7 +71,7 @@ The dataset item also includes the original Scrappa response fields such as `bas
 
 ## Pricing
 
-This Actor is designed for paid, usage-aligned runs. Charge per saved `company-detail-result` dataset item so users pay for delivered company profile records.
+This Actor charges one `company-detail-result` event for each saved company profile. The pay-per-event spending check includes the event charge and the default dataset item charge before storing a row.
 
 ## Notes
 
