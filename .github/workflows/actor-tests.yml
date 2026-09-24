@@ -26,7 +26,6 @@ jobs:
         actor:
           - path: actors/google-images-scraper
           - path: actors/google-flights-search-scraper
-          - path: actors/google-hotels-search-scraper
           - path: actors/google-jobs-scraper
           - path: actors/google-maps-business-details-scraper
           - path: actors/immobilienscout24-locations-scraper
@@ -91,6 +90,7 @@ jobs:
           - actors/google-news-scraper
           - actors/tiktok-search-scraper
           - actors/linkedin-post-scraper
+          - actors/google-hotels-search-scraper
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
