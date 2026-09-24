@@ -15,7 +15,7 @@ const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: usize = 8;
+const APIFY_MAX_RETRIES: usize = 4;
 const APIFY_MIN_RETRY_DELAY: Duration = Duration::from_millis(500);
 const APIFY_CHARGE_IDEMPOTENCY_HEADER: &str = "idempotency-key";
 static CHARGE_IDEMPOTENCY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
@@ -425,4 +425,23 @@ fn scrappa_error_message(body: &str, fallback: &str) -> String {
         .chars()
         .take(500)
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn retry_backoff_fits_actor_timeout_with_room_for_work() {
+        let actor: Value = serde_json::from_str(include_str!("../.actor/actor.json")).unwrap();
+        let timeout_secs = actor["defaultRunOptions"]["timeoutSecs"].as_u64().unwrap();
+        let retry_backoff = (0..APIFY_MAX_RETRIES).fold(Duration::ZERO, |total, attempt| {
+            total.saturating_add(apify_retry_delay(attempt))
+        });
+
+        assert!(
+            retry_backoff <= Duration::from_secs(timeout_secs) / 10,
+            "Apify retry backoff ({retry_backoff:?}) should use at most 10% of the Actor runtime ({timeout_secs}s)"
+        );
+    }
 }
