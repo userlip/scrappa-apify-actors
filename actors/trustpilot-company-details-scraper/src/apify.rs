@@ -222,6 +222,9 @@ impl ApifyClient {
             return Ok(charge_limit_result(0));
         }
 
+        self.push_dataset_item(item).await?;
+        budget.record_charge(DEFAULT_DATASET_ITEM_EVENT)?;
+
         let url = self.resource_url(&["actor-runs", &self.actor_run_id, "charge"])?;
         let idempotency_key = format!("{}-company-detail-result-{item_index}", self.actor_run_id);
         let body = json!({"eventName": COMPANY_DETAIL_RESULT_EVENT, "count": 1});
@@ -237,9 +240,6 @@ impl ApifyClient {
             .await?;
         successful_response(response, "charge company detail result").await?;
         budget.record_charge(COMPANY_DETAIL_RESULT_EVENT)?;
-
-        self.push_dataset_item(item).await?;
-        budget.record_charge(DEFAULT_DATASET_ITEM_EVENT)?;
 
         let status_message = if !budget.can_charge_next_item()? {
             log_charge_limit(1, 1);
@@ -427,43 +427,64 @@ mod tests {
     use std::{
         io::{Read, Write},
         net::{TcpListener, TcpStream},
-        sync::mpsc::{self, Receiver},
         thread::{self, JoinHandle},
-        time::Duration,
+        time::{Duration, Instant},
     };
 
     struct MockServer {
         base_url: String,
-        requests: Receiver<String>,
-        thread: JoinHandle<()>,
+        thread: JoinHandle<Vec<String>>,
     }
 
     impl MockServer {
-        fn start(expected_requests: usize) -> Self {
+        fn start(max_requests: usize, quiet_timeout: Duration, status: StatusCode) -> Self {
             let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            listener.set_nonblocking(true).unwrap();
             let address = listener.local_addr().unwrap();
-            let (sender, requests) = mpsc::channel();
             let thread = thread::spawn(move || {
-                for _ in 0..expected_requests {
-                    let (mut stream, _) = listener.accept().unwrap();
-                    let request = read_request(&mut stream);
-                    sender.send(request).unwrap();
-                    stream
-                        .write_all(
-                            b"HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}",
-                        )
-                        .unwrap();
+                let mut requests = Vec::new();
+                let mut last_request_at = Instant::now();
+                loop {
+                    match listener.accept() {
+                        Ok((mut stream, _)) => {
+                            let request = read_request(&mut stream);
+                            requests.push(request);
+                            let reason = status.canonical_reason().unwrap_or("Response");
+                            let response_body = if status.is_success() {
+                                "{}"
+                            } else {
+                                "dataset append failed"
+                            };
+                            write!(
+                                stream,
+                                "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{response_body}",
+                                response_body.len()
+                            )
+                            .unwrap();
+                            last_request_at = Instant::now();
+                            if requests.len() >= max_requests {
+                                break;
+                            }
+                        }
+                        Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                            if last_request_at.elapsed() >= quiet_timeout {
+                                break;
+                            }
+                            thread::sleep(Duration::from_millis(10));
+                        }
+                        Err(error) => panic!("mock server accept failed: {error}"),
+                    }
                 }
+                requests
             });
             Self {
                 base_url: format!("http://{address}"),
-                requests,
                 thread,
             }
         }
 
-        fn request(&self) -> String {
-            self.requests.recv_timeout(Duration::from_secs(5)).unwrap()
+        fn finish(self) -> Vec<String> {
+            self.thread.join().unwrap()
         }
     }
 
@@ -562,8 +583,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn charges_the_custom_event_then_writes_only_the_budgeted_dataset_item() {
-        let server = MockServer::start(2);
+    async fn stores_the_budgeted_dataset_item_before_charging_it() {
+        let server = MockServer::start(2, Duration::from_secs(2), StatusCode::CREATED);
         let client = ApifyClient::new(
             &server.base_url,
             "test-token".into(),
@@ -587,7 +608,17 @@ mod tests {
         );
         assert!(!budget.can_charge_next_item().unwrap());
 
-        let charge_request = server.request();
+        let requests = server.finish();
+        assert_eq!(requests.len(), 2);
+
+        let dataset_request = &requests[0];
+        assert!(dataset_request.starts_with("POST /v2/datasets/test-dataset/items HTTP/1.1"));
+        assert_eq!(
+            request_body(dataset_request),
+            json!([{"company_domain":"example.com"}])
+        );
+
+        let charge_request = &requests[1];
         let charge_headers = charge_request.to_ascii_lowercase();
         assert!(charge_request.starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
         assert!(charge_headers.contains("authorization: bearer test-token"));
@@ -596,13 +627,39 @@ mod tests {
             request_body(&charge_request),
             json!({"eventName":"company-detail-result", "count":1})
         );
+    }
 
-        let dataset_request = server.request();
-        assert!(dataset_request.starts_with("POST /v2/datasets/test-dataset/items HTTP/1.1"));
+    #[tokio::test]
+    async fn does_not_charge_or_replay_a_failed_dataset_append() {
+        let server = MockServer::start(
+            3,
+            Duration::from_millis(1_500),
+            StatusCode::SERVICE_UNAVAILABLE,
+        );
+        let client = ApifyClient::new(
+            &server.base_url,
+            "test-token".into(),
+            "test-store".into(),
+            "test-dataset".into(),
+            "test-run".into(),
+            "INPUT".into(),
+        )
+        .unwrap();
+        let mut budget = ChargeBudget::from_run(&pricing_run(0.15, json!({}))).unwrap();
+
+        let error = client
+            .push_charged_item(&json!({"company_domain":"example.com"}), &mut budget, 7)
+            .await
+            .unwrap_err();
+
+        assert!(error.to_string().contains("503"));
+        assert!(budget.can_charge_next_item().unwrap());
+        let requests = server.finish();
+        assert_eq!(requests.len(), 1);
+        assert!(requests[0].starts_with("POST /v2/datasets/test-dataset/items HTTP/1.1"));
         assert_eq!(
-            request_body(&dataset_request),
+            request_body(&requests[0]),
             json!([{"company_domain":"example.com"}])
         );
-        server.thread.join().unwrap();
     }
 }
