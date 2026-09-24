@@ -398,6 +398,19 @@ impl PricingState {
         Ok(spent + item_price <= max_total_charge_usd + tolerance)
     }
 
+    pub(crate) fn can_save_dataset_item(&self) -> Result<bool> {
+        if !self.is_pay_per_event {
+            return Ok(true);
+        }
+        let Some(max_total_charge_usd) = self.max_total_charge_usd else {
+            return Ok(true);
+        };
+        let item_price = self.event_price(DEFAULT_DATASET_ITEM_EVENT)?;
+        let spent = self.spent_so_far()?;
+        let tolerance = f64::EPSILON * max_total_charge_usd.max(1.0);
+        Ok(spent + item_price <= max_total_charge_usd + tolerance)
+    }
+
     pub(crate) fn event_price(&self, event_name: &str) -> Result<f64> {
         let Some(value) = self.event_prices.get(event_name) else {
             return Ok(0.0);
@@ -505,6 +518,10 @@ async fn recover_charged_item(
         .get("status")
         .and_then(Value::as_str)
         .ok_or_else(|| anyhow!("PPE recovery record {journal_key} has no status"))?;
+    let journal_version = record
+        .get("journal_version")
+        .and_then(Value::as_u64)
+        .unwrap_or(1);
     let recovery_idempotency_key = record
         .get("idempotency_key")
         .and_then(Value::as_str)
@@ -523,46 +540,115 @@ async fn recover_charged_item(
     if record.get("item").is_none() {
         bail!("PPE recovery record {journal_key} has no dataset item");
     }
+    let recovery_item = record
+        .get("item")
+        .cloned()
+        .ok_or_else(|| anyhow!("PPE recovery record {journal_key} has no dataset item"))?;
     state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom);
     state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset);
 
-    if status == "charged" {
-        state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+    if journal_version < 2 {
+        if status == "charged" {
+            if !apify.dataset_contains_doctor_url(doctor_url).await? {
+                bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
+            }
+            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+            state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
+            return Ok(PushChargedItemResult {
+                saved_count: 1,
+                status_message: None,
+            });
+        }
+        if status != "pending" && status != "saved" {
+            bail!("PPE recovery record {journal_key} has unsupported status {status}");
+        }
+        if !apify.dataset_contains_doctor_url(doctor_url).await? {
+            bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
+        }
+
         state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
+        if state.event_count(SCRAPPA_CHARGE_EVENT) > baseline_custom {
+            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+        } else {
+            if !state.can_charge_custom_event()? {
+                bail!("Charge limit prevents custom charging of the saved Jameda doctor result for {doctor_url}");
+            }
+            apify
+                .charge_event(SCRAPPA_CHARGE_EVENT, &recovery_idempotency_key)
+                .await?;
+            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+        }
+
+        record["journal_version"] = json!(2);
+        record["status"] = json!("saved");
+        if let Err(error) = apify.put_record(&journal_key, &record).await {
+            eprintln!("Could not finalize PPE recovery record {journal_key}: {error}");
+        }
         return Ok(PushChargedItemResult {
             saved_count: 1,
             status_message: None,
         });
     }
-    if status != "pending" && status != "saved" {
-        bail!("PPE recovery record {journal_key} has unsupported status {status}");
-    }
 
-    if status == "pending" {
-        if !apify.dataset_contains_doctor_url(doctor_url).await? {
-            bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
+    match status {
+        "saved" => {
+            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+            state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
+            return Ok(PushChargedItemResult {
+                saved_count: 1,
+                status_message: None,
+            });
         }
-        state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
-        record["status"] = json!("saved");
-        apify.put_record(&journal_key, &record).await?;
-    } else {
-        state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
-    }
-
-    if state.event_count(SCRAPPA_CHARGE_EVENT) > baseline_custom {
-        state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-    } else {
-        if !state.can_charge_custom_event()? {
-            bail!("Charge limit prevents custom charging of the saved Jameda doctor result for {doctor_url}");
+        "publishing" => {
+            if !apify.dataset_contains_doctor_url(doctor_url).await? {
+                bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
+            }
+            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+            state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
+            record["status"] = json!("saved");
+            if let Err(error) = apify.put_record(&journal_key, &record).await {
+                eprintln!("Could not finalize PPE recovery record {journal_key}: {error}");
+            }
+            return Ok(PushChargedItemResult {
+                saved_count: 1,
+                status_message: None,
+            });
         }
-        apify
-            .charge_event(SCRAPPA_CHARGE_EVENT, &recovery_idempotency_key)
-            .await?;
-        state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+        "pending" => {
+            if state.event_count(SCRAPPA_CHARGE_EVENT) > baseline_custom {
+                state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+            } else {
+                if !state.can_save_one_result()? {
+                    return Ok(charge_limit_reached());
+                }
+                apify
+                    .charge_event(SCRAPPA_CHARGE_EVENT, &recovery_idempotency_key)
+                    .await?;
+                state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+            }
+            record["status"] = json!("charged");
+            apify.put_record(&journal_key, &record).await?;
+        }
+        "charged" => {
+            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
+        }
+        _ => bail!("PPE recovery record {journal_key} has unsupported status {status}"),
     }
 
-    record["status"] = json!("charged");
+    if !state.can_save_dataset_item()? {
+        bail!("Charge limit prevents saving the charged Jameda doctor result for {doctor_url}");
+    }
+    record["status"] = json!("publishing");
     apify.put_record(&journal_key, &record).await?;
+    apify
+        .push_dataset_item_with_recovery(&recovery_item, doctor_url)
+        .await?;
+    state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
+
+    record["status"] = json!("saved");
+    if let Err(error) = apify.put_record(&journal_key, &record).await {
+        eprintln!("Could not finalize PPE recovery record {journal_key}: {error}");
+    }
     Ok(PushChargedItemResult {
         saved_count: 1,
         status_message: None,
@@ -606,7 +692,8 @@ pub(crate) async fn push_charged_item(
 
     let baseline_custom = state.event_count(SCRAPPA_CHARGE_EVENT);
     let baseline_dataset = state.event_count(DEFAULT_DATASET_ITEM_EVENT);
-    let mut record = json!({
+    let record = json!({
+        "journal_version": 2,
         "status": "pending",
         "doctor_url": doctor_url,
         "item": item,
@@ -617,29 +704,7 @@ pub(crate) async fn push_charged_item(
         }
     });
     apify.put_record(&journal_key, &record).await?;
-    apify
-        .push_dataset_item_with_recovery(item, doctor_url)
-        .await?;
-    state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
-
-    record["status"] = json!("saved");
-    apify.put_record(&journal_key, &record).await?;
-
-    if !state.can_charge_custom_event()? {
-        bail!("Charge limit prevents custom charging of the saved Jameda doctor result for {doctor_url}");
-    }
-    apify
-        .charge_event(SCRAPPA_CHARGE_EVENT, &idempotency_key)
-        .await?;
-    state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-
-    record["status"] = json!("charged");
-    apify.put_record(&journal_key, &record).await?;
-
-    Ok(PushChargedItemResult {
-        saved_count: 1,
-        status_message: None,
-    })
+    recover_charged_item(apify, state, record, result_index, doctor_url).await
 }
 
 fn charge_limit_reached() -> PushChargedItemResult {

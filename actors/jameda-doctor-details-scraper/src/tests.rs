@@ -549,10 +549,13 @@ async fn spending_limit_skips_dataset_and_custom_event_when_result_does_not_fit(
 }
 
 #[tokio::test]
-async fn dataset_failure_does_not_charge_the_custom_result_event() {
+async fn dataset_failure_keeps_the_charge_journal_and_does_not_replay() {
     let (base_url, server) = start_mock_server(vec![
         (200, mock_ppe_run(json!(0.0011), json!({})).to_string()),
         (404, String::new()),
+        (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
         (201, "{}".to_owned()),
         (400, r#"{"error":"dataset write rejected"}"#.to_owned()),
         (200, "[]".to_owned()),
@@ -571,19 +574,31 @@ async fn dataset_failure_does_not_charge_the_custom_result_event() {
     .await
     .unwrap_err();
 
-    assert!(error
-        .to_string()
-        .contains("dataset item publication failed"));
+    assert!(error.to_string().contains("dataset item publication failed"));
     let requests = server.await.unwrap();
-    assert!(!requests.iter().any(|request| request
-        .head
-        .starts_with("POST /v2/actor-runs/test-run/charge")));
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.head.starts_with("POST /v2/actor-runs/test-run/charge"))
+            .count(),
+        1
+    );
     assert_eq!(
         requests
             .iter()
             .filter(|request| request.head.starts_with("POST /v2/datasets/dataset/items"))
             .count(),
         1
+    );
+    assert!(requests[3]
+        .head
+        .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
+    assert!(requests[6]
+        .head
+        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
+    assert_eq!(
+        serde_json::from_str::<Value>(&requests[5].body).unwrap()["status"],
+        "publishing"
     );
 }
 
@@ -592,6 +607,9 @@ async fn does_not_replay_an_ambiguous_dataset_post_when_recovery_finds_no_row() 
     let (base_url, server) = start_mock_server(vec![
         (200, mock_ppe_run(json!(0.0011), json!({})).to_string()),
         (404, String::new()),
+        (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
         (201, "{}".to_owned()),
         (503, r#"{"error":"dataset response lost"}"#.to_owned()),
         (200, "[]".to_owned()),
@@ -614,6 +632,7 @@ async fn does_not_replay_an_ambiguous_dataset_post_when_recovery_finds_no_row() 
         .to_string()
         .contains("will not be retried to avoid duplicates"));
     let requests = server.await.unwrap();
+    assert_eq!(requests.len(), 8);
     assert_eq!(
         requests
             .iter()
@@ -621,16 +640,21 @@ async fn does_not_replay_an_ambiguous_dataset_post_when_recovery_finds_no_row() 
             .count(),
         1
     );
-    assert!(!requests.iter().any(|request| request
-        .head
-        .starts_with("POST /v2/actor-runs/test-run/charge")));
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.head.starts_with("POST /v2/actor-runs/test-run/charge"))
+            .count(),
+        1
+    );
 }
 
 #[tokio::test]
-async fn publishes_row_before_charge_and_journals_each_confirmed_step() {
+async fn charges_before_publishing_and_journals_each_confirmed_step() {
     let (base_url, server) = start_mock_server(vec![
         (200, mock_ppe_run(json!(0.0011), json!({})).to_string()),
         (404, String::new()),
+        (201, "{}".to_owned()),
         (201, "{}".to_owned()),
         (201, "{}".to_owned()),
         (201, "{}".to_owned()),
@@ -647,23 +671,25 @@ async fn publishes_row_before_charge_and_journals_each_confirmed_step() {
 
     assert_eq!(result.saved_count, 1);
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 7);
+    assert_eq!(requests.len(), 8);
     assert!(requests[3]
         .head
-        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
-    assert!(requests[5]
-        .head
         .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
+    assert!(requests[6]
+        .head
+        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
     assert!(
         requests
             .iter()
-            .position(|request| request.head.starts_with("POST /v2/datasets/dataset/items"))
-            < requests.iter().position(|request| request
+            .position(|request| request
                 .head
                 .starts_with("POST /v2/actor-runs/test-run/charge"))
+            < requests
+                .iter()
+                .position(|request| request.head.starts_with("POST /v2/datasets/dataset/items"))
     );
     assert_eq!(
-        serde_json::from_str::<Value>(&requests[3].body).unwrap(),
+        serde_json::from_str::<Value>(&requests[6].body).unwrap(),
         item
     );
     assert_eq!(
@@ -672,21 +698,23 @@ async fn publishes_row_before_charge_and_journals_each_confirmed_step() {
     );
     assert_eq!(
         serde_json::from_str::<Value>(&requests[4].body).unwrap()["status"],
-        "saved"
+        "charged"
     );
     assert_eq!(
-        serde_json::from_str::<Value>(&requests[6].body).unwrap()["status"],
-        "charged"
+        serde_json::from_str::<Value>(&requests[5].body).unwrap()["status"],
+        "publishing"
+    );
+    assert_eq!(
+        serde_json::from_str::<Value>(&requests[7].body).unwrap()["status"],
+        "saved"
     );
 }
 
 #[tokio::test]
-async fn rejected_charge_keeps_the_confirmed_row_recoverable() {
+async fn rejected_charge_never_publishes_a_dataset_item() {
     let (base_url, server) = start_mock_server(vec![
         (200, mock_ppe_run(json!(1.0), json!({})).to_string()),
         (404, String::new()),
-        (201, "{}".to_owned()),
-        (201, "{}".to_owned()),
         (201, "{}".to_owned()),
         (400, r#"{"error":"charge rejected"}"#.to_owned()),
     ])
@@ -706,17 +734,13 @@ async fn rejected_charge_keeps_the_confirmed_row_recoverable() {
 
     assert!(error.to_string().contains("event charge failed (400)"));
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 6);
+    assert_eq!(requests.len(), 4);
     assert!(requests[3]
         .head
-        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
-    assert!(requests[5]
-        .head
         .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
-    assert_eq!(
-        serde_json::from_str::<Value>(&requests[4].body).unwrap()["status"],
-        "saved"
-    );
+    assert!(!requests
+        .iter()
+        .any(|request| request.head.starts_with("POST /v2/datasets/dataset/items")));
 }
 
 #[tokio::test]
@@ -726,10 +750,11 @@ async fn recovery_finds_a_row_after_ambiguous_dataset_failure_without_duplicatin
         (200, mock_ppe_run(json!(0.0011), json!({})).to_string()),
         (404, String::new()),
         (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
         (503, r#"{"error":"write response lost"}"#.to_owned()),
         (200, json!([item]).to_string()),
-        (201, "{}".to_owned()),
-        (201, "{}".to_owned()),
         (201, "{}".to_owned()),
     ])
     .await;
@@ -757,23 +782,27 @@ async fn recovery_finds_a_row_after_ambiguous_dataset_failure_without_duplicatin
             .count(),
         1
     );
-    assert_eq!(requests.len(), 8);
+    assert_eq!(requests.len(), 9);
     assert!(requests[3]
         .head
-        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
-    assert!(requests[4]
-        .head
-        .starts_with("GET /v2/datasets/dataset/items?format=json&clean=true&limit=1000 HTTP/1.1"));
+        .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
     assert!(requests[6]
         .head
-        .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
+        .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
+    assert!(requests[7]
+        .head
+        .starts_with("GET /v2/datasets/dataset/items?format=json&clean=true&limit=1000 HTTP/1.1"));
     assert_eq!(
-        serde_json::from_str::<Value>(&requests[5].body).unwrap()["status"],
-        "saved"
+        serde_json::from_str::<Value>(&requests[4].body).unwrap()["status"],
+        "charged"
     );
     assert_eq!(
-        serde_json::from_str::<Value>(&requests[7].body).unwrap()["status"],
-        "charged"
+        serde_json::from_str::<Value>(&requests[5].body).unwrap()["status"],
+        "publishing"
+    );
+    assert_eq!(
+        serde_json::from_str::<Value>(&requests[8].body).unwrap()["status"],
+        "saved"
     );
 }
 
@@ -800,6 +829,7 @@ async fn saved_result_recovers_an_already_recorded_charge_without_reposting() {
             .to_string(),
         ),
         (200, recovery_record.to_string()),
+        (200, json!([item]).to_string()),
         (201, "{}".to_owned()),
     ])
     .await;
@@ -811,17 +841,19 @@ async fn saved_result_recovers_an_already_recorded_charge_without_reposting() {
 
     assert_eq!(result.saved_count, 1);
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 3);
+    assert_eq!(requests.len(), 4);
     assert!(!requests.iter().any(|request| request
         .head
         .starts_with("POST /v2/actor-runs/test-run/charge")));
     assert!(!requests
         .iter()
         .any(|request| request.head.starts_with("POST /v2/datasets/dataset/items")));
-    assert_eq!(
-        serde_json::from_str::<Value>(&requests[2].body).unwrap()["status"],
-        "charged"
-    );
+    assert!(requests[2]
+        .head
+        .starts_with("GET /v2/datasets/dataset/items?format=json&clean=true&limit=1000 HTTP/1.1"));
+    let finalized_record = serde_json::from_str::<Value>(&requests[3].body).unwrap();
+    assert_eq!(finalized_record["journal_version"], 2);
+    assert_eq!(finalized_record["status"], "saved");
 }
 
 #[tokio::test]
@@ -847,6 +879,7 @@ async fn resumes_a_charged_result_from_its_journal_before_upstream_fetch() {
             )
             .to_string(),
         ),
+        (200, json!([item]).to_string()),
     ])
     .await;
     let apify = mock_apify_client(base_url);
@@ -864,13 +897,16 @@ async fn resumes_a_charged_result_from_its_journal_before_upstream_fetch() {
     assert!(requests[1]
         .head
         .starts_with("GET /v2/actor-runs/test-run HTTP/1.1"));
+    assert!(requests[2]
+        .head
+        .starts_with("GET /v2/datasets/dataset/items?format=json&clean=true&limit=1000 HTTP/1.1"));
     assert!(!requests.iter().any(|request| request
         .head
         .starts_with("POST /v2/actor-runs/test-run/charge")));
     assert!(!requests
         .iter()
         .any(|request| request.head.starts_with("POST /v2/datasets/dataset/items")));
-    assert_eq!(requests.len(), 2);
+    assert_eq!(requests.len(), 3);
     assert!(!requests
         .iter()
         .any(|request| request.head.starts_with("GET /jameda/doctor-details")));
@@ -907,6 +943,48 @@ async fn pending_recovery_without_a_confirmed_row_fails_without_reposting() {
     )
     .await
     .unwrap_err();
+
+    assert!(error
+        .to_string()
+        .contains("will not be retried to avoid duplicates"));
+    let requests = server.await.unwrap();
+    assert_eq!(requests.len(), 3);
+    assert!(!requests
+        .iter()
+        .any(|request| request.head.starts_with("POST /v2/datasets/dataset/items")));
+    assert!(!requests.iter().any(|request| request
+        .head
+        .starts_with("POST /v2/actor-runs/test-run/charge")));
+}
+
+#[tokio::test]
+async fn publishing_recovery_without_a_confirmed_row_fails_without_reposting() {
+    let item = json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL});
+    let recovery_record = json!({
+        "journal_version":2,
+        "status":"publishing",
+        "doctor_url":MARKUS_URL,
+        "item":item,
+        "idempotency_key":"test-run-doctor-profile-result-1",
+        "baseline_event_counts": {
+            "doctor-profile-result":0,
+            "apify-default-dataset-item":0
+        }
+    });
+    let (base_url, server) = start_mock_server(vec![
+        (200, recovery_record.to_string()),
+        (
+            200,
+            mock_ppe_run(json!(0.0011), json!({"doctor-profile-result":1})).to_string(),
+        ),
+        (200, "[]".to_owned()),
+    ])
+    .await;
+    let apify = mock_apify_client(base_url);
+    let mut pricing = None;
+    let error = resume_charged_item(&apify, &mut pricing, 1, MARKUS_URL)
+        .await
+        .unwrap_err();
 
     assert!(error
         .to_string()
