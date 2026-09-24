@@ -163,7 +163,9 @@ impl ApifyClient {
 
         self.push_dataset_items(&items[..decision.charged_count])
             .await?;
-        budget.record_charge(DATASET_ITEM_CHARGE_EVENT, decision.charged_count)?;
+        if budget.event_prices.contains_key(DATASET_ITEM_CHARGE_EVENT) {
+            budget.record_charge(DATASET_ITEM_CHARGE_EVENT, decision.charged_count)?;
+        }
 
         let url = self.endpoint(&["actor-runs", &self.config.actor_run_id, "charge"])?;
         let idempotency_key = charge_idempotency_key(&self.config.actor_run_id);
@@ -339,9 +341,6 @@ impl PpeBudget {
         if !event_prices.contains_key(DOCTOR_RESULT_CHARGE_EVENT) {
             bail!("Apify run did not provide the {DOCTOR_RESULT_CHARGE_EVENT} event price");
         }
-        if !event_prices.contains_key(DATASET_ITEM_CHARGE_EVENT) {
-            bail!("Apify run did not provide the {DATASET_ITEM_CHARGE_EVENT} event price");
-        }
 
         Ok(Self {
             event_prices,
@@ -356,10 +355,11 @@ impl PpeBudget {
             .event_prices
             .get(event_name)
             .ok_or_else(|| anyhow!("Apify run did not provide the {event_name} event price"))?;
-        let dataset_item_price = *self
+        let dataset_item_price = self
             .event_prices
             .get(DATASET_ITEM_CHARGE_EVENT)
-            .ok_or_else(|| anyhow!("Apify run did not provide the {DATASET_ITEM_CHARGE_EVENT} event price"))?;
+            .copied()
+            .unwrap_or(0.0);
         let row_price = event_price + dataset_item_price;
         if !row_price.is_finite() {
             bail!("Apify run returned invalid per-row charges");
@@ -569,10 +569,11 @@ mod tests {
             .as_object_mut()
             .unwrap()
             .remove("apify-default-dataset-item");
-        assert!(PpeBudget::from_run(&missing_dataset_item_price)
-            .unwrap_err()
-            .to_string()
-            .contains("apify-default-dataset-item"));
+        let budget = PpeBudget::from_run(&missing_dataset_item_price).unwrap();
+        assert_eq!(
+            budget.plan_charge(DOCTOR_RESULT_CHARGE_EVENT, 2).unwrap().charged_count,
+            2
+        );
         assert!(!is_pay_per_event(
             &json!({"data":{"pricingInfo":{"pricingModel":"PRICE_PER_DATASET_ITEM"}}})
         )
