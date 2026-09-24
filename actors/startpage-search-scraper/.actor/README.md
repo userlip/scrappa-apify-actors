@@ -53,6 +53,8 @@ Each dataset item is one Startpage organic result:
 }
 ```
 
+The default key-value store's `OUTPUT` record contains a run summary with the normalized requests, fetched query count, extracted and saved result counts, per-query result cap, and whether the PPE charge limit stopped the batch early.
+
 ## Notes
 
 For higher-volume Startpage collection or direct API access, use Scrappa's Startpage Search API at `https://scrappa.co/api/startpage/search`.
