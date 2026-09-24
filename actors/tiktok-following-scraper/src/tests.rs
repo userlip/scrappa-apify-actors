@@ -234,6 +234,60 @@ fn calculates_ppe_capacity_from_existing_run_charges() {
     );
 }
 
+#[test]
+fn treats_missing_null_and_zero_spending_limits_as_unlimited() {
+    let run_with_limit = |max_charge: Option<Value>| {
+        let mut run = json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {
+                        "actorChargeEvents": {
+                            "apify-default-dataset-item": { "eventPriceUsd": 0.0001 },
+                            "other-event": { "eventPriceUsd": 0.0001 }
+                        }
+                    }
+                },
+                "chargedEventCounts": { "other-event": 1 },
+                "options": {}
+            }
+        });
+        if let Some(max_charge) = max_charge {
+            run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
+        }
+        run
+    };
+
+    let runs = [
+        run_with_limit(None),
+        run_with_limit(Some(Value::Null)),
+        run_with_limit(Some(json!(0))),
+        run_with_limit(Some(json!(0.00025))),
+    ];
+
+    let capacities = runs
+        .iter()
+        .map(|run| {
+            affordable_dataset_items(run, 5, &mut DatasetBudget::default())
+                .map_err(|error| error.to_string())
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(capacities, vec![Ok(5), Ok(5), Ok(5), Ok(1)]);
+}
+
+#[test]
+fn does_not_limit_non_ppe_runs() {
+    let run = json!({
+        "data": {
+            "pricingInfo": { "pricingModel": "PRICE_PER_DATASET_ITEM" }
+        }
+    });
+    assert_eq!(
+        affordable_dataset_items(&run, 5, &mut DatasetBudget::default()).unwrap(),
+        5
+    );
+}
+
 fn mock_server(
     responses: Vec<(&'static str, &'static str)>,
 ) -> (Url, thread::JoinHandle<Vec<String>>) {
@@ -405,6 +459,43 @@ async fn stops_at_the_ppe_cap_and_keeps_small_run_output_response() {
     assert!(requests[3].contains("\"lookup_user_id\":\"107955\""));
     assert!(requests[4].contains("\"following\":[{\"user_id\":\"1\"},{\"user_id\":\"2\"}]"));
     assert!(!requests[4].contains("\"following_extracted\""));
+}
+
+#[tokio::test]
+async fn zero_ppe_cap_writes_all_rows_and_preserves_output_count() {
+    let (base_url, server) = mock_server_until_idle(vec![
+        ("200 OK", r#"{"profile":"107955","count":10}"#),
+        (
+            "200 OK",
+            r#"{"code":0,"data":{"following":[{"user_id":"1"},{"user_id":"2"}],"hasMore":false,"time":0},"processed_time":30}"#,
+        ),
+        (
+            "200 OK",
+            r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0001}}}},"chargedEventCounts":{},"options":{"maxTotalChargeUsd":0}}}"#,
+        ),
+        ("201 Created", ""),
+        ("201 Created", ""),
+    ]);
+    let config = test_config(base_url, "test-scrappa-key");
+    let client = Client::builder().timeout(REQUEST_TIMEOUT).build().unwrap();
+
+    run_actor(&client, &config).await.unwrap();
+    let requests = server.join().unwrap();
+
+    assert_eq!(requests.len(), 5);
+    let dataset_write = requests
+        .iter()
+        .find(|request| request.starts_with("POST /api/v2/datasets/dataset-id/items "))
+        .unwrap();
+    assert!(dataset_write.contains("\"user_id\":\"1\""));
+    assert!(dataset_write.contains("\"user_id\":\"2\""));
+    let output = requests
+        .iter()
+        .find(|request| request.starts_with("PUT /api/v2/key-value-stores/store-id/records/OUTPUT "))
+        .unwrap();
+    assert!(output.contains("\"following\":[{\"user_id\":\"1\"},{\"user_id\":\"2\"}]"));
+    assert!(output.contains("\"processed_time\":30"));
+    assert!(!output.contains("\"following_extracted\""));
 }
 
 #[tokio::test]

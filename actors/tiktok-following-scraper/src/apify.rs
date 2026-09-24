@@ -160,7 +160,23 @@ pub(crate) fn affordable_dataset_items(
         .and_then(Value::as_str)
         != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        return Ok(requested);
+    }
+
+    let Some(max_charge) = data.pointer("/options/maxTotalChargeUsd") else {
+        return Ok(requested);
+    };
+    if max_charge.is_null() {
+        return Ok(requested);
+    }
+    let max_charge = max_charge
+        .as_f64()
+        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+    if !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+    if max_charge == 0.0 {
+        return Ok(requested);
     }
 
     let events = data
@@ -172,11 +188,7 @@ pub(crate) fn affordable_dataset_items(
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
