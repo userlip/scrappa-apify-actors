@@ -167,10 +167,11 @@ impl ApifyClient {
     pub async fn push_dataset_item(&self, item: &Value) -> Result<()> {
         let url = self.endpoint(&["datasets", &self.dataset_id, "items"])?;
         let response = self
-            .send_with_retry("store a result in the default dataset", || {
-                self.request(Method::POST, url.clone()).json(item)
-            })
-            .await?;
+            .request(Method::POST, url)
+            .json(item)
+            .send()
+            .await
+            .context("store a result in the default dataset failed")?;
         require_success(response, "store dataset item").await?;
         Ok(())
     }
@@ -181,6 +182,10 @@ impl ApifyClient {
         count: usize,
         idempotency_key: &str,
     ) -> Result<()> {
+        if idempotency_key.trim().is_empty() {
+            return Err(anyhow!("charge event idempotency key must not be empty"));
+        }
+
         let url = self.endpoint(&["actor-runs", &self.actor_run_id, "charge"])?;
         let body = json!({"eventName": event_name, "count": count});
         let response = self
@@ -349,9 +354,140 @@ async fn require_success(response: Response, operation: &str) -> Result<Response
 
 #[cfg(test)]
 mod tests {
-    use reqwest::StatusCode;
+    use std::{
+        io::{BufRead, BufReader, Read, Write},
+        net::{TcpListener, TcpStream},
+        sync::mpsc,
+        thread,
+        time::Duration,
+    };
 
-    use super::{apify_retry_delay, is_retryable_status};
+    use anyhow::Result;
+    use reqwest::Client;
+    use reqwest::StatusCode;
+    use serde_json::{json, Value};
+
+    use super::{apify_retry_delay, is_retryable_status, ApifyClient};
+
+    enum FirstDatasetResponse {
+        ServerError,
+        Lost,
+    }
+
+    struct MockDatasetServer {
+        base_url: String,
+        rows: mpsc::Receiver<Vec<Value>>,
+        stop: mpsc::Sender<()>,
+        thread: thread::JoinHandle<()>,
+    }
+
+    impl MockDatasetServer {
+        fn start(first_response: FirstDatasetResponse) -> Self {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            listener.set_nonblocking(true).unwrap();
+            let address = listener.local_addr().unwrap();
+            let (stop, stop_requested) = mpsc::channel();
+            let (stored_rows, rows) = mpsc::channel();
+            let thread = thread::spawn(move || {
+                let mut rows = Vec::new();
+                let mut request_count = 0;
+                loop {
+                    if stop_requested.try_recv().is_ok() {
+                        break;
+                    }
+
+                    match listener.accept() {
+                        Ok((mut stream, _)) => {
+                            stream
+                                .set_read_timeout(Some(Duration::from_secs(2)))
+                                .unwrap();
+                            let item = read_dataset_item(&mut stream).unwrap();
+                            rows.push(item);
+                            request_count += 1;
+
+                            if request_count == 1 {
+                                match first_response {
+                                    FirstDatasetResponse::ServerError => {
+                                        write_response(&mut stream, 500);
+                                    }
+                                    FirstDatasetResponse::Lost => {
+                                        thread::sleep(Duration::from_millis(150));
+                                    }
+                                }
+                            } else {
+                                write_response(&mut stream, 201);
+                            }
+                        }
+                        Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                            thread::sleep(Duration::from_millis(1));
+                        }
+                        Err(error) => panic!("mock Apify server failed: {error}"),
+                    }
+                }
+                stored_rows.send(rows).unwrap();
+            });
+
+            Self {
+                base_url: format!("http://{address}"),
+                rows,
+                stop,
+                thread,
+            }
+        }
+
+        fn finish(self) -> Vec<Value> {
+            self.stop.send(()).unwrap();
+            self.thread.join().unwrap();
+            self.rows.recv().unwrap()
+        }
+    }
+
+    fn client(base_url: String, timeout: Duration) -> ApifyClient {
+        ApifyClient {
+            http: Client::builder().timeout(timeout).build().unwrap(),
+            base_url,
+            token: "test-token".to_owned(),
+            actor_run_id: "test-run".to_owned(),
+            key_value_store_id: "default".to_owned(),
+            dataset_id: "default".to_owned(),
+            input_key: "INPUT".to_owned(),
+            is_at_home: true,
+        }
+    }
+
+    fn read_dataset_item(stream: &mut TcpStream) -> Result<Value> {
+        let mut request = BufReader::new(stream);
+        let mut line = String::new();
+        request.read_line(&mut line)?;
+        let mut body_length = 0;
+        loop {
+            line.clear();
+            if request.read_line(&mut line)? == 0 {
+                anyhow::bail!("request ended before the dataset item was received");
+            }
+            if line == "\r\n" {
+                break;
+            }
+            if let Some((name, value)) = line.split_once(':') {
+                if name.eq_ignore_ascii_case("content-length") {
+                    body_length = value.trim().parse()?;
+                }
+            }
+        }
+
+        let mut body = vec![0; body_length];
+        request.read_exact(&mut body)?;
+        Ok(serde_json::from_slice(&body)?)
+    }
+
+    fn write_response(stream: &mut TcpStream, status: u16) {
+        let reason = if status == 201 { "Created" } else { "Internal Server Error" };
+        write!(
+            stream,
+            "HTTP/1.1 {status} {reason}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+        )
+        .unwrap();
+    }
 
     #[test]
     fn retries_rate_limits_and_server_errors_only() {
@@ -366,5 +502,31 @@ mod tests {
         assert_eq!(apify_retry_delay(1).as_millis(), 500);
         assert_eq!(apify_retry_delay(2).as_millis(), 1_000);
         assert_eq!(apify_retry_delay(8).as_millis(), 64_000);
+    }
+
+    #[tokio::test]
+    async fn does_not_retry_dataset_append_after_server_error() {
+        let server = MockDatasetServer::start(FirstDatasetResponse::ServerError);
+        let item = json!({"hotel": "ritz-paris"});
+        let result = client(server.base_url.clone(), Duration::from_secs(2))
+            .push_dataset_item(&item)
+            .await;
+        let rows = server.finish();
+
+        assert_eq!(rows, vec![item]);
+        assert!(result.is_err(), "the first 5xx response should be returned");
+    }
+
+    #[tokio::test]
+    async fn does_not_retry_dataset_append_after_lost_response() {
+        let server = MockDatasetServer::start(FirstDatasetResponse::Lost);
+        let item = json!({"hotel": "ritz-paris"});
+        let result = client(server.base_url.clone(), Duration::from_millis(25))
+            .push_dataset_item(&item)
+            .await;
+        let rows = server.finish();
+
+        assert_eq!(rows, vec![item]);
+        assert!(result.is_err(), "the timed-out append should be returned as an error");
     }
 }
