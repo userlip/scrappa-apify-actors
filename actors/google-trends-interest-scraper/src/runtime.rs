@@ -39,17 +39,18 @@ pub async fn run_actor(client: &Client, config: &Config) -> Result<()> {
             ppe_items_result(&mut budget, dataset_items.len());
         push_dataset_items(client, config, &dataset_items[..kept]).await?;
         charge_timeline_points(client, config, custom_charge.charged_count).await?;
-        let charge_result = custom_charge.merge(dataset_charge);
-        if charge_result.event_charge_limit_reached
-            && charge_result.charged_count < dataset_items.len()
-        {
+        let event_charge_limit_reached = custom_charge.event_charge_limit_reached
+            || dataset_charge.event_charge_limit_reached;
+        let saved_rows = kept;
+        if event_charge_limit_reached && saved_rows < dataset_items.len() {
             let status_message =
                 "Charge limit reached before saving all Google Trends timeline points.";
             println!(
                 "{status_message} {}",
                 json!({
                     "event": TIMELINE_POINT_CHARGE_EVENT,
-                    "charged_count": charge_result.charged_count,
+                    "charged_count": custom_charge.charged_count,
+                    "saved_rows": saved_rows,
                     "requested_count": dataset_items.len(),
                 })
             );

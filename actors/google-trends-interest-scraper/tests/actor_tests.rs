@@ -394,7 +394,7 @@ async fn charges_ppe_results_with_the_named_event_and_stores_output() {
 }
 
 #[tokio::test]
-async fn stops_after_partial_ppe_write_with_terminal_status_message() {
+async fn marks_one_of_three_ppe_rows_as_partial() {
     let input = r#"{"q":"tesla"}"#;
     let run = serde_json::to_string(&ppe_run(0.01, None, 0.005)).unwrap();
     let (base_url, server) = mock_server(vec![
@@ -423,4 +423,66 @@ async fn stops_after_partial_ppe_write_with_terminal_status_message() {
     assert!(requests
         .iter()
         .all(|request| !request.to_ascii_lowercase().contains("records/output")));
+}
+
+#[tokio::test]
+async fn marks_two_of_three_ppe_rows_as_partial() {
+    let input = r#"{"q":"tesla"}"#;
+    let run = serde_json::to_string(&ppe_run(0.0003, Some(0.0001), 0.0008)).unwrap();
+    let (base_url, server) = mock_server(vec![
+        ("200 OK", Box::leak(run.into_boxed_str())),
+        ("200 OK", input),
+        ("200 OK", THREE_POINT_RESPONSE),
+        ("201 Created", ""),
+        ("201 Created", "{}"),
+        ("200 OK", "{}"),
+    ]);
+    let config = test_config(base_url, "scrappa-test-key");
+    run_actor(&Client::new(), &config).await.unwrap();
+    let requests = server.join().unwrap();
+    assert_eq!(requests.len(), 6);
+    assert_eq!(request_body(&requests[3]).as_array().unwrap().len(), 2);
+    assert_eq!(request_body(&requests[4])["count"], 2);
+    assert!(requests[5]
+        .to_ascii_lowercase()
+        .starts_with("put /v2/actor-runs/run-id "));
+    let status = request_body(&requests[5]);
+    assert_eq!(
+        status["statusMessage"],
+        "Charge limit reached before saving all Google Trends timeline points."
+    );
+    assert_eq!(status["isStatusMessageTerminal"], true);
+    assert!(requests
+        .iter()
+        .all(|request| !request.to_ascii_lowercase().contains("records/output")));
+}
+
+#[tokio::test]
+async fn writes_full_output_when_all_ppe_rows_are_free() {
+    let input = r#"{"q":"tesla"}"#;
+    let run = serde_json::to_string(&ppe_run(0.0, Some(0.0), 0.0)).unwrap();
+    let (base_url, server) = mock_server(vec![
+        ("200 OK", Box::leak(run.into_boxed_str())),
+        ("200 OK", input),
+        ("200 OK", THREE_POINT_RESPONSE),
+        ("201 Created", ""),
+        ("201 Created", "{}"),
+        ("201 Created", ""),
+    ]);
+    let config = test_config(base_url, "scrappa-test-key");
+    run_actor(&Client::new(), &config).await.unwrap();
+    let requests = server.join().unwrap();
+    assert_eq!(requests.len(), 6);
+    assert_eq!(request_body(&requests[3]).as_array().unwrap().len(), 3);
+    assert_eq!(
+        request_body(&requests[4]),
+        json!({ "eventName": "timeline-point", "count": 3 })
+    );
+    assert!(requests[5]
+        .to_ascii_lowercase()
+        .starts_with("put /v2/key-value-stores/store-id/records/output"));
+    assert_eq!(
+        request_body(&requests[5]),
+        serde_json::from_str::<Value>(THREE_POINT_RESPONSE).unwrap()
+    );
 }
