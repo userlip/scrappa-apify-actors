@@ -7,6 +7,7 @@ use url::Url;
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const API_TIMEOUT: Duration = Duration::from_secs(60);
+const MAX_DATASET_REQUEST_BYTES: usize = 5_000_000;
 pub const FLIGHT_RESULT_CHARGE_EVENT: &str = "flight-result";
 const DEFAULT_DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 
@@ -97,27 +98,34 @@ impl<'a> ApifyClient<'a> {
             .pointer("/data/pricingInfo/pricingModel")
             .and_then(Value::as_str)
             == Some("PAY_PER_EVENT");
-        let saved_count = if is_pay_per_event {
-            let charge_count =
-                affordable_result_count(&run, FLIGHT_RESULT_CHARGE_EVENT, items.len())?;
-            if charge_count == 0 {
-                return Ok(PushDataResult {
-                    saved_count: 0,
-                    event_charge_limit_reached: true,
-                });
-            }
-            self.store_dataset_items(&items[..charge_count]).await?;
-            let idempotency_key = format!(
-                "{}:{FLIGHT_RESULT_CHARGE_EVENT}:results:1:count:{charge_count}",
-                self.config.actor_run_id
-            );
-            self.charge_events(FLIGHT_RESULT_CHARGE_EVENT, charge_count, &idempotency_key)
-                .await?;
-            charge_count
+        let save_count = if is_pay_per_event {
+            affordable_result_count(&run, FLIGHT_RESULT_CHARGE_EVENT, items.len())?
         } else {
-            self.store_dataset_items(items).await?;
             items.len()
         };
+        if is_pay_per_event && save_count == 0 {
+            return Ok(PushDataResult {
+                saved_count: 0,
+                event_charge_limit_reached: true,
+            });
+        }
+
+        let mut saved_count = 0;
+        for range in dataset_item_batch_ranges(&items[..save_count])? {
+            let batch = &items[range.clone()];
+            self.store_dataset_items(batch).await?;
+            if is_pay_per_event {
+                let idempotency_key = format!(
+                    "{}:{FLIGHT_RESULT_CHARGE_EVENT}:results:{}:count:{}",
+                    self.config.actor_run_id,
+                    range.start + 1,
+                    batch.len()
+                );
+                self.charge_events(FLIGHT_RESULT_CHARGE_EVENT, batch.len(), &idempotency_key)
+                    .await?;
+            }
+            saved_count += batch.len();
+        }
 
         Ok(PushDataResult {
             saved_count,
@@ -221,6 +229,41 @@ impl<'a> ApifyClient<'a> {
     fn endpoint(&self, segments: &[&str]) -> Result<Url> {
         endpoint_url(&self.config.apify_api_base, segments)
     }
+}
+
+fn dataset_item_batch_ranges(items: &[Value]) -> Result<Vec<std::ops::Range<usize>>> {
+    let mut ranges = Vec::new();
+    let mut start = 0;
+    let mut current_bytes: usize = 2;
+
+    for (index, item) in items.iter().enumerate() {
+        let item_bytes = serde_json::to_vec(item)?.len();
+        let single_item_bytes = item_bytes.saturating_add(2);
+        if single_item_bytes > MAX_DATASET_REQUEST_BYTES {
+            bail!(
+                "Dataset item {} exceeds Apify's {}-byte request limit",
+                index + 1,
+                MAX_DATASET_REQUEST_BYTES
+            );
+        }
+
+        let separator_bytes = usize::from(index > start);
+        let next_bytes = current_bytes
+            .saturating_add(separator_bytes)
+            .saturating_add(item_bytes);
+        if next_bytes > MAX_DATASET_REQUEST_BYTES {
+            ranges.push(start..index);
+            start = index;
+            current_bytes = single_item_bytes;
+        } else {
+            current_bytes = next_bytes;
+        }
+    }
+
+    if start < items.len() {
+        ranges.push(start..items.len());
+    }
+    Ok(ranges)
 }
 
 pub fn affordable_result_count(run: &Value, event_name: &str, requested: usize) -> Result<usize> {
@@ -532,12 +575,85 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn pay_per_event_dataset_writes_and_charges_each_size_limited_chunk() {
+        use std::collections::HashSet;
+
+        let run = json!({"data": {
+            "pricingInfo": {
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "flight-result": {"eventPriceUsd": 0.2},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.1}
+                }}
+            },
+            "chargedEventCounts": {},
+            "options": {"maxTotalChargeUsd": 0}
+        }});
+        let mut responses = vec![(200, run.to_string())];
+        for _ in 0..3 {
+            responses.push((201, String::new()));
+            responses.push((200, "{}".to_owned()));
+        }
+        let (base_url, server) = mock_server(responses);
+        let config = test_config(&base_url);
+        let http = Client::new();
+        let apify = ApifyClient::new(&http, &config);
+        let payload = "x".repeat(MAX_DATASET_REQUEST_BYTES / 2);
+        let items = (1..=3)
+            .map(|position| json!({"position": position, "payload": payload.clone()}))
+            .collect::<Vec<_>>();
+
+        let result = apify.push_dataset_items(&items).await.unwrap();
+
+        assert_eq!(result.saved_count, items.len());
+        assert!(!result.event_charge_limit_reached);
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 7);
+        assert_eq!(requests[0].target, "/v2/actor-runs/run-id");
+
+        let mut saved_positions = Vec::new();
+        let mut idempotency_keys = HashSet::new();
+        let mut charged_count = 0;
+        for chunk_index in 0..3 {
+            let dataset_request = &requests[1 + chunk_index * 2];
+            let charge_request = &requests[2 + chunk_index * 2];
+
+            assert_eq!(dataset_request.method, "POST");
+            assert_eq!(dataset_request.target, "/v2/datasets/dataset-id/items");
+            assert!(dataset_request.body.len() <= MAX_DATASET_REQUEST_BYTES);
+            let rows = serde_json::from_str::<Vec<Value>>(&dataset_request.body).unwrap();
+            assert_eq!(rows.len(), 1);
+            saved_positions.push(rows[0]["position"].as_u64().unwrap());
+
+            assert_eq!(charge_request.method, "POST");
+            assert_eq!(charge_request.target, "/v2/actor-runs/run-id/charge");
+            let charge: Value = serde_json::from_str(&charge_request.body).unwrap();
+            assert_eq!(charge["eventName"], FLIGHT_RESULT_CHARGE_EVENT);
+            let count = charge["count"].as_u64().unwrap() as usize;
+            assert_eq!(count, rows.len());
+            charged_count += count;
+
+            let idempotency_key = charge_request.headers.get("idempotency-key").unwrap();
+            assert_eq!(
+                idempotency_key,
+                &format!(
+                    "run-id:{FLIGHT_RESULT_CHARGE_EVENT}:results:{}:count:1",
+                    chunk_index + 1
+                )
+            );
+            assert!(idempotency_keys.insert(idempotency_key.clone()));
+        }
+
+        assert_eq!(saved_positions, vec![1, 2, 3]);
+        assert_eq!(charged_count, items.len());
+    }
+
+    #[tokio::test]
     async fn non_pay_per_event_storage_keeps_all_result_counts_without_charging() {
         let run = json!({"data": {
             "pricingInfo": {"pricingModel": "DEVELOPER"}
         }});
-        let (base_url, server) =
-            mock_server(vec![(200, run.to_string()), (201, String::new())]);
+        let (base_url, server) = mock_server(vec![(200, run.to_string()), (201, String::new())]);
         let config = test_config(&base_url);
         let http = Client::new();
         let apify = ApifyClient::new(&http, &config);
@@ -602,10 +718,7 @@ mod tests {
             "chargedEventCounts": {},
             "options": {"maxTotalChargeUsd": 1.0}
         }});
-        let (base_url, server) = mock_server_with_replies(vec![
-            Some((200, run.to_string())),
-            None,
-        ]);
+        let (base_url, server) = mock_server_with_replies(vec![Some((200, run.to_string())), None]);
         let config = test_config(&base_url);
         let http = Client::new();
         let apify = ApifyClient::new(&http, &config);
@@ -697,11 +810,36 @@ mod tests {
         use std::net::TcpListener;
 
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        listener.set_nonblocking(true).unwrap();
         let address = listener.local_addr().unwrap();
         let server = std::thread::spawn(move || {
             let mut requests = Vec::with_capacity(replies.len());
-            for reply in replies {
-                let (stream, _) = listener.accept().unwrap();
+            let mut replies = replies.into_iter().peekable();
+            let started_at = std::time::Instant::now();
+            let mut last_request_at = started_at;
+            loop {
+                if !requests.is_empty() && replies.peek().is_none() {
+                    break;
+                }
+                let accepted = match listener.accept() {
+                    Ok(accepted) => Some(accepted),
+                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                        let idle_timeout = if requests.is_empty() {
+                            started_at.elapsed() >= std::time::Duration::from_secs(5)
+                        } else {
+                            last_request_at.elapsed() >= std::time::Duration::from_secs(2)
+                        };
+                        if idle_timeout {
+                            break;
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(5));
+                        continue;
+                    }
+                    Err(error) => panic!("Mock server accept failed: {error}"),
+                };
+                let Some((stream, _)) = accepted else {
+                    break;
+                };
                 let mut reader = BufReader::new(stream);
                 let mut request_line = String::new();
                 reader.read_line(&mut request_line).unwrap();
@@ -734,7 +872,10 @@ mod tests {
                     headers,
                     body,
                 });
-                if let Some((status, response_body)) = reply {
+                if let Some((status, response_body)) = replies
+                    .next()
+                    .expect("Mock server received more requests than configured replies")
+                {
                     let mut stream = reader.into_inner();
                     let reason = match status {
                         201 => "Created",
@@ -749,6 +890,7 @@ mod tests {
                     )
                     .unwrap();
                 }
+                last_request_at = std::time::Instant::now();
             }
             requests
         });
