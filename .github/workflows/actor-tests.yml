@@ -29,7 +29,6 @@ jobs:
           - path: actors/google-hotels-search-scraper
           - path: actors/google-jobs-scraper
           - path: actors/google-maps-business-details-scraper
-          - path: actors/immobilienscout24-locations-scraper
           - path: actors/immobilienscout24-price-insights-scraper
           - path: actors/instagram-post-info-cheapest-0-20-1000-results
           - path: actors/instagram-user-info-cheapest-0-20-1000-results
@@ -91,6 +90,7 @@ jobs:
           - actors/google-news-scraper
           - actors/tiktok-search-scraper
           - actors/linkedin-post-scraper
+          - actors/immobilienscout24-locations-scraper
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
