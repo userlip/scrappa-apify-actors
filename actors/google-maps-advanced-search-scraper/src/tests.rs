@@ -20,6 +20,8 @@ fn input_schema_and_prefill_contract_are_kept() {
     assert_eq!(schema["required"], json!(["query", "zoom"]));
     assert_eq!(schema["properties"]["query"]["prefill"], "coffee shops");
     assert_eq!(schema["properties"]["zoom"]["default"], 15);
+    assert_eq!(schema["properties"]["latitude"]["prefill"], 40.7128);
+    assert_eq!(schema["properties"]["longitude"]["prefill"], -74.006);
     assert_eq!(schema["properties"]["zoom"]["minimum"], 3);
     assert_eq!(schema["properties"]["zoom"]["maximum"], 21);
     assert!(schema["properties"].get("page").is_none());

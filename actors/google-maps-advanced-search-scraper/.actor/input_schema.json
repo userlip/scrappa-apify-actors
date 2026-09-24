@@ -24,13 +24,15 @@
       "title": "Latitude",
       "type": "number",
       "description": "Center latitude for search (optional, auto-resolved from query if blank)",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 40.7128
     },
     "longitude": {
       "title": "Longitude",
       "type": "number",
       "description": "Center longitude for search (optional, auto-resolved from query if blank)",
-      "editor": "number"
+      "editor": "number",
+      "prefill": -74.006
     },
     "limit": {
       "title": "Result Limit",
