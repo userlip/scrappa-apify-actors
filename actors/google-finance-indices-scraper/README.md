@@ -1,6 +1,6 @@
 # Google Finance Indices Scraper
 
-Fetch Google Finance index quotes in batches through Scrappa's `GET /api/google-finance/indices` API. One dataset row and one `index-result` event are produced only for each unique saved index; price is **$0.00025 per result**.
+Fetch Google Finance index quotes in batches through Scrappa's `GET /api/google-finance/indices` API. Each unique saved index produces one dataset row and one `index-result` event at **$0.00025 per result**. If Apify also prices `apify-default-dataset-item`, that event is charged for each dataset row too, and both event prices count toward `maxTotalChargeUsd`.
 
 The Actor runtime is implemented in Rust. Its input schema and defaults remain in `.actor/input_schema.json`.
 

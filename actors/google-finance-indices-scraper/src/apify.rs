@@ -5,6 +5,7 @@ use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::{json, Value};
 
 pub const INDEX_RESULT_CHARGE_EVENT: &str = "index-result";
+const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const DEFAULT_APIFY_API_BASE: &str = "https://api.apify.com";
 
 #[derive(Clone)]
@@ -53,7 +54,7 @@ fn required_env(name: &str) -> Result<String> {
 #[derive(Default)]
 struct ChargeBudget {
     initial_counts: Option<BTreeMap<String, u64>>,
-    local_index_result_charges: u64,
+    local_event_charges: BTreeMap<String, u64>,
     is_ppe: Option<bool>,
     run_snapshot: Option<Value>,
 }
@@ -105,7 +106,7 @@ impl ApifyClient {
             }
         };
         let Some(capacity) =
-            affordable_event_count(&run, INDEX_RESULT_CHARGE_EVENT, &mut self.budget)?
+            affordable_row_count(&run, INDEX_RESULT_CHARGE_EVENT, &mut self.budget)?
         else {
             return Ok(usize::MAX);
         };
@@ -123,11 +124,7 @@ impl ApifyClient {
         self.push_dataset_item(item).await?;
         if self.budget.is_ppe == Some(true) {
             self.charge_index_result(item).await?;
-            self.budget.local_index_result_charges = self
-                .budget
-                .local_index_result_charges
-                .checked_add(1)
-                .ok_or_else(|| anyhow!("Charged index count overflowed"))?;
+            self.record_local_event_charge(INDEX_RESULT_CHARGE_EVENT)?;
             let charge_limit_reached = self.get_capacity().await? == 0;
             return Ok(SaveResult {
                 saved_count: 1,
@@ -139,6 +136,18 @@ impl ApifyClient {
             saved_count: 1,
             charge_limit_reached: false,
         })
+    }
+
+    fn record_local_event_charge(&mut self, event_name: &str) -> Result<()> {
+        let count = self
+            .budget
+            .local_event_charges
+            .entry(event_name.to_owned())
+            .or_default();
+        *count = count
+            .checked_add(1)
+            .ok_or_else(|| anyhow!("Charged {event_name} count overflowed"))?;
+        Ok(())
     }
 
     fn endpoint(&self, segments: &[&str]) -> Result<Url> {
@@ -164,7 +173,7 @@ impl ApifyClient {
         response_json(response, "Apify run pricing request").await
     }
 
-    async fn push_dataset_item(&self, item: &Value) -> Result<()> {
+    async fn push_dataset_item(&mut self, item: &Value) -> Result<()> {
         let url = self.endpoint(&["datasets", &self.config.dataset_id, "items"])?;
         let response = self
             .http
@@ -176,6 +185,9 @@ impl ApifyClient {
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await?;
+        if self.budget.is_ppe == Some(true) {
+            self.record_local_event_charge(DEFAULT_DATASET_ITEM_EVENT)?;
+        }
         Ok(())
     }
 
@@ -273,7 +285,7 @@ fn charged_counts(run: &Value) -> Result<BTreeMap<String, u64>> {
         .collect()
 }
 
-fn affordable_event_count(
+fn affordable_row_count(
     run: &Value,
     event_name: &str,
     budget: &mut ChargeBudget,
@@ -294,21 +306,48 @@ fn affordable_event_count(
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
         .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
-    let event_price = events
+    let result_event_price = events
         .get(event_name)
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the {event_name} event price"))?;
     let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
-        Some(Value::Null) => return Ok(Some(usize::MAX)),
+        None | Some(Value::Null) => return Ok(Some(usize::MAX)),
         Some(value) => value
             .as_f64()
             .ok_or_else(|| anyhow!("Apify run provided an invalid spending limit"))?,
-        None => bail!("Apify run did not provide the spending limit"),
     };
-    if !event_price.is_finite() || event_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0
+    if !result_event_price.is_finite()
+        || result_event_price < 0.0
+        || !max_charge.is_finite()
+        || max_charge < 0.0
     {
         bail!("Apify run returned invalid charging values");
+    }
+    if max_charge == 0.0 {
+        return Ok(Some(usize::MAX));
+    }
+
+    let dataset_item_price = events
+        .get(DEFAULT_DATASET_ITEM_EVENT)
+        .map(|event| {
+            event
+                .get("eventPriceUsd")
+                .and_then(Value::as_f64)
+                .ok_or_else(|| {
+                    anyhow!(
+                        "Apify run did not provide the {DEFAULT_DATASET_ITEM_EVENT} event price"
+                    )
+                })
+        })
+        .transpose()?
+        .unwrap_or(0.0);
+    if !dataset_item_price.is_finite() || dataset_item_price < 0.0 {
+        bail!("Apify run returned an invalid dataset item price");
+    }
+    let row_price = result_event_price + dataset_item_price;
+    if !row_price.is_finite() {
+        bail!("Apify run returned invalid per-row pricing");
     }
 
     let current_counts = charged_counts(run)?;
@@ -326,30 +365,30 @@ fn affordable_event_count(
         }
         let current = current_counts.get(name).copied().unwrap_or(0);
         let initial = initial_counts.get(name).copied().unwrap_or(0);
-        let count = if name == event_name {
-            initial
-                .checked_add(budget.local_index_result_charges)
-                .ok_or_else(|| anyhow!("Charged index count overflowed"))?
-                .max(current)
-        } else {
-            initial.max(current)
-        };
+        let local = budget.local_event_charges.get(name).copied().unwrap_or(0);
+        let count = initial
+            .checked_add(local)
+            .ok_or_else(|| anyhow!("Charged event count overflowed for {name}"))?
+            .max(current);
         spent += price * count as f64;
     }
     if !spent.is_finite() {
         bail!("Apify run returned invalid charged totals");
     }
-    if event_price == 0.0 {
+    if row_price == 0.0 {
         return Ok(Some(usize::MAX));
     }
-    let tolerance = f64::EPSILON * max_charge.max(1.0);
-    let remaining = (max_charge - spent + tolerance).max(0.0);
-    let count = (remaining / event_price).floor();
-    Ok(Some(if count.is_finite() {
+    let remaining = (max_charge - spent).max(0.0);
+    let count = (remaining / row_price).floor();
+    let mut count = if count.is_finite() {
         count as usize
     } else {
         usize::MAX
-    }))
+    };
+    if spent + row_price * count as f64 > max_charge {
+        count = count.saturating_sub(1);
+    }
+    Ok(Some(count))
 }
 
 #[cfg(test)]
@@ -382,11 +421,18 @@ mod tests {
         }})
     }
 
+    fn run_with_dataset_item_price(max_charge: f64, counts: Value) -> Value {
+        let mut run = run(max_charge, counts);
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["apify-default-dataset-item"] =
+            json!({"eventPriceUsd": 0.0001});
+        run
+    }
+
     #[test]
     fn computes_result_capacity_after_all_existing_event_charges() {
         let mut budget = ChargeBudget::default();
         assert_eq!(
-            affordable_event_count(
+            affordable_row_count(
                 &run(0.00055, json!({"apify-actor-start": 1})),
                 INDEX_RESULT_CHARGE_EVENT,
                 &mut budget
@@ -394,9 +440,11 @@ mod tests {
             .unwrap(),
             Some(2)
         );
-        budget.local_index_result_charges = 1;
+        budget
+            .local_event_charges
+            .insert(INDEX_RESULT_CHARGE_EVENT.to_owned(), 1);
         assert_eq!(
-            affordable_event_count(
+            affordable_row_count(
                 &run(0.00055, json!({"apify-actor-start": 1})),
                 INDEX_RESULT_CHARGE_EVENT,
                 &mut budget
@@ -405,7 +453,7 @@ mod tests {
             Some(1)
         );
         assert_eq!(
-            affordable_event_count(
+            affordable_row_count(
                 &run(0.00055, json!({"index-result": 1, "apify-actor-start": 1})),
                 INDEX_RESULT_CHARGE_EVENT,
                 &mut budget
@@ -416,28 +464,91 @@ mod tests {
     }
 
     #[test]
+    fn computes_capacity_from_custom_and_default_dataset_prices_per_row() {
+        let mut budget = ChargeBudget::default();
+        assert_eq!(
+            affordable_row_count(
+                &run_with_dataset_item_price(0.0006, json!({"apify-actor-start": 1})),
+                INDEX_RESULT_CHARGE_EVENT,
+                &mut budget
+            )
+            .unwrap(),
+            Some(1)
+        );
+
+        budget
+            .local_event_charges
+            .insert(INDEX_RESULT_CHARGE_EVENT.to_owned(), 1);
+        assert_eq!(
+            affordable_row_count(
+                &run_with_dataset_item_price(0.0006, json!({"apify-actor-start": 1})),
+                INDEX_RESULT_CHARGE_EVENT,
+                &mut budget
+            )
+            .unwrap(),
+            Some(0)
+        );
+    }
+
+    #[test]
+    fn dataset_only_rows_consume_capacity_when_the_default_event_is_priced() {
+        let mut budget = ChargeBudget::default();
+        assert_eq!(
+            affordable_row_count(
+                &run_with_dataset_item_price(
+                    0.00045,
+                    json!({"apify-actor-start": 1, "apify-default-dataset-item": 1})
+                ),
+                INDEX_RESULT_CHARGE_EVENT,
+                &mut budget
+            )
+            .unwrap(),
+            Some(0)
+        );
+    }
+
+    #[test]
     fn validates_prices_and_limits_but_allows_unlimited_and_non_ppe_runs() {
         let mut budget = ChargeBudget::default();
         let mut no_event = run(1.0, json!({}));
         no_event["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"] = json!({});
-        assert!(affordable_event_count(&no_event, INDEX_RESULT_CHARGE_EVENT, &mut budget).is_err());
+        assert!(affordable_row_count(&no_event, INDEX_RESULT_CHARGE_EVENT, &mut budget).is_err());
 
         let mut unlimited = run(1.0, json!({}));
         unlimited["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
         assert_eq!(
-            affordable_event_count(&unlimited, INDEX_RESULT_CHARGE_EVENT, &mut budget).unwrap(),
+            affordable_row_count(&unlimited, INDEX_RESULT_CHARGE_EVENT, &mut budget).unwrap(),
+            Some(usize::MAX)
+        );
+
+        let mut zero_limit = run(0.0, json!({}));
+        zero_limit["data"]["options"]["maxTotalChargeUsd"] = json!(0);
+        assert_eq!(
+            affordable_row_count(&zero_limit, INDEX_RESULT_CHARGE_EVENT, &mut budget).unwrap(),
+            Some(usize::MAX)
+        );
+
+        let mut missing_limit = run(1.0, json!({}));
+        missing_limit["data"]["options"] = json!({});
+        assert_eq!(
+            affordable_row_count(
+                &missing_limit,
+                INDEX_RESULT_CHARGE_EVENT,
+                &mut budget
+            )
+            .unwrap(),
             Some(usize::MAX)
         );
 
         let mut invalid_limit = run(1.0, json!({}));
         invalid_limit["data"]["options"]["maxTotalChargeUsd"] = json!("unlimited");
         assert!(
-            affordable_event_count(&invalid_limit, INDEX_RESULT_CHARGE_EVENT, &mut budget).is_err()
+            affordable_row_count(&invalid_limit, INDEX_RESULT_CHARGE_EVENT, &mut budget).is_err()
         );
 
         let non_ppe = json!({"data":{"pricingInfo":{"pricingModel":"FLAT_PRICE"}}});
         assert_eq!(
-            affordable_event_count(&non_ppe, INDEX_RESULT_CHARGE_EVENT, &mut budget).unwrap(),
+            affordable_row_count(&non_ppe, INDEX_RESULT_CHARGE_EVENT, &mut budget).unwrap(),
             None
         );
     }
@@ -525,6 +636,58 @@ mod tests {
         assert_eq!(client.get_capacity().await.unwrap(), 2);
         assert_eq!(client.get_capacity().await.unwrap(), 2);
         assert_eq!(server.finish().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn stops_after_one_row_when_custom_and_default_events_reach_a_tight_cap() {
+        let start_run = run_with_dataset_item_price(0.0006, json!({"apify-actor-start": 1}));
+        let server = MockServer::start(vec![
+            MockResponse::json(200, &start_run.to_string()),
+            MockResponse::json(201, "{}"),
+            MockResponse::json(200, "{}"),
+        ]);
+        let mut client = ApifyClient::new(actor_config(&server.base_url)).unwrap();
+        let item = json!({"id":"INDEXSP:.INX","symbol":".INX"});
+
+        let capacity = client.get_capacity().await.unwrap();
+        assert_eq!(capacity, 1);
+        assert_eq!(
+            client.save_index(&item, capacity).await.unwrap(),
+            SaveResult {
+                saved_count: 1,
+                charge_limit_reached: true
+            }
+        );
+        assert_eq!(client.get_capacity().await.unwrap(), 0);
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 3);
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-1/items");
+        assert_eq!(requests[2].target, "/v2/actor-runs/run-1/charge");
+        assert!(requests
+            .iter()
+            .all(|request| !request.target.ends_with("/records/OUTPUT")));
+    }
+
+    #[tokio::test]
+    async fn a_dataset_only_failure_row_uses_default_item_capacity_without_custom_charge() {
+        let start_run = run_with_dataset_item_price(0.00045, json!({"apify-actor-start": 1}));
+        let server = MockServer::start(vec![
+            MockResponse::json(200, &start_run.to_string()),
+            MockResponse::json(201, "{}"),
+        ]);
+        let mut client = ApifyClient::new(actor_config(&server.base_url)).unwrap();
+
+        assert_eq!(client.get_capacity().await.unwrap(), 1);
+        client
+            .push_dataset_item(&json!({"status":"failed","error":"upstream"}))
+            .await
+            .unwrap();
+        assert_eq!(client.get_capacity().await.unwrap(), 0);
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-1/items");
     }
 
     #[tokio::test]
