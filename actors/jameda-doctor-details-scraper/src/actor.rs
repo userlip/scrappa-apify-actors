@@ -3,7 +3,9 @@ use std::{env, process::ExitCode};
 use anyhow::{anyhow, Result};
 use serde_json::json;
 
-use crate::apify::{env_or_default, push_charged_item, ApifyClient, ApifyConfig};
+use crate::apify::{
+    env_or_default, push_charged_item, resume_charged_item, ApifyClient, ApifyConfig,
+};
 use crate::doctor_details::{
     build_dataset_item, build_doctor_details_params, build_doctor_details_plan,
     build_output_summary, describe_request, InputFailure,
@@ -36,9 +38,34 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
     let mut pricing = None;
 
     for (index, doctor_url) in plan.doctor_urls.iter().enumerate() {
-        let params = build_doctor_details_params(doctor_url);
         println!("Fetching Jameda doctor details for {doctor_url}");
 
+        match resume_charged_item(apify, &mut pricing, index + 1, doctor_url).await {
+            Ok(Some(result)) => {
+                saved_profiles += result.saved_count;
+                println!(
+                    "Recovered {} Jameda doctor profile result(s) for {doctor_url}",
+                    result.saved_count
+                );
+                if result.status_message.is_some() {
+                    status_message = result.status_message;
+                    break;
+                }
+                continue;
+            }
+            Ok(None) => {}
+            Err(error) => {
+                let message = error.to_string();
+                failures.push(InputFailure {
+                    doctor_url: doctor_url.clone(),
+                    error: message.clone(),
+                });
+                eprintln!("Failed to recover Jameda doctor details for {doctor_url}: {message}");
+                break;
+            }
+        }
+
+        let params = build_doctor_details_params(doctor_url);
         let response = match scrappa.get(doctor_url).await {
             Ok(response) => response,
             Err(error) => {
@@ -62,7 +89,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
             }
         };
         let item = build_dataset_item(&response, doctor_url, &params);
-        match push_charged_item(apify, &mut pricing, &item, index + 1, doctor_url).await {
+        match push_charged_item(apify, &mut pricing, &item, index + 1, doctor_url, true).await {
             Ok(result) => {
                 saved_profiles += result.saved_count;
                 println!(

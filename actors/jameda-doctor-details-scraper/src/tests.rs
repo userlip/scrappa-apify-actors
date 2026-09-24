@@ -509,6 +509,7 @@ async fn spending_limit_skips_dataset_and_custom_event_when_result_does_not_fit(
         &json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL}),
         1,
         MARKUS_URL,
+        false,
     )
     .await
     .unwrap();
@@ -545,7 +546,7 @@ async fn charges_before_publishing_and_journals_the_pair() {
     let apify = mock_apify_client(base_url);
     let mut pricing = None;
     let item = json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL});
-    let result = push_charged_item(&apify, &mut pricing, &item, 1, MARKUS_URL)
+    let result = push_charged_item(&apify, &mut pricing, &item, 1, MARKUS_URL, false)
         .await
         .unwrap();
 
@@ -603,6 +604,7 @@ async fn rejected_charge_never_publishes_a_dataset_item() {
         &json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL}),
         1,
         MARKUS_URL,
+        false,
     )
     .await
     .unwrap_err();
@@ -635,7 +637,7 @@ async fn recovery_finds_a_row_after_ambiguous_dataset_failure_without_duplicatin
     .await;
     let apify = mock_apify_client(base_url);
     let mut pricing = None;
-    let result = push_charged_item(&apify, &mut pricing, &item, 1, MARKUS_URL)
+    let result = push_charged_item(&apify, &mut pricing, &item, 1, MARKUS_URL, false)
         .await
         .unwrap();
 
@@ -697,7 +699,7 @@ async fn charged_pending_result_recovers_without_charging_twice() {
     .await;
     let apify = mock_apify_client(base_url);
     let mut pricing = None;
-    let result = push_charged_item(&apify, &mut pricing, &item, 1, MARKUS_URL)
+    let result = push_charged_item(&apify, &mut pricing, &item, 1, MARKUS_URL, false)
         .await
         .unwrap();
 
@@ -713,6 +715,55 @@ async fn charged_pending_result_recovers_without_charging_twice() {
             .count(),
         1
     );
+}
+
+#[tokio::test]
+async fn resumes_a_charged_result_from_its_journal_before_upstream_fetch() {
+    let item = json!({"doctor_name":"Doctor", "requested_doctor_url":MARKUS_URL});
+    let recovery_record = json!({
+        "status":"charged",
+        "doctor_url":MARKUS_URL,
+        "item":item,
+        "idempotency_key":"test-run-doctor-profile-result-1",
+        "baseline_event_counts": {
+            "doctor-profile-result":0,
+            "apify-default-dataset-item":0
+        }
+    });
+    let (base_url, server) = start_mock_server(vec![
+        (200, recovery_record.to_string()),
+        (
+            200,
+            mock_ppe_run(json!(0.0011), json!({"doctor-profile-result":1})).to_string(),
+        ),
+        (200, "[]".to_owned()),
+        (201, "{}".to_owned()),
+        (200, "[]".to_owned()),
+        (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
+    ])
+    .await;
+    let apify = mock_apify_client(base_url);
+    let mut pricing = None;
+    let result = resume_charged_item(&apify, &mut pricing, 1, MARKUS_URL)
+        .await
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(result.saved_count, 1);
+    let requests = server.await.unwrap();
+    assert!(requests[0]
+        .head
+        .starts_with("GET /v2/key-value-stores/store/records/PPE_RESULT_0001 HTTP/1.1"));
+    assert!(requests[1]
+        .head
+        .starts_with("GET /v2/actor-runs/test-run HTTP/1.1"));
+    assert!(!requests.iter().any(|request| request
+        .head
+        .starts_with("POST /v2/actor-runs/test-run/charge")));
+    assert!(!requests
+        .iter()
+        .any(|request| request.head.starts_with("GET /jameda/doctor-details")));
 }
 
 #[tokio::test]
