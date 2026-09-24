@@ -123,6 +123,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(&json!({
+                "runId": self.run_id,
                 "statusMessage": status_message,
                 "isStatusMessageTerminal": true
             }))
@@ -395,6 +396,31 @@ mod tests {
             "/v2/key-value-stores/store-id/records/INPUT"
         );
         assert_eq!(requests[0].headers["authorization"], "Bearer test-token");
+    }
+
+    #[tokio::test]
+    async fn includes_run_id_when_setting_terminal_status_message() {
+        let server = MockServer::start(vec![MockResponse::json(200, "")]);
+        let client = test_client(&server.base_url());
+        let status_message = "Charge limit reached before saving all items.";
+
+        client
+            .set_terminal_status_message(status_message)
+            .await
+            .unwrap();
+
+        let requests = server.join();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0].method, "PUT");
+        assert_eq!(requests[0].target, "/v2/actor-runs/test-run");
+        assert_eq!(
+            serde_json::from_str::<Value>(&requests[0].body).unwrap(),
+            json!({
+                "runId": "test-run",
+                "statusMessage": status_message,
+                "isStatusMessageTerminal": true
+            })
+        );
     }
 
     #[tokio::test]
