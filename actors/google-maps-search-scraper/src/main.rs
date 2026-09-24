@@ -14,6 +14,7 @@ const APIFY_MIN_RETRY_DELAY: Duration = Duration::from_millis(500);
 const APIFY_MAX_RETRY_DELAY: Duration = Duration::from_secs(30);
 const SCRAPPA_USER_AGENT: &str = "thescrappa-google-maps-search-scraper/1.0";
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
+const MAX_DATASET_REQUEST_BYTES: usize = 5_000_000;
 
 struct ActorConfig {
     apify_api_base_url: Url,
@@ -622,6 +623,45 @@ impl DatasetBudget {
     }
 }
 
+fn dataset_item_chunks(items: &[Value]) -> Result<Vec<&[Value]>> {
+    let mut chunks = Vec::new();
+    let mut chunk_start = 0;
+    let mut chunk_bytes: usize = 2;
+
+    for (index, item) in items.iter().enumerate() {
+        let item_bytes = serde_json::to_vec(item)
+            .context("Could not serialize dataset item")?
+            .len();
+        if item_bytes.saturating_add(2) >= MAX_DATASET_REQUEST_BYTES {
+            bail!(
+                "A dataset item must serialize to less than {} bytes",
+                MAX_DATASET_REQUEST_BYTES - 2
+            );
+        }
+
+        let separator_bytes = usize::from(index != chunk_start);
+        let next_chunk_bytes = chunk_bytes
+            .saturating_add(separator_bytes)
+            .saturating_add(item_bytes);
+        if next_chunk_bytes >= MAX_DATASET_REQUEST_BYTES {
+            chunks.push(&items[chunk_start..index]);
+            chunk_start = index;
+            chunk_bytes = 2;
+        }
+
+        let separator_bytes = usize::from(index != chunk_start);
+        chunk_bytes = chunk_bytes
+            .saturating_add(separator_bytes)
+            .saturating_add(item_bytes);
+    }
+
+    if chunk_start < items.len() {
+        chunks.push(&items[chunk_start..]);
+    }
+
+    Ok(chunks)
+}
+
 async fn push_dataset_items(
     client: &Client,
     config: &ActorConfig,
@@ -645,18 +685,17 @@ async fn push_dataset_items(
         &config.apify_api_base_url,
         &["v2", "datasets", &config.default_dataset_id, "items"],
     )?;
-    let response = send_apify_request(
-        || {
-            client
-                .post(url.clone())
-                .bearer_auth(&config.apify_token)
-                .timeout(config.apify_request_timeout)
-                .json(&items[..allowed])
-        },
-        "Apify dataset write",
-    )
-    .await?;
-    apify_write(response, "Apify dataset write").await?;
+    for chunk in dataset_item_chunks(&items[..allowed])? {
+        let response = client
+            .post(url.clone())
+            .bearer_auth(&config.apify_token)
+            .timeout(config.apify_request_timeout)
+            .json(chunk)
+            .send()
+            .await
+            .context("Apify dataset write failed")?;
+        apify_write(response, "Apify dataset write").await?;
+    }
 
     if let Some(budget) = budget.as_mut() {
         budget.record_saved_items(allowed);
@@ -753,6 +792,7 @@ mod tests {
         status: u16,
         body: String,
         delay: Duration,
+        close_without_response: bool,
     }
 
     struct MockServer {
@@ -788,6 +828,9 @@ mod tests {
                     let request = read_request(&mut stream).unwrap_or_default();
                     let _ = request_sender.send(request);
                     response_threads.push(thread::spawn(move || {
+                        if response.close_without_response {
+                            return;
+                        }
                         if !response.delay.is_zero() {
                             thread::sleep(response.delay);
                         }
@@ -878,6 +921,7 @@ mod tests {
             status,
             body: body.to_owned(),
             delay: Duration::ZERO,
+            close_without_response: false,
         }
     }
 
@@ -886,6 +930,16 @@ mod tests {
             status,
             body: body.to_owned(),
             delay,
+            close_without_response: false,
+        }
+    }
+
+    fn disconnected_response() -> MockResponse {
+        MockResponse {
+            status: 0,
+            body: String::new(),
+            delay: Duration::ZERO,
+            close_without_response: true,
         }
     }
 
@@ -1149,6 +1203,73 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn dataset_payloads_are_chunked_below_the_api_limit_in_input_order() {
+        const MAX_REQUEST_BYTES: usize = 5_000_000;
+        let large_description = format!(
+            "{}{}",
+            "🍕".repeat(MAX_REQUEST_BYTES / 16),
+            "\"".repeat(MAX_REQUEST_BYTES / 8)
+        );
+        let items = vec![
+            json!({"position": 1, "description": large_description}),
+            json!({"position": 2, "description": large_description}),
+        ];
+        let server = MockServer::start(vec![
+            pricing_response(1.0, json!({})),
+            response(201, "{}"),
+            response(201, "{}"),
+        ]);
+
+        let saved = push_dataset_items(&client(), &config(&server.base_url), &items)
+            .await
+            .unwrap();
+
+        assert_eq!(saved, 2);
+        let requests = server.requests();
+        assert_eq!(requests.len(), 3);
+        let dataset_requests = requests
+            .iter()
+            .filter(|request| request_parts(request).0 == "POST")
+            .collect::<Vec<_>>();
+        assert_eq!(dataset_requests.len(), 2);
+
+        let mut stored_positions = Vec::new();
+        for request in dataset_requests {
+            let (_, path, body) = request_parts(request);
+            assert_eq!(path, "/v2/datasets/test-dataset/items");
+            assert!(body.len() < MAX_REQUEST_BYTES);
+            let chunk: Vec<Value> = serde_json::from_str(body).unwrap();
+            stored_positions.extend(chunk.iter().map(|item| item["position"].as_u64().unwrap()));
+        }
+        assert_eq!(stored_positions, vec![1, 2]);
+    }
+
+    #[tokio::test]
+    async fn dataset_append_is_not_retried_after_a_lost_response() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"query":"pizza"}"#),
+            response(200, r#"{"items":[{"name":"Example"}]}"#),
+            pricing_response(1.0, json!({})),
+            disconnected_response(),
+            response(201, "{}"),
+            response(201, "{}"),
+        ]);
+
+        let error = run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap_err();
+
+        assert!(error.to_string().contains("Apify dataset write failed"));
+        let requests = server.requests();
+        let dataset_writes = requests
+            .iter()
+            .filter(|request| request_parts(request).0 == "POST")
+            .count();
+        assert_eq!(dataset_writes, 1);
+        assert_eq!(requests.len(), 4);
+    }
+
+    #[tokio::test]
     async fn scrappa_timeout_uses_the_advanced_search_fallback() {
         let server = MockServer::start(vec![
             response(200, r#"{"query":"pizza","fallback_zoom":13}"#),
@@ -1239,6 +1360,27 @@ mod tests {
         assert_eq!(request_parts(&requests[0]).1, request_parts(&requests[1]).1);
         assert!(has_apify_auth(&requests[0]));
         assert!(has_apify_auth(&requests[1]));
+    }
+
+    #[tokio::test]
+    async fn apify_output_put_retries_transient_api_errors() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"query":"empty results"}"#),
+            response(200, r#"{"items":[]}"#),
+            response(503, r#"{"error":"temporarily unavailable"}"#),
+            response(201, "{}"),
+        ]);
+
+        run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 4);
+        assert_eq!(request_parts(&requests[2]).0, "PUT");
+        assert_eq!(request_parts(&requests[2]).1, request_parts(&requests[3]).1);
+        assert!(has_apify_auth(&requests[2]));
+        assert!(has_apify_auth(&requests[3]));
     }
 
     #[test]

@@ -38,7 +38,7 @@ Search for businesses on Google Maps at scale. This actor returns Scrappa Google
 
 ## Output
 
-The actor pushes every item from the Scrappa `items` response array into the default dataset. Fields vary by business, but records can include:
+The actor pushes the affordable result prefix from the Scrappa `items` response array into the default dataset in ordered requests smaller than 5 MB. Fields vary by business, but records can include:
 
 - `name`
 - `price_level`
