@@ -1,0 +1,7 @@
+/.git
+/.env
+/.env.*
+/target
+/apify_storage
+/crawlee_storage
+/storage
