@@ -1,11 +1,14 @@
 use crate::{
-    apify::{ApifyClient, PpeBudget},
+    apify::{max_retry_sequence_duration, ApifyClient, PpeBudget},
     batch::{result_error, run_batch},
     challenge::{
         build_requests, challenge_url, extract_challenge_detail, normalize_challenge_detail,
         ChallengeRequest, RequestType,
     },
-    config::{ActorConfig, CHALLENGE_DETAIL_CHARGE_EVENT, DEFAULT_DATASET_ITEM_EVENT, INPUT_KEY},
+    config::{
+        ActorConfig, APIFY_MAX_RETRIES, APIFY_REQUEST_TIMEOUT, CHALLENGE_DETAIL_CHARGE_EVENT,
+        DEFAULT_DATASET_ITEM_EVENT, INPUT_KEY,
+    },
     scrappa::{challenge_error, scrappa_error_message, ScrappaClient},
 };
 use serde_json::{json, Map, Value};
@@ -14,7 +17,7 @@ use std::{
     io::{Read, Write},
     net::{TcpListener, TcpStream},
     sync::{
-        atomic::{AtomicUsize, Ordering},
+        atomic::{AtomicBool, AtomicUsize, Ordering},
         mpsc::{self, Receiver},
         Arc,
     },
@@ -212,6 +215,16 @@ fn ppe_budget_counts_prior_events_caps_lookups_and_charges_each_saved_row() {
 }
 
 #[test]
+fn apify_retry_sequence_fits_below_actor_timeout() {
+    let actor: Value = serde_json::from_str(include_str!("../.actor/actor.json")).unwrap();
+    let actor_timeout =
+        Duration::from_secs(actor["defaultRunOptions"]["timeoutSecs"].as_u64().unwrap());
+    assert!(max_retry_sequence_duration() < actor_timeout);
+    assert_eq!(APIFY_REQUEST_TIMEOUT, Duration::from_secs(8));
+    assert_eq!(APIFY_MAX_RETRIES, 2);
+}
+
+#[test]
 fn ppe_preflight_requires_room_for_custom_and_automatic_dataset_events() {
     let budget = PpeBudget::from_run(&ppe_run(0.0003, 0.0001, 0.00025, json!({}))).unwrap();
     assert_eq!(budget.event_capacity(DEFAULT_DATASET_ITEM_EVENT), 3);
@@ -276,6 +289,7 @@ struct MockRequest {
 struct MockServer {
     base_url: Url,
     requests: Receiver<MockRequest>,
+    stop: Arc<AtomicBool>,
     thread: JoinHandle<()>,
 }
 
@@ -288,13 +302,21 @@ impl MockServer {
         listener.set_nonblocking(true).unwrap();
         let address = listener.local_addr().unwrap();
         let (sender, requests) = mpsc::channel();
+        let stop = Arc::new(AtomicBool::new(false));
+        let thread_stop = Arc::clone(&stop);
         let thread = thread::spawn(move || {
             let deadline = Instant::now() + Duration::from_secs(10);
-            for _ in 0..request_count {
+            'requests: for _ in 0..request_count {
                 let (mut stream, _) = loop {
+                    if thread_stop.load(Ordering::SeqCst) {
+                        break 'requests;
+                    }
                     match listener.accept() {
                         Ok(connection) => break connection,
                         Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                            if thread_stop.load(Ordering::SeqCst) {
+                                break 'requests;
+                            }
                             assert!(
                                 Instant::now() < deadline,
                                 "mock server timed out waiting for requests"
@@ -331,11 +353,13 @@ impl MockServer {
         Self {
             base_url: Url::parse(&format!("http://{address}")).unwrap(),
             requests,
+            stop,
             thread,
         }
     }
 
     fn finish(self) -> Vec<MockRequest> {
+        self.stop.store(true, Ordering::SeqCst);
         self.thread.join().unwrap();
         self.requests.into_iter().collect()
     }
@@ -514,6 +538,60 @@ async fn unsuccessful_custom_charge_is_not_counted_as_billed() {
         .iter()
         .any(|request| request.path == "/v2/datasets/test-dataset/items"));
     assert!(captured
+        .iter()
+        .any(|request| request.path == "/v2/actor-runs/test-run/charge"));
+}
+
+#[tokio::test]
+async fn dataset_insert_is_not_retried_after_commit_with_lost_success_response() {
+    let stored_rows = Arc::new(AtomicUsize::new(0));
+    let handler_stored_rows = Arc::clone(&stored_rows);
+    let write_responses = Arc::new(AtomicUsize::new(0));
+    let handler_write_responses = Arc::clone(&write_responses);
+    let charge_calls = Arc::new(AtomicUsize::new(0));
+    let handler_charge_calls = Arc::clone(&charge_calls);
+    let server = MockServer::start(4, move |request| match request.path.as_str() {
+        path if path.contains("challenge_name=booktok") => (
+            200,
+            r#"{"code":0,"data":{"challenge":{"id":"1","challenge_name":"BookTok"}}}"#.to_owned(),
+        ),
+        "/v2/datasets/test-dataset/items" => {
+            handler_stored_rows.fetch_add(1, Ordering::SeqCst);
+            if handler_write_responses.fetch_add(1, Ordering::SeqCst) == 0 {
+                (500, r#"{"error":"response lost after append"}"#.to_owned())
+            } else {
+                (201, "{}".to_owned())
+            }
+        }
+        "/v2/actor-runs/test-run/charge" => {
+            handler_charge_calls.fetch_add(1, Ordering::SeqCst);
+            (201, "{}".to_owned())
+        }
+        _ => (404, "{}".to_owned()),
+    });
+    let config = test_config(server.base_url.clone());
+    let apify = ApifyClient::new(&config).unwrap();
+    let scrappa = ScrappaClient::new(&config).unwrap();
+    let mut budget = PpeBudget::from_run(&ppe_run(0.001, 0.0001, 0.00025, json!({}))).unwrap();
+    let requests = vec![request(RequestType::ChallengeName, "booktok")];
+
+    let summary = run_batch(&requests, &scrappa, &apify, &config, &mut budget)
+        .await
+        .unwrap();
+    assert_eq!(summary["saved"], 0);
+    assert_eq!(summary["failed"], 1);
+    assert_eq!(stored_rows.load(Ordering::SeqCst), 1);
+    assert_eq!(charge_calls.load(Ordering::SeqCst), 0);
+
+    let captured = server.finish();
+    assert_eq!(
+        captured
+            .iter()
+            .filter(|request| request.path == "/v2/datasets/test-dataset/items")
+            .count(),
+        1
+    );
+    assert!(!captured
         .iter()
         .any(|request| request.path == "/v2/actor-runs/test-run/charge"));
 }
