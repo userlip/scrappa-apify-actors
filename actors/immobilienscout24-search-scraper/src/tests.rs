@@ -347,7 +347,7 @@ fn non_ppe_runs_publish_every_result_without_event_charges() {
     assert_eq!(plan.items_to_push, 4);
     assert_eq!(plan.custom_event_charge_count, 0);
     assert!(!plan.limit_reached);
-    assert_eq!(plan.charged_count, 0);
+    assert_eq!(plan.charged_event_count, 0);
     assert!(!plan.should_charge_custom_event);
 }
 
@@ -367,7 +367,7 @@ fn ppe_budget_accounts_for_prior_charges_and_both_dataset_event_prices() {
     assert_eq!(plan.items_to_push, 1);
     assert_eq!(plan.custom_event_charge_count, 1);
     assert!(plan.limit_reached);
-    assert_eq!(plan.charged_count, 2);
+    assert_eq!(plan.charged_event_count, 2);
     assert!(plan.should_charge_custom_event);
 }
 
@@ -385,7 +385,7 @@ fn ppe_with_no_remaining_budget_keeps_the_sdk_single_item_limit_probe() {
     assert_eq!(plan.items_to_push, 1);
     assert_eq!(plan.custom_event_charge_count, 1);
     assert!(plan.limit_reached);
-    assert_eq!(plan.charged_count, 2);
+    assert_eq!(plan.charged_event_count, 2);
     assert!(plan.should_charge_custom_event);
 }
 
@@ -403,7 +403,7 @@ fn ppe_with_two_results_and_budget_for_one_reports_the_saved_item_count() {
 
     assert_eq!(plan.items_to_push, 1);
     assert!(plan.limit_reached);
-    assert_eq!(plan.charged_count, 2);
+    assert_eq!(plan.charged_event_count, 2);
     assert!(plan.items_to_push < 2);
 }
 

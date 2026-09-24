@@ -89,7 +89,7 @@ async fn run_actor() -> Result<()> {
                     json!({
                         "event": PROPERTY_RESULT_CHARGE_EVENT,
                         "saved_count": plan.items_to_push,
-                        "charged_event_count": plan.charged_count,
+                        "charged_event_count": plan.charged_event_count,
                         "requested_count": listings.len(),
                         "limit_reached": plan.limit_reached,
                     })

@@ -83,7 +83,7 @@ impl ChargePricing {
                 items_to_push: requested,
                 custom_event_charge_count: 0,
                 limit_reached: false,
-                charged_count: 0,
+                charged_event_count: 0,
                 should_charge_custom_event: false,
             };
         }
@@ -113,7 +113,7 @@ impl ChargePricing {
                 items_to_push,
                 custom_event_charge_count: 0,
                 limit_reached: requested > 0,
-                charged_count: 0,
+                charged_event_count: 0,
                 should_charge_custom_event: false,
             };
         }
@@ -130,7 +130,7 @@ impl ChargePricing {
             items_to_push,
             custom_event_charge_count: custom_count,
             limit_reached,
-            charged_count: custom_count + default_count,
+            charged_event_count: custom_count + default_count,
             should_charge_custom_event: self
                 .configured_events
                 .iter()
@@ -187,6 +187,6 @@ pub(crate) struct PushPlan {
     pub(crate) items_to_push: usize,
     pub(crate) custom_event_charge_count: usize,
     pub(crate) limit_reached: bool,
-    pub(crate) charged_count: usize,
+    pub(crate) charged_event_count: usize,
     pub(crate) should_charge_custom_event: bool,
 }
