@@ -106,13 +106,13 @@ impl<'a> ApifyClient<'a> {
                     event_charge_limit_reached: true,
                 });
             }
+            self.store_dataset_items(&items[..charge_count]).await?;
             let idempotency_key = format!(
                 "{}:{FLIGHT_RESULT_CHARGE_EVENT}:results:1:count:{charge_count}",
                 self.config.actor_run_id
             );
             self.charge_events(FLIGHT_RESULT_CHARGE_EVENT, charge_count, &idempotency_key)
                 .await?;
-            self.store_dataset_items(&items[..charge_count]).await?;
             charge_count
         } else {
             self.store_dataset_items(items).await?;
@@ -485,8 +485,8 @@ mod tests {
         }});
         let (base_url, server) = mock_server(vec![
             (200, run.to_string()),
-            (200, "{}".to_owned()),
             (201, String::new()),
+            (200, "{}".to_owned()),
         ]);
         let config = test_config(&base_url);
         let http = Client::new();
@@ -506,19 +506,114 @@ mod tests {
         assert_eq!(requests[0].method, "GET");
         assert_eq!(requests[0].target, "/v2/actor-runs/run-id");
         assert_eq!(requests[1].method, "POST");
-        assert_eq!(requests[1].target, "/v2/actor-runs/run-id/charge");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
         assert_eq!(
             serde_json::from_str::<Value>(&requests[1].body).unwrap(),
-            json!({"eventName": "flight-result", "count": 2})
-        );
-        assert!(requests[1].headers.contains_key("idempotency-key"));
-        assert_eq!(requests[2].method, "POST");
-        assert_eq!(requests[2].target, "/v2/datasets/dataset-id/items");
-        assert_eq!(
-            serde_json::from_str::<Value>(&requests[2].body).unwrap(),
             json!([{"position": 1}, {"position": 2}])
         );
+        assert_eq!(requests[2].method, "POST");
+        assert_eq!(requests[2].target, "/v2/actor-runs/run-id/charge");
+        assert_eq!(
+            serde_json::from_str::<Value>(&requests[2].body).unwrap(),
+            json!({"eventName": "flight-result", "count": 2})
+        );
+        assert!(requests[2].headers.contains_key("idempotency-key"));
         assert_authorized(&requests);
+    }
+
+    #[tokio::test]
+    async fn non_pay_per_event_storage_keeps_all_result_counts_without_charging() {
+        let run = json!({"data": {
+            "pricingInfo": {"pricingModel": "DEVELOPER"}
+        }});
+        let (base_url, server) =
+            mock_server(vec![(200, run.to_string()), (201, String::new())]);
+        let config = test_config(&base_url);
+        let http = Client::new();
+        let apify = ApifyClient::new(&http, &config);
+        let items = vec![json!({"position": 1}), json!({"position": 2})];
+
+        let result = apify.push_dataset_items(&items).await.unwrap();
+
+        assert_eq!(result.saved_count, items.len());
+        assert!(!result.event_charge_limit_reached);
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(requests[0].target, "/v2/actor-runs/run-id");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
+        assert_eq!(
+            serde_json::from_str::<Value>(&requests[1].body).unwrap(),
+            json!([{"position": 1}, {"position": 2}])
+        );
+    }
+
+    #[tokio::test]
+    async fn pay_per_event_dataset_write_failure_does_not_charge_results() {
+        let run = json!({"data": {
+            "pricingInfo": {
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "flight-result": {"eventPriceUsd": 0.2},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.1}
+                }}
+            },
+            "chargedEventCounts": {},
+            "options": {"maxTotalChargeUsd": 1.0}
+        }});
+        let (base_url, server) = mock_server(vec![
+            (200, run.to_string()),
+            (500, "dataset rejected".to_owned()),
+        ]);
+        let config = test_config(&base_url);
+        let http = Client::new();
+        let apify = ApifyClient::new(&http, &config);
+
+        assert!(apify
+            .push_dataset_items(&[json!({"position": 1})])
+            .await
+            .is_err());
+
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(requests[0].target, "/v2/actor-runs/run-id");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
+    }
+
+    #[tokio::test]
+    async fn ambiguous_dataset_write_failure_is_not_retried_or_charged() {
+        let run = json!({"data": {
+            "pricingInfo": {
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "flight-result": {"eventPriceUsd": 0.2},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.1}
+                }}
+            },
+            "chargedEventCounts": {},
+            "options": {"maxTotalChargeUsd": 1.0}
+        }});
+        let (base_url, server) = mock_server_with_replies(vec![
+            Some((200, run.to_string())),
+            None,
+        ]);
+        let config = test_config(&base_url);
+        let http = Client::new();
+        let apify = ApifyClient::new(&http, &config);
+
+        assert!(apify
+            .push_dataset_items(&[json!({"position": 1})])
+            .await
+            .is_err());
+
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(requests[0].target, "/v2/actor-runs/run-id");
+        assert_eq!(requests[1].method, "POST");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
+        assert_eq!(
+            serde_json::from_str::<Value>(&requests[1].body).unwrap(),
+            json!([{"position": 1}])
+        );
     }
 
     #[tokio::test]
@@ -582,14 +677,20 @@ mod tests {
     fn mock_server(
         responses: Vec<(u16, String)>,
     ) -> (String, std::thread::JoinHandle<Vec<CapturedRequest>>) {
+        mock_server_with_replies(responses.into_iter().map(Some).collect())
+    }
+
+    fn mock_server_with_replies(
+        replies: Vec<Option<(u16, String)>>,
+    ) -> (String, std::thread::JoinHandle<Vec<CapturedRequest>>) {
         use std::io::{BufRead, BufReader, Read, Write};
         use std::net::TcpListener;
 
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let address = listener.local_addr().unwrap();
         let server = std::thread::spawn(move || {
-            let mut requests = Vec::with_capacity(responses.len());
-            for (status, response_body) in responses {
+            let mut requests = Vec::with_capacity(replies.len());
+            for reply in replies {
                 let (stream, _) = listener.accept().unwrap();
                 let mut reader = BufReader::new(stream);
                 let mut request_line = String::new();
@@ -617,21 +718,27 @@ mod tests {
                 let mut body = vec![0; content_length];
                 reader.read_exact(&mut body).unwrap();
                 let body = String::from_utf8(body).unwrap();
-                let mut stream = reader.into_inner();
-                let reason = if status == 201 { "Created" } else { "OK" };
-                write!(
-                    stream,
-                    "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-                    response_body.len(),
-                    response_body
-                )
-                .unwrap();
                 requests.push(CapturedRequest {
                     method,
                     target,
                     headers,
                     body,
                 });
+                if let Some((status, response_body)) = reply {
+                    let mut stream = reader.into_inner();
+                    let reason = match status {
+                        201 => "Created",
+                        500 => "Internal Server Error",
+                        _ => "OK",
+                    };
+                    write!(
+                        stream,
+                        "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                        response_body.len(),
+                        response_body
+                    )
+                    .unwrap();
+                }
             }
             requests
         });
