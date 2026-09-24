@@ -7,6 +7,7 @@ RUN cargo clean --release -p tiktok-challenge-search-scraper && cargo build --re
 
 FROM builder AS test
 COPY .actor/input_schema.json .actor/input_schema.json
+COPY tests ./tests
 RUN cargo test --locked
 
 FROM debian:bookworm-slim AS runtime
