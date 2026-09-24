@@ -191,21 +191,25 @@ async fn process_doctor(
 
     let saved_count = items.len().min(*remaining_capacity);
     if saved_count > 0 {
-        apify
-            .push_dataset_items(&config.dataset_id, &items[..saved_count])
-            .await?;
-        *remaining_capacity = (*remaining_capacity).saturating_sub(saved_count);
         let idempotency_key = format!(
             "{}-{}-{}-{}",
             config.actor_run_id, JAMEDA_REVIEW_CHARGE_EVENT, doctor_index, saved_count
         );
-        apify
+        if let Err(error) = apify
             .charge_event(
                 &config.actor_run_id,
                 JAMEDA_REVIEW_CHARGE_EVENT,
                 saved_count,
                 &idempotency_key,
             )
+            .await
+        {
+            *remaining_capacity = 0;
+            return Err(error);
+        }
+        *remaining_capacity = (*remaining_capacity).saturating_sub(saved_count);
+        apify
+            .push_dataset_items(&config.dataset_id, &items[..saved_count])
             .await?;
     }
 
@@ -244,6 +248,12 @@ async fn run_actor_from_env() -> Result<()> {
 mod tests {
     use super::*;
     use serde_json::json;
+    use std::{
+        io::{BufRead, BufReader, Read, Write},
+        net::TcpListener,
+        thread,
+        time::Duration,
+    };
 
     #[test]
     fn applies_schema_sort_default_only_when_omitted() {
@@ -258,6 +268,102 @@ mod tests {
         assert_eq!(
             apply_input_defaults(json!({"doctor_url": "x", "sort": "oldest"}))["sort"],
             "oldest"
+        );
+    }
+
+    #[tokio::test]
+    async fn charges_review_results_before_publishing_them() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = thread::spawn(move || {
+            let mut paths = Vec::new();
+            for _ in 0..3 {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream
+                    .set_read_timeout(Some(Duration::from_secs(5)))
+                    .unwrap();
+                let mut reader = BufReader::new(stream.try_clone().unwrap());
+                let mut request_line = String::new();
+                reader.read_line(&mut request_line).unwrap();
+                let path = request_line
+                    .split_whitespace()
+                    .nth(1)
+                    .unwrap()
+                    .split('?')
+                    .next()
+                    .unwrap()
+                    .to_owned();
+                let mut content_length = 0;
+                loop {
+                    let mut header = String::new();
+                    reader.read_line(&mut header).unwrap();
+                    if header == "\r\n" || header.is_empty() {
+                        break;
+                    }
+                    if let Some((name, value)) = header.split_once(':') {
+                        if name.eq_ignore_ascii_case("content-length") {
+                            content_length = value.trim().parse::<usize>().unwrap();
+                        }
+                    }
+                }
+                let mut request_body = vec![0; content_length];
+                reader.read_exact(&mut request_body).unwrap();
+                paths.push(path.clone());
+
+                let (status, body) = if path.starts_with("/api/jameda/reviews") {
+                    ("200 OK", r#"{"data":[{"id":"review-1"}]}"#)
+                } else {
+                    ("201 Created", "{}")
+                };
+                write!(
+                    stream,
+                    "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                )
+                .unwrap();
+                stream.flush().unwrap();
+            }
+            paths
+        });
+
+        let api_base = format!("http://{address}");
+        let apify = ApifyClient::new(&api_base, "test-token".to_owned()).unwrap();
+        let scrappa =
+            scrappa::ScrappaClient::new("test-key".to_owned(), format!("{api_base}/api")).unwrap();
+        let config = ActorConfig {
+            apify_api_base: api_base,
+            apify_token: "test-token".to_owned(),
+            actor_run_id: "run-id".to_owned(),
+            key_value_store_id: "store-id".to_owned(),
+            dataset_id: "dataset-id".to_owned(),
+            input_key: "INPUT".to_owned(),
+            scrappa_api_base: String::new(),
+            scrappa_api_key: "test-key".to_owned(),
+        };
+        let mut remaining_capacity = Some(1);
+
+        let result = process_doctor(
+            &apify,
+            &scrappa,
+            &config,
+            "https://www.jameda.de/arzt/doctor/1",
+            0,
+            &Map::new(),
+            &mut remaining_capacity,
+        )
+        .await
+        .unwrap();
+
+        assert_eq!((result.0, result.1), (1, 1));
+        assert!(result.2.is_some());
+        assert_eq!(remaining_capacity, Some(0));
+        assert_eq!(
+            server.join().unwrap(),
+            [
+                "/api/jameda/reviews",
+                "/v2/actor-runs/run-id/charge",
+                "/v2/datasets/dataset-id/items"
+            ]
         );
     }
 }

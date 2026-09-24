@@ -231,8 +231,7 @@ pub fn chargeable_event_capacity(
     }
 
     let available_charge = (max_charge - spent).max(0.0);
-    let affordable_count = ((available_charge / unit_price) * 10_000.0).round() / 10_000.0;
-    let affordable_count = affordable_count.floor();
+    let affordable_count = (available_charge / unit_price).floor();
     Ok(Some(if affordable_count.is_finite() {
         affordable_count as usize
     } else {
@@ -373,6 +372,15 @@ mod tests {
         let run_runtime_limit = pricing_run(json!(1), json!({ "apify-actor-start": 1 }));
         assert_eq!(
             chargeable_event_capacity(&run_runtime_limit, EVENT, Some("0")).unwrap(),
+            Some(0)
+        );
+    }
+
+    #[test]
+    fn does_not_round_capacity_up_to_an_unaffordable_event() {
+        let run = pricing_run(json!(0.0101996), json!({ "apify-actor-start": 1 }));
+        assert_eq!(
+            chargeable_event_capacity(&run, EVENT, None).unwrap(),
             Some(0)
         );
     }
