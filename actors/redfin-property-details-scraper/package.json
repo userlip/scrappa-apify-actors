@@ -1,25 +1,11 @@
 {
   "name": "redfin-property-details-scraper",
   "version": "1.0.0",
-  "type": "module",
-  "main": "./dist/main.js",
+  "private": true,
+  "description": "Actor-local npm wrappers for the Rust build and test commands.",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/main.js",
-    "start:dev": "tsx src/main.ts",
-    "test": "npm run build && node --test test/*.test.mjs",
-    "test:dev": "TEST_SOURCE=src tsx --test test/*.test.mjs",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "apify": "^3.2.6"
-  },
-  "overrides": {
-    "file-type": "^21.3.1"
-  },
-  "devDependencies": {
-    "@types/node": "^20.17.10",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "build": "docker run --rm -v \"$PWD:/build\" -w /build rust:1.90-slim-bookworm cargo build --locked",
+    "test": "docker run --rm -v \"$PWD:/build\" -w /build rust:1.90-slim-bookworm cargo test --locked",
+    "typecheck": "docker run --rm -v \"$PWD:/build\" -w /build rust:1.90-slim-bookworm cargo check --locked"
   }
 }
