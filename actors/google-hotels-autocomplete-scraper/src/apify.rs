@@ -107,7 +107,8 @@ impl EventBudget {
 
         let run_limit = data
             .pointer("/options/maxTotalChargeUsd")
-            .and_then(Value::as_f64);
+            .and_then(Value::as_f64)
+            .filter(|limit| *limit != 0.0);
         let max_total_charge_usd = match (run_limit, max_total_charge_env) {
             (Some(run_limit), Some(env_limit)) => Some(run_limit.min(env_limit)),
             (Some(run_limit), None) => Some(run_limit),
@@ -217,6 +218,18 @@ impl ApifyClient {
             .send_with_retries(|| self.client.get(url.clone()))
             .await?;
         response_json(response, "Apify run pricing request").await
+    }
+
+    pub async fn set_terminal_status_message(&self, status_message: &str) -> Result<()> {
+        let url = self.endpoint(&["v2", "actor-runs", &self.actor_run_id])?;
+        let body = json!({
+            "statusMessage": status_message,
+            "isStatusMessageTerminal": true
+        });
+        let response = self
+            .send_with_retries(|| self.client.put(url.clone()).json(&body))
+            .await?;
+        require_success(response, "Apify terminal status message update").await
     }
 
     pub async fn charge_event(&mut self, event_name: &str, count: usize) -> Result<()> {
@@ -606,6 +619,39 @@ mod tests {
     }
 
     #[test]
+    fn treats_zero_null_and_missing_run_limits_as_unlimited() {
+        let mut missing_limit = run_data(json!(1.0), json!({}));
+        missing_limit["data"]
+            .as_object_mut()
+            .unwrap()
+            .remove("options");
+        let runs = [
+            ("null", run_data(Value::Null, json!({}))),
+            ("missing", missing_limit),
+            ("zero", run_data(json!(0.0), json!({}))),
+        ];
+
+        for (name, run) in runs {
+            let PricingMode::PayPerEvent(budget) = EventBudget::from_run(&run, None).unwrap()
+            else {
+                panic!("expected pay-per-event pricing for {name} limit");
+            };
+            assert_eq!(budget.affordable_count(17), 17, "{name} limit");
+        }
+    }
+
+    #[test]
+    fn zero_run_limit_does_not_override_a_positive_environment_limit() {
+        let run = run_data(json!(0.0), json!({}));
+        let PricingMode::PayPerEvent(budget) = EventBudget::from_run(&run, Some(0.0005)).unwrap()
+        else {
+            panic!("expected pay-per-event pricing");
+        };
+
+        assert_eq!(budget.affordable_count(100), 2);
+    }
+
+    #[test]
     fn non_pay_per_event_models_do_not_create_custom_event_budgets() {
         let run = json!({"data": {"pricingInfo": {"pricingModel": "FREE"}}});
         assert!(matches!(
@@ -704,6 +750,39 @@ mod tests {
         let output = server.next_request();
         assert!(output.starts_with("PUT /v2/key-value-stores/store-test/records/OUTPUT HTTP/1.1"));
         assert!(output.contains(r#"{"suggestions_saved":2}"#));
+    }
+
+    #[tokio::test]
+    async fn saves_a_terminal_status_message_on_the_apify_run() {
+        let server = MockServer::start(vec![(200, r#"{"data":{}}"#.to_owned())]);
+        let apify = ApifyClient::new(
+            Client::new(),
+            server.base_url.clone(),
+            "test-token".to_owned(),
+            "store-test".to_owned(),
+            "dataset-test".to_owned(),
+            "run-test".to_owned(),
+            "INPUT".to_owned(),
+        );
+
+        apify
+            .set_terminal_status_message("Saved 2 suggestion results.")
+            .await
+            .unwrap();
+
+        let request = server.next_request();
+        assert!(request.starts_with("PUT /v2/actor-runs/run-test HTTP/1.1"));
+        assert!(request
+            .to_ascii_lowercase()
+            .contains("authorization: bearer test-token"));
+        let body = request.split("\r\n\r\n").nth(1).unwrap();
+        assert_eq!(
+            serde_json::from_str::<Value>(body).unwrap(),
+            json!({
+                "statusMessage": "Saved 2 suggestion results.",
+                "isStatusMessageTerminal": true
+            })
+        );
     }
 
     #[tokio::test]

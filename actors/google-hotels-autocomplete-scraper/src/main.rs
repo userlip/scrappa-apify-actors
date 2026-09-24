@@ -205,6 +205,7 @@ async fn run_actor() -> Result<()> {
         )
     };
     println!("{status_message}");
+    apify.set_terminal_status_message(&status_message).await?;
     Ok(())
 }
 
