@@ -91,6 +91,7 @@ jobs:
           - actors/google-news-scraper
           - actors/tiktok-search-scraper
           - actors/linkedin-post-scraper
+          - actors/jameda-reviews-scraper
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
