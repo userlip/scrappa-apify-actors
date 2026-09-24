@@ -15,6 +15,7 @@ use std::{
 pub struct MockResponse {
     pub status: u16,
     body: String,
+    disconnect: bool,
 }
 
 impl MockResponse {
@@ -22,6 +23,15 @@ impl MockResponse {
         Self {
             status,
             body: value.to_string(),
+            disconnect: false,
+        }
+    }
+
+    pub fn disconnect() -> Self {
+        Self {
+            status: 0,
+            body: String::new(),
+            disconnect: true,
         }
     }
 }
@@ -60,6 +70,10 @@ impl MockServer {
                 let request = read_request(&mut stream).unwrap_or_default();
                 if sender.send(request).is_err() {
                     return;
+                }
+                if response.disconnect {
+                    drop(stream);
+                    continue;
                 }
                 let reason = match response.status {
                     200 => "OK",

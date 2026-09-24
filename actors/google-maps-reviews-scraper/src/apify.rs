@@ -128,11 +128,11 @@ impl ApifyClient {
         }
         let url = self.endpoint(&["datasets", &self.dataset_id, "items"])?;
         let response = self
-            .send_with_retries("dataset item publication", || {
-                self.request(Method::POST, url.clone())
-                    .json(&items[..count])
-            })
-            .await?;
+            .request(Method::POST, url)
+            .json(&items[..count])
+            .send()
+            .await
+            .context("Apify dataset item publication failed")?;
         successful_response(response, "dataset item publication").await?;
         *remaining_budget -= count;
         Ok(count)
@@ -366,21 +366,39 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn retries_transient_dataset_write_failure_without_exceeding_cached_budget() {
+    async fn does_not_retry_dataset_post_after_the_response_is_lost() {
+        let server = MockServer::start(vec![
+            MockResponse::disconnect(),
+            MockResponse::json(201, json!({})),
+        ]);
+        let apify = client(server.root_url());
+        let mut remaining = 1;
+        assert!(apify
+            .push_data(&[json!({"review_id": "r1"})], &mut remaining)
+            .await
+            .is_err());
+        assert_eq!(remaining, 1);
+        let requests = server.requests();
+        assert_eq!(requests.len(), 1);
+        assert!(requests[0].starts_with("POST /v2/datasets/test-dataset/items "));
+        assert!(requests[0].ends_with("[{\"review_id\":\"r1\"}]"));
+    }
+
+    #[tokio::test]
+    async fn retries_transient_output_put_failure() {
         let server = MockServer::start(vec![
             MockResponse::json(503, json!({"message": "retry"})),
             MockResponse::json(201, json!({})),
         ]);
         let apify = client(server.root_url());
-        let mut remaining = 1;
-        assert_eq!(
-            apify
-                .push_data(&[json!({"review_id": "r1"})], &mut remaining)
-                .await
-                .unwrap(),
-            1
-        );
-        assert_eq!(remaining, 0);
-        assert_eq!(server.requests().len(), 2);
+
+        apify.set_output(&json!({"items": []})).await.unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 2);
+        assert!(requests
+            .iter()
+            .all(|request| request
+                .starts_with("PUT /v2/key-value-stores/test-store/records/OUTPUT ")));
     }
 }
