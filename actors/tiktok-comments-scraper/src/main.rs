@@ -772,13 +772,29 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-    if data
+    match data
         .pointer("/pricingInfo/pricingModel")
         .and_then(Value::as_str)
-        != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        Some("PAY_PER_EVENT") => {}
+        Some(_) => return Ok(requested),
+        None => bail!("Apify run pricing model is missing"),
     }
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => return Ok(requested),
+        Some(value) => {
+            let max_charge = value
+                .as_f64()
+                .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
+            if !max_charge.is_finite() || max_charge < 0.0 {
+                bail!("Apify run returned invalid charging values");
+            }
+            if max_charge == 0.0 {
+                return Ok(requested);
+            }
+            max_charge
+        }
+    };
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
@@ -788,11 +804,7 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -1311,11 +1323,11 @@ mod tests {
             0.05,
             json!({
                 "apify-actor-start": 1,
-                "apify-default-dataset-item": 0
+                "apify-default-dataset-item": 1
             }),
         );
-        assert_eq!(affordable_dataset_items(&run, 8).unwrap(), 3);
-        assert_eq!(affordable_dataset_items(&run, 8).unwrap(), 3);
+        assert_eq!(affordable_dataset_items(&run, 8).unwrap(), 2);
+        assert_eq!(affordable_dataset_items(&run, 8).unwrap(), 2);
         assert_eq!(
             affordable_dataset_items(&pricing_run(0.02, json!({"apify-actor-start": 1})), 8)
                 .unwrap(),
@@ -1327,6 +1339,35 @@ mod tests {
             8
         );
         assert!(affordable_dataset_items(&json!({"data": {}}), 1).is_err());
+    }
+
+    #[test]
+    fn allows_non_ppe_runs_to_write_all_requested_dataset_items() {
+        let run = json!({
+            "data": {
+                "pricingInfo": { "pricingModel": "PRICE_PER_DATASET_ITEM" }
+            }
+        });
+
+        assert_eq!(affordable_dataset_items(&run, 8).unwrap(), 8);
+    }
+
+    #[test]
+    fn treats_missing_null_and_zero_ppe_caps_as_unlimited() {
+        let mut missing_cap = pricing_run(1.0, json!({}));
+        missing_cap["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+
+        let mut null_cap = pricing_run(1.0, json!({}));
+        null_cap["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+
+        let zero_cap = pricing_run(0.0, json!({}));
+
+        for run in [&missing_cap, &null_cap, &zero_cap] {
+            assert_eq!(affordable_dataset_items(run, 8).unwrap(), 8);
+        }
     }
 
     #[test]
