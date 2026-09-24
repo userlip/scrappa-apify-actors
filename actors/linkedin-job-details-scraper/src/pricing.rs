@@ -128,9 +128,7 @@ impl PricingState {
     }
 
     pub(crate) fn should_push_item(&self, event_name: Option<&str>) -> bool {
-        let max_charges = self.item_limit(event_name);
-        max_charges >= 1
-            || (max_charges == 0 && self.total_charged_amount() <= self.max_total_charge_usd)
+        self.item_limit(event_name) >= 1
     }
 
     pub(crate) fn register_charge(&mut self, event_name: &str, count: usize) -> ChargeRecord {

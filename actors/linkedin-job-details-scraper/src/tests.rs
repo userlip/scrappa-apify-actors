@@ -382,7 +382,7 @@ async fn actor_run_charges_successful_results_with_tiered_pricing() {
 }
 
 #[test]
-fn ppe_budget_skips_rows_only_after_the_run_is_already_over_the_limit() {
+fn ppe_budget_skips_rows_when_the_combined_charge_exceeds_the_limit() {
     let exact_limit = ppe_run(
         0.0012,
         json!({
@@ -391,7 +391,11 @@ fn ppe_budget_skips_rows_only_after_the_run_is_already_over_the_limit() {
         }),
     );
     let pricing = PricingState::from_run(&exact_limit).unwrap();
-    assert!(pricing.should_push_item(Some(JOB_RESULT_CHARGE_EVENT)));
+    assert!(!pricing.should_push_item(Some(JOB_RESULT_CHARGE_EVENT)));
+
+    let insufficient_remaining_budget = ppe_run(0.0011, json!({}));
+    let pricing = PricingState::from_run(&insufficient_remaining_budget).unwrap();
+    assert!(!pricing.should_push_item(Some(JOB_RESULT_CHARGE_EVENT)));
 
     let over_limit = ppe_run(
         0.0011,
@@ -640,6 +644,48 @@ async fn actor_run_stops_at_the_ppe_limit_and_sets_terminal_status() {
         .unwrap();
     assert_eq!(request_body(status)["statusMessage"], status_message);
     assert_eq!(request_body(status)["isStatusMessageTerminal"], true);
+}
+
+#[tokio::test]
+async fn actor_run_does_not_publish_when_combined_charge_exceeds_limit() {
+    let input = json!({ "url": "linkedin.com/jobs/view/1234567890" });
+    let (base, server) = start_actor_mock(input, ppe_run(0.0011, json!({})), 6).await;
+    let http = Client::builder().timeout(REQUEST_TIMEOUT).build().unwrap();
+    let config = mock_config(&base);
+    let apify = ApifyClient::new(http.clone(), &config.apify);
+
+    let status_message = run(&config, &apify, http).await.unwrap().unwrap();
+    assert_eq!(
+        status_message,
+        "Charge limit reached after saving 0 of 1 LinkedIn job detail results."
+    );
+
+    let requests = server.await.unwrap();
+    assert_eq!(requests.len(), 4);
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request_line(request).starts_with("POST /v2/datasets/test-dataset/items "))
+            .count(),
+        0
+    );
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request_line(request).starts_with("POST /v2/actor-runs/test-run/charge "))
+            .count(),
+        0
+    );
+    let output = requests
+        .iter()
+        .find(|request| {
+            request_line(request).starts_with("PUT /v2/key-value-stores/test-store/records/OUTPUT")
+        })
+        .unwrap();
+    assert_eq!(
+        request_body(output),
+        json!({ "requested": 1, "succeeded": 0, "failed": 0 })
+    );
 }
 
 fn mock_config(base: &str) -> Config {
