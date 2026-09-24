@@ -436,7 +436,7 @@ struct DatasetBudget {
     initial_spend: f64,
     saved_dataset_items: u64,
     item_price: f64,
-    max_charge: f64,
+    max_charge: Option<f64>,
 }
 
 impl DatasetBudget {
@@ -460,14 +460,18 @@ impl DatasetBudget {
             .and_then(|event| event.get("eventPriceUsd"))
             .and_then(Value::as_f64)
             .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-        let max_charge = data
-            .pointer("/options/maxTotalChargeUsd")
-            .and_then(Value::as_f64)
-            .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+        let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+            None | Some(Value::Null) => None,
+            Some(Value::Number(number)) => Some(
+                number
+                    .as_f64()
+                    .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
+            ),
+            Some(_) => bail!("Apify run returned an invalid spending limit"),
+        };
         if !item_price.is_finite()
             || item_price < 0.0
-            || !max_charge.is_finite()
-            || max_charge < 0.0
+            || max_charge.is_some_and(|value| !value.is_finite() || value < 0.0)
         {
             bail!("Apify run returned invalid charging values");
         }
@@ -507,14 +511,17 @@ impl DatasetBudget {
     }
 
     fn affordable_items(&self, requested: usize) -> usize {
+        let Some(max_charge) = self.max_charge else {
+            return requested;
+        };
         if self.item_price == 0.0 {
             return requested;
         }
-        let tolerance = f64::EPSILON * self.max_charge.max(1.0);
+        let tolerance = f64::EPSILON * max_charge.max(1.0);
         (1..=requested)
             .take_while(|new_items| {
                 let count = self.saved_dataset_items.saturating_add(*new_items as u64);
-                self.initial_spend + self.item_price * count as f64 <= self.max_charge + tolerance
+                self.initial_spend + self.item_price * count as f64 <= max_charge + tolerance
             })
             .count()
     }
@@ -739,7 +746,7 @@ mod tests {
         }
     }
 
-    fn pricing_run(max_charge: f64, dataset_items: u64, start_events: u64) -> Value {
+    fn pricing_run(max_charge: Option<f64>, dataset_items: u64, start_events: u64) -> Value {
         json!({
             "data": {
                 "pricingInfo": {
@@ -855,7 +862,7 @@ mod tests {
 
     #[test]
     fn ppe_budget_counts_existing_events_and_caps_dataset_rows() {
-        let mut budget = DatasetBudget::from_run(&pricing_run(0.0005, 0, 1)).unwrap();
+        let mut budget = DatasetBudget::from_run(&pricing_run(Some(0.0005), 0, 1)).unwrap();
         assert_eq!(budget.affordable_items(3), 2);
         budget.item_saved().unwrap();
         assert_eq!(budget.affordable_items(3), 1);
@@ -865,7 +872,7 @@ mod tests {
 
     #[test]
     fn free_dataset_items_fit_a_zero_spend_limit() {
-        let mut run = pricing_run(0.0, 0, 0);
+        let mut run = pricing_run(Some(0.0), 0, 0);
         run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"][DATASET_ITEM_EVENT]
             ["eventPriceUsd"] = json!(0.0);
         let budget = DatasetBudget::from_run(&run).unwrap();
@@ -873,19 +880,41 @@ mod tests {
     }
 
     #[test]
+    fn absent_or_null_ppe_charge_cap_is_unlimited() {
+        let null_cap = pricing_run(None, 0, 0);
+        let mut absent_cap = pricing_run(Some(0.0005), 0, 0);
+        absent_cap["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+
+        for run in [&null_cap, &absent_cap] {
+            let budget = DatasetBudget::from_run(run).unwrap();
+            assert_eq!(budget.max_charge, None);
+            assert_eq!(budget.affordable_items(10), 10);
+        }
+    }
+
+    #[test]
     fn invalid_or_non_ppe_run_pricing_fails_closed() {
         assert!(DatasetBudget::from_run(&json!({"data": {}})).is_err());
-        let mut run = pricing_run(1.0, 0, 0);
+        let mut run = pricing_run(Some(1.0), 0, 0);
         run["data"]["pricingInfo"]["pricingModel"] = json!("PRICE_PER_DATASET_ITEM");
         assert!(DatasetBudget::from_run(&run)
             .unwrap_err()
             .to_string()
             .contains("pay-per-event"));
-        let mut run = pricing_run(1.0, 0, 0);
+        let mut run = pricing_run(Some(1.0), 0, 0);
         run["data"]["chargedEventCounts"]["unknown-event"] = json!(1);
         assert!(DatasetBudget::from_run(&run)
             .unwrap_err()
             .to_string()
             .contains("Missing price for charged event"));
+        let mut run = pricing_run(Some(1.0), 0, 0);
+        run["data"]["options"]["maxTotalChargeUsd"] = json!("1.0");
+        assert!(DatasetBudget::from_run(&run)
+            .unwrap_err()
+            .to_string()
+            .contains("invalid spending limit"));
     }
 }
