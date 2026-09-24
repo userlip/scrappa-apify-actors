@@ -102,13 +102,7 @@ impl PpeBudget {
         } else {
             self.max_charges_by_price(item_price)
         };
-        if max_count >= requested {
-            requested
-        } else if max_count == 0 && self.total_charged_amount() <= self.max_total_charge_usd {
-            1
-        } else {
-            max_count.min(requested)
-        }
+        max_count.min(requested)
     }
 
     pub fn finish_dataset_push(
@@ -248,13 +242,19 @@ mod tests {
     }
 
     #[test]
-    fn accounts_for_prior_events_and_treats_zero_limit_as_unlimited() {
-        let budget = PpeBudget::from_run(&run(
+    fn declines_unaffordable_rows_after_prior_charges_and_treats_zero_limit_as_unlimited() {
+        let mut budget = PpeBudget::from_run(&run(
             json!(0.25),
             json!({"business-result":1,"apify-default-dataset-item":1}),
         ))
         .unwrap();
-        assert_eq!(budget.dataset_item_limit(5), 1);
+        assert_eq!(budget.dataset_item_limit(5), 0);
+        let result = budget.finish_dataset_push(0, 5);
+        assert_eq!(result.saved_count, 0);
+        assert_eq!(
+            result.status_message.as_deref(),
+            Some("Charge limit reached after saving 0 of 5 Trustpilot business results on the current page.")
+        );
         let unlimited = PpeBudget::from_run(&run(json!(0), json!({}))).unwrap();
         assert_eq!(unlimited.dataset_item_limit(5), 5);
     }
