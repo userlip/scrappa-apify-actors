@@ -5,9 +5,6 @@
   "description": "Get public Instagram profile data for up to 100 usernames per run, including biography, follower counts, verification status, and profile pictures.",
   "version": "0.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "js-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
