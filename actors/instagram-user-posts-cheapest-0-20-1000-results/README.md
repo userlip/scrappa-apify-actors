@@ -25,7 +25,7 @@ To fetch the next page, pass the `next_max_id` value from the previous run's `OU
 
 Each run pushes one dataset item per returned post. If Scrappa returns zero posts, the dataset remains empty. The full Scrappa API response is also saved to the default key-value store as `OUTPUT`.
 
-Dataset writes respect the run's `maxTotalChargeUsd` limit. The Actor checks the current pay-per-event charges and saves only as many posts as the remaining budget allows. The `OUTPUT` record retains the full upstream response.
+For `PAY_PER_EVENT` runs, dataset writes respect the run's `maxTotalChargeUsd` limit. The Actor checks current event charges and saves only as many posts as the remaining budget allows. Other pricing models save all returned posts. The `OUTPUT` record retains the full upstream response.
 
 ## Runtime
 

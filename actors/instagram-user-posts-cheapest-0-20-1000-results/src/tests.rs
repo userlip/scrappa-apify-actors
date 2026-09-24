@@ -354,15 +354,14 @@ fn positive_limit_accounts_for_custom_and_existing_dataset_charges_first() {
         }),
     );
     assert_eq!(affordable_dataset_items(&run, 5, 0).unwrap(), 1);
+}
 
-    let non_ppe = serde_json::json!({"data": {
-        "pricingInfo": {"pricingModel": "PRICE_PER_RESULT"},
-        "options": {"maxTotalChargeUsd": 0}
+#[test]
+fn non_ppe_runs_allow_all_requested_dataset_items() {
+    let run = serde_json::json!({"data": {
+        "pricingInfo": {"pricingModel": "PRICE_PER_RESULT"}
     }});
-    assert!(affordable_dataset_items(&non_ppe, 5, 0)
-        .unwrap_err()
-        .to_string()
-        .contains("not configured for pay-per-event pricing"));
+    assert_eq!(affordable_dataset_items(&run, 5, 0).unwrap(), 5);
 }
 
 #[test]
@@ -438,6 +437,41 @@ async fn local_smoke_preserves_input_auth_dataset_charge_and_output() {
         ("PUT", "/api/v2/key-value-stores/test-store/records/OUTPUT")
     );
     assert_eq!(serde_json::from_str::<Value>(body).unwrap(), upstream);
+}
+
+#[tokio::test]
+async fn non_ppe_run_preserves_dataset_and_output_writes() {
+    let upstream = serde_json::json!({
+        "posts": [{"id":"post-1"}, {"id":"post-2"}]
+    });
+    let run = serde_json::json!({"data": {
+        "pricingInfo": {"pricingModel": "PRICE_PER_RESULT"}
+    }});
+    let server = MockServer::start(vec![
+        input_response(r#"{"username":"natgeo"}"#),
+        response(200, &upstream.to_string()),
+        response(200, &run.to_string()),
+        response(201, ""),
+        response(200, ""),
+    ]);
+    let config = config(&server.base_url);
+    run_actor(&client(), &config).await.unwrap();
+
+    let requests = server.requests();
+    assert_eq!(requests.len(), 5);
+    assert_eq!(request_parts(&requests[2]).1, "/api/v2/actor-runs/test-run");
+    assert_eq!(request_parts(&requests[3]).0, "POST");
+    assert_eq!(
+        serde_json::from_str::<Value>(request_parts(&requests[3]).2).unwrap(),
+        serde_json::json!([
+            {"request_username":"natgeo", "id":"post-1"},
+            {"request_username":"natgeo", "id":"post-2"}
+        ])
+    );
+    assert_eq!(
+        request_parts(&requests[4]).1,
+        "/api/v2/key-value-stores/test-store/records/OUTPUT"
+    );
 }
 
 #[tokio::test]

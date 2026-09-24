@@ -45,7 +45,7 @@ Next page:
 
 Each run saves one dataset item per returned post. If Scrappa returns zero posts, the dataset remains empty and the full response is still available in the default key-value store as `OUTPUT`. The exact fields can vary depending on what Instagram returns, but common fields include:
 
-Dataset writes respect the run's `maxTotalChargeUsd` limit. If the remaining budget cannot cover every post, the Actor saves only the affordable items and keeps the full Scrappa response in `OUTPUT`.
+For `PAY_PER_EVENT` runs, dataset writes respect the run's `maxTotalChargeUsd` limit. If the remaining budget cannot cover every post, the Actor saves only the affordable items. Other pricing models save all returned posts. The full Scrappa response is kept in `OUTPUT`.
 
 | Field | Description |
 | --- | --- |
