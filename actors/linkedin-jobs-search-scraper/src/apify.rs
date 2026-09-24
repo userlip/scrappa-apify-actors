@@ -167,12 +167,13 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-    if data
+    match data
         .pointer("/pricingInfo/pricingModel")
         .and_then(Value::as_str)
-        != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        Some("PAY_PER_EVENT") => {}
+        Some(_) => return Ok(requested),
+        None => bail!("Apify run is not configured for pay-per-event pricing"),
     }
 
     let events = data
@@ -337,12 +338,16 @@ mod tests {
     }
 
     #[test]
-    fn missing_ppe_data_fails_instead_of_saving_unbudgeted_rows() {
+    fn missing_apify_pricing_fails() {
         assert!(affordable_dataset_items(&json!({}), 1).is_err());
-        assert!(affordable_dataset_items(
-            &json!({"data": {"pricingInfo": {"pricingModel": "FREE"}}}),
-            1
-        )
-        .is_err());
+        assert!(affordable_dataset_items(&json!({"data": {"pricingInfo": {}}}), 1).is_err());
+    }
+
+    #[test]
+    fn non_ppe_runs_keep_all_requested_dataset_items() {
+        for pricing_model in ["PRICE_PER_DATASET_ITEM", "FLAT_PRICE_PER_MONTH", "FREE"] {
+            let run = json!({"data": {"pricingInfo": {"pricingModel": pricing_model}}});
+            assert_eq!(affordable_dataset_items(&run, 7).unwrap(), 7);
+        }
     }
 }
