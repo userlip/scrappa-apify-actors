@@ -4,7 +4,8 @@ use serde_json::{json, Map, Number, Value};
 use std::{
     collections::{HashMap, HashSet},
     env,
-    time::Duration,
+    sync::atomic::{AtomicU64, Ordering},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tokio::time::sleep;
 use url::Url;
@@ -17,6 +18,24 @@ const APIFY_MAX_RETRIES: usize = 8;
 const APIFY_MIN_RETRY_DELAY: Duration = Duration::from_millis(500);
 const CHALLENGE_RESULT_CHARGE_EVENT: &str = "challenge-result";
 const MAX_SAFE_INTEGER: f64 = 9_007_199_254_740_991.0;
+const APIFY_CHARGE_IDEMPOTENCY_HEADER: &str = "idempotency-key";
+static CHARGE_IDEMPOTENCY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+#[derive(Clone, Copy)]
+enum ApifyRetryPolicy<'a> {
+    Safe,
+    WithIdempotencyKey(&'a str),
+    Never,
+}
+
+fn charge_idempotency_key(run_id: &str, event_name: &str) -> String {
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let sequence = CHARGE_IDEMPOTENCY_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+    format!("{run_id}-{event_name}-{timestamp}-{sequence}")
+}
 
 #[derive(Clone, Debug)]
 pub struct ActorConfig {
@@ -102,14 +121,22 @@ impl ActorClient {
         url: Url,
         body: Option<&Value>,
         operation: &str,
+        retry_policy: ApifyRetryPolicy<'_>,
     ) -> Result<Response> {
-        for attempt in 0..=APIFY_MAX_RETRIES {
+        let max_retries = match retry_policy {
+            ApifyRetryPolicy::Never => 0,
+            ApifyRetryPolicy::Safe | ApifyRetryPolicy::WithIdempotencyKey(_) => APIFY_MAX_RETRIES,
+        };
+        for attempt in 0..=max_retries {
             let mut request = self
                 .apify_http
                 .request(method.clone(), url.clone())
                 .bearer_auth(&self.config.apify_token)
                 .header(reqwest::header::ACCEPT, "application/json")
                 .timeout(APIFY_REQUEST_TIMEOUT);
+            if let ApifyRetryPolicy::WithIdempotencyKey(key) = retry_policy {
+                request = request.header(APIFY_CHARGE_IDEMPOTENCY_HEADER, key);
+            }
             if let Some(body) = body {
                 request = request.json(body);
             }
@@ -118,19 +145,17 @@ impl ActorClient {
                 Ok(response) if response.status().is_success() => {
                     return Ok(response);
                 }
-                Ok(response)
-                    if is_retryable_status(response.status()) && attempt < APIFY_MAX_RETRIES =>
-                {
+                Ok(response) if is_retryable_status(response.status()) && attempt < max_retries => {
                     eprintln!(
-                        "Apify API request for {operation} failed with {}; retrying ({}/{APIFY_MAX_RETRIES})",
+                        "Apify API request for {operation} failed with {}; retrying ({}/{max_retries})",
                         response.status(),
                         attempt + 1
                     );
                 }
                 Ok(response) => return Err(apify_response_error(response, operation).await),
-                Err(error) if attempt < APIFY_MAX_RETRIES => {
+                Err(error) if attempt < max_retries => {
                     eprintln!(
-                        "Apify API request for {operation} failed: {error}; retrying ({}/{APIFY_MAX_RETRIES})",
+                        "Apify API request for {operation} failed: {error}; retrying ({}/{max_retries})",
                         attempt + 1
                     );
                 }
@@ -153,8 +178,11 @@ impl ActorClient {
         url: Url,
         body: Option<&Value>,
         operation: &str,
+        retry_policy: ApifyRetryPolicy<'_>,
     ) -> Result<Value> {
-        let response = self.send_apify_json(method, url, body, operation).await?;
+        let response = self
+            .send_apify_json(method, url, body, operation, retry_policy)
+            .await?;
         response.json().await.with_context(|| {
             format!("Apify API response while trying to {operation} is not valid JSON")
         })
@@ -172,7 +200,13 @@ impl ActorClient {
             ],
         )?;
         let response = self
-            .send_apify_json(Method::GET, url, None, "fetch Actor input")
+            .send_apify_json(
+                Method::GET,
+                url,
+                None,
+                "fetch Actor input",
+                ApifyRetryPolicy::Safe,
+            )
             .await;
         let response = match response {
             Ok(response) => response,
@@ -191,8 +225,14 @@ impl ActorClient {
             &self.config.apify_api_base_url,
             &["v2", "actor-runs", &self.config.actor_run_id],
         )?;
-        self.apify_json(Method::GET, url, None, "fetch Actor run pricing")
-            .await
+        self.apify_json(
+            Method::GET,
+            url,
+            None,
+            "fetch Actor run pricing",
+            ApifyRetryPolicy::Safe,
+        )
+        .await
     }
 
     async fn store_dataset_items(&self, items: &[Value]) -> Result<()> {
@@ -208,6 +248,7 @@ impl ActorClient {
             url,
             Some(&json!(items)),
             "store dataset items",
+            ApifyRetryPolicy::Never,
         )
         .await?;
         Ok(())
@@ -221,11 +262,13 @@ impl ActorClient {
             &self.config.apify_api_base_url,
             &["v2", "actor-runs", &self.config.actor_run_id, "charge"],
         )?;
+        let idempotency_key = charge_idempotency_key(&self.config.actor_run_id, event_name);
         self.send_apify_json(
             Method::POST,
             url,
             Some(&json!({ "eventName": event_name, "count": count })),
             "charge Actor run events",
+            ApifyRetryPolicy::WithIdempotencyKey(&idempotency_key),
         )
         .await?;
         Ok(())
@@ -242,8 +285,14 @@ impl ActorClient {
                 "OUTPUT",
             ],
         )?;
-        self.send_apify_json(Method::PUT, url, Some(output), "write OUTPUT")
-            .await?;
+        self.send_apify_json(
+            Method::PUT,
+            url,
+            Some(output),
+            "write OUTPUT",
+            ApifyRetryPolicy::Safe,
+        )
+        .await?;
         Ok(())
     }
 
@@ -563,7 +612,9 @@ fn challenge_id(challenge: &Value) -> Value {
             }
         }
         Some(Value::Number(number)) => {
-            let Some(number) = number.as_f64() else { return Value::Null };
+            let Some(number) = number.as_f64() else {
+                return Value::Null;
+            };
             if number.is_finite() && number.fract() == 0.0 && number.abs() <= MAX_SAFE_INTEGER {
                 Value::String(if number == 0.0 {
                     "0".to_owned()
@@ -1005,7 +1056,7 @@ mod tests {
     use super::*;
     use std::{
         io::{Read, Write},
-        net::{TcpListener, TcpStream},
+        net::{Shutdown, TcpListener, TcpStream},
         sync::{
             atomic::{AtomicBool, AtomicUsize, Ordering},
             mpsc::{self, Receiver},
@@ -1015,9 +1066,11 @@ mod tests {
         time::{Duration, Instant},
     };
 
+    #[derive(Clone)]
     struct MockResponse {
         status: u16,
         body: String,
+        disconnect: bool,
     }
 
     impl MockResponse {
@@ -1025,6 +1078,15 @@ mod tests {
             Self {
                 status,
                 body: body.to_string(),
+                disconnect: false,
+            }
+        }
+
+        fn disconnect() -> Self {
+            Self {
+                status: 0,
+                body: String::new(),
+                disconnect: true,
             }
         }
     }
@@ -1063,6 +1125,10 @@ mod tests {
                         break;
                     }
                     let response = handler(&request);
+                    if response.disconnect {
+                        let _ = stream.shutdown(Shutdown::Both);
+                        continue;
+                    }
                     let reason = match response.status {
                         200 => "OK",
                         201 => "Created",
@@ -1184,6 +1250,16 @@ mod tests {
         })
     }
 
+    fn header_value(request: &str, name: &str) -> Option<String> {
+        let (_, _, headers, _) = request_parts(request);
+        headers.lines().find_map(|line| {
+            let (header, value) = line.split_once(':')?;
+            header
+                .eq_ignore_ascii_case(name)
+                .then(|| value.trim().to_owned())
+        })
+    }
+
     fn ppe_run(max_total: f64) -> Value {
         json!({
             "data": {
@@ -1198,6 +1274,35 @@ mod tests {
                 "chargedEventCounts": { "apify-actor-start": 1 }
             }
         })
+    }
+
+    async fn assert_dataset_append_is_not_retried(first_response: MockResponse) {
+        let attempts = Arc::new(AtomicUsize::new(0));
+        let request_attempts = Arc::clone(&attempts);
+        let appended_rows = Arc::new(AtomicUsize::new(0));
+        let captured_rows = Arc::clone(&appended_rows);
+        let server = MockServer::start(move |request| {
+            if request_parts(request).1 != "/v2/datasets/test-dataset/items" {
+                return MockResponse::json(404, json!({ "error": "unexpected request" }));
+            }
+
+            let items: Vec<Value> = serde_json::from_str(request_parts(request).3).unwrap();
+            captured_rows.fetch_add(items.len(), Ordering::SeqCst);
+            if request_attempts.fetch_add(1, Ordering::SeqCst) == 0 {
+                first_response.clone()
+            } else {
+                MockResponse::json(201, json!({}))
+            }
+        });
+
+        let error = test_client(&server)
+            .store_dataset_items(&[json!({ "id": 1 })])
+            .await
+            .unwrap_err();
+        assert!(!error.to_string().is_empty());
+        assert_eq!(attempts.load(Ordering::SeqCst), 1);
+        assert_eq!(appended_rows.load(Ordering::SeqCst), 1);
+        assert_eq!(server.requests().len(), 1);
     }
 
     #[test]
@@ -1514,25 +1619,13 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn retries_apify_storage_server_errors_but_not_scrappa_failures() {
-        let dataset_attempts = Arc::new(AtomicUsize::new(0));
-        let attempts = Arc::clone(&dataset_attempts);
-        let server = MockServer::start(move |request| {
-            if request_parts(request)
-                .1
-                .starts_with("/v2/datasets/test-dataset/items")
-                && attempts.fetch_add(1, Ordering::SeqCst) == 0
-            {
-                MockResponse::json(500, json!({ "error": "temporary storage error" }))
-            } else {
-                MockResponse::json(201, json!({}))
-            }
-        });
-        test_client(&server)
-            .store_dataset_items(&[json!({ "id": 1 })])
-            .await
-            .unwrap();
-        assert_eq!(dataset_attempts.load(Ordering::SeqCst), 2);
+    async fn does_not_replay_dataset_append_after_server_error_and_does_not_retry_scrappa_failures()
+    {
+        assert_dataset_append_is_not_retried(MockResponse::json(
+            500,
+            json!({ "error": "dataset append succeeded but response failed" }),
+        ))
+        .await;
 
         let server = MockServer::start(|_| {
             MockResponse::json(
@@ -1552,6 +1645,110 @@ mod tests {
             .to_string();
         assert!(error.contains("Scrappa API error (401): Invalid key - keywords: is invalid"));
         assert_eq!(server.requests().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn does_not_replay_dataset_append_after_lost_response() {
+        assert_dataset_append_is_not_retried(MockResponse::disconnect()).await;
+    }
+
+    async fn assert_charge_retry_is_idempotent(first_response: MockResponse) {
+        let attempts = Arc::new(AtomicUsize::new(0));
+        let request_attempts = Arc::clone(&attempts);
+        let charged_event_count = Arc::new(AtomicUsize::new(0));
+        let captured_charges = Arc::clone(&charged_event_count);
+        let processed_keys = Arc::new(Mutex::new(HashSet::<String>::new()));
+        let charge_keys = Arc::clone(&processed_keys);
+        let appended_rows = Arc::new(AtomicUsize::new(0));
+        let captured_rows = Arc::clone(&appended_rows);
+        let server = MockServer::start(move |request| {
+            if request_parts(request).1 == "/v2/datasets/test-dataset/items" {
+                let items: Vec<Value> = serde_json::from_str(request_parts(request).3).unwrap();
+                captured_rows.fetch_add(items.len(), Ordering::SeqCst);
+                return MockResponse::json(201, json!({}));
+            }
+            if request_parts(request).1 != "/v2/actor-runs/test-run/charge" {
+                return MockResponse::json(404, json!({ "error": "unexpected request" }));
+            }
+
+            let body: Value = serde_json::from_str(request_parts(request).3).unwrap();
+            let key = header_value(request, "idempotency-key");
+            let is_new_charge = key
+                .as_ref()
+                .is_none_or(|key| charge_keys.lock().unwrap().insert(key.clone()));
+            if is_new_charge {
+                captured_charges
+                    .fetch_add(body["count"].as_u64().unwrap() as usize, Ordering::SeqCst);
+            }
+
+            if request_attempts.fetch_add(1, Ordering::SeqCst) == 0 {
+                first_response.clone()
+            } else {
+                MockResponse::json(201, json!({}))
+            }
+        });
+
+        let client = test_client(&server);
+        let batch = [json!({ "id": 1 }), json!({ "id": 2 })];
+        client.store_dataset_items(&batch).await.unwrap();
+        client
+            .charge_event(CHALLENGE_RESULT_CHARGE_EVENT, batch.len())
+            .await
+            .unwrap();
+
+        let requests = server.requests();
+        let charge_requests = requests
+            .iter()
+            .filter(|request| request_parts(request).1.ends_with("/charge"))
+            .collect::<Vec<_>>();
+        assert_eq!(appended_rows.load(Ordering::SeqCst), 2);
+        assert_eq!(charge_requests.len(), 2);
+        assert_eq!(charged_event_count.load(Ordering::SeqCst), 2);
+        let first_key = header_value(charge_requests[0], "idempotency-key");
+        assert!(
+            first_key.is_some(),
+            "charge request must have an idempotency key"
+        );
+        assert_eq!(
+            header_value(charge_requests[1], "idempotency-key"),
+            first_key
+        );
+
+        client
+            .charge_event(CHALLENGE_RESULT_CHARGE_EVENT, 1)
+            .await
+            .unwrap();
+        let next_request = server.requests();
+        assert_eq!(next_request.len(), 1);
+        assert_ne!(
+            header_value(&next_request[0], "idempotency-key"),
+            first_key,
+            "a separate charge needs a unique idempotency key"
+        );
+        assert_eq!(charged_event_count.load(Ordering::SeqCst), 3);
+    }
+
+    #[tokio::test]
+    async fn charge_retry_after_500_does_not_bill_the_same_saved_batch_twice() {
+        assert_charge_retry_is_idempotent(MockResponse::json(
+            500,
+            json!({ "error": "charge succeeded but response failed" }),
+        ))
+        .await;
+    }
+
+    #[tokio::test]
+    async fn charge_retry_after_429_does_not_bill_the_same_saved_batch_twice() {
+        assert_charge_retry_is_idempotent(MockResponse::json(
+            429,
+            json!({ "error": "rate limited" }),
+        ))
+        .await;
+    }
+
+    #[tokio::test]
+    async fn charge_retry_after_lost_response_does_not_bill_the_same_saved_batch_twice() {
+        assert_charge_retry_is_idempotent(MockResponse::disconnect()).await;
     }
 
     #[test]
