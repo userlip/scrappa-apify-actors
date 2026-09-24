@@ -297,6 +297,7 @@ mod tests {
     use reqwest::StatusCode;
     use serde_json::json;
     use std::{
+        collections::HashMap,
         io::{Read, Write},
         net::TcpListener,
         sync::mpsc,
@@ -305,6 +306,15 @@ mod tests {
 
     fn no_retry_delay(_: usize) -> Duration {
         Duration::ZERO
+    }
+
+    fn request_url(request: &str) -> url::Url {
+        let target = request
+            .lines()
+            .next()
+            .and_then(|line| line.split_whitespace().nth(1))
+            .unwrap();
+        url::Url::parse(&format!("http://localhost{target}")).unwrap()
     }
 
     fn response(status: u16, body: &str) -> String {
@@ -418,7 +428,13 @@ mod tests {
         let first = requests.recv().unwrap();
         let second = requests.recv().unwrap();
         for request in [first, second] {
-            assert!(request.starts_with("GET /api/jameda/search?q=Hals+%26+Nase&loc=M%C3%BCnchen&per_page=28&page=2 HTTP/1.1"));
+            let request_url = request_url(&request);
+            assert_eq!(request_url.path(), "/api/jameda/search");
+            let query = request_url.query_pairs().into_owned().collect::<HashMap<_, _>>();
+            assert_eq!(query.get("q").map(String::as_str), Some("Hals & Nase"));
+            assert_eq!(query.get("loc").map(String::as_str), Some("München"));
+            assert_eq!(query.get("per_page").map(String::as_str), Some("28"));
+            assert_eq!(query.get("page").map(String::as_str), Some("2"));
             assert!(request
                 .to_ascii_lowercase()
                 .contains("x-api-key: test-api-key"));
