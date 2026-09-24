@@ -234,6 +234,9 @@ pub fn affordable_property_results(run: &Value, requested: usize) -> Result<usiz
     let max_charge = max_charge
         .as_f64()
         .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
+    if max_charge == 0.0 {
+        return Ok(requested);
+    }
     if !property_result_price.is_finite()
         || property_result_price < 0.0
         || !dataset_item_price.is_finite()
@@ -363,9 +366,22 @@ mod tests {
     }
 
     #[test]
-    fn treats_an_unset_spending_limit_as_unlimited() {
+    fn treats_a_null_spending_limit_as_unlimited() {
         let mut run = pay_per_event_run(1.0, json!({}));
         run["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+        assert_eq!(affordable_property_results(&run, 7).unwrap(), 7);
+    }
+
+    #[test]
+    fn treats_a_missing_spending_limit_as_unlimited() {
+        let mut run = pay_per_event_run(1.0, json!({}));
+        run["data"]["options"] = json!({});
+        assert_eq!(affordable_property_results(&run, 7).unwrap(), 7);
+    }
+
+    #[test]
+    fn treats_a_zero_spending_limit_as_unlimited() {
+        let run = pay_per_event_run(0.0, json!({}));
         assert_eq!(affordable_property_results(&run, 7).unwrap(), 7);
     }
 
