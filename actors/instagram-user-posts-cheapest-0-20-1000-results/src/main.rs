@@ -246,11 +246,20 @@ fn affordable_dataset_items(
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    // Apify's charging.js treats zero, null, and missing limits as unbounded.
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => None,
+        Some(value) => {
+            let amount = value
+                .as_f64()
+                .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+            if !amount.is_finite() || amount < 0.0 {
+                bail!("Apify run returned invalid charging values");
+            }
+            (amount > 0.0).then_some(amount)
+        }
+    };
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -287,6 +296,9 @@ fn affordable_dataset_items(
     if !spent.is_finite() {
         bail!("Apify run returned invalid charged totals");
     }
+    let Some(max_charge) = max_charge else {
+        return Ok(requested);
+    };
     if item_price == 0.0 {
         return Ok(requested);
     }
@@ -667,21 +679,28 @@ mod tests {
     fn pricing_response(max_charge: f64, counts: Value) -> MockResponse {
         response(
             200,
-            &serde_json::json!({
-                "data": {
-                    "pricingInfo": {
-                        "pricingModel": "PAY_PER_EVENT",
-                        "pricingPerEvent": {"actorChargeEvents": {
-                            "apify-default-dataset-item": {"eventPriceUsd": 0.0002},
-                            "apify-actor-start": {"eventPriceUsd": 0.0001}
-                        }}
-                    },
-                    "options": {"maxTotalChargeUsd": max_charge},
-                    "chargedEventCounts": counts
-                }
-            })
-            .to_string(),
+            &pricing_run(Some(serde_json::json!(max_charge)), counts).to_string(),
         )
+    }
+
+    fn pricing_run(max_charge: Option<Value>, counts: Value) -> Value {
+        let mut run = serde_json::json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.0002},
+                        "apify-actor-start": {"eventPriceUsd": 0.0001}
+                    }}
+                },
+                "options": {},
+                "chargedEventCounts": counts
+            }
+        });
+        if let Some(max_charge) = max_charge {
+            run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
+        }
+        run
     }
 
     fn config(base_url: &Url) -> Config {
@@ -850,6 +869,36 @@ mod tests {
             "options":{"maxTotalChargeUsd":1}
         }});
         assert!(affordable_dataset_items(&missing_counts, 1, 0).is_err());
+    }
+
+    #[test]
+    fn treats_zero_omitted_and_null_total_charge_limits_as_unbounded() {
+        let counts = serde_json::json!({"apify-actor-start": 1});
+        for max_charge in [Some(serde_json::json!(0)), None, Some(Value::Null)] {
+            let run = pricing_run(max_charge, counts.clone());
+            assert_eq!(affordable_dataset_items(&run, 5, 0).unwrap(), 5);
+        }
+    }
+
+    #[test]
+    fn positive_limit_accounts_for_custom_and_existing_dataset_charges_first() {
+        let run = pricing_run(
+            Some(serde_json::json!(0.0006)),
+            serde_json::json!({
+                "apify-actor-start": 1,
+                "apify-default-dataset-item": 1
+            }),
+        );
+        assert_eq!(affordable_dataset_items(&run, 5, 0).unwrap(), 1);
+
+        let non_ppe = serde_json::json!({"data": {
+            "pricingInfo": {"pricingModel": "PRICE_PER_RESULT"},
+            "options": {"maxTotalChargeUsd": 0}
+        }});
+        assert!(affordable_dataset_items(&non_ppe, 5, 0)
+            .unwrap_err()
+            .to_string()
+            .contains("not configured for pay-per-event pricing"));
     }
 
     #[test]
