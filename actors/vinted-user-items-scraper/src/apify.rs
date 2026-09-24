@@ -251,7 +251,7 @@ impl ActorPricing {
         let max_total_charge_usd = data
             .pointer("/options/maxTotalChargeUsd")
             .and_then(Value::as_f64)
-            .filter(|amount| *amount > 0.0)
+            .filter(|amount| amount.is_finite() && *amount >= 0.0)
             .unwrap_or(f64::INFINITY);
         let event_prices = data
             .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
@@ -301,9 +301,6 @@ impl ActorPricing {
         let available = self.max_charges_by_price(combined_price);
         if available >= requested {
             return requested;
-        }
-        if available == 0 && self.total_charged_amount() <= self.max_total_charge_usd {
-            return 1;
         }
         available
     }
@@ -481,7 +478,7 @@ mod tests {
     }
 
     #[test]
-    fn trims_a_batch_to_available_budget_and_allows_sdk_limit_probe_row() {
+    fn trims_a_batch_to_available_budget_without_an_overlimit_probe_row() {
         let mut pricing = ActorPricing::from_run(&json!({
             "data": {
                 "pricingInfo": {
@@ -501,23 +498,49 @@ mod tests {
         assert_eq!(pricing.limit_dataset_items(4, "user-item-result"), 1);
         pricing.record_dataset_items(1);
         pricing.record_event_charge("user-item-result", 1);
-        assert_eq!(pricing.limit_dataset_items(4, "user-item-result"), 1);
-
-        pricing.record_dataset_items(1);
-        pricing.record_event_charge("user-item-result", 1);
         assert_eq!(pricing.limit_dataset_items(4, "user-item-result"), 0);
     }
 
     #[test]
-    fn zero_spending_cap_means_no_configured_cap() {
+    fn zero_spending_cap_allows_no_priced_dataset_rows() {
         let pricing = ActorPricing::from_run(&json!({
             "data": {
-                "pricingInfo": {"pricingModel":"PAY_PER_EVENT"},
+                "pricingInfo": {
+                    "pricingModel":"PAY_PER_EVENT",
+                    "pricingPerEvent": {
+                        "actorChargeEvents": {
+                            "user-item-result": {"eventPriceUsd":0.001},
+                            "apify-default-dataset-item": {"eventPriceUsd":0.0003}
+                        }
+                    }
+                },
                 "chargedEventCounts": {},
                 "options": {"maxTotalChargeUsd": 0}
             }
         }))
         .unwrap();
-        assert_eq!(pricing.limit_dataset_items(20, "user-item-result"), 20);
+        assert_eq!(pricing.limit_dataset_items(20, "user-item-result"), 0);
+    }
+
+    #[test]
+    fn fully_spent_start_charge_leaves_no_dataset_capacity() {
+        let pricing = ActorPricing::from_run(&json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel":"PAY_PER_EVENT",
+                    "pricingPerEvent": {
+                        "actorChargeEvents": {
+                            "user-item-result": {"eventPriceUsd":0.001},
+                            "apify-default-dataset-item": {"eventPriceUsd":0.0003},
+                            "apify-actor-start": {"eventPriceUsd":0.0015}
+                        }
+                    }
+                },
+                "chargedEventCounts": {"apify-actor-start":1},
+                "options": {"maxTotalChargeUsd":0.0015}
+            }
+        }))
+        .unwrap();
+        assert_eq!(pricing.limit_dataset_items(20, "user-item-result"), 0);
     }
 }
