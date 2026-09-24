@@ -3,10 +3,16 @@ use std::{collections::BTreeMap, env, time::Duration};
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::{json, Value};
+use tokio::time::sleep;
+
+use crate::runtime_config::{
+    apify_request_timeout, ppe_row_save_budget, RunDeadline, CHARGE_RETRY_BACKOFF_MS,
+};
 
 pub const INDEX_RESULT_CHARGE_EVENT: &str = "index-result";
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const DEFAULT_APIFY_API_BASE: &str = "https://api.apify.com";
+const RETRYABLE_CHARGE_STATUSES: [u16; 6] = [408, 429, 500, 502, 503, 504];
 
 #[derive(Clone)]
 pub struct ActorConfig {
@@ -63,19 +69,31 @@ pub struct ApifyClient {
     http: Client,
     config: ActorConfig,
     budget: ChargeBudget,
+    deadline: RunDeadline,
 }
 
 impl ApifyClient {
+    #[cfg(test)]
     pub fn new(config: ActorConfig) -> Result<Self> {
+        Self::new_with_deadline(
+            config,
+            RunDeadline::for_actor_timeout(Duration::from_secs(
+                crate::runtime_config::ACTOR_TIMEOUT_SECONDS,
+            ))?,
+        )
+    }
+
+    pub fn new_with_deadline(config: ActorConfig, deadline: RunDeadline) -> Result<Self> {
         let http = Client::builder()
             .connect_timeout(Duration::from_secs(10))
-            .timeout(Duration::from_secs(15))
+            .timeout(apify_request_timeout())
             .build()
             .context("Could not create Apify HTTP client")?;
         Ok(Self {
             http,
             config,
             budget: ChargeBudget::default(),
+            deadline,
         })
     }
 
@@ -121,6 +139,13 @@ impl ApifyClient {
             });
         }
 
+        if self.budget.is_ppe == Some(true) {
+            self.deadline.ensure_remaining(
+                ppe_row_save_budget(),
+                "saving and charging a pay-per-event index row",
+            )?;
+        }
+
         self.push_dataset_item(item).await?;
         if self.budget.is_ppe == Some(true) {
             self.charge_index_result(item).await?;
@@ -155,10 +180,14 @@ impl ApifyClient {
     }
 
     async fn send(&self, method: Method, url: Url) -> Result<Response> {
+        let request_timeout = self
+            .deadline
+            .request_timeout(apify_request_timeout(), "an Apify API request")?;
         self.http
             .request(method, url)
             .bearer_auth(&self.config.apify_token)
             .header(reqwest::header::ACCEPT, "application/json")
+            .timeout(request_timeout)
             .send()
             .await
             .context("Apify API request failed")
@@ -175,12 +204,16 @@ impl ApifyClient {
 
     async fn push_dataset_item(&mut self, item: &Value) -> Result<()> {
         let url = self.endpoint(&["datasets", &self.config.dataset_id, "items"])?;
+        let request_timeout = self
+            .deadline
+            .request_timeout(apify_request_timeout(), "an Apify dataset write")?;
         let response = self
             .http
             .post(url)
             .bearer_auth(&self.config.apify_token)
             .header(reqwest::header::ACCEPT, "application/json")
             .json(item)
+            .timeout(request_timeout)
             .send()
             .await
             .context("Apify dataset write failed")?;
@@ -197,22 +230,64 @@ impl ApifyClient {
             .get("id")
             .and_then(Value::as_str)
             .ok_or_else(|| anyhow!("Index result is missing its id"))?;
-        let response = self
-            .http
-            .post(url)
-            .bearer_auth(&self.config.apify_token)
-            .header(reqwest::header::ACCEPT, "application/json")
-            .header(
-                "idempotency-key",
-                format!("{}:index-result:{result_id}", self.config.actor_run_id),
-            )
-            .json(&json!({ "eventName": INDEX_RESULT_CHARGE_EVENT, "count": 1 }))
-            .send()
-            .await
-            .context("Apify index-result charge request failed")?;
-        ensure_success(response, "Apify index-result charge").await?;
-        Ok(())
+        let idempotency_key = format!("{}:index-result:{result_id}", self.config.actor_run_id);
+        let charge_body = json!({ "eventName": INDEX_RESULT_CHARGE_EVENT, "count": 1 });
+        let mut last_error = None;
+        let mut attempt = 0_u32;
+
+        loop {
+            attempt = attempt.saturating_add(1);
+            let request_timeout = match self
+                .deadline
+                .request_timeout(apify_request_timeout(), "an Apify index-result charge")
+            {
+                Ok(request_timeout) => request_timeout,
+                Err(error) => return Err(last_error.unwrap_or(error)),
+            };
+            match self
+                .http
+                .post(url.clone())
+                .bearer_auth(&self.config.apify_token)
+                .header(reqwest::header::ACCEPT, "application/json")
+                .header("idempotency-key", &idempotency_key)
+                .json(&charge_body)
+                .timeout(request_timeout)
+                .send()
+                .await
+            {
+                Ok(response) if response.status().is_success() => return Ok(()),
+                Ok(response) => {
+                    let status = response.status();
+                    if !is_retryable_charge_status(status) {
+                        return ensure_success(response, "Apify index-result charge").await;
+                    }
+                    last_error = Some(anyhow!("Apify index-result charge failed with {status}"));
+                }
+                Err(error) => {
+                    let retryable = is_retryable_charge_error(&error);
+                    last_error = Some(anyhow!("Apify index-result charge request failed: {error}"));
+                    if !retryable {
+                        return Err(last_error.unwrap());
+                    }
+                }
+            }
+
+            let backoff_ms = CHARGE_RETRY_BACKOFF_MS * (1_u64 << attempt.saturating_sub(1).min(4));
+            let remaining = self.deadline.remaining();
+            let backoff = Duration::from_millis(backoff_ms).min(remaining / 2);
+            if !backoff.is_zero() {
+                sleep(backoff).await;
+            }
+        }
     }
+}
+
+fn is_retryable_charge_status(status: StatusCode) -> bool {
+    RETRYABLE_CHARGE_STATUSES.contains(&status.as_u16())
+}
+
+fn is_retryable_charge_error(error: &reqwest::Error) -> bool {
+    error.is_timeout() || error.is_connect() || error.is_body()
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -395,7 +470,13 @@ fn affordable_row_count(
 mod tests {
     use super::*;
     use crate::test_support::{MockResponse, MockServer};
+    use crate::{
+        request_params::IndicesParams,
+        runtime_config::{RunDeadline, PPE_ROW_SAVE_BUDGET_MS},
+        scrappa::ScrappaClient,
+    };
     use serde_json::json;
+    use std::time::{Duration, Instant};
 
     fn actor_config(base_url: &str) -> ActorConfig {
         ActorConfig {
@@ -724,5 +805,135 @@ mod tests {
         let requests = server.finish();
         assert_eq!(requests.len(), 2);
         assert_eq!(requests[1].target, "/v2/datasets/dataset-1/items");
+    }
+
+    #[tokio::test]
+    async fn retries_transient_charge_failures_after_dataset_write_until_success() {
+        let server = MockServer::start(vec![
+            MockResponse::json(200, &run(0.00025, json!({})).to_string()),
+            MockResponse::json_after(201, "{}", Duration::from_millis(40)),
+            MockResponse::json_after(503, "temporary charge failure", Duration::from_millis(40)),
+            MockResponse::json_after(503, "temporary charge failure", Duration::from_millis(40)),
+            MockResponse::json_after(503, "temporary charge failure", Duration::from_millis(40)),
+            MockResponse::json_after(201, "{}", Duration::from_millis(40)),
+        ]);
+        let deadline = RunDeadline::for_work_window(Duration::from_secs(70)).unwrap();
+        let mut client =
+            ApifyClient::new_with_deadline(actor_config(&server.base_url), deadline).unwrap();
+        let item = json!({"id":"INDEXSP:.INX","symbol":".INX"});
+
+        let capacity = client.get_capacity().await.unwrap();
+        assert_eq!(capacity, 1);
+        assert_eq!(
+            client
+                .save_index(&item, capacity)
+                .await
+                .unwrap()
+                .saved_count,
+            1
+        );
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 6);
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-1/items");
+        assert_eq!(requests[2].target, "/v2/actor-runs/run-1/charge");
+        assert_eq!(requests[3].target, "/v2/actor-runs/run-1/charge");
+        assert_eq!(requests[4].target, "/v2/actor-runs/run-1/charge");
+        assert_eq!(requests[5].target, "/v2/actor-runs/run-1/charge");
+        let charge_keys: Vec<_> = requests[2..]
+            .iter()
+            .map(|request| {
+                request
+                    .headers
+                    .to_ascii_lowercase()
+                    .lines()
+                    .find(|line| line.starts_with("idempotency-key:"))
+                    .unwrap()
+                    .to_owned()
+            })
+            .collect();
+        assert!(charge_keys.iter().all(|key| key == &charge_keys[0]));
+        let charge_bodies: Vec<_> = requests[2..]
+            .iter()
+            .map(|request| serde_json::from_str::<Value>(&request.body).unwrap())
+            .collect();
+        assert!(charge_bodies.iter().all(|body| body == &charge_bodies[0]));
+    }
+
+    #[tokio::test]
+    async fn delayed_retries_and_persistence_finish_inside_the_actor_work_deadline() {
+        let delay = Duration::from_millis(80);
+        let apify_server = MockServer::start(vec![
+            MockResponse::json_after(200, &run(0.00025, json!({})).to_string(), delay),
+            MockResponse::json_after(201, "{}", delay),
+            MockResponse::json_after(503, "temporary charge failure", delay),
+            MockResponse::json_after(201, "{}", delay),
+        ]);
+        let scrappa_server = MockServer::start(vec![
+            MockResponse::json_after(503, "upstream busy", delay),
+            MockResponse::json_after(503, "upstream busy", delay),
+            MockResponse::json_after(200, r#"{"indices":[{"symbol":".INX"}]}"#, delay),
+        ]);
+        let deadline =
+            RunDeadline::for_work_window(Duration::from_millis(PPE_ROW_SAVE_BUDGET_MS + 4_000))
+                .unwrap();
+        let mut apify =
+            ApifyClient::new_with_deadline(actor_config(&apify_server.base_url), deadline).unwrap();
+        let scrappa = ScrappaClient::new_with_deadline(
+            "scrappa-test-key".to_owned(),
+            Some(&scrappa_server.base_url),
+            deadline,
+        )
+        .unwrap();
+        let params = IndicesParams {
+            indices: None,
+            hl: "en".to_owned(),
+            gl: "us".to_owned(),
+        };
+        let started = Instant::now();
+
+        assert_eq!(apify.get_capacity().await.unwrap(), 1);
+        let response = scrappa.get_indices(&params, Some(".INX")).await.unwrap();
+        assert_eq!(response["indices"][0]["symbol"], ".INX");
+        assert_eq!(
+            apify
+                .save_index(&json!({"id":"INDEXSP:.INX","symbol":".INX"}), 1,)
+                .await
+                .unwrap()
+                .saved_count,
+            1
+        );
+        assert!(started.elapsed() < Duration::from_secs(5));
+        assert!(deadline.remaining() > Duration::ZERO);
+
+        let scrappa_requests = scrappa_server.finish();
+        assert_eq!(scrappa_requests.len(), 3);
+        let apify_requests = apify_server.finish();
+        assert_eq!(apify_requests.len(), 4);
+        assert_eq!(apify_requests[1].target, "/v2/datasets/dataset-1/items");
+        assert_eq!(apify_requests[2].target, "/v2/actor-runs/run-1/charge");
+        assert_eq!(apify_requests[3].target, "/v2/actor-runs/run-1/charge");
+    }
+
+    #[tokio::test]
+    async fn skips_a_ppe_row_when_the_deadline_cannot_cover_persistence_retries() {
+        let server = MockServer::start(vec![MockResponse::json(
+            200,
+            &run(0.00025, json!({})).to_string(),
+        )]);
+        let deadline = RunDeadline::for_work_window(Duration::from_secs(10)).unwrap();
+        let mut client =
+            ApifyClient::new_with_deadline(actor_config(&server.base_url), deadline).unwrap();
+
+        let capacity = client.get_capacity().await.unwrap();
+        let error = client
+            .save_index(&json!({"id":"INDEXSP:.INX"}), capacity)
+            .await
+            .unwrap_err();
+
+        assert!(error.to_string().contains("saving and charging"));
+        let requests = server.finish();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0].target, "/v2/actor-runs/run-1");
     }
 }
