@@ -580,6 +580,35 @@ mod tests {
         ppe_run_with(json!(0.0005), json!({"apify-actor-start": 1}))
     }
 
+    fn tiered_ppe_run(max_total_charge_usd: f64) -> Value {
+        let mut run = ppe_run_with(json!(max_total_charge_usd), json!({"apify-actor-start": 1}));
+        let events = run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            .as_object_mut()
+            .unwrap();
+        for (event_name, tiers) in [
+            (
+                DEFAULT_DATASET_ITEM_CHARGE_EVENT,
+                json!({
+                    "FREE": {"tieredEventPriceUsd": 0.0002},
+                    "GOLD": {"tieredEventPriceUsd": 0.0003}
+                }),
+            ),
+            (
+                URL_RESULT_CHARGE_EVENT,
+                json!({
+                    "FREE": {"tieredEventPriceUsd": 0.0002},
+                    "GOLD": {"tieredEventPriceUsd": 0.0004}
+                }),
+            ),
+        ] {
+            let event = events.get_mut(event_name).unwrap().as_object_mut().unwrap();
+            event.remove("eventPriceUsd");
+            event.insert("eventTieredPricingUsd".to_owned(), tiers);
+        }
+
+        run
+    }
+
     fn apify_client(base_url: Url) -> ApifyClient {
         ApifyClient::new(ApifyConfig {
             api_base_url: base_url,
@@ -832,31 +861,7 @@ mod tests {
 
     #[tokio::test]
     async fn tiered_ppe_prices_use_the_highest_tier_before_append() {
-        let mut run = ppe_run();
-        let events = run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
-            .as_object_mut()
-            .unwrap();
-        for (event_name, tiers) in [
-            (
-                DEFAULT_DATASET_ITEM_CHARGE_EVENT,
-                json!({
-                    "FREE": {"tieredEventPriceUsd": 0.0002},
-                    "GOLD": {"tieredEventPriceUsd": 0.0003}
-                }),
-            ),
-            (
-                URL_RESULT_CHARGE_EVENT,
-                json!({
-                    "FREE": {"tieredEventPriceUsd": 0.0002},
-                    "GOLD": {"tieredEventPriceUsd": 0.0004}
-                }),
-            ),
-        ] {
-            let event = events.get_mut(event_name).unwrap().as_object_mut().unwrap();
-            event.remove("eventPriceUsd");
-            event.insert("eventTieredPricingUsd".to_owned(), tiers);
-        }
-
+        let run = tiered_ppe_run(0.00075);
         let run_body = serde_json::to_string(&run).unwrap();
         let server = start_mock_server(vec![MockResponse::json(200, &run_body)]).await;
         let client = apify_client(server.base_url());
@@ -883,6 +888,36 @@ mod tests {
         let requests = server.requests().await;
         assert_eq!(requests.len(), 1);
         assert!(requests[0].starts_with("GET /api/v2/actor-runs/test-run HTTP/1.1"));
+    }
+
+    #[tokio::test]
+    async fn saves_tiered_ppe_rows_when_the_cap_covers_the_highest_tier() {
+        let run_body = serde_json::to_string(&tiered_ppe_run(0.0009)).unwrap();
+        let server = start_mock_server(vec![
+            MockResponse::json(200, &run_body),
+            MockResponse::text(201, ""),
+            MockResponse::text(201, ""),
+        ])
+        .await;
+        let client = apify_client(server.base_url());
+        let mut billing = client.get_billing_state().await.unwrap();
+
+        assert_eq!(
+            client
+                .push_dataset_item(
+                    &json!({"success": true, "input_url": "https://example.com"}),
+                    &mut billing,
+                    "test-run:url-result:0",
+                )
+                .await
+                .unwrap(),
+            DatasetWriteResult::Saved
+        );
+
+        let requests = server.requests().await;
+        assert_eq!(requests.len(), 3);
+        assert!(requests[1].starts_with("POST /api/v2/datasets/test-dataset/items HTTP/1.1"));
+        assert!(requests[2].starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1"));
     }
 
     #[tokio::test]
