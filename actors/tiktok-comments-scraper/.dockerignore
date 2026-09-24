@@ -1,0 +1,8 @@
+target/
+apify_storage/
+crawlee_storage/
+storage/
+node_modules/
+.env
+.env.*
+.git/
