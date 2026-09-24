@@ -336,7 +336,7 @@ impl ApifyClient {
             std::process::id()
         );
         let response = self
-            .send(
+            .send_once(
                 Method::POST,
                 self.resource_url(&["actor-runs", &self.actor_run_id, "charge"])?,
                 Some(json!({"eventName": event_name, "count": count})),
@@ -696,6 +696,26 @@ mod tests {
             .unwrap_err();
         assert!(error.to_string().contains("Apify API error (503)"));
         assert_eq!(server.requests().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn charge_post_does_not_retry_a_transient_failure() {
+        let server = MockServer::start(vec![
+            response(503, json!({"error":"temporary"})),
+            response(200, json!({})),
+        ]);
+        let client = ApifyClient::new(config(server.base_url.clone())).unwrap();
+        let error = client.charge_event("review-result", 1).await.unwrap_err();
+
+        assert!(error.to_string().contains("event charge"));
+        let requests = server.requests();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(
+            request_parts(&requests[0]).1,
+            "/v2/actor-runs/test-run/charge"
+        );
+        assert_eq!(request_parts(&requests[0]).0, "POST");
+        assert!(header(&requests[0], "Idempotency-Key").is_some());
     }
 
     #[tokio::test]

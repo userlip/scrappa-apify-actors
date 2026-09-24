@@ -6,16 +6,32 @@ use std::{error::Error, fmt, time::Duration};
 use crate::request_params::RequestParams;
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
+pub const REQUEST_DEADLINE_MS: u64 = 180_000;
 const REVIEWS_ENDPOINT: &str = "/kununu/reviews";
+const MAX_ATTEMPTS: usize = 4;
+const RETRY_BACKOFF_MS: u64 = 500;
 
 #[derive(Debug)]
-pub struct ScrappaTimeoutError;
+pub struct ScrappaTimeoutError {
+    timeout: Duration,
+}
+
+impl ScrappaTimeoutError {
+    pub fn new(timeout: Duration) -> Self {
+        Self { timeout }
+    }
+
+    pub fn timeout_seconds(&self) -> u64 {
+        self.timeout.as_secs()
+    }
+}
 
 impl fmt::Display for ScrappaTimeoutError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             formatter,
-            "Scrappa API request timed out after {REQUEST_TIMEOUT_MS}ms"
+            "Scrappa API request timed out after {}ms",
+            self.timeout.as_millis()
         )
     }
 }
@@ -26,6 +42,7 @@ pub struct ScrappaClient {
     client: Client,
     base_url: String,
     api_key: String,
+    request_deadline: Duration,
 }
 
 impl ScrappaClient {
@@ -34,11 +51,26 @@ impl ScrappaClient {
     }
 
     fn with_timeout(api_key: String, base_url: String, timeout: Duration) -> Result<Self> {
+        Self::with_timeouts(
+            api_key,
+            base_url,
+            timeout,
+            Duration::from_millis(REQUEST_DEADLINE_MS),
+        )
+    }
+
+    fn with_timeouts(
+        api_key: String,
+        base_url: String,
+        timeout: Duration,
+        request_deadline: Duration,
+    ) -> Result<Self> {
         let client = Client::builder().timeout(timeout).build()?;
         Ok(Self {
             client,
             base_url,
             api_key,
+            request_deadline,
         })
     }
 
@@ -67,24 +99,71 @@ impl ScrappaClient {
             }
         }
 
-        let response = self
-            .client
-            .get(url)
-            .header("X-API-Key", &self.api_key)
-            .header(reqwest::header::ACCEPT, "application/json")
-            .send()
-            .await
-            .map_err(map_request_error)?;
-        response_json(response).await
+        let request = async {
+            for attempt in 0..MAX_ATTEMPTS {
+                let response = self
+                    .client
+                    .get(url.clone())
+                    .header("X-API-Key", &self.api_key)
+                    .header(reqwest::header::ACCEPT, "application/json")
+                    .send()
+                    .await;
+
+                let result = match response {
+                    Ok(response)
+                        if is_retryable_status(response.status()) && attempt + 1 < MAX_ATTEMPTS =>
+                    {
+                        tokio::time::sleep(retry_delay(attempt)).await;
+                        continue;
+                    }
+                    Ok(response) => response_json(response).await,
+                    Err(error) => Err(map_request_error(error)),
+                };
+
+                match result {
+                    Ok(value) => return Ok(value),
+                    Err(error)
+                        if attempt + 1 < MAX_ATTEMPTS && is_retryable_request_error(&error) =>
+                    {
+                        tokio::time::sleep(retry_delay(attempt)).await;
+                    }
+                    Err(error) => return Err(error),
+                }
+            }
+
+            unreachable!("Scrappa request attempts are bounded above zero")
+        };
+
+        match tokio::time::timeout(self.request_deadline, request).await {
+            Ok(result) => result,
+            Err(_) => Err(ScrappaTimeoutError::new(self.request_deadline).into()),
+        }
     }
 }
 
 fn map_request_error(error: reqwest::Error) -> anyhow::Error {
     if error.is_timeout() {
-        ScrappaTimeoutError.into()
+        ScrappaTimeoutError::new(Duration::from_millis(REQUEST_TIMEOUT_MS)).into()
     } else {
         error.into()
     }
+}
+
+fn is_retryable_status(status: StatusCode) -> bool {
+    status == StatusCode::REQUEST_TIMEOUT
+        || status == StatusCode::TOO_MANY_REQUESTS
+        || status.is_server_error()
+}
+
+fn is_retryable_request_error(error: &anyhow::Error) -> bool {
+    error.downcast_ref::<ScrappaTimeoutError>().is_some()
+        || error
+            .downcast_ref::<reqwest::Error>()
+            .is_some_and(|error| error.is_connect() || error.is_timeout())
+}
+
+fn retry_delay(retry: usize) -> Duration {
+    Duration::from_millis(RETRY_BACKOFF_MS * 2_u64.saturating_pow(retry as u32))
 }
 
 fn js_string(value: &Value) -> String {
@@ -166,7 +245,10 @@ fn is_truthy(value: &Value) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{REQUEST_TIMEOUT_MS, ScrappaClient, ScrappaTimeoutError, format_api_error};
+    use super::{
+        REQUEST_DEADLINE_MS, REQUEST_TIMEOUT_MS, ScrappaClient, ScrappaTimeoutError,
+        format_api_error,
+    };
     use crate::{request_params::build_request_plan, test_support::*};
     use reqwest::{StatusCode, Url};
     use serde_json::{Map, json};
@@ -218,7 +300,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn formats_scrappa_validation_errors_and_does_not_retry_upstream_failures() {
+    async fn formats_scrappa_validation_errors_without_retrying_permanent_4xx() {
         let server = MockServer::start(vec![response(
             422,
             json!({"message":"Invalid input", "errors":{"score_filters":["must be valid"]}}),
@@ -234,10 +316,63 @@ mod tests {
         assert_eq!(server.requests().len(), 1);
 
         assert_eq!(REQUEST_TIMEOUT_MS, 90_000);
+        assert_eq!(REQUEST_DEADLINE_MS, 180_000);
+        assert!(REQUEST_DEADLINE_MS < 300_000);
         assert_eq!(
-            ScrappaTimeoutError.to_string(),
+            ScrappaTimeoutError::new(Duration::from_millis(REQUEST_TIMEOUT_MS)).to_string(),
             "Scrappa API request timed out after 90000ms"
         );
+    }
+
+    #[tokio::test]
+    async fn retries_service_unavailable_then_returns_success() {
+        let server = MockServer::start(vec![
+            response(503, json!({"message":"temporarily unavailable"})),
+            response(200, json!({"success": true})),
+        ]);
+
+        let result = client(server.base_url.clone())
+            .get(&Map::new())
+            .await
+            .unwrap();
+
+        assert_eq!(result["success"], true);
+        let requests = server.requests();
+        assert_eq!(requests.len(), 2);
+        assert!(
+            requests
+                .iter()
+                .all(|request| request_parts(request).0 == "GET")
+        );
+    }
+
+    #[tokio::test]
+    async fn does_not_retry_permanent_client_errors() {
+        let server = MockServer::start(vec![response(400, json!({"message":"invalid request"}))]);
+
+        let error = client(server.base_url.clone())
+            .get(&Map::new())
+            .await
+            .unwrap_err();
+
+        assert_eq!(
+            error.to_string(),
+            "Scrappa API error (400): invalid request"
+        );
+        let requests = server.requests();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(request_parts(&requests[0]).0, "GET");
+    }
+
+    #[test]
+    fn retries_only_the_transient_http_status_ranges() {
+        assert!(super::is_retryable_status(StatusCode::REQUEST_TIMEOUT));
+        assert!(super::is_retryable_status(StatusCode::TOO_MANY_REQUESTS));
+        assert!(super::is_retryable_status(StatusCode::SERVICE_UNAVAILABLE));
+        assert!(!super::is_retryable_status(StatusCode::BAD_REQUEST));
+        assert!(!super::is_retryable_status(
+            StatusCode::UNPROCESSABLE_ENTITY
+        ));
     }
 
     #[tokio::test]
@@ -249,9 +384,10 @@ mod tests {
             let _ = read_timeout_request(&mut stream);
             std::thread::sleep(Duration::from_millis(100));
         });
-        let client = ScrappaClient::with_timeout(
+        let client = ScrappaClient::with_timeouts(
             "test-api-key".into(),
             format!("http://{address}"),
+            Duration::from_secs(1),
             Duration::from_millis(10),
         )
         .unwrap();
