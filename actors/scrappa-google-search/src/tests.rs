@@ -266,29 +266,30 @@ async fn actor_preserves_search_options_retries_writes_affordable_rows_and_store
         "X-API-Key",
         "test-scrappa-key"
     ));
-    assert_eq!(
-        query_parameters(&requests[2]),
-        vec![
-            (
-                "query".to_owned(),
-                "best restaurants in new york".to_owned()
-            ),
-            ("location".to_owned(), "New York, NY, USA".to_owned()),
-            ("gl".to_owned(), "us".to_owned()),
-            ("hl".to_owned(), "en".to_owned()),
-            ("google_domain".to_owned(), "google.com".to_owned()),
-            ("start".to_owned(), "20".to_owned()),
-            ("amount".to_owned(), "10".to_owned()),
-            ("safe".to_owned(), "active".to_owned()),
-            ("tbs".to_owned(), "qdr:w".to_owned()),
-            ("tbm".to_owned(), "nws".to_owned()),
-            ("lr".to_owned(), "lang_en".to_owned()),
-            ("cr".to_owned(), "countryUS".to_owned()),
-            ("uule".to_owned(), "w+CAIQIC".to_owned()),
-            ("nfpr".to_owned(), "1".to_owned()),
-            ("filter".to_owned(), "0".to_owned()),
-        ]
-    );
+    let mut actual_query_parameters = query_parameters(&requests[2]);
+    actual_query_parameters.sort_unstable();
+    let mut expected_query_parameters = vec![
+        (
+            "query".to_owned(),
+            "best restaurants in new york".to_owned(),
+        ),
+        ("location".to_owned(), "New York, NY, USA".to_owned()),
+        ("gl".to_owned(), "us".to_owned()),
+        ("hl".to_owned(), "en".to_owned()),
+        ("google_domain".to_owned(), "google.com".to_owned()),
+        ("start".to_owned(), "20".to_owned()),
+        ("amount".to_owned(), "10".to_owned()),
+        ("safe".to_owned(), "active".to_owned()),
+        ("tbs".to_owned(), "qdr:w".to_owned()),
+        ("tbm".to_owned(), "nws".to_owned()),
+        ("lr".to_owned(), "lang_en".to_owned()),
+        ("cr".to_owned(), "countryUS".to_owned()),
+        ("uule".to_owned(), "w+CAIQIC".to_owned()),
+        ("nfpr".to_owned(), "1".to_owned()),
+        ("filter".to_owned(), "0".to_owned()),
+    ];
+    expected_query_parameters.sort_unstable();
+    assert_eq!(actual_query_parameters, expected_query_parameters);
     assert!(requests[3].starts_with("GET /v2/actor-runs/test-run HTTP/1.1"));
     assert!(requests[4].starts_with("POST /v2/datasets/test-dataset/items HTTP/1.1"));
     let (_, _, dataset_body) = request_parts(&requests[4]);
