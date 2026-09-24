@@ -5,9 +5,6 @@
   "description": "Search TikTok challenges and hashtags by keyword. Discover challenge IDs, names, descriptions, stats, and raw TikTok metadata through Scrappa.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

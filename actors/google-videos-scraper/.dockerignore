@@ -11,6 +11,7 @@ storage
 # generated and installed files
 dist
 node_modules
+target
 
 # local environment files
 .env

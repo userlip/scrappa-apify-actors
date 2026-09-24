@@ -31,7 +31,7 @@ Use `country` plus `slug` when you have the Booking.com URL parts. The `.html` s
 
 ## Batch input
 
-Use `urls` or `hotels` to process multiple hotel pages in one actor run. The actor calls Scrappa once per hotel and pushes one dataset item per successful hotel detail response. Failed hotel requests are saved as uncharged error rows.
+Use `urls` or `hotels` to process multiple hotel pages in one actor run. The actor calls Scrappa once per hotel and pushes one dataset item per processed request. Failed hotel requests are saved as error rows without the custom `hotel-result` event charge; Apify's default dataset item pricing still applies when configured.
 
 ```json
 {
@@ -77,3 +77,12 @@ Dataset items contain the full Scrappa hotel detail payload plus normalized requ
 ```
 
 For higher-volume Booking.com hotel detail extraction, use the Scrappa API directly at `https://scrappa.co`.
+
+## Local Rust validation
+
+Run the behavior tests in the build image, then smoke the image using the schema's prefilled hotel input:
+
+```sh
+docker build -f .actor/Dockerfile -t booking-hotel-details-scraper:local .
+node test/smoke.mjs
+```

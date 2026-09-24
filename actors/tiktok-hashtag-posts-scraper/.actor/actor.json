@@ -5,9 +5,6 @@
   "description": "TikTok hashtag scraper for extracting public posts by hashtag, hashtag URL, or challenge ID. Get captions, engagement metrics, author metadata, timestamps, and pagination cursors through Scrappa.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

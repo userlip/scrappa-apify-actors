@@ -1,0 +1,16 @@
+# Rust build output
+target/
+
+# Apify local storage
+apify_storage/
+crawlee_storage/
+storage/
+
+# Local credentials and editor state
+.env
+.env.*
+.git/
+.idea/
+.vscode/
+.zed/
+node_modules/

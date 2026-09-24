@@ -11,7 +11,7 @@
   "version": "1.0",
   "buildTag": "latest",
   "meta": {
-    "templateId": "ts-start"
+    "templateId": "rust-start"
   },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",

@@ -5,9 +5,6 @@
   "description": "TikTok music scraper for extracting public videos that use specific music tracks or sounds. Monitor TikTok sound videos, music track posts, creator adoption, captions, engagement metrics, timestamps, and pagination cursors through Scrappa.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

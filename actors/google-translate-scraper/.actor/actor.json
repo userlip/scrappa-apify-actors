@@ -5,9 +5,6 @@
   "description": "Translate text in bulk through Scrappa's Google Translate API. Batch multiple text items in one Apify run and export one dataset item per translation.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

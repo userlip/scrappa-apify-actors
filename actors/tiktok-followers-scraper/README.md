@@ -49,6 +49,14 @@ Each TikTok follower is saved as one dataset item:
 
 The full API response, including pagination metadata, is saved to `OUTPUT`.
 
+## Runtime
+
+The Rust actor calls Scrappa's `/tiktok/user/profile` endpoint to resolve usernames, then calls `/tiktok/user/followers` with the numeric user ID. Each Scrappa request uses the `X-API-Key` header and a 60-second timeout. The actor does not retry failed upstream requests; the configured Apify run deadline is 120 seconds.
+
+Each returned follower is written as one default dataset item. For pay-per-event runs with a positive `maxTotalChargeUsd`, the actor reads the event prices and charged event counts and saves only the rows affordable under that cap. Other pricing models and uncapped runs (zero, null, or absent `maxTotalChargeUsd`) save every follower. Apify automatically charges its `apify-default-dataset-item` event for each saved row. `OUTPUT` always keeps the complete Scrappa response, including followers beyond a positive run cap.
+
+The Rust tests use loopback mocks and a dummy API token. Run them from this directory with `cargo test --locked`. Build the local image from this directory with `docker build -f .actor/Dockerfile -t tiktok-followers-scraper:local .`.
+
 ## Support
 
 For higher-volume usage or direct API access, use Scrappa at https://scrappa.co.

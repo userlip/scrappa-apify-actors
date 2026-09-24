@@ -5,9 +5,6 @@
   "description": "Scrape Google Finance market movers, trend rows, major indices, currencies, crypto, and finance news from the markets endpoint.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

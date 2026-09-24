@@ -21,7 +21,7 @@ For higher-volume workloads or direct API integration, use the [Scrappa API](htt
 | `user_ids` | array or CSV string | No | Multiple Vinted user IDs. Singular and batch fields can be combined |
 | `country` | string | No | Vinted market code. Defaults to `FR` |
 
-The Actor trims and deduplicates IDs in input order, validates numeric IDs and country codes, and accepts at most 100 unique IDs per run. Requests use at most eight concurrent Scrappa calls with two 15-second attempts, keeping the maximum batch within the Actor's 600-second runtime. Supported countries are `FR`, `DE`, `ES`, `IT`, `NL`, `BE`, `AT`, `PL`, `CZ`, `LT`, `LU`, `SK`, `HU`, `RO`, `PT`, `SE`, `DK`, `FI`, and `US`.
+The Actor trims and deduplicates IDs in input order, validates numeric IDs and country codes, and accepts at most 100 unique IDs per run. It processes up to 32 profiles concurrently, with two 15-second Scrappa attempts and bounded Apify dataset and charge requests; the worst-case request budget keeps the maximum batch within the Actor's 600-second runtime. Supported countries are `FR`, `DE`, `ES`, `IT`, `NL`, `BE`, `AT`, `PL`, `CZ`, `LT`, `LU`, `SK`, `HU`, `RO`, `PT`, `SE`, `DK`, `FI`, and `US`.
 
 ### Batch example
 
@@ -85,7 +85,6 @@ The dataset is the primary output channel. The Actor does not write per-profile 
 ## Development
 
 ```bash
-npm install
-npm test
-npm run typecheck
+cargo test --locked
+docker build -f .actor/Dockerfile -t vinted-user-profile-scraper:local .
 ```

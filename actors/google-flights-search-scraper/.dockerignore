@@ -1,0 +1,7 @@
+target/
+.git/
+node_modules/
+dist/
+storage/
+test/
+src/*.ts

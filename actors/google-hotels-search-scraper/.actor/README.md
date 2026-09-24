@@ -2,7 +2,7 @@
 
 Scrape Google Hotels search results with dates, guests, price filters, star class, ratings, amenities, vacation rental filters, booking links, and pagination.
 
-The actor saves one dataset item per property and stores the complete Scrappa response in key-value store key `OUTPUT`.
+The Rust actor saves one dataset item per property, limited by the run’s PAY_PER_EVENT spending cap, and stores the complete Scrappa response in key-value store key `OUTPUT`.
 
 ## Example input
 

@@ -5,10 +5,8 @@
   "description": "Resolve cities, districts, and postal-code queries to ImmobilienScout24 location names, types, and geocodes in one batch run.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
+  "output": "./output_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"

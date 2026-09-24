@@ -5,9 +5,6 @@
   "description": "Scrape Booking.com search results with property names, URLs, images, review scores, locations, prices, dates, guests, and rooms.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

@@ -18,44 +18,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-actors:
-    runs-on: [self-hosted, ci, github-actions]
-    strategy:
-      fail-fast: false
-      matrix:
-        actor:
-          - path: actors/google-images-scraper
-          - path: actors/google-flights-search-scraper
-          - path: actors/google-hotels-search-scraper
-          - path: actors/google-jobs-scraper
-          - path: actors/google-maps-business-details-scraper
-          - path: actors/immobilienscout24-locations-scraper
-          - path: actors/immobilienscout24-price-insights-scraper
-          - path: actors/instagram-post-info-cheapest-0-20-1000-results
-          - path: actors/instagram-user-info-cheapest-0-20-1000-results
-          - path: actors/instagram-user-posts-cheapest-0-20-1000-results
-          - path: actors/linkedin-search-scraper
-          - path: actors/redfin-property-details-scraper
-          - path: actors/tiktok-comments-scraper
-          - path: actors/tiktok-profile-scraper
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: ${{ matrix.actor.path }}/package-lock.json
-
-      - name: Install dependencies
-        working-directory: ${{ matrix.actor.path }}
-        run: npm ci
-
-      - name: Run tests
-        working-directory: ${{ matrix.actor.path }}
-        run: npm test
 
   test-rust-actors:
     runs-on: [self-hosted, ci, github-actions]
@@ -63,34 +25,112 @@ jobs:
       fail-fast: false
       matrix:
         actor:
-          - actors/youtube-api-batch-videos
+          - actors/arbeitsagentur-jobs-scraper
+          - actors/booking-hotel-details-scraper
+          - actors/booking-search-scraper
+          - actors/domain-availability-checker
+          - actors/google-finance-historical-prices-scraper
+          - actors/google-finance-indices-scraper
+          - actors/google-finance-intraday-scraper
+          - actors/google-finance-markets-scraper
+          - actors/google-finance-quote-scraper
+          - actors/google-finance-search-scraper
+          - actors/google-flights-search-scraper
+          - actors/google-hotels-autocomplete-scraper
+          - actors/google-hotels-search-scraper
+          - actors/google-images-scraper
+          - actors/google-jobs-scraper
+          - actors/google-maps-advanced-search-scraper
+          - actors/google-maps-autocomplete-scraper
+          - actors/google-maps-business-details-scraper
+          - actors/google-maps-directions-scraper
+          - actors/google-maps-photos-scraper
+          - actors/google-maps-reviews-scraper
+          - actors/google-maps-search-scraper
+          - actors/google-news-scraper
+          - actors/google-patents-details-scraper
+          - actors/google-patents-search-scraper
+          - actors/google-search
+          - actors/google-translate-scraper
+          - actors/google-trends-autocomplete-scraper
+          - actors/google-trends-interest-scraper
+          - actors/google-trends-related-queries-scraper
+          - actors/google-videos-scraper
+          - actors/immobilienscout24-locations-scraper
+          - actors/immobilienscout24-price-insights-scraper
+          - actors/immobilienscout24-search-scraper
+          - actors/immowelt-property-search-scraper
+          - actors/indeed-jobs-scraper
+          - actors/instagram-post-info-cheapest-0-20-1000-results
+          - actors/instagram-user-info-cheapest-0-20-1000-results
+          - actors/instagram-user-posts-cheapest-0-20-1000-results
+          - actors/jameda-doctor-details-scraper
+          - actors/jameda-reviews-scraper
+          - actors/jameda-search-scraper
+          - actors/kleinanzeigen-listing-details-scraper
+          - actors/kleinanzeigen-search-scraper
+          - actors/kununu-jobs-scraper
+          - actors/kununu-reviews-scraper
           - actors/linkedin-company-scraper
+          - actors/linkedin-job-details-scraper
+          - actors/linkedin-jobs-search-scraper
+          - actors/linkedin-post-scraper
           - actors/linkedin-profile-scraper
+          - actors/linkedin-search-scraper
+          - actors/pinterest-search-scraper
+          - actors/redfin-property-details-scraper
+          - actors/redfin-property-search-scraper
+          - actors/redfin-valuation-scraper
+          - actors/scrappa-google-search
+          - actors/similarweb-traffic-analytics-scraper
+          - actors/startpage-search-scraper
+          - actors/stepstone-jobs-scraper
+          - actors/tiktok-ads-scraper
+          - actors/tiktok-challenge-details-scraper
+          - actors/tiktok-challenge-posts-scraper
+          - actors/tiktok-challenge-search-scraper
+          - actors/tiktok-comments-scraper
+          - actors/tiktok-followers-scraper
+          - actors/tiktok-following-scraper
+          - actors/tiktok-hashtag-posts-scraper
+          - actors/tiktok-music-posts-scraper
+          - actors/tiktok-profile-scraper
+          - actors/tiktok-search-scraper
+          - actors/tiktok-user-posts-scraper
+          - actors/tiktok-video-scraper
+          - actors/trustedshops-reviews-scraper
+          - actors/trustedshops-search-scraper
+          - actors/trustedshops-shop-profile-scraper
+          - actors/trustpilot-business-search-scraper
+          - actors/trustpilot-company-details-scraper
           - actors/trustpilot-company-reviews-scraper
-          - actors/youtube-api-video-comments
-          - actors/youtube-api-related-videos
-          - actors/youtube-api-search-data
-          - actors/youtube-api-search-suggestions
-          - actors/youtube-api-get-video-details
+          - actors/vinted-item-details-scraper
+          - actors/vinted-search-scraper
+          - actors/vinted-user-items-scraper
+          - actors/vinted-user-profile-scraper
+          - actors/website-content-extractor-scraper
+          - actors/youtube-api-batch-videos
+          - actors/youtube-api-channel-podcasts
           - actors/youtube-api-channel-videos
-          - actors/youtube-transcript-scraper
-          - actors/youtube-api-trending-videos
-          - actors/youtube-api-video-chapters
-          - actors/youtube-api-search-by-category
-          - actors/youtube-api-hashtags
-          - actors/youtube-api-playlists
-          - actors/youtube-api-get-channel-shorts
-          - actors/youtube-api-get-channel-statistics
-          - actors/youtube-api-get-playlists-details
+          - actors/youtube-api-get-channel-about-details
           - actors/youtube-api-get-channel-community
           - actors/youtube-api-get-channel-details
           - actors/youtube-api-get-channel-livestreams
           - actors/youtube-api-get-channel-playlists
-          - actors/youtube-api-get-channel-about-details
-          - actors/youtube-api-channel-podcasts
-          - actors/google-news-scraper
-          - actors/tiktok-search-scraper
-          - actors/linkedin-post-scraper
+          - actors/youtube-api-get-channel-shorts
+          - actors/youtube-api-get-channel-statistics
+          - actors/youtube-api-get-playlists-details
+          - actors/youtube-api-get-video-details
+          - actors/youtube-api-hashtags
+          - actors/youtube-api-playlists
+          - actors/youtube-api-related-videos
+          - actors/youtube-api-search-by-category
+          - actors/youtube-api-search-data
+          - actors/youtube-api-search-suggestions
+          - actors/youtube-api-trending-videos
+          - actors/youtube-api-video-chapters
+          - actors/youtube-api-video-comments
+          - actors/youtube-transcript-scraper
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -101,3 +141,8 @@ jobs:
       - name: Run Rust actor tests
         working-directory: ${{ matrix.actor }}
         run: cargo test --locked
+
+      - name: Build Booking Rust actor image
+        if: matrix.actor == 'actors/booking-search-scraper'
+        working-directory: actors/booking-search-scraper
+        run: docker build --file .actor/Dockerfile --tag booking-search-scraper:ci .

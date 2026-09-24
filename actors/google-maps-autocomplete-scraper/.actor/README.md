@@ -1,37 +1,33 @@
 # Google Maps Autocomplete
 
-Get autocomplete suggestions from Google Maps. Perfect for location discovery, address validation, and search interface building.
-
-## Features
-
-- **Real-time Suggestions** - Get predictions as user types
-- **Multiple Types** - Places, addresses, businesses, and more
-- **Coordinates** - Location data for each suggestion
-- **Quick Lookup** - Fast response times
-- **Address Validation** - Verify user input
+Get autocomplete suggestions from Google Maps through Scrappa's Maps API.
 
 ## Input
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `query` | string | Yes | Partial search term (e.g., 'time sq', 'starbucks new') |
+| `query` | string | Yes | Partial search term, such as `time sq` or `starbucks new` |
+
+The Apify input form prefills `query` with `new york`.
 
 ## Output
 
-Array of suggestion objects with:
-- `main_text` - The suggestion text
-- `type` - Type (place, address, business, etc.)
-- `latitude` / `longitude` - Coordinates
-- `country` - Country code
-- `google_id` / `place_id` - IDs for further queries
+Each object returned in Scrappa's `suggestions` array is written unchanged as a separate default dataset item. The full upstream response is also stored in the default key-value store under `OUTPUT`.
 
-## Example Usage
+The actor makes one request for the query. The Maps autocomplete response has no page loop; if Scrappa includes pagination metadata, it remains in `OUTPUT`.
 
-1. User starts typing: "new yo"
-2. Call autocomplete with: `{"query": "new yo"}`
-3. Get suggestions for "New York", "New York Coffee", etc.
-4. Use returned `business_id` with Details or Reviews actors
+## API key and request behavior
 
-## Pricing
+Configure `SCRAPPA_API_KEY` in the actor's environment variables. The actor sends it in the `X-API-Key` header to `https://scrappa.co/api/maps/autocomplete` with the input query. Scrappa requests have a 60-second deadline and are not retried; HTTP, validation, and timeout errors fail the run. Apify storage and run API calls have a 360-second request timeout and retry network errors, HTTP 429, and 5xx responses up to eight times with exponential backoff starting at 500 ms.
 
-$0.30 per 1,000 results. No API keys required.
+## PAY_PER_EVENT budget
+
+Dataset output uses Apify's default `apify-default-dataset-item` event, so each saved suggestion is charged as one result under PAY_PER_EVENT pricing. The actor reads current event prices and charged event counts, then saves only the affordable prefix under `maxTotalChargeUsd`. It keeps the full Scrappa response in `OUTPUT`, including suggestions omitted from the dataset by the spending limit.
+
+## Local development
+
+Run focused tests with `cargo test --locked`. Build the actor image from this directory with:
+
+```sh
+docker build -f .actor/Dockerfile -t google-maps-autocomplete-scraper .
+```

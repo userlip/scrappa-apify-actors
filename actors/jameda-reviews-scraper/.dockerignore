@@ -1,5 +1,7 @@
 node_modules
 dist
+target
+.git
 storage
 apify_storage
 .env

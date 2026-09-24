@@ -1,0 +1,17 @@
+# Rust and container build outputs
+target/
+
+# Apify local storage
+apify_storage/
+crawlee_storage/
+storage/
+
+# Local environment files
+.env
+.env.*
+
+# Editor and git files
+.idea/
+.vscode/
+.zed/
+.git/

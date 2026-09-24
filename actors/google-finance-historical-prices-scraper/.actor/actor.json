@@ -5,9 +5,6 @@
   "description": "Scrape daily, weekly, or monthly historical price and volume time-series data from Google Finance for stock backtesting, charting, and market research workflows.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

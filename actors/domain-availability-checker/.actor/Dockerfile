@@ -1,12 +1,23 @@
-FROM apify/actor-node:20
+FROM rust:1.90-slim-bookworm AS builder
 
-COPY --chown=myuser:myuser package*.json ./
+WORKDIR /build
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src && printf 'fn main() {}\n' > src/main.rs \
+    && cargo build --release --locked \
+    && rm src/main.rs
 
-RUN npm install --include=dev
+COPY src ./src
+RUN cargo clean --release -p domain-availability-checker \
+    && cargo build --release --locked
 
-COPY --chown=myuser:myuser . ./
+FROM debian:bookworm-slim
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 1000 myuser
 
-RUN npm run build \
-    && npm prune --omit=dev
+WORKDIR /home/myuser
+COPY --from=builder --chown=myuser:myuser /build/target/release/domain-availability-checker /usr/local/bin/actor
+USER myuser
 
-CMD npm run start
+CMD ["/usr/local/bin/actor"]

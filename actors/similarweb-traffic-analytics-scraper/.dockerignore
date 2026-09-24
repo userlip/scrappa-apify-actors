@@ -1,0 +1,7 @@
+target/
+.git/
+node_modules/
+apify_storage/
+storage/
+.env
+.env.*

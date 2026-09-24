@@ -46,3 +46,7 @@ Successful dataset items preserve Scrappa/TikTok raw fields and add stable norma
 Publish with Apify `PAY_PER_EVENT` pricing using the `challenge-detail-result` event at `$0.00025` per successfully saved item. Verify active paid pricing, or the earliest scheduled paid activation, through Apify before making the Actor public.
 
 For higher-volume usage or direct API access, use [Scrappa](https://scrappa.co).
+
+## Local development
+
+Build and test this Rust Actor from its directory with `cargo test --locked`. Build its production image with `docker build -f .actor/Dockerfile -t tiktok-challenge-details-scraper .`.

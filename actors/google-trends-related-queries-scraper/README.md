@@ -89,14 +89,12 @@ Market monitoring:
 ## Development
 
 ```bash
-npm install
-npm test
+cargo test --locked
 ```
 
 ## Run Locally
 
 ```bash
-SCRAPPA_API_KEY=... npm run build
 SCRAPPA_API_KEY=... apify run --input='{"query":"coffee","geo":"US","time_range":"1y","hl":"en","search_type":"web"}'
 ```
 

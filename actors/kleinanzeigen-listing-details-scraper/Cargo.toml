@@ -1,0 +1,15 @@
+[package]
+name = "kleinanzeigen-listing-details-scraper"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+
+[dependencies]
+anyhow = "1"
+rand = "0.8"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+url = "2"

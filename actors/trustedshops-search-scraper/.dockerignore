@@ -1,0 +1,8 @@
+target
+node_modules
+dist
+.git
+test
+package-lock.json
+package.json
+tsconfig.json

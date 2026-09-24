@@ -5,9 +5,6 @@
   "description": "Fetch listed items from one or more Vinted seller user IDs for inventory monitoring, reseller research, and competitor tracking.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

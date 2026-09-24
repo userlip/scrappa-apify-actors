@@ -5,9 +5,6 @@
   "description": "Extract public TikTok follower lists by username, profile URL, or user ID. Get follower IDs, usernames, nicknames, avatars, follower counts, verification status, and pagination tokens through Scrappa.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

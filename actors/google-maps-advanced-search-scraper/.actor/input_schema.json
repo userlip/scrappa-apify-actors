@@ -24,20 +24,23 @@
       "title": "Latitude",
       "type": "number",
       "description": "Center latitude for search (optional, auto-resolved from query if blank)",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 40.7128
     },
     "longitude": {
       "title": "Longitude",
       "type": "number",
       "description": "Center longitude for search (optional, auto-resolved from query if blank)",
-      "editor": "number"
+      "editor": "number",
+      "prefill": -74.006
     },
     "limit": {
       "title": "Result Limit",
       "type": "integer",
       "description": "Maximum results to return (1 or more)",
       "editor": "number",
-      "minimum": 1
+      "minimum": 1,
+      "prefill": 10
     },
     "hl": {
       "title": "Language (HL)",
@@ -52,7 +55,8 @@
       "type": "string",
       "description": "ISO 3166-1 alpha-2 country code for region-specific results (e.g., 'us', 'de', 'fr', 'uk')",
       "editor": "textfield",
-      "maxLength": 2
+      "maxLength": 2,
+      "prefill": "us"
     }
   },
   "required": ["query", "zoom"]
