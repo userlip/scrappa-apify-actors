@@ -90,44 +90,43 @@ async fn run() -> Result<()> {
             describe_booking_hotel_request(request)
         );
 
-        let result = process_successful_request(&apify, &mut charging, &scrappa, request).await;
-        match result {
-            Ok(push_result) => {
-                if push_result.saved {
-                    saved_results += 1;
-                    println!("Saved hotel detail result {}", request.index + 1);
-                }
-                if let Some(status_message) = push_result.status_message {
-                    println!(
-                        "{status_message} {}",
-                        json!({
-                            "event": BOOKING_HOTEL_RESULT_CHARGE_EVENT,
-                            "charged_count": push_result.charged_count,
-                            "requested_count": requests.len(),
-                            "request_index": request.index,
-                            "event_charge_limit_reached": push_result.event_charge_limit_reached,
-                        })
-                    );
-                    apify.set_terminal_status(&status_message, "INFO").await;
-                    return Ok(());
-                }
+        let response = match scrappa.get("/booking/hotel", &request.params).await {
+            Ok(response) => response,
+            Err(error) if error.is_actor_level_failure() => {
+                return Err(anyhow::Error::new(error));
             }
             Err(error) => {
-                if error
-                    .downcast_ref::<ScrappaError>()
-                    .is_some_and(ScrappaError::is_actor_level_failure)
-                {
-                    return Err(error);
-                }
-
                 failed_requests += 1;
+                let error = anyhow::Error::new(error);
                 let message = actor_error_message(&error);
                 eprintln!(
                     "Hotel detail request {} failed: {message}",
                     request.index + 1
                 );
                 push_error_hotel_item(&apify, &mut charging, request, &message).await?;
+                continue;
             }
+        };
+        let details = get_booking_hotel_details(&response);
+        let item = build_booking_hotel_dataset_item(details, request);
+        let push_result = push_successful_hotel_item(&apify, &mut charging, item, request).await?;
+        if push_result.saved {
+            saved_results += 1;
+            println!("Saved hotel detail result {}", request.index + 1);
+        }
+        if let Some(status_message) = push_result.status_message {
+            println!(
+                "{status_message} {}",
+                json!({
+                    "event": BOOKING_HOTEL_RESULT_CHARGE_EVENT,
+                    "charged_count": push_result.charged_count,
+                    "requested_count": requests.len(),
+                    "request_index": request.index,
+                    "event_charge_limit_reached": push_result.event_charge_limit_reached,
+                })
+            );
+            apify.set_terminal_status(&status_message, "INFO").await;
+            return Ok(());
         }
     }
 
@@ -141,21 +140,6 @@ async fn run() -> Result<()> {
         })
     );
     Ok(())
-}
-
-async fn process_successful_request(
-    apify: &ApifyClient,
-    charging: &mut ChargingManager,
-    scrappa: &ScrappaClient,
-    request: &BookingHotelRequest,
-) -> Result<PushHotelItemResult> {
-    let response = scrappa
-        .get("/booking/hotel", &request.params)
-        .await
-        .map_err(anyhow::Error::new)?;
-    let details = get_booking_hotel_details(&response);
-    let item = build_booking_hotel_dataset_item(details, request);
-    push_successful_hotel_item(apify, charging, item, request).await
 }
 
 async fn push_successful_hotel_item(

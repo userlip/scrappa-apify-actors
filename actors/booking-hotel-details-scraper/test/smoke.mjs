@@ -24,6 +24,7 @@ const charges = [];
 const statusUpdates = [];
 const scrappaRequests = [];
 let inputReads = 0;
+let loseNextDatasetResponse = false;
 const server = createServer(async (request, response) => {
     const requestUrl = new URL(request.url, 'http://127.0.0.1');
     const chunks = [];
@@ -68,6 +69,11 @@ const server = createServer(async (request, response) => {
     }
     if (requestUrl.pathname === '/v2/datasets/dataset-1/items' && request.method === 'POST') {
         datasetItems.push(JSON.parse(body));
+        if (loseNextDatasetResponse) {
+            loseNextDatasetResponse = false;
+            request.socket.destroy();
+            return;
+        }
         return sendJson(response, 201, { data: {} });
     }
     if (requestUrl.pathname === '/v2/actor-runs/run-1/charge' && request.method === 'POST') {
@@ -90,7 +96,7 @@ function sendJson(response, status, value) {
 await new Promise((resolveListen) => server.listen(0, '0.0.0.0', resolveListen));
 const { port } = server.address();
 const image = process.env.BOOKING_HOTEL_ACTOR_IMAGE ?? 'booking-hotel-details-scraper:local';
-const run = await runDocker([
+const dockerArguments = [
     'run', '--rm', '--network', 'host',
     '-e', `APIFY_API_PUBLIC_BASE_URL=http://127.0.0.1:${port}`,
     '-e', 'APIFY_TOKEN=smoke-token',
@@ -102,7 +108,8 @@ const run = await runDocker([
     '-e', 'SCRAPPA_API_KEY=smoke-scrappa-key',
     '-e', `SCRAPPA_API_BASE_URL=http://127.0.0.1:${port}/api`,
     image,
-]);
+];
+const run = await runDocker(dockerArguments);
 
 try {
     assert.equal(run.error, undefined, run.error?.message);
@@ -131,6 +138,20 @@ try {
     assert.match(run.stdout, /"charged_count":2/);
     console.log('Local image smoke passed: schema prefills -> Scrappa request -> dataset row -> hotel-result charge.');
     console.log(`Image logs:\n${run.stdout.trim()}`);
+
+    const datasetCountBeforeLostResponse = datasetItems.length;
+    const chargeCountBeforeLostResponse = charges.length;
+    loseNextDatasetResponse = true;
+    const lostResponseRun = await runDocker(dockerArguments);
+
+    assert.equal(lostResponseRun.error, undefined, lostResponseRun.error?.message);
+    assert.equal(lostResponseRun.status, 1, `Docker actor should fail after an ambiguous dataset append\n${lostResponseRun.stdout}\n${lostResponseRun.stderr}`);
+    assert.equal(datasetItems.length, datasetCountBeforeLostResponse + 1);
+    assert.equal(datasetItems.at(-1).request_success, true);
+    assert.equal(charges.length, chargeCountBeforeLostResponse);
+    assert.equal(statusUpdates.length, 2);
+    assert.equal(statusUpdates.at(-1).level, 'ERROR');
+    console.log('Lost-response smoke passed: the stored result was not followed by an error row or charge.');
 } finally {
     await new Promise((resolveClose) => server.close(resolveClose));
 }
