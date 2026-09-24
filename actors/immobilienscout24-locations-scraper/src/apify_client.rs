@@ -31,6 +31,8 @@ struct ChargeBudget {
     event_prices: HashMap<String, f64>,
     charged_event_counts: HashMap<String, u64>,
     max_total_charge_usd: f64,
+    max_paid_dataset_items: Option<u64>,
+    dataset_item_count: u64,
 }
 
 impl Default for ChargeBudget {
@@ -40,6 +42,8 @@ impl Default for ChargeBudget {
             event_prices: HashMap::new(),
             charged_event_counts: HashMap::new(),
             max_total_charge_usd: f64::INFINITY,
+            max_paid_dataset_items: None,
+            dataset_item_count: 0,
         }
     }
 }
@@ -108,6 +112,8 @@ impl ChargeBudget {
             event_prices,
             charged_event_counts: parsed_counts,
             max_total_charge_usd: max_charge,
+            max_paid_dataset_items: None,
+            dataset_item_count: 0,
         })
     }
 
@@ -138,9 +144,24 @@ impl ChargeBudget {
         self.event_price(CHARGE_EVENT) + self.event_price(DEFAULT_DATASET_ITEM_EVENT)
     }
 
+    fn enable_legacy_dataset_item_limit(&mut self, max_paid_items: u64, existing_items: u64) {
+        self.max_paid_dataset_items = Some(max_paid_items);
+        self.dataset_item_count = existing_items;
+    }
+
     fn affordable_rows(&self, requested: usize) -> usize {
-        if !self.is_pay_per_event || requested == 0 {
+        if requested == 0 {
             return requested;
+        }
+        if !self.is_pay_per_event {
+            return self
+                .max_paid_dataset_items
+                .map(|max_items| {
+                    max_items
+                        .saturating_sub(self.dataset_item_count)
+                        .min(requested as u64) as usize
+                })
+                .unwrap_or(requested);
         }
         let max_rows = self.max_charges_for_price(self.item_price());
         if max_rows >= requested {
@@ -155,7 +176,11 @@ impl ChargeBudget {
     }
 
     fn record_rows(&mut self, count: usize) {
-        if !self.is_pay_per_event || count == 0 {
+        if count == 0 {
+            return;
+        }
+        self.dataset_item_count = self.dataset_item_count.saturating_add(count as u64);
+        if !self.is_pay_per_event {
             return;
         }
         for event_name in [CHARGE_EVENT, DEFAULT_DATASET_ITEM_EVENT] {
@@ -169,6 +194,9 @@ impl ChargeBudget {
     }
 
     fn limit_reached(&self) -> bool {
+        if let Some(max_items) = self.max_paid_dataset_items {
+            return self.dataset_item_count >= max_items;
+        }
         self.is_pay_per_event
             && [CHARGE_EVENT, DEFAULT_DATASET_ITEM_EVENT]
                 .into_iter()
@@ -216,11 +244,45 @@ impl ApifyClient {
                     max_charge
                 },
             )?;
+            self.enable_legacy_dataset_item_limit_if_needed(&pricing_info)
+                .await?;
             return Ok(());
         }
 
         let run = self.get_run().await?;
         self.budget = ChargeBudget::from_run(&run)?;
+        let pricing_info = run
+            .pointer("/data/pricingInfo")
+            .cloned()
+            .unwrap_or(Value::Null);
+        self.enable_legacy_dataset_item_limit_if_needed(&pricing_info)
+            .await?;
+        Ok(())
+    }
+
+    async fn enable_legacy_dataset_item_limit_if_needed(
+        &mut self,
+        pricing_info: &Value,
+    ) -> Result<()> {
+        if self.budget.is_pay_per_event
+            || pricing_info.get("pricingModel").and_then(Value::as_str)
+                != Some("PRICE_PER_DATASET_ITEM")
+        {
+            return Ok(());
+        }
+
+        let max_paid_items = match env::var("ACTOR_MAX_PAID_DATASET_ITEMS") {
+            Ok(value) => value
+                .parse::<u64>()
+                .context("ACTOR_MAX_PAID_DATASET_ITEMS was not a non-negative integer")?,
+            Err(env::VarError::NotPresent) => 0,
+            Err(error) => {
+                return Err(error).context("ACTOR_MAX_PAID_DATASET_ITEMS was not valid Unicode")
+            }
+        };
+        let existing_items = self.get_dataset_item_count().await?;
+        self.budget
+            .enable_legacy_dataset_item_limit(max_paid_items, existing_items);
         Ok(())
     }
 
@@ -288,6 +350,22 @@ impl ApifyClient {
         response_json(response, "run pricing request").await
     }
 
+    async fn get_dataset_item_count(&self) -> Result<u64> {
+        let url = self.endpoint(&["v2", "datasets", &self.config.dataset_id])?;
+        let response = self
+            .send_with_retry(
+                || self.authorized(self.http.get(url.clone())),
+                "dataset item-count request",
+                true,
+            )
+            .await?;
+        let dataset = response_json(response, "dataset item-count request").await?;
+        dataset
+            .pointer("/data/itemCount")
+            .and_then(Value::as_u64)
+            .ok_or_else(|| anyhow!("Apify dataset response did not provide a valid item count"))
+    }
+
     fn endpoint(&self, segments: &[&str]) -> Result<Url> {
         endpoint_url(&self.config.apify_api_base, segments)
     }
@@ -341,7 +419,7 @@ impl ApifyClient {
             .send_with_retry(
                 || self.authorized(self.http.post(url.clone()).json(items)),
                 "dataset item publication",
-                true,
+                false,
             )
             .await?;
         require_apify_success(response, "dataset item publication").await
@@ -382,11 +460,7 @@ impl LocationWriter for ApifyClient {
             });
         }
 
-        let saved_count = if self.budget.is_pay_per_event {
-            self.budget.affordable_rows(items.len())
-        } else {
-            items.len()
-        };
+        let saved_count = self.budget.affordable_rows(items.len());
         if saved_count == 0 {
             return Ok(SaveResult {
                 saved_count: 0,
@@ -397,8 +471,8 @@ impl LocationWriter for ApifyClient {
         self.push_dataset_items(&items[..saved_count]).await?;
         if self.budget.is_pay_per_event {
             self.charge_location_event(saved_count).await?;
-            self.budget.record_rows(saved_count);
         }
+        self.budget.record_rows(saved_count);
 
         Ok(SaveResult {
             saved_count,
@@ -557,6 +631,19 @@ mod tests {
         assert_eq!(budget.affordable_rows(10), 1);
     }
 
+    #[test]
+    fn legacy_item_budget_includes_items_already_written_before_resume() {
+        let mut budget = ChargeBudget::default();
+        budget.enable_legacy_dataset_item_limit(3, 2);
+
+        assert_eq!(budget.affordable_rows(10), 1);
+        assert!(!budget.limit_reached());
+
+        budget.record_rows(1);
+        assert_eq!(budget.affordable_rows(10), 0);
+        assert!(budget.limit_reached());
+    }
+
     #[tokio::test]
     async fn reads_input_and_writes_dataset_then_custom_charge_and_output_to_apify() {
         let calls = Arc::new(Mutex::new(Vec::<MockRequest>::new()));
@@ -653,6 +740,58 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn limits_legacy_dataset_writes_using_existing_item_count() {
+        let calls = Arc::new(Mutex::new(Vec::<MockRequest>::new()));
+        let handler_calls = calls.clone();
+        let server = MockServer::start(move |request| {
+            handler_calls.lock().unwrap().push(request);
+            MockResponse::json(201, json!({}))
+        });
+        let mut client = ApifyClient::new(config(&server.base_url(""))).unwrap();
+        client.budget.enable_legacy_dataset_item_limit(3, 2);
+        let rows = vec![json!({ "geocode": "1" }), json!({ "geocode": "2" })];
+
+        let saved = client.save_locations(&rows).await.unwrap();
+        assert_eq!(
+            saved,
+            SaveResult {
+                saved_count: 1,
+                limit_reached: true
+            }
+        );
+        let after_exhaustion = client
+            .save_locations(&[json!({ "geocode": "3" })])
+            .await
+            .unwrap();
+        assert_eq!(
+            after_exhaustion,
+            SaveResult {
+                saved_count: 0,
+                limit_reached: true
+            }
+        );
+
+        let calls = calls.lock().unwrap();
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].path, "/v2/datasets/dataset-1/items");
+        assert_eq!(calls[0].json_body(), json!([rows[0]]));
+    }
+
+    #[tokio::test]
+    async fn reads_dataset_item_count_for_legacy_pricing() {
+        let calls = Arc::new(Mutex::new(Vec::<MockRequest>::new()));
+        let handler_calls = calls.clone();
+        let server = MockServer::start(move |request| {
+            handler_calls.lock().unwrap().push(request);
+            MockResponse::json(200, json!({ "data": { "itemCount": 7 } }))
+        });
+        let client = ApifyClient::new(config(&server.base_url(""))).unwrap();
+
+        assert_eq!(client.get_dataset_item_count().await.unwrap(), 7);
+        assert_eq!(calls.lock().unwrap()[0].path, "/v2/datasets/dataset-1");
+    }
+
+    #[tokio::test]
     async fn preserves_sdk_boundary_charge_and_stops_after_the_over_limit_result() {
         let calls = Arc::new(Mutex::new(Vec::<MockRequest>::new()));
         let handler_calls = calls.clone();
@@ -734,7 +873,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn retries_transient_dataset_write_failures() {
+    async fn fails_a_transient_dataset_write_without_retrying_it() {
         let calls = Arc::new(Mutex::new(Vec::<MockRequest>::new()));
         let handler_calls = calls.clone();
         let server = MockServer::start(move |request| {
@@ -749,11 +888,13 @@ mod tests {
         let mut client = ApifyClient::new(config(&server.base_url(""))).unwrap();
         client.budget = ChargeBudget::default();
 
-        let saved = client
+        let error = client
             .save_locations(&[json!({ "geocode": "1" })])
             .await
-            .unwrap();
-        assert_eq!(saved.saved_count, 1);
-        assert_eq!(calls.lock().unwrap().len(), 2);
+            .unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("dataset item publication failed (503)"));
+        assert_eq!(calls.lock().unwrap().len(), 1);
     }
 }
