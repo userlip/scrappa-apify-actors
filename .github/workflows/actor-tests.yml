@@ -36,7 +36,6 @@ jobs:
           - path: actors/instagram-user-posts-cheapest-0-20-1000-results
           - path: actors/linkedin-search-scraper
           - path: actors/redfin-property-details-scraper
-          - path: actors/tiktok-comments-scraper
           - path: actors/tiktok-profile-scraper
     steps:
       - name: Checkout repository
@@ -79,6 +78,7 @@ jobs:
           - actors/youtube-api-search-by-category
           - actors/youtube-api-hashtags
           - actors/youtube-api-playlists
+          - actors/tiktok-comments-scraper
           - actors/youtube-api-get-channel-shorts
           - actors/youtube-api-get-channel-statistics
           - actors/youtube-api-get-playlists-details
