@@ -190,10 +190,6 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
     if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
-    if max_charge == 0.0 {
-        return Ok(requested);
-    }
-
     let counts = data
         .get("chargedEventCounts")
         .and_then(Value::as_object)
@@ -332,9 +328,9 @@ mod tests {
     }
 
     #[test]
-    fn ppe_capacity_is_unbounded_when_the_spending_limit_is_zero() {
+    fn ppe_capacity_is_zero_when_the_spending_limit_is_zero() {
         let run = run(Some(json!(0)), json!({"apify-actor-start": 1}));
-        assert_eq!(affordable_dataset_items(&run, 7).unwrap(), 7);
+        assert_eq!(affordable_dataset_items(&run, 7).unwrap(), 0);
     }
 
     #[test]
