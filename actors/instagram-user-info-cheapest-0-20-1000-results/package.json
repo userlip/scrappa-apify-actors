@@ -1,0 +1,9 @@
+{
+  "name": "instagram-user-info-cheapest-0-20-1000-results",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Test adapter for the Rust Instagram User Info actor.",
+  "scripts": {
+    "test": "cargo test --locked"
+  }
+}
