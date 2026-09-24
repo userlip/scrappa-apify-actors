@@ -18,9 +18,13 @@ INPUT = {
 
 
 class SmokeState:
-    def __init__(self):
+    def __init__(self, transient_charge_failures=0, reject_charge=False):
         self.dataset_items = []
         self.charges = []
+        self.charge_attempts = []
+        self.accepted_charge_keys = {}
+        self.transient_charge_failures = transient_charge_failures
+        self.reject_charge = reject_charge
         self.output = None
         self.status_messages = []
         self.request_order = []
@@ -93,9 +97,30 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/v2/actor-runs/smoke-run/charge":
             self._require_apify_auth()
-            self._require(bool(self.headers.get("idempotency-key")), "missing charge idempotency key")
-            self.server.state.charges.append(body)
-            self.server.state.request_order.append("charge")
+            idempotency_key = self.headers.get("idempotency-key")
+            self._require(bool(idempotency_key), "missing charge idempotency key")
+            state = self.server.state
+            state.charge_attempts.append((body, idempotency_key))
+            if idempotency_key in state.accepted_charge_keys:
+                self._require(
+                    state.accepted_charge_keys[idempotency_key] == body,
+                    "charge retry changed the idempotent request body",
+                )
+                state.request_order.append("charge-replay")
+                self._write_json(201, {})
+                return
+            if state.reject_charge:
+                state.request_order.append("charge-rejected")
+                self._write_json(402, {"message": "Charge rejected by smoke fixture."})
+                return
+
+            state.accepted_charge_keys[idempotency_key] = body
+            state.charges.append(body)
+            state.request_order.append("charge")
+            if state.transient_charge_failures > 0:
+                state.transient_charge_failures -= 1
+                self._write_json(503, {"message": "Temporary charge service error."})
+                return
             self._write_json(201, {})
             return
 
@@ -155,7 +180,7 @@ def main():
     parser.add_argument("--image", default="google-translate-scraper:local")
     args = parser.parse_args()
 
-    state = SmokeState()
+    state = SmokeState(transient_charge_failures=1)
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     server.state = state
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -163,8 +188,8 @@ def main():
     port = server.server_address[1]
     api_base = f"http://127.0.0.1:{port}/api"
 
-    try:
-        result = subprocess.run(
+    def run_image():
+        return subprocess.run(
             [
                 "docker",
                 "run",
@@ -196,10 +221,8 @@ def main():
             text=True,
             timeout=60,
         )
-    finally:
-        server.shutdown()
-        server.server_close()
-        thread.join(timeout=5)
+
+    result = run_image()
 
     if result.returncode != 0:
         raise SystemExit(
@@ -245,12 +268,39 @@ def main():
         raise SystemExit(f"Unexpected OUTPUT record: {state.output!r}")
     if state.charges != [{"eventName": "translation-result", "count": 1}]:
         raise SystemExit(f"Unexpected event charges: {state.charges!r}")
-    if state.request_order != ["dataset", "charge", "dataset"]:
+    if len(state.charge_attempts) != 2:
+        raise SystemExit(f"Expected one idempotent charge retry: {state.charge_attempts!r}")
+    if state.charge_attempts[0][1] != state.charge_attempts[1][1]:
+        raise SystemExit(f"Charge retry changed idempotency key: {state.charge_attempts!r}")
+    if state.request_order != ["charge", "charge-replay", "dataset", "dataset"]:
         raise SystemExit(f"Unexpected output/charge ordering: {state.request_order!r}")
 
-    print("Local Rust image smoke passed.")
-    print(f"dataset rows: {len(state.dataset_items)}; explicit charges: {state.charges}")
-    print(f"OUTPUT: {json.dumps(state.output, sort_keys=True)}")
+    state.dataset_items.clear()
+    state.charges.clear()
+    state.charge_attempts.clear()
+    state.accepted_charge_keys.clear()
+    state.output = None
+    state.status_messages.clear()
+    state.request_order.clear()
+    state.failures.clear()
+    state.reject_charge = True
+
+    result = run_image()
+    if result.returncode == 0:
+        raise SystemExit("Actor run succeeded despite a rejected translation charge.")
+    if state.failures:
+        raise SystemExit("Mock service assertion failures: " + "; ".join(state.failures))
+    if state.dataset_items:
+        raise SystemExit(f"Charge rejection still published successful dataset rows: {state.dataset_items!r}")
+    if state.charges or state.request_order != ["charge-rejected"]:
+        raise SystemExit(f"Unexpected rejected-charge side effects: {state.request_order!r}")
+
+    server.shutdown()
+    server.server_close()
+    thread.join(timeout=5)
+    print("Local Rust image charge-order and rejection smoke passed.")
+    print("transient accepted charge retried once with the same idempotency key before dataset writes")
+    print("rejected charge stopped the run before publishing dataset rows")
     print(result.stdout)
 
 

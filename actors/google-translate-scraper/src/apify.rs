@@ -11,6 +11,11 @@ use crate::{
 };
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
+const CHARGE_MAX_ATTEMPTS: usize = 3;
+const CHARGE_TOTAL_DEADLINE: Duration = Duration::from_secs(60);
+const CHARGE_REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
+const CHARGE_RETRY_DELAYS: [Duration; CHARGE_MAX_ATTEMPTS - 1] =
+    [Duration::from_millis(250), Duration::from_millis(500)];
 
 pub struct ApifyClient {
     http: Client,
@@ -143,15 +148,55 @@ impl ApifyClient {
         idempotency_key: &str,
     ) -> Result<(), String> {
         let url = self.resource_url(&["actor-runs", &self.actor_run_id, "charge"])?;
-        let response = self
-            .request(Method::POST, url)
-            .header("idempotency-key", idempotency_key)
-            .json(&json!({"eventName": event_name, "count": count}))
-            .send()
-            .await
-            .map_err(|error| format!("Apify event charge request failed: {error}"))?;
-        successful_response(response, "charge Actor event").await?;
-        Ok(())
+        let request_body = json!({"eventName": event_name, "count": count});
+        let result = tokio::time::timeout(CHARGE_TOTAL_DEADLINE, async {
+            for attempt in 0..CHARGE_MAX_ATTEMPTS {
+                let response = self
+                    .request(Method::POST, url.clone())
+                    .timeout(CHARGE_REQUEST_TIMEOUT)
+                    .header("idempotency-key", idempotency_key)
+                    .json(&request_body)
+                    .send()
+                    .await;
+
+                let retry_message = match response {
+                    Ok(response) if response.status().is_success() => return Ok(()),
+                    Ok(response) => {
+                        let status = response.status();
+                        let body = response.text().await.unwrap_or_default();
+                        let message = api_error(status, &body, "charge Actor event");
+                        if !retryable_charge_status(status) {
+                            return Err(message);
+                        }
+                        message
+                    }
+                    Err(error) => {
+                        let message = format!("Apify event charge request failed: {error}");
+                        if !(error.is_timeout() || error.is_connect() || error.is_request()) {
+                            return Err(message);
+                        }
+                        message
+                    }
+                };
+
+                if attempt + 1 == CHARGE_MAX_ATTEMPTS {
+                    return Err(retry_message);
+                }
+                eprintln!(
+                    "{retry_message}; retrying charge with the same idempotency key (attempt {}/{CHARGE_MAX_ATTEMPTS})",
+                    attempt + 2
+                );
+                tokio::time::sleep(CHARGE_RETRY_DELAYS[attempt]).await;
+            }
+
+            unreachable!("charge retry loop always returns or exhausts its attempts")
+        })
+        .await;
+
+        match result {
+            Ok(result) => result,
+            Err(_) => Err("Apify event charge request exceeded its 60 second deadline".to_owned()),
+        }
     }
 
     pub async fn set_terminal_status_message(&self, message: &str) -> Result<(), String> {
@@ -239,17 +284,15 @@ impl TranslationOutput for ApifyTranslationOutput<'_> {
             });
         }
 
-        self.client.push_dataset_item(item).await?;
-        let mut charged_count = 0;
+        // Confirm custom PPE charges before making successful results visible in the dataset.
         for event_name in &plan.events_to_charge {
-            self.charging.record_charge(event_name, 1)?;
-            charged_count += 1;
             if event_name == DEFAULT_DATASET_ITEM_CHARGE_EVENT {
                 continue;
             }
             if !self.charging.has_event_price(event_name) {
-                eprintln!("Attempting to charge for an unknown event '{event_name}'");
-                continue;
+                return Err(format!(
+                    "Apify PAY_PER_EVENT run did not provide a price for required event {event_name}"
+                ));
             }
 
             let idempotency_key = format!(
@@ -259,21 +302,17 @@ impl TranslationOutput for ApifyTranslationOutput<'_> {
             self.client
                 .charge_event(event_name, 1, &idempotency_key)
                 .await?;
+            self.charging.record_charge(event_name, 1)?;
         }
 
-        let event_charge_limit_reached = self.charging.event_limit_reached(&plan.events_to_charge);
-        if item.success && event_charge_limit_reached && charged_count < 1 {
-            let status_message = format!(
-                "Charge limit reached before saving translation {}; stopping batch without writing uncharged success results.",
-                item.index + 1
-            );
-            eprintln!(
-                "{status_message} {{\"event\":\"{TRANSLATION_RESULT_CHARGE_EVENT}\",\"charged_count\":{charged_count}}}"
-            );
-            return Ok(PushTranslationResult {
-                saved: false,
-                status_message: Some(status_message),
-            });
+        self.client.push_dataset_item(item).await?;
+        if plan
+            .events_to_charge
+            .iter()
+            .any(|event_name| event_name == DEFAULT_DATASET_ITEM_CHARGE_EVENT)
+        {
+            self.charging
+                .record_charge(DEFAULT_DATASET_ITEM_CHARGE_EVENT, 1)?;
         }
 
         Ok(PushTranslationResult {
@@ -281,6 +320,10 @@ impl TranslationOutput for ApifyTranslationOutput<'_> {
             status_message: None,
         })
     }
+}
+
+fn retryable_charge_status(status: StatusCode) -> bool {
+    matches!(status.as_u16(), 408 | 425 | 429 | 500 | 502 | 503 | 504)
 }
 
 async fn response_json(response: Response, operation: &str) -> Result<Value, String> {
