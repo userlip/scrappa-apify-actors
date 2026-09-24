@@ -5,7 +5,7 @@
   "description": "Extract photos for one or many businesses from Google Maps. Get photo URLs, metadata, and coordinates for building image galleries and visual archives.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": { "templateId": "ts-start" },
+  "meta": { "templateId": "rust-start" },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
