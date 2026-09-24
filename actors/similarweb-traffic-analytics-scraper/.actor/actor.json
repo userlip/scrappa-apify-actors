@@ -5,9 +5,6 @@
   "description": "Analyze website traffic, rankings, engagement metrics, traffic sources, top countries, monthly visits, and top keywords for one or more domains.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
