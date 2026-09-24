@@ -214,11 +214,13 @@ impl ApifyClient {
 
     async fn push_dataset_item(&self, item: &Value) -> Result<()> {
         let url = self.resource_url(&["datasets", &self.dataset_id, "items"])?;
+        // Dataset appends can commit before a timeout, so retrying could duplicate a row.
         let response = self
-            .send_with_retry("dataset item publication", || {
-                self.request(Method::POST, url.clone()).json(item)
-            })
-            .await?;
+            .request(Method::POST, url)
+            .json(item)
+            .send()
+            .await
+            .context("Apify API dataset item publication failed")?;
         successful_response(response, "dataset item publication").await?;
         Ok(())
     }
@@ -472,11 +474,21 @@ async fn successful_response(response: Response, operation: &str) -> Result<Resp
 #[cfg(test)]
 mod tests {
     use super::{
-        ChargingManager, DEFAULT_DATASET_ITEM_EVENT, LISTING_DETAIL_RESULT_CHARGE_EVENT,
-        is_retryable_status, retry_delay,
+        ApifyClient, ChargingManager, DEFAULT_DATASET_ITEM_EVENT,
+        LISTING_DETAIL_RESULT_CHARGE_EVENT, is_retryable_status, retry_delay,
     };
-    use reqwest::StatusCode;
+    use reqwest::{Client, StatusCode};
     use serde_json::json;
+    use std::{
+        io::{Read, Write},
+        net::{TcpListener, TcpStream},
+        sync::{
+            Arc,
+            atomic::{AtomicUsize, Ordering},
+        },
+        thread,
+        time::{Duration, Instant},
+    };
 
     fn charging(run: serde_json::Value) -> ChargingManager {
         ChargingManager::from_run(&run).unwrap()
@@ -566,5 +578,94 @@ mod tests {
         assert!(!is_retryable_status(StatusCode::BAD_REQUEST));
         assert_eq!(retry_delay(1), std::time::Duration::from_millis(500));
         assert_eq!(retry_delay(2), std::time::Duration::from_millis(1000));
+    }
+
+    #[tokio::test]
+    async fn does_not_retry_dataset_post_after_response_timeout() {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        listener.set_nonblocking(true).unwrap();
+        let address = listener.local_addr().unwrap();
+        let received = Arc::new(AtomicUsize::new(0));
+        let server_received = Arc::clone(&received);
+        let server = thread::spawn(move || {
+            let deadline = Instant::now() + Duration::from_millis(800);
+            while Instant::now() < deadline {
+                match listener.accept() {
+                    Ok((mut stream, _)) => {
+                        read_request(&mut stream);
+                        let attempt = server_received.fetch_add(1, Ordering::SeqCst);
+                        if attempt == 0 {
+                            thread::sleep(Duration::from_millis(120));
+                        }
+                        let _ = stream.write_all(
+                            b"HTTP/1.1 201 Created\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                        );
+                        if attempt > 0 {
+                            break;
+                        }
+                    }
+                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                        thread::sleep(Duration::from_millis(10));
+                    }
+                    Err(error) => panic!("dataset mock server failed: {error}"),
+                }
+            }
+        });
+
+        let mut apify = ApifyClient::new(
+            &format!("http://{address}"),
+            "token".into(),
+            "run".into(),
+            "store".into(),
+            "dataset".into(),
+            "INPUT".into(),
+        )
+        .unwrap();
+        apify.client = Client::builder()
+            .timeout(Duration::from_millis(40))
+            .build()
+            .unwrap();
+
+        let result = apify
+            .push_data(
+                &json!({"id": "listing-1"}),
+                LISTING_DETAIL_RESULT_CHARGE_EVENT,
+                0,
+            )
+            .await;
+        server.join().unwrap();
+
+        assert!(
+            result.is_err(),
+            "the ambiguous timed-out write must be reported"
+        );
+        assert_eq!(received.load(Ordering::SeqCst), 1);
+    }
+
+    fn read_request(stream: &mut TcpStream) {
+        let mut request = Vec::new();
+        let mut chunk = [0_u8; 1024];
+        let mut content_length = None;
+        loop {
+            let count = stream.read(&mut chunk).unwrap();
+            assert!(count > 0, "client closed before sending a complete request");
+            request.extend_from_slice(&chunk[..count]);
+            if let Some(header_end) = request.windows(4).position(|window| window == b"\r\n\r\n") {
+                let headers = String::from_utf8_lossy(&request[..header_end]);
+                content_length.get_or_insert_with(|| {
+                    headers
+                        .lines()
+                        .find_map(|line| {
+                            let (name, value) = line.split_once(':')?;
+                            name.eq_ignore_ascii_case("content-length")
+                                .then(|| value.trim().parse::<usize>().unwrap())
+                        })
+                        .unwrap_or(0)
+                });
+                if request.len() >= header_end + 4 + content_length.unwrap() {
+                    return;
+                }
+            }
+        }
     }
 }

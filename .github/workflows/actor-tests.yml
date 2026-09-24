@@ -63,6 +63,7 @@ jobs:
       fail-fast: false
       matrix:
         actor:
+          - actors/kleinanzeigen-listing-details-scraper
           - actors/youtube-api-batch-videos
           - actors/linkedin-company-scraper
           - actors/linkedin-profile-scraper
