@@ -396,13 +396,47 @@ impl RunPricing {
             .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
         let mut event_prices = HashMap::with_capacity(events.len());
         for (event_name, event) in events {
-            if let Some(price) = event.get("eventPriceUsd").and_then(Value::as_f64) {
-                if !price.is_finite() || price < 0.0 {
-                    bail!("Invalid price for charged event {event_name}");
+            let flat_price = event.get("eventPriceUsd");
+            let tiered_prices = event.get("eventTieredPricingUsd");
+            let price = match (flat_price, tiered_prices) {
+                (Some(_), Some(_)) => {
+                    bail!("Apify run returned both flat and tiered prices for charged event {event_name}");
                 }
+                (Some(price), None) => Some(valid_event_price(price, event_name)?),
+                (None, Some(tiers)) => {
+                    let tiers = tiers
+                        .as_object()
+                        .filter(|tiers| !tiers.is_empty())
+                        .ok_or_else(|| {
+                            anyhow!("Invalid tiered prices for charged event {event_name}")
+                        })?;
+
+                    // The run metadata does not identify the current user's tier, so reserve at
+                    // the maximum configured price to keep local cap checks from undercounting.
+                    let max_price = tiers
+                        .values()
+                        .map(|tier| {
+                            let price = tier.get("tieredEventPriceUsd").ok_or_else(|| {
+                                anyhow!("Invalid tiered price for charged event {event_name}")
+                            })?;
+                            valid_event_price(price, event_name)
+                        })
+                        .collect::<Result<Vec<_>>>()?
+                        .into_iter()
+                        .reduce(f64::max)
+                        .ok_or_else(|| {
+                            anyhow!("Invalid tiered prices for charged event {event_name}")
+                        })?;
+
+                    Some(max_price)
+                }
+                (None, None) if event_name == DEFAULT_DATASET_ITEM_CHARGE_EVENT => {
+                    bail!("Apify run did not provide a price for charged event {event_name}");
+                }
+                (None, None) => None,
+            };
+            if let Some(price) = price {
                 event_prices.insert(event_name.to_owned(), price);
-            } else if event_name == DEFAULT_DATASET_ITEM_CHARGE_EVENT {
-                bail!("Apify run did not provide a flat price for charged event {event_name}");
             }
         }
 
@@ -441,6 +475,14 @@ impl RunPricing {
             charged_event_counts,
         })
     }
+}
+
+fn valid_event_price(price: &Value, event_name: &str) -> Result<f64> {
+    let price = price
+        .as_f64()
+        .filter(|price| price.is_finite() && *price >= 0.0)
+        .ok_or_else(|| anyhow!("Invalid price for charged event {event_name}"))?;
+    Ok(price)
 }
 
 fn required_env(name: &str) -> Result<String> {
@@ -536,6 +578,35 @@ mod tests {
 
     fn ppe_run() -> Value {
         ppe_run_with(json!(0.0005), json!({"apify-actor-start": 1}))
+    }
+
+    fn tiered_ppe_run(max_total_charge_usd: f64) -> Value {
+        let mut run = ppe_run_with(json!(max_total_charge_usd), json!({"apify-actor-start": 1}));
+        let events = run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            .as_object_mut()
+            .unwrap();
+        for (event_name, tiers) in [
+            (
+                DEFAULT_DATASET_ITEM_CHARGE_EVENT,
+                json!({
+                    "FREE": {"tieredEventPriceUsd": 0.0002},
+                    "GOLD": {"tieredEventPriceUsd": 0.0003}
+                }),
+            ),
+            (
+                URL_RESULT_CHARGE_EVENT,
+                json!({
+                    "FREE": {"tieredEventPriceUsd": 0.0002},
+                    "GOLD": {"tieredEventPriceUsd": 0.0004}
+                }),
+            ),
+        ] {
+            let event = events.get_mut(event_name).unwrap().as_object_mut().unwrap();
+            event.remove("eventPriceUsd");
+            event.insert("eventTieredPricingUsd".to_owned(), tiers);
+        }
+
+        run
     }
 
     fn apify_client(base_url: Url) -> ApifyClient {
@@ -788,23 +859,65 @@ mod tests {
         );
     }
 
-    #[test]
-    fn rejects_tiered_default_dataset_event_prices() {
-        let mut run = ppe_run();
-        let event = run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
-            [DEFAULT_DATASET_ITEM_CHARGE_EVENT]
-            .as_object_mut()
-            .unwrap();
-        event.remove("eventPriceUsd");
-        event.insert(
-            "eventTieredPricingUsd".to_owned(),
-            json!({"FREE": {"tieredEventPriceUsd": 0.0002}}),
+    #[tokio::test]
+    async fn tiered_ppe_prices_use_the_highest_tier_before_append() {
+        let run = tiered_ppe_run(0.00075);
+        let run_body = serde_json::to_string(&run).unwrap();
+        let server = start_mock_server(vec![MockResponse::json(200, &run_body)]).await;
+        let client = apify_client(server.base_url());
+        let mut billing = client.get_billing_state().await.unwrap();
+        let pricing = billing.pricing.as_ref().unwrap();
+
+        assert_eq!(
+            pricing.event_prices[DEFAULT_DATASET_ITEM_CHARGE_EVENT],
+            0.0003
+        );
+        assert_eq!(pricing.event_prices[URL_RESULT_CHARGE_EVENT], 0.0004);
+        assert_eq!(
+            client
+                .push_dataset_item(
+                    &json!({"success": true, "input_url": "https://example.com"}),
+                    &mut billing,
+                    "test-run:url-result:0",
+                )
+                .await
+                .unwrap(),
+            DatasetWriteResult::ChargeLimitReached
         );
 
-        assert!(RunPricing::from_run(&run)
-            .unwrap_err()
-            .to_string()
-            .contains("flat price"));
+        let requests = server.requests().await;
+        assert_eq!(requests.len(), 1);
+        assert!(requests[0].starts_with("GET /api/v2/actor-runs/test-run HTTP/1.1"));
+    }
+
+    #[tokio::test]
+    async fn saves_tiered_ppe_rows_when_the_cap_covers_the_highest_tier() {
+        let run_body = serde_json::to_string(&tiered_ppe_run(0.0009)).unwrap();
+        let server = start_mock_server(vec![
+            MockResponse::json(200, &run_body),
+            MockResponse::text(201, ""),
+            MockResponse::text(201, ""),
+        ])
+        .await;
+        let client = apify_client(server.base_url());
+        let mut billing = client.get_billing_state().await.unwrap();
+
+        assert_eq!(
+            client
+                .push_dataset_item(
+                    &json!({"success": true, "input_url": "https://example.com"}),
+                    &mut billing,
+                    "test-run:url-result:0",
+                )
+                .await
+                .unwrap(),
+            DatasetWriteResult::Saved
+        );
+
+        let requests = server.requests().await;
+        assert_eq!(requests.len(), 3);
+        assert!(requests[1].starts_with("POST /api/v2/datasets/test-dataset/items HTTP/1.1"));
+        assert!(requests[2].starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1"));
     }
 
     #[tokio::test]
