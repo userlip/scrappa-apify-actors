@@ -337,9 +337,9 @@ fn normalize_tiktok_profile_record(profile: &Value) -> Result<Map<String, Value>
     };
     set_optional(&mut normalized, "user_id", user_id);
 
-    let unique_id = match profile.get("unique_id") {
-        Some(value) if !value.is_null() => normalize_optional_unique_id(Some(value))?,
-        _ => normalize_optional_unique_id(user.and_then(|user| user.get("uniqueId")))?,
+    let unique_id = match normalize_optional_unique_id(profile.get("unique_id"))? {
+        Some(value) => Some(value),
+        None => normalize_optional_unique_id(user.and_then(|user| user.get("uniqueId")))?,
     };
     set_optional(&mut normalized, "unique_id", unique_id);
 

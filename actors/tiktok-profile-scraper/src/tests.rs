@@ -329,6 +329,25 @@ fn normalizes_nested_profile_fields_and_preserves_existing_values() {
 }
 
 #[test]
+fn falls_back_to_nested_unique_id_when_top_level_id_is_empty() {
+    let normalized = normalize_tiktok_profile_record(&json!({
+        "unique_id": "",
+        "user": { "uniqueId": "tiktok" }
+    }))
+    .unwrap();
+
+    assert_eq!(normalized["unique_id"], "@tiktok");
+
+    let existing_top_level = normalize_tiktok_profile_record(&json!({
+        "unique_id": "primary",
+        "user": { "uniqueId": 123 }
+    }))
+    .unwrap();
+
+    assert_eq!(existing_top_level["unique_id"], "@primary");
+}
+
+#[test]
 fn extracts_first_profile_only_and_preserves_no_data() {
     assert!(extract_profile(None).is_none());
     assert!(extract_profile(Some(&Value::Null)).is_none());
