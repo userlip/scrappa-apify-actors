@@ -18,6 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
   test-rust-actors:
     runs-on: [self-hosted, ci, github-actions]
     strategy:
