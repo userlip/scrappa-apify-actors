@@ -30,7 +30,7 @@ Extract public TikTok posts for a creator through Scrappa. Use it for content re
 
 ## Output
 
-Each TikTok post is saved as one dataset item:
+Each saved TikTok post is saved as one dataset item:
 
 ```json
 {
@@ -50,7 +50,11 @@ Each TikTok post is saved as one dataset item:
 }
 ```
 
-The full API response, including pagination metadata, is saved to `OUTPUT`.
+The full API response, including pagination metadata, is saved to `OUTPUT`. When the actor uses pay-per-event pricing, dataset rows are limited to the remaining `apify-default-dataset-item` budget; `OUTPUT` still contains the full response.
+
+## Runtime
+
+This actor is built and run as a Rust binary. Scrappa requests use a 60-second deadline and are not retried. Apify API requests use the Apify client's transient-error retry behavior.
 
 ## Support
 
