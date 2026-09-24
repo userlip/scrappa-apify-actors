@@ -11,6 +11,7 @@ use url::Url;
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 pub const DOCTOR_RESULT_CHARGE_EVENT: &str = "doctor-result";
+pub const DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 static CHARGE_ID_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Clone)]
@@ -160,6 +161,10 @@ impl ApifyClient {
             });
         }
 
+        self.push_dataset_items(&items[..decision.charged_count])
+            .await?;
+        budget.record_charge(DATASET_ITEM_CHARGE_EVENT, decision.charged_count)?;
+
         let url = self.endpoint(&["actor-runs", &self.config.actor_run_id, "charge"])?;
         let idempotency_key = charge_idempotency_key(&self.config.actor_run_id);
         let response = self
@@ -175,8 +180,6 @@ impl ApifyClient {
         successful_response(response, "Apify result charge request").await?;
 
         budget.record_charge(DOCTOR_RESULT_CHARGE_EVENT, decision.charged_count)?;
-        self.push_dataset_items(&items[..decision.charged_count])
-            .await?;
         Ok(PushChargedItemsResult {
             saved_count: decision.charged_count,
             event_charge_limit_reached: decision.event_charge_limit_reached,
@@ -319,16 +322,25 @@ impl PpeBudget {
                     .with_context(|| "ACTOR_MAX_TOTAL_CHARGE_USD must be a valid number")
             })
             .transpose()?;
+        if run_charge_limit
+            .into_iter()
+            .chain(environment_charge_limit)
+            .any(|limit| !limit.is_finite() || limit < 0.0)
+        {
+            bail!("Apify run returned an invalid spending limit");
+        }
+        let run_charge_limit = run_charge_limit.filter(|limit| *limit > 0.0);
+        let environment_charge_limit = environment_charge_limit.filter(|limit| *limit > 0.0);
         let max_total_charge_usd = match (run_charge_limit, environment_charge_limit) {
             (Some(run_limit), Some(environment_limit)) => Some(run_limit.min(environment_limit)),
             (Some(limit), None) | (None, Some(limit)) => Some(limit),
             (None, None) => None,
         };
-        if max_total_charge_usd.is_some_and(|limit| !limit.is_finite() || limit < 0.0) {
-            bail!("Apify run returned an invalid spending limit");
-        }
         if !event_prices.contains_key(DOCTOR_RESULT_CHARGE_EVENT) {
             bail!("Apify run did not provide the {DOCTOR_RESULT_CHARGE_EVENT} event price");
+        }
+        if !event_prices.contains_key(DATASET_ITEM_CHARGE_EVENT) {
+            bail!("Apify run did not provide the {DATASET_ITEM_CHARGE_EVENT} event price");
         }
 
         Ok(Self {
@@ -344,6 +356,14 @@ impl PpeBudget {
             .event_prices
             .get(event_name)
             .ok_or_else(|| anyhow!("Apify run did not provide the {event_name} event price"))?;
+        let dataset_item_price = *self
+            .event_prices
+            .get(DATASET_ITEM_CHARGE_EVENT)
+            .ok_or_else(|| anyhow!("Apify run did not provide the {DATASET_ITEM_CHARGE_EVENT} event price"))?;
+        let row_price = event_price + dataset_item_price;
+        if !row_price.is_finite() {
+            bail!("Apify run returned invalid per-row charges");
+        }
         let Some(max_total_charge_usd) = self.max_total_charge_usd else {
             return Ok(ChargeDecision {
                 charged_count: requested,
@@ -379,7 +399,7 @@ impl PpeBudget {
         if !total_spent.is_finite() {
             bail!("Apify run returned invalid charged totals");
         }
-        if event_price == 0.0 {
+        if row_price == 0.0 {
             return Ok(ChargeDecision {
                 charged_count: requested,
                 event_charge_limit_reached: false,
@@ -388,14 +408,14 @@ impl PpeBudget {
 
         let tolerance = f64::EPSILON * max_total_charge_usd.max(1.0);
         let remaining = (max_total_charge_usd - total_spent + tolerance).max(0.0);
-        let affordable = (remaining / event_price).floor();
+        let affordable = (remaining / row_price).floor();
         let affordable = if affordable.is_finite() && affordable < usize::MAX as f64 {
             affordable as usize
         } else {
             usize::MAX
         };
         let charged_count = requested.min(affordable);
-        let next_event_spend = total_spent + charged_count as f64 * event_price + event_price;
+        let next_event_spend = total_spent + (charged_count as f64 + 1.0) * row_price;
         let event_charge_limit_reached = next_event_spend > max_total_charge_usd + tolerance;
         Ok(ChargeDecision {
             charged_count,
@@ -425,6 +445,7 @@ mod tests {
         json!({"data": {
             "pricingInfo": {"pricingModel":"PAY_PER_EVENT", "pricingPerEvent":{"actorChargeEvents":{
                 "doctor-result":{"eventPriceUsd":0.10},
+                "apify-default-dataset-item":{"eventPriceUsd":0.03},
                 "apify-actor-start":{"eventPriceUsd":0.05},
                 "other-result":{"eventPriceUsd":0.20}
             }}},
@@ -435,17 +456,27 @@ mod tests {
 
     #[test]
     fn pay_per_event_budget_accounts_for_all_charges_and_partial_results() {
-        let run = ppe_run(json!(0.55), json!({"apify-actor-start":1,"other-result":1}));
+        let run = ppe_run(
+            json!(0.52),
+            json!({
+                "apify-actor-start":1,
+                "apify-default-dataset-item":1,
+                "other-result":1
+            }),
+        );
         assert!(is_pay_per_event(&run).unwrap());
         let mut budget = PpeBudget::from_run(&run).unwrap();
         assert_eq!(
             budget.plan_charge(DOCTOR_RESULT_CHARGE_EVENT, 5).unwrap(),
             ChargeDecision {
-                charged_count: 3,
+                charged_count: 1,
                 event_charge_limit_reached: true
             }
         );
-        budget.record_charge(DOCTOR_RESULT_CHARGE_EVENT, 3).unwrap();
+        budget.record_charge(DOCTOR_RESULT_CHARGE_EVENT, 1).unwrap();
+        budget
+            .record_charge(DATASET_ITEM_CHARGE_EVENT, 1)
+            .unwrap();
         assert_eq!(
             budget.plan_charge(DOCTOR_RESULT_CHARGE_EVENT, 1).unwrap(),
             ChargeDecision {
@@ -457,15 +488,40 @@ mod tests {
 
     #[test]
     fn exact_budget_exhaustion_is_reported_even_when_every_requested_item_fits() {
-        let run = ppe_run(json!(0.35), json!({"apify-actor-start":1}));
+        let run = ppe_run(json!(0.31), json!({"apify-actor-start":1}));
         let budget = PpeBudget::from_run(&run).unwrap();
         assert_eq!(
             budget.plan_charge(DOCTOR_RESULT_CHARGE_EVENT, 3).unwrap(),
             ChargeDecision {
-                charged_count: 3,
+                charged_count: 2,
                 event_charge_limit_reached: true
             }
         );
+    }
+
+    #[test]
+    fn absent_null_and_zero_run_limits_are_unlimited() {
+        let mut runs = vec![
+            ppe_run(Value::Null, json!({})),
+            ppe_run(json!(0.0), json!({})),
+        ];
+        let mut absent_limit = ppe_run(json!(1.0), json!({}));
+        absent_limit["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+        runs.push(absent_limit);
+
+        for run in runs {
+            let budget = PpeBudget::from_run(&run).unwrap();
+            assert_eq!(
+                budget.plan_charge(DOCTOR_RESULT_CHARGE_EVENT, 4).unwrap(),
+                ChargeDecision {
+                    charged_count: 4,
+                    event_charge_limit_reached: false
+                }
+            );
+        }
     }
 
     #[test]
@@ -507,6 +563,16 @@ mod tests {
             .unwrap_err()
             .to_string()
             .contains("doctor-result"));
+
+        let mut missing_dataset_item_price = ppe_run(json!(1.0), json!({}));
+        missing_dataset_item_price["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            .as_object_mut()
+            .unwrap()
+            .remove("apify-default-dataset-item");
+        assert!(PpeBudget::from_run(&missing_dataset_item_price)
+            .unwrap_err()
+            .to_string()
+            .contains("apify-default-dataset-item"));
         assert!(!is_pay_per_event(
             &json!({"data":{"pricingInfo":{"pricingModel":"PRICE_PER_DATASET_ITEM"}}})
         )

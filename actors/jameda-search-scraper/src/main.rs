@@ -493,8 +493,9 @@ mod tests {
                 200,
                 json!({"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{
                 "doctor-result":{"eventPriceUsd":0.10},
+                "apify-default-dataset-item":{"eventPriceUsd":0.03},
                 "apify-actor-start":{"eventPriceUsd":0.05}
-            }}},"options":{"maxTotalChargeUsd":0.15},"chargedEventCounts":{"apify-actor-start":1}}}),
+            }}},"options":{"maxTotalChargeUsd":0.25},"chargedEventCounts":{"apify-actor-start":1}}}),
             ),
             mock_response(201, json!({})),
             mock_response(201, json!({})),
@@ -541,22 +542,22 @@ mod tests {
         );
         assert_eq!(
             request_line(&apify_requests[1]),
+            ("POST", "/v2/datasets/dataset-test/items")
+        );
+        let saved_rows: Value = serde_json::from_str(request_body(&apify_requests[1])).unwrap();
+        assert_eq!(saved_rows.as_array().unwrap().len(), 1);
+        assert_eq!(saved_rows[0]["name"], "Dr. A");
+        assert_eq!(
+            request_line(&apify_requests[2]),
             ("POST", "/v2/actor-runs/run-test/charge")
         );
-        assert!(apify_requests[1]
+        assert!(apify_requests[2]
             .to_ascii_lowercase()
             .contains("idempotency-key:"));
         assert_eq!(
-            serde_json::from_str::<Value>(request_body(&apify_requests[1])).unwrap(),
+            serde_json::from_str::<Value>(request_body(&apify_requests[2])).unwrap(),
             json!({"eventName":"doctor-result","count":1})
         );
-        assert_eq!(
-            request_line(&apify_requests[2]),
-            ("POST", "/v2/datasets/dataset-test/items")
-        );
-        let saved_rows: Value = serde_json::from_str(request_body(&apify_requests[2])).unwrap();
-        assert_eq!(saved_rows.as_array().unwrap().len(), 1);
-        assert_eq!(saved_rows[0]["name"], "Dr. A");
         assert_eq!(
             request_line(&apify_requests[3]),
             ("PUT", "/v2/key-value-stores/kvs-test/records/OUTPUT")
@@ -567,6 +568,59 @@ mod tests {
         assert_eq!(output["responses_saved"], 1);
         assert_eq!(output["status_message"], expected_status);
         assert_eq!(output["responses"][0]["data"].as_array().unwrap().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn failed_dataset_write_does_not_submit_custom_charge() {
+        let apify_server = MockServer::start(vec![
+            mock_response(
+                200,
+                json!({
+                    "data": {
+                        "pricingInfo": {
+                            "pricingModel": "PAY_PER_EVENT",
+                            "pricingPerEvent": {"actorChargeEvents": {
+                                "doctor-result": {"eventPriceUsd": 0.10},
+                                "apify-default-dataset-item": {"eventPriceUsd": 0.03}
+                            }}
+                        },
+                        "options": {"maxTotalChargeUsd": 1.0},
+                        "chargedEventCounts": {}
+                    }
+                }),
+            ),
+            mock_response(500, json!({"error":"dataset unavailable"})),
+        ]);
+        let apify = test_apify_client(&apify_server.base_url);
+        let scrappa_server = MockServer::start(vec![mock_response(
+            200,
+            json!({
+                "data":[{"name":"Dr. A","url":"/a"}],
+                "meta":{"page":1,"total_results":1,"total_pages":1,"has_next_page":false}
+            }),
+        )]);
+        let scrappa_base = format!("{}/api", scrappa_server.base_url);
+        let client = ScrappaClient::new("test-scrappa-key".into(), Some(&scrappa_base)).unwrap();
+
+        let error = execute_with_input(&apify, &client, json!({"q":"Zahnarzt"}))
+            .await
+            .unwrap_err();
+        assert!(error.to_string().contains("Apify dataset write failed"));
+
+        let apify_requests = apify_server.finish();
+        assert_eq!(apify_requests.len(), 2);
+        assert_eq!(
+            request_line(&apify_requests[0]),
+            ("GET", "/v2/actor-runs/run-test")
+        );
+        assert_eq!(
+            request_line(&apify_requests[1]),
+            ("POST", "/v2/datasets/dataset-test/items")
+        );
+        assert!(apify_requests
+            .iter()
+            .all(|request| !request.contains("/charge")));
+        assert_eq!(scrappa_server.finish().len(), 1);
     }
 
     #[tokio::test]
