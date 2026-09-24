@@ -8,8 +8,10 @@ use reqwest::{Client, Response, header};
 use serde_json::{Value, json};
 use url::Url;
 
+use crate::runtime_config::APIFY_REQUEST_TIMEOUT_MS;
+
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
-const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
+const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_millis(APIFY_REQUEST_TIMEOUT_MS);
 const RELATED_RESULT_CHARGE_EVENT: &str = "related-result";
 const DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 
