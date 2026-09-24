@@ -85,7 +85,6 @@ The dataset is the primary output channel. The Actor does not write per-profile 
 ## Development
 
 ```bash
-npm install
-npm test
-npm run typecheck
+cargo test --locked
+docker build -f .actor/Dockerfile -t vinted-user-profile-scraper:local .
 ```

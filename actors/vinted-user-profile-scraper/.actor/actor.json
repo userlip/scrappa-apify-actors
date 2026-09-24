@@ -5,9 +5,6 @@
   "description": "Research public Vinted seller identity, reputation, activity, verification, bundle discounts, and marketplace trust signals through Scrappa. Batch seller IDs in one run, then scale up with the Scrappa direct API.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
