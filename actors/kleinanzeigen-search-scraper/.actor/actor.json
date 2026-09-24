@@ -5,9 +5,6 @@
   "description": "Search Kleinanzeigen listings by query, location, category, page, and EUR price range. Supports batch searches in one run and saves each listing as one charged dataset item.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

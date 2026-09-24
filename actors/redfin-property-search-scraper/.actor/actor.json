@@ -5,9 +5,6 @@
   "description": "Scrape Redfin property search listings with prices, beds, baths, square footage, addresses, coordinates, URLs, MLS numbers, and listing IDs.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

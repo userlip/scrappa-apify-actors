@@ -7,7 +7,8 @@ resolution stays on Scrappa infrastructure.
 The Actor accepts batch-first `queries`, singular `query` compatibility, and a
 per-query `limit` from 1–20. It normalizes and deduplicates queries, continues
 after individual query failures, and writes one charged dataset row per unique
-geocode with its first `source_query`.
+geocode with its first `source_query`. The same saved rows are written once to
+the default key-value store under `OUTPUT`.
 
 If the live Scrappa endpoint has a retryable outage, the default Berlin query
 can use a small verified cache. Cached rows are explicitly marked with
@@ -19,3 +20,15 @@ dataset writes stop immediately; up to nine already-started Scrappa requests in
 the current batch may still complete without producing charged output.
 
 See [.actor/README.md](.actor/README.md) for marketplace input/output examples.
+
+## Development
+
+Run the focused Rust tests with `cargo test --locked`. Build the production
+image from this directory with:
+
+```sh
+docker build -f .actor/Dockerfile -t immobilienscout24-locations-scraper:local .
+python3 test/image-smoke.py immobilienscout24-locations-scraper:local
+```
+
+The image smoke uses mock Apify and Scrappa endpoints.

@@ -9,6 +9,7 @@ Search Indeed job listings through the Scrappa Indeed Jobs API.
 - Cursor pagination through `data.pagination.next_cursor`
 - Full raw API response saved to the key-value store
 - Paid usage-aligned actor surface for high-intent Indeed job-search workflows
+- Pay-per-event dataset writes respect the run's remaining result budget
 
 ## Input
 
@@ -96,3 +97,5 @@ The complete Scrappa response is saved to the `OUTPUT` key, including pagination
 ## Support
 
 For issues or questions, contact us through Apify.
+
+For pay-per-event runs, each saved default dataset item is charged at the configured item price. If the run's remaining spend limit cannot cover every returned job, only the affordable jobs are added to the dataset.

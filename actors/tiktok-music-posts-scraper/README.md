@@ -1,6 +1,6 @@
 # TikTok Music Posts Scraper
 
-TikTok Music Posts Scraper extracts public TikTok videos that use specific music tracks or sounds through Scrappa. Use it for TikTok sound videos, TikTok music track posts, trend monitoring, creator discovery, campaign research, and content intelligence workflows.
+TikTok Music Posts Scraper is a Rust Apify actor that calls Scrappa's TikTok music posts endpoint. It extracts public TikTok videos that use specific music tracks or sounds. Use it for TikTok sound videos, TikTok music track posts, trend monitoring, creator discovery, campaign research, and content intelligence workflows.
 
 ## Features
 
@@ -58,6 +58,18 @@ The `OUTPUT` key-value-store record contains a compact summary with processed mu
 ## Pricing
 
 This actor is intended for paid per-result usage, aligned with one dataset item per TikTok post returned.
+
+The actor checks the Apify run's pay-per-event prices and spending limit before writing result rows. It stops fetching additional music IDs when the run cannot charge another dataset item.
+
+Apify INPUT and run reads, plus the idempotent OUTPUT key-value-store write, retry network errors, HTTP 429, and server errors up to eight times with exponential backoff. Dataset item POSTs are single-attempt because a response can fail after Apify has stored the rows. Scrappa API requests keep the existing single-attempt behavior and 60-second timeout; the actor run timeout remains 120 seconds.
+
+## Local development
+
+Run the focused Rust tests from this directory with cargo test --locked.
+
+Build the Apify image with docker build -f .actor/Dockerfile -t tiktok-music-posts-scraper .
+
+After building, run the local image smoke against a mock Apify and Scrappa server with python3 test/image-smoke.py tiktok-music-posts-scraper.
 
 ## Support
 

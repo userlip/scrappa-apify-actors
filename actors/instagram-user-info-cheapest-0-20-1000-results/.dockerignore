@@ -1,4 +1,7 @@
 node_modules
 npm-debug.log
+target
+apify_storage
+storage
 .actor
 .git

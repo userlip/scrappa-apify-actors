@@ -1,6 +1,6 @@
 # Google Hotels Search Scraper
 
-Scrape Google Hotels search results through Scrappa. The actor returns one dataset item per hotel or vacation rental property and writes the full Scrappa response to the default key-value store as `OUTPUT`.
+Scrape Google Hotels search results through Scrappa. This Rust actor returns one dataset item per hotel or vacation rental property and writes the full Scrappa response to the default key-value store as `OUTPUT`.
 
 ## What it extracts
 
@@ -63,5 +63,7 @@ Dataset items contain the full property object plus normalized top-level fields 
   "request_check_out_date": "YYYY-MM-DD"
 }
 ```
+
+Dataset rows use Apify's apify-default-dataset-item charge event. Before writing rows, the actor reads the run's PAY_PER_EVENT prices and maxTotalChargeUsd, then saves only the affordable prefix of the result page. The complete Scrappa response is still written to OUTPUT.
 
 For higher-volume Google Hotels or travel market research use cases, use Scrappa directly at `https://scrappa.co`.

@@ -5,9 +5,6 @@
   "description": "Extract comments and optional nested replies from public TikTok video URLs. Get comment text, author details, likes, reply counts, timestamps, parent comment IDs, and pagination cursors through Scrappa.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

@@ -10,6 +10,7 @@ Search Trusted Shops shop profiles by keyword and market through Scrappa. Use it
 - Extract shop TSID, account name, shop URL, profile URL, rating, review count, certification status, categories, logo, and description
 - Dataset rows optimized for Apify table views
 - Full Scrappa page responses saved to the `OUTPUT` key-value-store record
+- Pay-per-event runs charge the `shop-result` event per returned dataset item and stop at the run spending limit
 
 ## Input
 

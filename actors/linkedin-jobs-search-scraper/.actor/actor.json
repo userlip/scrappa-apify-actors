@@ -5,16 +5,13 @@
   "description": "Search public LinkedIn job listings through Scrappa. Extract LinkedIn job result titles, URLs, snippets, search metadata, and pagination.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "storages": {
     "dataset": {

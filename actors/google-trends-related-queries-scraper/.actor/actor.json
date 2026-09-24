@@ -5,9 +5,6 @@
   "description": "Find Google Trends related queries and topics for SEO keyword research, content planning, and market monitoring. Extract top and rising query/topic rows from Scrappa's Google Trends Related Queries API.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "../Dockerfile",
   "environmentVariables": {
@@ -17,7 +14,7 @@
     "memoryMbytes": 128
   },
   "defaultRunOptions": {
-    "timeoutSecs": 240
+    "timeoutSecs": 375
   },
   "storages": {
     "dataset": {

@@ -5,9 +5,6 @@
   "description": "Search privacy-focused Startpage SERPs through Scrappa, with batch query input and one Apify dataset item per organic result.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

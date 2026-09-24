@@ -1,3 +1,3 @@
 # TikTok Music Posts Scraper
 
-Apify actor for Scrappa's `/api/tiktok/music/posts` endpoint.
+Rust Apify actor for Scrappa's TikTok music posts endpoint.

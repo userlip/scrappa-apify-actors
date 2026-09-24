@@ -6,7 +6,7 @@ This actor is a focused companion to `google-patents-search-scraper`: search dis
 
 ## Pricing
 
-This actor is intended for paid per-result monetization. Recommended marketplace pricing is **$0.20 per 1,000 dataset items** so users pay for returned patent detail records and can batch many IDs in one Apify run.
+This actor uses Apify pay-per-event pricing. Recommended marketplace pricing is **$0.20 per 1,000 dataset items**; each saved row, including a structured error row, is one charged result. The actor checks the run's current spending limit before each lookup and stops before work that cannot produce a chargeable row.
 
 ## Input
 
@@ -82,6 +82,15 @@ Failed patents are also pushed as dataset items so batch runs keep one output ro
 ```
 
 For a single-patent run, the same item is also stored in the key-value store as `OUTPUT`.
+
+## Local development
+
+Run the actor's focused Rust tests and build its image from this directory:
+
+```sh
+cargo test --locked
+docker build -f .actor/Dockerfile -t google-patents-details-scraper:local .
+```
 
 ## Notes
 

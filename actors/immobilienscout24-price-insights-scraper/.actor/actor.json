@@ -5,7 +5,6 @@
   "description": "Benchmark German property markets with apartment and house rent and purchase prices per square meter for rent-vs-buy research and recurring city comparisons. Batch locations in one run; upgrade to the Scrappa API for larger recurring workloads.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": { "templateId": "ts-start" },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },

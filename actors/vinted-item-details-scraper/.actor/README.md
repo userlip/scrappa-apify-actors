@@ -67,3 +67,7 @@ The `OUTPUT` key-value-store record contains only the run summary: requested cou
 ## Notes
 
 Vinted does not provide a public developer API. This actor returns public marketplace listing data through Scrappa's structured Vinted item details endpoint. For search, seller profiles, shipping data, similar items, higher-volume access, or direct API usage, use Scrappa at https://scrappa.co.
+
+## Local development
+
+Run the focused Rust tests from this directory with `cargo test --locked`. Build the production image with `docker build -f .actor/Dockerfile .`. The runtime reads Apify's `APIFY_TOKEN`, `ACTOR_RUN_ID`, `ACTOR_DEFAULT_KEY_VALUE_STORE_ID`, and `ACTOR_DEFAULT_DATASET_ID` variables plus `SCRAPPA_API_KEY`.

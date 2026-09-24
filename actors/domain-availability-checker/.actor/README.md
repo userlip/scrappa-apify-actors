@@ -40,3 +40,17 @@ Bulk-check domains with Scrappa's RDAP-based availability endpoint.
 ```
 
 RDAP availability is a strong pre-check, not a registrar checkout guarantee. Domains marked `probably_available` can still be premium, reserved, restricted, or unavailable at a specific registrar.
+
+## Local development
+
+Run the focused actor tests from this directory:
+
+```sh
+cargo test --locked
+```
+
+Build the local Apify image from this directory:
+
+```sh
+docker build -f .actor/Dockerfile -t domain-availability-checker:local .
+```

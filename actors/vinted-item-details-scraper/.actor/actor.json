@@ -5,9 +5,6 @@
   "description": "Enrich Vinted item IDs with full listing details including description, price, photos, seller, category, condition, favorites, views, and availability. Built as a thin Scrappa-powered companion to Vinted Search.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

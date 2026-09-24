@@ -5,9 +5,6 @@
   "description": "Scrape minute-level intraday price and volume graph data from Google Finance for charting, dashboards, trading research, and market monitoring workflows.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

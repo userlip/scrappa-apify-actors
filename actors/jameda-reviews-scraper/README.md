@@ -20,8 +20,8 @@ Apify actor wrapper for Scrappa's `jameda-reviews` endpoint. It accepts one `doc
 ## Development
 
 ```bash
-npm install
-npm test
+cargo test --locked
+cargo build --release --locked
 ```
 
-The actor is intentionally batch-first to keep Apify run overhead low. Scraping stays on Scrappa infrastructure; this actor validates input, calls `https://scrappa.co/api/jameda/reviews`, and writes dataset rows.
+The actor is intentionally batch-first to keep Apify run overhead low. Scraping stays on Scrappa infrastructure; this actor validates input, calls `https://scrappa.co/api/jameda/reviews`, and writes dataset rows. Its production image is built from the actor-local `.actor/Dockerfile`.

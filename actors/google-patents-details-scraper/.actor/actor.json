@@ -5,9 +5,6 @@
   "description": "Enrich Google Patents publication IDs and URLs with full patent metadata, abstracts, inventors, assignees, dates, citations, and links.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

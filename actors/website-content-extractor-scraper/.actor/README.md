@@ -83,6 +83,8 @@ Markdown mode normalizes Scrappa's plain-text response into a dataset item:
 
 If one URL fails validation or Scrappa returns an infrastructure error, the actor writes an error row for that URL and continues with the rest of the batch.
 
+The run summary is also written to the default key-value store's `OUTPUT` record with requested, saved, succeeded, failed, and response type counts.
+
 ## High-Volume Use
 
 For high-volume website content extraction or direct Web Scraper API access, call Scrappa directly at `https://scrappa.co/api/web-scraper`. This Apify actor is optimized for marketplace workflows and batched URL extraction, not for running a separate Apify job per page.

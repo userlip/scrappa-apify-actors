@@ -1,0 +1,13 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "ImmobilienScout24 location matches",
+  "description": "Resolved location rows saved to the run dataset and OUTPUT key-value record.",
+  "type": "object",
+  "properties": {
+    "locations": {
+      "type": "string",
+      "title": "Resolved locations",
+      "template": "{{links.apiDefaultKeyValueStoreUrl}}/records/OUTPUT"
+    }
+  }
+}
