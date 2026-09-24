@@ -89,6 +89,7 @@ jobs:
           - actors/youtube-api-get-channel-about-details
           - actors/youtube-api-channel-podcasts
           - actors/google-news-scraper
+          - actors/startpage-search-scraper
           - actors/tiktok-search-scraper
           - actors/linkedin-post-scraper
     steps:

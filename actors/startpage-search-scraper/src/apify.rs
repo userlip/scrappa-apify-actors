@@ -31,6 +31,8 @@ impl ApifyClient {
         Ok(Self {
             client: Client::builder()
                 .timeout(REQUEST_TIMEOUT)
+                // Keep non-idempotent dataset POSTs from being retried by reqwest.
+                .retry(reqwest::retry::never())
                 .build()
                 .context("Could not create Apify HTTP client")?,
             base_url: Url::parse(base_url)
@@ -157,9 +159,9 @@ impl ApifyClient {
         }
         let url = self.resource_url(&["datasets", dataset_id, "items"])?;
         let response = self
-            .send_with_retry("dataset write", || {
-                self.request(Method::POST, url.clone()).json(items)
-            })
+            .request(Method::POST, url)
+            .json(items)
+            .send()
             .await
             .context("Failed to store items in the default dataset")?;
         successful_response(response, "store dataset items").await?;

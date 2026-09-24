@@ -512,6 +512,34 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn does_not_retry_dataset_post_when_the_response_is_transient() {
+        let (base_url, server) = mock_server(vec![
+            normal_ppe_run(0.1),
+            (503, "temporarily unavailable".to_owned()),
+        ]);
+        let client = ApifyClient::new(&base_url, "test-apify-token".to_owned()).unwrap();
+        let mut budget = client.dataset_item_budget("test-run", 1).await.unwrap();
+
+        let result = tokio::time::timeout(
+            Duration::from_secs(1),
+            client.push_data("test-dataset", &[json!({"title": "First result"})], &mut budget),
+        )
+        .await
+        .expect("dataset POST should return without a retry");
+
+        assert!(result.is_err());
+        assert_eq!(budget.remaining_items(), 1);
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 2);
+        assert!(requests[0].to_ascii_lowercase().starts_with(
+            "get /v2/actor-runs/test-run http/1.1"
+        ));
+        assert!(requests[1]
+            .to_ascii_lowercase()
+            .starts_with("post /v2/datasets/test-dataset/items http/1.1"));
+    }
+
+    #[tokio::test]
     async fn retries_transient_apify_storage_errors_and_does_not_retry_scrappa_errors() {
         let input = json!({"queries": [{"query": "privacy tools"}]});
         let (base_url, server) = mock_server(vec![
