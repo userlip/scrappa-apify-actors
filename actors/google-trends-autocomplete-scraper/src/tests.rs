@@ -1,0 +1,779 @@
+use super::*;
+use std::{
+    io::{Read, Write},
+    net::{TcpListener, TcpStream},
+    sync::mpsc::{self, Receiver},
+    thread::{self, JoinHandle},
+};
+
+const INPUT_SCHEMA: &str = include_str!("../.actor/input_schema.json");
+
+struct MockRequest {
+    method: String,
+    target: String,
+    headers: Map<String, Value>,
+    body: String,
+}
+
+struct MockServer {
+    base_url: String,
+    requests: Receiver<MockRequest>,
+    thread: Option<JoinHandle<()>>,
+}
+
+impl MockServer {
+    fn start(responses: Vec<(u16, String)>) -> Self {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        let (sender, requests) = mpsc::channel();
+        let thread = thread::spawn(move || {
+            for (status, body) in responses {
+                let (mut stream, _) = listener.accept().unwrap();
+                let request = read_mock_request(&mut stream);
+                sender.send(request).unwrap();
+                let reason = match status {
+                    200 => "OK",
+                    201 => "Created",
+                    404 => "Not Found",
+                    401 => "Unauthorized",
+                    429 => "Too Many Requests",
+                    500 => "Internal Server Error",
+                    503 => "Service Unavailable",
+                    _ => "Error",
+                };
+                write!(
+                    stream,
+                    "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                )
+                .unwrap();
+            }
+        });
+        Self {
+            base_url: format!("http://{address}"),
+            requests,
+            thread: Some(thread),
+        }
+    }
+
+    fn finish(mut self) -> Vec<MockRequest> {
+        let requests = self.requests.try_iter().collect();
+        self.thread.take().unwrap().join().unwrap();
+        requests
+    }
+}
+
+fn read_mock_request(stream: &mut TcpStream) -> MockRequest {
+    let mut bytes = Vec::new();
+    let mut buffer = [0; 4096];
+    loop {
+        let header_end = bytes.windows(4).position(|window| window == b"\r\n\r\n");
+        if let Some(header_end) = header_end {
+            let header_text = String::from_utf8_lossy(&bytes[..header_end]);
+            let content_length = header_text
+                .lines()
+                .skip(1)
+                .filter_map(|line| line.split_once(':'))
+                .find(|(name, _)| name.eq_ignore_ascii_case("content-length"))
+                .and_then(|(_, value)| value.trim().parse::<usize>().ok())
+                .unwrap_or(0);
+            if bytes.len() >= header_end + 4 + content_length {
+                break;
+            }
+        }
+        let count = stream.read(&mut buffer).unwrap();
+        assert!(count > 0, "mock request ended before its body was read");
+        bytes.extend_from_slice(&buffer[..count]);
+    }
+    let header_end = bytes
+        .windows(4)
+        .position(|window| window == b"\r\n\r\n")
+        .unwrap();
+    let header_text = String::from_utf8_lossy(&bytes[..header_end]);
+    let mut lines = header_text.lines();
+    let mut request_line = lines.next().unwrap().split_whitespace();
+    let method = request_line.next().unwrap().to_owned();
+    let target = request_line.next().unwrap().to_owned();
+    let headers = lines
+        .filter_map(|line| line.split_once(':'))
+        .map(|(name, value)| {
+            (
+                name.to_ascii_lowercase(),
+                Value::String(value.trim().to_owned()),
+            )
+        })
+        .collect();
+    let body = String::from_utf8(bytes[header_end + 4..].to_vec()).unwrap();
+    MockRequest {
+        method,
+        target,
+        headers,
+        body,
+    }
+}
+
+fn test_config(base_url: &str) -> Config {
+    Config {
+        apify_api_base: Url::parse(base_url).unwrap(),
+        scrappa_api_base: Url::parse(base_url).unwrap(),
+        apify_token: "apify-test-token".to_owned(),
+        key_value_store_id: "store-id".to_owned(),
+        dataset_id: "dataset-id".to_owned(),
+        actor_run_id: "test-run".to_owned(),
+        input_key: "INPUT".to_owned(),
+        scrappa_api_key: "scrappa-test-key".to_owned(),
+    }
+}
+
+fn mock_response(status: u16, body: Value) -> (u16, String) {
+    (status, body.to_string())
+}
+
+fn run_response(pricing_info: Value, charged: Value, max_charge: Value) -> Value {
+    json!({
+        "data": {
+            "pricingInfo": pricing_info,
+            "chargedEventCounts": charged,
+            "options": { "maxTotalChargeUsd": max_charge },
+        }
+    })
+}
+
+fn ppe_pricing(events: Value) -> Value {
+    json!({
+        "pricingModel": "PAY_PER_EVENT",
+        "pricingPerEvent": { "actorChargeEvents": events },
+    })
+}
+
+fn ppe_run_body() -> Value {
+    run_response(
+        ppe_pricing(json!({
+            "suggestion-result": { "eventPriceUsd": 0.1 },
+            "apify-default-dataset-item": { "eventPriceUsd": 0.02 },
+            "actor-start": { "eventPriceUsd": 0.15 },
+        })),
+        json!({ "actor-start": 1 }),
+        json!(0.4),
+    )
+}
+
+fn request_target(request: &MockRequest) -> String {
+    request.target.clone()
+}
+
+#[test]
+fn input_schema_keeps_prefill_alias_and_defaults() {
+    let schema: Value = serde_json::from_str(INPUT_SCHEMA).unwrap();
+    assert_eq!(schema["properties"]["query"]["prefill"], "tesla");
+    assert_eq!(schema["properties"]["query"]["maxLength"], 100);
+    assert_eq!(schema["properties"]["q"]["maxLength"], 100);
+    assert!(schema.get("required").is_none());
+    assert_eq!(schema["properties"]["geo"]["default"], "US");
+    assert_eq!(schema["properties"]["hl"]["default"], "en");
+}
+
+#[test]
+fn query_builder_preserves_alias_defaults_and_normalization() {
+    let params = build_autocomplete_params(&json!({
+        "query": " tesla ",
+        "q": "ignored",
+        "geo": " us ",
+        "hl": "EN",
+    }))
+    .unwrap();
+    assert_eq!(
+        Value::Object(params.as_map()),
+        json!({ "q": "tesla", "geo": "US", "hl": "en" })
+    );
+    assert_eq!(params.describe(), "\"tesla\" (geo=US, hl=en)");
+
+    let alias =
+        build_autocomplete_params(&json!({ "query": " ", "q": "bitcoin", "geo": "worldwide" }))
+            .unwrap();
+    assert_eq!(
+        Value::Object(alias.as_map()),
+        json!({ "q": "bitcoin", "geo": "Worldwide", "hl": "en" })
+    );
+    assert_eq!(
+        Value::Object(
+            build_autocomplete_params(&json!({ "query": "coffee" }))
+                .unwrap()
+                .as_map()
+        ),
+        json!({ "q": "coffee", "geo": "US", "hl": "en" })
+    );
+}
+
+#[test]
+fn query_builder_rejects_invalid_values_and_missing_queries() {
+    assert_eq!(
+        build_autocomplete_params(&json!({}))
+            .unwrap_err()
+            .to_string(),
+        "query is required"
+    );
+    assert_eq!(
+        build_autocomplete_params(&json!({ "query": 12 }))
+            .unwrap_err()
+            .to_string(),
+        "query must be a string"
+    );
+    assert_eq!(
+        build_autocomplete_params(&json!({ "query": "tesla", "geo": 12 }))
+            .unwrap_err()
+            .to_string(),
+        "geo must be a string"
+    );
+    assert_eq!(
+        build_autocomplete_params(&json!({ "query": "tesla", "hl": "eng" }))
+            .unwrap_err()
+            .to_string(),
+        "hl must be 2 characters or fewer"
+    );
+    assert_eq!(
+        build_autocomplete_params(&json!({ "query": "tesla", "hl": "e1" }))
+            .unwrap_err()
+            .to_string(),
+        "hl must be a two-letter language code"
+    );
+}
+
+#[test]
+fn autocomplete_items_keep_raw_fields_and_normalize_common_names() {
+    let params = build_autocomplete_params(&json!({ "query": "tesla" })).unwrap();
+    let items = build_autocomplete_dataset_items(
+        &json!({
+            "search_parameters": { "q": "tesla", "geo": "US", "hl": "en" },
+            "suggestions": [
+                "tesla stock",
+                { "query": "tesla price", "type": "query", "extra": "kept" },
+                { "title": "Tesla, Inc.", "type": "company" },
+                42,
+            ],
+            "response_time_ms": 623,
+        }),
+        &params,
+    );
+    assert_eq!(items.len(), 3);
+    assert_eq!(items[0]["suggestion"], "tesla stock");
+    assert_eq!(items[0]["position"], 1);
+    assert_eq!(items[0]["type"], Value::Null);
+    assert_eq!(items[0]["source_keyword"], "tesla");
+    assert_eq!(items[0]["request_geo"], "US");
+    assert_eq!(items[0]["request_hl"], "en");
+    assert_eq!(items[0]["response_time_ms"], 623);
+    assert_eq!(items[1]["query"], "tesla price");
+    assert_eq!(items[1]["suggestion"], "tesla price");
+    assert_eq!(items[1]["extra"], "kept");
+    assert_eq!(items[2]["suggestion"], "Tesla, Inc.");
+    assert_eq!(items[2]["position"], 3);
+}
+
+#[test]
+fn response_accepts_nested_containers_and_empty_shapes() {
+    let params = build_autocomplete_params(&json!({ "query": "coffee" })).unwrap();
+    assert_eq!(
+        build_autocomplete_dataset_items(
+            &json!({ "data": { "suggestions": ["coffee shop"] } }),
+            &params
+        )[0]["suggestion"],
+        "coffee shop"
+    );
+    assert_eq!(
+        build_autocomplete_dataset_items(
+            &json!({ "autocomplete": { "results": [{ "keyword": "coffee beans" }] } }),
+            &params
+        )[0]["suggestion"],
+        "coffee beans"
+    );
+    assert!(
+        build_autocomplete_dataset_items(&json!({ "suggestions": "none" }), &params).is_empty()
+    );
+    assert!(build_autocomplete_dataset_items(
+        &json!({ "suggestions": null, "results": [] }),
+        &params
+    )
+    .is_empty());
+}
+
+#[test]
+fn ppe_budget_counts_all_priced_events_and_limits_rows() {
+    let pricing = PricingState::from_run(&ppe_run_body()).unwrap();
+    assert_eq!(pricing.affordable_suggestion_count(5).unwrap(), 2);
+
+    let free_pricing = PricingState::from_run(&run_response(
+        json!({ "pricingModel": "FLAT_RATE" }),
+        json!({}),
+        Value::Null,
+    ))
+    .unwrap();
+    assert_eq!(free_pricing.affordable_suggestion_count(5).unwrap(), 5);
+}
+
+#[test]
+fn retry_policy_covers_timeouts_transient_statuses_and_network_errors() {
+    assert!(ScrappaRequestError::Timeout.is_retryable());
+    for status in [408, 429, 500, 502, 503, 504] {
+        assert!(ScrappaRequestError::Api {
+            status,
+            message: String::new()
+        }
+        .is_retryable());
+    }
+    for status in [400, 401, 403, 404, 422] {
+        assert!(!ScrappaRequestError::Api {
+            status,
+            message: String::new()
+        }
+        .is_retryable());
+    }
+    assert_eq!(get_retry_delay_ms(1, 0), 2000);
+    assert_eq!(get_retry_delay_ms(2, 250), 4250);
+    assert_eq!(get_retry_delay_ms(10, 0), 10_000);
+}
+
+#[test]
+fn scrappa_errors_keep_auth_and_validation_messages() {
+    assert_eq!(
+        read_scrappa_error_message(
+            r#"{"message":"Validation failed","errors":{"q":["required","too long"]}}"#,
+            StatusCode::UNPROCESSABLE_ENTITY,
+        ),
+        "Validation failed - q: required, too long"
+    );
+    assert_eq!(
+        read_scrappa_error_message("upstream   unavailable", StatusCode::BAD_GATEWAY),
+        "upstream unavailable"
+    );
+    assert!(
+        !ScrappaRequestError::InvalidJson(serde_json::from_str::<Value>("{").unwrap_err())
+            .is_retryable()
+    );
+}
+
+#[tokio::test]
+async fn scrappa_client_retries_transient_status_and_preserves_headers_and_query() {
+    let server = MockServer::start(vec![
+        mock_response(503, json!({ "message": "temporarily busy" })),
+        mock_response(200, json!({ "suggestions": ["coffee shop"] })),
+    ]);
+    let server_base_url = server.base_url.clone();
+    let base_url = Url::parse(&server_base_url).unwrap();
+    let http = Client::new();
+    let client = ScrappaClient {
+        http: &http,
+        base_url: &base_url,
+        api_key: "scrappa-test-key",
+    };
+    let params =
+        build_autocomplete_params(&json!({ "query": "coffee & tea", "geo": "us" })).unwrap();
+    let response = client.get_autocomplete(&params).await.unwrap();
+    assert_eq!(response["suggestions"][0], "coffee shop");
+
+    let requests = server.finish();
+    assert_eq!(requests.len(), 2);
+    let url = Url::parse(&format!(
+        "{server_base_url}{}",
+        request_target(&requests[0])
+    ))
+    .unwrap();
+    assert_eq!(url.path(), "/google-trends/autocomplete");
+    assert_eq!(
+        url.query_pairs().find(|(key, _)| key == "q").unwrap().1,
+        "coffee & tea"
+    );
+    assert_eq!(
+        url.query_pairs().find(|(key, _)| key == "geo").unwrap().1,
+        "US"
+    );
+    assert_eq!(requests[0].headers["x-api-key"], "scrappa-test-key");
+    assert_eq!(requests[0].headers["accept"], "application/json");
+    assert_eq!(requests[0].headers["user-agent"], SCRAPPA_USER_AGENT);
+}
+
+#[tokio::test]
+async fn actor_writes_dataset_and_raw_kv_output_for_non_ppe_runs() {
+    let server = MockServer::start(vec![
+        (404, String::new()),
+        mock_response(
+            200,
+            run_response(
+                json!({ "pricingModel": "FLAT_RATE" }),
+                json!({}),
+                Value::Null,
+            ),
+        ),
+        mock_response(200, json!({ "query": "tesla", "geo": "US" })),
+        mock_response(
+            200,
+            json!({
+                "search_parameters": { "q": "tesla" },
+                "suggestions": ["tesla stock", { "query": "tesla model y", "type": "query" }],
+                "response_time_ms": 321,
+            }),
+        ),
+        (200, String::new()),
+        (200, String::new()),
+    ]);
+    let config = test_config(&server.base_url);
+    let http = Client::new();
+    run_actor(&http, &config).await.unwrap();
+
+    let requests = server.finish();
+    assert_eq!(requests.len(), 6);
+    assert_eq!(
+        request_target(&requests[0]),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+    assert_eq!(request_target(&requests[1]), "/v2/actor-runs/test-run");
+    assert_eq!(
+        request_target(&requests[2]),
+        "/v2/key-value-stores/store-id/records/INPUT"
+    );
+    assert_eq!(
+        requests[1].headers["authorization"],
+        "Bearer apify-test-token"
+    );
+    assert_eq!(
+        request_target(&requests[4]),
+        "/v2/datasets/dataset-id/items"
+    );
+    assert_eq!(requests[4].method, "POST");
+    let rows: Value = serde_json::from_str(&requests[4].body).unwrap();
+    assert_eq!(rows.as_array().unwrap().len(), 2);
+    assert_eq!(rows[1]["position"], 2);
+    assert_eq!(
+        request_target(&requests[5]),
+        "/v2/key-value-stores/store-id/records/OUTPUT"
+    );
+    let output: Value = serde_json::from_str(&requests[5].body).unwrap();
+    assert_eq!(output["suggestion_count"], 2);
+    assert_eq!(output["saved_suggestion_count"], 2);
+    assert_eq!(output["charge_limit_reached"], false);
+    assert_eq!(output["raw_response"]["response_time_ms"], 321);
+}
+
+#[tokio::test]
+async fn actor_charges_only_saved_rows_and_omits_raw_response_at_budget_limit() {
+    let server = MockServer::start(vec![
+        (404, String::new()),
+        mock_response(200, ppe_run_body()),
+        mock_response(200, json!({ "query": "tesla" })),
+        mock_response(
+            200,
+            json!({
+                "search_parameters": { "q": "tesla" },
+                "suggestions": ["one", "two", "three"],
+            }),
+        ),
+        (200, String::new()),
+        mock_response(201, json!({})),
+        (200, String::new()),
+        mock_response(200, json!([])),
+        (200, String::new()),
+        (200, String::new()),
+        (200, String::new()),
+        mock_response(200, json!({ "status": "completed" })),
+    ]);
+    let config = test_config(&server.base_url);
+    let http = Client::new();
+    run_actor(&http, &config).await.unwrap();
+
+    let server_base_url = server.base_url.clone();
+    let requests = server.finish();
+    assert_eq!(requests.len(), 12);
+    assert_eq!(
+        request_target(&requests[5]),
+        "/v2/actor-runs/test-run/charge"
+    );
+    assert_eq!(requests[5].method, "POST");
+    assert_eq!(
+        request_target(&requests[4]),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+    let prepared: Value = serde_json::from_str(&requests[4].body).unwrap();
+    assert_eq!(prepared["status"], "prepared");
+    assert_eq!(
+        prepared["limited_dataset_items"].as_array().unwrap().len(),
+        2
+    );
+    assert!(prepared["response"].get("suggestions").is_none());
+    assert_eq!(
+        requests[5].headers["idempotency-key"],
+        "google-trends-autocomplete-test-run-suggestions"
+    );
+    let charge: Value = serde_json::from_str(&requests[5].body).unwrap();
+    assert_eq!(
+        charge,
+        json!({ "eventName": "suggestion-result", "count": 2 })
+    );
+    assert_eq!(requests[7].method, "GET");
+    let dataset_url = Url::parse(&format!("{}{}", server_base_url, requests[7].target)).unwrap();
+    assert_eq!(dataset_url.path(), "/v2/datasets/dataset-id/items");
+    let query_value = |key| {
+        dataset_url
+            .query_pairs()
+            .find(|(name, _)| name == key)
+            .unwrap()
+            .1
+            .into_owned()
+    };
+    assert_eq!(query_value("format"), "json");
+    assert_eq!(query_value("offset"), "0");
+    assert_eq!(query_value("limit"), "3");
+    assert_eq!(query_value("clean"), "false");
+    assert_eq!(query_value("desc"), "false");
+    assert_eq!(requests[8].method, "POST");
+    assert_eq!(
+        request_target(&requests[8]),
+        "/v2/datasets/dataset-id/items"
+    );
+    let rows: Value = serde_json::from_str(&requests[8].body).unwrap();
+    assert_eq!(rows.as_array().unwrap().len(), 2);
+    assert_eq!(
+        request_target(&requests[9]),
+        "/v2/key-value-stores/store-id/records/OUTPUT"
+    );
+    let output: Value = serde_json::from_str(&requests[9].body).unwrap();
+    assert_eq!(output["suggestion_count"], 3);
+    assert_eq!(output["saved_suggestion_count"], 2);
+    assert_eq!(output["charge_limit_reached"], true);
+    assert_eq!(output["raw_response_omitted"], true);
+    assert_eq!(output["raw_response"], Value::Null);
+    assert_eq!(request_target(&requests[10]), "/v2/actor-runs/test-run");
+    let status_message: Value = serde_json::from_str(&requests[10].body).unwrap();
+    assert_eq!(status_message["isStatusMessageTerminal"], true);
+    assert!(status_message["statusMessage"]
+        .as_str()
+        .unwrap()
+        .contains("Charge limit reached"));
+    assert_eq!(
+        request_target(&requests[11]),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+    assert_eq!(
+        serde_json::from_str::<Value>(&requests[11].body).unwrap(),
+        json!({ "status": "completed" })
+    );
+}
+
+#[tokio::test]
+async fn actor_does_not_write_dataset_when_suggestion_charge_fails() {
+    let server = MockServer::start(vec![
+        (404, String::new()),
+        mock_response(200, ppe_run_body()),
+        mock_response(200, json!({ "query": "tesla" })),
+        mock_response(
+            200,
+            json!({
+                "search_parameters": { "q": "tesla" },
+                "suggestions": ["one", "two", "three"],
+            }),
+        ),
+        (200, String::new()),
+        (500, json!({ "error": "charge failed" }).to_string()),
+    ]);
+    let config = test_config(&server.base_url);
+    let http = Client::new();
+
+    let error = run_actor(&http, &config).await.unwrap_err();
+    assert!(error
+        .to_string()
+        .contains("suggestion result charge request failed"));
+
+    let requests = server.finish();
+    assert_eq!(requests.len(), 6);
+    assert_eq!(
+        request_target(&requests[4]),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+    assert_eq!(
+        serde_json::from_str::<Value>(&requests[4].body).unwrap()["status"],
+        "prepared"
+    );
+    assert_eq!(
+        request_target(&requests[5]),
+        "/v2/actor-runs/test-run/charge"
+    );
+    let charge: Value = serde_json::from_str(&requests[5].body).unwrap();
+    assert_eq!(
+        charge,
+        json!({ "eventName": "suggestion-result", "count": 2 })
+    );
+    assert!(requests
+        .iter()
+        .all(|request| request.target != "/v2/datasets/dataset-id/items"));
+}
+
+#[tokio::test]
+async fn actor_resumes_charged_suggestions_after_dataset_write_failure() {
+    let response = json!({
+        "search_parameters": { "q": "tesla" },
+        "suggestions": ["one", "two"],
+        "response_time_ms": 123,
+    });
+    let saved_items = build_autocomplete_dataset_items(
+        &response,
+        &build_autocomplete_params(&json!({ "query": "tesla" })).unwrap(),
+    );
+    let charged_state = json!({
+        "status": "charged",
+        "charge_count": 2,
+        "suggestion_count": 2,
+        "charge_limit_reached": false,
+        "charge_idempotency_key": "google-trends-autocomplete-test-run-suggestions",
+        "params": { "query": "tesla", "geo": "US", "hl": "en" },
+        "response": response,
+    });
+    let server = MockServer::start(vec![
+        (404, String::new()),
+        mock_response(200, ppe_run_body()),
+        mock_response(200, json!({ "query": "tesla" })),
+        mock_response(200, response.clone()),
+        (200, String::new()),
+        mock_response(201, json!({})),
+        (200, String::new()),
+        mock_response(200, json!([])),
+        (500, json!({ "error": "dataset write failed" }).to_string()),
+        mock_response(200, charged_state),
+        mock_response(200, json!([])),
+        (200, String::new()),
+        (200, String::new()),
+        (200, String::new()),
+        mock_response(200, json!({ "status": "completed" })),
+    ]);
+    let config = test_config(&server.base_url);
+    let http = Client::new();
+
+    let error = run_actor(&http, &config).await.unwrap_err();
+    assert!(error.to_string().contains("Apify dataset write failed"));
+    run_actor(&http, &config).await.unwrap();
+    run_actor(&http, &config).await.unwrap();
+
+    let requests = server.finish();
+    assert_eq!(requests.len(), 15);
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.target == "/v2/actor-runs/test-run/charge")
+            .count(),
+        1
+    );
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| {
+                request.target.split('?').next() == Some("/google-trends/autocomplete")
+            })
+            .count(),
+        1
+    );
+    let dataset_writes = requests
+        .iter()
+        .filter(|request| {
+            request.method == "POST" && request.target == "/v2/datasets/dataset-id/items"
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(dataset_writes.len(), 2);
+    assert_eq!(
+        serde_json::from_str::<Value>(&dataset_writes[0].body).unwrap(),
+        json!(saved_items)
+    );
+    assert_eq!(
+        serde_json::from_str::<Value>(&dataset_writes[1].body).unwrap(),
+        json!(saved_items)
+    );
+    let output_request = requests
+        .iter()
+        .find(|request| {
+            request.method == "PUT"
+                && request.target == "/v2/key-value-stores/store-id/records/OUTPUT"
+        })
+        .unwrap();
+    let output: Value = serde_json::from_str(&output_request.body).unwrap();
+    assert_eq!(output["saved_suggestion_count"], 2);
+    assert_eq!(output["raw_response"]["response_time_ms"], 123);
+    let completion = requests
+        .iter()
+        .rev()
+        .find(|request| {
+            request.method == "PUT"
+                && request.target
+                    == "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+        })
+        .unwrap();
+    assert_eq!(
+        serde_json::from_str::<Value>(&completion.body).unwrap(),
+        json!({ "status": "completed" })
+    );
+    assert_eq!(
+        request_target(requests.last().unwrap()),
+        "/v2/key-value-stores/store-id/records/GOOGLE_TRENDS_AUTOCOMPLETE_PPE_STATE"
+    );
+}
+
+#[tokio::test]
+async fn actor_resume_skips_dataset_rows_already_written_before_failure() {
+    let response = json!({ "suggestions": ["one", "two"] });
+    let params = build_autocomplete_params(&json!({ "query": "tesla" })).unwrap();
+    let saved_items = build_autocomplete_dataset_items(&response, &params);
+    let charged_state = json!({
+        "status": "charged",
+        "charge_count": 2,
+        "suggestion_count": 2,
+        "charge_limit_reached": false,
+        "charge_idempotency_key": "google-trends-autocomplete-test-run-suggestions",
+        "params": { "query": "tesla", "geo": "US", "hl": "en" },
+        "response": response.clone(),
+    });
+    let server = MockServer::start(vec![
+        (404, String::new()),
+        mock_response(200, ppe_run_body()),
+        mock_response(200, json!({ "query": "tesla" })),
+        mock_response(200, response),
+        (200, String::new()),
+        mock_response(201, json!({})),
+        (200, String::new()),
+        mock_response(200, json!([])),
+        (
+            500,
+            json!({ "error": "write response was lost" }).to_string(),
+        ),
+        mock_response(200, charged_state),
+        mock_response(200, json!(saved_items.clone())),
+        (200, String::new()),
+        (200, String::new()),
+    ]);
+    let config = test_config(&server.base_url);
+    let http = Client::new();
+
+    assert!(run_actor(&http, &config).await.is_err());
+    run_actor(&http, &config).await.unwrap();
+
+    let requests = server.finish();
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.target == "/v2/actor-runs/test-run/charge")
+            .count(),
+        1
+    );
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| {
+                request.method == "POST" && request.target == "/v2/datasets/dataset-id/items"
+            })
+            .count(),
+        1
+    );
+    let output = requests
+        .iter()
+        .find(|request| request.target == "/v2/key-value-stores/store-id/records/OUTPUT")
+        .unwrap();
+    assert_eq!(
+        serde_json::from_str::<Value>(&output.body).unwrap()["saved_suggestion_count"],
+        2
+    );
+}

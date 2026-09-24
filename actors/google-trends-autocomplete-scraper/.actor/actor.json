@@ -5,11 +5,8 @@
   "description": "Get Google Trends autocomplete suggestions for SEO keyword research, content planning, and market monitoring. Extract one dataset row per suggestion from Scrappa's Google Trends Autocomplete API.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
-  "dockerfile": "../Dockerfile",
+  "dockerfile": "./Dockerfile",
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
