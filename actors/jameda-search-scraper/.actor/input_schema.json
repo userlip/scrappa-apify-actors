@@ -25,11 +25,13 @@
         "required": ["q"],
         "properties": {
           "q": {
+            "title": "Search Query",
             "type": "string",
             "minLength": 2,
             "maxLength": 255
           },
           "loc": {
+            "title": "Location",
             "type": "string",
             "maxLength": 100
           }

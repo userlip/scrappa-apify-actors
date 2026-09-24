@@ -354,7 +354,7 @@ mod tests {
     }
 
     #[test]
-    fn keeps_input_schema_and_prefills_unchanged() {
+    fn validates_deployable_schema_and_prefills() {
         let schema: Value = serde_json::from_str(
             &std::fs::read_to_string(concat!(
                 env!("CARGO_MANIFEST_DIR"),
@@ -364,6 +364,14 @@ mod tests {
         )
         .unwrap();
         assert!(schema.get("anyOf").is_none());
+        assert_eq!(
+            schema.pointer("/properties/searches/items/properties/q/title"),
+            Some(&json!("Search Query"))
+        );
+        assert_eq!(
+            schema.pointer("/properties/searches/items/properties/loc/title"),
+            Some(&json!("Location"))
+        );
         assert_eq!(
             schema["properties"]["searches"]["prefill"],
             json!([
