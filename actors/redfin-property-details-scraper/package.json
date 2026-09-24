@@ -4,8 +4,8 @@
   "private": true,
   "description": "Actor-local npm wrappers for the Rust build and test commands.",
   "scripts": {
-    "build": "docker run --rm -v \"$PWD:/build\" -w /build rust:1.90-slim-bookworm cargo build --locked",
-    "test": "docker run --rm -v \"$PWD:/build\" -w /build rust:1.90-slim-bookworm cargo test --locked",
-    "typecheck": "docker run --rm -v \"$PWD:/build\" -w /build rust:1.90-slim-bookworm cargo check --locked"
+    "build": "sh scripts/cargo.sh build --locked",
+    "test": "sh scripts/cargo.sh test --locked",
+    "typecheck": "sh scripts/cargo.sh check --locked"
   }
 }
