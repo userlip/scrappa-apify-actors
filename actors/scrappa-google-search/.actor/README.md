@@ -68,6 +68,12 @@ The complete response is saved to the `OUTPUT` key, including:
 }
 ```
 
+The actor saves one dataset item per organic result, in Scrappa's result order. Dataset writes are limited to the remaining Apify `PAY_PER_EVENT` budget. If the spending limit covers only part of the result set, the affordable prefix is saved and the complete Scrappa response remains available in `OUTPUT`.
+
+## Runtime
+
+The production actor is a Rust binary. It reads `INPUT` from the default key-value store, calls Scrappa with `SCRAPPA_API_KEY`, writes organic results to the default dataset, and stores the full response as `OUTPUT`. It uses `ACTOR_DEFAULT_KEY_VALUE_STORE_ID`, `ACTOR_DEFAULT_DATASET_ID`, `ACTOR_RUN_ID`, `ACTOR_INPUT_KEY` (defaults to `INPUT`), and `APIFY_TOKEN` for Apify storage and run-pricing access. Scrappa requests have a 60-second timeout and retry up to three times for transient API or connection failures.
+
 ## Example
 
 ```json
