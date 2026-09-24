@@ -130,3 +130,7 @@ For higher-volume review monitoring, competitor intelligence, local SEO audits, 
 ## Support
 
 For Apify run issues, open an issue on this actor with the run ID, input JSON, and expected result. For direct Scrappa API access or larger usage, contact Scrappa through `https://scrappa.co`.
+
+## Development
+
+This actor is implemented in Rust. From the actor source directory (`actors/google-maps-reviews-scraper`), run its focused tests with `cargo test --locked` and build the production image with `docker build -f .actor/Dockerfile -t google-maps-reviews-scraper .`.
