@@ -4,3 +4,4 @@ apify_storage/
 .env
 .env.local
 *.log
+target/
