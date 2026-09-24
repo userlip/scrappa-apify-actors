@@ -207,11 +207,19 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => None,
+        Some(value) => {
+            let max_charge = value
+                .as_f64()
+                .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+            if !max_charge.is_finite() || max_charge < 0.0 {
+                bail!("Apify run returned invalid charging values");
+            }
+            (max_charge > 0.0).then_some(max_charge)
+        }
+    };
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -243,6 +251,9 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
     if item_price == 0.0 {
         return Ok(requested);
     }
+    let Some(max_charge) = max_charge else {
+        return Ok(requested);
+    };
 
     let tolerance = f64::EPSILON * max_charge.max(1.0);
     let affordable = ((max_charge + tolerance - spent) / item_price).floor();
@@ -282,11 +293,16 @@ mod tests {
     use serde_json::json;
 
     fn priced_run(max_charge: f64, counts: Value) -> Value {
+        priced_run_with_limit(json!(max_charge), counts)
+    }
+
+    fn priced_run_with_limit(max_charge: Value, counts: Value) -> Value {
         json!({"data": {
             "pricingInfo": {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {
                 "actorChargeEvents": {
                     "apify-default-dataset-item": {"eventPriceUsd": 0.0002},
-                    "apify-actor-start": {"eventPriceUsd": 0.00005}
+                    "apify-actor-start": {"eventPriceUsd": 0.00005},
+                    "custom-charge": {"eventPriceUsd": 0.0001}
                 }
             }},
             "options": {"maxTotalChargeUsd": max_charge},
@@ -295,12 +311,40 @@ mod tests {
     }
 
     #[test]
-    fn counts_only_items_that_fit_the_remaining_ppe_budget() {
+    fn positive_ppe_limit_counts_prior_charges_before_dataset_items() {
         let run = priced_run(
             0.0005,
             json!({"apify-default-dataset-item": 1, "apify-actor-start": 1}),
         );
         assert_eq!(affordable_dataset_items(&run, 10).unwrap(), 1);
+    }
+
+    #[test]
+    fn positive_ppe_limit_accounts_for_custom_charges_before_dataset_items() {
+        let run = priced_run(
+            0.0004,
+            json!({"apify-default-dataset-item": 1, "custom-charge": 1}),
+        );
+        assert_eq!(affordable_dataset_items(&run, 10).unwrap(), 0);
+    }
+
+    #[test]
+    fn zero_ppe_limit_is_unbounded() {
+        let run = priced_run(0.0, json!({"apify-actor-start": 1}));
+        assert_eq!(affordable_dataset_items(&run, 10).unwrap(), 10);
+    }
+
+    #[test]
+    fn omitted_or_null_ppe_limit_is_unbounded() {
+        let null_limit = priced_run_with_limit(Value::Null, json!({"apify-actor-start": 1}));
+        assert_eq!(affordable_dataset_items(&null_limit, 10).unwrap(), 10);
+
+        let mut omitted_limit = priced_run(1.0, json!({"apify-actor-start": 1}));
+        omitted_limit["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+        assert_eq!(affordable_dataset_items(&omitted_limit, 10).unwrap(), 10);
     }
 
     #[test]
