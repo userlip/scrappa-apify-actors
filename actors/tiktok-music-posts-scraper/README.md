@@ -61,7 +61,7 @@ This actor is intended for paid per-result usage, aligned with one dataset item 
 
 The actor checks the Apify run's pay-per-event prices and spending limit before writing result rows. It stops fetching additional music IDs when the run cannot charge another dataset item.
 
-Apify storage and run API requests retry network errors, HTTP 429, and server errors up to eight times with exponential backoff. Scrappa API requests keep the existing single-attempt behavior and 60-second timeout; the actor run timeout remains 120 seconds.
+Apify INPUT and run reads, plus the idempotent OUTPUT key-value-store write, retry network errors, HTTP 429, and server errors up to eight times with exponential backoff. Dataset item POSTs are single-attempt because a response can fail after Apify has stored the rows. Scrappa API requests keep the existing single-attempt behavior and 60-second timeout; the actor run timeout remains 120 seconds.
 
 ## Local development
 
