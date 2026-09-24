@@ -2,6 +2,8 @@
 
 Scrape historical price and volume data from Google Finance for stock backtesting, charting, portfolio research, and market monitoring workflows. The actor wraps Scrappa's `/api/google-finance/historical` endpoint and writes one Apify dataset item per historical price point.
 
+The Actor makes one authenticated Scrappa request and retains every returned price point in order. For pay-per-event runs, it charges the configured `price-point` event for each saved row and respects the run's maximum total charge.
+
 ## What you get
 
 - Daily, weekly, or monthly historical price points
