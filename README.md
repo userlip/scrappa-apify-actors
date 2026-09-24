@@ -124,7 +124,7 @@ From the actor directory, run `cargo test --locked` and build its Docker image b
 
 This inventory covers the 106 live `thescrappa` Actors and their 106 local source directories as checked on 2026-09-24. All local Actor runtimes are Rust crates. Actor source versions use Apify `SOURCE_FILES`; a repository merge does not deploy them. The historical rows below retain their original pricing and run observations, not an assertion that those old builds are currently live.
 
-`google-search-scraper` is represented by the legacy `actors/google-search` directory. The Rust migration used candidate builds and prefilled runs with capped spend; Kununu Reviews stays on its previous live build while Scrappa's upstream Kununu anti-bot 503 persists. Validate pricing and maintenance status against the live Apify API before changing either.
+`google-search-scraper` is represented by the legacy `actors/google-search` directory. All 106 Actors now run Rust builds. Kununu Reviews was promoted after Scrappa's qualified browser pool returned real reviews: prefilled run `kN3YTibeOc0lWAhPc` saved and charged 10 reviews in 1 second; `de/sap` run `8gspxu10yDsKrb1Nc` independently saved and charged 10 reviews in 4.407 seconds. Validate pricing and maintenance status against the live Apify API before changing either.
 
 Use [docs/monetization-activation-checklist.md](docs/monetization-activation-checklist.md) for the exact-date May 2026 activation audit of actors that were public on 2026-05-11.
 
