@@ -210,9 +210,6 @@ pub fn chargeable_event_capacity(
     if !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned an invalid maximum total charge");
     }
-    if max_charge == 0.0 {
-        return Ok(Some(usize::MAX));
-    }
 
     let counts = data
         .get("chargedEventCounts")
@@ -362,6 +359,21 @@ mod tests {
         assert_eq!(
             chargeable_event_capacity(&non_ppe, EVENT, None).unwrap(),
             None
+        );
+    }
+
+    #[test]
+    fn returns_zero_capacity_when_total_charge_limit_is_zero() {
+        let run_option_limit = pricing_run(json!(0), json!({ "apify-actor-start": 1 }));
+        assert_eq!(
+            chargeable_event_capacity(&run_option_limit, EVENT, None).unwrap(),
+            Some(0)
+        );
+
+        let run_runtime_limit = pricing_run(json!(1), json!({ "apify-actor-start": 1 }));
+        assert_eq!(
+            chargeable_event_capacity(&run_runtime_limit, EVENT, Some("0")).unwrap(),
+            Some(0)
         );
     }
 
