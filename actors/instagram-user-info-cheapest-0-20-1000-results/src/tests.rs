@@ -181,6 +181,10 @@ fn config(apify_api_base: Url, scrappa_api_base: Url) -> ActorConfig {
 }
 
 fn pricing_response(max_charge: f64, charged_events: Value) -> Value {
+    pricing_response_with_options(json!({ "maxTotalChargeUsd": max_charge }), charged_events)
+}
+
+fn pricing_response_with_options(options: Value, charged_events: Value) -> Value {
     json!({
         "data": {
             "pricingInfo": {
@@ -190,7 +194,7 @@ fn pricing_response(max_charge: f64, charged_events: Value) -> Value {
                     "apify-actor-start": { "eventPriceUsd": 0.00005 }
                 }}
             },
-            "options": { "maxTotalChargeUsd": max_charge },
+            "options": options,
             "chargedEventCounts": charged_events
         }
     })
@@ -317,6 +321,50 @@ fn dataset_budget_includes_previously_charged_events() {
     );
     let budget = DatasetBudget::from_run(&run).unwrap();
     assert_eq!(budget.affordable_items(5), 3);
+}
+
+#[test]
+fn dataset_budget_treats_zero_omitted_and_null_limits_as_unbounded() {
+    let charges = json!({
+        "apify-default-dataset-item": 3,
+        "apify-actor-start": 1
+    });
+    let options = [
+        json!({ "maxTotalChargeUsd": 0 }),
+        json!({}),
+        json!({ "maxTotalChargeUsd": null }),
+    ];
+
+    for options in options {
+        let run = pricing_response_with_options(options, charges.clone());
+        let budget = DatasetBudget::from_run(&run).unwrap();
+        assert_eq!(budget.affordable_items(5), 5);
+    }
+}
+
+#[test]
+fn dataset_budget_applies_positive_limit_after_dataset_and_custom_charges() {
+    let mut run = pricing_response_with_options(
+        json!({ "maxTotalChargeUsd": 0.001 }),
+        json!({
+            "apify-default-dataset-item": 1,
+            "apify-actor-start": 1,
+            "custom-lookup": 1
+        }),
+    );
+    run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["custom-lookup"] =
+        json!({ "eventPriceUsd": 0.0003 });
+
+    let budget = DatasetBudget::from_run(&run).unwrap();
+    assert_eq!(budget.affordable_items(5), 2);
+}
+
+#[test]
+fn dataset_budget_keeps_rejecting_non_ppe_runs() {
+    let mut run = pricing_response(1.0, json!({}));
+    run["data"]["pricingInfo"]["pricingModel"] = json!("PRICE_PER_DATASET_ITEM");
+
+    assert!(DatasetBudget::from_run(&run).is_err());
 }
 
 #[test]

@@ -500,15 +500,22 @@ impl DatasetBudget {
             .and_then(|event| event.get("eventPriceUsd"))
             .and_then(Value::as_f64)
             .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-        let max_total_charge_usd = data
-            .pointer("/options/maxTotalChargeUsd")
-            .and_then(Value::as_f64)
-            .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-        if !dataset_item_price_usd.is_finite()
-            || dataset_item_price_usd < 0.0
-            || !max_total_charge_usd.is_finite()
-            || max_total_charge_usd < 0.0
-        {
+        let max_total_charge_usd = match data.pointer("/options/maxTotalChargeUsd") {
+            None | Some(Value::Null) => f64::INFINITY,
+            Some(value) => {
+                let amount = value
+                    .as_f64()
+                    .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+                if amount == 0.0 {
+                    f64::INFINITY
+                } else if amount.is_finite() && amount > 0.0 {
+                    amount
+                } else {
+                    bail!("Apify run returned invalid charging values");
+                }
+            }
+        };
+        if !dataset_item_price_usd.is_finite() || dataset_item_price_usd < 0.0 {
             bail!("Apify run returned invalid charging values");
         }
 
@@ -547,7 +554,7 @@ impl DatasetBudget {
     }
 
     fn affordable_items(&self, requested: usize) -> usize {
-        if self.dataset_item_price_usd == 0.0 {
+        if self.dataset_item_price_usd == 0.0 || self.max_total_charge_usd.is_infinite() {
             return requested;
         }
         let tolerance = f64::EPSILON * self.max_total_charge_usd.max(1.0);
