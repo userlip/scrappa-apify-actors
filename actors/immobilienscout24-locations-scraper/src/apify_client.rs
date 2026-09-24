@@ -74,6 +74,11 @@ impl ChargeBudget {
         if !is_pay_per_event {
             return Ok(Self::default());
         }
+        let max_charge = if max_charge == 0.0 {
+            f64::INFINITY
+        } else {
+            max_charge
+        };
         if !max_charge.is_finite() && max_charge != f64::INFINITY {
             bail!("Apify run returned an invalid spending limit");
         }
@@ -235,15 +240,7 @@ impl ApifyClient {
                     .context("ACTOR_MAX_TOTAL_CHARGE_USD was not a number")?,
                 Err(_) => f64::INFINITY,
             };
-            self.budget = ChargeBudget::from_pricing(
-                &pricing_info,
-                &charged_counts,
-                if max_charge == 0.0 {
-                    f64::INFINITY
-                } else {
-                    max_charge
-                },
-            )?;
+            self.budget = ChargeBudget::from_pricing(&pricing_info, &charged_counts, max_charge)?;
             self.enable_legacy_dataset_item_limit_if_needed(&pricing_info)
                 .await?;
             return Ok(());
@@ -607,6 +604,77 @@ mod tests {
             0.0005,
         ).unwrap();
         assert_eq!(env_budget.affordable_rows(10), 1);
+    }
+
+    #[tokio::test]
+    async fn zero_spending_limit_saves_multiple_rows_and_charges_after_dataset_publication() {
+        let calls = Arc::new(Mutex::new(Vec::<MockRequest>::new()));
+        let handler_calls = calls.clone();
+        let server = MockServer::start(move |request| {
+            handler_calls.lock().unwrap().push(request);
+            MockResponse::json(201, json!({}))
+        });
+        let mut client = ApifyClient::new(config(&server.base_url(""))).unwrap();
+        client.budget = ChargeBudget::from_run(&ppe_run(0.0, json!({}))).unwrap();
+        let rows = vec![json!({ "geocode": "1" }), json!({ "geocode": "2" })];
+
+        let saved = client.save_locations(&rows).await.unwrap();
+
+        assert_eq!(
+            saved,
+            SaveResult {
+                saved_count: 2,
+                limit_reached: false
+            }
+        );
+        let calls = calls.lock().unwrap();
+        let dataset_position = calls
+            .iter()
+            .position(|request| request.path == "/v2/datasets/dataset-1/items")
+            .unwrap();
+        let charge_position = calls
+            .iter()
+            .position(|request| request.path == "/v2/actor-runs/run-1/charge")
+            .unwrap();
+        assert!(dataset_position < charge_position);
+        assert_eq!(calls[dataset_position].json_body(), json!(rows));
+        assert_eq!(
+            calls[charge_position].json_body(),
+            json!({ "eventName": "location-result", "count": 2 })
+        );
+    }
+
+    #[test]
+    fn omitted_and_null_spending_limits_are_unlimited() {
+        let pricing = json!({ "pricingModel": "PAY_PER_EVENT", "pricingPerEvent": { "actorChargeEvents": {
+            "location-result": { "eventPriceUsd": 0.00025 }
+        } } });
+        for options in [json!({}), json!({ "maxTotalChargeUsd": null })] {
+            let budget = run_pricing_budget(&json!({ "data": {
+                "pricingInfo": pricing,
+                "chargedEventCounts": {},
+                "options": options
+            } }))
+            .unwrap();
+
+            assert_eq!(budget.affordable_rows(4), 4);
+        }
+    }
+
+    #[test]
+    fn positive_spending_limit_combines_event_prices_and_existing_charges() {
+        let budget = ChargeBudget::from_run(&json!({ "data": {
+            "pricingInfo": { "pricingModel": "PAY_PER_EVENT", "pricingPerEvent": { "actorChargeEvents": {
+                "location-result": { "eventPriceUsd": 0.0002 },
+                "apify-default-dataset-item": { "eventPriceUsd": 0.0001 },
+                "other-event": { "eventPriceUsd": 0.0001 }
+            } } },
+            "chargedEventCounts": { "other-event": 2 },
+            "options": { "maxTotalChargeUsd": 0.0008 }
+        } }))
+        .unwrap();
+
+        assert_eq!(budget.affordable_rows(10), 2);
     }
 
     #[test]
