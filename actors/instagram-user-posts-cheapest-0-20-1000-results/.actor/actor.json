@@ -5,14 +5,12 @@
   "description": "Fetch recent Instagram posts and reels from a public user profile by username, with pagination support through max_id.",
   "version": "0.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "js-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
+  "defaultMemoryMbytes": 128,
   "defaultRunOptions": {
     "timeoutSecs": 120
   },

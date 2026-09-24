@@ -24,3 +24,9 @@ To fetch the next page, pass the `next_max_id` value from the previous run's `OU
 ## Output
 
 Each run pushes one dataset item per returned post. If Scrappa returns zero posts, the dataset remains empty. The full Scrappa API response is also saved to the default key-value store as `OUTPUT`.
+
+Dataset writes respect the run's `maxTotalChargeUsd` limit. The Actor checks the current pay-per-event charges and saves only as many posts as the remaining budget allows. The `OUTPUT` record retains the full upstream response.
+
+## Runtime
+
+This Actor is implemented in Rust. The Scrappa request deadline is 90 seconds; the Apify run timeout is 120 seconds.

@@ -1,4 +1,8 @@
+target
 node_modules
-npm-debug.log
-.actor
+apify_storage
+crawlee_storage
+storage
+.env
+.env.*
 .git
