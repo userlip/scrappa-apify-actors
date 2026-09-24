@@ -9,7 +9,7 @@ use anyhow::{Result, anyhow};
 use apify::{ApifyClient, ApifyConfig, EventBudget};
 use request_params::{RequestPlan, build_request_plan, describe_request, page_params};
 use review_processing::{build_page_summary, collect_reviews, enrich_review, reported_total_pages};
-use scrappa::{REQUEST_TIMEOUT_MS, ScrappaClient, ScrappaTimeoutError};
+use scrappa::{ScrappaClient, ScrappaTimeoutError};
 use serde_json::{Map, Value, json};
 use std::{env, process, time::Duration};
 
@@ -41,10 +41,10 @@ fn build_output(plan: &RequestPlan, responses: Vec<Value>, reviews_extracted: us
 }
 
 fn actor_error_message(error: &anyhow::Error) -> String {
-    if error.downcast_ref::<ScrappaTimeoutError>().is_some() {
+    if let Some(timeout) = error.downcast_ref::<ScrappaTimeoutError>() {
         format!(
             "{error}. The Kununu reviews request exceeded the {}s Scrappa API timeout. Try fewer pages or run the request again.",
-            REQUEST_TIMEOUT_MS / 1000
+            timeout.timeout_seconds()
         )
     } else {
         format!("{error:#}")
@@ -243,10 +243,11 @@ mod tests {
     use crate::{
         apify::{ApifyClient, ApifyConfig, EventBudget},
         request_params::build_request_plan,
-        scrappa::{ScrappaClient, ScrappaTimeoutError},
+        scrappa::{REQUEST_TIMEOUT_MS, ScrappaClient, ScrappaTimeoutError},
         test_support::*,
     };
     use serde_json::{Value, json};
+    use std::time::Duration;
 
     fn apify_config(base_url: String) -> ApifyConfig {
         ApifyConfig {
@@ -496,7 +497,9 @@ mod tests {
 
     #[test]
     fn timeout_error_keeps_the_existing_actor_guidance() {
-        let error = anyhow::Error::new(ScrappaTimeoutError);
+        let error = anyhow::Error::new(ScrappaTimeoutError::new(Duration::from_millis(
+            REQUEST_TIMEOUT_MS,
+        )));
         assert_eq!(
             actor_error_message(&error),
             "Scrappa API request timed out after 90000ms. The Kununu reviews request exceeded the 90s Scrappa API timeout. Try fewer pages or run the request again."
