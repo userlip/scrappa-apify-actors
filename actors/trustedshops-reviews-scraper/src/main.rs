@@ -28,12 +28,8 @@ struct ActorConfig {
 
 impl ActorConfig {
     fn from_env() -> Result<Self> {
-        let api_key = env::var("SCRAPPA_API_KEY").ok();
-        let scrappa_api_key = api_key
-            .filter(|value| !value.is_empty())
-            .ok_or_else(|| anyhow!("SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."))?;
         Ok(Self {
-            scrappa_api_key,
+            scrappa_api_key: env::var("SCRAPPA_API_KEY").unwrap_or_default(),
             scrappa_api_base_url: env::var("SCRAPPA_API_BASE_URL")
                 .unwrap_or_else(|_| SCRAPPA_API_BASE_URL.into()),
             apify_api_base_url: env::var("APIFY_API_PUBLIC_BASE_URL")
@@ -216,7 +212,7 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient) -> Result<()> {
                 }
                 let charge_result =
                     pricing.record_dataset_push(REVIEW_RESULT_CHARGE_EVENT, rows.len());
-                let saved_count = charge_result.charged_count.min(requested_count);
+                let saved_count = charge_result.saved_count;
                 if charge_result.event_charge_limit_reached {
                     let status_message = format!(
                         "Charge limit reached after saving {saved_count} of {requested_count} Trusted Shops reviews for {} page {page}.",
@@ -271,7 +267,14 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient) -> Result<()> {
 async fn run() -> Result<()> {
     let config = ActorConfig::from_env()?;
     let apify = config.apify_client()?;
-    if let Err(error) = run_actor(&config, &apify).await {
+    let result = if config.scrappa_api_key.is_empty() {
+        Err(anyhow!(
+            "SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."
+        ))
+    } else {
+        run_actor(&config, &apify).await
+    };
+    if let Err(error) = result {
         let message = actor_error_message(&error);
         if let Err(status_error) = apify.set_terminal_status_message(&message).await {
             eprintln!("Failed to set Actor run failure status: {status_error:#}");

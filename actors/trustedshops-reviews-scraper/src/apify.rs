@@ -268,6 +268,7 @@ impl RunPricing {
         if affordable >= requested {
             requested
         } else if affordable == 0 && self.total_charged_amount() <= self.max_total_charge_usd {
+            // Match Apify SDK 3.7.2: one over-limit item signals the platform to stop the run.
             1
         } else {
             affordable.min(requested)
@@ -405,6 +406,28 @@ mod tests {
         assert_eq!(budget.chargeable_event_count("review-result"), Some(1));
         assert_eq!(budget.dataset_push_limit(5, "review-result"), 1);
         assert_eq!(budget.dataset_push_limit(5, "unknown-event"), 3);
+    }
+
+    #[test]
+    fn allows_one_over_limit_item_to_match_apify_sdk_termination_behavior() {
+        let mut budget = pricing(
+            json!({
+                "review-result": {"eventPriceUsd": 0.00025},
+                "apify-default-dataset-item": {"eventPriceUsd": 0.0001},
+                "previous-event": {"eventPriceUsd": 0.00035},
+            }),
+            json!({"previous-event": 2}),
+            0.001,
+        );
+
+        assert_eq!(budget.chargeable_event_count("review-result"), Some(1));
+        assert_eq!(budget.dataset_push_limit(3, "review-result"), 1);
+
+        let result = budget.record_dataset_push("review-result", 1);
+        assert_eq!(result.saved_count, 1);
+        assert_eq!(result.charged_count, 2);
+        assert!(result.event_charge_limit_reached);
+        assert!(budget.total_charged_amount() > budget.max_total_charge_usd);
     }
 
     #[test]
