@@ -1,4 +1,4 @@
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, StatusCode};
@@ -61,7 +61,7 @@ impl<'a> ApifyClient<'a> {
         response_json(response, "Apify run pricing request").await
     }
 
-    async fn charge_event(&self, count: usize, idempotency_key: &str) -> Result<()> {
+    async fn charge_event(&self, count: usize, idempotency_key: &str) -> Result<usize> {
         let url = self.endpoint(&["v2", "actor-runs", &self.config.actor_run_id, "charge"])?;
         for retry in 0..=APIFY_MAX_CHARGE_RETRIES {
             let response = self
@@ -73,27 +73,45 @@ impl<'a> ApifyClient<'a> {
                 }))
                 .send()
                 .await;
-
-            match response {
-                Ok(response) if is_retryable_charge_status(response.status()) => {
-                    if retry == APIFY_MAX_CHARGE_RETRIES {
-                        return ensure_success(response, "Apify listing-result charge").await;
-                    }
+            let response = match response {
+                Ok(response)
+                    if is_retryable_charge_status(response.status())
+                        && retry < APIFY_MAX_CHARGE_RETRIES =>
+                {
+                    tokio::time::sleep(charge_retry_delay(retry)).await;
+                    continue;
                 }
-                Ok(response) => {
-                    return ensure_success(response, "Apify listing-result charge").await;
-                }
-                Err(error) if is_retryable_charge_error(&error) => {
-                    if retry == APIFY_MAX_CHARGE_RETRIES {
-                        return Err(error).context("Apify listing-result charge request failed");
-                    }
+                Ok(response) => response,
+                Err(error)
+                    if is_retryable_charge_error(&error) && retry < APIFY_MAX_CHARGE_RETRIES =>
+                {
+                    tokio::time::sleep(charge_retry_delay(retry)).await;
+                    continue;
                 }
                 Err(error) => {
                     return Err(error).context("Apify listing-result charge request failed");
                 }
+            };
+            if !response.status().is_success() {
+                return ensure_success(response, "Apify listing-result charge")
+                    .await
+                    .map(|()| count);
             }
 
-            tokio::time::sleep(charge_retry_delay(retry)).await;
+            let body = match response.text().await {
+                Ok(body) => body,
+                Err(error)
+                    if is_retryable_charge_error(&error) && retry < APIFY_MAX_CHARGE_RETRIES =>
+                {
+                    tokio::time::sleep(charge_retry_delay(retry)).await;
+                    continue;
+                }
+                Err(error) => {
+                    return Err(error)
+                        .context("Apify listing-result charge response could not be read");
+                }
+            };
+            return parse_charged_count(&body, count);
         }
 
         unreachable!("the charge retry loop always returns or retries")
@@ -146,12 +164,43 @@ impl<'a> ApifyClient<'a> {
     }
 }
 
+fn parse_charged_count(body: &str, requested_count: usize) -> Result<usize> {
+    if body.trim().is_empty() {
+        return Ok(requested_count);
+    }
+    let result: Value = serde_json::from_str(body)
+        .context("Apify listing-result charge returned invalid JSON")?;
+    let charged_count = result
+        .get("chargedCount")
+        .or_else(|| result.pointer("/data/chargedCount"));
+    let Some(charged_count) = charged_count else {
+        let limit_reached = result
+            .get("eventChargeLimitReached")
+            .or_else(|| result.pointer("/data/eventChargeLimitReached"))
+            .and_then(Value::as_bool)
+            == Some(true);
+        if limit_reached {
+            bail!("Apify listing-result charge reached the limit without a charged count");
+        }
+        return Ok(requested_count);
+    };
+    let charged_count = charged_count.as_u64().ok_or_else(|| {
+        anyhow!("Apify listing-result charge returned an invalid charged count")
+    })?;
+    let charged_count = usize::try_from(charged_count)
+        .context("Apify listing-result charge count exceeds this platform's limit")?;
+    if charged_count > requested_count {
+        bail!("Apify listing-result charge returned more events than requested");
+    }
+    Ok(charged_count)
+}
+
 fn is_retryable_charge_status(status: StatusCode) -> bool {
     status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
 }
 
 fn is_retryable_charge_error(error: &reqwest::Error) -> bool {
-    error.is_timeout() || error.is_connect() || error.is_request()
+    error.is_timeout() || error.is_connect() || error.is_request() || error.is_body()
 }
 
 fn charge_retry_delay(retry: usize) -> Duration {
@@ -323,12 +372,8 @@ pub(super) fn is_pay_per_event(run: &Value) -> Result<bool> {
 
 fn next_charge_idempotency_key(run_id: &str, budget: &mut DatasetBudget) -> String {
     budget.charge_attempts = budget.charge_attempts.saturating_add(1);
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|duration| duration.as_nanos())
-        .unwrap_or_default();
     format!(
-        "{run_id}-{LISTING_RESULT_CHARGE_EVENT}-{}-{timestamp}",
+        "{run_id}-{LISTING_RESULT_CHARGE_EVENT}-{}",
         budget.charge_attempts
     )
 }
@@ -366,17 +411,19 @@ pub(super) async fn push_charged_listings(
             charge_limit_reached: true,
         });
     }
-    apify.push_dataset_items(&items[..saved_count]).await?;
     let idempotency_key = next_charge_idempotency_key(&apify.config.actor_run_id, budget);
-    apify.charge_event(saved_count, &idempotency_key).await?;
+    let charged_count = apify.charge_event(saved_count, &idempotency_key).await?;
+    if charged_count > 0 {
+        apify.push_dataset_items(&items[..charged_count]).await?;
+    }
     budget.saved_listing_results = budget
         .saved_listing_results
-        .checked_add(saved_count as u64)
+        .checked_add(charged_count as u64)
         .ok_or_else(|| anyhow!("Listing result count overflowed"))?;
 
     Ok(PushChargedListingsResult {
-        saved_count,
-        charge_limit_reached: saved_count < items.len(),
+        saved_count: charged_count,
+        charge_limit_reached: charged_count < items.len(),
     })
 }
 
