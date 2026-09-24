@@ -6,7 +6,7 @@
   "version": "1.0",
   "buildTag": "latest",
   "meta": {
-    "templateId": "ts-start"
+    "templateId": "rust-start"
   },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
@@ -14,7 +14,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "timeoutSecs": 360
