@@ -3,9 +3,7 @@ use std::{env, process::ExitCode};
 use anyhow::{anyhow, Result};
 use serde_json::json;
 
-use crate::apify::{
-    env_or_default, push_charged_item, resume_charged_item, ApifyClient, ApifyConfig,
-};
+use crate::apify::{env_or_default, push_charged_item, ApifyClient, ApifyConfig};
 use crate::doctor_details::{
     build_dataset_item, build_doctor_details_params, build_doctor_details_plan,
     build_output_summary, describe_request, InputFailure,
@@ -17,56 +15,23 @@ struct RunOutcome {
     succeeded: bool,
 }
 
-async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
-    let input = apify
-        .get_input()
-        .await?
-        .ok_or_else(|| anyhow!("Input is required"))?;
-    let plan = build_doctor_details_plan(&input)?;
-    println!(
-        "Fetching Jameda doctor details for {}",
-        describe_request(&plan.doctor_urls)
-    );
+pub(crate) struct DoctorUrlProcessing {
+    pub(crate) failures: Vec<InputFailure>,
+    pub(crate) saved_profiles: usize,
+    pub(crate) status_message: Option<String>,
+}
 
-    let scrappa = ScrappaClient::new(
-        api_key.to_owned(),
-        env_or_default("SCRAPPA_API_BASE_URL", SCRAPPA_API_DEFAULT),
-    )?;
-    let mut failures = plan.input_failures;
+pub(crate) async fn process_doctor_urls(
+    apify: &ApifyClient,
+    scrappa: &ScrappaClient,
+    doctor_urls: &[String],
+    mut failures: Vec<InputFailure>,
+) -> DoctorUrlProcessing {
     let mut saved_profiles = 0;
     let mut status_message = None;
     let mut pricing = None;
-    let mut fatal_result_error = false;
-
-    for (index, doctor_url) in plan.doctor_urls.iter().enumerate() {
+    for (index, doctor_url) in doctor_urls.iter().enumerate() {
         println!("Fetching Jameda doctor details for {doctor_url}");
-
-        match resume_charged_item(apify, &mut pricing, index + 1, doctor_url).await {
-            Ok(Some(result)) => {
-                saved_profiles += result.saved_count;
-                println!(
-                    "Recovered {} Jameda doctor profile result(s) for {doctor_url}",
-                    result.saved_count
-                );
-                if result.status_message.is_some() {
-                    status_message = result.status_message;
-                    break;
-                }
-                continue;
-            }
-            Ok(None) => {}
-            Err(error) => {
-                fatal_result_error = true;
-                let message = error.to_string();
-                failures.push(InputFailure {
-                    doctor_url: doctor_url.clone(),
-                    error: message.clone(),
-                });
-                eprintln!("Failed to recover Jameda doctor details for {doctor_url}: {message}");
-                break;
-            }
-        }
-
         let params = build_doctor_details_params(doctor_url);
         let response = match scrappa.get(doctor_url).await {
             Ok(response) => response,
@@ -91,7 +56,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
             }
         };
         let item = build_dataset_item(&response, doctor_url, &params);
-        match push_charged_item(apify, &mut pricing, &item, index + 1, doctor_url, true).await {
+        match push_charged_item(apify, &mut pricing, &item, index + 1, doctor_url).await {
             Ok(result) => {
                 saved_profiles += result.saved_count;
                 println!(
@@ -104,17 +69,44 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
                 }
             }
             Err(error) => {
-                fatal_result_error = true;
+                pricing = None;
                 let message = error.to_string();
                 failures.push(InputFailure {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
                 eprintln!("Failed to save Jameda doctor details for {doctor_url}: {message}");
-                break;
             }
         }
     }
+
+    DoctorUrlProcessing {
+        failures,
+        saved_profiles,
+        status_message,
+    }
+}
+
+async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
+    let input = apify
+        .get_input()
+        .await?
+        .ok_or_else(|| anyhow!("Input is required"))?;
+    let plan = build_doctor_details_plan(&input)?;
+    println!(
+        "Fetching Jameda doctor details for {}",
+        describe_request(&plan.doctor_urls)
+    );
+
+    let scrappa = ScrappaClient::new(
+        api_key.to_owned(),
+        env_or_default("SCRAPPA_API_BASE_URL", SCRAPPA_API_DEFAULT),
+    )?;
+    let processing =
+        process_doctor_urls(apify, &scrappa, &plan.doctor_urls, plan.input_failures).await;
+    let failures = processing.failures;
+    let saved_profiles = processing.saved_profiles;
+    let mut status_message = processing.status_message;
 
     if status_message.is_none() && !failures.is_empty() {
         status_message = Some(format!(
@@ -154,7 +146,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
 
     Ok(RunOutcome {
         status_message,
-        succeeded: !fatal_result_error,
+        succeeded: true,
     })
 }
 

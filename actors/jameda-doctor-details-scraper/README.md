@@ -58,7 +58,7 @@ Each URL can be a full `https://www.jameda.de/...` URL or a Jameda profile path.
 
 The exact fields depend on what is available on the live Jameda profile.
 
-The actor calls Scrappa once per normalized doctor URL. The endpoint returns one profile per request and does not use a pagination cursor. On pay-per-event runs, the actor charges its `doctor-profile-result` event before publishing the profile row. Failed or uncertain dataset writes are reconciled with a read and are never replayed, preventing duplicate rows. A positive `maxTotalChargeUsd` caps the combined custom-event and default dataset-item charges. An absent, null, or zero limit is unbounded. A compact request and failure summary is saved to `OUTPUT`.
+The actor calls Scrappa once per normalized doctor URL. The endpoint returns one profile per request and does not use a pagination cursor. On pay-per-event runs, the actor checks the combined charge limit, persists each profile row, then charges its `doctor-profile-result` event with a stable idempotency key. Failed or uncertain dataset writes are reconciled with a read and are never replayed, preventing duplicate rows. Per-URL Apify failures are reported while the actor continues with later URLs; a run fails when no profile row is saved. A positive `maxTotalChargeUsd` caps the combined custom-event and default dataset-item charges. An absent, null, or zero limit is unbounded. A compact request and failure summary is saved to `OUTPUT`.
 
 ## Local Development
 

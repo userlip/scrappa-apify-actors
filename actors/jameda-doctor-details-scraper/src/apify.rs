@@ -72,27 +72,6 @@ impl ApifyClient {
             .map(Some)
     }
 
-    pub(crate) async fn get_record(&self, key: &str) -> Result<Option<Value>> {
-        let url = self.endpoint(&[
-            "v2",
-            "key-value-stores",
-            &self.config.key_value_store_id,
-            "records",
-            key,
-        ])?;
-        let response = self.request_with_retry("GET", url).await?;
-        if response.status() == StatusCode::NOT_FOUND {
-            return Ok(None);
-        }
-
-        require_apify_success(response, &format!("{key} record retrieval"))
-            .await?
-            .json::<Value>()
-            .await
-            .context("Apify key-value record was not valid JSON")
-            .map(Some)
-    }
-
     pub(crate) async fn get_run(&self) -> Result<Value> {
         let url = self.endpoint(&["v2", "actor-runs", &self.config.run_id])?;
         require_apify_success(
@@ -398,19 +377,6 @@ impl PricingState {
         Ok(spent + item_price <= max_total_charge_usd + tolerance)
     }
 
-    pub(crate) fn can_save_dataset_item(&self) -> Result<bool> {
-        if !self.is_pay_per_event {
-            return Ok(true);
-        }
-        let Some(max_total_charge_usd) = self.max_total_charge_usd else {
-            return Ok(true);
-        };
-        let item_price = self.event_price(DEFAULT_DATASET_ITEM_EVENT)?;
-        let spent = self.spent_so_far()?;
-        let tolerance = f64::EPSILON * max_total_charge_usd.max(1.0);
-        Ok(spent + item_price <= max_total_charge_usd + tolerance)
-    }
-
     pub(crate) fn event_price(&self, event_name: &str) -> Result<f64> {
         let Some(value) = self.event_prices.get(event_name) else {
             return Ok(0.0);
@@ -458,13 +424,6 @@ impl PricingState {
             .and_then(Value::as_u64)
             .unwrap_or_default()
     }
-
-    pub(crate) fn ensure_event_count_at_least(&mut self, event_name: &str, minimum: u64) {
-        if self.event_prices.contains_key(event_name) && self.event_count(event_name) < minimum {
-            self.charged_event_counts
-                .insert(event_name.to_owned(), json!(minimum));
-        }
-    }
 }
 
 pub(crate) fn increment_event_count(counts: &mut Map<String, Value>, event_name: &str) {
@@ -481,187 +440,12 @@ pub(crate) struct PushChargedItemResult {
     pub(crate) status_message: Option<String>,
 }
 
-pub(crate) async fn resume_charged_item(
-    apify: &ApifyClient,
-    pricing: &mut Option<PricingState>,
-    result_index: usize,
-    doctor_url: &str,
-) -> Result<Option<PushChargedItemResult>> {
-    let journal_key = format!("PPE_RESULT_{result_index:04}");
-    let Some(record) = apify.get_record(&journal_key).await? else {
-        return Ok(None);
-    };
-    if pricing.is_none() {
-        *pricing = Some(PricingState::from_run(&apify.get_run().await?)?);
-    }
-    let state = pricing.as_mut().expect("Pricing state initialized");
-    if !state.is_pay_per_event {
-        bail!("PPE recovery record {journal_key} exists for a non-PPE run");
-    }
-    recover_charged_item(apify, state, record, result_index, doctor_url)
-        .await
-        .map(Some)
-}
-
-async fn recover_charged_item(
-    apify: &ApifyClient,
-    state: &mut PricingState,
-    mut record: Value,
-    result_index: usize,
-    doctor_url: &str,
-) -> Result<PushChargedItemResult> {
-    let journal_key = format!("PPE_RESULT_{result_index:04}");
-    if record.get("doctor_url").and_then(Value::as_str) != Some(doctor_url) {
-        bail!("PPE recovery record {journal_key} does not match the current doctor URL");
-    }
-    let status = record
-        .get("status")
-        .and_then(Value::as_str)
-        .ok_or_else(|| anyhow!("PPE recovery record {journal_key} has no status"))?;
-    let journal_version = record
-        .get("journal_version")
-        .and_then(Value::as_u64)
-        .unwrap_or(1);
-    let recovery_idempotency_key = record
-        .get("idempotency_key")
-        .and_then(Value::as_str)
-        .ok_or_else(|| anyhow!("PPE recovery record {journal_key} has no idempotency key"))?
-        .to_owned();
-    let baseline_custom = record
-        .pointer("/baseline_event_counts/doctor-profile-result")
-        .and_then(Value::as_u64)
-        .ok_or_else(|| {
-            anyhow!("PPE recovery record {journal_key} has no custom-charge baseline")
-        })?;
-    let baseline_dataset = record
-        .pointer("/baseline_event_counts/apify-default-dataset-item")
-        .and_then(Value::as_u64)
-        .unwrap_or_default();
-    if record.get("item").is_none() {
-        bail!("PPE recovery record {journal_key} has no dataset item");
-    }
-    let recovery_item = record
-        .get("item")
-        .cloned()
-        .ok_or_else(|| anyhow!("PPE recovery record {journal_key} has no dataset item"))?;
-    state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom);
-    state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset);
-
-    if journal_version < 2 {
-        if status == "charged" {
-            if !apify.dataset_contains_doctor_url(doctor_url).await? {
-                bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
-            }
-            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-            state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
-            return Ok(PushChargedItemResult {
-                saved_count: 1,
-                status_message: None,
-            });
-        }
-        if status != "pending" && status != "saved" {
-            bail!("PPE recovery record {journal_key} has unsupported status {status}");
-        }
-        if !apify.dataset_contains_doctor_url(doctor_url).await? {
-            bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
-        }
-
-        state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
-        if state.event_count(SCRAPPA_CHARGE_EVENT) > baseline_custom {
-            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-        } else {
-            if !state.can_charge_custom_event()? {
-                bail!("Charge limit prevents custom charging of the saved Jameda doctor result for {doctor_url}");
-            }
-            apify
-                .charge_event(SCRAPPA_CHARGE_EVENT, &recovery_idempotency_key)
-                .await?;
-            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-        }
-
-        record["journal_version"] = json!(2);
-        record["status"] = json!("saved");
-        if let Err(error) = apify.put_record(&journal_key, &record).await {
-            eprintln!("Could not finalize PPE recovery record {journal_key}: {error}");
-        }
-        return Ok(PushChargedItemResult {
-            saved_count: 1,
-            status_message: None,
-        });
-    }
-
-    match status {
-        "saved" => {
-            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-            state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
-            return Ok(PushChargedItemResult {
-                saved_count: 1,
-                status_message: None,
-            });
-        }
-        "publishing" => {
-            if !apify.dataset_contains_doctor_url(doctor_url).await? {
-                bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
-            }
-            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-            state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
-            record["status"] = json!("saved");
-            if let Err(error) = apify.put_record(&journal_key, &record).await {
-                eprintln!("Could not finalize PPE recovery record {journal_key}: {error}");
-            }
-            return Ok(PushChargedItemResult {
-                saved_count: 1,
-                status_message: None,
-            });
-        }
-        "pending" => {
-            if state.event_count(SCRAPPA_CHARGE_EVENT) > baseline_custom {
-                state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-            } else {
-                if !state.can_save_one_result()? {
-                    return Ok(charge_limit_reached());
-                }
-                apify
-                    .charge_event(SCRAPPA_CHARGE_EVENT, &recovery_idempotency_key)
-                    .await?;
-                state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-            }
-            record["status"] = json!("charged");
-            apify.put_record(&journal_key, &record).await?;
-        }
-        "charged" => {
-            state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
-        }
-        _ => bail!("PPE recovery record {journal_key} has unsupported status {status}"),
-    }
-
-    if !state.can_save_dataset_item()? {
-        bail!("Charge limit prevents saving the charged Jameda doctor result for {doctor_url}");
-    }
-    record["status"] = json!("publishing");
-    apify.put_record(&journal_key, &record).await?;
-    apify
-        .push_dataset_item_with_recovery(&recovery_item, doctor_url)
-        .await?;
-    state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
-
-    record["status"] = json!("saved");
-    if let Err(error) = apify.put_record(&journal_key, &record).await {
-        eprintln!("Could not finalize PPE recovery record {journal_key}: {error}");
-    }
-    Ok(PushChargedItemResult {
-        saved_count: 1,
-        status_message: None,
-    })
-}
-
 pub(crate) async fn push_charged_item(
     apify: &ApifyClient,
     pricing: &mut Option<PricingState>,
     item: &Value,
     result_index: usize,
     doctor_url: &str,
-    recovery_checked: bool,
 ) -> Result<PushChargedItemResult> {
     if pricing.is_none() {
         *pricing = Some(PricingState::from_run(&apify.get_run().await?)?);
@@ -675,36 +459,57 @@ pub(crate) async fn push_charged_item(
         });
     }
 
-    let journal_key = format!("PPE_RESULT_{result_index:04}");
     let idempotency_key = format!(
         "{}-{SCRAPPA_CHARGE_EVENT}-{result_index}",
         apify.config.run_id
     );
-    if !recovery_checked {
-        if let Some(record) = apify.get_record(&journal_key).await? {
-            return recover_charged_item(apify, state, record, result_index, doctor_url).await;
-        }
-    }
-
     if !state.can_save_one_result()? {
         return Ok(charge_limit_reached());
     }
 
+    apify
+        .push_dataset_item_with_recovery(item, doctor_url)
+        .await?;
+    state.record_dataset_item();
+    if !state.can_charge_custom_event()? {
+        bail!("Charge limit prevents charging the saved Jameda doctor result for {doctor_url}");
+    }
+
     let baseline_custom = state.event_count(SCRAPPA_CHARGE_EVENT);
-    let baseline_dataset = state.event_count(DEFAULT_DATASET_ITEM_EVENT);
-    let record = json!({
-        "journal_version": 2,
-        "status": "pending",
-        "doctor_url": doctor_url,
-        "item": item,
-        "idempotency_key": idempotency_key,
-        "baseline_event_counts": {
-            "doctor-profile-result": baseline_custom,
-            "apify-default-dataset-item": baseline_dataset
+    if let Err(charge_error) = apify
+        .charge_event(SCRAPPA_CHARGE_EVENT, &idempotency_key)
+        .await
+    {
+        let refreshed_run = match apify.get_run().await {
+            Ok(run) => run,
+            Err(recovery_error) => {
+                return Err(charge_error.context(format!(
+                "custom charge could not be confirmed because the pricing refresh failed: {recovery_error:#}"
+                )));
+            }
+        };
+        let refreshed_pricing = match PricingState::from_run(&refreshed_run) {
+            Ok(pricing) => pricing,
+            Err(recovery_error) => {
+                return Err(charge_error.context(format!(
+                "custom charge could not be confirmed because the pricing response was invalid: {recovery_error:#}"
+                )));
+            }
+        };
+        if refreshed_pricing.event_count(SCRAPPA_CHARGE_EVENT) <= baseline_custom {
+            return Err(charge_error.context(format!(
+                "the dataset row was confirmed, but the custom charge was not confirmed for {doctor_url}"
+            )));
         }
-    });
-    apify.put_record(&journal_key, &record).await?;
-    recover_charged_item(apify, state, record, result_index, doctor_url).await
+        *state = refreshed_pricing;
+    } else {
+        state.record_custom_charge();
+    }
+
+    Ok(PushChargedItemResult {
+        saved_count: 1,
+        status_message: None,
+    })
 }
 
 fn charge_limit_reached() -> PushChargedItemResult {
