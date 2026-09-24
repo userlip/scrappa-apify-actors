@@ -5,9 +5,6 @@
   "description": "Search Google Images with Scrappa. Extract image thumbnails, original image URLs, source pages, dimensions, titles, product flags, filters, and localization metadata.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
