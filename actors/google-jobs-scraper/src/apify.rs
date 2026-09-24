@@ -168,28 +168,31 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .and_then(Value::as_str)
         != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        return Ok(requested);
     }
+
+    let Some(max_total_charge) = data.pointer("/options/maxTotalChargeUsd") else {
+        return Ok(requested);
+    };
+    if max_total_charge.is_null() {
+        return Ok(requested);
+    }
+    let max_total_charge = max_total_charge
+        .as_f64()
+        .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
+    if !max_total_charge.is_finite() || max_total_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+    if max_total_charge == 0.0 {
+        return Ok(requested);
+    }
+
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
         .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
     let item_price = event_price(events, DATASET_ITEM_EVENT)?;
-    let max_total_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    let max_total_charge = if max_total_charge.is_null() {
-        f64::INFINITY
-    } else {
-        max_total_charge
-            .as_f64()
-            .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?
-    };
-    if !item_price.is_finite()
-        || item_price < 0.0
-        || (!max_total_charge.is_finite() && !max_total_charge.is_infinite())
-        || max_total_charge < 0.0
-    {
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -211,7 +214,7 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
     if !spent.is_finite() {
         bail!("Apify run returned invalid charged totals");
     }
-    if item_price == 0.0 || max_total_charge.is_infinite() {
+    if item_price == 0.0 {
         return Ok(requested);
     }
 
@@ -276,32 +279,46 @@ mod tests {
     }
 
     #[test]
-    fn respects_spending_limit_and_charges_from_other_events() {
+    fn respects_positive_spending_limit_and_charges_from_other_events() {
         let run = pricing_run(json!(0.05), json!({ "apify-actor-start": 2 }));
         assert_eq!(affordable_dataset_items(&run, 10).unwrap(), 1);
     }
 
     #[test]
-    fn allows_unlimited_budget_when_apify_returns_null_and_zero_price_events() {
-        let unlimited = pricing_run(Value::Null, json!({}));
-        assert_eq!(affordable_dataset_items(&unlimited, 7).unwrap(), 7);
-        let free = json!({
+    fn treats_missing_null_and_zero_spending_limits_as_unlimited() {
+        let mut missing = pricing_run(Value::Null, json!({}));
+        missing["data"]["options"] = json!({});
+        assert_eq!(affordable_dataset_items(&missing, 7).unwrap(), 7);
+
+        let null = pricing_run(Value::Null, json!({}));
+        assert_eq!(affordable_dataset_items(&null, 7).unwrap(), 7);
+
+        let zero = json!({
             "data": {
                 "pricingInfo": {
                     "pricingModel": "PAY_PER_EVENT",
                     "pricingPerEvent": { "actorChargeEvents": {
-                        "apify-default-dataset-item": { "eventPriceUsd": 0.0 }
+                        "apify-default-dataset-item": { "eventPriceUsd": 0.01 },
+                        "apify-actor-start": { "eventPriceUsd": 0.02 }
                     }}
                 },
                 "options": { "maxTotalChargeUsd": 0.0 },
-                "chargedEventCounts": {}
+                "chargedEventCounts": { "apify-actor-start": 1 }
             }
         });
-        assert_eq!(affordable_dataset_items(&free, 7).unwrap(), 7);
+        assert_eq!(affordable_dataset_items(&zero, 7).unwrap(), 7);
     }
 
     #[test]
-    fn rejects_missing_prices_invalid_counts_and_non_ppe_runs() {
+    fn returns_all_dataset_items_for_non_ppe_runs() {
+        for pricing_model in ["FREE", "FIXED_PRICE"] {
+            let run = json!({ "data": { "pricingInfo": { "pricingModel": pricing_model } } });
+            assert_eq!(affordable_dataset_items(&run, 7).unwrap(), 7);
+        }
+    }
+
+    #[test]
+    fn rejects_missing_prices_and_invalid_counts_for_positive_caps() {
         let no_dataset_price = json!({
             "data": {
                 "pricingInfo": { "pricingModel": "PAY_PER_EVENT", "pricingPerEvent": { "actorChargeEvents": {} } },
@@ -313,9 +330,6 @@ mod tests {
 
         let invalid_count = pricing_run(json!(1.0), json!({ "apify-actor-start": -1 }));
         assert!(affordable_dataset_items(&invalid_count, 1).is_err());
-
-        let non_ppe = json!({ "data": { "pricingInfo": { "pricingModel": "FREE" } } });
-        assert!(affordable_dataset_items(&non_ppe, 1).is_err());
     }
 
     #[tokio::test]
@@ -357,6 +371,40 @@ mod tests {
             .all(|request| request.to_ascii_lowercase().contains("authorization: bearer apify-test-token")));
         assert!(requests[2].contains(r#"[{"title":"Nurse"},{"title":"RN"}]"#));
         assert!(requests[3].contains(r#"{"jobs":[{"title":"Nurse"},{"title":"RN"}]}"#));
+    }
+
+    #[tokio::test]
+    async fn writes_dataset_rows_and_output_for_non_ppe_runs_without_custom_charges() {
+        let server = MockServer::start(vec![
+            MockResponse::json(200, r#"{"data":{"pricingInfo":{"pricingModel":"FREE"}}}"#),
+            MockResponse::json(201, "{}"),
+            MockResponse::json(201, "{}"),
+        ]);
+        let client = ApifyClient::new(
+            Client::builder().timeout(Duration::from_secs(1)).build().unwrap(),
+            Url::parse(&server.base_url()).unwrap(),
+            "apify-test-token".to_owned(),
+            "store-id".to_owned(),
+            "dataset-id".to_owned(),
+            "run-id".to_owned(),
+            "INPUT".to_owned(),
+        );
+        let jobs = vec![json!({ "title": "Nurse" }), json!({ "title": "RN" })];
+        let output = json!({ "jobs": jobs });
+
+        let allowed_items = client.dataset_item_limit(jobs.len()).await.unwrap();
+        assert_eq!(allowed_items, jobs.len());
+        assert_eq!(client.push_dataset_items(&jobs[..allowed_items]).await.unwrap(), 2);
+        client.set_output(&output).await.unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 3);
+        assert!(requests[0].starts_with("GET /v2/actor-runs/run-id HTTP/1.1"));
+        assert!(requests[1].starts_with("POST /v2/datasets/dataset-id/items HTTP/1.1"));
+        assert!(requests[2].starts_with("PUT /v2/key-value-stores/store-id/records/OUTPUT HTTP/1.1"));
+        assert!(requests.iter().all(|request| !request.contains("/charges")));
+        assert!(requests[1].contains(r#"[{"title":"Nurse"},{"title":"RN"}]"#));
+        assert!(requests[2].contains(r#"{"jobs":[{"title":"Nurse"},{"title":"RN"}]}"#));
     }
 
     #[test]

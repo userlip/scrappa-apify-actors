@@ -23,7 +23,7 @@ INPUT = {
     "google_domain": "google.com",
 }
 
-RUN_PRICING = {
+POSITIVE_CAP_PRICING = {
     "data": {
         "pricingInfo": {
             "pricingModel": "PAY_PER_EVENT",
@@ -39,13 +39,44 @@ RUN_PRICING = {
     }
 }
 
+NON_PPE_PRICING = {"data": {"pricingInfo": {"pricingModel": "FREE"}}}
+
+
+def ppe_pricing(max_total_charge=None, include_max_total_charge=True):
+    data = {
+        "pricingInfo": {
+            "pricingModel": "PAY_PER_EVENT",
+            "pricingPerEvent": {
+                "actorChargeEvents": {
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.01},
+                    "apify-actor-start": {"eventPriceUsd": 0.005},
+                }
+            },
+        },
+        "chargedEventCounts": {"apify-actor-start": 1},
+    }
+    if include_max_total_charge:
+        data["options"] = {"maxTotalChargeUsd": max_total_charge}
+    else:
+        data["options"] = {}
+    return {"data": data}
+
+
+RUN_PRICING = {
+    "ppe-positive": POSITIVE_CAP_PRICING,
+    "free": NON_PPE_PRICING,
+    "ppe-missing-limit": ppe_pricing(include_max_total_charge=False),
+    "ppe-null-limit": ppe_pricing(max_total_charge=None),
+    "ppe-zero-limit": ppe_pricing(max_total_charge=0.0),
+}
+
 
 class SmokeServer(ThreadingHTTPServer):
     def __init__(self, address, handler):
         super().__init__(address, handler)
         self.calls = []
         self.dataset_items = []
-        self.output = None
+        self.outputs = []
         self.state_lock = threading.Lock()
 
 
@@ -58,8 +89,12 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/v2/key-value-stores/test-store/records/INPUT":
             self._respond(200, INPUT)
             return
-        if self.path == "/v2/actor-runs/test-run":
-            self._respond(200, RUN_PRICING)
+        if urlsplit(self.path).path.startswith("/v2/actor-runs/"):
+            run_id = urlsplit(self.path).path.rsplit("/", 1)[-1]
+            if run_id not in RUN_PRICING:
+                self._respond(404, {"error": "unexpected actor run", "path": self.path})
+                return
+            self._respond(200, RUN_PRICING[run_id])
             return
         if urlsplit(self.path).path == "/api/google/jobs":
             self._respond(200, GOOGLE_RESPONSE)
@@ -86,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         output = json.loads(self._read_body())
         with self.server.state_lock:
-            self.server.output = output
+            self.server.outputs.append(output)
         self._respond(201, {})
 
     def _record_call(self):
@@ -112,11 +147,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
-def run_smoke(image):
-    server = SmokeServer(("0.0.0.0", 0), Handler)
-    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
-    server_thread.start()
-    port = server.server_address[1]
+def run_smoke_case(image, server, port, run_id, expected_items, capped):
     command = [
         "docker",
         "run",
@@ -130,7 +161,7 @@ def run_smoke(image):
         "-e",
         "ACTOR_DEFAULT_DATASET_ID=test-dataset",
         "-e",
-        "ACTOR_RUN_ID=test-run",
+        "ACTOR_RUN_ID={}".format(run_id),
         "-e",
         "ACTOR_INPUT_KEY=INPUT",
         "-e",
@@ -141,29 +172,26 @@ def run_smoke(image):
         "SCRAPPA_API_BASE_URL=http://127.0.0.1:{}/api".format(port),
         image,
     ]
-    try:
-        result = subprocess.run(command, capture_output=True, text=True, timeout=60)
-    finally:
-        server.shutdown()
-        server.server_close()
-        server_thread.join(timeout=5)
+    with server.state_lock:
+        previous_call_count = len(server.calls)
+        previous_item_count = len(server.dataset_items)
+        previous_output_count = len(server.outputs)
+
+    result = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    with server.state_lock:
+        calls = list(server.calls[previous_call_count:])
+        dataset_items = list(server.dataset_items[previous_item_count:])
+        outputs = list(server.outputs[previous_output_count:])
 
     if result.returncode != 0:
-        with server.state_lock:
-            calls = list(server.calls)
         raise RuntimeError(
-            "Actor image exited {}\nstdout:\n{}\nstderr:\n{}\nmock service calls:\n{}".format(
-                result.returncode, result.stdout, result.stderr, json.dumps(calls, indent=2)
+            "Actor image exited {} for {}\nstdout:\n{}\nstderr:\n{}\nmock service calls:\n{}".format(
+                result.returncode, run_id, result.stdout, result.stderr, json.dumps(calls, indent=2)
             )
         )
 
-    with server.state_lock:
-        calls = list(server.calls)
-        dataset_items = list(server.dataset_items)
-        output = server.output
-
     google_calls = [call for call in calls if urlsplit(call["path"]).path == "/api/google/jobs"]
-    assert len(google_calls) == 1, "expected one Google Jobs request, got {}".format(google_calls)
+    assert len(google_calls) == 1, "expected one Google Jobs request for {}: {}".format(run_id, google_calls)
     google_request = google_calls[0]
     assert google_request["headers"].get("x-api-key") == "scrappa-local-test-key"
     assert google_request["headers"].get("user-agent") == "thescrappa-google-jobs-scraper/1.0"
@@ -179,10 +207,37 @@ def run_smoke(image):
         call["headers"].get("authorization") == "Bearer apify-local-test-token"
         for call in apify_calls
     ), "expected bearer auth on each Apify API call"
-    assert dataset_items == [GOOGLE_RESPONSE["jobs"][0]], dataset_items
-    assert output == GOOGLE_RESPONSE, output
-    assert "Charge limit reached after saving 1/2" in result.stdout, result.stdout
-    print("Local image smoke passed: Scrappa auth/query, Apify auth, PPE cap, dataset row, and OUTPUT verified.")
+    assert all("/charges" not in call["path"].lower() for call in apify_calls), apify_calls
+    assert dataset_items == expected_items, "{} dataset rows: {}".format(run_id, dataset_items)
+    assert outputs == [GOOGLE_RESPONSE], "{} OUTPUT: {}".format(run_id, outputs)
+    if capped:
+        assert "Charge limit reached after saving 1/2" in result.stdout, result.stdout
+    else:
+        assert "Charge limit reached" not in result.stdout, result.stdout
+
+
+def run_smoke(image):
+    server = SmokeServer(("0.0.0.0", 0), Handler)
+    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    server_thread.start()
+    port = server.server_address[1]
+    try:
+        run_smoke_case(
+            image,
+            server,
+            port,
+            "ppe-positive",
+            [GOOGLE_RESPONSE["jobs"][0]],
+            capped=True,
+        )
+        all_jobs = GOOGLE_RESPONSE["jobs"]
+        for run_id in ["free", "ppe-missing-limit", "ppe-null-limit", "ppe-zero-limit"]:
+            run_smoke_case(image, server, port, run_id, all_jobs, capped=False)
+    finally:
+        server.shutdown()
+        server.server_close()
+        server_thread.join(timeout=5)
+    print("Local image smoke passed: positive PPE cap, FREE run, missing/null/zero unlimited caps, dataset rows, and OUTPUT verified.")
 
 
 if __name__ == "__main__":
