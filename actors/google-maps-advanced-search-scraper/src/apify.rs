@@ -12,7 +12,7 @@ use crate::config::{endpoint_url, Config};
 
 pub(crate) const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const MAX_APIFY_REQUEST_ATTEMPTS: usize = 3;
-const DATASET_BATCH_MAX_BYTES: usize = 4_500_000;
+pub(crate) const DATASET_BATCH_MAX_BYTES: usize = 5_000_000;
 
 fn transient_apify_status(status: StatusCode) -> bool {
     status == StatusCode::REQUEST_TIMEOUT
@@ -223,7 +223,7 @@ pub(crate) fn dataset_batches(items: &[Value]) -> Result<Vec<Vec<Value>>> {
             .context("Could not serialize Apify dataset item")?
             .len();
         if item_bytes + 2 > DATASET_BATCH_MAX_BYTES {
-            bail!("Apify dataset item exceeds the 4.5 MB write limit");
+            bail!("Apify dataset item exceeds the 5 MB write limit");
         }
         let separator_bytes = usize::from(!batch.is_empty());
         if !batch.is_empty() && batch_bytes + separator_bytes + item_bytes > DATASET_BATCH_MAX_BYTES
