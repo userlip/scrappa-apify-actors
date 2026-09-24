@@ -155,12 +155,6 @@ impl ChargingManager {
         Ok(())
     }
 
-    pub fn event_limit_reached(&self, events: &[String]) -> bool {
-        events
-            .iter()
-            .any(|event_name| self.max_event_charge_count(event_name) == 0)
-    }
-
     fn max_event_charge_count(&self, event_name: &str) -> usize {
         let Some(price) = self.event_prices.get(event_name).copied() else {
             return usize::MAX;
