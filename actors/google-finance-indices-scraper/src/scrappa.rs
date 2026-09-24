@@ -7,7 +7,7 @@ use tokio::time::{sleep, timeout};
 
 use crate::{
     request_params::IndicesParams,
-    runtime_config::{request_timeout, REQUEST_ATTEMPTS, RETRY_BACKOFF_MS},
+    runtime_config::{request_timeout, RunDeadline, REQUEST_ATTEMPTS, RETRY_BACKOFF_MS},
 };
 
 const DEFAULT_SCRAPPA_API_BASE: &str = "https://scrappa.co/api";
@@ -18,10 +18,26 @@ pub struct ScrappaClient {
     http: Client,
     api_key: String,
     base_url: Url,
+    deadline: RunDeadline,
 }
 
 impl ScrappaClient {
+    #[cfg(test)]
     pub fn new(api_key: String, base_url: Option<&str>) -> Result<Self> {
+        Self::new_with_deadline(
+            api_key,
+            base_url,
+            RunDeadline::for_actor_timeout(Duration::from_secs(
+                crate::runtime_config::ACTOR_TIMEOUT_SECONDS,
+            ))?,
+        )
+    }
+
+    pub fn new_with_deadline(
+        api_key: String,
+        base_url: Option<&str>,
+        deadline: RunDeadline,
+    ) -> Result<Self> {
         let raw_base_url = base_url.unwrap_or(DEFAULT_SCRAPPA_API_BASE);
         let base_url = Url::parse(raw_base_url)
             .with_context(|| format!("Invalid Scrappa API base URL: {raw_base_url}"))?;
@@ -34,6 +50,7 @@ impl ScrappaClient {
             http,
             api_key,
             base_url,
+            deadline,
         })
     }
 
@@ -42,7 +59,14 @@ impl ScrappaClient {
         let mut last_error = None;
 
         for attempt in 1..=REQUEST_ATTEMPTS {
-            match timeout(request_timeout(), self.get_once(&url)).await {
+            let request_timeout = match self
+                .deadline
+                .request_timeout(request_timeout(), "a Scrappa request")
+            {
+                Ok(request_timeout) => request_timeout,
+                Err(error) => return Err(error),
+            };
+            match timeout(request_timeout, self.get_once(&url, request_timeout)).await {
                 Ok(Ok(response)) => return Ok(response),
                 Ok(Err(error)) => {
                     let retryable = is_retryable_error(&error);
@@ -54,7 +78,7 @@ impl ScrappaClient {
                 Err(_) => {
                     last_error = Some(anyhow!(
                         "Scrappa API request timed out after {}ms",
-                        request_timeout().as_millis()
+                        request_timeout.as_millis()
                     ));
                     if attempt == REQUEST_ATTEMPTS {
                         break;
@@ -62,7 +86,11 @@ impl ScrappaClient {
                 }
             }
 
-            sleep(Duration::from_millis(attempt as u64 * RETRY_BACKOFF_MS)).await;
+            let backoff = Duration::from_millis(attempt as u64 * RETRY_BACKOFF_MS);
+            if self.deadline.remaining() <= backoff {
+                break;
+            }
+            sleep(backoff).await;
         }
 
         Err(last_error.unwrap_or_else(|| anyhow!("Scrappa API request failed")))
@@ -86,12 +114,13 @@ impl ScrappaClient {
         Ok(url)
     }
 
-    async fn get_once(&self, url: &Url) -> Result<Value> {
+    async fn get_once(&self, url: &Url, request_timeout: Duration) -> Result<Value> {
         let response = self
             .http
             .get(url.clone())
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
+            .timeout(request_timeout)
             .send()
             .await
             .context("Scrappa API request failed")?;
@@ -136,6 +165,7 @@ mod tests {
     use super::*;
     use crate::{
         request_params::IndicesParams,
+        runtime_config::RunDeadline,
         test_support::{MockResponse, MockServer},
     };
 
@@ -186,5 +216,25 @@ mod tests {
         assert!(!is_retryable_error(&anyhow!(ScrappaStatus(
             StatusCode::NOT_FOUND
         ))));
+    }
+
+    #[tokio::test]
+    async fn does_not_start_a_scrappa_request_after_the_work_deadline() {
+        let server = MockServer::start(Vec::new());
+        let deadline = RunDeadline::for_work_window(Duration::ZERO).unwrap();
+        let client = ScrappaClient::new_with_deadline(
+            "secret-key".to_owned(),
+            Some(&server.base_url),
+            deadline,
+        )
+        .unwrap();
+        let params = IndicesParams {
+            indices: None,
+            hl: "en".to_owned(),
+            gl: "us".to_owned(),
+        };
+
+        assert!(client.get_indices(&params, Some(".INX")).await.is_err());
+        assert!(server.finish().is_empty());
     }
 }

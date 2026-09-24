@@ -8,12 +8,13 @@ mod scrappa;
 #[cfg(test)]
 mod test_support;
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use serde_json::{json, Value};
 
 use apify::{ActorConfig, ApifyClient, SaveResult};
 use batch_runner::{run_indices_batch, BatchDependencies, BatchSummary};
 use request_params::{build_google_finance_indices_params, normalize_indices, IndicesParams};
+use runtime_config::RunDeadline;
 use scrappa::ScrappaClient;
 
 struct ActorDependencies {
@@ -39,12 +40,9 @@ impl BatchDependencies for ActorDependencies {
 }
 
 async fn run_actor() -> Result<BatchSummary> {
-    if !runtime_config::retry_budget_fits_actor_timeout() {
-        bail!("Configured retry budget exceeds the Actor timeout");
-    }
-
     let config = ActorConfig::from_env()?;
-    let apify = ApifyClient::new(config.clone())?;
+    let deadline = RunDeadline::from_env()?;
+    let apify = ApifyClient::new_with_deadline(config.clone(), deadline)?;
     let input = apify.get_input().await?;
     let input = if input.is_null() { json!({}) } else { input };
     let params = build_google_finance_indices_params(&input)?;
@@ -55,7 +53,11 @@ async fn run_actor() -> Result<BatchSummary> {
         request_params::describe_google_finance_indices_request(&params)
     );
 
-    let scrappa = ScrappaClient::new(config.scrappa_api_key, config.scrappa_api_base.as_deref())?;
+    let scrappa = ScrappaClient::new_with_deadline(
+        config.scrappa_api_key,
+        config.scrappa_api_base.as_deref(),
+        deadline,
+    )?;
     let mut dependencies = ActorDependencies {
         apify,
         scrappa,

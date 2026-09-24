@@ -21,6 +21,7 @@ pub struct MockRequest {
 pub struct MockResponse {
     status: u16,
     body: String,
+    delay: Duration,
 }
 
 impl MockResponse {
@@ -28,6 +29,15 @@ impl MockResponse {
         Self {
             status,
             body: body.to_owned(),
+            delay: Duration::ZERO,
+        }
+    }
+
+    pub fn json_after(status: u16, body: &str, delay: Duration) -> Self {
+        Self {
+            status,
+            body: body.to_owned(),
+            delay,
         }
     }
 }
@@ -68,6 +78,7 @@ impl MockServer {
                 if request_sender.send(request).is_err() {
                     return;
                 }
+                thread::sleep(response.delay);
                 let reason = match response.status {
                     200 => "OK",
                     201 => "Created",
