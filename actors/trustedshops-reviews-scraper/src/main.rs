@@ -212,7 +212,7 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient) -> Result<()> {
                 }
                 let charge_result =
                     pricing.record_dataset_push(REVIEW_RESULT_CHARGE_EVENT, rows.len());
-                let saved_count = charge_result.charged_count.min(requested_count);
+                let saved_count = charge_result.saved_count;
                 if charge_result.event_charge_limit_reached {
                     let status_message = format!(
                         "Charge limit reached after saving {saved_count} of {requested_count} Trusted Shops reviews for {} page {page}.",
