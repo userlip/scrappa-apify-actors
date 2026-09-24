@@ -147,7 +147,7 @@ pub enum ChargingBudget {
 pub struct PayPerEventBudget {
     event_prices: HashMap<String, f64>,
     charged_usd: f64,
-    max_total_charge_usd: f64,
+    max_total_charge_usd: Option<f64>,
 }
 
 impl ChargingBudget {
@@ -177,13 +177,18 @@ impl ChargingBudget {
             }
         }
 
-        let max_total_charge_usd = data
-            .pointer("/options/maxTotalChargeUsd")
-            .and_then(Value::as_f64)
-            .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-        if !max_total_charge_usd.is_finite() || max_total_charge_usd < 0.0 {
-            bail!("Apify run returned an invalid spending limit");
-        }
+        let max_total_charge_usd = match data.pointer("/options/maxTotalChargeUsd") {
+            None | Some(Value::Null) => None,
+            Some(value) => {
+                let max_total_charge_usd = value
+                    .as_f64()
+                    .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
+                if !max_total_charge_usd.is_finite() || max_total_charge_usd < 0.0 {
+                    bail!("Apify run returned an invalid spending limit");
+                }
+                Some(max_total_charge_usd)
+            }
+        };
 
         let charged_counts = data
             .get("chargedEventCounts")
@@ -226,11 +231,14 @@ impl PayPerEventBudget {
             return Ok(requested);
         }
 
-        let tolerance = f64::EPSILON * self.max_total_charge_usd.max(1.0);
+        let Some(max_total_charge_usd) = self.max_total_charge_usd else {
+            return Ok(requested);
+        };
+        let tolerance = f64::EPSILON * max_total_charge_usd.max(1.0);
         Ok((1..=requested)
             .take_while(|count| {
                 self.charged_usd + *count as f64 * price_per_saved_item
-                    <= self.max_total_charge_usd + tolerance
+                    <= max_total_charge_usd + tolerance
             })
             .count())
     }
@@ -470,7 +478,7 @@ mod tests {
     }
 
     #[test]
-    fn missing_ppe_charges_or_spending_limits_fail_closed() {
+    fn missing_ppe_charge_prices_fail_closed() {
         let mut run = ppe_run(1.0, json!({}));
         run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
             .as_object_mut()
@@ -480,10 +488,35 @@ mod tests {
             panic!("expected PPE budget");
         };
         assert!(budget.affordable_items(1).is_err());
+    }
 
-        let mut run = ppe_run(1.0, json!({}));
-        run["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
-        assert!(ChargingBudget::from_run(&run).is_err());
+    #[test]
+    fn zero_spending_limit_has_no_remaining_budget() {
+        let zero = ppe_run(0.0, json!({"apify-actor-start": 1}));
+        let ChargingBudget::PayPerEvent(budget) = ChargingBudget::from_run(&zero).unwrap() else {
+            panic!("expected PPE budget");
+        };
+        assert_eq!(budget.affordable_items(10).unwrap(), 0);
+    }
+
+    #[test]
+    fn null_and_missing_spending_limits_are_unbounded() {
+        let mut null = ppe_run(1.0, json!({"apify-actor-start": 1}));
+        null["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+
+        let mut missing = ppe_run(1.0, json!({"apify-actor-start": 1}));
+        missing["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+
+        for run in [null, missing] {
+            let ChargingBudget::PayPerEvent(budget) = ChargingBudget::from_run(&run).unwrap()
+            else {
+                panic!("expected PPE budget");
+            };
+            assert_eq!(budget.affordable_items(10).unwrap(), 10);
+        }
     }
 
     #[tokio::test]

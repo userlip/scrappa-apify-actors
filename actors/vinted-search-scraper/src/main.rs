@@ -57,10 +57,10 @@ async fn push_charged_items(
             let saved_count = ppe_budget.affordable_items(items.len())?;
             if saved_count > 0 {
                 apify
-                    .charge_event(&config.actor_run_id, ITEM_RESULT_CHARGE_EVENT, saved_count)
+                    .push_data(&config.dataset_id, &items[..saved_count])
                     .await?;
                 apify
-                    .push_data(&config.dataset_id, &items[..saved_count])
+                    .charge_event(&config.actor_run_id, ITEM_RESULT_CHARGE_EVENT, saved_count)
                     .await?;
                 ppe_budget.record_saved_items(saved_count)?;
             }
@@ -268,6 +268,15 @@ mod tests {
 
     impl MockServer {
         fn start(responses: Vec<MockResponse>) -> Self {
+            let mut responses = responses.into_iter();
+            Self::start_with_handler(move |_| {
+                responses.next().expect("unexpected HTTP request")
+            })
+        }
+
+        fn start_with_handler(
+            mut response_for_request: impl FnMut(&str) -> MockResponse + Send + 'static,
+        ) -> Self {
             let listener = TcpListener::bind("127.0.0.1:0").unwrap();
             listener.set_nonblocking(true).unwrap();
             let address = listener.local_addr().unwrap();
@@ -276,7 +285,7 @@ mod tests {
             let stopped = Arc::clone(&stop);
             let thread = thread::spawn(move || {
                 let deadline = Instant::now() + Duration::from_secs(10);
-                for response in responses {
+                loop {
                     let (mut stream, _) = loop {
                         if stopped.load(Ordering::Relaxed) || Instant::now() >= deadline {
                             return;
@@ -290,13 +299,15 @@ mod tests {
                         }
                     };
                     let request = read_request(&mut stream).unwrap_or_default();
+                    let response = response_for_request(&request);
                     if request_sender.send(request).is_err() {
                         return;
                     }
-                    let reason = if response.status == 201 {
-                        "Created"
-                    } else {
-                        "OK"
+                    let reason = match response.status {
+                        201 => "Created",
+                        404 => "Not Found",
+                        503 => "Service Unavailable",
+                        _ => "OK",
                     };
                     let reply = format!(
                         "HTTP/1.1 {} {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
@@ -532,20 +543,20 @@ mod tests {
         assert_eq!(request_parts(&requests[2]).0, "/v2/actor-runs/test-run");
         assert_eq!(
             request_parts(&requests[3]).0,
-            "/v2/actor-runs/test-run/charge"
-        );
-        assert_eq!(
-            serde_json::from_str::<Value>(request_parts(&requests[3]).1).unwrap(),
-            json!({"eventName": "item-result", "count": 1})
-        );
-        assert_eq!(
-            request_parts(&requests[4]).0,
             "/v2/datasets/test-dataset/items"
         );
-        let saved_rows: Value = serde_json::from_str(request_parts(&requests[4]).1).unwrap();
+        let saved_rows: Value = serde_json::from_str(request_parts(&requests[3]).1).unwrap();
         assert_eq!(saved_rows.as_array().unwrap().len(), 1);
         assert_eq!(saved_rows[0]["id"], json!("first"));
         assert_eq!(saved_rows[0]["request_page"], json!(1));
+        assert_eq!(
+            request_parts(&requests[4]).0,
+            "/v2/actor-runs/test-run/charge"
+        );
+        assert_eq!(
+            serde_json::from_str::<Value>(request_parts(&requests[4]).1).unwrap(),
+            json!({"eventName": "item-result", "count": 1})
+        );
         assert_eq!(
             request_parts(&requests[5]).0,
             "/v2/key-value-stores/test-store/records/OUTPUT"
@@ -571,6 +582,51 @@ mod tests {
             requests.iter().all(|request| !request.contains("&page=2")),
             "{requests:#?}"
         );
+    }
+
+    #[tokio::test]
+    async fn failed_dataset_write_does_not_charge_or_retry_the_append() {
+        let server = MockServer::start_with_handler(|request| {
+            if request.starts_with("GET /v2/actor-runs/test-run ") {
+                mock_response(
+                    200,
+                    ppe_run_response(1.0, json!({"apify-actor-start": 1})),
+                )
+            } else if request.starts_with("POST /v2/datasets/test-dataset/items ") {
+                MockResponse {
+                    status: 503,
+                    body: json!({"error": "dataset unavailable"}).to_string(),
+                }
+            } else if request.starts_with("POST /v2/actor-runs/test-run/charge ") {
+                mock_response(201, json!({}))
+            } else {
+                panic!("unexpected request: {request}");
+            }
+        });
+        let config = actor_config(&server.base_url);
+        let apify =
+            ApifyClient::new(config.apify_api_base_url.clone(), "test-token".to_owned()).unwrap();
+        let items = vec![json!({"id": "listing-1"})];
+        let mut budget = None;
+
+        let result = push_charged_items(&apify, &config, &mut budget, &items, 1).await;
+
+        let error = result.err().unwrap().to_string();
+        assert!(error.contains("store dataset items"), "{error}");
+        let requests = server.requests();
+        assert!(requests
+            .iter()
+            .all(|request| !request.starts_with("POST /v2/actor-runs/test-run/charge ")));
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.starts_with("POST /v2/datasets/test-dataset/items "))
+                .count(),
+            1
+        );
+        assert_eq!(requests.len(), 2);
+        assert!(requests[0].starts_with("GET /v2/actor-runs/test-run "));
+        assert!(requests[1].starts_with("POST /v2/datasets/test-dataset/items "));
     }
 
     #[test]
