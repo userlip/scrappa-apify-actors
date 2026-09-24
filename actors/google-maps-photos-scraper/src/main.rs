@@ -2,7 +2,7 @@ mod business_id;
 
 use anyhow::{anyhow, bail, Context, Result};
 use business_id::{get_business_id_requests, BusinessIdRequest};
-use reqwest::{header, RequestBuilder, Response, StatusCode};
+use reqwest::{header, Method, RequestBuilder, Response, StatusCode};
 use serde_json::{json, Map, Value};
 use std::{env, error::Error as StdError, fmt, time::Duration};
 use tokio::{time::sleep, time::timeout};
@@ -16,6 +16,7 @@ const ACTOR_TIMEOUT: Duration = Duration::from_secs(720);
 const APIFY_MAX_RETRIES: u8 = 8;
 const APIFY_INITIAL_RETRY_DELAY: Duration = Duration::from_millis(500);
 const MAX_DATASET_REQUEST_BYTES: usize = 9 * 1024 * 1024;
+const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 
 struct ActorConfig {
     apify_api_base_url: Url,
@@ -98,6 +99,7 @@ async fn send_apify_request(client: &reqwest::Client, request: RequestBuilder) -
     let request = request
         .build()
         .context("Could not build Apify API request")?;
+    let retryable_method = request.method() == Method::GET || request.method() == Method::PUT;
     let mut last_error = None;
 
     for attempt in 0..=APIFY_MAX_RETRIES {
@@ -106,14 +108,18 @@ async fn send_apify_request(client: &reqwest::Client, request: RequestBuilder) -
             .ok_or_else(|| anyhow!("Apify API request body could not be retried"))?;
         match client.execute(request).await {
             Ok(response)
-                if retryable_apify_status(response.status()) && attempt < APIFY_MAX_RETRIES =>
+                if retryable_method
+                    && retryable_apify_status(response.status())
+                    && attempt < APIFY_MAX_RETRIES =>
             {
                 drop(response);
                 sleep(apify_retry_delay(attempt + 1)).await;
             }
             Ok(response) => return Ok(response),
             Err(error)
-                if (error.is_connect() || error.is_timeout()) && attempt < APIFY_MAX_RETRIES =>
+                if retryable_method
+                    && (error.is_connect() || error.is_timeout())
+                    && attempt < APIFY_MAX_RETRIES =>
             {
                 last_error = Some(error);
                 sleep(apify_retry_delay(attempt + 1)).await;
@@ -211,6 +217,7 @@ fn affordable_dataset_items(
     run: &Value,
     requested: usize,
     environment_max_charge: Option<f64>,
+    locally_saved_dataset_items: usize,
 ) -> Result<Option<usize>> {
     let data = run
         .get("data")
@@ -229,7 +236,7 @@ fn affordable_dataset_items(
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
         .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
-    let item_price = event_price(events, "apify-default-dataset-item")?;
+    let item_price = event_price(events, DATASET_ITEM_EVENT)?;
     let max_charge = match data
         .pointer("/options/maxTotalChargeUsd")
         .and_then(Value::as_f64)
@@ -249,8 +256,20 @@ fn affordable_dataset_items(
         .get("chargedEventCounts")
         .and_then(Value::as_object)
         .ok_or_else(|| anyhow!("Apify run did not provide charged event counts"))?;
-    let mut spent = 0.0;
+    let reported_dataset_items = match counts.get(DATASET_ITEM_EVENT) {
+        Some(count) => count
+            .as_u64()
+            .ok_or_else(|| anyhow!("Invalid charged event count for {DATASET_ITEM_EVENT}"))?,
+        None => 0,
+    };
+    let locally_saved_dataset_items = u64::try_from(locally_saved_dataset_items)
+        .context("Too many dataset items were saved during this actor run")?;
+    let charged_dataset_items = reported_dataset_items.max(locally_saved_dataset_items);
+    let mut spent = item_price * charged_dataset_items as f64;
     for (event_name, count) in counts {
+        if event_name == DATASET_ITEM_EVENT {
+            continue;
+        }
         let count = count
             .as_u64()
             .ok_or_else(|| anyhow!("Invalid charged event count for {event_name}"))?;
@@ -284,6 +303,7 @@ async fn run_dataset_capacity(
     client: &reqwest::Client,
     config: &ActorConfig,
     requested: usize,
+    locally_saved_dataset_items: usize,
 ) -> Result<Option<usize>> {
     let url = endpoint_url(
         &config.apify_api_base_url,
@@ -299,7 +319,12 @@ async fn run_dataset_capacity(
     .await
     .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
-    affordable_dataset_items(&run, requested, config.max_total_charge_usd)
+    affordable_dataset_items(
+        &run,
+        requested,
+        config.max_total_charge_usd,
+        locally_saved_dataset_items,
+    )
 }
 
 fn dataset_chunks(items: &[Value]) -> Result<Vec<&[Value]>> {
@@ -334,16 +359,23 @@ struct DatasetSave {
     charge_limit_reached: bool,
 }
 
+#[derive(Debug, Default)]
+struct DatasetBudget {
+    saved_items: usize,
+}
+
 async fn push_dataset_items(
     client: &reqwest::Client,
     config: &ActorConfig,
     items: &[Value],
+    dataset_budget: &mut DatasetBudget,
 ) -> Result<DatasetSave> {
     if items.is_empty() {
         return Ok(DatasetSave::default());
     }
 
-    let capacity = run_dataset_capacity(client, config, items.len()).await?;
+    let capacity =
+        run_dataset_capacity(client, config, items.len(), dataset_budget.saved_items).await?;
     let saved_count = capacity.unwrap_or(items.len()).min(items.len());
     if saved_count == 0 {
         return Ok(DatasetSave {
@@ -371,6 +403,10 @@ async fn push_dataset_items(
         .await
         .context("Apify dataset write failed")?;
         response_status(response, "Apify dataset write").await?;
+        dataset_budget.saved_items = dataset_budget
+            .saved_items
+            .checked_add(chunk.len())
+            .ok_or_else(|| anyhow!("Dataset item count exceeded the actor's capacity"))?;
     }
 
     Ok(DatasetSave {
@@ -660,6 +696,7 @@ fn business_summary(
 async fn record_business_error(
     client: &reqwest::Client,
     config: &ActorConfig,
+    dataset_budget: &mut DatasetBudget,
     request: &BusinessIdRequest,
     business_id: &str,
     error: &str,
@@ -667,7 +704,7 @@ async fn record_business_error(
     first_output: &mut Option<Value>,
 ) -> Result<()> {
     let output = input_error_output(&request.input_business_id, business_id, error);
-    push_dataset_items(client, config, &[output]).await?;
+    push_dataset_items(client, config, &[output], dataset_budget).await?;
     run_results.push(business_summary(
         &request.input_business_id,
         business_id,
@@ -698,6 +735,7 @@ async fn run_actor(client: &reqwest::Client, config: &ActorConfig) -> Result<()>
     let mut failed = 0;
     let mut total_photos = 0;
     let mut first_output = None;
+    let mut dataset_budget = DatasetBudget::default();
 
     println!(
         "Fetching Google Maps photos for {} business{}",
@@ -715,6 +753,7 @@ async fn run_actor(client: &reqwest::Client, config: &ActorConfig) -> Result<()>
             record_business_error(
                 client,
                 config,
+                &mut dataset_budget,
                 request,
                 &request.input_business_id,
                 error,
@@ -742,6 +781,7 @@ async fn run_actor(client: &reqwest::Client, config: &ActorConfig) -> Result<()>
                     record_business_error(
                         client,
                         config,
+                        &mut dataset_budget,
                         request,
                         business_id,
                         error,
@@ -763,7 +803,8 @@ async fn run_actor(client: &reqwest::Client, config: &ActorConfig) -> Result<()>
             .collect::<Vec<_>>();
         let mut saved_photo_count = dataset_photos.len();
         if !dataset_photos.is_empty() {
-            let saved = push_dataset_items(client, config, &dataset_photos).await?;
+            let saved =
+                push_dataset_items(client, config, &dataset_photos, &mut dataset_budget).await?;
             saved_photo_count = saved.saved_count;
             if saved.charge_limit_reached {
                 println!(
@@ -1016,20 +1057,32 @@ mod tests {
     #[test]
     fn ppe_budget_accounts_for_other_charges_and_trims_dataset_items() {
         let run = pricing_run(0.12, json!({ "apify-actor-start": 1 }));
-        assert_eq!(affordable_dataset_items(&run, 5, None).unwrap(), Some(2));
+        assert_eq!(affordable_dataset_items(&run, 5, None, 0).unwrap(), Some(2));
+
+        let partially_caught_up_run = pricing_run(
+            0.17,
+            json!({
+                "apify-actor-start": 1,
+                "apify-default-dataset-item": 1
+            }),
+        );
+        assert_eq!(
+            affordable_dataset_items(&partially_caught_up_run, 5, None, 2).unwrap(),
+            Some(1)
+        );
     }
 
     #[test]
     fn non_ppe_pricing_keeps_all_default_dataset_items() {
         let run =
             json!({ "data": { "pricingInfo": { "pricingModel": "PRICE_PER_DATASET_ITEM" } } });
-        assert_eq!(affordable_dataset_items(&run, 5, None).unwrap(), None);
+        assert_eq!(affordable_dataset_items(&run, 5, None, 0).unwrap(), None);
     }
 
     #[test]
     fn exhausted_ppe_budget_allows_no_chargeable_dataset_items() {
         let run = pricing_run(0.02, json!({ "apify-actor-start": 1 }));
-        assert_eq!(affordable_dataset_items(&run, 5, None).unwrap(), Some(0));
+        assert_eq!(affordable_dataset_items(&run, 5, None, 0).unwrap(), Some(0));
     }
 
     #[test]
@@ -1038,13 +1091,56 @@ mod tests {
             0.12,
             json!({ "apify-actor-start": 1, "unpriced-event": 100 }),
         );
-        assert_eq!(affordable_dataset_items(&run, 5, None).unwrap(), Some(2));
+        assert_eq!(affordable_dataset_items(&run, 5, None, 0).unwrap(), Some(2));
 
         let unlimited = pricing_run(0.0, json!({ "apify-actor-start": 100 }));
         assert_eq!(
-            affordable_dataset_items(&unlimited, 5, Some(0.01)).unwrap(),
+            affordable_dataset_items(&unlimited, 5, Some(0.01), 0).unwrap(),
             Some(5)
         );
+    }
+
+    #[tokio::test]
+    async fn ppe_budget_tracks_dataset_rows_when_run_charges_are_stale_across_businesses() {
+        let input = json!({ "business_ids": ["ChIJone", "ChIJtwo"] });
+        let photos = json!({
+            "items": [
+                { "photo_id": "p1" },
+                { "photo_id": "p2" },
+                { "photo_id": "p3" }
+            ]
+        })
+        .to_string();
+        let stale_run = pricing_run(0.12, json!({ "apify-actor-start": 1 })).to_string();
+        let server = MockServer::start(vec![
+            mock_response(200, input.to_string()),
+            mock_response(200, photos.clone()),
+            mock_response(200, stale_run.clone()),
+            mock_response(201, ""),
+            mock_response(200, photos),
+            mock_response(200, stale_run),
+            mock_response(201, ""),
+            mock_response(201, ""),
+        ]);
+        let config = config(&server.base_url);
+        let client = reqwest::Client::builder()
+            .timeout(APIFY_REQUEST_TIMEOUT)
+            .build()
+            .unwrap();
+
+        run_actor(&client, &config).await.unwrap();
+
+        let requests = server.requests();
+        let dataset_items_written = requests
+            .iter()
+            .filter(|request| request.starts_with("POST /v2/datasets/dataset-id/items "))
+            .map(|request| request_body(request).as_array().unwrap().len())
+            .sum::<usize>();
+        assert_eq!(dataset_items_written, 2);
+        assert!(requests
+            .last()
+            .unwrap()
+            .starts_with("PUT /v2/key-value-stores/store-id/records/OUTPUT "));
     }
 
     #[test]
@@ -1183,7 +1279,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn apify_get_and_dataset_post_retry_transient_status_but_scrappa_does_not_retry() {
+    async fn apify_get_and_output_put_retry_but_dataset_post_and_scrappa_do_not() {
         let server = MockServer::start(vec![
             mock_response(500, "temporary"),
             mock_response(200, "{\"ok\":true}"),
@@ -1205,8 +1301,19 @@ mod tests {
             .post(post_server.base_url.join("dataset/items").unwrap())
             .json(&json!([{ "photo_id": "one" }]));
         let response = send_apify_request(&client, post_request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        assert_eq!(post_server.requests().len(), 1);
+
+        let put_server = MockServer::start(vec![
+            mock_response(500, "temporary"),
+            mock_response(201, ""),
+        ]);
+        let put_request = client
+            .put(put_server.base_url.join("records/OUTPUT").unwrap())
+            .json(&json!({ "photos": [] }));
+        let response = send_apify_request(&client, put_request).await.unwrap();
         assert_eq!(response.status(), StatusCode::CREATED);
-        assert_eq!(post_server.requests().len(), 2);
+        assert_eq!(put_server.requests().len(), 2);
 
         let error_server = MockServer::start(vec![mock_response(500, "upstream unavailable")]);
         let mut scrappa_base_url = error_server.base_url.clone();
@@ -1222,6 +1329,34 @@ mod tests {
         let error = scrappa.get_photos("0x123:0x456", None).await.unwrap_err();
         assert!(error.to_string().contains("Scrappa API error (500)"));
         assert_eq!(error_server.requests().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn dataset_append_transient_failure_is_not_retried() {
+        let run = pricing_run(1.0, json!({ "apify-actor-start": 1 }));
+        let server = MockServer::start(vec![
+            mock_response(200, run.to_string()),
+            mock_response(500, "append may already have succeeded"),
+            mock_response(201, ""),
+        ]);
+        let config = config(&server.base_url);
+        let client = reqwest::Client::builder()
+            .timeout(APIFY_REQUEST_TIMEOUT)
+            .build()
+            .unwrap();
+
+        let result = push_dataset_items(
+            &client,
+            &config,
+            &[json!({ "photo_id": "one" })],
+            &mut DatasetBudget::default(),
+        )
+        .await;
+
+        assert!(result.is_err());
+        let requests = server.requests();
+        assert_eq!(requests.len(), 2);
+        assert!(requests[1].starts_with("POST /v2/datasets/dataset-id/items "));
     }
 
     #[tokio::test]
