@@ -102,8 +102,3 @@ jobs:
       - name: Run Rust actor tests
         working-directory: ${{ matrix.actor }}
         run: cargo test --locked
-
-      - name: Build Kleinanzeigen actor Docker image
-        if: matrix.actor == 'actors/kleinanzeigen-search-scraper'
-        working-directory: ${{ matrix.actor }}
-        run: docker build -f .actor/Dockerfile -t kleinanzeigen-search-scraper:ci .

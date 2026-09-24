@@ -76,13 +76,14 @@ async fn non_ppe_run_preserves_pagination_auth_and_dataset_kv_output() {
 }
 
 #[tokio::test]
-async fn ppe_writes_only_affordable_rows_before_charging_and_terminal_status() {
+async fn ppe_writes_affordable_rows_then_retries_transient_charge_with_same_key() {
     let server = MockServer::start(vec![
         input_response(json!({"query": "iphone"})),
         ppe_pricing(0.25, 0),
         listing_response(3),
         ppe_pricing(0.25, 0),
         MockResponse::json(201, json!({})),
+        MockResponse::text(503, "temporarily unavailable"),
         MockResponse::json(201, json!({})),
         MockResponse::json(200, json!({})),
         MockResponse::json(200, json!({})),
@@ -111,13 +112,19 @@ async fn ppe_writes_only_affordable_rows_before_charging_and_terminal_status() {
 
     let requests = server.finish();
     let charge = requests_to(&requests, "/v2/actor-runs/test-run/charge");
-    assert_eq!(charge.len(), 1);
+    assert_eq!(charge.len(), 2);
     assert_eq!(
         serde_json::from_str::<Value>(&charge[0].body).unwrap(),
         json!({"eventName": "listing-result", "count": 1})
     );
     let key = charge[0].headers.get("idempotency-key").unwrap();
     assert!(key.starts_with("test-run-listing-result-1-"));
+    assert_eq!(
+        charge[1].headers.get("idempotency-key").unwrap(),
+        key,
+        "charge retries must reuse the same idempotency key"
+    );
+    assert_eq!(charge[1].body, charge[0].body);
     let charge_position = requests
         .iter()
         .position(|request| request.target.starts_with("/v2/actor-runs/test-run/charge"))
