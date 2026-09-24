@@ -33,6 +33,7 @@ impl MockServer {
                 sender.send(request).unwrap();
                 let reason = match status {
                     200 => "OK",
+                    201 => "Created",
                     401 => "Unauthorized",
                     429 => "Too Many Requests",
                     500 => "Internal Server Error",
@@ -459,7 +460,7 @@ async fn actor_charges_only_saved_rows_and_omits_raw_response_at_budget_limit() 
                 "suggestions": ["one", "two", "three"],
             }),
         ),
-        (200, String::new()),
+        mock_response(201, json!({})),
         (200, String::new()),
         (200, String::new()),
         (200, String::new()),
@@ -472,24 +473,24 @@ async fn actor_charges_only_saved_rows_and_omits_raw_response_at_budget_limit() 
     assert_eq!(requests.len(), 7);
     assert_eq!(
         request_target(&requests[3]),
-        "/v2/datasets/dataset-id/items"
-    );
-    let rows: Value = serde_json::from_str(&requests[3].body).unwrap();
-    assert_eq!(rows.as_array().unwrap().len(), 2);
-    assert_eq!(
-        request_target(&requests[4]),
         "/v2/actor-runs/test-run/charge"
     );
-    assert_eq!(requests[4].method, "POST");
+    assert_eq!(requests[3].method, "POST");
     assert_eq!(
-        requests[4].headers["idempotency-key"],
+        requests[3].headers["idempotency-key"],
         "google-trends-autocomplete-test-run-suggestions"
     );
-    let charge: Value = serde_json::from_str(&requests[4].body).unwrap();
+    let charge: Value = serde_json::from_str(&requests[3].body).unwrap();
     assert_eq!(
         charge,
         json!({ "eventName": "suggestion-result", "count": 2 })
     );
+    assert_eq!(
+        request_target(&requests[4]),
+        "/v2/datasets/dataset-id/items"
+    );
+    let rows: Value = serde_json::from_str(&requests[4].body).unwrap();
+    assert_eq!(rows.as_array().unwrap().len(), 2);
     assert_eq!(
         request_target(&requests[5]),
         "/v2/key-value-stores/store-id/records/OUTPUT"
@@ -507,4 +508,42 @@ async fn actor_charges_only_saved_rows_and_omits_raw_response_at_budget_limit() 
         .as_str()
         .unwrap()
         .contains("Charge limit reached"));
+}
+
+#[tokio::test]
+async fn actor_does_not_write_dataset_when_suggestion_charge_fails() {
+    let server = MockServer::start(vec![
+        mock_response(200, ppe_run_body()),
+        mock_response(200, json!({ "query": "tesla" })),
+        mock_response(
+            200,
+            json!({
+                "search_parameters": { "q": "tesla" },
+                "suggestions": ["one", "two", "three"],
+            }),
+        ),
+        (500, json!({ "error": "charge failed" }).to_string()),
+    ]);
+    let config = test_config(&server.base_url);
+    let http = Client::new();
+
+    let error = run_actor(&http, &config).await.unwrap_err();
+    assert!(error
+        .to_string()
+        .contains("suggestion result charge request failed"));
+
+    let requests = server.finish();
+    assert_eq!(requests.len(), 4);
+    assert_eq!(
+        request_target(&requests[3]),
+        "/v2/actor-runs/test-run/charge"
+    );
+    let charge: Value = serde_json::from_str(&requests[3].body).unwrap();
+    assert_eq!(
+        charge,
+        json!({ "eventName": "suggestion-result", "count": 2 })
+    );
+    assert!(requests
+        .iter()
+        .all(|request| request.target != "/v2/datasets/dataset-id/items"));
 }
