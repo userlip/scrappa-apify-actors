@@ -1,15 +1,15 @@
 {
   "name": "vinted-search-scraper",
   "version": "1.0.0",
-  "type": "module",
-  "main": "./dist/main.js",
+  "private": true,
+  "description": "Workspace scripts for the Rust Vinted Search Scraper actor.",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/main.js",
-    "start:dev": "tsx src/main.ts",
-    "test": "npm run build && node --test test/*.test.mjs",
-    "test:dev": "TEST_SOURCE=src tsx --test test/*.test.mjs",
-    "typecheck": "tsc --noEmit"
+    "build": "cargo build --release --locked",
+    "start": "cargo run --release --locked",
+    "start:dev": "cargo run",
+    "test": "cargo test --locked",
+    "test:dev": "cargo test",
+    "typecheck": "cargo check --locked"
   },
   "dependencies": {
     "apify": "^3.2.6"

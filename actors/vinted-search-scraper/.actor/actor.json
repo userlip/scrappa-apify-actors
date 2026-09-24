@@ -5,10 +5,6 @@
   "description": "Search Vinted secondhand fashion listings by keyword, country, brand, category, size, condition, price range, and sort order. Built for resale research, price monitoring, and marketplace analytics.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start",
-    "generatedBy": "Cursor with Grok 4.6"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
