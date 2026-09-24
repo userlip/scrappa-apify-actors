@@ -279,11 +279,7 @@ impl PpeBudget {
         if !available.is_finite() {
             return usize::MAX;
         }
-        let rounded_to_four_places = (available * 10_000.0).round() / 10_000.0;
-        rounded_to_four_places
-            .floor()
-            .max(0.0)
-            .min(usize::MAX as f64) as usize
+        available.floor().max(0.0).min(usize::MAX as f64) as usize
     }
 
     fn event_price(&self, event: &str) -> f64 {
@@ -296,7 +292,7 @@ impl PpeBudget {
             .iter()
             .map(|(event, count)| self.event_price(event) * *count as f64)
             .sum();
-        format!("{total:.6}").parse().unwrap_or(total)
+        total
     }
 }
 
@@ -461,7 +457,8 @@ mod tests {
 
     #[test]
     fn reads_ppe_budget_and_accounts_for_custom_and_dataset_event_prices() {
-        let mut budget = PpeBudget::from_run(&run(0.007, json!({ "apify-actor-start": 1 }))).unwrap();
+        let mut budget =
+            PpeBudget::from_run(&run(0.007, json!({ "apify-actor-start": 1 }))).unwrap();
 
         assert!(budget.is_pay_per_event());
         assert!(budget.can_charge_event(ROUTE_RESULT_EVENT));
@@ -485,6 +482,23 @@ mod tests {
 
         assert!(!budget.can_push_one_item());
         assert!(!budget.can_charge_event(ROUTE_RESULT_EVENT));
+    }
+
+    #[test]
+    fn refuses_an_item_when_the_limit_is_fractionally_below_its_combined_price() {
+        let budget = PpeBudget::from_run(&run(0.002999999, json!({}))).unwrap();
+
+        assert!(!budget.can_push_one_item());
+    }
+
+    #[test]
+    fn preserves_sub_microdollar_charges_when_computing_remaining_budget() {
+        let mut run = run(0.00300048, json!({ "apify-actor-start": 1 }));
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["apify-actor-start"]
+            ["eventPriceUsd"] = json!(0.00000049);
+        let budget = PpeBudget::from_run(&run).unwrap();
+
+        assert!(!budget.can_push_one_item());
     }
 
     #[test]
