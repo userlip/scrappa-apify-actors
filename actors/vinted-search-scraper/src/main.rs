@@ -59,9 +59,15 @@ async fn push_charged_items(
                 apify
                     .push_data(&config.dataset_id, &items[..saved_count])
                     .await?;
-                apify
-                    .charge_event(&config.actor_run_id, ITEM_RESULT_CHARGE_EVENT, saved_count)
-                    .await?;
+                if ppe_budget.is_tier_priced_event(ITEM_RESULT_CHARGE_EVENT) {
+                    println!(
+                        "Skipped the direct charge for tier-priced event {ITEM_RESULT_CHARGE_EVENT}; it is not chargeable through the flat-price API path."
+                    );
+                } else {
+                    apify
+                        .charge_event(&config.actor_run_id, ITEM_RESULT_CHARGE_EVENT, saved_count)
+                        .await?;
+                }
                 ppe_budget.record_saved_items(saved_count)?;
             }
 
@@ -269,9 +275,7 @@ mod tests {
     impl MockServer {
         fn start(responses: Vec<MockResponse>) -> Self {
             let mut responses = responses.into_iter();
-            Self::start_with_handler(move |_| {
-                responses.next().expect("unexpected HTTP request")
-            })
+            Self::start_with_handler(move |_| responses.next().expect("unexpected HTTP request"))
         }
 
         fn start_with_handler(
@@ -419,6 +423,23 @@ mod tests {
                 "chargedEventCounts": charged_counts
             }
         })
+    }
+
+    fn tiered_ppe_run_response(max_total_charge_usd: f64, charged_counts: Value) -> Value {
+        let mut run = ppe_run_response(max_total_charge_usd, charged_counts);
+        let events = run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            .as_object_mut()
+            .unwrap();
+        for event_name in [ITEM_RESULT_CHARGE_EVENT, "apify-default-dataset-item"] {
+            events.insert(
+                event_name.to_owned(),
+                json!({"eventTieredPricingUsd": {
+                    "FREE": {"tieredEventPriceUsd": 0.0001},
+                    "GOLD": {"tieredEventPriceUsd": 0.0003}
+                }}),
+            );
+        }
+        run
     }
 
     #[test]
@@ -585,13 +606,67 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn tier_priced_result_event_saves_items_without_flat_price_charge() {
+        let server = MockServer::start(vec![
+            mock_response(
+                200,
+                json!({
+                    "query": "nike shoes",
+                    "country": "DE",
+                    "max_pages": 1,
+                    "order": "newest_first"
+                }),
+            ),
+            mock_response(
+                200,
+                json!({
+                    "items": [
+                        {"id": "first", "title": "First listing"},
+                        {"id": "second", "title": "Second listing"}
+                    ],
+                    "pagination": {"has_next_page": false, "total_pages": 1, "total_entries": 2}
+                }),
+            ),
+            mock_response(
+                200,
+                tiered_ppe_run_response(0.006, json!({"apify-actor-start": 1})),
+            ),
+            mock_response(201, json!({})),
+            mock_response(200, json!({})),
+        ]);
+        let config = actor_config(&server.base_url);
+        let apify =
+            ApifyClient::new(config.apify_api_base_url.clone(), "test-token".to_owned()).unwrap();
+        let scrappa = ScrappaClient::new(
+            config.scrappa_api_base_url.clone(),
+            "test-api-key".to_owned(),
+        )
+        .unwrap();
+
+        run_actor(&apify, &scrappa, &config).await.unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 5);
+        assert_eq!(
+            request_parts(&requests[3]).0,
+            "/v2/datasets/test-dataset/items"
+        );
+        let saved_rows: Value = serde_json::from_str(request_parts(&requests[3]).1).unwrap();
+        assert_eq!(saved_rows.as_array().unwrap().len(), 2);
+        assert!(requests
+            .iter()
+            .all(|request| !request.starts_with("POST /v2/actor-runs/test-run/charge ")));
+        assert_eq!(
+            request_parts(&requests[4]).0,
+            "/v2/key-value-stores/test-store/records/OUTPUT"
+        );
+    }
+
+    #[tokio::test]
     async fn failed_dataset_write_does_not_charge_or_retry_the_append() {
         let server = MockServer::start_with_handler(|request| {
             if request.starts_with("GET /v2/actor-runs/test-run ") {
-                mock_response(
-                    200,
-                    ppe_run_response(1.0, json!({"apify-actor-start": 1})),
-                )
+                mock_response(200, ppe_run_response(1.0, json!({"apify-actor-start": 1})))
             } else if request.starts_with("POST /v2/datasets/test-dataset/items ") {
                 MockResponse {
                     status: 503,
