@@ -10,6 +10,30 @@ use crate::{
     pricing::{affordable_point_count, ChargeBudget, INTRADAY_PRICE_POINT_CHARGE_EVENT},
 };
 
+const APIFY_MAX_ATTEMPTS: usize = 3;
+const APIFY_RETRY_BASE_DELAY_MS: u64 = 250;
+const APIFY_RETRY_MAX_DELAY_MS: u64 = 2_000;
+
+fn apify_retry_delay(attempt: usize) -> Duration {
+    let exponent = u32::try_from(attempt.saturating_sub(1)).unwrap_or(u32::MAX);
+    let multiplier = 1_u64.checked_shl(exponent).unwrap_or(u64::MAX);
+    Duration::from_millis(
+        APIFY_RETRY_BASE_DELAY_MS
+            .saturating_mul(multiplier)
+            .min(APIFY_RETRY_MAX_DELAY_MS),
+    )
+}
+
+fn is_retryable_charge_status(status: StatusCode) -> bool {
+    status == StatusCode::REQUEST_TIMEOUT
+        || status == StatusCode::TOO_MANY_REQUESTS
+        || status.is_server_error()
+}
+
+fn is_retryable_dataset_status(status: StatusCode) -> bool {
+    status == StatusCode::REQUEST_TIMEOUT || status == StatusCode::TOO_MANY_REQUESTS
+}
+
 async fn response_json(response: Response, operation: &str) -> Result<Value> {
     let status = response.status();
     let body = response
@@ -232,36 +256,97 @@ impl<'a> ApifyClient<'a> {
             self.charge_sequence,
         );
         let url = self.endpoint(&["v2", "actor-runs", &self.config.actor_run_id, "charge"])?;
-        let response = self
-            .http
-            .post(url)
-            .bearer_auth(&self.config.apify_token)
-            .header(header::ACCEPT, "application/json")
-            .header("idempotency-key", idempotency_key)
-            .json(&json!({
-                "eventName": INTRADAY_PRICE_POINT_CHARGE_EVENT,
-                "count": count,
-            }))
-            .send()
-            .await
-            .context("Apify intraday price point charge request failed")?;
-        ensure_success(response, "Apify intraday price point charge request").await?;
-        self.charge_budget.confirm_point_charges(count)?;
-        Ok(())
+        let body = json!({
+            "eventName": INTRADAY_PRICE_POINT_CHARGE_EVENT,
+            "count": count,
+        });
+
+        for attempt in 1..=APIFY_MAX_ATTEMPTS {
+            let response = self
+                .http
+                .post(url.clone())
+                .bearer_auth(&self.config.apify_token)
+                .header(header::ACCEPT, "application/json")
+                .header("idempotency-key", &idempotency_key)
+                .json(&body)
+                .send()
+                .await;
+
+            match response {
+                Ok(response) if response.status().is_success() => {
+                    ensure_success(response, "Apify intraday price point charge request").await?;
+                    self.charge_budget.confirm_point_charges(count)?;
+                    return Ok(());
+                }
+                Ok(response)
+                    if attempt < APIFY_MAX_ATTEMPTS
+                        && is_retryable_charge_status(response.status()) =>
+                {
+                    let status = response.status();
+                    let delay = apify_retry_delay(attempt);
+                    eprintln!(
+                        "Apify intraday price point charge request returned {status}. Retrying attempt {}/{APIFY_MAX_ATTEMPTS} in {}ms.",
+                        attempt + 1,
+                        delay.as_millis(),
+                    );
+                    tokio::time::sleep(delay).await;
+                }
+                Ok(response) => {
+                    return ensure_success(response, "Apify intraday price point charge request")
+                        .await;
+                }
+                Err(error) if attempt < APIFY_MAX_ATTEMPTS && !error.is_builder() => {
+                    let delay = apify_retry_delay(attempt);
+                    eprintln!(
+                        "Apify intraday price point charge request failed ({error}). Retrying attempt {}/{APIFY_MAX_ATTEMPTS} in {}ms.",
+                        attempt + 1,
+                        delay.as_millis(),
+                    );
+                    tokio::time::sleep(delay).await;
+                }
+                Err(error) => {
+                    return Err(error).context("Apify intraday price point charge request failed");
+                }
+            }
+        }
+
+        unreachable!("charge retry loop always returns the final result")
     }
 
     async fn store_dataset_items(&self, items: &[Value]) -> Result<()> {
         let url = self.endpoint(&["v2", "datasets", &self.config.dataset_id, "items"])?;
-        let response = self
-            .http
-            .post(url)
-            .bearer_auth(&self.config.apify_token)
-            .header(header::ACCEPT, "application/json")
-            .json(items)
-            .send()
-            .await
-            .context("Apify dataset write failed")?;
-        ensure_success(response, "Apify dataset write").await
+        for attempt in 1..=APIFY_MAX_ATTEMPTS {
+            let response = self
+                .http
+                .post(url.clone())
+                .bearer_auth(&self.config.apify_token)
+                .header(header::ACCEPT, "application/json")
+                .json(items)
+                .send()
+                .await
+                .context("Apify dataset write failed")?;
+
+            if response.status().is_success() {
+                return ensure_success(response, "Apify dataset write").await;
+            }
+
+            if attempt < APIFY_MAX_ATTEMPTS && is_retryable_dataset_status(response.status()) {
+                let status = response.status();
+                let delay = apify_retry_delay(attempt);
+                eprintln!(
+                    "Apify dataset write returned {status}. Retrying attempt {}/{APIFY_MAX_ATTEMPTS} in {}ms.",
+                    attempt + 1,
+                    delay.as_millis(),
+                );
+                tokio::time::sleep(delay).await;
+                continue;
+            }
+
+            // Dataset appends have no idempotency key; a 5xx may follow a committed append.
+            return ensure_success(response, "Apify dataset write").await;
+        }
+
+        unreachable!("dataset retry loop always returns the final result")
     }
 }
 
@@ -273,6 +358,8 @@ mod tests {
         net::{TcpListener, TcpStream},
         thread,
     };
+
+    const DROP_RESPONSE: u16 = 0;
 
     fn read_http_request(stream: &mut TcpStream) -> Vec<u8> {
         let mut request = Vec::new();
@@ -308,13 +395,15 @@ mod tests {
                 .map(|(status, reason, body)| {
                     let (mut stream, _) = listener.accept().unwrap();
                     let request = read_http_request(&mut stream);
-                    write!(
-                        stream,
-                        "HTTP/1.1 {status} {reason}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-                        body.len(),
-                        body
-                    )
-                    .unwrap();
+                    if status != DROP_RESPONSE {
+                        write!(
+                            stream,
+                            "HTTP/1.1 {status} {reason}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                            body.len(),
+                            body
+                        )
+                        .unwrap();
+                    }
                     request
                 })
                 .collect()
@@ -373,6 +462,19 @@ mod tests {
             .map(|position| position + 4)
             .unwrap();
         serde_json::from_slice(&request[body_start..]).unwrap()
+    }
+
+    fn request_header<'a>(request: &'a [u8], name: &str) -> &'a str {
+        std::str::from_utf8(request)
+            .unwrap()
+            .lines()
+            .find_map(|line| {
+                let (header_name, value) = line.split_once(':')?;
+                header_name
+                    .eq_ignore_ascii_case(name)
+                    .then_some(value.trim())
+            })
+            .unwrap()
     }
 
     #[tokio::test]
@@ -445,6 +547,101 @@ mod tests {
             request_body(&requests[2]),
             json!({ "eventName": "intraday-price-point", "count": 2 })
         );
+    }
+
+    #[tokio::test]
+    async fn retries_ambiguous_charge_failures_with_the_same_idempotency_key() {
+        let (api_base_url, server) = mock_apify_server(vec![
+            (200, "OK", intraday_pricing_response()),
+            (201, "Created", String::new()),
+            (
+                503,
+                "Service Unavailable",
+                r#"{"error":"temporary charge failure"}"#.to_owned(),
+            ),
+            (DROP_RESPONSE, "", String::new()),
+            (201, "Created", String::new()),
+        ]);
+        let http = Client::new();
+        let config = test_apify_config(api_base_url);
+        let mut apify = ApifyClient::new(&http, &config);
+        let items = [json!({ "price": 198.42 })];
+
+        let result = apify.push_dataset_items(&items).await.unwrap();
+
+        assert_eq!(result.saved_count, 1);
+        assert!(!result.charge_limit_reached);
+        assert_eq!(apify.charge_budget.confirmed_point_charges(), 1);
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 5);
+        assert_eq!(request_path(&requests[0]), "/v2/actor-runs/test-run");
+        assert_eq!(
+            request_path(&requests[1]),
+            "/v2/datasets/test-dataset/items"
+        );
+        assert_eq!(request_path(&requests[2]), "/v2/actor-runs/test-run/charge");
+        assert_eq!(request_path(&requests[3]), "/v2/actor-runs/test-run/charge");
+        assert_eq!(request_path(&requests[4]), "/v2/actor-runs/test-run/charge");
+        assert_eq!(
+            request_header(&requests[2], "idempotency-key"),
+            request_header(&requests[3], "idempotency-key")
+        );
+        assert_eq!(
+            request_header(&requests[2], "idempotency-key"),
+            request_header(&requests[4], "idempotency-key")
+        );
+        assert_eq!(
+            request_body(&requests[2]),
+            json!({ "eventName": "intraday-price-point", "count": 1 })
+        );
+        assert_eq!(request_body(&requests[2]), request_body(&requests[3]));
+        assert_eq!(request_body(&requests[2]), request_body(&requests[4]));
+    }
+
+    #[tokio::test]
+    async fn retries_definite_dataset_rejection_before_charging() {
+        let (api_base_url, server) = mock_apify_server(vec![
+            (200, "OK", intraday_pricing_response()),
+            (
+                408,
+                "Request Timeout",
+                r#"{"error":"request incomplete"}"#.to_owned(),
+            ),
+            (
+                429,
+                "Too Many Requests",
+                r#"{"error":"rate limited"}"#.to_owned(),
+            ),
+            (201, "Created", String::new()),
+            (201, "Created", String::new()),
+        ]);
+        let http = Client::new();
+        let config = test_apify_config(api_base_url);
+        let mut apify = ApifyClient::new(&http, &config);
+        let items = [json!({ "price": 198.42 })];
+
+        let result = apify.push_dataset_items(&items).await.unwrap();
+
+        assert_eq!(result.saved_count, 1);
+        assert_eq!(apify.charge_budget.confirmed_point_charges(), 1);
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 5);
+        assert_eq!(request_path(&requests[0]), "/v2/actor-runs/test-run");
+        assert_eq!(
+            request_path(&requests[1]),
+            "/v2/datasets/test-dataset/items"
+        );
+        assert_eq!(
+            request_path(&requests[2]),
+            "/v2/datasets/test-dataset/items"
+        );
+        assert_eq!(
+            request_path(&requests[3]),
+            "/v2/datasets/test-dataset/items"
+        );
+        assert_eq!(request_path(&requests[4]), "/v2/actor-runs/test-run/charge");
+        assert_eq!(request_body(&requests[1]), request_body(&requests[2]));
+        assert_eq!(request_body(&requests[1]), request_body(&requests[3]));
     }
 
     #[tokio::test]
