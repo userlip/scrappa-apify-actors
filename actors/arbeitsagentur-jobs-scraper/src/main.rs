@@ -158,22 +158,23 @@ impl ApifyClient {
         }
 
         let capacity = self.run_dataset_capacity(items.len()).await?;
-        let mut saved = 0;
-        for item in items.iter().take(capacity) {
-            let url = self.endpoint(&["v2", "datasets", &self.dataset_id, "items"])?;
-            let response = self
-                .http
-                .post(url)
-                .bearer_auth(&self.token)
-                .header(header::ACCEPT, "application/json")
-                .json(item)
-                .send()
-                .await
-                .context("Failed to publish dataset item to Apify API")?;
-            require_apify_success(response, "dataset item publication").await?;
-            saved += 1;
+        let affordable_items = &items[..capacity];
+        if affordable_items.is_empty() {
+            return Ok(0);
         }
-        Ok(saved)
+
+        let url = self.endpoint(&["v2", "datasets", &self.dataset_id, "items"])?;
+        let response = self
+            .http
+            .post(url)
+            .bearer_auth(&self.token)
+            .header(header::ACCEPT, "application/json")
+            .json(affordable_items)
+            .send()
+            .await
+            .context("Failed to publish dataset item to Apify API")?;
+        require_apify_success(response, "dataset item publication").await?;
+        Ok(affordable_items.len())
     }
 
     async fn run_dataset_capacity(&self, requested: usize) -> Result<usize> {
@@ -1384,7 +1385,7 @@ mod tests {
             request_line(&apify_requests[2]),
             "POST /v2/datasets/dataset/items HTTP/1.1"
         );
-        assert_eq!(request_body(&apify_requests[2])["title"], "Job 1");
+        assert_eq!(request_body(&apify_requests[2])[0]["title"], "Job 1");
         assert_eq!(
             request_line(&apify_requests[3]),
             "PUT /v2/key-value-stores/store/records/OUTPUT HTTP/1.1"
@@ -1435,6 +1436,35 @@ mod tests {
         let requests = server.await.unwrap();
         assert_eq!(requests.len(), 2);
         assert!(request_line(&requests[1]).starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
+        assert_eq!(request_body(&requests[1]), json!([{"title": "first"}]));
+    }
+
+    #[tokio::test]
+    async fn dataset_publisher_sends_affordable_rows_in_one_array_request() {
+        let (base_url, server) = start_mock_server(vec![
+            MockResponse::json(200, mock_priced_run(0.0006, json!({}))),
+            MockResponse::json(201, Value::Null),
+        ])
+        .await;
+        let config = config(base_url, SCRAPPA_API_DEFAULT.to_owned());
+        let apify = ApifyClient::new(Client::new(), &config);
+        let rows = vec![
+            json!({"title": "first"}),
+            json!({"title": "second"}),
+            json!({"title": "third"}),
+        ];
+
+        assert_eq!(apify.push_dataset_items(&rows).await.unwrap(), 2);
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(
+            request_line(&requests[1]),
+            "POST /v2/datasets/dataset/items HTTP/1.1"
+        );
+        assert_eq!(
+            request_body(&requests[1]),
+            json!([{"title": "first"}, {"title": "second"}])
+        );
     }
 
     #[tokio::test]
