@@ -5,9 +5,6 @@
   "description": "Search Google Patents for prior art, IP monitoring, patent landscaping, assignee tracking, inventor research, country coverage, status, patent type, and filing or publication date filters.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

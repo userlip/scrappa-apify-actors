@@ -64,6 +64,31 @@ Each dataset item is one patent result with flattened fields for easier exports:
 
 The full Scrappa response is also stored in the key-value store as `OUTPUT`.
 
+Before writing results, the actor reads the run's PPE prices, charged event counts, and `maxTotalChargeUsd`, then saves only the affordable prefix of result rows. Apify's default dataset item event charges each row written to the default dataset. If the budget is reached, `OUTPUT` contains only the saved patent prefix and the run receives a charge-limit status message. Scrappa requests have a 60-second deadline and retry up to three times for timeouts and transient HTTP statuses (`408`, `429`, `500`, `502`, `503`, `504`).
+
+## Development
+
+This actor uses Rust 1.90. Run its focused test suite from this directory:
+
+```bash
+cargo test --locked
+```
+
+## Run locally
+
+The actor reads `INPUT` from its default key-value store, calls Scrappa, and writes dataset items and `OUTPUT` through the Apify API:
+
+```bash
+APIFY_TOKEN=... \
+ACTOR_RUN_ID=... \
+ACTOR_DEFAULT_KEY_VALUE_STORE_ID=... \
+ACTOR_DEFAULT_DATASET_ID=... \
+SCRAPPA_API_KEY=... \
+cargo run --locked
+```
+
+For local mocks, `APIFY_API_PUBLIC_BASE_URL` and `SCRAPPA_API_BASE_URL` can override the production API bases.
+
 The actor preserves Scrappa's original patent result fields and adds the flattened aliases shown above, so new upstream fields may appear in exports without an actor code change.
 
 ## Notes
