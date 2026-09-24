@@ -721,7 +721,21 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .and_then(Value::as_str)
         != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        return Ok(requested);
+    }
+
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        Some(Value::Number(value)) => value
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
+        Some(Value::Null) | None => return Ok(requested),
+        Some(_) => bail!("Apify run returned an invalid spending limit"),
+    };
+    if !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+    if max_charge == 0.0 {
+        return Ok(requested);
     }
 
     let events = data
@@ -733,11 +747,7 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -1104,6 +1114,24 @@ mod tests {
         })
     }
 
+    fn run_pricing_with_options(options: Value) -> Value {
+        json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {
+                        "actorChargeEvents": {
+                            "apify-default-dataset-item": {"eventPriceUsd": 0.0001},
+                            "other-event": {"eventPriceUsd": 0.0001}
+                        }
+                    }
+                },
+                "chargedEventCounts": {},
+                "options": options
+            }
+        })
+    }
+
     fn request_parts(request: &str) -> (&str, &str, &str) {
         let (headers, body) = request.split_once("\r\n\r\n").unwrap_or((request, ""));
         let mut parts = headers
@@ -1301,21 +1329,30 @@ mod tests {
     }
 
     #[test]
-    fn calculates_ppe_capacity_from_remaining_run_budget() {
+    fn applies_positive_ppe_caps_to_remaining_run_budget() {
         let run = run_pricing(0.0002, 0.0001, json!({"other-event":1}));
         assert_eq!(affordable_dataset_items(&run, 5).unwrap(), 1);
 
-        let no_budget = run_pricing(0.0, 0.0001, json!({}));
-        assert_eq!(affordable_dataset_items(&no_budget, 5).unwrap(), 0);
-
-        let no_charge = run_pricing(0.0, 0.0, json!({}));
+        let no_charge = run_pricing(0.0002, 0.0, json!({}));
         assert_eq!(affordable_dataset_items(&no_charge, 5).unwrap(), 5);
+    }
 
-        let invalid = json!({"data":{"pricingInfo":{"pricingModel":"PAY_PER_RESULT"}}});
-        assert!(affordable_dataset_items(&invalid, 1)
-            .unwrap_err()
-            .to_string()
-            .contains("not configured for pay-per-event pricing"));
+    #[test]
+    fn non_ppe_runs_can_save_all_requested_dataset_items() {
+        let run = json!({"data":{"pricingInfo":{"pricingModel":"PAY_PER_RESULT"}}});
+        assert_eq!(affordable_dataset_items(&run, 5).unwrap(), 5);
+    }
+
+    #[test]
+    fn zero_or_unspecified_ppe_spending_limit_is_unlimited() {
+        for options in [
+            json!({}),
+            json!({"maxTotalChargeUsd": 0}),
+            json!({"maxTotalChargeUsd": null}),
+        ] {
+            let run = run_pricing_with_options(options);
+            assert_eq!(affordable_dataset_items(&run, 5).unwrap(), 5);
+        }
     }
 
     #[test]
@@ -1403,6 +1440,57 @@ mod tests {
         );
 
         let (method, path, body) = request_parts(&requests[5]);
+        assert_eq!(
+            (method, path),
+            ("PUT", "/v2/key-value-stores/test-store/records/OUTPUT")
+        );
+        assert_eq!(
+            serde_json::from_str::<Value>(body).unwrap(),
+            followers_response
+        );
+    }
+
+    #[tokio::test]
+    async fn writes_all_followers_for_non_ppe_runs_and_keeps_full_output() {
+        let followers_response = json!({
+            "code": 0,
+            "data": {
+                "followers": [
+                    {"user_id":"1","unique_id":"first"},
+                    {"user_id":"2","unique_id":"second"}
+                ],
+                "hasMore": true,
+                "time": "1711111111"
+            }
+        });
+        let input = json!({"profile":"107955","count":2}).to_string();
+        let non_ppe_run = json!({"data":{"pricingInfo":{"pricingModel":"PAY_PER_RESULT"}}});
+        let server = MockServer::start(vec![
+            response(200, &input),
+            json_response(200, &followers_response),
+            json_response(200, &non_ppe_run),
+            response(201, ""),
+            response(201, ""),
+        ]);
+        let mut scrappa_base_url = server.base_url.clone();
+        scrappa_base_url.set_path("/api");
+        let config = test_config(&server.base_url, &scrappa_base_url);
+
+        run_actor(&Client::new(), &config).await.unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 5);
+        let (method, path, body) = request_parts(&requests[3]);
+        assert_eq!((method, path), ("POST", "/v2/datasets/test-dataset/items"));
+        assert_eq!(
+            serde_json::from_str::<Value>(body).unwrap(),
+            json!([
+                {"user_id":"1","unique_id":"first","lookup_unique_id":null,"lookup_user_id":"107955"},
+                {"user_id":"2","unique_id":"second","lookup_unique_id":null,"lookup_user_id":"107955"}
+            ])
+        );
+
+        let (method, path, body) = request_parts(&requests[4]);
         assert_eq!(
             (method, path),
             ("PUT", "/v2/key-value-stores/test-store/records/OUTPUT")
