@@ -30,3 +30,7 @@ Every unique successful video is one dataset row and one `challenge-post-result`
 TikTok cover, video, avatar, and music URLs may be signed and expire. Store media you are authorized to retain promptly. Stable `video_id`/`aweme_id` values are suitable for deduplication and monitoring.
 
 No per-video key-value-store records are written; the default dataset is the result channel.
+
+## Development
+
+The Actor is implemented in Rust. Run its focused tests from this directory with `cargo test --locked`.

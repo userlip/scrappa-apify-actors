@@ -5,7 +5,6 @@
   "description": "Batch TikTok challenge video scraper for campaign monitoring and hashtag research, powered by Scrappa.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": { "templateId": "ts-start" },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
