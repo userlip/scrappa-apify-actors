@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "docker run --rm --user \"$(id -u):$(id -g)\" -v \"$PWD:/workspace\" -w /workspace rust:1.90-slim-bookworm cargo test --locked"
+    "test": "bash ./test/run-rust-tests.sh"
   }
 }

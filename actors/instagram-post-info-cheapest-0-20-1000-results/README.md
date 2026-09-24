@@ -26,4 +26,4 @@ The default run uses 128 MB and a 300-second timeout. Suggested pricing is $0.20
 
 ## Development
 
-The actor runtime is a native Rust binary. Run focused Rust tests with `cargo test --locked`; `npm test` runs the same command in the pinned Rust container for the existing actor test job.
+The actor runtime is a native Rust binary. Run focused Rust tests with `cargo test --locked`. `npm test` uses a local Rust toolchain, a permitted Rust container, or installs pinned Rust 1.90 in the runner's temporary directory.
