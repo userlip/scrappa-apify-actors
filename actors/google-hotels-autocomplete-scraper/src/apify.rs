@@ -21,6 +21,12 @@ pub enum PricingMode {
 }
 
 #[derive(Debug)]
+pub enum ChargedDatasetError {
+    DatasetWrite(anyhow::Error),
+    EventCharge(anyhow::Error),
+}
+
+#[derive(Debug)]
 pub struct EventBudget {
     event_name: String,
     event_price_usd: f64,
@@ -223,6 +229,7 @@ impl ApifyClient {
     pub async fn set_terminal_status_message(&self, status_message: &str) -> Result<()> {
         let url = self.endpoint(&["v2", "actor-runs", &self.actor_run_id])?;
         let body = json!({
+            "runId": self.actor_run_id.as_str(),
             "statusMessage": status_message,
             "isStatusMessageTerminal": true
         });
@@ -294,15 +301,19 @@ impl ApifyClient {
         &mut self,
         budget: &mut EventBudget,
         items: &[Value],
-    ) -> Result<usize> {
+    ) -> std::result::Result<usize, ChargedDatasetError> {
         let count = budget.affordable_count(items.len());
         if count == 0 {
             return Ok(0);
         }
 
-        self.push_dataset_items(&items[..count]).await?;
+        self.push_dataset_items(&items[..count])
+            .await
+            .map_err(ChargedDatasetError::DatasetWrite)?;
+        self.charge_event(budget.event_name(), count)
+            .await
+            .map_err(ChargedDatasetError::EventCharge)?;
         budget.record_charge(count);
-        self.charge_event(budget.event_name(), count).await?;
         Ok(count)
     }
 
@@ -779,6 +790,7 @@ mod tests {
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),
             json!({
+                "runId": "run-test",
                 "statusMessage": "Saved 2 suggestion results.",
                 "isStatusMessageTerminal": true
             })
@@ -820,9 +832,11 @@ mod tests {
             .await
             .unwrap_err();
 
-        assert!(error
-            .to_string()
-            .contains("Apify dataset item publication failed"));
+        assert!(matches!(
+            error,
+            ChargedDatasetError::DatasetWrite(error)
+                if error.to_string().contains("Apify dataset item publication failed")
+        ));
         assert_eq!(budget.affordable_count(2), 1);
         let dataset = server.next_request();
         assert!(dataset.starts_with("POST /v2/datasets/dataset-test/items HTTP/1.1"));
