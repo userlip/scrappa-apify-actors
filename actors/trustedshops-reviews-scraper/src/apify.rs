@@ -44,7 +44,8 @@ impl ApifyClient {
                 .timeout(Duration::from_secs(60))
                 .build()
                 .context("Could not create Apify API client")?,
-            base_url: Url::parse(base_url).context("APIFY_API_PUBLIC_BASE_URL must be a valid URL")?,
+            base_url: Url::parse(base_url)
+                .context("APIFY_API_PUBLIC_BASE_URL must be a valid URL")?,
             token,
             store_id,
             input_key,
@@ -71,12 +72,15 @@ impl ApifyClient {
 
     pub async fn get_input(&self) -> Result<Option<Value>> {
         let response = self
-            .request(Method::GET, self.resource_url(&[
-                "key-value-stores",
-                &self.store_id,
-                "records",
-                &self.input_key,
-            ])?)
+            .request(
+                Method::GET,
+                self.resource_url(&[
+                    "key-value-stores",
+                    &self.store_id,
+                    "records",
+                    &self.input_key,
+                ])?,
+            )
             .send()
             .await
             .context("Failed to fetch Actor input from the default key-value store")?;
@@ -84,12 +88,20 @@ impl ApifyClient {
             return Ok(None);
         }
         let response = successful_response(response, "fetch Actor input").await?;
-        Ok(Some(response.json().await.context("Actor input record is not valid JSON")?))
+        Ok(Some(
+            response
+                .json()
+                .await
+                .context("Actor input record is not valid JSON")?,
+        ))
     }
 
     pub async fn get_run_pricing(&self) -> Result<RunPricing> {
         let response = self
-            .request(Method::GET, self.resource_url(&["actor-runs", &self.run_id])?)
+            .request(
+                Method::GET,
+                self.resource_url(&["actor-runs", &self.run_id])?,
+            )
             .send()
             .await
             .context("Apify run pricing request failed")?;
@@ -106,7 +118,10 @@ impl ApifyClient {
             return Ok(());
         }
         let response = self
-            .request(Method::POST, self.resource_url(&["datasets", &self.dataset_id, "items"])?)
+            .request(
+                Method::POST,
+                self.resource_url(&["datasets", &self.dataset_id, "items"])?,
+            )
             .json(items)
             .send()
             .await
@@ -115,12 +130,20 @@ impl ApifyClient {
         Ok(())
     }
 
-    pub async fn charge_event(&self, event_name: &str, count: usize, idempotency_key: &str) -> Result<()> {
+    pub async fn charge_event(
+        &self,
+        event_name: &str,
+        count: usize,
+        idempotency_key: &str,
+    ) -> Result<()> {
         if count == 0 {
             return Ok(());
         }
         let response = self
-            .request(Method::POST, self.resource_url(&["actor-runs", &self.run_id, "charge"])?)
+            .request(
+                Method::POST,
+                self.resource_url(&["actor-runs", &self.run_id, "charge"])?,
+            )
             .header("idempotency-key", idempotency_key)
             .json(&json!({"eventName": event_name, "count": count}))
             .send()
@@ -132,12 +155,10 @@ impl ApifyClient {
 
     pub async fn set_output(&self, output: &Value) -> Result<()> {
         let response = self
-            .request(Method::PUT, self.resource_url(&[
-                "key-value-stores",
-                &self.store_id,
-                "records",
-                "OUTPUT",
-            ])?)
+            .request(
+                Method::PUT,
+                self.resource_url(&["key-value-stores", &self.store_id, "records", "OUTPUT"])?,
+            )
             .json(output)
             .send()
             .await
@@ -148,7 +169,10 @@ impl ApifyClient {
 
     pub async fn set_terminal_status_message(&self, message: &str) -> Result<()> {
         let response = self
-            .request(Method::PUT, self.resource_url(&["actor-runs", &self.run_id])?)
+            .request(
+                Method::PUT,
+                self.resource_url(&["actor-runs", &self.run_id])?,
+            )
             .json(&json!({
                 "runId": self.run_id,
                 "statusMessage": message,
@@ -164,9 +188,14 @@ impl ApifyClient {
 
 impl RunPricing {
     fn from_run(run: &Value) -> Result<Self> {
-        let data = run.get("data").ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-        let pricing_info = data.get("pricingInfo").ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-        let is_pay_per_event = pricing_info.get("pricingModel").and_then(Value::as_str) == Some("PAY_PER_EVENT");
+        let data = run
+            .get("data")
+            .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+        let pricing_info = data
+            .get("pricingInfo")
+            .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
+        let is_pay_per_event =
+            pricing_info.get("pricingModel").and_then(Value::as_str) == Some("PAY_PER_EVENT");
         let mut event_prices = HashMap::new();
         if is_pay_per_event {
             let events = pricing_info
@@ -224,12 +253,18 @@ impl RunPricing {
             return requested;
         }
         let item_price = self.event_prices.get(event_name).copied().unwrap_or(0.0)
-            + self.event_prices.get(DEFAULT_DATASET_ITEM_EVENT).copied().unwrap_or(0.0);
+            + self
+                .event_prices
+                .get(DEFAULT_DATASET_ITEM_EVENT)
+                .copied()
+                .unwrap_or(0.0);
         if item_price <= 0.0 {
             return requested;
         }
         let remaining = self.max_total_charge_usd - round_to(self.total_charged_amount(), 6);
-        let affordable = round_to((remaining / item_price).max(0.0), 4).floor().clamp(0.0, usize::MAX as f64) as usize;
+        let affordable = round_to((remaining / item_price).max(0.0), 4)
+            .floor()
+            .clamp(0.0, usize::MAX as f64) as usize;
         if affordable >= requested {
             requested
         } else if affordable == 0 && self.total_charged_amount() <= self.max_total_charge_usd {
@@ -260,8 +295,14 @@ impl RunPricing {
                 event_charge_limit_reached,
             };
         }
-        *self.charged_counts.entry(event_name.to_owned()).or_default() += count as u64;
-        *self.charged_counts.entry(DEFAULT_DATASET_ITEM_EVENT.to_owned()).or_default() += count as u64;
+        *self
+            .charged_counts
+            .entry(event_name.to_owned())
+            .or_default() += count as u64;
+        *self
+            .charged_counts
+            .entry(DEFAULT_DATASET_ITEM_EVENT.to_owned())
+            .or_default() += count as u64;
         let event_charge_limit_reached = self
             .chargeable_event_count(event_name)
             .is_some_and(|capacity| capacity == 0)
@@ -278,7 +319,9 @@ impl RunPricing {
     fn total_charged_amount(&self) -> f64 {
         self.charged_counts
             .iter()
-            .map(|(event_name, count)| self.event_prices.get(event_name).copied().unwrap_or(0.0) * *count as f64)
+            .map(|(event_name, count)| {
+                self.event_prices.get(event_name).copied().unwrap_or(0.0) * *count as f64
+            })
             .sum()
     }
 
@@ -322,7 +365,8 @@ mod tests {
                 "chargedEventCounts": counts,
                 "options": {"maxTotalChargeUsd": maximum}
             }
-        })).unwrap()
+        }))
+        .unwrap()
     }
 
     #[test]
@@ -350,7 +394,14 @@ mod tests {
         );
         assert_eq!(budget.dataset_push_limit(5, "review-result"), 2);
         let result = budget.record_dataset_push("review-result", 2);
-        assert_eq!(result, PushChargeResult { saved_count: 2, charged_count: 4, event_charge_limit_reached: false });
+        assert_eq!(
+            result,
+            PushChargeResult {
+                saved_count: 2,
+                charged_count: 4,
+                event_charge_limit_reached: false
+            }
+        );
         assert_eq!(budget.chargeable_event_count("review-result"), Some(1));
         assert_eq!(budget.dataset_push_limit(5, "review-result"), 1);
         assert_eq!(budget.dataset_push_limit(5, "unknown-event"), 3);
@@ -366,13 +417,23 @@ mod tests {
         assert_eq!(budget.chargeable_event_count("review-result"), Some(2));
         assert_eq!(budget.dataset_push_limit(5, "review-result"), 2);
         let result = budget.record_dataset_push("review-result", 2);
-        assert_eq!(result, PushChargeResult { saved_count: 2, charged_count: 4, event_charge_limit_reached: true });
+        assert_eq!(
+            result,
+            PushChargeResult {
+                saved_count: 2,
+                charged_count: 4,
+                event_charge_limit_reached: true
+            }
+        );
         assert_eq!(budget.chargeable_event_count("review-result"), Some(0));
     }
 
     #[test]
     fn allows_non_ppe_runs_without_event_budget_limits() {
-        let pricing = RunPricing::from_run(&json!({ "data": {"pricingInfo":{"pricingModel":"PRICE_PER_DATASET_ITEM"}} })).unwrap();
+        let pricing = RunPricing::from_run(
+            &json!({ "data": {"pricingInfo":{"pricingModel":"PRICE_PER_DATASET_ITEM"}} }),
+        )
+        .unwrap();
         assert!(!pricing.is_pay_per_event);
         assert_eq!(pricing.chargeable_event_count("review-result"), None);
         assert_eq!(pricing.dataset_push_limit(10, "review-result"), 10);

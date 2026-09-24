@@ -48,17 +48,37 @@ pub fn enrich_review(
     item.insert("tsid".into(), json!(target.tsid));
     item.insert("shop_name".into(), shop_name(review, response));
     item.insert("rating".into(), review_rating(review));
-    item.insert("review_text".into(), review_text(review).unwrap_or(Value::Null));
-    item.insert("review_title".into(), review_title(review).unwrap_or(Value::Null));
-    item.insert("created_at".into(), review_date(review).unwrap_or(Value::Null));
+    item.insert(
+        "review_text".into(),
+        review_text(review).unwrap_or(Value::Null),
+    );
+    item.insert(
+        "review_title".into(),
+        review_title(review).unwrap_or(Value::Null),
+    );
+    item.insert(
+        "created_at".into(),
+        review_date(review).unwrap_or(Value::Null),
+    );
     item.insert("verified".into(), review_verified(review));
     item.insert(
         "criteria".into(),
-        first_non_null(review, &["criteria", "ratings"]).cloned().unwrap_or(Value::Null),
+        first_non_null(review, &["criteria", "ratings"])
+            .cloned()
+            .unwrap_or(Value::Null),
     );
-    item.insert("review_id".into(), review_id(review).map_or(Value::Null, Value::String));
-    item.insert("page".into(), request_params.get("page").cloned().unwrap_or(Value::Null));
-    item.insert("size".into(), request_params.get("size").cloned().unwrap_or(Value::Null));
+    item.insert(
+        "review_id".into(),
+        review_id(review).map_or(Value::Null, Value::String),
+    );
+    item.insert(
+        "page".into(),
+        request_params.get("page").cloned().unwrap_or(Value::Null),
+    );
+    item.insert(
+        "size".into(),
+        request_params.get("size").cloned().unwrap_or(Value::Null),
+    );
     item.insert("source_url".into(), json!(target.source_url));
     item.insert("input".into(), json!(target.input));
     item.insert(
@@ -136,7 +156,10 @@ fn review_date(review: &Value) -> Option<Value> {
         return Some(json!(value.trim()));
     }
     let timestamp = value.as_i64().or_else(|| {
-        value.as_f64().filter(|number| number.is_finite()).map(|number| number as i64)
+        value
+            .as_f64()
+            .filter(|number| number.is_finite())
+            .map(|number| number as i64)
     })?;
     let millis = if timestamp > 100_000_000_000 {
         timestamp
@@ -154,8 +177,18 @@ fn review_verified(review: &Value) -> Value {
         return json!(value);
     }
     match review.get("verificationStatus").and_then(Value::as_str) {
-        Some(value) if ["MEMBER_VERIFIED", "VERIFIED"].contains(&value.trim().to_ascii_uppercase().as_str()) => json!(true),
-        Some(value) if ["UNVERIFIED", "NOT_VERIFIED", "NOT_MEMBER_VERIFIED"].contains(&value.trim().to_ascii_uppercase().as_str()) => json!(false),
+        Some(value)
+            if ["MEMBER_VERIFIED", "VERIFIED"]
+                .contains(&value.trim().to_ascii_uppercase().as_str()) =>
+        {
+            json!(true)
+        }
+        Some(value)
+            if ["UNVERIFIED", "NOT_VERIFIED", "NOT_MEMBER_VERIFIED"]
+                .contains(&value.trim().to_ascii_uppercase().as_str()) =>
+        {
+            json!(false)
+        }
         _ => Value::Null,
     }
 }
@@ -173,32 +206,38 @@ fn shop_name(review: &Value, response: &Value) -> Value {
 }
 
 fn total_pages(response: &Value) -> Value {
-    first_non_null(response, &[
-        "pagination.total_pages",
-        "pagination.totalPages",
-        "meta.pagination.total_pages",
-        "meta.pagination.totalPages",
-        "meta.total_pages",
-        "meta.totalPages",
-        "metaData.totalPageCount",
-    ])
+    first_non_null(
+        response,
+        &[
+            "pagination.total_pages",
+            "pagination.totalPages",
+            "meta.pagination.total_pages",
+            "meta.pagination.totalPages",
+            "meta.total_pages",
+            "meta.totalPages",
+            "metaData.totalPageCount",
+        ],
+    )
     .filter(|value| value.is_number())
     .cloned()
     .unwrap_or(Value::Null)
 }
 
 fn total_reviews(response: &Value) -> Value {
-    first_non_null(response, &[
-        "pagination.total_count",
-        "pagination.totalCount",
-        "meta.pagination.total_count",
-        "meta.pagination.totalCount",
-        "meta.total_count",
-        "meta.totalCount",
-        "metaData.totalReviewCount",
-        "data.shop.reviewCount",
-        "response.data.shop.reviewCount",
-    ])
+    first_non_null(
+        response,
+        &[
+            "pagination.total_count",
+            "pagination.totalCount",
+            "meta.pagination.total_count",
+            "meta.pagination.totalCount",
+            "meta.total_count",
+            "meta.totalCount",
+            "metaData.totalReviewCount",
+            "data.shop.reviewCount",
+            "response.data.shop.reviewCount",
+        ],
+    )
     .filter(|value| value.is_number())
     .cloned()
     .unwrap_or(Value::Null)
@@ -227,7 +266,10 @@ mod tests {
     const TSID: &str = "XFB15FFBDE1DEE7A55D292A7D48598A6A";
 
     fn target() -> TrustedShopsTarget {
-        build_request_plan(&json!({ "tsid": TSID })).unwrap().targets.remove(0)
+        build_request_plan(&json!({ "tsid": TSID }))
+            .unwrap()
+            .targets
+            .remove(0)
     }
 
     #[test]
@@ -237,9 +279,24 @@ mod tests {
             "data": {"reviews": [{"review_id":"review-2", "title":"Second"}, {"title":"Missing ID"}]}
         });
         let reviews = collect_reviews(&response);
-        assert_eq!(reviews.iter().map(|review| review["title"].as_str().unwrap()).collect::<Vec<_>>(), ["First", "Second", "Missing ID"]);
-        assert_eq!(collect_reviews(&json!({ "data": [{"id":"review-3"}] })).len(), 1);
-        assert_eq!(collect_reviews(&json!({ "response": {"data": {"shop": {"reviews": [{"id":"review-4"}]}}} })).len(), 1);
+        assert_eq!(
+            reviews
+                .iter()
+                .map(|review| review["title"].as_str().unwrap())
+                .collect::<Vec<_>>(),
+            ["First", "Second", "Missing ID"]
+        );
+        assert_eq!(
+            collect_reviews(&json!({ "data": [{"id":"review-3"}] })).len(),
+            1
+        );
+        assert_eq!(
+            collect_reviews(
+                &json!({ "response": {"data": {"shop": {"reviews": [{"id":"review-4"}]}}} })
+            )
+            .len(),
+            1
+        );
         assert!(collect_reviews(&json!({})).is_empty());
     }
 
@@ -275,7 +332,11 @@ mod tests {
             "criteria": {"delivery": 5},
             "customField": "preserved"
         });
-        let params = page_params(&build_request_plan(&json!({ "tsid": TSID, "page": 2, "size": 10, "market": "DEU" })).unwrap(), 2);
+        let params = page_params(
+            &build_request_plan(&json!({ "tsid": TSID, "page": 2, "size": 10, "market": "DEU" }))
+                .unwrap(),
+            2,
+        );
         let response = json!({"pagination": {"total_count": 123, "total_pages": 13}});
         let item = enrich_review(&review, &target(), &params, &response, false);
         assert_eq!(item["tsid"], TSID);
@@ -295,7 +356,10 @@ mod tests {
         assert_eq!(item["page_total_pages"], 13);
         assert_eq!(item["customField"], "preserved");
         assert!(item.get("raw_review").is_none());
-        assert_eq!(enrich_review(&review, &target(), &params, &response, true)["raw_review"], review);
+        assert_eq!(
+            enrich_review(&review, &target(), &params, &response, true)["raw_review"],
+            review
+        );
     }
 
     #[test]
@@ -313,16 +377,46 @@ mod tests {
         assert_eq!(item["created_at"], "2026-05-31T19:13:43.000Z");
         assert_eq!(item["verified"], true);
         assert_eq!(item["page_total_reviews"], 100);
-        assert_eq!(enrich_review(&json!({"verificationStatus":"UNVERIFIED"}), &target(), &Map::new(), &json!({}), false)["verified"], false);
-        assert_eq!(enrich_review(&json!({"verificationStatus":"PENDING"}), &target(), &Map::new(), &json!({}), false)["verified"], Value::Null);
+        assert_eq!(
+            enrich_review(
+                &json!({"verificationStatus":"UNVERIFIED"}),
+                &target(),
+                &Map::new(),
+                &json!({}),
+                false
+            )["verified"],
+            false
+        );
+        assert_eq!(
+            enrich_review(
+                &json!({"verificationStatus":"PENDING"}),
+                &target(),
+                &Map::new(),
+                &json!({}),
+                false
+            )["verified"],
+            Value::Null
+        );
     }
 
     #[test]
     fn handles_pagination_stop_conditions() {
-        assert_eq!(has_next_page(&json!({"pagination":{"has_next_page":false}}), 1), Some(false));
-        assert_eq!(has_next_page(&json!({"meta":{"pagination":{"hasNextPage":true}}}), 1), Some(true));
-        assert_eq!(has_next_page(&json!({"metaData":{"totalPageCount":2}}), 1), Some(true));
-        assert_eq!(has_next_page(&json!({"metaData":{"totalPageCount":2}}), 2), Some(false));
+        assert_eq!(
+            has_next_page(&json!({"pagination":{"has_next_page":false}}), 1),
+            Some(false)
+        );
+        assert_eq!(
+            has_next_page(&json!({"meta":{"pagination":{"hasNextPage":true}}}), 1),
+            Some(true)
+        );
+        assert_eq!(
+            has_next_page(&json!({"metaData":{"totalPageCount":2}}), 1),
+            Some(true)
+        );
+        assert_eq!(
+            has_next_page(&json!({"metaData":{"totalPageCount":2}}), 2),
+            Some(false)
+        );
         assert_eq!(has_next_page(&json!({}), 1), None);
     }
 }

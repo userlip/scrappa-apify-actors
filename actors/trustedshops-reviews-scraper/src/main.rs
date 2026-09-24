@@ -4,7 +4,9 @@ use std::{env, process};
 
 use trustedshops_reviews_scraper::{
     apify::ApifyClient,
-    request_params::{RequestPlan, TrustedShopsTarget, build_request_plan, describe_request, page_params},
+    request_params::{
+        RequestPlan, TrustedShopsTarget, build_request_plan, describe_request, page_params,
+    },
     review_processing::{collect_reviews, enrich_review, has_next_page},
     scrappa::{REQUEST_TIMEOUT_MS, ScrappaClient, ScrappaError},
 };
@@ -32,13 +34,27 @@ impl ActorConfig {
             .ok_or_else(|| anyhow!("SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."))?;
         Ok(Self {
             scrappa_api_key,
-            scrappa_api_base_url: env::var("SCRAPPA_API_BASE_URL").unwrap_or_else(|_| SCRAPPA_API_BASE_URL.into()),
-            apify_api_base_url: env::var("APIFY_API_PUBLIC_BASE_URL").unwrap_or_else(|_| APIFY_API_PUBLIC_BASE_URL.into()),
-            store_id: required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID", "ACTOR_DEFAULT_KEY_VALUE_STORE_ID environment variable is not set")?,
+            scrappa_api_base_url: env::var("SCRAPPA_API_BASE_URL")
+                .unwrap_or_else(|_| SCRAPPA_API_BASE_URL.into()),
+            apify_api_base_url: env::var("APIFY_API_PUBLIC_BASE_URL")
+                .unwrap_or_else(|_| APIFY_API_PUBLIC_BASE_URL.into()),
+            store_id: required_env(
+                "ACTOR_DEFAULT_KEY_VALUE_STORE_ID",
+                "ACTOR_DEFAULT_KEY_VALUE_STORE_ID environment variable is not set",
+            )?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".into()),
-            dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID", "ACTOR_DEFAULT_DATASET_ID environment variable is not set")?,
-            run_id: required_env("ACTOR_RUN_ID", "ACTOR_RUN_ID environment variable is not set")?,
-            apify_token: required_env("APIFY_TOKEN", "APIFY_TOKEN environment variable is not set")?,
+            dataset_id: required_env(
+                "ACTOR_DEFAULT_DATASET_ID",
+                "ACTOR_DEFAULT_DATASET_ID environment variable is not set",
+            )?,
+            run_id: required_env(
+                "ACTOR_RUN_ID",
+                "ACTOR_RUN_ID environment variable is not set",
+            )?,
+            apify_token: required_env(
+                "APIFY_TOKEN",
+                "APIFY_TOKEN environment variable is not set",
+            )?,
         })
     }
 
@@ -83,7 +99,13 @@ fn target_value(target: &TrustedShopsTarget) -> Value {
     })
 }
 
-fn page_output(target: &TrustedShopsTarget, page: u64, reviews_count: usize, response: &Value, include_raw: bool) -> Value {
+fn page_output(
+    target: &TrustedShopsTarget,
+    page: u64,
+    reviews_count: usize,
+    response: &Value,
+    include_raw: bool,
+) -> Value {
     let mut page = Map::from_iter([
         ("tsid".into(), json!(target.tsid)),
         ("page".into(), json!(page)),
@@ -96,7 +118,10 @@ fn page_output(target: &TrustedShopsTarget, page: u64, reviews_count: usize, res
 }
 
 fn actor_error_message(error: &anyhow::Error) -> String {
-    if error.downcast_ref::<ScrappaError>().is_some_and(ScrappaError::is_timeout) {
+    if error
+        .downcast_ref::<ScrappaError>()
+        .is_some_and(ScrappaError::is_timeout)
+    {
         return format!(
             "{error}. The Trusted Shops reviews request exceeded the {}s Scrappa API timeout. Try fewer pages, fewer TSIDs, or run the request again.",
             REQUEST_TIMEOUT_MS / 1000
@@ -124,9 +149,15 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient) -> Result<()> {
         .filter(|input| !input.is_null())
         .ok_or_else(|| anyhow!("Input is required"))?;
     let plan = build_request_plan(&input).map_err(anyhow::Error::msg)?;
-    println!("Fetching Trusted Shops reviews for {}", describe_request(&plan));
+    println!(
+        "Fetching Trusted Shops reviews for {}",
+        describe_request(&plan)
+    );
 
-    let scrappa = ScrappaClient::new(config.scrappa_api_key.clone(), config.scrappa_api_base_url.clone())?;
+    let scrappa = ScrappaClient::new(
+        config.scrappa_api_key.clone(),
+        config.scrappa_api_base_url.clone(),
+    )?;
     let mut responses = Vec::new();
     let mut reviews_extracted = 0;
     for target in &plan.targets {
@@ -147,13 +178,25 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient) -> Result<()> {
                 return Ok(());
             }
 
-            println!("Fetching Trusted Shops reviews page {page} for {}", target.tsid);
+            println!(
+                "Fetching Trusted Shops reviews page {page} for {}",
+                target.tsid
+            );
             let response = fetch_page(&scrappa, target, &params).await?;
             let reviews = collect_reviews(&response);
-            responses.push(page_output(target, page, reviews.len(), &response, plan.include_raw_responses));
+            responses.push(page_output(
+                target,
+                page,
+                reviews.len(),
+                &response,
+                plan.include_raw_responses,
+            ));
 
             if reviews.is_empty() {
-                println!("No Trusted Shops reviews found on page {page} for {}", target.tsid);
+                println!(
+                    "No Trusted Shops reviews found on page {page} for {}",
+                    target.tsid
+                );
                 break;
             }
             let enriched_reviews = reviews
@@ -171,7 +214,8 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient) -> Result<()> {
                         .charge_event(REVIEW_RESULT_CHARGE_EVENT, rows.len(), &idempotency_key)
                         .await?;
                 }
-                let charge_result = pricing.record_dataset_push(REVIEW_RESULT_CHARGE_EVENT, rows.len());
+                let charge_result =
+                    pricing.record_dataset_push(REVIEW_RESULT_CHARGE_EVENT, rows.len());
                 let saved_count = charge_result.charged_count.min(requested_count);
                 if charge_result.event_charge_limit_reached {
                     let status_message = format!(
@@ -179,13 +223,16 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient) -> Result<()> {
                         target.tsid
                     );
                     println!("{status_message}");
-                    println!("{}", json!({
-                        "event": REVIEW_RESULT_CHARGE_EVENT,
-                        "saved_count": saved_count,
-                        "requested_count": requested_count,
-                        "tsid": target.tsid,
-                        "page": page,
-                    }));
+                    println!(
+                        "{}",
+                        json!({
+                            "event": REVIEW_RESULT_CHARGE_EVENT,
+                            "saved_count": saved_count,
+                            "requested_count": requested_count,
+                            "tsid": target.tsid,
+                            "page": page,
+                        })
+                    );
                     apify.set_terminal_status_message(&status_message).await?;
                     return Ok(());
                 }
@@ -195,7 +242,10 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient) -> Result<()> {
                 requested_count
             };
             reviews_extracted += saved_count;
-            println!("Found {} Trusted Shops review(s) on page {page}; saved {saved_count}", reviews.len());
+            println!(
+                "Found {} Trusted Shops review(s) on page {page}; saved {saved_count}",
+                reviews.len()
+            );
 
             if has_next_page(&response, page) == Some(false) {
                 println!("Stopping after page {page}; Scrappa reported no next page");
@@ -207,11 +257,14 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient) -> Result<()> {
     let output = build_output(&plan, responses, reviews_extracted);
     apify.set_output(&output).await?;
     println!("Trusted Shops reviews extraction completed successfully");
-    println!("Results summary: {}", json!({
-        "targets": plan.targets.iter().map(|target| target.tsid.as_str()).collect::<Vec<_>>(),
-        "pages_fetched": output["pages_fetched"],
-        "reviews_extracted": reviews_extracted,
-    }));
+    println!(
+        "Results summary: {}",
+        json!({
+            "targets": plan.targets.iter().map(|target| target.tsid.as_str()).collect::<Vec<_>>(),
+            "pages_fetched": output["pages_fetched"],
+            "reviews_extracted": reviews_extracted,
+        })
+    );
     Ok(())
 }
 
@@ -248,15 +301,28 @@ mod tests {
 
     #[test]
     fn output_matches_node_actor_request_and_response_shape() {
-        let plan = build_request_plan(&json!({ "tsids": [TSID], "size": 20, "max_pages": 2 })).unwrap();
-        let response = page_output(&plan.targets[0], 1, 1, &json!({"reviews":[{"id":"review-1"}]}), true);
+        let plan =
+            build_request_plan(&json!({ "tsids": [TSID], "size": 20, "max_pages": 2 })).unwrap();
+        let response = page_output(
+            &plan.targets[0],
+            1,
+            1,
+            &json!({"reviews":[{"id":"review-1"}]}),
+            true,
+        );
         let output = build_output(&plan, vec![response], 1);
-        assert_eq!(output["request"]["targets"][0]["sourceUrl"], format!("https://www.trustedshops.de/bewertung/info_{TSID}.html"));
+        assert_eq!(
+            output["request"]["targets"][0]["sourceUrl"],
+            format!("https://www.trustedshops.de/bewertung/info_{TSID}.html")
+        );
         assert_eq!(output["request"]["start_page"], 1);
         assert_eq!(output["request"]["max_pages"], 2);
         assert_eq!(output["pages_fetched"], 1);
         assert_eq!(output["reviews_extracted"], 1);
         assert_eq!(output["responses"][0]["count"], 1);
-        assert_eq!(output["responses"][0]["response"]["reviews"][0]["id"], "review-1");
+        assert_eq!(
+            output["responses"][0]["response"]["reviews"][0]["id"],
+            "review-1"
+        );
     }
 }

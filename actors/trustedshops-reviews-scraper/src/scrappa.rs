@@ -1,6 +1,10 @@
 use reqwest::{Client, Url};
 use serde_json::{Map, Value};
-use std::{error::Error, fmt, time::{Duration, SystemTime, UNIX_EPOCH}};
+use std::{
+    error::Error,
+    fmt,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
 const MAX_ATTEMPTS: usize = 3;
@@ -30,8 +34,13 @@ pub enum ScrappaError {
 impl fmt::Display for ScrappaError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Timeout => write!(formatter, "Scrappa API request timed out after {REQUEST_TIMEOUT_MS}ms"),
-            Self::Api { status, message } => write!(formatter, "Scrappa API error ({status}): {message}"),
+            Self::Timeout => write!(
+                formatter,
+                "Scrappa API request timed out after {REQUEST_TIMEOUT_MS}ms"
+            ),
+            Self::Api { status, message } => {
+                write!(formatter, "Scrappa API error ({status}): {message}")
+            }
             Self::Transport(error) => write!(formatter, "{error}"),
             Self::InvalidResponse(error) => write!(formatter, "{error}"),
             Self::InvalidUrl(error) => write!(formatter, "{error}"),
@@ -98,7 +107,11 @@ impl ScrappaClient {
         })
     }
 
-    pub async fn get(&self, endpoint: &str, params: &Map<String, Value>) -> Result<Value, ScrappaError> {
+    pub async fn get(
+        &self,
+        endpoint: &str,
+        params: &Map<String, Value>,
+    ) -> Result<Value, ScrappaError> {
         let mut last_error = None;
         for attempt in 1..=self.attempts {
             match self.send(endpoint, params).await {
@@ -122,10 +135,14 @@ impl ScrappaClient {
         Err(last_error.expect("at least one Scrappa request attempt is made"))
     }
 
-    async fn send(&self, endpoint: &str, params: &Map<String, Value>) -> Result<Value, ScrappaError> {
+    async fn send(
+        &self,
+        endpoint: &str,
+        params: &Map<String, Value>,
+    ) -> Result<Value, ScrappaError> {
         let base_url = self.base_url.trim_end_matches('/');
-        let mut url = Url::parse(&format!("{base_url}{endpoint}"))
-            .map_err(ScrappaError::InvalidUrl)?;
+        let mut url =
+            Url::parse(&format!("{base_url}{endpoint}")).map_err(ScrappaError::InvalidUrl)?;
         {
             let mut query = url.query_pairs_mut();
             for (key, value) in params {
@@ -203,7 +220,13 @@ fn js_string(value: &Value) -> String {
             .as_array()
             .unwrap()
             .iter()
-            .map(|value| if value.is_null() { String::new() } else { js_string(value) })
+            .map(|value| {
+                if value.is_null() {
+                    String::new()
+                } else {
+                    js_string(value)
+                }
+            })
             .collect::<Vec<_>>()
             .join(","),
         Value::Object(_) => "[object Object]".into(),
@@ -226,7 +249,13 @@ fn api_error_message(body: &str, fallback: &str) -> String {
                 .map(|(field, messages)| {
                     let messages = messages
                         .as_array()
-                        .map(|messages| messages.iter().filter_map(Value::as_str).collect::<Vec<_>>().join(", "))
+                        .map(|messages| {
+                            messages
+                                .iter()
+                                .filter_map(Value::as_str)
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        })
                         .unwrap_or_default();
                     format!("{field}: {messages}")
                 })
@@ -239,7 +268,12 @@ fn api_error_message(body: &str, fallback: &str) -> String {
         }
         return message;
     }
-    body.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(500).collect()
+    body.split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .chars()
+        .take(500)
+        .collect()
 }
 
 #[cfg(test)]
@@ -274,7 +308,9 @@ mod tests {
                         break;
                     }
                 }
-                sender.send(String::from_utf8_lossy(&request).into_owned()).unwrap();
+                sender
+                    .send(String::from_utf8_lossy(&request).into_owned())
+                    .unwrap();
                 if delay_ms > 0 {
                     thread::sleep(Duration::from_millis(delay_ms));
                 }
@@ -305,24 +341,51 @@ mod tests {
             3,
             0,
             0,
-        ).unwrap();
-        let params = serde_json::from_value::<Map<String, Value>>(json!({"page":2,"size":20,"market":"DEU","include":true,"skip":false})).unwrap();
-        assert_eq!(client.get("/trustedshops/reviews/TSID", &params).await.unwrap(), json!({"reviews":[]}));
+        )
+        .unwrap();
+        let params = serde_json::from_value::<Map<String, Value>>(
+            json!({"page":2,"size":20,"market":"DEU","include":true,"skip":false}),
+        )
+        .unwrap();
+        assert_eq!(
+            client
+                .get("/trustedshops/reviews/TSID", &params)
+                .await
+                .unwrap(),
+            json!({"reviews":[]})
+        );
         let requests = requests.try_iter().collect::<Vec<_>>();
         assert_eq!(requests.len(), 3);
         assert!(requests[0].starts_with("GET /trustedshops/reviews/TSID?"));
-        assert!(requests[0].to_ascii_lowercase().contains("x-api-key: test-key"));
-        assert!(requests[0].to_ascii_lowercase().contains("user-agent: thescrappa-trustedshops-reviews-scraper/1.0"));
+        assert!(
+            requests[0]
+                .to_ascii_lowercase()
+                .contains("x-api-key: test-key")
+        );
+        assert!(
+            requests[0]
+                .to_ascii_lowercase()
+                .contains("user-agent: thescrappa-trustedshops-reviews-scraper/1.0")
+        );
         assert!(requests[0].contains("include=1"));
         assert!(!requests[0].contains("skip="));
     }
 
     #[tokio::test]
     async fn does_not_retry_validation_errors_and_formats_api_details() {
-        let (base_url, requests) = mock_server(vec![(400, r#"{"message":"Bad input","errors":{"page":["must be positive"]}}"#, 0)]);
-        let client = ScrappaClient::with_policy("key".into(), base_url, Duration::from_secs(2), 3, 0, 0).unwrap();
+        let (base_url, requests) = mock_server(vec![(
+            400,
+            r#"{"message":"Bad input","errors":{"page":["must be positive"]}}"#,
+            0,
+        )]);
+        let client =
+            ScrappaClient::with_policy("key".into(), base_url, Duration::from_secs(2), 3, 0, 0)
+                .unwrap();
         let error = client.get("/reviews", &Map::new()).await.unwrap_err();
-        assert_eq!(error.to_string(), "Scrappa API error (400): Bad input - page: must be positive");
+        assert_eq!(
+            error.to_string(),
+            "Scrappa API error (400): Bad input - page: must be positive"
+        );
         assert!(!error.is_retryable());
         assert_eq!(requests.try_iter().count(), 1);
     }
@@ -330,10 +393,15 @@ mod tests {
     #[tokio::test]
     async fn maps_request_deadlines_to_retryable_timeouts() {
         let (base_url, _requests) = mock_server(vec![(200, "{}", 80)]);
-        let client = ScrappaClient::with_policy("key".into(), base_url, Duration::from_millis(20), 1, 0, 0).unwrap();
+        let client =
+            ScrappaClient::with_policy("key".into(), base_url, Duration::from_millis(20), 1, 0, 0)
+                .unwrap();
         let error = client.get("/reviews", &Map::new()).await.unwrap_err();
         assert!(error.is_timeout());
-        assert_eq!(error.to_string(), "Scrappa API request timed out after 90000ms");
+        assert_eq!(
+            error.to_string(),
+            "Scrappa API request timed out after 90000ms"
+        );
         assert!(error.is_retryable());
     }
 
