@@ -36,10 +36,9 @@ The prefilled example uses Berlin only to keep the default run small. Batch inpu
 
 ## Validation
 
-Run `npm test` and `npm run typecheck` locally. Before deploying, run
-`SCRAPPA_API_KEY=... npm run test:integration` with a valid key supplied through
-your environment. This checks the actual schema prefill against the live Scrappa
-API and requires complete price snapshots within Apify's five-minute QA limit.
+Run `cargo test --locked` and `cargo build --release --locked` from this directory.
+`python3 integration/local_image_smoke.py` builds the production image and runs it
+against local Apify and Scrappa API stubs using the schema prefill.
 
 ## Pricing
 
