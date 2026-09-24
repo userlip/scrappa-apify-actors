@@ -5,9 +5,6 @@
   "description": "Scrape Immowelt property search listings with prices, rooms, floor area, addresses, coordinates, images, expose URLs, and pagination.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {
