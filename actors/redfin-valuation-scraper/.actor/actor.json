@@ -5,9 +5,6 @@
   "description": "Get Redfin home value estimates, value ranges, last sale context, property specs, and comparable sales by Redfin property ID.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": {
-    "templateId": "ts-start"
-  },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": {

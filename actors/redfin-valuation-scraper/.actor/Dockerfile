@@ -1,9 +1,19 @@
-FROM apify/actor-node:20
+FROM rust:1-bookworm AS builder
 
-COPY --chown=myuser:myuser . ./
+WORKDIR /build
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+RUN cargo build --release --locked
 
-RUN npm install --include=dev \
-    && npm run build \
-    && npm prune --omit=dev
+FROM debian:bookworm-slim
 
-CMD npm run start
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 1000 myuser
+
+WORKDIR /home/myuser/app
+COPY --from=builder --chown=myuser:myuser /build/target/release/redfin-valuation-scraper /usr/local/bin/redfin-valuation-scraper
+USER myuser
+
+CMD ["/usr/local/bin/redfin-valuation-scraper"]
