@@ -22,6 +22,8 @@ fn input_schema_and_prefill_contract_are_kept() {
     assert_eq!(schema["properties"]["zoom"]["default"], 15);
     assert_eq!(schema["properties"]["latitude"]["prefill"], 40.7128);
     assert_eq!(schema["properties"]["longitude"]["prefill"], -74.006);
+    assert_eq!(schema["properties"]["limit"]["prefill"], 10);
+    assert_eq!(schema["properties"]["gl"]["prefill"], "us");
     assert_eq!(schema["properties"]["zoom"]["minimum"], 3);
     assert_eq!(schema["properties"]["zoom"]["maximum"], 21);
     assert!(schema["properties"].get("page").is_none());
