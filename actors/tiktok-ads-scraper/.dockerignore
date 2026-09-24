@@ -1,5 +1,6 @@
 node_modules
 dist
+target
 apify_storage
 .env
 .env.local
