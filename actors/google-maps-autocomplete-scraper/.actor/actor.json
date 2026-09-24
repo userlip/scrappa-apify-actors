@@ -5,7 +5,6 @@
   "description": "Get search suggestions and autocomplete predictions from Google Maps. Useful for location discovery, address validation, and building search interfaces.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": { "templateId": "ts-start" },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
