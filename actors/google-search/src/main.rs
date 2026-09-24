@@ -130,6 +130,12 @@ fn parse_pricing_snapshot(
     })
 }
 
+fn max_total_charge_usd_from_run(data: &Value) -> Option<f64> {
+    data.pointer("/options/maxTotalChargeUsd")
+        .and_then(Value::as_f64)
+        .filter(|limit| *limit != 0.0)
+}
+
 fn endpoint_url(base_url: &Url, segments: &[&str]) -> Result<Url> {
     let mut url = base_url.clone();
     url.path_segments_mut()
@@ -242,10 +248,10 @@ impl ApifyClient<'_> {
             .filter(|value| !value.is_null())
             .cloned()
             .ok_or_else(|| anyhow!("Apify run did not provide charged event counts"))?;
-        let max_total_charge_usd = self.config.max_total_charge_usd.or_else(|| {
-            data.pointer("/options/maxTotalChargeUsd")
-                .and_then(Value::as_f64)
-        });
+        let max_total_charge_usd = self
+            .config
+            .max_total_charge_usd
+            .or_else(|| max_total_charge_usd_from_run(data));
         Ok(PricingSnapshot {
             pricing_info,
             charged_event_counts,
@@ -943,6 +949,64 @@ mod tests {
         .unwrap();
         assert_eq!(snapshot.max_total_charge_usd, Some(0.001));
         assert_eq!(affordable_dataset_items(&snapshot, 2).unwrap(), 1);
+    }
+
+    #[test]
+    fn zero_run_charge_limit_keeps_prefilled_results_unbounded() {
+        let run_data = json!({"options": {"maxTotalChargeUsd": 0}});
+        let snapshot = PricingSnapshot {
+            pricing_info: json!({
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "apify-actor-start": {"eventPriceUsd": 0.0001},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.0003}
+                }}
+            }),
+            charged_event_counts: json!({"apify-actor-start": 1}),
+            max_total_charge_usd: max_total_charge_usd_from_run(&run_data),
+        };
+
+        assert_eq!(affordable_dataset_items(&snapshot, 3).unwrap(), 3);
+    }
+
+    #[test]
+    fn missing_or_null_run_charge_limit_keeps_prefilled_results_unbounded() {
+        for run_data in [
+            json!({"options": {}}),
+            json!({"options": {"maxTotalChargeUsd": null}}),
+        ] {
+            let snapshot = PricingSnapshot {
+                pricing_info: json!({
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.0003}
+                    }}
+                }),
+                charged_event_counts: json!({}),
+                max_total_charge_usd: max_total_charge_usd_from_run(&run_data),
+            };
+
+            assert_eq!(affordable_dataset_items(&snapshot, 3).unwrap(), 3);
+        }
+    }
+
+    #[test]
+    fn positive_run_charge_limit_accounts_for_prior_custom_charges() {
+        let run_data = json!({"options": {"maxTotalChargeUsd": 0.0009}});
+        let snapshot = PricingSnapshot {
+            pricing_info: json!({
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "apify-actor-start": {"eventPriceUsd": 0.0001},
+                    "custom-result": {"eventPriceUsd": 0.0002},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.0003}
+                }}
+            }),
+            charged_event_counts: json!({"apify-actor-start": 1, "custom-result": 2}),
+            max_total_charge_usd: max_total_charge_usd_from_run(&run_data),
+        };
+
+        assert_eq!(affordable_dataset_items(&snapshot, 3).unwrap(), 1);
     }
 
     #[test]
