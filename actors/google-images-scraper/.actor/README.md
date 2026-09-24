@@ -8,7 +8,8 @@ Search Google Images and export dataset-ready image metadata for product researc
 - Original image width and height when Google exposes dimensions
 - Filters for size, type, color, aspect ratio, safe search, language, country, and time-based `tbs`
 - Batch input for up to 50 deduplicated searches in one Actor run
-- Full Scrappa response saved to key-value store record `OUTPUT`
+- Single-query Scrappa response saved to key-value store record `OUTPUT`; batch runs save request summaries there
+- Dataset and single-query output rows are capped to the remaining `PAY_PER_EVENT` budget
 
 ## Input
 
