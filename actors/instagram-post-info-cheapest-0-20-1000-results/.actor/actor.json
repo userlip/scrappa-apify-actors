@@ -5,9 +5,6 @@
     "description": "Retrieve detailed Instagram post data using a URL or shortcode via the Scrappa Instagram Post API.",
     "version": "0.0",
     "buildTag": "latest",
-    "meta": {
-        "templateId": "js-start"
-    },
     "defaultRunOptions": {
         "timeoutSecs": 300,
         "memoryMbytes": 128

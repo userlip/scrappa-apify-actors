@@ -8,6 +8,8 @@ storage
 
 # installed files
 node_modules
+target
+test
 
 # git folder
 .git
