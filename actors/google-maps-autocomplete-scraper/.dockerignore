@@ -1,0 +1,10 @@
+.git
+.idea
+.vscode
+.zed
+.env
+.env.*
+apify_storage
+storage
+target
+node_modules
