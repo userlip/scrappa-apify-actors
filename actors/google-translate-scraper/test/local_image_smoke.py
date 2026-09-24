@@ -42,12 +42,22 @@ class Handler(BaseHTTPRequestHandler):
                             "pricingModel": "PAY_PER_EVENT",
                             "pricingPerEvent": {
                                 "actorChargeEvents": {
-                                    "translation-result": {"eventPriceUsd": 0.0002},
-                                    "apify-default-dataset-item": {"eventPriceUsd": 0.0001},
+                                    "translation-result": {
+                                        "eventTieredPricingUsd": {
+                                            "FREE": {"tieredEventPriceUsd": 0.0006},
+                                            "GOLD": {"tieredEventPriceUsd": 0.0002},
+                                        }
+                                    },
+                                    "apify-default-dataset-item": {
+                                        "eventTieredPricingUsd": {
+                                            "FREE": {"tieredEventPriceUsd": 0.0004},
+                                            "GOLD": {"tieredEventPriceUsd": 0.0001},
+                                        }
+                                    },
                                 }
                             },
                         },
-                        "options": {"maxTotalChargeUsd": 0.001},
+                        "options": {"maxTotalChargeUsd": 0.0005},
                         "chargedEventCounts": {},
                     }
                 },
@@ -165,6 +175,8 @@ def main():
                 f"APIFY_API_PUBLIC_BASE_URL={api_base}",
                 "-e",
                 "APIFY_TOKEN=smoke-token",
+                "-e",
+                "APIFY_USER_PRICING_TIER=GOLD",
                 "-e",
                 "ACTOR_DEFAULT_KEY_VALUE_STORE_ID=smoke-store",
                 "-e",

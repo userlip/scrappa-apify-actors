@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, env};
 
 use serde_json::Value;
 
@@ -21,6 +21,11 @@ pub struct ChargingManager {
 
 impl ChargingManager {
     pub fn from_run(run: &Value) -> Result<Self, String> {
+        let user_pricing_tier = env::var("APIFY_USER_PRICING_TIER").ok();
+        Self::from_run_with_tier(run, user_pricing_tier.as_deref())
+    }
+
+    fn from_run_with_tier(run: &Value, user_pricing_tier: Option<&str>) -> Result<Self, String> {
         let data = run.get("data").unwrap_or(run);
         let pricing_info = data.get("pricingInfo");
         let is_pay_per_event = pricing_info
@@ -35,17 +40,7 @@ impl ChargingManager {
                 .and_then(Value::as_object)
                 .ok_or_else(|| "Apify run did not provide event prices".to_owned())?;
             for (event_name, event) in events {
-                let price = event
-                    .get("eventPriceUsd")
-                    .and_then(Value::as_f64)
-                    .ok_or_else(|| {
-                        format!("Apify run did not provide the price for {event_name}")
-                    })?;
-                if !price.is_finite() || price < 0.0 {
-                    return Err(format!(
-                        "Apify run returned an invalid price for {event_name}"
-                    ));
-                }
+                let price = event_price(event_name, event, user_pricing_tier)?;
                 event_prices.insert(event_name.clone(), price);
             }
         }
@@ -203,6 +198,62 @@ impl ChargingManager {
     }
 }
 
+fn event_price(
+    event_name: &str,
+    event: &Value,
+    user_pricing_tier: Option<&str>,
+) -> Result<f64, String> {
+    let flat_price = event.get("eventPriceUsd");
+    if flat_price.is_some_and(|price| !price.is_null()) {
+        let price = flat_price
+            .and_then(Value::as_f64)
+            .ok_or_else(|| format!("Apify run did not provide the price for {event_name}"))?;
+        return validate_event_price(event_name, price);
+    }
+
+    let tiered_prices = event
+        .get("eventTieredPricingUsd")
+        .and_then(Value::as_object)
+        .ok_or_else(|| format!("Apify run did not provide the price for {event_name}"))?;
+    let prices = tiered_prices
+        .iter()
+        .map(|(tier, pricing)| {
+            let price = pricing
+                .get("tieredEventPriceUsd")
+                .and_then(Value::as_f64)
+                .ok_or_else(|| {
+                    format!("Apify run did not provide the tiered price for {event_name} at {tier}")
+                })?;
+            validate_event_price(event_name, price).map(|price| (tier.clone(), price))
+        })
+        .collect::<Result<BTreeMap<_, _>, _>>()?;
+
+    user_pricing_tier
+        .and_then(|tier| prices.get(tier).copied())
+        .or_else(|| {
+            user_pricing_tier
+                .is_none()
+                .then(|| prices.get("FREE").copied())
+                .flatten()
+        })
+        .or_else(|| {
+            prices
+                .values()
+                .copied()
+                .max_by(|left, right| left.total_cmp(right))
+        })
+        .ok_or_else(|| format!("Apify run did not provide the price for {event_name}"))
+}
+
+fn validate_event_price(event_name: &str, price: f64) -> Result<f64, String> {
+    if !price.is_finite() || price < 0.0 {
+        return Err(format!(
+            "Apify run returned an invalid price for {event_name}"
+        ));
+    }
+    Ok(price)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -325,5 +376,37 @@ mod tests {
             ChargingManager::from_run(&invalid_count).unwrap_err(),
             "Invalid charged event count for translation-result"
         );
+    }
+
+    #[test]
+    fn accepts_tiered_event_prices_from_apify_run_pricing() {
+        let mut tiered_run = run("PAY_PER_EVENT", 0.001, json!({}));
+        let events = tiered_run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            .as_object_mut()
+            .unwrap();
+
+        for event in events.values_mut() {
+            let flat_price = event["eventPriceUsd"].as_f64().unwrap();
+            *event = json!({
+                "eventTieredPricingUsd": {
+                    "FREE": {"tieredEventPriceUsd": flat_price},
+                    "GOLD": {"tieredEventPriceUsd": flat_price * 2.0}
+                }
+            });
+        }
+
+        let gold = ChargingManager::from_run_with_tier(&tiered_run, Some("GOLD"))
+            .expect("tiered run pricing should be accepted");
+        assert_eq!(gold.event_prices["translation-result"], 0.0005);
+        assert_eq!(gold.event_prices["apify-default-dataset-item"], 0.0002);
+        assert_eq!(gold.max_event_charge_count("translation-result"), 2);
+
+        let default = ChargingManager::from_run_with_tier(&tiered_run, None)
+            .expect("tiered run pricing should default to the FREE tier");
+        assert_eq!(default.event_prices["translation-result"], 0.00025);
+
+        let unknown = ChargingManager::from_run_with_tier(&tiered_run, Some("PLATINUM"))
+            .expect("an unknown tier should use a conservative configured price");
+        assert_eq!(unknown.event_prices["translation-result"], 0.0005);
     }
 }
