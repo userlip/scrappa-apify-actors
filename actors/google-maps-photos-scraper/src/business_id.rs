@@ -356,12 +356,6 @@ mod tests {
             schema.pointer("/properties/maximum_cache_age/minimum"),
             Some(&json!(0))
         );
-        assert_eq!(
-            schema["anyOf"],
-            json!([
-                { "required": ["business_ids"] },
-                { "required": ["business_id"] }
-            ])
-        );
+        assert!(schema.get("anyOf").is_none());
     }
 }
