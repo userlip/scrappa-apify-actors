@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Method, Response, StatusCode, Url};
@@ -146,6 +146,7 @@ pub enum ChargingBudget {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PayPerEventBudget {
     event_prices: HashMap<String, f64>,
+    tiered_events: HashSet<String>,
     charged_usd: f64,
     max_total_charge_usd: Option<f64>,
 }
@@ -168,12 +169,19 @@ impl ChargingBudget {
             .and_then(Value::as_object)
             .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
         let mut event_prices = HashMap::new();
+        let mut tiered_events = HashSet::new();
         for (event_name, event) in events {
             if let Some(price) = event.get("eventPriceUsd").and_then(Value::as_f64) {
                 if !price.is_finite() || price < 0.0 {
                     bail!("Apify run returned an invalid price for event {event_name}");
                 }
                 event_prices.insert(event_name.clone(), price);
+            } else if event
+                .get("eventTieredPricingUsd")
+                .and_then(Value::as_object)
+                .is_some()
+            {
+                tiered_events.insert(event_name.clone());
             }
         }
 
@@ -213,6 +221,7 @@ impl ChargingBudget {
 
         Ok(Self::PayPerEvent(PayPerEventBudget {
             event_prices,
+            tiered_events,
             charged_usd,
             max_total_charge_usd,
         }))
@@ -220,6 +229,10 @@ impl ChargingBudget {
 }
 
 impl PayPerEventBudget {
+    pub fn is_tier_priced_event(&self, event_name: &str) -> bool {
+        self.tiered_events.contains(event_name)
+    }
+
     pub fn affordable_items(&self, requested: usize) -> Result<usize> {
         let result_item_price = self.event_price(ITEM_RESULT_CHARGE_EVENT)?;
         let default_item_price = self.event_price(DEFAULT_DATASET_ITEM_EVENT)?;
@@ -257,6 +270,9 @@ impl PayPerEventBudget {
     }
 
     fn event_price(&self, event_name: &str) -> Result<f64> {
+        if self.is_tier_priced_event(event_name) {
+            return Ok(0.0);
+        }
         self.event_prices
             .get(event_name)
             .copied()
@@ -466,6 +482,32 @@ mod tests {
         assert_eq!(budget.affordable_items(10).unwrap(), 3);
         budget.record_saved_items(2).unwrap();
         assert_eq!(budget.affordable_items(10).unwrap(), 1);
+    }
+
+    #[test]
+    fn tier_priced_result_and_dataset_events_follow_charging_manager_behavior() {
+        let mut run = ppe_run(0.006, json!({"apify-actor-start": 1}));
+        let events = run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            .as_object_mut()
+            .unwrap();
+        for event_name in [ITEM_RESULT_CHARGE_EVENT, DEFAULT_DATASET_ITEM_EVENT] {
+            events.insert(
+                event_name.to_owned(),
+                json!({"eventTieredPricingUsd": {
+                    "FREE": {"tieredEventPriceUsd": 0.0001},
+                    "GOLD": {"tieredEventPriceUsd": 0.0003}
+                }}),
+            );
+        }
+
+        let ChargingBudget::PayPerEvent(mut budget) = ChargingBudget::from_run(&run).unwrap()
+        else {
+            panic!("expected PPE budget");
+        };
+
+        assert_eq!(budget.affordable_items(3).unwrap(), 3);
+        budget.record_saved_items(1).unwrap();
+        assert_eq!(budget.affordable_items(3).unwrap(), 3);
     }
 
     #[test]
