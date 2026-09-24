@@ -28,7 +28,6 @@ jobs:
           - path: actors/google-flights-search-scraper
           - path: actors/google-hotels-search-scraper
           - path: actors/google-jobs-scraper
-          - path: actors/google-maps-business-details-scraper
           - path: actors/immobilienscout24-locations-scraper
           - path: actors/immobilienscout24-price-insights-scraper
           - path: actors/instagram-post-info-cheapest-0-20-1000-results
@@ -89,6 +88,7 @@ jobs:
           - actors/youtube-api-get-channel-about-details
           - actors/youtube-api-channel-podcasts
           - actors/google-news-scraper
+          - actors/google-maps-business-details-scraper
           - actors/tiktok-search-scraper
           - actors/linkedin-post-scraper
     steps:
