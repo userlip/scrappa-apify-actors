@@ -12,6 +12,8 @@ const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
+const SCRAPPA_RETRY_DELAY: Duration = Duration::from_millis(500);
 const ACTOR_TIMEOUT: Duration = Duration::from_secs(720);
 const APIFY_MAX_RETRIES: u8 = 8;
 const APIFY_INITIAL_RETRY_DELAY: Duration = Duration::from_millis(500);
@@ -467,43 +469,65 @@ struct ScrappaClient<'a> {
 impl ScrappaClient<'_> {
     async fn get_photos(&self, business_id: &str, input: Option<&Value>) -> Result<Value> {
         let url = build_photos_url(self.base_url, business_id, input)?;
-        let response = self
-            .http
-            .get(url)
-            .header("X-API-Key", self.api_key)
-            .header(header::ACCEPT, "application/json")
-            .timeout(SCRAPPA_REQUEST_TIMEOUT)
-            .send()
-            .await
-            .map_err(|error| {
-                let message = if error.is_timeout() {
-                    format!(
-                        "Scrappa API request timed out after {}ms",
-                        SCRAPPA_REQUEST_TIMEOUT.as_millis()
-                    )
-                } else {
-                    format!("Scrappa API request failed: {error}")
-                };
-                ScrappaError {
-                    status_code: None,
-                    message,
+        for attempt in 0..SCRAPPA_MAX_ATTEMPTS {
+            let response = self
+                .http
+                .get(url.clone())
+                .header("X-API-Key", self.api_key)
+                .header(header::ACCEPT, "application/json")
+                .timeout(SCRAPPA_REQUEST_TIMEOUT)
+                .send()
+                .await;
+
+            match response {
+                Ok(response) if response.status().is_success() => {
+                    return response
+                        .json()
+                        .await
+                        .context("Scrappa API response was not valid JSON");
                 }
-            })?;
-
-        if !response.status().is_success() {
-            let status_code = response.status().as_u16();
-            let message = scrappa_error_message(response).await;
-            return Err(ScrappaError {
-                status_code: Some(status_code),
-                message: format!("Scrappa API error ({status_code}): {message}"),
+                Ok(response) => {
+                    let status = response.status();
+                    if attempt + 1 < SCRAPPA_MAX_ATTEMPTS
+                        && (status == StatusCode::REQUEST_TIMEOUT
+                            || status == StatusCode::TOO_MANY_REQUESTS
+                            || status.is_server_error())
+                    {
+                        sleep(SCRAPPA_RETRY_DELAY * (attempt + 1)).await;
+                        continue;
+                    }
+                    let status_code = status.as_u16();
+                    let message = scrappa_error_message(response).await;
+                    return Err(ScrappaError {
+                        status_code: Some(status_code),
+                        message: format!("Scrappa API error ({status_code}): {message}"),
+                    }
+                    .into());
+                }
+                Err(error) => {
+                    if attempt + 1 < SCRAPPA_MAX_ATTEMPTS
+                        && (error.is_connect() || error.is_timeout())
+                    {
+                        sleep(SCRAPPA_RETRY_DELAY * (attempt + 1)).await;
+                        continue;
+                    }
+                    let message = if error.is_timeout() {
+                        format!(
+                            "Scrappa API request timed out after {}ms",
+                            SCRAPPA_REQUEST_TIMEOUT.as_millis()
+                        )
+                    } else {
+                        format!("Scrappa API request failed: {error}")
+                    };
+                    return Err(ScrappaError {
+                        status_code: None,
+                        message,
+                    }
+                    .into());
+                }
             }
-            .into());
         }
-
-        response
-            .json()
-            .await
-            .context("Scrappa API response was not valid JSON")
+        unreachable!("bounded Scrappa GET attempts always return")
     }
 }
 
@@ -1279,7 +1303,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn apify_get_and_output_put_retry_but_dataset_post_and_scrappa_do_not() {
+    async fn apify_safe_methods_retry_but_dataset_post_and_permanent_scrappa_errors_do_not() {
         let server = MockServer::start(vec![
             mock_response(500, "temporary"),
             mock_response(200, "{\"ok\":true}"),
@@ -1315,7 +1339,7 @@ mod tests {
         assert_eq!(response.status(), StatusCode::CREATED);
         assert_eq!(put_server.requests().len(), 2);
 
-        let error_server = MockServer::start(vec![mock_response(500, "upstream unavailable")]);
+        let error_server = MockServer::start(vec![mock_response(400, "invalid business")]);
         let mut scrappa_base_url = error_server.base_url.clone();
         scrappa_base_url
             .path_segments_mut()
@@ -1327,8 +1351,31 @@ mod tests {
             api_key: "test-scrappa-key",
         };
         let error = scrappa.get_photos("0x123:0x456", None).await.unwrap_err();
-        assert!(error.to_string().contains("Scrappa API error (500)"));
+        assert!(error.to_string().contains("Scrappa API error (400)"));
         assert_eq!(error_server.requests().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn transient_scrappa_unavailability_retries_get_then_returns_photos() {
+        let server = MockServer::start(vec![
+            mock_response(503, "temporarily unavailable"),
+            mock_response(
+                200,
+                json!({ "photos": [{ "photo_id": "one" }] }).to_string(),
+            ),
+        ]);
+        let mut base_url = server.base_url.clone();
+        base_url.path_segments_mut().unwrap().extend(["api"]);
+        let client = reqwest::Client::new();
+        let scrappa = ScrappaClient {
+            http: &client,
+            base_url: &base_url,
+            api_key: "test-key",
+        };
+
+        let response = scrappa.get_photos("0x123:0x456", None).await.unwrap();
+        assert_eq!(response["photos"][0]["photo_id"], "one");
+        assert_eq!(server.requests().len(), 2);
     }
 
     #[tokio::test]
@@ -1416,6 +1463,8 @@ mod tests {
         let server = MockServer::start(vec![
             mock_response(200, input.to_string()),
             mock_response(503, "upstream unavailable"),
+            mock_response(503, "upstream unavailable"),
+            mock_response(503, "upstream unavailable"),
         ]);
         let config = config(&server.base_url);
         let client = reqwest::Client::builder()
@@ -1425,6 +1474,6 @@ mod tests {
 
         let error = run_actor(&client, &config).await.unwrap_err();
         assert!(error.to_string().contains("Scrappa API error (503)"));
-        assert_eq!(server.requests().len(), 2);
+        assert_eq!(server.requests().len(), 4);
     }
 }
