@@ -319,6 +319,9 @@ fn affordable_event_count(run: &Value, requested: usize) -> Result<usize> {
     if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
+    if max_charge == 0.0 {
+        return Ok(requested);
+    }
 
     let counts = data
         .get("chargedEventCounts")
@@ -533,17 +536,32 @@ mod tests {
     }
 
     #[test]
-    fn allows_all_rows_without_a_limit_and_handles_zero_price() {
-        assert_eq!(
-            affordable_event_count(&run(Value::Null, json!({})), 9).unwrap(),
-            9
-        );
+    fn allows_all_rows_when_event_prices_are_zero() {
         let mut free_run = run(json!(0.0), json!({}));
         free_run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["related-result"]
             ["eventPriceUsd"] = json!(0.0);
         free_run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["apify-default-dataset-item"]
             ["eventPriceUsd"] = json!(0.0);
         assert_eq!(affordable_event_count(&free_run, 9).unwrap(), 9);
+    }
+
+    #[test]
+    fn treats_zero_null_and_missing_spending_limits_as_unlimited() {
+        assert_eq!(
+            affordable_event_count(&run(json!(0), json!({})), 9).unwrap(),
+            9
+        );
+        assert_eq!(
+            affordable_event_count(&run(Value::Null, json!({})), 9).unwrap(),
+            9
+        );
+
+        let mut missing_limit_run = run(json!(1.0), json!({}));
+        missing_limit_run["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+        assert_eq!(affordable_event_count(&missing_limit_run, 9).unwrap(), 9);
     }
 
     #[test]
