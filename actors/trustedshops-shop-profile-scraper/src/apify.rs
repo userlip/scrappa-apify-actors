@@ -11,6 +11,7 @@ use crate::charging::{
 };
 
 static CHARGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+const MAX_CHARGE_ATTEMPTS: u32 = 3;
 
 pub struct ApifyClient {
     client: Client,
@@ -114,7 +115,7 @@ impl ApifyClient {
 
         let custom_charge = charging.charge_event(SHOP_PROFILE_RESULT_CHARGE_EVENT);
         let dataset_charge = charging.charge_event(DEFAULT_DATASET_ITEM_CHARGE_EVENT);
-        if custom_charge.charged_count > 0
+        let charge_error = if custom_charge.charged_count > 0
             && charging.is_priced_event(SHOP_PROFILE_RESULT_CHARGE_EVENT)
         {
             self.charge_event(
@@ -122,18 +123,29 @@ impl ApifyClient {
                 SHOP_PROFILE_RESULT_CHARGE_EVENT,
                 custom_charge.charged_count,
             )
-            .await?;
-        }
+            .await
+            .err()
+        } else {
+            None
+        };
 
         let charged_count = custom_charge.charged_count + dataset_charge.charged_count;
         let limit_reached =
             custom_charge.event_charge_limit_reached || dataset_charge.event_charge_limit_reached;
-        let saved_count = if limit_reached {
+        let saved_count = if charge_error.is_some() {
+            1
+        } else if limit_reached {
             charged_count.min(1)
         } else {
             1
         };
-        let status_message = limit_reached.then(|| charge_limit_message(saved_count, 1));
+        let status_message = if let Some(error) = charge_error {
+            Some(format!(
+                "TrustedShops shop profile was saved, but its Apify charge could not be confirmed: {error}"
+            ))
+        } else {
+            limit_reached.then(|| charge_limit_message(saved_count, 1))
+        };
 
         Ok(PushDataResult {
             saved_count,
@@ -190,18 +202,52 @@ impl ApifyClient {
                 .as_nanos(),
             CHARGE_SEQUENCE.fetch_add(1, Ordering::Relaxed),
         );
-        let response = self
-            .request(
-                Method::POST,
-                self.resource_url(&["actor-runs", run_id, "charge"])?,
-            )
-            .header("idempotency-key", idempotency_key)
-            .json(&json!({"eventName": event_name, "count": count}))
-            .send()
-            .await
-            .context("Apify event charge request failed")?;
-        successful_response(response, "charge for a shop profile result").await?;
-        Ok(())
+        let url = self.resource_url(&["actor-runs", run_id, "charge"])?;
+        let body = json!({"eventName": event_name, "count": count});
+
+        for attempt in 1..=MAX_CHARGE_ATTEMPTS {
+            let response = self
+                .request(Method::POST, url.clone())
+                .header("idempotency-key", &idempotency_key)
+                .json(&body)
+                .send()
+                .await;
+
+            match response {
+                Ok(response) if response.status().is_success() => return Ok(()),
+                Ok(response)
+                    if attempt < MAX_CHARGE_ATTEMPTS
+                        && retryable_charge_status(response.status()) =>
+                {
+                    eprintln!(
+                        "Apify charge request returned HTTP {}; retrying attempt {}/{} with the same idempotency key.",
+                        response.status().as_u16(),
+                        attempt + 1,
+                        MAX_CHARGE_ATTEMPTS,
+                    );
+                }
+                Ok(response) => {
+                    successful_response(response, "charge for a shop profile result").await?;
+                    return Ok(());
+                }
+                Err(error)
+                    if attempt < MAX_CHARGE_ATTEMPTS && retryable_charge_transport(&error) =>
+                {
+                    eprintln!(
+                        "Apify charge request failed ({error}); retrying attempt {}/{} with the same idempotency key.",
+                        attempt + 1,
+                        MAX_CHARGE_ATTEMPTS,
+                    );
+                }
+                Err(error) => {
+                    return Err(error).context("Apify event charge request failed");
+                }
+            }
+
+            tokio::time::sleep(charge_retry_delay(attempt)).await;
+        }
+
+        bail!("Apify event charge request exhausted its retry attempts")
     }
 
     fn request(&self, method: Method, url: Url) -> reqwest::RequestBuilder {
@@ -225,6 +271,20 @@ fn charge_limit_message(saved_count: usize, requested_count: usize) -> String {
     format!(
         "Charge limit reached after saving {saved_count} of {requested_count} TrustedShops shop profile results."
     )
+}
+
+fn retryable_charge_status(status: StatusCode) -> bool {
+    status == StatusCode::REQUEST_TIMEOUT
+        || status == StatusCode::TOO_MANY_REQUESTS
+        || status.is_server_error()
+}
+
+fn retryable_charge_transport(error: &reqwest::Error) -> bool {
+    error.is_timeout() || error.is_connect() || error.is_request()
+}
+
+fn charge_retry_delay(failed_attempt: u32) -> Duration {
+    Duration::from_millis(u64::from(failed_attempt) * 250)
 }
 
 async fn successful_response(response: Response, operation: &str) -> Result<Response> {
@@ -367,6 +427,86 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn retries_transient_charge_failures_with_the_same_idempotency_key() {
+        let server = MockServer::start(vec![
+            MockResponse::json(201, json!({})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+            MockResponse::json(200, json!({})),
+        ]);
+        let apify = client(&server);
+        let mut charging = charging(0.15, json!({}));
+
+        let result = apify
+            .push_charged_item(
+                "test-run",
+                "test-dataset",
+                &json!({"tsid":"example"}),
+                &mut charging,
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(result.saved_count, 1);
+        let requests = server.requests();
+        assert_eq!(requests.len(), 3);
+        assert_eq!(
+            request_parts(&requests[0]).1,
+            "/v2/datasets/test-dataset/items"
+        );
+        assert_eq!(
+            request_parts(&requests[1]).1,
+            "/v2/actor-runs/test-run/charge"
+        );
+        assert_eq!(
+            request_parts(&requests[2]).1,
+            "/v2/actor-runs/test-run/charge"
+        );
+        assert_eq!(
+            request_header(&requests[1], "idempotency-key"),
+            request_header(&requests[2], "idempotency-key")
+        );
+        assert_eq!(request_parts(&requests[1]).2, request_parts(&requests[2]).2);
+    }
+
+    #[tokio::test]
+    async fn persistent_charge_failures_keep_the_dataset_result_counted_as_saved() {
+        let server = MockServer::start(vec![
+            MockResponse::json(201, json!({})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+        ]);
+        let apify = client(&server);
+        let mut charging = charging(0.15, json!({}));
+
+        let result = apify
+            .push_charged_item(
+                "test-run",
+                "test-dataset",
+                &json!({"tsid":"example"}),
+                &mut charging,
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(result.saved_count, 1);
+        assert!(result.status_message.as_deref().is_some_and(|message| {
+            message.contains("was saved") && message.contains("charge could not be confirmed")
+        }));
+        let requests = server.requests();
+        assert_eq!(requests.len(), 4);
+        assert_eq!(
+            request_parts(&requests[0]).1,
+            "/v2/datasets/test-dataset/items"
+        );
+        let keys = requests[1..]
+            .iter()
+            .map(|request| request_header(request, "idempotency-key"))
+            .collect::<Vec<_>>();
+        assert!(keys.iter().all(|key| key == &keys[0]));
+    }
+
+    #[tokio::test]
     async fn exhausted_budget_does_not_write_or_charge_another_result() {
         let server = MockServer::start(Vec::new());
         let apify = client(&server);
@@ -391,5 +531,17 @@ mod tests {
             Some("Charge limit reached after saving 0 of 1 TrustedShops shop profile results.")
         );
         assert!(server.requests().is_empty());
+    }
+
+    fn request_header(request: &str, name: &str) -> String {
+        request
+            .lines()
+            .find_map(|line| {
+                let (header, value) = line.split_once(':')?;
+                header
+                    .eq_ignore_ascii_case(name)
+                    .then(|| value.trim().to_owned())
+            })
+            .expect("request header is present")
     }
 }
