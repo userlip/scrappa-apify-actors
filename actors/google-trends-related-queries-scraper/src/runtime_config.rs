@@ -1,10 +1,11 @@
 use std::time::Duration;
 
 #[cfg(test)]
-pub const ACTOR_TIMEOUT_MS: u64 = 240_000;
+pub const ACTOR_TIMEOUT_MS: u64 = 375_000;
 #[cfg(test)]
 pub const ACTOR_COMPLETION_RESERVE_MS: u64 = 30_000;
 
+pub const APIFY_REQUEST_TIMEOUT_MS: u64 = 30_000;
 pub const RELATED_REQUEST_TIMEOUT_MS: u64 = 30_000;
 pub const RELATED_MAX_ATTEMPTS: usize = 4;
 pub const RELATED_MAX_RETRY_DELAY_MS: u64 = 20_000;
@@ -43,11 +44,15 @@ mod tests {
 
     #[test]
     fn configured_requests_fit_actor_deadline_with_completion_reserve() {
+        // INPUT, run pricing, dataset write, then charge plus OUTPUT or terminal status.
+        const MAX_APIFY_REQUESTS_PER_RUN: u64 = 5;
+
         let related = maximum_request_duration_ms(
             RELATED_REQUEST_TIMEOUT_MS,
             RELATED_MAX_ATTEMPTS,
             RELATED_MAX_RETRY_DELAY_MS,
         );
+        let apify = APIFY_REQUEST_TIMEOUT_MS.saturating_mul(MAX_APIFY_REQUESTS_PER_RUN);
         let autocomplete = maximum_request_duration_ms(
             AUTOCOMPLETE_REQUEST_TIMEOUT_MS,
             AUTOCOMPLETE_MAX_ATTEMPTS,
@@ -55,12 +60,16 @@ mod tests {
         );
 
         assert_eq!(related, 180_000);
+        assert_eq!(apify, 150_000);
         assert_eq!(autocomplete, 15_000);
         assert_eq!(
-            related + autocomplete + ACTOR_COMPLETION_RESERVE_MS,
-            225_000
+            related + apify + autocomplete,
+            345_000
         );
-        assert!(related + autocomplete + ACTOR_COMPLETION_RESERVE_MS < ACTOR_TIMEOUT_MS);
+        assert_eq!(
+            related + apify + autocomplete + ACTOR_COMPLETION_RESERVE_MS,
+            ACTOR_TIMEOUT_MS
+        );
 
         let actor: Value = serde_json::from_str(include_str!("../.actor/actor.json")).unwrap();
         assert_eq!(
