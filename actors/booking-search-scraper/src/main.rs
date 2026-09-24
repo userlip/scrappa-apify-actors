@@ -1403,8 +1403,13 @@ mod tests {
         let schema: Value =
             serde_json::from_str(include_str!("../.actor/input_schema.json")).unwrap();
         assert_eq!(schema["properties"]["ss"]["prefill"], "Paris");
-        assert_eq!(schema["properties"]["checkin"]["prefill"], "2026-07-01");
-        assert_eq!(schema["properties"]["checkout"]["prefill"], "2026-07-03");
+        assert!(schema["properties"]["checkin"].get("prefill").is_none());
+        assert!(schema["properties"]["checkout"].get("prefill").is_none());
+        let input = json!({"ss": schema["properties"]["ss"]["prefill"]});
+        let searches = build_booking_search_requests(&input).unwrap();
+        assert_eq!(searches.len(), 1);
+        assert!(searches[0].params.get("checkin").is_none());
+        assert!(searches[0].params.get("checkout").is_none());
         assert_eq!(
             schema["properties"]["searches"]["maxItems"],
             MAX_SEARCHES_PER_RUN
