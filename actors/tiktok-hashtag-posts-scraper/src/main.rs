@@ -809,7 +809,19 @@ fn affordable_dataset_items(
         .and_then(Value::as_str)
         != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        return Ok(requested);
+    }
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => return Ok(requested),
+        Some(value) => value
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
+    };
+    if !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+    if max_charge == 0.0 {
+        return Ok(requested);
     }
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
@@ -820,11 +832,7 @@ fn affordable_dataset_items(
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -1253,7 +1261,7 @@ mod tests {
     }
 
     #[test]
-    fn validates_api_codes_and_ppe_capacity() {
+    fn validates_scrappa_api_codes() {
         assert!(validate_scrappa_code(&value(r#"{"code":0}"#), "test").is_ok());
         assert!(validate_scrappa_code(&value(r#"{"data":[]}"#), "test").is_ok());
         assert!(
@@ -1262,15 +1270,32 @@ mod tests {
                 .to_string()
                 .contains("code 1: bad")
         );
+    }
 
+    #[test]
+    fn allows_all_dataset_items_for_non_ppe_runs() {
+        let run = value(r#"{"data":{"pricingInfo":{"pricingModel":"PRICE_PER_DATASET_ITEM"}}}"#);
+        assert_eq!(affordable_dataset_items(&run, 3, 0).unwrap(), 3);
+    }
+
+    #[test]
+    fn treats_zero_null_and_missing_ppe_limits_as_unlimited() {
+        let runs = [
+            r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT"},"options":{"maxTotalChargeUsd":0}}}"#,
+            r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT"},"options":{"maxTotalChargeUsd":null}}}"#,
+            r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT"},"options":{}}}"#,
+        ];
+        for run in runs {
+            assert_eq!(affordable_dataset_items(&value(run), 3, 0).unwrap(), 3);
+        }
+    }
+
+    #[test]
+    fn enforces_positive_ppe_limits_using_charges_and_saved_rows() {
         let run = value(
             r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0001},"other-event":{"eventPriceUsd":0.0001}}}},"options":{"maxTotalChargeUsd":0.00025},"chargedEventCounts":{"other-event":1}}}"#,
         );
         assert_eq!(affordable_dataset_items(&run, 3, 0).unwrap(), 1);
-        let zero_budget = value(
-            r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0001}}}},"options":{"maxTotalChargeUsd":0.0},"chargedEventCounts":{}}}"#,
-        );
-        assert_eq!(affordable_dataset_items(&zero_budget, 3, 0).unwrap(), 0);
         assert_eq!(affordable_dataset_items(&run, 3, 1).unwrap(), 0);
     }
 
@@ -1346,7 +1371,7 @@ mod tests {
                 ),
                 (
                     "200 OK",
-                    r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0003}}}},"options":{"maxTotalChargeUsd":1.0},"chargedEventCounts":{"apify-default-dataset-item":0}}}"#,
+                    r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0003}}}},"options":{"maxTotalChargeUsd":0.0003},"chargedEventCounts":{"apify-default-dataset-item":0}}}"#,
                 ),
                 ("201 Created", ""),
                 ("201 Created", ""),
@@ -1441,7 +1466,7 @@ mod tests {
         assert_eq!(posts_query["cursor"], "0");
 
         let rows: Value = serde_json::from_str(&requests[4].body).unwrap();
-        assert_eq!(rows.as_array().unwrap().len(), 2);
+        assert_eq!(rows.as_array().unwrap().len(), 1);
         assert_eq!(rows[0]["aweme_id"], "1");
         assert_eq!(rows[0]["lookup_challenge_name"], "Cosplay");
         assert!(rows[0]["lookup_challenge_id"].is_null());
@@ -1454,7 +1479,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn zero_ppe_budget_skips_dataset_write_but_keeps_raw_output() {
+    async fn zero_ppe_limit_is_uncapped_and_keeps_raw_output() {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let address = listener.local_addr().unwrap();
         let server = thread::spawn(move || {
@@ -1469,6 +1494,7 @@ mod tests {
                     r#"{"data":{"pricingInfo":{"pricingModel":"PAY_PER_EVENT","pricingPerEvent":{"actorChargeEvents":{"apify-default-dataset-item":{"eventPriceUsd":0.0003}}}},"options":{"maxTotalChargeUsd":0.0},"chargedEventCounts":{}}}"#,
                 ),
                 ("201 Created", ""),
+                ("201 Created", ""),
             ];
             let mut requests = Vec::new();
             for (status, body) in responses {
@@ -1482,11 +1508,13 @@ mod tests {
             .await
             .unwrap();
         let requests = server.join().unwrap();
-        assert_eq!(requests.len(), 4);
-        assert!(requests
-            .iter()
-            .all(|request| !request.method_and_path.contains("/v2/datasets/")));
+        assert_eq!(requests.len(), 5);
         assert!(requests[3]
+            .method_and_path
+            .starts_with("POST /v2/datasets/dataset-test/items "));
+        let rows: Value = serde_json::from_str(&requests[3].body).unwrap();
+        assert_eq!(rows.as_array().unwrap().len(), 1);
+        assert!(requests[4]
             .method_and_path
             .starts_with("PUT /v2/key-value-stores/store-test/records/OUTPUT "));
     }
