@@ -1,5 +1,3 @@
-use std::time::SystemTime;
-
 #[cfg(test)]
 use std::time::Duration;
 
@@ -88,8 +86,8 @@ impl ApifyClient {
 
         let limit = affordable_event_items(&run, event_name, items.len())?;
         if limit > 0 {
-            self.charge_event(event_name, limit).await?;
             self.write_dataset_items(&items[..limit]).await?;
+            self.charge_event(event_name, limit).await?;
         }
         Ok(PushResult {
             charged_count: limit,
@@ -149,14 +147,7 @@ impl ApifyClient {
 
     async fn charge_event(&self, event_name: &str, count: usize) -> Result<()> {
         let url = self.endpoint(&["v2", "actor-runs", &self.run_id, "charge"])?;
-        let idempotency_key = format!(
-            "{}-{event_name}-{}",
-            self.run_id,
-            SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_nanos()
-        );
+        let idempotency_key = format!("{}-{event_name}-{count}", self.run_id);
         let response = self
             .http
             .post(url)
@@ -434,7 +425,28 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn charges_market_event_and_only_writes_rows_affordable_within_budget() {
+    async fn does_not_charge_market_event_when_dataset_write_fails() {
+        let run = run(json!(2.0), json!({}), prices());
+        let server = MockServer::start(vec![
+            MockResponse::json(200, &run.to_string()),
+            MockResponse::json(500, r#"{"error":"dataset unavailable"}"#),
+        ]);
+        let client = test_client(&server.base_url());
+        let items = vec![json!({ "position": 1 })];
+
+        assert!(client.push_data(&items, "market-item").await.is_err());
+
+        let requests = server.join();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(requests[1].method, "POST");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
+        assert!(requests
+            .iter()
+            .all(|request| request.target != "/v2/actor-runs/test-run/charge"));
+    }
+
+    #[tokio::test]
+    async fn writes_affordable_rows_before_charging_market_event() {
         let run = run(
             json!(2.0),
             json!({
@@ -445,8 +457,8 @@ mod tests {
         );
         let server = MockServer::start(vec![
             MockResponse::json(200, &run.to_string()),
-            MockResponse::json(200, ""),
             MockResponse::json(201, ""),
+            MockResponse::json(200, ""),
         ]);
         let client = test_client(&server.base_url());
         let items = (1..=6)
@@ -463,15 +475,9 @@ mod tests {
         let requests = server.join();
         assert_eq!(requests.len(), 3);
         assert_eq!(requests[1].method, "POST");
-        assert_eq!(requests[1].target, "/v2/actor-runs/test-run/charge");
+        assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
         assert_eq!(
             serde_json::from_str::<Value>(&requests[1].body).unwrap(),
-            json!({ "eventName": "market-item", "count": 4 })
-        );
-        assert!(!requests[1].headers["idempotency-key"].is_empty());
-        assert_eq!(requests[2].target, "/v2/datasets/dataset-id/items");
-        assert_eq!(
-            serde_json::from_str::<Value>(&requests[2].body).unwrap(),
             json!([
                 { "position": 1 },
                 { "position": 2 },
@@ -479,6 +485,12 @@ mod tests {
                 { "position": 4 }
             ])
         );
+        assert_eq!(requests[2].target, "/v2/actor-runs/test-run/charge");
+        assert_eq!(
+            serde_json::from_str::<Value>(&requests[2].body).unwrap(),
+            json!({ "eventName": "market-item", "count": 4 })
+        );
+        assert_eq!(requests[2].headers["idempotency-key"], "test-run-market-item-4");
     }
 
     #[tokio::test]
