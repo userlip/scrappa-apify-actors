@@ -246,9 +246,16 @@ pub fn affordable_result_count(run: &Value, event_name: &str, requested: usize) 
     }
     let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
         None | Some(Value::Null) => f64::INFINITY,
-        Some(value) => value
-            .as_f64()
-            .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
+        Some(value) => {
+            let value = value
+                .as_f64()
+                .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
+            if value == 0.0 {
+                f64::INFINITY
+            } else {
+                value
+            }
+        }
     };
     if max_charge.is_nan() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
@@ -393,7 +400,7 @@ mod tests {
     }
 
     #[test]
-    fn budget_counts_prior_result_charges_and_other_events() {
+    fn positive_budget_includes_prior_charges_and_both_per_result_prices() {
         let run = run(json!(1.0), json!({"flight-result": 1, "actor-start": 1}));
         assert_eq!(
             affordable_result_count(&run, FLIGHT_RESULT_CHARGE_EVENT, 10).unwrap(),
@@ -402,21 +409,24 @@ mod tests {
     }
 
     #[test]
-    fn missing_budget_and_charge_counts_mean_unlimited_and_unspent() {
-        let run = json!({"data": {
-            "pricingInfo": {
-                "pricingModel": "PAY_PER_EVENT",
-                "pricingPerEvent": {"actorChargeEvents": {
-                    "flight-result": {"eventPriceUsd": 0.2},
-                    "apify-default-dataset-item": {"eventPriceUsd": 0.1}
-                }}
-            },
-            "options": {"maxTotalChargeUsd": null}
-        }});
-        assert_eq!(
-            affordable_result_count(&run, FLIGHT_RESULT_CHARGE_EVENT, 10).unwrap(),
-            10
-        );
+    fn zero_null_and_missing_budgets_mean_unlimited() {
+        let mut missing_budget = run(json!(1.0), json!({}));
+        missing_budget["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+
+        for (description, run) in [
+            ("zero", run(json!(0.0), json!({}))),
+            ("null", run(Value::Null, json!({}))),
+            ("missing", missing_budget),
+        ] {
+            assert_eq!(
+                affordable_result_count(&run, FLIGHT_RESULT_CHARGE_EVENT, 10).unwrap(),
+                10,
+                "{description} budget should mean unlimited"
+            );
+        }
     }
 
     #[test]
