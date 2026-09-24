@@ -1,4 +1,17 @@
-use super::*;
+use crate::{
+    billing::ChargePricing,
+    endpoint::endpoint_url,
+    input::{normalize_search_input, DEFAULT_LOCATION, DEFAULT_TYPE},
+    response::{
+        dataset_item, get_listings, get_response_page, get_total_pages, get_total_results,
+        limited_response,
+    },
+    scrappa::{
+        is_handled_empty_search_error, is_retryable_scrappa_error, scrappa_error_message,
+        scrappa_retry_delay, ScrappaError,
+    },
+};
+use serde_json::{json, Number, Value};
 
 #[test]
 fn missing_empty_and_unknown_input_use_the_prefilled_defaults() {
@@ -374,6 +387,24 @@ fn ppe_with_no_remaining_budget_keeps_the_sdk_single_item_limit_probe() {
     assert!(plan.limit_reached);
     assert_eq!(plan.charged_count, 2);
     assert!(plan.should_charge_custom_event);
+}
+
+#[test]
+fn ppe_with_two_results_and_budget_for_one_reports_the_saved_item_count() {
+    let pricing = ChargePricing::from_run(&ppe_run(
+        0.001,
+        json!({
+            "property-result": { "eventPriceUsd": 0.001 }
+        }),
+        json!({}),
+    ))
+    .unwrap();
+    let plan = pricing.plan_dataset_push(2);
+
+    assert_eq!(plan.items_to_push, 1);
+    assert!(plan.limit_reached);
+    assert_eq!(plan.charged_count, 2);
+    assert!(plan.items_to_push < 2);
 }
 
 #[test]
