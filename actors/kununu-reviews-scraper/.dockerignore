@@ -1,11 +1,9 @@
 target/
+.git/
 dist/
+node_modules/
 storage/
 apify_storage/
 .env
 .env.local
 *.log
-.DS_Store
-.idea/
-.vscode/
-.zed/

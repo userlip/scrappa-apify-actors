@@ -4,6 +4,15 @@ Extract Kununu company reviews through Scrappa. Use it for DACH employer reputat
 
 This Actor is a thin wrapper: Apify validates input, calls `https://scrappa.co/api/kununu/reviews`, and writes one dataset item per Kununu review. Scraping runs on Scrappa infrastructure.
 
+## Development
+
+This actor is implemented in Rust 1.90. Run its focused tests and build the local image from this directory:
+
+```sh
+docker run --rm -v "$PWD:/app" -w /app rust:1.90-slim-bookworm cargo test --locked
+docker build -f .actor/Dockerfile -t kununu-reviews-scraper:local .
+```
+
 ## Features
 
 - Batch `targets` so one Apify run can process multiple Kununu companies
