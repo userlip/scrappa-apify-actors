@@ -67,6 +67,7 @@ jobs:
           - actors/linkedin-company-scraper
           - actors/linkedin-profile-scraper
           - actors/trustpilot-company-reviews-scraper
+          - actors/trustedshops-search-scraper
           - actors/youtube-api-video-comments
           - actors/youtube-api-related-videos
           - actors/youtube-api-search-data

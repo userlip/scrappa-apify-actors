@@ -180,7 +180,7 @@ async fn push_charged_items(
     };
 
     Ok(PushResult {
-        saved_count: charge_result.charged_count.min(items.len()),
+        saved_count: items_to_keep,
         charge_result: Some(charge_result),
     })
 }
@@ -427,8 +427,8 @@ mod tests {
                 "request": {"q":"H&M partner","market":"FRA","start_page":2,"max_pages":2},
                 "pages_fetched": 1,
                 "responses_saved": 0,
-                "shops_extracted": 2,
-                "status_message": "Charge limit reached after saving 2 of 2 Trusted Shops results on the current page.",
+                "shops_extracted": 1,
+                "status_message": "Charge limit reached after saving 1 of 2 Trusted Shops results on the current page.",
                 "total_shop_count": 77,
                 "total_page_count": 6,
                 "responses": []
@@ -510,7 +510,7 @@ mod tests {
             serde_json::from_str::<Value>(request_parts(&apify_requests[5]).2).unwrap(),
             json!({
                 "runId":"test-run",
-                "statusMessage":"Charge limit reached after saving 2 of 2 Trusted Shops results on the current page.",
+                "statusMessage":"Charge limit reached after saving 1 of 2 Trusted Shops results on the current page.",
                 "isStatusMessageTerminal":true
             })
         );
