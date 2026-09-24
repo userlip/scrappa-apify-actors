@@ -1,0 +1,9 @@
+{
+  "name": "immobilienscout24-price-insights-scraper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CI entry point for the Rust actor image smoke test.",
+  "scripts": {
+    "test": "python3 integration/local_image_smoke.py"
+  }
+}
