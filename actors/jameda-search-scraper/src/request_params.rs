@@ -372,6 +372,14 @@ mod tests {
             schema.pointer("/properties/searches/items/properties/loc/title"),
             Some(&json!("Location"))
         );
+        for field in ["q", "loc"] {
+            assert!(
+                schema
+                    .pointer(&format!("/properties/searches/items/properties/{field}/description"))
+                    .and_then(Value::as_str)
+                    .is_some_and(|description| !description.is_empty())
+            );
+        }
         assert_eq!(
             schema["properties"]["searches"]["prefill"],
             json!([

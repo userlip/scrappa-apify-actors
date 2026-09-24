@@ -26,12 +26,14 @@
         "properties": {
           "q": {
             "title": "Search Query",
+            "description": "Doctor name, specialty, symptom, or medical service.",
             "type": "string",
             "minLength": 2,
             "maxLength": 255
           },
           "loc": {
             "title": "Location",
+            "description": "Optional German city or location.",
             "type": "string",
             "maxLength": 100
           }
