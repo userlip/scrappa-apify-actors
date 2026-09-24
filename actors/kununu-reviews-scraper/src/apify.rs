@@ -90,6 +90,41 @@ impl ApifyClient {
         self.resource_url(&["key-value-stores", store_id, "records", record_key])
     }
 
+    fn request(
+        &self,
+        method: &Method,
+        url: &Url,
+        body: Option<&Value>,
+        idempotency_key: Option<&str>,
+    ) -> reqwest::RequestBuilder {
+        let mut request = self
+            .client
+            .request(method.clone(), url.clone())
+            .bearer_auth(&self.token)
+            .header(reqwest::header::ACCEPT, "application/json");
+        if let Some(body) = body {
+            request = request.json(body);
+        }
+        if let Some(idempotency_key) = idempotency_key {
+            request = request.header("Idempotency-Key", idempotency_key);
+        }
+        request
+    }
+
+    async fn send_once(
+        &self,
+        method: Method,
+        url: Url,
+        body: Option<Value>,
+        idempotency_key: Option<String>,
+        operation: &str,
+    ) -> Result<Response> {
+        self.request(&method, &url, body.as_ref(), idempotency_key.as_deref())
+            .send()
+            .await
+            .with_context(|| format!("Apify API {operation} failed"))
+    }
+
     async fn send(
         &self,
         method: Method,
@@ -99,19 +134,11 @@ impl ApifyClient {
         operation: &str,
     ) -> Result<Response> {
         for retry in 0..=APIFY_MAX_RETRIES {
-            let mut request = self
-                .client
-                .request(method.clone(), url.clone())
-                .bearer_auth(&self.token)
-                .header(reqwest::header::ACCEPT, "application/json");
-            if let Some(body) = &body {
-                request = request.json(body);
-            }
-            if let Some(idempotency_key) = &idempotency_key {
-                request = request.header("Idempotency-Key", idempotency_key);
-            }
-
-            match request.send().await {
+            match self
+                .request(&method, &url, body.as_ref(), idempotency_key.as_deref())
+                .send()
+                .await
+            {
                 Ok(response)
                     if is_retryable_status(response.status()) && retry < APIFY_MAX_RETRIES =>
                 {
@@ -222,7 +249,7 @@ impl ApifyClient {
             return Ok(());
         }
         let response = self
-            .send(
+            .send_once(
                 Method::POST,
                 self.resource_url(&["datasets", &self.dataset_id, "items"])?,
                 Some(Value::Array(items.to_vec())),
@@ -240,7 +267,7 @@ impl ApifyClient {
     ) -> Result<PushDataResult> {
         if items.is_empty() {
             return Ok(PushDataResult {
-                charged_count: 0,
+                saved_count: 0,
                 event_charge_limit_reached: false,
             });
         }
@@ -252,7 +279,7 @@ impl ApifyClient {
         }
         if limited_items.is_empty() {
             return Ok(PushDataResult {
-                charged_count: 0,
+                saved_count: 0,
                 event_charge_limit_reached: true,
             });
         }
@@ -264,9 +291,7 @@ impl ApifyClient {
             .charge(self, DEFAULT_DATASET_ITEM_EVENT, limited_items.len())
             .await?;
         Ok(PushDataResult {
-            charged_count: event_charge
-                .charged_count
-                .saturating_add(dataset_item_charge.charged_count),
+            saved_count: event_charge.charged_count.min(limited_items.len()),
             event_charge_limit_reached: event_charge.event_charge_limit_reached
                 || dataset_item_charge.event_charge_limit_reached,
         })
@@ -345,7 +370,7 @@ fn format_apify_error(status: StatusCode, body: &str, operation: &str) -> String
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PushDataResult {
-    pub charged_count: usize,
+    pub saved_count: usize,
     pub event_charge_limit_reached: bool,
 }
 
@@ -659,6 +684,21 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn dataset_post_does_not_retry_a_transient_failure() {
+        let server = MockServer::start(vec![
+            response(503, json!({"error":"temporary"})),
+            response(201, json!({})),
+        ]);
+        let client = ApifyClient::new(config(server.base_url.clone())).unwrap();
+        let error = client
+            .push_dataset_items(&[json!({"review_id":"r1"})])
+            .await
+            .unwrap_err();
+        assert!(error.to_string().contains("Apify API error (503)"));
+        assert_eq!(server.requests().len(), 1);
+    }
+
+    #[tokio::test]
     async fn charged_dataset_write_saves_rows_before_charging_the_custom_event() {
         let server = MockServer::start(vec![response(200, json!({})), response(201, json!({}))]);
         let client = ApifyClient::new(config(server.base_url.clone())).unwrap();
@@ -671,7 +711,7 @@ mod tests {
         assert_eq!(
             result,
             PushDataResult {
-                charged_count: 4,
+                saved_count: 2,
                 event_charge_limit_reached: false,
             }
         );

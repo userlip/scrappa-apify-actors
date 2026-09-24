@@ -120,7 +120,7 @@ async fn execute(
                     let charge_result = apify
                         .push_charged_dataset_items(event_budget, &enriched_reviews)
                         .await?;
-                    let saved_count = charge_result.charged_count.min(enriched_reviews.len());
+                    let saved_count = charge_result.saved_count.min(enriched_reviews.len());
                     if charge_result.event_charge_limit_reached {
                         let status_message = format!(
                             "Charge limit reached after saving {saved_count} of {} Kununu reviews for {}/{} page {page}.",
@@ -378,6 +378,63 @@ mod tests {
         assert_eq!(output["reviews_extracted"], 1);
         assert_eq!(output["responses"][0]["pagination"]["totalPages"], 1);
         assert!(output["responses"][0].get("response").is_none());
+    }
+
+    #[tokio::test]
+    async fn partial_ppe_batch_reports_only_rows_written_before_limit() {
+        let apify_server =
+            MockServer::start(vec![response(201, json!({})), response(201, json!({}))]);
+        let scrappa_server = MockServer::start(vec![response(
+            200,
+            json!({
+                "success": true,
+                "data": [
+                    {"uuid":"review-1", "title":"First"},
+                    {"uuid":"review-2", "title":"Second"}
+                ],
+                "meta":{"pagination":{"totalPages":1,"totalResults":2}}
+            }),
+        )]);
+        let apify = ApifyClient::new(apify_config(apify_server.base_url.clone())).unwrap();
+        let scrappa =
+            ScrappaClient::new("test-api-key".into(), scrappa_server.base_url.clone()).unwrap();
+        let mut budget = ppe_budget(0.25, 0.25);
+        let result = execute(
+            &apify,
+            &scrappa,
+            &mut budget,
+            &json!({"targets":["de/example-gmbh"]}),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(result.pages_fetched, 1);
+        assert_eq!(result.reviews_extracted, 0);
+        assert!(!result.output_written);
+        assert_eq!(
+            result.status_message.as_deref(),
+            Some(
+                "Charge limit reached after saving 1 of 2 Kununu reviews for de/example-gmbh page 1."
+            )
+        );
+
+        let requests = apify_server.requests();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(
+            request_parts(&requests[0]).1,
+            "/v2/datasets/test-dataset/items"
+        );
+        let rows: Value = serde_json::from_str(request_parts(&requests[0]).2).unwrap();
+        assert_eq!(rows.as_array().unwrap().len(), 1);
+        assert_eq!(rows[0]["review_id"], "review-1");
+        assert_eq!(
+            request_parts(&requests[1]).1,
+            "/v2/actor-runs/test-run/charge"
+        );
+        assert_eq!(
+            serde_json::from_str::<Value>(request_parts(&requests[1]).2).unwrap(),
+            json!({"eventName":"review-result","count":1})
+        );
     }
 
     #[tokio::test]
