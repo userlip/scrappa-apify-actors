@@ -213,13 +213,35 @@ impl<'a> ApifyClient<'a> {
 
     async fn store_dataset_items(&self, items: &[Value]) -> Result<()> {
         let url = self.endpoint(&["v2", "datasets", &self.config.dataset_id, "items"])?;
+        let body = if items.len() == 1 {
+            let item_body = serde_json::to_vec(&items[0])
+                .context("Failed to serialize Apify dataset item")?;
+            if item_body.len() > MAX_DATASET_REQUEST_BYTES {
+                bail!(
+                    "Apify dataset item exceeds the {MAX_DATASET_REQUEST_BYTES} byte request limit"
+                );
+            }
+            if item_body.len() + 2 > MAX_DATASET_REQUEST_BYTES {
+                item_body
+            } else {
+                serde_json::to_vec(items).context("Failed to serialize Apify dataset items")?
+            }
+        } else {
+            serde_json::to_vec(items).context("Failed to serialize Apify dataset items")?
+        };
+        if body.len() > MAX_DATASET_REQUEST_BYTES {
+            bail!(
+                "Apify dataset items request exceeds the {MAX_DATASET_REQUEST_BYTES} byte request limit"
+            );
+        }
         let response = self
             .http
             .post(url)
             .timeout(API_TIMEOUT)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .json(items)
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(body)
             .send()
             .await
             .context("Apify dataset write failed")?;
@@ -238,13 +260,22 @@ fn dataset_item_batch_ranges(items: &[Value]) -> Result<Vec<std::ops::Range<usiz
 
     for (index, item) in items.iter().enumerate() {
         let item_bytes = serde_json::to_vec(item)?.len();
-        let single_item_bytes = item_bytes.saturating_add(2);
-        if single_item_bytes > MAX_DATASET_REQUEST_BYTES {
+        if item_bytes > MAX_DATASET_REQUEST_BYTES {
             bail!(
                 "Dataset item {} exceeds Apify's {}-byte request limit",
                 index + 1,
                 MAX_DATASET_REQUEST_BYTES
             );
+        }
+        let single_item_bytes = item_bytes.saturating_add(2);
+        if single_item_bytes > MAX_DATASET_REQUEST_BYTES {
+            if start < index {
+                ranges.push(start..index);
+            }
+            ranges.push(index..index + 1);
+            start = index + 1;
+            current_bytes = 2;
+            continue;
         }
 
         let separator_bytes = usize::from(index > start);
@@ -649,28 +680,66 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn near_limit_single_item_uses_object_payload_without_array_overflow() {
+        let empty_item = json!({"position": 1, "payload": ""});
+        let empty_item_size = serde_json::to_vec(&empty_item).unwrap().len();
+        let items = vec![json!({
+            "position": 1,
+            "payload": "x".repeat(MAX_DATASET_REQUEST_BYTES - empty_item_size - 1)
+        })];
+        let item_size = serde_json::to_vec(&items[0]).unwrap().len();
+        assert_eq!(item_size, MAX_DATASET_REQUEST_BYTES - 1);
+        assert_eq!(dataset_item_batch_ranges(&items).unwrap(), vec![0..1]);
+
+        let (base_url, server) = mock_server(vec![(201, String::new())]);
+        let config = test_config(&base_url);
+        let http = Client::new();
+        let apify = ApifyClient::new(&http, &config);
+
+        apify.store_dataset_items(&items).await.unwrap();
+
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0].target, "/v2/datasets/dataset-id/items");
+        assert_eq!(requests[0].body.len(), MAX_DATASET_REQUEST_BYTES - 1);
+        assert!(serde_json::from_str::<Value>(&requests[0].body)
+            .unwrap()
+            .is_object());
+    }
+
+    #[tokio::test]
     async fn non_pay_per_event_storage_keeps_all_result_counts_without_charging() {
         let run = json!({"data": {
             "pricingInfo": {"pricingModel": "DEVELOPER"}
         }});
-        let (base_url, server) = mock_server(vec![(200, run.to_string()), (201, String::new())]);
+        let (base_url, server) = mock_server(vec![
+            (200, run.to_string()),
+            (201, String::new()),
+            (201, String::new()),
+        ]);
         let config = test_config(&base_url);
         let http = Client::new();
         let apify = ApifyClient::new(&http, &config);
-        let items = vec![json!({"position": 1}), json!({"position": 2})];
+        let items = vec![
+            json!({"position": 1, "payload": "x".repeat(3_000_000)}),
+            json!({"position": 2, "payload": "y".repeat(3_000_000)}),
+        ];
 
         let result = apify.push_dataset_items(&items).await.unwrap();
 
         assert_eq!(result.saved_count, items.len());
         assert!(!result.event_charge_limit_reached);
         let requests = server.join().unwrap();
-        assert_eq!(requests.len(), 2);
+        assert_eq!(requests.len(), 3);
         assert_eq!(requests[0].target, "/v2/actor-runs/run-id");
         assert_eq!(requests[1].target, "/v2/datasets/dataset-id/items");
-        assert_eq!(
-            serde_json::from_str::<Value>(&requests[1].body).unwrap(),
-            json!([{"position": 1}, {"position": 2}])
-        );
+        assert_eq!(requests[2].target, "/v2/datasets/dataset-id/items");
+        for (request, position) in [(&requests[1], 1), (&requests[2], 2)] {
+            assert!(request.body.len() <= MAX_DATASET_REQUEST_BYTES);
+            let chunk: Vec<Value> = serde_json::from_str(&request.body).unwrap();
+            assert_eq!(chunk.len(), 1);
+            assert_eq!(chunk[0]["position"], position);
+        }
     }
 
     #[tokio::test]
