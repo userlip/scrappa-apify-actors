@@ -202,6 +202,15 @@ fn pricing_response_with_options(options: Value, charged_events: Value) -> Value
 
 fn mock_apify(input: Value, max_charge: f64, charged_events: Value) -> MockServer {
     MockServer::start(move |request| {
+        if request
+            .headers
+            .get("authorization")
+            .map(String::as_str)
+            != Some("Bearer apify-test-token")
+        {
+            return MockResponse::json(401, json!({ "message": "Unauthorized" }));
+        }
+
         if request.path.ends_with("/records/INPUT") {
             return MockResponse::json(200, input.clone());
         }
