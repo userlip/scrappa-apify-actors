@@ -240,9 +240,6 @@ pub(crate) fn affordable_dataset_items(
             .as_f64()
             .ok_or_else(|| anyhow!("Apify run did not provide a valid spending limit"))?,
     };
-    if max_charge == 0.0 {
-        return Ok(requested);
-    }
     if !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
@@ -290,7 +287,11 @@ pub(crate) fn affordable_dataset_items(
         return Ok(requested);
     }
 
-    let tolerance = f64::EPSILON * max_charge.max(1.0);
+    let tolerance = if max_charge == 0.0 {
+        0.0
+    } else {
+        f64::EPSILON * max_charge.max(1.0)
+    };
     Ok((1..=requested)
         .take_while(|count| spent + *count as f64 * item_price <= max_charge + tolerance)
         .count())

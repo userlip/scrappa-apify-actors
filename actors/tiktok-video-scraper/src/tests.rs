@@ -341,7 +341,7 @@ fn non_ppe_pricing_keeps_unbounded_dataset_capacity() {
 }
 
 #[test]
-fn ppe_without_a_positive_max_charge_keeps_legacy_unbounded_capacity() {
+fn ppe_without_a_max_charge_keeps_legacy_unbounded_capacity() {
     let mut missing_cap: Value =
         serde_json::from_str(&pricing_run(1.0, json!({"other-event": 1}))).unwrap();
     missing_cap["data"]["options"]
@@ -351,12 +351,17 @@ fn ppe_without_a_positive_max_charge_keeps_legacy_unbounded_capacity() {
     let mut null_cap: Value =
         serde_json::from_str(&pricing_run(1.0, json!({"other-event": 1}))).unwrap();
     null_cap["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
-    let zero_cap: Value =
-        serde_json::from_str(&pricing_run(0.0, json!({"other-event": 1}))).unwrap();
 
-    for run in [&missing_cap, &null_cap, &zero_cap] {
+    for run in [&missing_cap, &null_cap] {
         assert_eq!(affordable_dataset_items(run, 5, 0).unwrap(), 5);
     }
+}
+
+#[test]
+fn ppe_zero_max_charge_disallows_paid_dataset_items() {
+    let run: Value = serde_json::from_str(&pricing_run(0.0, json!({}))).unwrap();
+    assert_eq!(affordable_dataset_items(&run, 5, 0).unwrap(), 0);
+    assert_eq!(affordable_dataset_items(&run, 5, 1).unwrap(), 0);
 }
 
 #[test]
@@ -532,31 +537,28 @@ async fn budget_stops_before_scrappa_lookup_and_keeps_an_affordable_prefix() {
 }
 
 #[tokio::test]
-async fn zero_total_charge_cap_keeps_legacy_unbounded_output() {
+async fn zero_total_charge_cap_stops_before_lookup_or_output() {
     let run = pricing_run(0.0, json!({}));
     let (address, server) = start_mock_server(vec![
         ("200 OK".to_owned(), json!({"url": VIDEO_URL}).to_string()),
         ("200 OK".to_owned(), run),
-        (
-            "200 OK".to_owned(),
-            json!({"data": {"aweme_id":"uncapped-video"}}).to_string(),
-        ),
-        ("201 Created".to_owned(), String::new()),
     ]);
 
     run_actor(&Client::new(), &request_config(address))
         .await
         .unwrap();
     let requests = server.join().unwrap();
-    assert_eq!(requests.len(), 4);
-    assert!(requests[2].method_and_path.contains("/api/tiktok/video?"));
-    assert!(requests[3]
+    assert_eq!(requests.len(), 2);
+    assert!(requests[0]
         .method_and_path
-        .starts_with("POST /v2/datasets/dataset-test/items "));
-    let row: Value = serde_json::from_str(&requests[3].body).unwrap();
-    assert_eq!(row["aweme_id"], "uncapped-video");
-    assert_eq!(row["request_url"], VIDEO_URL);
-    assert_eq!(row["result_found"], true);
+        .starts_with("GET /v2/key-value-stores/store-test/records/INPUT "));
+    assert!(requests[1]
+        .method_and_path
+        .starts_with("GET /v2/actor-runs/run-test "));
+    assert!(requests.iter().all(|request| {
+        !request.method_and_path.contains("/api/tiktok/video")
+            && !request.method_and_path.contains("/v2/datasets/")
+    }));
 }
 
 #[tokio::test]
