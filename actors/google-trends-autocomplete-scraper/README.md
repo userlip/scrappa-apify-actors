@@ -83,16 +83,17 @@ Localized market research:
 ## Development
 
 ```bash
-npm install
-npm test
+cargo test --locked
+cargo build --release --locked
 ```
 
 ## Run Locally
 
 ```bash
-SCRAPPA_API_KEY=... npm run build
-SCRAPPA_API_KEY=... apify run --input='{"query":"tesla","geo":"US","hl":"en"}'
+APIFY_TOKEN=... ACTOR_RUN_ID=... ACTOR_DEFAULT_KEY_VALUE_STORE_ID=... ACTOR_DEFAULT_DATASET_ID=... SCRAPPA_API_KEY=... cargo run --locked
 ```
+
+The actor reads `INPUT` from the configured default key-value store. `APIFY_API_PUBLIC_BASE_URL` and `SCRAPPA_API_BASE_URL` can be overridden for local HTTP mocks.
 
 ## Scrappa API
 
