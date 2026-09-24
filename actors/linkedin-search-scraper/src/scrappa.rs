@@ -87,7 +87,7 @@ impl Default for RetryPolicy {
 }
 
 impl RetryPolicy {
-    fn delay_after(&self, failed_attempt: usize) -> Duration {
+    pub(super) fn delay_after(&self, failed_attempt: usize) -> Duration {
         let jitter_ms = if self.jitter_max_ms == 0 {
             0
         } else {

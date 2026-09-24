@@ -1,11 +1,7 @@
 mod scrappa;
 mod search;
 
-use std::{
-    env,
-    process::ExitCode,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::{env, process::ExitCode};
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Response, StatusCode};
@@ -317,30 +313,64 @@ async fn charge_search_result(
     client: &Client,
     config: &ActorConfig,
     charge_index: usize,
+    retry_policy: RetryPolicy,
 ) -> Result<()> {
     let url = apify_url(
         &config.apify_api_base_url,
         &["actor-runs", &config.actor_run_id, "charge"],
     )?;
     let idempotency_key = format!(
-        "{}-{}-{}-{charge_index}",
-        config.actor_run_id,
-        std::process::id(),
-        SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_nanos()
+        "{}-{SEARCH_CHARGE_EVENT}-{charge_index}",
+        config.actor_run_id
     );
-    let response = client
-        .post(url)
-        .bearer_auth(&config.apify_token)
-        .header("idempotency-key", idempotency_key)
-        .json(&json!({"eventName": SEARCH_CHARGE_EVENT, "count": 1}))
-        .send()
-        .await
-        .context("Apify result charge request failed")?;
-    require_apify_success(response, "result charge").await?;
-    Ok(())
+    let attempts = retry_policy.attempts.max(1);
+
+    for attempt in 1..=attempts {
+        let response = client
+            .post(url.clone())
+            .bearer_auth(&config.apify_token)
+            .header("idempotency-key", idempotency_key.as_str())
+            .json(&json!({"eventName": SEARCH_CHARGE_EVENT, "count": 1}))
+            .send()
+            .await;
+
+        match response {
+            Ok(response) if response.status().is_success() => return Ok(()),
+            Ok(response) => {
+                let status = response.status();
+                if attempt == attempts || !is_retryable_charge_status(status) {
+                    return require_apify_success(response, "result charge")
+                        .await
+                        .map(|_| ());
+                }
+                eprintln!(
+                    "Apify result charge failed with HTTP {}; retrying attempt {}/{}.",
+                    status.as_u16(),
+                    attempt + 1,
+                    attempts
+                );
+            }
+            Err(error) => {
+                let retryable = error.is_timeout() || error.is_connect();
+                if attempt == attempts || !retryable {
+                    return Err(error).context("Apify result charge request failed");
+                }
+                eprintln!(
+                    "Apify result charge request failed ({error}); retrying attempt {}/{}.",
+                    attempt + 1,
+                    attempts
+                );
+            }
+        }
+
+        tokio::time::sleep(retry_policy.delay_after(attempt)).await;
+    }
+
+    unreachable!("at least one charge attempt is made")
+}
+
+fn is_retryable_charge_status(status: StatusCode) -> bool {
+    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
 }
 
 async fn put_output(client: &Client, config: &ActorConfig, output: &Value) -> Result<()> {
@@ -485,15 +515,15 @@ async fn run_actor(
                 break;
             }
 
+            if budget.is_pay_per_event && budget.has_custom_charge_event() {
+                charge_search_result(client, config, saved_results + 1, retry_policy).await?;
+                budget.record_custom_charge();
+            }
             push_dataset_item(client, config, result).await?;
-            saved_results += 1;
             if budget.is_pay_per_event {
                 budget.record_dataset_item();
-                if budget.has_custom_charge_event() {
-                    charge_search_result(client, config, saved_results).await?;
-                    budget.record_custom_charge();
-                }
             }
+            saved_results += 1;
         }
         println!("Saved {saved_results} LinkedIn search result(s)");
     } else {
@@ -721,6 +751,17 @@ mod tests {
         }
     }
 
+    fn idempotency_key(request: &str) -> &str {
+        request
+            .lines()
+            .find_map(|line| {
+                let (name, value) = line.split_once(':')?;
+                name.eq_ignore_ascii_case("idempotency-key")
+                    .then_some(value.trim())
+            })
+            .expect("charge request includes an idempotency key")
+    }
+
     fn test_config(base_url: Url) -> ActorConfig {
         ActorConfig {
             apify_api_base_url: base_url.clone(),
@@ -765,10 +806,10 @@ mod tests {
                 200,
                 r#"{"organic_results":[{"position":1,"title":"Founder","link":"https://www.linkedin.com/in/founder"},{"position":2,"title":"CTO","link":"https://www.linkedin.com/in/cto"}],"total_results":40,"search_information":{"query_displayed":"founder","total_results":40},"pagination":{"current_page":1,"pages":[{"page":1},{"page":2}]}}"#,
             ),
-            response(201, "{}"),
             response(200, "{}"),
             response(201, "{}"),
             response(200, "{}"),
+            response(201, "{}"),
             response(200, "{}"),
         ]);
         let client = Client::builder()
@@ -802,19 +843,107 @@ mod tests {
             .to_ascii_lowercase()
             .contains("x-api-key: scrappa-test-key"));
         assert!(requests[2].contains("thescrappa-linkedin-search-scraper/1.0"));
-        assert!(requests[3].contains("\"title\":\"Founder\""));
-        assert!(requests[4].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
-        assert!(requests[4].contains("\"eventName\":\"linkedin-search-result\""));
-        assert!(requests[4].contains("\"count\":1"));
-        assert!(requests[4]
-            .to_ascii_lowercase()
-            .contains("idempotency-key:"));
-        assert!(requests[5].contains("\"title\":\"CTO\""));
-        assert!(requests[6].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[3].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[3].contains("\"eventName\":\"linkedin-search-result\""));
+        assert!(requests[3].contains("\"count\":1"));
+        assert_eq!(
+            idempotency_key(&requests[3]),
+            "run-1-linkedin-search-result-1"
+        );
+        assert!(requests[4].contains("\"title\":\"Founder\""));
+        assert!(requests[5].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert_eq!(
+            idempotency_key(&requests[5]),
+            "run-1-linkedin-search-result-2"
+        );
+        assert!(requests[6].contains("\"title\":\"CTO\""));
         assert!(requests[7].starts_with("PUT /v2/key-value-stores/store-1/records/OUTPUT HTTP/1.1"));
         assert!(requests[7].contains("\"results\":2"));
         assert!(requests[7].contains("\"current_page\":1"));
         assert!(requests[7].contains("\"pages\":2"));
+    }
+
+    #[tokio::test]
+    async fn retries_result_charge_with_the_same_idempotency_key_before_writing_dataset_item() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"query":"cto"}"#),
+            response(200, run_response("PAY_PER_EVENT", 0.01, 0)),
+            response(200, r#"{"organic_results":[{"position":1,"title":"CTO"}]}"#),
+            response(503, "temporarily unavailable"),
+            response(200, "{}"),
+            response(201, "{}"),
+            response(200, "{}"),
+        ]);
+        let client = Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .unwrap();
+        let scrappa_client = ScrappaClient::new(Duration::from_secs(2)).unwrap();
+        let config = test_config(server.base_url.clone());
+
+        run_actor(
+            &client,
+            &scrappa_client,
+            &config,
+            RetryPolicy {
+                attempts: 2,
+                base_delay: Duration::ZERO,
+                max_delay: Duration::ZERO,
+                jitter_max_ms: 0,
+            },
+        )
+        .await
+        .unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 7);
+        assert!(requests[3].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[4].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert_eq!(idempotency_key(&requests[3]), idempotency_key(&requests[4]));
+        assert_eq!(
+            idempotency_key(&requests[3]),
+            "run-1-linkedin-search-result-1"
+        );
+        assert!(requests[5].contains("\"title\":\"CTO\""));
+        assert!(requests[6].starts_with("PUT /v2/key-value-stores/store-1/records/OUTPUT HTTP/1.1"));
+    }
+
+    #[tokio::test]
+    async fn does_not_write_dataset_item_when_result_charge_fails() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"query":"cto"}"#),
+            response(200, run_response("PAY_PER_EVENT", 0.01, 0)),
+            response(200, r#"{"organic_results":[{"position":1,"title":"CTO"}]}"#),
+            response(500, "charge failed"),
+        ]);
+        let client = Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .unwrap();
+        let scrappa_client = ScrappaClient::new(Duration::from_secs(2)).unwrap();
+        let config = test_config(server.base_url.clone());
+
+        let error = run_actor(
+            &client,
+            &scrappa_client,
+            &config,
+            RetryPolicy {
+                attempts: 1,
+                ..RetryPolicy::default()
+            },
+        )
+        .await
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("Apify result charge failed with 500"));
+        let requests = server.requests();
+        assert_eq!(requests.len(), 4);
+        assert!(requests[3].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(!requests
+            .iter()
+            .any(|request| request.starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1")));
     }
 
     #[tokio::test]
