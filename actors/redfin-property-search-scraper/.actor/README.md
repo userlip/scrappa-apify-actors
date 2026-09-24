@@ -7,6 +7,11 @@ Scrappa's Redfin API and saves one dataset item per property listing.
 Recommended paid pricing: **$0.30 per 1,000 saved property listings** using the
 `property-result` pay-per-event charge.
 
+The actor is implemented in Rust. Build and test it from the actor directory with
+`cargo test --locked`, then build `.actor/Dockerfile` and run
+`python3 test/local_image_smoke.py`. The smoke test uses local Apify and Scrappa
+HTTP fixtures only.
+
 ## Example input
 
 ```json
