@@ -26,7 +26,7 @@ Pass up to three symbols as a JSON array, or as a comma-separated string. Scrapp
 
 Each successful unique index is written as one Apify dataset row with its requested symbol, matched symbol, name, exchange, current price, price change, percent change, previous close, movement direction, locale, and retrieval timestamp.
 
-Each saved dataset row emits one `index-result` event and costs **$0.00025 per result**. Duplicate input symbols, unmatched symbols, and mismatched upstream responses are not saved or charged. Output is dataset-only; the actor does not write an `OUTPUT` key-value-store record.
+Each saved dataset row emits one `index-result` event at **$0.00025 per result**. If Apify also prices `apify-default-dataset-item`, each row incurs that event charge too; the actor counts both prices against `maxTotalChargeUsd`. Duplicate input symbols, unmatched symbols, and mismatched upstream responses are not saved or charged. Output is dataset-only; the actor does not write an `OUTPUT` key-value-store record.
 
 ```json
 {
