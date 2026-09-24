@@ -13,6 +13,7 @@ pub struct MockResponse {
     status: u16,
     body: String,
     delay: Duration,
+    headers: Vec<(String, String)>,
 }
 
 impl MockResponse {
@@ -21,11 +22,17 @@ impl MockResponse {
             status,
             body: body.to_owned(),
             delay: Duration::ZERO,
+            headers: Vec::new(),
         }
     }
 
     pub fn after(mut self, delay: Duration) -> Self {
         self.delay = delay;
+        self
+    }
+
+    pub fn with_header(mut self, name: &str, value: &str) -> Self {
+        self.headers.push((name.to_owned(), value.to_owned()));
         self
     }
 }
@@ -70,11 +77,17 @@ impl MockServer {
                     504 => "Gateway Timeout",
                     _ => "Mock Response",
                 };
+                let extra_headers = response
+                    .headers
+                    .iter()
+                    .map(|(name, value)| format!("{name}: {value}\r\n"))
+                    .collect::<String>();
                 let response_text = format!(
-                    "HTTP/1.1 {} {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    "HTTP/1.1 {} {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n{}Connection: close\r\n\r\n{}",
                     response.status,
                     reason,
                     response.body.len(),
+                    extra_headers,
                     response.body
                 );
                 let _ = stream.write_all(response_text.as_bytes());
