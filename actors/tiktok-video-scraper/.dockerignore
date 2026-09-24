@@ -1,0 +1,7 @@
+.git
+.gitignore
+.dockerignore
+.actor/
+target/
+apify_storage/
+storage/
