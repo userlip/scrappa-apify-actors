@@ -359,7 +359,9 @@ impl ChargeBudget {
             return usize::MAX;
         }
 
-        let remaining = self.max_total_charge_usd - self.total_charged_usd;
+        let spent = self.total_charged_usd;
+        let tolerance = f64::EPSILON * self.max_total_charge_usd.max(spent).max(1.0);
+        let remaining = self.max_total_charge_usd - spent + tolerance;
         if remaining <= 0.0 {
             return 0;
         }
@@ -460,6 +462,46 @@ mod tests {
         pricing.record_result_charge();
         assert!(!pricing.can_write_result());
         assert!(pricing.event_limit_reached());
+    }
+
+    #[test]
+    fn admits_exact_decimal_caps_with_existing_or_dataset_charges() {
+        let combined_events = ActorPricing::from_run(&run(
+            json!({
+                PRICE_INSIGHT_RESULT_EVENT: {"eventPriceUsd": 0.1},
+                DEFAULT_DATASET_ITEM_EVENT: {"eventPriceUsd": 0.2}
+            }),
+            json!({}),
+            Some(json!(0.3)),
+        ))
+        .unwrap();
+        assert!(combined_events.can_write_result());
+
+        let existing_charge = ActorPricing::from_run(&run(
+            json!({
+                PRICE_INSIGHT_RESULT_EVENT: {"eventPriceUsd": 0.1},
+                "prior-event": {"eventPriceUsd": 0.2}
+            }),
+            json!({"prior-event": 1}),
+            Some(json!(0.3)),
+        ))
+        .unwrap();
+        assert!(existing_charge.can_write_result());
+    }
+
+    #[test]
+    fn rejects_a_genuinely_over_cap_decimal_result() {
+        let pricing = ActorPricing::from_run(&run(
+            json!({
+                PRICE_INSIGHT_RESULT_EVENT: {"eventPriceUsd": 0.1},
+                DEFAULT_DATASET_ITEM_EVENT: {"eventPriceUsd": 0.2}
+            }),
+            json!({}),
+            Some(json!(0.299999999)),
+        ))
+        .unwrap();
+
+        assert!(!pricing.can_write_result());
     }
 
     #[test]

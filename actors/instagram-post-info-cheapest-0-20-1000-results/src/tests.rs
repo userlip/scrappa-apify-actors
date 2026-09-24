@@ -284,7 +284,7 @@ fn missing_and_null_spending_limits_are_unbounded() {
 }
 
 #[test]
-fn zero_spending_limit_blocks_dataset_items() {
+fn zero_spending_limit_is_unbounded_for_dataset_items() {
     let run = json!({
         "data": {
             "pricingInfo": {
@@ -297,7 +297,13 @@ fn zero_spending_limit_blocks_dataset_items() {
             "chargedEventCounts": {}
         }
     });
-    assert_eq!(affordable_dataset_items(&run, 3).unwrap(), 0);
+    assert_eq!(affordable_dataset_items(&run, 3).unwrap(), 3);
+
+    let mut invalid = run.clone();
+    invalid["data"]["options"]["maxTotalChargeUsd"] = json!(-1);
+    assert!(affordable_dataset_items(&invalid, 3).is_err());
+    invalid["data"]["options"]["maxTotalChargeUsd"] = json!("malformed");
+    assert!(affordable_dataset_items(&invalid, 3).is_err());
 }
 
 #[tokio::test]
@@ -600,7 +606,7 @@ async fn actor_publishes_dataset_item_for_free_and_unbounded_ppe_runs() {
 }
 
 #[tokio::test]
-async fn zero_ppe_budget_keeps_output_but_skips_dataset_item() {
+async fn zero_ppe_cap_still_publishes_output_and_dataset_item() {
     let output = json!({"success": true, "data": {"shortcode": "CODE"}});
     let mut run = run_pricing(0.0, 0);
     run["data"]["chargedEventCounts"] = json!({});
@@ -609,18 +615,22 @@ async fn zero_ppe_budget_keeps_output_but_skips_dataset_item() {
         MockResponse::json(200, output.clone()),
         MockResponse::json(201, json!({})),
         MockResponse::json(200, run),
+        MockResponse::json(201, json!({})),
     ])
     .await;
 
     run_actor_with_config(config(base_url)).await.unwrap();
 
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 4);
+    assert_eq!(requests.len(), 5);
     assert!(requests[2].path.ends_with("/records/OUTPUT"));
     assert_eq!(requests[3].path, "/v2/actor-runs/run-1");
-    assert!(requests
-        .iter()
-        .all(|request| !request.path.starts_with("/v2/datasets/")));
+    assert_eq!(requests[4].method, "POST");
+    assert_eq!(requests[4].path, "/v2/datasets/dataset-1/items");
+    assert_eq!(
+        serde_json::from_str::<Value>(&requests[4].body).unwrap(),
+        output
+    );
 }
 
 #[tokio::test]

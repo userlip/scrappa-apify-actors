@@ -332,12 +332,15 @@ impl RunPricing {
             }
         }
 
-        let max_total_charge_usd = data
+        let mut max_total_charge_usd = data
             .pointer("/options/maxTotalChargeUsd")
             .and_then(Value::as_f64)
             .unwrap_or(f64::INFINITY);
         if max_total_charge_usd.is_nan() || max_total_charge_usd < 0.0 {
             bail!("Apify run returned an invalid spending limit");
+        }
+        if max_total_charge_usd == 0.0 {
+            max_total_charge_usd = f64::INFINITY;
         }
 
         let mut charged_counts = HashMap::new();
@@ -374,7 +377,9 @@ impl RunPricing {
         if price <= 0.0 || self.max_total_charge_usd == f64::INFINITY {
             return usize::MAX;
         }
-        let available = (self.max_total_charge_usd - self.total_charged_amount()) / price;
+        let spent = self.total_charged_amount();
+        let tolerance = f64::EPSILON * self.max_total_charge_usd.max(spent).max(1.0);
+        let available = (self.max_total_charge_usd - spent + tolerance) / price;
         if !available.is_finite() {
             return if available.is_sign_positive() {
                 usize::MAX
@@ -385,11 +390,10 @@ impl RunPricing {
         if available <= 0.0 {
             return 0;
         }
-        let rounded = (available * 10_000.0).round() / 10_000.0;
-        if rounded >= usize::MAX as f64 {
+        if available >= usize::MAX as f64 {
             usize::MAX
         } else {
-            rounded.floor() as usize
+            available.floor() as usize
         }
     }
 
@@ -403,6 +407,10 @@ impl RunPricing {
     }
 
     fn can_push_one_default_result(&self) -> bool {
+        if self.max_total_charge_usd == f64::INFINITY {
+            return true;
+        }
+
         let total = self.total_charged_amount();
         let item_price = self.prices.get(RESULT_EVENT).copied().unwrap_or(0.0)
             + self
@@ -410,7 +418,13 @@ impl RunPricing {
                 .get(DEFAULT_DATASET_ITEM_EVENT)
                 .copied()
                 .unwrap_or(0.0);
-        total + item_price <= self.max_total_charge_usd
+        let remaining = self.max_total_charge_usd - total;
+        if item_price <= remaining {
+            return true;
+        }
+
+        let tolerance = f64::EPSILON * self.max_total_charge_usd.max(total).max(1.0);
+        item_price - remaining <= tolerance
     }
 
     fn record_charge(&mut self, event_name: &str) {
@@ -514,5 +528,64 @@ impl ResultsSink for ApifyActor {
             saved,
             limit_reached: false,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn pricing(max_charge: Value, prices: Value, counts: Value) -> RunPricing {
+        RunPricing::from_run_response(&json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": { "actorChargeEvents": prices }
+                },
+                "options": { "maxTotalChargeUsd": max_charge },
+                "chargedEventCounts": counts
+            }
+        }))
+        .unwrap()
+    }
+
+    #[test]
+    fn admits_exact_decimal_boundaries_with_prior_and_dataset_charges() {
+        let prior_charge = pricing(
+            json!(0.3),
+            json!({
+                RESULT_EVENT: { "eventPriceUsd": 0.1 },
+                "prior-event": { "eventPriceUsd": 0.2 }
+            }),
+            json!({ "prior-event": 1 }),
+        );
+        assert_eq!(prior_charge.available_capacity(RESULT_EVENT, 1), 1);
+        assert!(prior_charge.can_push_one_default_result());
+
+        let dataset_charge = pricing(
+            json!(0.3),
+            json!({
+                RESULT_EVENT: { "eventPriceUsd": 0.1 },
+                DEFAULT_DATASET_ITEM_EVENT: { "eventPriceUsd": 0.2 }
+            }),
+            json!({}),
+        );
+        assert!(dataset_charge.can_push_one_default_result());
+    }
+
+    #[test]
+    fn does_not_round_up_a_genuinely_over_cap_result() {
+        let pricing = pricing(
+            json!(0.299999999),
+            json!({
+                RESULT_EVENT: { "eventPriceUsd": 0.1 },
+                "prior-event": { "eventPriceUsd": 0.2 }
+            }),
+            json!({ "prior-event": 1 }),
+        );
+
+        assert_eq!(pricing.available_capacity(RESULT_EVENT, 1), 0);
+        assert!(!pricing.can_push_one_default_result());
     }
 }

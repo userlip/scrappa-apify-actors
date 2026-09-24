@@ -343,7 +343,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn zero_ppe_budget_does_not_write_or_charge_listing_rows() {
+    async fn zero_ppe_budget_still_saves_and_charges_priced_listing_rows() {
         let server = MockServer::start(vec![json_response(json!({
             "items": [{"id":"111-1"}]
         }))])
@@ -359,11 +359,8 @@ mod tests {
             .unwrap();
 
         assert_eq!(summary.pages_fetched, 1);
-        assert_eq!(summary.saved_items, 0);
-        assert_eq!(
-            summary.status_message.as_deref(),
-            Some("Charge limit reached after saving 0 of 1 Vinted item(s) for user 111 on page 1.")
-        );
+        assert_eq!(summary.saved_items, 1);
+        assert_eq!(summary.status_message, None);
         let requests = server.requests.lock().unwrap();
         assert_eq!(
             requests
@@ -372,20 +369,31 @@ mod tests {
                 .count(),
             1
         );
-        assert!(!requests.iter().any(|request| {
-            request.method == "POST"
-                && (request.path == "/v2/datasets/test-dataset/items"
-                    || request.path == "/v2/actor-runs/test-run/charge")
-        }));
-        let status_update = requests
+
+        let dataset_writes = requests
             .iter()
-            .find(|request| request.method == "PUT" && request.path == "/v2/actor-runs/test-run")
-            .unwrap();
+            .filter(|request| {
+                request.method == "POST" && request.path == "/v2/datasets/test-dataset/items"
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(dataset_writes.len(), 1);
+        assert_eq!(dataset_writes[0].body.as_array().unwrap().len(), 1);
+        assert_eq!(dataset_writes[0].body[0]["id"], "111-1");
+
+        let charges = requests
+            .iter()
+            .filter(|request| {
+                request.method == "POST" && request.path == "/v2/actor-runs/test-run/charge"
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(charges.len(), 1);
         assert_eq!(
-            status_update.body["statusMessage"],
-            summary.status_message.unwrap()
+            charges[0].body,
+            json!({"eventName":"user-item-result","count":1})
         );
-        assert_eq!(status_update.body["isStatusMessageTerminal"], true);
+        assert!(!requests.iter().any(|request| {
+            request.method == "PUT" && request.path == "/v2/actor-runs/test-run"
+        }));
     }
 
     fn test_apify_client(server: &MockServer) -> ApifyClient {

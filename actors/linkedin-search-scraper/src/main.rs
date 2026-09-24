@@ -515,15 +515,15 @@ async fn run_actor(
                 break;
             }
 
-            if budget.is_pay_per_event && budget.has_custom_charge_event() {
-                charge_search_result(client, config, saved_results + 1, retry_policy).await?;
-                budget.record_custom_charge();
-            }
             push_dataset_item(client, config, result).await?;
             if budget.is_pay_per_event {
                 budget.record_dataset_item();
             }
             saved_results += 1;
+            if budget.is_pay_per_event && budget.has_custom_charge_event() {
+                charge_search_result(client, config, saved_results, retry_policy).await?;
+                budget.record_custom_charge();
+            }
         }
         println!("Saved {saved_results} LinkedIn search result(s)");
     } else {
@@ -806,10 +806,10 @@ mod tests {
                 200,
                 r#"{"organic_results":[{"position":1,"title":"Founder","link":"https://www.linkedin.com/in/founder"},{"position":2,"title":"CTO","link":"https://www.linkedin.com/in/cto"}],"total_results":40,"search_information":{"query_displayed":"founder","total_results":40},"pagination":{"current_page":1,"pages":[{"page":1},{"page":2}]}}"#,
             ),
-            response(200, "{}"),
             response(201, "{}"),
             response(200, "{}"),
             response(201, "{}"),
+            response(200, "{}"),
             response(200, "{}"),
         ]);
         let client = Client::builder()
@@ -843,20 +843,22 @@ mod tests {
             .to_ascii_lowercase()
             .contains("x-api-key: scrappa-test-key"));
         assert!(requests[2].contains("thescrappa-linkedin-search-scraper/1.0"));
-        assert!(requests[3].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
-        assert!(requests[3].contains("\"eventName\":\"linkedin-search-result\""));
-        assert!(requests[3].contains("\"count\":1"));
+        assert!(requests[3].starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1"));
+        assert!(requests[3].contains("\"title\":\"Founder\""));
+        assert!(requests[4].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[4].contains("\"eventName\":\"linkedin-search-result\""));
+        assert!(requests[4].contains("\"count\":1"));
         assert_eq!(
-            idempotency_key(&requests[3]),
+            idempotency_key(&requests[4]),
             "run-1-linkedin-search-result-1"
         );
-        assert!(requests[4].contains("\"title\":\"Founder\""));
-        assert!(requests[5].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[5].starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1"));
+        assert!(requests[5].contains("\"title\":\"CTO\""));
+        assert!(requests[6].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
         assert_eq!(
-            idempotency_key(&requests[5]),
+            idempotency_key(&requests[6]),
             "run-1-linkedin-search-result-2"
         );
-        assert!(requests[6].contains("\"title\":\"CTO\""));
         assert!(requests[7].starts_with("PUT /v2/key-value-stores/store-1/records/OUTPUT HTTP/1.1"));
         assert!(requests[7].contains("\"results\":2"));
         assert!(requests[7].contains("\"current_page\":1"));
@@ -864,14 +866,14 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn retries_result_charge_with_the_same_idempotency_key_before_writing_dataset_item() {
+    async fn retries_result_charge_with_the_same_idempotency_key_after_writing_dataset_item() {
         let server = MockServer::start(vec![
             response(200, r#"{"query":"cto"}"#),
             response(200, run_response("PAY_PER_EVENT", 0.01, 0)),
             response(200, r#"{"organic_results":[{"position":1,"title":"CTO"}]}"#),
+            response(201, "{}"),
             response(503, "temporarily unavailable"),
             response(200, "{}"),
-            response(201, "{}"),
             response(200, "{}"),
         ]);
         let client = Client::builder()
@@ -897,23 +899,25 @@ mod tests {
 
         let requests = server.requests();
         assert_eq!(requests.len(), 7);
-        assert!(requests[3].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[3].starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1"));
+        assert!(requests[3].contains("\"title\":\"CTO\""));
         assert!(requests[4].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
-        assert_eq!(idempotency_key(&requests[3]), idempotency_key(&requests[4]));
+        assert!(requests[5].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert_eq!(idempotency_key(&requests[4]), idempotency_key(&requests[5]));
         assert_eq!(
-            idempotency_key(&requests[3]),
+            idempotency_key(&requests[4]),
             "run-1-linkedin-search-result-1"
         );
-        assert!(requests[5].contains("\"title\":\"CTO\""));
         assert!(requests[6].starts_with("PUT /v2/key-value-stores/store-1/records/OUTPUT HTTP/1.1"));
     }
 
     #[tokio::test]
-    async fn does_not_write_dataset_item_when_result_charge_fails() {
+    async fn fails_actor_when_result_charge_fails_after_saving_dataset_item() {
         let server = MockServer::start(vec![
             response(200, r#"{"query":"cto"}"#),
             response(200, run_response("PAY_PER_EVENT", 0.01, 0)),
             response(200, r#"{"organic_results":[{"position":1,"title":"CTO"}]}"#),
+            response(201, "{}"),
             response(500, "charge failed"),
         ]);
         let client = Client::builder()
@@ -939,11 +943,49 @@ mod tests {
             .to_string()
             .contains("Apify result charge failed with 500"));
         let requests = server.requests();
+        assert_eq!(requests.len(), 5);
+        assert!(requests[3].starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1"));
+        assert!(requests[3].contains("\"title\":\"CTO\""));
+        assert!(requests[4].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(!requests.iter().any(|request| request
+            .starts_with("PUT /v2/key-value-stores/store-1/records/OUTPUT HTTP/1.1")));
+    }
+
+    #[tokio::test]
+    async fn does_not_charge_when_dataset_write_fails() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"query":"cto"}"#),
+            response(200, run_response("PAY_PER_EVENT", 0.01, 0)),
+            response(200, r#"{"organic_results":[{"position":1,"title":"CTO"}]}"#),
+            response(500, "dataset failed"),
+        ]);
+        let client = Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .unwrap();
+        let scrappa_client = ScrappaClient::new(Duration::from_secs(2)).unwrap();
+        let config = test_config(server.base_url.clone());
+
+        let error = run_actor(
+            &client,
+            &scrappa_client,
+            &config,
+            RetryPolicy {
+                attempts: 1,
+                ..RetryPolicy::default()
+            },
+        )
+        .await
+        .unwrap_err();
+
+        assert!(error.to_string().contains("Apify dataset write failed"));
+        let requests = server.requests();
         assert_eq!(requests.len(), 4);
-        assert!(requests[3].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
-        assert!(!requests
-            .iter()
-            .any(|request| request.starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1")));
+        assert!(requests[3].starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1"));
+        assert!(!requests.iter().any(|request| {
+            request.starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1")
+                || request.starts_with("PUT /v2/key-value-stores/store-1/records/OUTPUT HTTP/1.1")
+        }));
     }
 
     #[tokio::test]

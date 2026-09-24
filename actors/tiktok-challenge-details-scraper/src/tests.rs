@@ -351,8 +351,8 @@ fn read_mock_request(stream: &mut TcpStream) -> MockRequest {
         }
         bytes.extend_from_slice(&chunk[..read]);
         let Some(header_end) = bytes.windows(4).position(|window| window == b"\r\n\r\n") else {
-                continue;
-            };
+            continue;
+        };
         let headers = String::from_utf8_lossy(&bytes[..header_end]);
         let content_length = headers
             .lines()

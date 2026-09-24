@@ -179,6 +179,7 @@ async fn process_plan_with_charging(
     let mut failures = Vec::new();
     let mut saved_profiles = 0;
     let mut status_message = None;
+    let mut fatal_error = None;
 
     for request in &plan.requests {
         let Some(tsid) = request.tsid.as_deref() else {
@@ -217,12 +218,21 @@ async fn process_plan_with_charging(
             }
             Err(error) => {
                 let message = format_actor_error(&error);
+                let saved_count = error
+                    .downcast_ref::<apify::PostWriteChargeFailure>()
+                    .map(|failure| failure.saved_count);
+                eprintln!("Failed to fetch TrustedShops shop profile for {tsid}: {message}");
                 failures.push(json!({
                     "tsid": tsid,
                     "source_url": request.source_url,
-                    "error": message,
+                    "error": message.clone(),
                 }));
-                eprintln!("Failed to fetch TrustedShops shop profile for {tsid}: {message}");
+                if let Some(saved_count) = saved_count {
+                    saved_profiles += saved_count;
+                    status_message = Some(message);
+                    fatal_error = Some(error);
+                    break;
+                }
             }
         }
     }
@@ -254,6 +264,9 @@ async fn process_plan_with_charging(
             "profiles_failed": failures.len(),
         })
     );
+    if let Some(error) = fatal_error {
+        return Err(error);
+    }
 
     if saved_profiles == 0 && !failures.is_empty() {
         return Err(anyhow!(status_message.unwrap_or_else(|| {
@@ -414,7 +427,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn keeps_persisted_profile_saved_when_charge_retries_are_exhausted() {
+    async fn fails_run_and_records_saved_profile_when_charge_retries_are_exhausted() {
         let tsid = "XFB15FFBDE1DEE7A55D292A7D48598A6A";
         let source_url = format!("https://www.trustedshops.de/bewertung/info_{tsid}.html");
         let server = MockServer::start(vec![
@@ -430,37 +443,112 @@ mod tests {
             MockResponse::json(503, json!({"error":"temporary failure"})),
             MockResponse::json(503, json!({"error":"temporary failure"})),
             MockResponse::json(200, json!({})),
-            MockResponse::json(200, json!({})),
         ]);
         let config = test_config(&server.base_url);
         let apify =
             ApifyClient::new(&config.apify_api_base_url, config.apify_token.clone()).unwrap();
         let mut charging = ChargingManager::from_run(&pricing_response());
 
-        run_actor_with_charging(&config, &apify, &mut charging)
+        let error = run_actor_with_charging(&config, &apify, &mut charging)
             .await
-            .unwrap();
+            .unwrap_err();
 
+        assert!(
+            error
+                .downcast_ref::<apify::PostWriteChargeFailure>()
+                .is_some()
+        );
         let requests = server.requests();
+        assert_eq!(requests.len(), 7);
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.starts_with("POST /v2/datasets/test-dataset/items "))
+                .count(),
+            1
+        );
         let output: Value = serde_json::from_str(request_parts(&requests[6]).2).unwrap();
         assert_eq!(output["profiles_requested"], 1);
         assert_eq!(output["profiles_saved"], 1);
-        assert_eq!(output["profiles_failed"], 0);
-        assert!(output["failures"].as_array().unwrap().is_empty());
+        assert_eq!(output["profiles_failed"], 1);
+        assert_eq!(output["failures"].as_array().unwrap().len(), 1);
         assert!(
-            output["status_message"]
+            output["failures"][0]["error"]
                 .as_str()
                 .unwrap()
                 .contains("shop profile was saved, but its Apify charge could not be confirmed")
         );
-
-        let status: Value = serde_json::from_str(request_parts(&requests[7]).2).unwrap();
-        assert_eq!(status["isStatusMessageTerminal"], true);
         assert!(
-            status["statusMessage"]
+            output["status_message"]
                 .as_str()
                 .unwrap()
                 .contains("Apify charge could not be confirmed")
+        );
+    }
+
+    #[tokio::test]
+    async fn charge_failure_fails_run_even_after_an_earlier_profile_succeeded() {
+        let first_tsid = "XFB15FFBDE1DEE7A55D292A7D48598A6A";
+        let second_tsid = "XFB15FFBDE1DEE7A55D292A7D48598A6B";
+        let source_urls = [first_tsid, second_tsid]
+            .map(|tsid| format!("https://www.trustedshops.de/bewertung/info_{tsid}.html"));
+        let server = MockServer::start(vec![
+            MockResponse::json(200, json!({"urls":source_urls})),
+            MockResponse::json(
+                200,
+                json!({
+                    "response":{"data":{"shop":{"tsId":first_tsid,"name":"First Shop","url":"first.example"}}}
+                }),
+            ),
+            MockResponse::json(201, json!({})),
+            MockResponse::json(201, json!({})),
+            MockResponse::json(
+                200,
+                json!({
+                    "response":{"data":{"shop":{"tsId":second_tsid,"name":"Second Shop","url":"second.example"}}}
+                }),
+            ),
+            MockResponse::json(201, json!({})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+            MockResponse::json(200, json!({})),
+        ]);
+        let config = test_config(&server.base_url);
+        let apify =
+            ApifyClient::new(&config.apify_api_base_url, config.apify_token.clone()).unwrap();
+        let mut pricing = pricing_response();
+        pricing["data"]["options"]["maxTotalChargeUsd"] = json!(1.0);
+        let mut charging = ChargingManager::from_run(&pricing);
+
+        let error = run_actor_with_charging(&config, &apify, &mut charging)
+            .await
+            .unwrap_err();
+
+        assert!(
+            error
+                .downcast_ref::<apify::PostWriteChargeFailure>()
+                .is_some()
+        );
+        let requests = server.requests();
+        assert_eq!(requests.len(), 10);
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.starts_with("POST /v2/datasets/test-dataset/items "))
+                .count(),
+            2
+        );
+        let output: Value = serde_json::from_str(request_parts(&requests[9]).2).unwrap();
+        assert_eq!(output["profiles_requested"], 2);
+        assert_eq!(output["profiles_saved"], 2);
+        assert_eq!(output["profiles_failed"], 1);
+        assert_eq!(output["failures"][0]["tsid"], second_tsid);
+        assert!(
+            output["failures"][0]["error"]
+                .as_str()
+                .unwrap()
+                .contains("shop profile was saved, but its Apify charge could not be confirmed")
         );
     }
 

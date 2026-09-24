@@ -516,7 +516,10 @@ mod tests {
             serde_json::from_str::<Value>(&requests[2].body).unwrap(),
             json!({ "eventName": "market-item", "count": 4 })
         );
-        assert_eq!(requests[2].headers["idempotency-key"], "test-run-market-item-4");
+        assert_eq!(
+            requests[2].headers["idempotency-key"],
+            "test-run-market-item-4"
+        );
     }
 
     #[tokio::test]

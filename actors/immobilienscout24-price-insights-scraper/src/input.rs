@@ -159,7 +159,9 @@ mod tests {
             "Input is required"
         );
         assert_eq!(
-            normalize_locations(Some(&Value::Null)).unwrap_err().to_string(),
+            normalize_locations(Some(&Value::Null))
+                .unwrap_err()
+                .to_string(),
             "Input is required"
         );
         assert!(normalize_locations(Some(&json!({})))

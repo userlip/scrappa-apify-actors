@@ -39,8 +39,8 @@ pub async fn run_actor(client: &Client, config: &Config) -> Result<()> {
             ppe_items_result(&mut budget, dataset_items.len());
         push_dataset_items(client, config, &dataset_items[..kept]).await?;
         charge_timeline_points(client, config, custom_charge.charged_count).await?;
-        let event_charge_limit_reached = custom_charge.event_charge_limit_reached
-            || dataset_charge.event_charge_limit_reached;
+        let event_charge_limit_reached =
+            custom_charge.event_charge_limit_reached || dataset_charge.event_charge_limit_reached;
         let saved_rows = kept;
         if event_charge_limit_reached && saved_rows < dataset_items.len() {
             let status_message =

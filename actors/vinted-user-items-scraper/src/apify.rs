@@ -251,7 +251,7 @@ impl ActorPricing {
         let max_total_charge_usd = data
             .pointer("/options/maxTotalChargeUsd")
             .and_then(Value::as_f64)
-            .filter(|amount| amount.is_finite() && *amount >= 0.0)
+            .filter(|amount| amount.is_finite() && *amount > 0.0)
             .unwrap_or(f64::INFINITY);
         let event_prices = data
             .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
@@ -466,7 +466,9 @@ mod tests {
             "data": {
                 "pricingInfo": {
                     "pricingModel": "PAY_PER_EVENT",
-                    "pricingPerEvent": {"actorChargeEvents": {}}
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "user-item-result": {"eventPriceUsd": 0.0}
+                    }}
                 },
                 "chargedEventCounts": {},
                 "options": {"maxTotalChargeUsd": 0.0001}
@@ -474,6 +476,7 @@ mod tests {
         }))
         .unwrap();
         assert_eq!(free_ppe.limit_dataset_items(20, "user-item-result"), 20);
+        assert!(free_ppe.event_is_configured("user-item-result"));
         assert!(!free_ppe.event_is_exhausted("user-item-result"));
     }
 
@@ -502,7 +505,7 @@ mod tests {
     }
 
     #[test]
-    fn zero_spending_cap_allows_no_priced_dataset_rows() {
+    fn zero_spending_cap_allows_priced_dataset_rows() {
         let pricing = ActorPricing::from_run(&json!({
             "data": {
                 "pricingInfo": {
@@ -519,7 +522,7 @@ mod tests {
             }
         }))
         .unwrap();
-        assert_eq!(pricing.limit_dataset_items(20, "user-item-result"), 0);
+        assert_eq!(pricing.limit_dataset_items(20, "user-item-result"), 20);
     }
 
     #[test]

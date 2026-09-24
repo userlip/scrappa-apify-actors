@@ -57,7 +57,10 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient, http: Client) -> R
         .ok_or_else(|| anyhow!("Input is required"))?;
     let requests = build_search_requests(&input)?;
     let searches_requested = requests.len();
-    println!("Running {} Redfin property search request(s)", requests.len());
+    println!(
+        "Running {} Redfin property search request(s)",
+        requests.len()
+    );
 
     let scrappa = ScrappaClient::new(
         http,
@@ -70,12 +73,15 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient, http: Client) -> R
     for request in requests {
         status_message = billing.charge_limit_status(total_results, request.index);
         if let Some(message) = status_message.as_deref() {
-            println!("{message} {}", json!({
-                "event": PROPERTY_RESULT_EVENT,
-                "searches_requested": searches_requested,
-                "results": total_results,
-                "next_search_index": request.index,
-            }));
+            println!(
+                "{message} {}",
+                json!({
+                    "event": PROPERTY_RESULT_EVENT,
+                    "searches_requested": searches_requested,
+                    "results": total_results,
+                    "next_search_index": request.index,
+                })
+            );
             break;
         }
 
@@ -87,12 +93,16 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient, http: Client) -> R
             .collect::<Vec<_>>();
 
         if properties.is_empty() {
-            println!("Search {} returned no Redfin property results {}", request.index + 1, json!({
-                "search_index": request.index,
-                "api_count": search_count(&response),
-                "request_region_id": request.params.get("region_id"),
-                "request_market": request.params.get("market"),
-            }));
+            println!(
+                "Search {} returned no Redfin property results {}",
+                request.index + 1,
+                json!({
+                    "search_index": request.index,
+                    "api_count": search_count(&response),
+                    "request_region_id": request.params.get("region_id"),
+                    "request_market": request.params.get("market"),
+                })
+            );
             continue;
         }
 
@@ -100,14 +110,18 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient, http: Client) -> R
             let mut saved_for_search = 0;
             for (property_offset, property) in properties.iter().enumerate() {
                 if !billing.can_write_property_result() {
-                    let message = charge_limit_message(request.index, saved_for_search, properties.len(), 0);
-                    println!("{message} {}", json!({
-                        "event": PROPERTY_RESULT_EVENT,
-                        "charged_count": 0,
-                        "saved_count": saved_for_search,
-                        "requested_count": properties.len(),
-                        "search_index": request.index,
-                    }));
+                    let message =
+                        charge_limit_message(request.index, saved_for_search, properties.len(), 0);
+                    println!(
+                        "{message} {}",
+                        json!({
+                            "event": PROPERTY_RESULT_EVENT,
+                            "charged_count": 0,
+                            "saved_count": saved_for_search,
+                            "requested_count": properties.len(),
+                            "search_index": request.index,
+                        })
+                    );
                     status_message = Some(message);
                     break;
                 }
@@ -118,10 +132,7 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient, http: Client) -> R
                 if billing.should_charge_property_result() {
                     let idempotency_key = format!(
                         "{}-{}-{}-{}",
-                        config.actor_run_id,
-                        PROPERTY_RESULT_EVENT,
-                        request.index,
-                        property_offset,
+                        config.actor_run_id, PROPERTY_RESULT_EVENT, request.index, property_offset,
                     );
                     apify
                         .charge_event(PROPERTY_RESULT_EVENT, &idempotency_key)
@@ -142,13 +153,16 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient, http: Client) -> R
                         properties.len(),
                         charged_count,
                     );
-                    println!("{message} {}", json!({
-                        "event": PROPERTY_RESULT_EVENT,
-                        "charged_count": charged_count,
-                        "saved_count": saved_for_search,
-                        "requested_count": properties.len(),
-                        "search_index": request.index,
-                    }));
+                    println!(
+                        "{message} {}",
+                        json!({
+                            "event": PROPERTY_RESULT_EVENT,
+                            "charged_count": charged_count,
+                            "saved_count": saved_for_search,
+                            "requested_count": properties.len(),
+                            "search_index": request.index,
+                        })
+                    );
                     status_message = Some(message);
                     break;
                 }
@@ -158,12 +172,17 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient, http: Client) -> R
             total_results += properties.len();
         }
 
-        println!("Search {} returned {} Redfin property result(s) {}", request.index + 1, properties.len(), json!({
-            "search_index": request.index,
-            "api_count": search_count(&response),
-            "request_region_id": request.params.get("region_id"),
-            "request_market": request.params.get("market"),
-        }));
+        println!(
+            "Search {} returned {} Redfin property result(s) {}",
+            request.index + 1,
+            properties.len(),
+            json!({
+                "search_index": request.index,
+                "api_count": search_count(&response),
+                "request_region_id": request.params.get("region_id"),
+                "request_market": request.params.get("market"),
+            })
+        );
 
         if status_message.is_some() {
             break;
@@ -175,11 +194,14 @@ async fn run_actor(config: &ActorConfig, apify: &ApifyClient, http: Client) -> R
     } else {
         println!("Redfin property search completed successfully");
     }
-    println!("Results summary: {}", json!({
-        "searches": searches_requested,
-        "results": total_results,
-        "status_message": status_message,
-    }));
+    println!(
+        "Results summary: {}",
+        json!({
+            "searches": searches_requested,
+            "results": total_results,
+            "status_message": status_message,
+        })
+    );
     Ok(())
 }
 

@@ -1,4 +1,7 @@
-use std::{fmt, time::{Duration, SystemTime, UNIX_EPOCH}};
+use std::{
+    fmt,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use anyhow::{Context, Result};
 use reqwest::Client;
@@ -22,7 +25,10 @@ impl fmt::Display for ScrappaError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Timeout { timeout_ms } => {
-                write!(formatter, "Scrappa API request timed out after {timeout_ms}ms")
+                write!(
+                    formatter,
+                    "Scrappa API request timed out after {timeout_ms}ms"
+                )
             }
             Self::Network => formatter.write_str("Scrappa API network request failed"),
             Self::Http { status, details } => {
@@ -62,7 +68,12 @@ impl ScrappaClient {
     }
 
     fn with_timeout(http: Client, base_url: String, api_key: String, timeout_ms: u64) -> Self {
-        Self { http, base_url, api_key, timeout_ms }
+        Self {
+            http,
+            base_url,
+            api_key,
+            timeout_ms,
+        }
     }
 
     pub(crate) async fn get(&self, endpoint: &str, params: &Map<String, Value>) -> Result<Value> {
@@ -91,7 +102,11 @@ impl ScrappaClient {
         Err(last_error.expect("at least one request attempt").into())
     }
 
-    async fn send(&self, endpoint: &str, params: &Map<String, Value>) -> std::result::Result<Value, ScrappaError> {
+    async fn send(
+        &self,
+        endpoint: &str,
+        params: &Map<String, Value>,
+    ) -> std::result::Result<Value, ScrappaError> {
         let mut url = endpoint_url(&self.base_url, endpoint).map_err(|_| ScrappaError::Network)?;
         {
             let mut query = url.query_pairs_mut();
@@ -100,8 +115,12 @@ impl ScrappaClient {
                     Value::Null => {}
                     Value::String(value) if value.is_empty() => {}
                     Value::Bool(false) => {}
-                    Value::Bool(true) => { query.append_pair(key, "1"); }
-                    _ => { query.append_pair(key, &query_value(value)); }
+                    Value::Bool(true) => {
+                        query.append_pair(key, "1");
+                    }
+                    _ => {
+                        query.append_pair(key, &query_value(value));
+                    }
                 };
             }
         }
@@ -117,7 +136,9 @@ impl ScrappaClient {
             .await
             .map_err(|error| {
                 if error.is_timeout() {
-                    ScrappaError::Timeout { timeout_ms: self.timeout_ms }
+                    ScrappaError::Timeout {
+                        timeout_ms: self.timeout_ms,
+                    }
                 } else {
                     ScrappaError::Network
                 }
@@ -125,11 +146,17 @@ impl ScrappaClient {
 
         if !response.status().is_success() {
             let status = response.status().as_u16();
-            let fallback = response.status().canonical_reason().unwrap_or("Unknown status").to_owned();
+            let fallback = response
+                .status()
+                .canonical_reason()
+                .unwrap_or("Unknown status")
+                .to_owned();
             let body = match response.text().await {
                 Ok(body) => body,
                 Err(error) if error.is_timeout() => {
-                    return Err(ScrappaError::Timeout { timeout_ms: self.timeout_ms });
+                    return Err(ScrappaError::Timeout {
+                        timeout_ms: self.timeout_ms,
+                    });
                 }
                 Err(_) => String::new(),
             };
@@ -139,18 +166,17 @@ impl ScrappaClient {
             });
         }
 
-        response
-            .json::<Value>()
-            .await
-            .map_err(|error| {
-                if error.is_timeout() {
-                    ScrappaError::Timeout { timeout_ms: self.timeout_ms }
-                } else if error.is_body() {
-                    ScrappaError::Network
-                } else {
-                    ScrappaError::InvalidResponse
+        response.json::<Value>().await.map_err(|error| {
+            if error.is_timeout() {
+                ScrappaError::Timeout {
+                    timeout_ms: self.timeout_ms,
                 }
-            })
+            } else if error.is_body() {
+                ScrappaError::Network
+            } else {
+                ScrappaError::InvalidResponse
+            }
+        })
     }
 }
 
@@ -188,7 +214,11 @@ fn query_value(value: &Value) -> String {
 
 fn error_details(_status: u16, fallback: &str, body: &str) -> String {
     let Ok(error_data) = serde_json::from_str::<Value>(body) else {
-        return if body.is_empty() { fallback.to_owned() } else { truncate(&collapse_whitespace(body), 500) };
+        return if body.is_empty() {
+            fallback.to_owned()
+        } else {
+            truncate(&collapse_whitespace(body), 500)
+        };
     };
     let mut message = error_data
         .get("message")
@@ -201,7 +231,13 @@ fn error_details(_status: u16, fallback: &str, body: &str) -> String {
             .map(|(field, messages)| {
                 let messages = messages
                     .as_array()
-                    .map(|messages| messages.iter().map(json_string).collect::<Vec<_>>().join(", "))
+                    .map(|messages| {
+                        messages
+                            .iter()
+                            .map(json_string)
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    })
                     .unwrap_or_else(|| json_string(messages));
                 format!("{field}: {messages}")
             })
@@ -237,11 +273,16 @@ fn truncate(value: &str, max_chars: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
     use reqwest::StatusCode;
-    use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::TcpListener};
+    use serde_json::json;
+    use tokio::{
+        io::{AsyncReadExt, AsyncWriteExt},
+        net::TcpListener,
+    };
 
-    async fn test_server(responses: Vec<(u16, String)>) -> (String, tokio::task::JoinHandle<Vec<Vec<u8>>>) {
+    async fn test_server(
+        responses: Vec<(u16, String)>,
+    ) -> (String, tokio::task::JoinHandle<Vec<Vec<u8>>>) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let server = tokio::spawn(async move {
@@ -252,11 +293,18 @@ mod tests {
                 let mut buffer = [0; 2048];
                 loop {
                     let read = stream.read(&mut buffer).await.unwrap();
-                    if read == 0 { break; }
+                    if read == 0 {
+                        break;
+                    }
                     request.extend_from_slice(&buffer[..read]);
-                    if request.windows(4).any(|window| window == b"\r\n\r\n") { break; }
+                    if request.windows(4).any(|window| window == b"\r\n\r\n") {
+                        break;
+                    }
                 }
-                let reason = StatusCode::from_u16(status).unwrap().canonical_reason().unwrap_or("Unknown");
+                let reason = StatusCode::from_u16(status)
+                    .unwrap()
+                    .canonical_reason()
+                    .unwrap_or("Unknown");
                 let response = format!("HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len());
                 stream.write_all(response.as_bytes()).await.unwrap();
                 requests.push(request);
@@ -269,7 +317,11 @@ mod tests {
     #[test]
     fn formats_scrappa_errors_and_bounded_retry_delays() {
         assert_eq!(
-            error_details(422, "Unprocessable Entity", r#"{"message":"Invalid request","errors":{"region_id":["The region ID is required."]}}"#),
+            error_details(
+                422,
+                "Unprocessable Entity",
+                r#"{"message":"Invalid request","errors":{"region_id":["The region ID is required."]}}"#
+            ),
             "Invalid request - region_id: The region ID is required."
         );
         assert_eq!(retry_delay_ms(1, 0), 2000);
@@ -282,11 +334,18 @@ mod tests {
         let (base_url, server) = test_server(vec![
             (429, r#"{"message":"Try later"}"#.to_owned()),
             (200, r#"{"ok":true}"#.to_owned()),
-        ]).await;
+        ])
+        .await;
         let http = Client::builder().build().unwrap();
         let client = ScrappaClient::new(http, base_url, "secret".to_owned());
-        let params = serde_json::from_value::<Map<String, Value>>(json!({"market":"seattle","page":2,"use_cache":true,"no":false,"absent":null})).unwrap();
-        assert_eq!(client.get("/redfin/search", &params).await.unwrap(), json!({"ok":true}));
+        let params = serde_json::from_value::<Map<String, Value>>(
+            json!({"market":"seattle","page":2,"use_cache":true,"no":false,"absent":null}),
+        )
+        .unwrap();
+        assert_eq!(
+            client.get("/redfin/search", &params).await.unwrap(),
+            json!({"ok":true})
+        );
         let requests = server.await.unwrap();
         assert_eq!(requests.len(), 2);
         let request = std::str::from_utf8(&requests[0]).unwrap();
@@ -296,17 +355,20 @@ mod tests {
         assert!(request.contains("use_cache=1"));
         assert!(!request.contains("no="));
         assert!(request.to_lowercase().contains("x-api-key: secret"));
-        assert!(request.to_lowercase().contains("user-agent: thescrappa-redfin-property-search-scraper/1.0"));
+        assert!(request
+            .to_lowercase()
+            .contains("user-agent: thescrappa-redfin-property-search-scraper/1.0"));
     }
 
     #[tokio::test]
     async fn does_not_retry_non_transient_http_errors() {
-        let (base_url, server) = test_server(vec![
-            (422, r#"{"message":"Invalid request"}"#.to_owned()),
-        ]).await;
+        let (base_url, server) =
+            test_server(vec![(422, r#"{"message":"Invalid request"}"#.to_owned())]).await;
         let client = ScrappaClient::new(Client::new(), base_url, "secret".to_owned());
         let error = client.get("/redfin/search", &Map::new()).await.unwrap_err();
-        assert!(error.to_string().contains("Scrappa API error (422): Invalid request"));
+        assert!(error
+            .to_string()
+            .contains("Scrappa API error (422): Invalid request"));
         assert_eq!(server.await.unwrap().len(), 1);
     }
 
@@ -322,9 +384,16 @@ mod tests {
                 tokio::time::sleep(Duration::from_millis(80)).await;
             }
         });
-        let client = ScrappaClient::with_timeout(Client::new(), format!("http://{address}/api"), "secret".to_owned(), 20);
+        let client = ScrappaClient::with_timeout(
+            Client::new(),
+            format!("http://{address}/api"),
+            "secret".to_owned(),
+            20,
+        );
         let error = client.get("/redfin/search", &Map::new()).await.unwrap_err();
-        assert!(error.downcast_ref::<ScrappaError>().is_some_and(ScrappaError::is_timeout));
+        assert!(error
+            .downcast_ref::<ScrappaError>()
+            .is_some_and(ScrappaError::is_timeout));
         server.abort();
     }
 }

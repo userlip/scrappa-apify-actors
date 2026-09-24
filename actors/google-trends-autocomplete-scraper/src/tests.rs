@@ -2,7 +2,7 @@ use super::*;
 use std::{
     io::{Read, Write},
     net::{TcpListener, TcpStream},
-    sync::mpsc::{self, Receiver},
+    sync::mpsc::{self, Receiver, Sender},
     thread::{self, JoinHandle},
 };
 
@@ -18,6 +18,7 @@ struct MockRequest {
 struct MockServer {
     base_url: String,
     requests: Receiver<MockRequest>,
+    stop: Sender<()>,
     thread: Option<JoinHandle<()>>,
 }
 
@@ -25,40 +26,59 @@ impl MockServer {
     fn start(responses: Vec<(u16, String)>) -> Self {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let address = listener.local_addr().unwrap();
+        listener.set_nonblocking(true).unwrap();
         let (sender, requests) = mpsc::channel();
+        let (stop, stopped) = mpsc::channel();
         let thread = thread::spawn(move || {
-            for (status, body) in responses {
-                let (mut stream, _) = listener.accept().unwrap();
-                let request = read_mock_request(&mut stream);
-                sender.send(request).unwrap();
-                let reason = match status {
-                    200 => "OK",
-                    201 => "Created",
-                    401 => "Unauthorized",
-                    429 => "Too Many Requests",
-                    500 => "Internal Server Error",
-                    503 => "Service Unavailable",
-                    _ => "Error",
-                };
-                write!(
-                    stream,
-                    "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
-                    body.len()
-                )
-                .unwrap();
+            let mut served = 0;
+            loop {
+                match listener.accept() {
+                    Ok((mut stream, _)) => {
+                        let request = read_mock_request(&mut stream);
+                        sender.send(request).unwrap();
+                        let (status, body) = responses
+                            .get(served)
+                            .cloned()
+                            .unwrap_or((500, "unexpected mock request".to_owned()));
+                        served += 1;
+                        let reason = match status {
+                            200 => "OK",
+                            201 => "Created",
+                            401 => "Unauthorized",
+                            429 => "Too Many Requests",
+                            500 => "Internal Server Error",
+                            503 => "Service Unavailable",
+                            _ => "Error",
+                        };
+                        write!(
+                            stream,
+                            "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                            body.len()
+                        )
+                        .unwrap();
+                    }
+                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                        if !matches!(stopped.try_recv(), Err(mpsc::TryRecvError::Empty)) {
+                            break;
+                        }
+                        thread::sleep(std::time::Duration::from_millis(1));
+                    }
+                    Err(error) => panic!("mock server accept failed: {error}"),
+                }
             }
         });
         Self {
             base_url: format!("http://{address}"),
             requests,
+            stop,
             thread: Some(thread),
         }
     }
 
     fn finish(mut self) -> Vec<MockRequest> {
-        let requests = self.requests.try_iter().collect();
+        let _ = self.stop.send(());
         self.thread.take().unwrap().join().unwrap();
-        requests
+        self.requests.try_iter().collect()
     }
 }
 
@@ -473,24 +493,25 @@ async fn actor_charges_only_saved_rows_and_omits_raw_response_at_budget_limit() 
     assert_eq!(requests.len(), 7);
     assert_eq!(
         request_target(&requests[3]),
-        "/v2/actor-runs/test-run/charge"
+        "/v2/datasets/dataset-id/items"
     );
     assert_eq!(requests[3].method, "POST");
+    let rows: Value = serde_json::from_str(&requests[3].body).unwrap();
+    assert_eq!(rows.as_array().unwrap().len(), 2);
     assert_eq!(
-        requests[3].headers["idempotency-key"],
+        request_target(&requests[4]),
+        "/v2/actor-runs/test-run/charge"
+    );
+    assert_eq!(requests[4].method, "POST");
+    assert_eq!(
+        requests[4].headers["idempotency-key"],
         "google-trends-autocomplete-test-run-suggestions"
     );
-    let charge: Value = serde_json::from_str(&requests[3].body).unwrap();
+    let charge: Value = serde_json::from_str(&requests[4].body).unwrap();
     assert_eq!(
         charge,
         json!({ "eventName": "suggestion-result", "count": 2 })
     );
-    assert_eq!(
-        request_target(&requests[4]),
-        "/v2/datasets/dataset-id/items"
-    );
-    let rows: Value = serde_json::from_str(&requests[4].body).unwrap();
-    assert_eq!(rows.as_array().unwrap().len(), 2);
     assert_eq!(
         request_target(&requests[5]),
         "/v2/key-value-stores/store-id/records/OUTPUT"
@@ -511,7 +532,7 @@ async fn actor_charges_only_saved_rows_and_omits_raw_response_at_budget_limit() 
 }
 
 #[tokio::test]
-async fn actor_does_not_write_dataset_when_suggestion_charge_fails() {
+async fn actor_returns_error_when_suggestion_charge_fails_after_saving_rows() {
     let server = MockServer::start(vec![
         mock_response(200, ppe_run_body()),
         mock_response(200, json!({ "query": "tesla" })),
@@ -522,6 +543,7 @@ async fn actor_does_not_write_dataset_when_suggestion_charge_fails() {
                 "suggestions": ["one", "two", "three"],
             }),
         ),
+        (201, String::new()),
         (500, json!({ "error": "charge failed" }).to_string()),
     ]);
     let config = test_config(&server.base_url);
@@ -533,17 +555,47 @@ async fn actor_does_not_write_dataset_when_suggestion_charge_fails() {
         .contains("suggestion result charge request failed"));
 
     let requests = server.finish();
+    assert_eq!(requests.len(), 5);
+    assert_eq!(
+        request_target(&requests[3]),
+        "/v2/datasets/dataset-id/items"
+    );
+    assert_eq!(
+        request_target(&requests[4]),
+        "/v2/actor-runs/test-run/charge"
+    );
+}
+
+#[tokio::test]
+async fn actor_does_not_charge_or_retry_when_dataset_write_fails() {
+    let server = MockServer::start(vec![
+        mock_response(200, ppe_run_body()),
+        mock_response(200, json!({ "query": "tesla" })),
+        mock_response(
+            200,
+            json!({
+                "search_parameters": { "q": "tesla" },
+                "suggestions": ["one", "two", "three"],
+            }),
+        ),
+        (500, json!({ "error": "dataset write failed" }).to_string()),
+    ]);
+    let config = test_config(&server.base_url);
+    let http = Client::new();
+
+    let error = run_actor(&http, &config).await.unwrap_err();
+    assert!(error
+        .to_string()
+        .contains("Apify dataset write failed with 500"));
+
+    let requests = server.finish();
     assert_eq!(requests.len(), 4);
     assert_eq!(
         request_target(&requests[3]),
-        "/v2/actor-runs/test-run/charge"
+        "/v2/datasets/dataset-id/items"
     );
-    let charge: Value = serde_json::from_str(&requests[3].body).unwrap();
-    assert_eq!(
-        charge,
-        json!({ "eventName": "suggestion-result", "count": 2 })
-    );
+    assert_eq!(requests[3].method, "POST");
     assert!(requests
         .iter()
-        .all(|request| request.target != "/v2/datasets/dataset-id/items"));
+        .all(|request| request.target != "/v2/actor-runs/test-run/charge"));
 }

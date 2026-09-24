@@ -1,8 +1,8 @@
 use std::{collections::HashMap, time::Duration};
 
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, Response, StatusCode, Url};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use uuid::Uuid;
 
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
@@ -87,7 +87,7 @@ impl ApifyClient {
         let response = self
             .request(
                 Method::POST,
-                self.resource_url(&["datasets", dataset_id, "items"] )?,
+                self.resource_url(&["datasets", dataset_id, "items"])?,
             )
             .json(item)
             .send()
@@ -101,7 +101,7 @@ impl ApifyClient {
         let response = self
             .request(
                 Method::POST,
-                self.resource_url(&["actor-runs", actor_run_id, "charge"] )?,
+                self.resource_url(&["actor-runs", actor_run_id, "charge"])?,
             )
             .header("idempotency-key", Uuid::new_v4().to_string())
             .json(&json!({ "eventName": event_name, "count": 1 }))
@@ -116,7 +116,7 @@ impl ApifyClient {
         let response = self
             .request(
                 Method::PUT,
-                self.resource_url(&["key-value-stores", store_id, "records", "OUTPUT"] )?,
+                self.resource_url(&["key-value-stores", store_id, "records", "OUTPUT"])?,
             )
             .json(output)
             .send()
@@ -277,8 +277,8 @@ impl ChargeBudget {
         if !spent.is_finite() {
             return 0;
         }
-        let amount = ((self.max_total_charge_usd - spent) / next_item_price * 10_000.0).round()
-            / 10_000.0;
+        let amount =
+            ((self.max_total_charge_usd - spent) / next_item_price * 10_000.0).round() / 10_000.0;
         amount.floor().max(0.0).min(usize::MAX as f64) as usize
     }
 
@@ -331,35 +331,40 @@ mod tests {
 
     #[test]
     fn pay_per_event_budget_accounts_for_every_event_and_default_dataset_items() {
-        let mut budget = ChargeBudget::from_run(&pay_per_event_run(
-            0.35,
-            json!({ "apify-actor-start": 2 }),
-        ))
-        .unwrap();
+        let mut budget =
+            ChargeBudget::from_run(&pay_per_event_run(0.35, json!({ "apify-actor-start": 2 })))
+                .unwrap();
         budget.require_domain_result_event().unwrap();
 
-        assert_eq!(budget.max_event_charge_count_within_limit("domain-result"), 3);
+        assert_eq!(
+            budget.max_event_charge_count_within_limit("domain-result"),
+            3
+        );
         assert!(budget.can_push_item(Some("domain-result")));
         assert!(budget.can_push_item(None));
 
         budget.record_dataset_item();
         budget.record_charge("domain-result");
-        assert_eq!(budget.max_event_charge_count_within_limit("domain-result"), 2);
+        assert_eq!(
+            budget.max_event_charge_count_within_limit("domain-result"),
+            2
+        );
         assert_eq!(budget.total_charged_amount(), 0.14);
     }
 
     #[test]
     fn pay_per_event_budget_stops_when_the_next_result_would_exceed_the_cap() {
-        let mut budget = ChargeBudget::from_run(&pay_per_event_run(
-            0.13,
-            json!({ "apify-actor-start": 1 }),
-        ))
-        .unwrap();
+        let mut budget =
+            ChargeBudget::from_run(&pay_per_event_run(0.13, json!({ "apify-actor-start": 1 })))
+                .unwrap();
 
         assert!(budget.can_push_item(Some("domain-result")));
         budget.record_dataset_item();
         budget.record_charge("domain-result");
-        assert_eq!(budget.max_event_charge_count_within_limit("domain-result"), 0);
+        assert_eq!(
+            budget.max_event_charge_count_within_limit("domain-result"),
+            0
+        );
         assert!(!budget.can_push_item(Some("domain-result")));
     }
 
@@ -377,7 +382,10 @@ mod tests {
     fn zero_spending_limit_does_not_become_unlimited() {
         let budget = ChargeBudget::from_run(&pay_per_event_run(0.0, json!({}))).unwrap();
 
-        assert_eq!(budget.max_event_charge_count_within_limit("domain-result"), 0);
+        assert_eq!(
+            budget.max_event_charge_count_within_limit("domain-result"),
+            0
+        );
         assert!(!budget.can_push_item(Some("domain-result")));
     }
 
@@ -387,7 +395,10 @@ mod tests {
         run["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
         let budget = ChargeBudget::from_run(&run).unwrap();
 
-        assert_eq!(budget.max_event_charge_count_within_limit("domain-result"), usize::MAX);
+        assert_eq!(
+            budget.max_event_charge_count_within_limit("domain-result"),
+            usize::MAX
+        );
     }
 
     #[test]
@@ -401,7 +412,10 @@ mod tests {
         let budget = ChargeBudget::from_run(&run).unwrap();
 
         assert_eq!(
-            budget.require_domain_result_event().unwrap_err().to_string(),
+            budget
+                .require_domain_result_event()
+                .unwrap_err()
+                .to_string(),
             "Apify PAY_PER_EVENT run is missing the domain-result charge event"
         );
     }

@@ -47,7 +47,10 @@ pub fn transform_indeed_fallback_response(
             transformed.insert(field.to_owned(), value.clone());
         }
     }
-    transformed.insert("service_used".to_owned(), Value::String("indeed".to_owned()));
+    transformed.insert(
+        "service_used".to_owned(),
+        Value::String("indeed".to_owned()),
+    );
     transformed.insert(
         "fallback_from".to_owned(),
         Value::String("google_jobs".to_owned()),
@@ -62,10 +65,7 @@ pub fn transform_indeed_fallback_response(
 fn is_indeed_jobs_response(response: &Value) -> bool {
     response.is_object()
         && (response.get("data").is_some()
-            || response
-                .get("jobs")
-                .and_then(Value::as_array)
-                .is_some())
+            || response.get("jobs").and_then(Value::as_array).is_some())
 }
 
 fn transform_indeed_job(job: &Value, index: usize) -> Value {
@@ -264,7 +264,10 @@ mod tests {
         assert_eq!(transformed["pagination"]["next_cursor"], "cursor");
         assert_eq!(transformed["jobs_results"][0]["title"], "Registered Nurse");
         assert_eq!(transformed["jobs_results"][0]["company"], "Example Health");
-        assert_eq!(transformed["jobs_results"][0]["company_name"], "Example Health");
+        assert_eq!(
+            transformed["jobs_results"][0]["company_name"],
+            "Example Health"
+        );
         assert_eq!(transformed["jobs_results"][0]["via"], "Indeed");
         assert_eq!(
             transformed["jobs_results"][0]["description"],
@@ -300,7 +303,10 @@ mod tests {
 
     #[test]
     fn handles_empty_or_unsuccessful_wrappers_as_empty_fallback_results() {
-        for response in [Value::Null, json!({ "success": false, "message": "failed" })] {
+        for response in [
+            Value::Null,
+            json!({ "success": false, "message": "failed" }),
+        ] {
             let transformed = transform_indeed_fallback_response(
                 &response,
                 &GoogleJobsInput::default(),
@@ -324,7 +330,10 @@ mod tests {
             &GoogleJobsInput::default(),
             "timeout",
         );
-        assert_eq!(plain["jobs_results"][0]["description"], "Plain description wins.");
+        assert_eq!(
+            plain["jobs_results"][0]["description"],
+            "Plain description wins."
+        );
 
         let html = transform_indeed_fallback_response(
             &json!({

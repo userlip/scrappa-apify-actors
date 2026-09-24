@@ -795,9 +795,9 @@ async fn run_actor(http: &Client, config: &Config) -> Result<()> {
     if !dataset_items.is_empty() {
         if pricing.is_pay_per_event {
             let allowed_count = pricing.affordable_suggestion_count(dataset_items.len())?;
-            apify.charge_suggestions(allowed_count).await?;
             let items_to_save = &dataset_items[..allowed_count];
             apify.push_dataset_items(items_to_save).await?;
+            apify.charge_suggestions(allowed_count).await?;
             saved_suggestion_count = allowed_count;
             charge_limit_reached = allowed_count < dataset_items.len();
 

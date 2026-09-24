@@ -205,8 +205,7 @@ fn header_value<'a>(request: &'a str, name: &str) -> Option<&'a str> {
 }
 
 fn has_test_bearer_token(request: &str) -> bool {
-    header_value(request, "authorization")
-        == Some("Bearer test-token-not-a-real-credential")
+    header_value(request, "authorization") == Some("Bearer test-token-not-a-real-credential")
 }
 
 fn input_response(body: &str) -> MockResponse {
@@ -227,8 +226,7 @@ fn parses_input_and_builds_upstream_pagination_request() {
             max_id: "next-page".to_owned()
         }
     );
-    let url = build_scrappa_url(&Url::parse("https://scrappa.co/api").unwrap(), &input)
-        .unwrap();
+    let url = build_scrappa_url(&Url::parse("https://scrappa.co/api").unwrap(), &input).unwrap();
     assert_eq!(url.path(), "/api/instagram/user/posts");
     let query = url.query_pairs().collect::<Vec<_>>();
     assert_eq!(query[0], ("username".into(), "natgeo".into()));
@@ -238,14 +236,18 @@ fn parses_input_and_builds_upstream_pagination_request() {
         username: "natgeo".to_owned(),
         max_id: String::new(),
     };
-    let url = build_scrappa_url(&Url::parse("https://scrappa.co/api").unwrap(), &first_page)
-        .unwrap();
+    let url =
+        build_scrappa_url(&Url::parse("https://scrappa.co/api").unwrap(), &first_page).unwrap();
     assert_eq!(url.query(), Some("username=natgeo"));
 }
 
 #[test]
 fn validates_missing_username_and_preserves_posts_shape_precedence() {
-    for input in [Value::Null, serde_json::json!({}), serde_json::json!({"username": 7})] {
+    for input in [
+        Value::Null,
+        serde_json::json!({}),
+        serde_json::json!({"username": 7}),
+    ] {
         assert_eq!(
             parse_input(&input).unwrap_err().to_string(),
             "Instagram username is required."
@@ -271,7 +273,10 @@ fn validates_missing_username_and_preserves_posts_shape_precedence() {
 #[test]
 fn spreads_post_fields_after_request_metadata() {
     assert_eq!(
-        enrich_post(&serde_json::json!({"id":"1", "request_username":"source"}), "natgeo"),
+        enrich_post(
+            &serde_json::json!({"id":"1", "request_username":"source"}),
+            "natgeo"
+        ),
         serde_json::json!({"request_username":"source", "id":"1"})
     );
     assert_eq!(
@@ -290,18 +295,22 @@ fn preserves_scrappa_response_error_classification() {
         .unwrap_err()
         .to_string()
         .contains("Scrappa API authentication failed: bad key"));
-    assert!(validate_scrappa_response(503, r#"{"message":"upstream down"}"#)
-        .unwrap_err()
-        .to_string()
-        .contains("Scrappa API returned HTTP 503: upstream down"));
+    assert!(
+        validate_scrappa_response(503, r#"{"message":"upstream down"}"#)
+            .unwrap_err()
+            .to_string()
+            .contains("Scrappa API returned HTTP 503: upstream down")
+    );
     assert!(validate_scrappa_response(200, "<html>proxy</html>")
         .unwrap_err()
         .to_string()
         .contains("Scrappa API returned a non-JSON response: <html>proxy</html>"));
-    assert!(validate_scrappa_response(200, r#"{"success":false,"error":"bad request"}"#)
-        .unwrap_err()
-        .to_string()
-        .contains("Scrappa API returned an error response: bad request"));
+    assert!(
+        validate_scrappa_response(200, r#"{"success":false,"error":"bad request"}"#)
+            .unwrap_err()
+            .to_string()
+            .contains("Scrappa API returned an error response: bad request")
+    );
     assert!(validate_scrappa_response(200, "").is_err());
 }
 
@@ -370,7 +379,10 @@ fn retries_only_safe_apify_methods_on_transient_statuses() {
         apify_retry_delay("GET", StatusCode::SERVICE_UNAVAILABLE, APIFY_MAX_RETRIES),
         None
     );
-    assert_eq!(apify_retry_delay("POST", StatusCode::INTERNAL_SERVER_ERROR, 0), None);
+    assert_eq!(
+        apify_retry_delay("POST", StatusCode::INTERNAL_SERVER_ERROR, 0),
+        None
+    );
 }
 
 #[tokio::test]
@@ -392,24 +404,39 @@ async fn local_smoke_preserves_input_auth_dataset_charge_and_output() {
     let requests = server.requests();
     assert_eq!(requests.len(), 5);
     assert!(has_test_bearer_token(&requests[0]));
-    assert_eq!(request_parts(&requests[0]).1, "/api/v2/key-value-stores/test-store/records/INPUT");
+    assert_eq!(
+        request_parts(&requests[0]).1,
+        "/api/v2/key-value-stores/test-store/records/INPUT"
+    );
     assert_eq!(
         request_parts(&requests[1]).1,
         "/api/instagram/user/posts?username=natgeo&max_id=cursor-1"
     );
-    assert_eq!(header_value(&requests[1], "x-api-key"), Some("test-scrappa-key"));
-    assert_eq!(header_value(&requests[1], "accept"), Some("application/json"));
+    assert_eq!(
+        header_value(&requests[1], "x-api-key"),
+        Some("test-scrappa-key")
+    );
+    assert_eq!(
+        header_value(&requests[1], "accept"),
+        Some("application/json")
+    );
     assert!(has_test_bearer_token(&requests[2]));
     assert_eq!(request_parts(&requests[2]).1, "/api/v2/actor-runs/test-run");
     let (method, path, body) = request_parts(&requests[3]);
-    assert_eq!((method, path), ("POST", "/api/v2/datasets/test-dataset/items"));
+    assert_eq!(
+        (method, path),
+        ("POST", "/api/v2/datasets/test-dataset/items")
+    );
     assert_eq!(
         serde_json::from_str::<Value>(body).unwrap(),
         serde_json::json!([{"request_username":"upstream-value", "id":"post-1"}])
     );
     assert!(has_test_bearer_token(&requests[4]));
     let (method, path, body) = request_parts(&requests[4]);
-    assert_eq!((method, path), ("PUT", "/api/v2/key-value-stores/test-store/records/OUTPUT"));
+    assert_eq!(
+        (method, path),
+        ("PUT", "/api/v2/key-value-stores/test-store/records/OUTPUT")
+    );
     assert_eq!(serde_json::from_str::<Value>(body).unwrap(), upstream);
 }
 

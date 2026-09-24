@@ -12,7 +12,9 @@ use anyhow::{bail, Context, Result};
 use apify::ApifyClient;
 use fallback::transform_indeed_fallback_response;
 use jobs::{filter_count, get_jobs, get_next_page_token};
-use params::{build_indeed_fallback_params, build_jobs_params, normalize_jobs_input, GoogleJobsInput};
+use params::{
+    build_indeed_fallback_params, build_jobs_params, normalize_jobs_input, GoogleJobsInput,
+};
 use reqwest::Client;
 use scrappa::{ScrappaClient, ScrappaError};
 use serde_json::Value;
@@ -129,13 +131,15 @@ async fn run() -> Result<()> {
 
 async fn get_jobs_response(scrappa: &ScrappaClient, input: &GoogleJobsInput) -> Result<Value> {
     match scrappa
-        .get("/google/jobs", &build_jobs_params(input), SCRAPPA_MAX_ATTEMPTS)
+        .get(
+            "/google/jobs",
+            &build_jobs_params(input),
+            SCRAPPA_MAX_ATTEMPTS,
+        )
         .await
     {
         Ok(response) => Ok(response),
-        Err(google_error)
-            if input.next_page_token.is_none() && google_error.is_retryable() =>
-        {
+        Err(google_error) if input.next_page_token.is_none() && google_error.is_retryable() => {
             let google_message = google_error.to_string();
             eprintln!(
                 "Google Jobs request failed after retries ({google_message}). Falling back to Scrappa Indeed jobs for this search."
@@ -180,7 +184,8 @@ fn display_actor_error(error: &anyhow::Error) -> String {
 }
 
 fn required_env(name: &str) -> Result<String> {
-    let value = env::var(name).with_context(|| format!("Required environment variable {name} is missing"))?;
+    let value = env::var(name)
+        .with_context(|| format!("Required environment variable {name} is missing"))?;
     if value.is_empty() {
         bail!("Required environment variable {name} is empty");
     }
@@ -231,7 +236,9 @@ mod tests {
         assert!(requests[..3]
             .iter()
             .all(|request| request.starts_with("GET /google/jobs?")));
-        assert!(requests[3].starts_with("GET /indeed/jobs?query=nurse&limit=10&location=Austin&country=US&gl=us&hl=en"));
+        assert!(requests[3].starts_with(
+            "GET /indeed/jobs?query=nurse&limit=10&location=Austin&country=US&gl=us&hl=en"
+        ));
     }
 
     #[tokio::test]
@@ -262,7 +269,8 @@ mod tests {
 
     #[test]
     fn adds_timeout_context_to_actor_failure_message() {
-        let timeout = ScrappaError::Timeout("Scrappa API request timed out after 60000ms".to_owned());
+        let timeout =
+            ScrappaError::Timeout("Scrappa API request timed out after 60000ms".to_owned());
         let error = anyhow::Error::new(timeout);
         assert_eq!(
             display_actor_error(&error),

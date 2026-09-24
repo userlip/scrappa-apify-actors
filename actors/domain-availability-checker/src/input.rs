@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use serde_json::Value;
 use url::Url;
 
@@ -97,7 +97,11 @@ fn normalize_domain(value: &str) -> Result<String, String> {
         domain = Url::parse(&domain)
             .ok()
             .and_then(|url| url.host_str().map(str::to_owned))
-            .ok_or_else(|| format!("Invalid domain \"{original}\". Provide a valid fully qualified domain name."))?;
+            .ok_or_else(|| {
+                format!(
+                    "Invalid domain \"{original}\". Provide a valid fully qualified domain name."
+                )
+            })?;
     } else {
         let end = domain.find(['/', '?', '#']).unwrap_or(domain.len());
         domain.truncate(end);
@@ -241,8 +245,8 @@ mod tests {
 
     #[test]
     fn records_non_string_array_values_as_failures() {
-        let requests = get_domain_requests(&json!({ "domains": [7, true, {"key":"value"}] }))
-            .unwrap();
+        let requests =
+            get_domain_requests(&json!({ "domains": [7, true, {"key":"value"}] })).unwrap();
 
         assert_eq!(requests.len(), 3);
         assert_eq!(requests[0].input_domain, "7");

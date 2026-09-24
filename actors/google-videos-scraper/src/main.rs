@@ -1,8 +1,4 @@
-use std::{
-    collections::HashSet,
-    env,
-    time::Duration,
-};
+use std::{collections::HashSet, env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Response};
@@ -63,7 +59,8 @@ impl Config {
 }
 
 fn required_env(name: &str) -> Result<String> {
-    let value = env::var(name).with_context(|| format!("Required environment variable {name} is missing"))?;
+    let value = env::var(name)
+        .with_context(|| format!("Required environment variable {name} is missing"))?;
     if value.is_empty() {
         bail!("Required environment variable {name} is empty");
     }
@@ -86,7 +83,10 @@ fn endpoint_url(base_url: &Url, segments: &[&str]) -> Result<Url> {
 
 async fn response_json(response: Response, operation: &str) -> Result<Value> {
     let status = response.status();
-    let body = response.text().await.context("Failed to read API response")?;
+    let body = response
+        .text()
+        .await
+        .context("Failed to read API response")?;
     if !status.is_success() {
         let reason = status.canonical_reason().unwrap_or("Unknown status");
         let detail = if body.trim().is_empty() {
@@ -94,7 +94,10 @@ async fn response_json(response: Response, operation: &str) -> Result<Value> {
         } else {
             format!(": {}", body.trim())
         };
-        bail!("{operation} failed with {} {reason}{detail}", status.as_u16());
+        bail!(
+            "{operation} failed with {} {reason}{detail}",
+            status.as_u16()
+        );
     }
     serde_json::from_str(&body).with_context(|| format!("{operation} returned invalid JSON"))
 }
@@ -111,7 +114,10 @@ async fn ensure_success(response: Response, operation: &str) -> Result<()> {
     } else {
         format!(": {}", body.trim())
     };
-    bail!("{operation} failed with {} {reason}{detail}", status.as_u16());
+    bail!(
+        "{operation} failed with {} {reason}{detail}",
+        status.as_u16()
+    );
 }
 
 #[derive(Default)]
@@ -288,8 +294,8 @@ impl ApifyClient<'_> {
             });
         }
 
-        let saved_count = u64::try_from(affordable_items.len())
-            .context("Dataset row count is too large")?;
+        let saved_count =
+            u64::try_from(affordable_items.len()).context("Dataset row count is too large")?;
         let new_saved_count = budget
             .saved_dataset_items
             .checked_add(saved_count)
@@ -342,7 +348,11 @@ struct ScrappaApiError {
 
 impl std::fmt::Display for ScrappaApiError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(formatter, "Scrappa API error ({}): {}", self.status, self.message)
+        write!(
+            formatter,
+            "Scrappa API error ({}): {}",
+            self.status, self.message
+        )
     }
 }
 
@@ -355,7 +365,11 @@ struct ScrappaTimeoutError {
 
 impl std::fmt::Display for ScrappaTimeoutError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(formatter, "Scrappa API request timed out after {}ms", self.timeout_ms)
+        write!(
+            formatter,
+            "Scrappa API request timed out after {}ms",
+            self.timeout_ms
+        )
     }
 }
 
@@ -426,7 +440,11 @@ fn scrappa_error(status: u16, body: &str) -> ScrappaApiError {
             };
             details.push(format!(
                 "{field}: {}",
-                messages.iter().map(js_string).collect::<Vec<_>>().join(", ")
+                messages
+                    .iter()
+                    .map(js_string)
+                    .collect::<Vec<_>>()
+                    .join(", ")
             ));
         }
         message.push_str(" - ");
@@ -486,7 +504,11 @@ impl ScrappaClient<'_> {
             match result {
                 Ok(response) => return Ok(response),
                 Err(error) if attempt < max_attempts && is_retryable_scrappa_error(&error) => {
-                    eprintln!("Transient Scrappa API failure; retrying attempt {}/{}", attempt + 1, max_attempts);
+                    eprintln!(
+                        "Transient Scrappa API failure; retrying attempt {}/{}",
+                        attempt + 1,
+                        max_attempts
+                    );
                     tokio::time::sleep(self.retry_delays[attempt - 1]).await;
                 }
                 Err(error) => return Err(error),
@@ -643,7 +665,10 @@ fn get_google_videos_queries(input: &Map<String, Value>) -> Result<Vec<String>> 
     Ok(queries)
 }
 
-fn build_google_videos_params(input: &Map<String, Value>, query: &str) -> Result<Map<String, Value>> {
+fn build_google_videos_params(
+    input: &Map<String, Value>,
+    query: &str,
+) -> Result<Map<String, Value>> {
     let page = clean_integer(input.get("page"), "page", 1)?;
     let start = clean_integer(input.get("start"), "start", 0)?;
     if page.is_some() && start.is_some() {
@@ -781,11 +806,21 @@ fn enrich_result(result: &Value, params: &Map<String, Value>) -> Result<Value> {
         bail!("Scrappa API video_results items must be objects");
     };
     let mut enriched = result_object.clone();
-    let value_or_null = |field: &str| result_object.get(field).filter(|value| !value.is_null()).cloned().unwrap_or(Value::Null);
+    let value_or_null = |field: &str| {
+        result_object
+            .get(field)
+            .filter(|value| !value.is_null())
+            .cloned()
+            .unwrap_or(Value::Null)
+    };
     let video_url = result_object
         .get("link")
         .filter(|value| !value.is_null())
-        .or_else(|| result_object.get("video_link").filter(|value| !value.is_null()))
+        .or_else(|| {
+            result_object
+                .get("video_link")
+                .filter(|value| !value.is_null())
+        })
         .cloned()
         .unwrap_or(Value::Null);
     enriched.insert("position".to_owned(), value_or_null("position"));
@@ -1072,9 +1107,7 @@ mod tests {
         let mut bytes = Vec::new();
         let mut buffer = [0; 4096];
         loop {
-            let header_end = bytes
-                .windows(4)
-                .position(|window| window == b"\r\n\r\n");
+            let header_end = bytes.windows(4).position(|window| window == b"\r\n\r\n");
             if let Some(header_end) = header_end {
                 let header_text = String::from_utf8_lossy(&bytes[..header_end]);
                 let content_length = header_text
@@ -1214,10 +1247,23 @@ mod tests {
 
         assert_eq!(schema["title"], "Google Videos Scraper");
         assert_eq!(schema["required"], Value::Null);
-        assert_eq!(schema["properties"]["queries"]["prefill"], json!(["coffee brewing tutorial"]));
+        assert_eq!(
+            schema["properties"]["queries"]["prefill"],
+            json!(["coffee brewing tutorial"])
+        );
         assert_eq!(schema["properties"]["q"]["prefill"], Value::Null);
-        assert_eq!(build_google_videos_param_list(&Value::Object(input)).unwrap().len(), 1);
-        assert_eq!(build_google_videos_param_list(&json!({"queries": ["coffee", "espresso"]})).unwrap().len(), 2);
+        assert_eq!(
+            build_google_videos_param_list(&Value::Object(input))
+                .unwrap()
+                .len(),
+            1
+        );
+        assert_eq!(
+            build_google_videos_param_list(&json!({"queries": ["coffee", "espresso"]}))
+                .unwrap()
+                .len(),
+            2
+        );
     }
 
     #[test]
@@ -1269,10 +1315,12 @@ mod tests {
 
     #[test]
     fn request_builder_rejects_invalid_queries_pagination_and_locations() {
-        assert!(build_google_videos_param_list(&json!({"queries": "coffee"}))
-            .unwrap_err()
-            .to_string()
-            .contains("queries must be an array"));
+        assert!(
+            build_google_videos_param_list(&json!({"queries": "coffee"}))
+                .unwrap_err()
+                .to_string()
+                .contains("queries must be an array")
+        );
         assert!(build_google_videos_param_list(&json!({"q": "  "}))
             .unwrap_err()
             .to_string()
@@ -1284,47 +1332,70 @@ mod tests {
         .unwrap_err()
         .to_string()
         .contains("queries must contain 10 items or fewer"));
-        assert!(build_google_videos_param_list(&json!({"q": "coffee", "page": 1, "start": 0}))
-            .unwrap_err()
-            .to_string()
-            .contains("Cannot use both page and start parameters"));
-        assert!(build_google_videos_param_list(&json!({"q": "coffee", "location": "Austin", "uule": "encoded"}))
-            .unwrap_err()
-            .to_string()
-            .contains("Cannot use both location and uule parameters"));
+        assert!(
+            build_google_videos_param_list(&json!({"q": "coffee", "page": 1, "start": 0}))
+                .unwrap_err()
+                .to_string()
+                .contains("Cannot use both page and start parameters")
+        );
+        assert!(build_google_videos_param_list(
+            &json!({"q": "coffee", "location": "Austin", "uule": "encoded"})
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("Cannot use both location and uule parameters"));
     }
 
     #[test]
     fn request_builder_rejects_invalid_types_codes_and_filter_values() {
         assert!(build_google_videos_param_list(&json!({"q": "coffee", "gl": 123})).is_err());
-        assert!(build_google_videos_param_list(&json!({"q": "coffee", "hl": "eng"}))
-            .unwrap_err()
-            .to_string()
-            .contains("hl must be 2 characters or fewer"));
-        assert!(build_google_videos_param_list(&json!({"q": "coffee", "safe": "moderate"}))
-            .unwrap_err()
-            .to_string()
-            .contains("safe must be one of: active, off"));
-        assert!(build_google_videos_param_list(&json!({"q": "coffee", "filter": 2}))
-            .unwrap_err()
-            .to_string()
-            .contains("filter must be 0 or 1"));
-        assert!(build_google_videos_param_list(&json!({"q": "coffee", "nfpr": 1.5}))
-            .unwrap_err()
-            .to_string()
-            .contains("nfpr must be an integer"));
-        assert!(build_google_videos_param_list(&json!({"q": "coffee", "google_domain": "x".repeat(51)}))
-            .unwrap_err()
-            .to_string()
-            .contains("google_domain must be 50 characters or fewer"));
+        assert!(
+            build_google_videos_param_list(&json!({"q": "coffee", "hl": "eng"}))
+                .unwrap_err()
+                .to_string()
+                .contains("hl must be 2 characters or fewer")
+        );
+        assert!(
+            build_google_videos_param_list(&json!({"q": "coffee", "safe": "moderate"}))
+                .unwrap_err()
+                .to_string()
+                .contains("safe must be one of: active, off")
+        );
+        assert!(
+            build_google_videos_param_list(&json!({"q": "coffee", "filter": 2}))
+                .unwrap_err()
+                .to_string()
+                .contains("filter must be 0 or 1")
+        );
+        assert!(
+            build_google_videos_param_list(&json!({"q": "coffee", "nfpr": 1.5}))
+                .unwrap_err()
+                .to_string()
+                .contains("nfpr must be an integer")
+        );
+        assert!(build_google_videos_param_list(
+            &json!({"q": "coffee", "google_domain": "x".repeat(51)})
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("google_domain must be 50 characters or fewer"));
     }
 
     #[test]
     fn response_extraction_supports_arrays_video_results_and_data() {
         let result = json!({"position": 1, "title": "Coffee Tutorial"});
-        assert_eq!(extract_video_results(&json!([result.clone()])), vec![result.clone()]);
-        assert_eq!(extract_video_results(&json!({"video_results": [result.clone()]})), vec![result.clone()]);
-        assert_eq!(extract_video_results(&json!({"data": [result.clone()]})), vec![result]);
+        assert_eq!(
+            extract_video_results(&json!([result.clone()])),
+            vec![result.clone()]
+        );
+        assert_eq!(
+            extract_video_results(&json!({"video_results": [result.clone()]})),
+            vec![result.clone()]
+        );
+        assert_eq!(
+            extract_video_results(&json!({"data": [result.clone()]})),
+            vec![result]
+        );
         assert!(extract_video_results(&json!({"results": []})).is_empty());
         assert!(extract_video_results(&Value::Null).is_empty());
     }
@@ -1356,9 +1427,18 @@ mod tests {
         .unwrap();
 
         assert_eq!(enriched["provider_field"], "kept");
-        assert_eq!(enriched["video_url"], "https://www.youtube.com/watch?v=example");
-        assert_eq!(enriched["google_redirect_url"], "https://www.google.com/url?q=example");
-        assert_eq!(enriched["source_url"], "https://www.youtube.com/watch?v=example");
+        assert_eq!(
+            enriched["video_url"],
+            "https://www.youtube.com/watch?v=example"
+        );
+        assert_eq!(
+            enriched["google_redirect_url"],
+            "https://www.google.com/url?q=example"
+        );
+        assert_eq!(
+            enriched["source_url"],
+            "https://www.youtube.com/watch?v=example"
+        );
         assert_eq!(enriched["thumbnail_url"], "https://example.com/thumb.jpg");
         assert_eq!(enriched["key_moments_count"], 1);
         assert_eq!(enriched["request_q"], "coffee");
@@ -1369,8 +1449,14 @@ mod tests {
 
     #[test]
     fn dataset_enrichment_uses_google_redirect_when_destination_link_is_missing() {
-        let params = build_google_videos_param_list(&json!({"q": "coffee"})).unwrap().remove(0);
-        let enriched = enrich_result(&json!({"video_link": "https://google.test/redirect"}), &params).unwrap();
+        let params = build_google_videos_param_list(&json!({"q": "coffee"}))
+            .unwrap()
+            .remove(0);
+        let enriched = enrich_result(
+            &json!({"video_link": "https://google.test/redirect"}),
+            &params,
+        )
+        .unwrap();
         assert_eq!(enriched["video_url"], "https://google.test/redirect");
         assert_eq!(enriched["source_url"], Value::Null);
         assert_eq!(enriched["key_moments_count"], 0);
@@ -1417,10 +1503,7 @@ mod tests {
 
     #[test]
     fn positive_limit_keeps_only_the_affordable_prefix_after_custom_charges() {
-        let run = pricing_run(
-            Some(json!(0.00035)),
-            json!({"apify-actor-start": 1}),
-        );
+        let run = pricing_run(Some(json!(0.00035)), json!({"apify-actor-start": 1}));
 
         assert_eq!(
             affordable_dataset_items(&run, 3, &mut DatasetBudget::default()).unwrap(),
@@ -1471,7 +1554,9 @@ mod tests {
             request_timeout: Duration::from_secs(1),
             retry_delays: &[Duration::ZERO, Duration::ZERO],
         };
-        let params = build_google_videos_param_list(&json!({"q": "espresso"})).unwrap().remove(0);
+        let params = build_google_videos_param_list(&json!({"q": "espresso"}))
+            .unwrap()
+            .remove(0);
 
         let response = client.get_google_videos(&params).await.unwrap();
         assert_eq!(response["video_results"][0]["title"], "Espresso");
@@ -1492,10 +1577,14 @@ mod tests {
             request_timeout: Duration::from_secs(1),
             retry_delays: &[Duration::ZERO, Duration::ZERO],
         };
-        let params = build_google_videos_param_list(&json!({"q": "coffee"})).unwrap().remove(0);
+        let params = build_google_videos_param_list(&json!({"q": "coffee"}))
+            .unwrap()
+            .remove(0);
 
         let error = client.get_google_videos(&params).await.unwrap_err();
-        assert!(error.to_string().contains("Scrappa API error (401): denied"));
+        assert!(error
+            .to_string()
+            .contains("Scrappa API error (401): denied"));
         let requests = server.finish();
         assert_eq!(requests.len(), 1);
     }
@@ -1503,9 +1592,21 @@ mod tests {
     #[tokio::test]
     async fn scrappa_timeout_covers_the_response_body_and_uses_three_total_attempts() {
         let server = MockServer::start(vec![
-            delayed_response(200, json!({"video_results": []}), Duration::from_millis(120)),
-            delayed_response(200, json!({"video_results": []}), Duration::from_millis(120)),
-            delayed_response(200, json!({"video_results": []}), Duration::from_millis(120)),
+            delayed_response(
+                200,
+                json!({"video_results": []}),
+                Duration::from_millis(120),
+            ),
+            delayed_response(
+                200,
+                json!({"video_results": []}),
+                Duration::from_millis(120),
+            ),
+            delayed_response(
+                200,
+                json!({"video_results": []}),
+                Duration::from_millis(120),
+            ),
         ]);
         let config = test_config(&server.base_url);
         let client = ScrappaClient {
@@ -1514,7 +1615,9 @@ mod tests {
             request_timeout: Duration::from_millis(30),
             retry_delays: &[Duration::ZERO, Duration::ZERO],
         };
-        let params = build_google_videos_param_list(&json!({"q": "coffee"})).unwrap().remove(0);
+        let params = build_google_videos_param_list(&json!({"q": "coffee"}))
+            .unwrap()
+            .remove(0);
 
         let error = client.get_google_videos(&params).await.unwrap_err();
         assert!(error.to_string().contains("timed out after 30ms"));
@@ -1538,7 +1641,10 @@ mod tests {
         assert_eq!(requests.len(), 5);
         assert_eq!(requests[0].method, "GET");
         assert_eq!(requests[0].target, input_request());
-        assert_eq!(requests[0].headers["authorization"], "Bearer apify-test-token");
+        assert_eq!(
+            requests[0].headers["authorization"],
+            "Bearer apify-test-token"
+        );
         assert_eq!(requests[1].method, "GET");
         assert_eq!(requests[1].target, "/google/videos?q=coffee&page=2&gl=us");
         assert_eq!(requests[1].headers["x-api-key"], "scrappa-test-key");
@@ -1548,7 +1654,10 @@ mod tests {
         let dataset = object_body(&requests[3]);
         assert_eq!(dataset.as_array().unwrap().len(), 1);
         assert_eq!(dataset[0]["title"], "Coffee Tutorial");
-        assert_eq!(dataset[0]["video_url"], "https://www.youtube.com/watch?v=example");
+        assert_eq!(
+            dataset[0]["video_url"],
+            "https://www.youtube.com/watch?v=example"
+        );
         assert_eq!(dataset[0]["request_q"], "coffee");
         assert_eq!(requests[4].method, "PUT");
         assert_eq!(requests[4].target, output_request());
@@ -1572,24 +1681,36 @@ mod tests {
         assert_eq!(run_actor(&Client::new(), &config).await.unwrap(), None);
         let requests = server.finish();
         assert_eq!(requests.len(), 8);
-        assert_eq!(requests[1].target, "/google/videos?q=coffee&page=1&hl=en&gl=us&google_domain=google.com&safe=off");
-        assert_eq!(requests[4].target, "/google/videos?q=espresso&page=1&hl=en&gl=us&google_domain=google.com&safe=off");
-        assert_eq!(object_body(&requests[7]), json!({
-            "requests": [
-                {"request": {"q": "coffee", "page": 1, "hl": "en", "gl": "us", "google_domain": "google.com", "safe": "off"}, "video_results": 1},
-                {"request": {"q": "espresso", "page": 1, "hl": "en", "gl": "us", "google_domain": "google.com", "safe": "off"}, "video_results": 1}
-            ],
-            "video_results": 2
-        }));
+        assert_eq!(
+            requests[1].target,
+            "/google/videos?q=coffee&page=1&hl=en&gl=us&google_domain=google.com&safe=off"
+        );
+        assert_eq!(
+            requests[4].target,
+            "/google/videos?q=espresso&page=1&hl=en&gl=us&google_domain=google.com&safe=off"
+        );
+        assert_eq!(
+            object_body(&requests[7]),
+            json!({
+                "requests": [
+                    {"request": {"q": "coffee", "page": 1, "hl": "en", "gl": "us", "google_domain": "google.com", "safe": "off"}, "video_results": 1},
+                    {"request": {"q": "espresso", "page": 1, "hl": "en", "gl": "us", "google_domain": "google.com", "safe": "off"}, "video_results": 1}
+                ],
+                "video_results": 2
+            })
+        );
     }
 
     #[tokio::test]
     async fn charge_limit_saves_affordable_rows_writes_output_and_stops_batch_requests() {
         let server = MockServer::start(vec![
             mock_response(200, json!({"q": "coffee", "queries": ["espresso"]})),
-            mock_response(200, json!({"video_results": [
-                {"title": "First"}, {"title": "Second"}
-            ]})),
+            mock_response(
+                200,
+                json!({"video_results": [
+                    {"title": "First"}, {"title": "Second"}
+                ]}),
+            ),
             pricing_response(0.00035, 0),
             mock_response(200, json!({})),
             mock_response(201, json!({})),
@@ -1600,12 +1721,17 @@ mod tests {
         assert!(status.contains("Charge limit reached after saving 1 of 2"));
         let requests = server.finish();
         assert_eq!(requests.len(), 5);
-        assert!(requests[3].target.starts_with("/v2/datasets/dataset-id/items"));
+        assert!(requests[3]
+            .target
+            .starts_with("/v2/datasets/dataset-id/items"));
         assert_eq!(object_body(&requests[3]).as_array().unwrap().len(), 1);
-        assert_eq!(object_body(&requests[4]), json!({
-            "requests": [{"request": {"q": "coffee"}, "video_results": 1}],
-            "video_results": 1
-        }));
+        assert_eq!(
+            object_body(&requests[4]),
+            json!({
+                "requests": [{"request": {"q": "coffee"}, "video_results": 1}],
+                "video_results": 1
+            })
+        );
     }
 
     #[tokio::test]
@@ -1639,9 +1765,13 @@ mod tests {
         let config = test_config(&server.base_url);
 
         let error = run_actor(&Client::new(), &config).await.unwrap_err();
-        assert!(error.to_string().contains("Scrappa API error (403): forbidden"));
+        assert!(error
+            .to_string()
+            .contains("Scrappa API error (403): forbidden"));
         let requests = server.finish();
         assert_eq!(requests.len(), 2);
-        assert!(requests.iter().all(|request| request.target != output_request()));
+        assert!(requests
+            .iter()
+            .all(|request| request.target != output_request()));
     }
 }

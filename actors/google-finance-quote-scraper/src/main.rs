@@ -68,23 +68,23 @@ async fn run() -> Result<()> {
     let scrappa_api_base =
         env::var("SCRAPPA_API_BASE_URL").unwrap_or_else(|_| SCRAPPA_API_DEFAULT.into());
     let scrappa = ScrappaClient::new(api_key, &scrappa_api_base, REQUEST_TIMEOUT)?;
-    let fetch_result = match fetch_quote_with_fallback(&scrappa, &params, SCRAPPA_MAX_ATTEMPTS).await
-    {
-        Ok(result) => result,
-        Err(error) => {
-            if let Some(error) = error.downcast_ref::<ScrappaHttpError>()
-                && (500..=599).contains(&error.status)
-            {
-                exit_without_quote_result(&upstream_failure_message(error.status));
-                return Ok(());
+    let fetch_result =
+        match fetch_quote_with_fallback(&scrappa, &params, SCRAPPA_MAX_ATTEMPTS).await {
+            Ok(result) => result,
+            Err(error) => {
+                if let Some(error) = error.downcast_ref::<ScrappaHttpError>()
+                    && (500..=599).contains(&error.status)
+                {
+                    exit_without_quote_result(&upstream_failure_message(error.status));
+                    return Ok(());
+                }
+                if let Some(error) = error.downcast_ref::<ScrappaTimeoutError>() {
+                    exit_without_quote_result(&scrappa_timeout_message(error));
+                    return Ok(());
+                }
+                return Err(error);
             }
-            if let Some(error) = error.downcast_ref::<ScrappaTimeoutError>() {
-                exit_without_quote_result(&scrappa_timeout_message(error));
-                return Ok(());
-            }
-            return Err(error);
-        }
-    };
+        };
 
     if !has_meaningful_quote_data(&fetch_result.response) {
         exit_without_quote_result(&format!(
@@ -107,8 +107,7 @@ async fn run() -> Result<()> {
 
     let charge_plan = pricing.plan_default_dataset_item(QUOTE_RESULT_CHARGE_EVENT);
     if !charge_plan.keep_item {
-        let status_message =
-            "Charge limit reached before saving the Google Finance quote result; OUTPUT was not written.";
+        let status_message = "Charge limit reached before saving the Google Finance quote result; OUTPUT was not written.";
         println!(
             "{status_message} {{\"event\":\"{QUOTE_RESULT_CHARGE_EVENT}\",\"charged_count\":0}}"
         );

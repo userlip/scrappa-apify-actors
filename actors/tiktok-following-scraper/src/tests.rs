@@ -491,7 +491,9 @@ async fn zero_ppe_cap_writes_all_rows_and_preserves_output_count() {
     assert!(dataset_write.contains("\"user_id\":\"2\""));
     let output = requests
         .iter()
-        .find(|request| request.starts_with("PUT /api/v2/key-value-stores/store-id/records/OUTPUT "))
+        .find(|request| {
+            request.starts_with("PUT /api/v2/key-value-stores/store-id/records/OUTPUT ")
+        })
         .unwrap();
     assert!(output.contains("\"following\":[{\"user_id\":\"1\"},{\"user_id\":\"2\"}]"));
     assert!(output.contains("\"processed_time\":30"));

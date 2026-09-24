@@ -188,7 +188,9 @@ fn challenge_id(challenge: &Value) -> Value {
             }
         }
         Some(Value::Number(number)) => {
-            let Some(number) = number.as_f64() else { return Value::Null };
+            let Some(number) = number.as_f64() else {
+                return Value::Null;
+            };
             if number.is_finite() && number.fract() == 0.0 && number.abs() <= MAX_SAFE_INTEGER {
                 Value::String(if number == 0.0 {
                     "0".to_owned()

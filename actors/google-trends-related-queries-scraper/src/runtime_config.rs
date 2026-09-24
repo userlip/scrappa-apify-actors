@@ -62,10 +62,7 @@ mod tests {
         assert_eq!(related, 180_000);
         assert_eq!(apify, 150_000);
         assert_eq!(autocomplete, 15_000);
-        assert_eq!(
-            related + apify + autocomplete,
-            345_000
-        );
+        assert_eq!(related + apify + autocomplete, 345_000);
         assert_eq!(
             related + apify + autocomplete + ACTOR_COMPLETION_RESERVE_MS,
             ACTOR_TIMEOUT_MS

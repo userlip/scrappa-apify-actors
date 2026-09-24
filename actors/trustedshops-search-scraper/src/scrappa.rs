@@ -139,11 +139,11 @@ pub fn is_retryable(error: &anyhow::Error) -> bool {
     if let Some(error) = error.downcast_ref::<ScrappaApiError>() {
         return matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504);
     }
-    error
-        .downcast_ref::<reqwest::Error>()
-        .is_some_and(|error| {
-            error.is_timeout() || error.is_connect() || is_retryable_transport_message(&format!("{error:?}"))
-        })
+    error.downcast_ref::<reqwest::Error>().is_some_and(|error| {
+        error.is_timeout()
+            || error.is_connect()
+            || is_retryable_transport_message(&format!("{error:?}"))
+    })
 }
 
 fn is_retryable_transport_message(message: &str) -> bool {
@@ -281,7 +281,9 @@ mod tests {
         for message in ["connection reset by peer", "ECONNREFUSED", "EAI_AGAIN"] {
             assert!(is_retryable_transport_message(message));
         }
-        assert!(!is_retryable_transport_message("error decoding response body"));
+        assert!(!is_retryable_transport_message(
+            "error decoding response body"
+        ));
     }
 
     #[test]
@@ -335,10 +337,7 @@ mod tests {
             } else {
                 js_string(value)
             };
-            url.query_pairs_mut().append_pair(
-                key,
-                &value,
-            );
+            url.query_pairs_mut().append_pair(key, &value);
         }
         let query = url.query().unwrap();
         assert!(query.contains("q=H%26M+partner"));

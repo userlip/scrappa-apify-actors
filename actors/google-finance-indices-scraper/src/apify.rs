@@ -423,8 +423,8 @@ mod tests {
 
     fn run_with_dataset_item_price(max_charge: f64, counts: Value) -> Value {
         let mut run = run(max_charge, counts);
-        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["apify-default-dataset-item"] =
-            json!({"eventPriceUsd": 0.0001});
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            ["apify-default-dataset-item"] = json!({"eventPriceUsd": 0.0001});
         run
     }
 
@@ -531,12 +531,7 @@ mod tests {
         let mut missing_limit = run(1.0, json!({}));
         missing_limit["data"]["options"] = json!({});
         assert_eq!(
-            affordable_row_count(
-                &missing_limit,
-                INDEX_RESULT_CHARGE_EVENT,
-                &mut budget
-            )
-            .unwrap(),
+            affordable_row_count(&missing_limit, INDEX_RESULT_CHARGE_EVENT, &mut budget).unwrap(),
             Some(usize::MAX)
         );
 

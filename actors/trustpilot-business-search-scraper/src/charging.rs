@@ -253,7 +253,9 @@ mod tests {
         assert_eq!(result.saved_count, 0);
         assert_eq!(
             result.status_message.as_deref(),
-            Some("Charge limit reached after saving 0 of 5 Trustpilot business results on the current page.")
+            Some(
+                "Charge limit reached after saving 0 of 5 Trustpilot business results on the current page."
+            )
         );
         let unlimited = PpeBudget::from_run(&run(json!(0), json!({}))).unwrap();
         assert_eq!(unlimited.dataset_item_limit(5), 5);

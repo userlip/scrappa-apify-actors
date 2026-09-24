@@ -94,11 +94,7 @@ pub fn build_jobs_params(input: &GoogleJobsInput) -> Vec<(String, String)> {
     );
     push_string_param(&mut params, "hl", input.hl.as_deref());
     push_string_param(&mut params, "gl", input.gl.as_deref());
-    push_string_param(
-        &mut params,
-        "google_domain",
-        input.google_domain.as_deref(),
-    );
+    push_string_param(&mut params, "google_domain", input.google_domain.as_deref());
     push_string_param(&mut params, "uule", input.uule.as_deref());
     if let Some(value) = &input.lrad {
         if !value.is_null() && value.as_str() != Some("") {
@@ -243,7 +239,10 @@ mod tests {
     #[test]
     fn requires_query_unless_pagination_token_is_present_and_requires_uule_for_radius() {
         assert_eq!(
-            GoogleJobsInput::default().validate().unwrap_err().to_string(),
+            GoogleJobsInput::default()
+                .validate()
+                .unwrap_err()
+                .to_string(),
             "Job search query is required unless next_page_token is provided."
         );
         assert_eq!(

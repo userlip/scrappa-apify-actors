@@ -182,13 +182,7 @@ fn query_value(value: &Value) -> Option<String> {
         Value::Bool(false) => None,
         Value::String(value) => (!value.is_empty()).then(|| value.clone()),
         Value::Number(value) => Some(value.to_string()),
-        Value::Array(values) => Some(
-            values
-                .iter()
-                .map(js_string)
-                .collect::<Vec<_>>()
-                .join(","),
-        ),
+        Value::Array(values) => Some(values.iter().map(js_string).collect::<Vec<_>>().join(",")),
         Value::Object(_) => Some("[object Object]".into()),
     }
 }
@@ -258,7 +252,8 @@ async fn read_error_message(
         return Ok(message);
     }
 
-    Ok(body.split_whitespace()
+    Ok(body
+        .split_whitespace()
         .collect::<Vec<_>>()
         .join(" ")
         .chars()
@@ -303,11 +298,11 @@ pub fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use anyhow::anyhow;
     use super::{
         ScrappaClient, ScrappaHttpError, ScrappaTimeoutError, get_retry_delay_ms,
         is_retryable_scrappa_error,
     };
+    use anyhow::anyhow;
     use serde_json::{Map, json};
     use std::{
         io::{Read, Write},
@@ -446,12 +441,9 @@ mod tests {
     #[tokio::test]
     async fn sends_api_auth_user_agent_and_filtered_get_parameters() {
         let server = MockServer::start(vec![response(200, r#"{"ok":true}"#)]);
-        let client = ScrappaClient::new(
-            "test-key".into(),
-            &server.base_url,
-            Duration::from_secs(1),
-        )
-        .unwrap();
+        let client =
+            ScrappaClient::new("test-key".into(), &server.base_url, Duration::from_secs(1))
+                .unwrap();
         let params: Map<String, serde_json::Value> = json!({
             "symbol": "AAPL",
             "exchange": "NASDAQ",
@@ -464,7 +456,13 @@ mod tests {
         .unwrap()
         .clone();
 
-        assert_eq!(client.get("/google-finance/quote", &params, 1).await.unwrap(), json!({"ok": true}));
+        assert_eq!(
+            client
+                .get("/google-finance/quote", &params, 1)
+                .await
+                .unwrap(),
+            json!({"ok": true})
+        );
         let request = server.requests().pop().unwrap();
         let request_line = request.lines().next().unwrap();
         assert!(request_line.starts_with("GET /api/google-finance/quote?"));
@@ -482,16 +480,17 @@ mod tests {
             response(500, r#"{"message":"Internal Server Error"}"#),
             response(200, r#"{"quote":{"summary":{"symbol":"MSFT"}}}"#),
         ]);
-        let client = ScrappaClient::new(
-            "test-key".into(),
-            &server.base_url,
-            Duration::from_secs(1),
-        )
-        .unwrap()
-        .without_retry_wait();
+        let client =
+            ScrappaClient::new("test-key".into(), &server.base_url, Duration::from_secs(1))
+                .unwrap()
+                .without_retry_wait();
 
         let result = client
-            .get("/google-finance/quote", &json!({"symbol": "MSFT"}).as_object().unwrap().clone(), 3)
+            .get(
+                "/google-finance/quote",
+                &json!({"symbol": "MSFT"}).as_object().unwrap().clone(),
+                3,
+            )
             .await
             .unwrap();
         assert_eq!(result["quote"]["summary"]["symbol"], "MSFT");
@@ -506,13 +505,10 @@ mod tests {
             response(500, r#"{"message":"Internal Server Error"}"#),
             response(200, r#"{"quote":{"summary":{"symbol":"MSFT"}}}"#),
         ]);
-        let client = ScrappaClient::new(
-            "test-key".into(),
-            &server.base_url,
-            Duration::from_secs(1),
-        )
-        .unwrap()
-        .without_retry_wait();
+        let client =
+            ScrappaClient::new("test-key".into(), &server.base_url, Duration::from_secs(1))
+                .unwrap()
+                .without_retry_wait();
         let params: Map<String, serde_json::Value> = json!({
             "symbol": "MSFT",
             "period_type": "quarterly",
@@ -538,14 +534,18 @@ mod tests {
                 .next()
                 .is_some_and(|line| line.contains("period_type=quarterly"))
         }));
-        assert!(requests[3]
-            .lines()
-            .next()
-            .is_some_and(|line| !line.contains("period_type=")));
-        assert!(requests[3]
-            .lines()
-            .next()
-            .is_some_and(|line| line.contains("hl=en") && line.contains("symbol=MSFT")));
+        assert!(
+            requests[3]
+                .lines()
+                .next()
+                .is_some_and(|line| !line.contains("period_type="))
+        );
+        assert!(
+            requests[3]
+                .lines()
+                .next()
+                .is_some_and(|line| line.contains("hl=en") && line.contains("symbol=MSFT"))
+        );
     }
 
     #[tokio::test]
@@ -554,13 +554,10 @@ mod tests {
             422,
             r#"{"message":"Invalid request","errors":{"symbol":["The symbol is required."]}}"#,
         )]);
-        let client = ScrappaClient::new(
-            "test-key".into(),
-            &server.base_url,
-            Duration::from_secs(1),
-        )
-        .unwrap()
-        .without_retry_wait();
+        let client =
+            ScrappaClient::new("test-key".into(), &server.base_url, Duration::from_secs(1))
+                .unwrap()
+                .without_retry_wait();
 
         let error = client
             .get("/google-finance/quote", &Map::new(), 3)
@@ -568,7 +565,10 @@ mod tests {
             .unwrap_err();
         let error = error.downcast_ref::<ScrappaHttpError>().unwrap();
         assert_eq!(error.status, 422);
-        assert_eq!(error.details, "Invalid request - symbol: The symbol is required.");
+        assert_eq!(
+            error.details,
+            "Invalid request - symbol: The symbol is required."
+        );
         assert_eq!(server.requests().len(), 1);
     }
 
@@ -603,9 +603,9 @@ mod tests {
         assert!(!is_retryable_scrappa_error(
             &ScrappaHttpError::new(422, "Invalid request".into()).into()
         ));
-        assert!(is_retryable_scrappa_error(
-            &anyhow!("Scrappa API error (429): Rate limited")
-        ));
+        assert!(is_retryable_scrappa_error(&anyhow!(
+            "Scrappa API error (429): Rate limited"
+        )));
         assert!(!is_retryable_scrappa_error(&anyhow!("connection refused")));
         assert_eq!(get_retry_delay_ms(1, 0), 2_000);
         assert_eq!(get_retry_delay_ms(2, 500), 4_500);

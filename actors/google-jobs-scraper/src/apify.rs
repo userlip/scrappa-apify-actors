@@ -145,7 +145,8 @@ fn dataset_batches(items: &[Value]) -> Result<Vec<Vec<Value>>> {
             );
         }
         let separator_bytes = usize::from(!batch.is_empty());
-        if !batch.is_empty() && batch_bytes + separator_bytes + item_bytes > MAX_DATASET_BATCH_BYTES {
+        if !batch.is_empty() && batch_bytes + separator_bytes + item_bytes > MAX_DATASET_BATCH_BYTES
+        {
             batches.push(std::mem::take(&mut batch));
             batch_bytes = 2;
         }
@@ -345,7 +346,10 @@ mod tests {
         ]);
         let base_url = Url::parse(&server.base_url()).unwrap();
         let client = ApifyClient::new(
-            Client::builder().timeout(Duration::from_secs(1)).build().unwrap(),
+            Client::builder()
+                .timeout(Duration::from_secs(1))
+                .build()
+                .unwrap(),
             base_url,
             "apify-test-token".to_owned(),
             "store-id".to_owned(),
@@ -353,7 +357,10 @@ mod tests {
             "run-id".to_owned(),
             "INPUT".to_owned(),
         );
-        assert_eq!(client.get_input().await.unwrap().unwrap()["q"], "nurse jobs");
+        assert_eq!(
+            client.get_input().await.unwrap().unwrap()["q"],
+            "nurse jobs"
+        );
         assert_eq!(client.dataset_item_limit(2).await.unwrap(), 2);
         let jobs = vec![json!({ "title": "Nurse" }), json!({ "title": "RN" })];
         assert_eq!(client.push_dataset_items(&jobs).await.unwrap(), 2);
@@ -365,10 +372,12 @@ mod tests {
         assert!(requests[0].starts_with("GET /v2/key-value-stores/store-id/records/INPUT HTTP/1.1"));
         assert!(requests[1].starts_with("GET /v2/actor-runs/run-id HTTP/1.1"));
         assert!(requests[2].starts_with("POST /v2/datasets/dataset-id/items HTTP/1.1"));
-        assert!(requests[3].starts_with("PUT /v2/key-value-stores/store-id/records/OUTPUT HTTP/1.1"));
-        assert!(requests
-            .iter()
-            .all(|request| request.to_ascii_lowercase().contains("authorization: bearer apify-test-token")));
+        assert!(
+            requests[3].starts_with("PUT /v2/key-value-stores/store-id/records/OUTPUT HTTP/1.1")
+        );
+        assert!(requests.iter().all(|request| request
+            .to_ascii_lowercase()
+            .contains("authorization: bearer apify-test-token")));
         assert!(requests[2].contains(r#"[{"title":"Nurse"},{"title":"RN"}]"#));
         assert!(requests[3].contains(r#"{"jobs":[{"title":"Nurse"},{"title":"RN"}]}"#));
     }
@@ -381,7 +390,10 @@ mod tests {
             MockResponse::json(201, "{}"),
         ]);
         let client = ApifyClient::new(
-            Client::builder().timeout(Duration::from_secs(1)).build().unwrap(),
+            Client::builder()
+                .timeout(Duration::from_secs(1))
+                .build()
+                .unwrap(),
             Url::parse(&server.base_url()).unwrap(),
             "apify-test-token".to_owned(),
             "store-id".to_owned(),
@@ -394,14 +406,22 @@ mod tests {
 
         let allowed_items = client.dataset_item_limit(jobs.len()).await.unwrap();
         assert_eq!(allowed_items, jobs.len());
-        assert_eq!(client.push_dataset_items(&jobs[..allowed_items]).await.unwrap(), 2);
+        assert_eq!(
+            client
+                .push_dataset_items(&jobs[..allowed_items])
+                .await
+                .unwrap(),
+            2
+        );
         client.set_output(&output).await.unwrap();
 
         let requests = server.requests();
         assert_eq!(requests.len(), 3);
         assert!(requests[0].starts_with("GET /v2/actor-runs/run-id HTTP/1.1"));
         assert!(requests[1].starts_with("POST /v2/datasets/dataset-id/items HTTP/1.1"));
-        assert!(requests[2].starts_with("PUT /v2/key-value-stores/store-id/records/OUTPUT HTTP/1.1"));
+        assert!(
+            requests[2].starts_with("PUT /v2/key-value-stores/store-id/records/OUTPUT HTTP/1.1")
+        );
         assert!(requests.iter().all(|request| !request.contains("/charges")));
         assert!(requests[1].contains(r#"[{"title":"Nurse"},{"title":"RN"}]"#));
         assert!(requests[2].contains(r#"{"jobs":[{"title":"Nurse"},{"title":"RN"}]}"#));

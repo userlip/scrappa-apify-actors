@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Method, Response, StatusCode, Url};
@@ -146,7 +146,6 @@ pub enum ChargingBudget {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PayPerEventBudget {
     event_prices: HashMap<String, f64>,
-    tiered_events: HashSet<String>,
     charged_usd: f64,
     max_total_charge_usd: Option<f64>,
 }
@@ -169,19 +168,9 @@ impl ChargingBudget {
             .and_then(Value::as_object)
             .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
         let mut event_prices = HashMap::new();
-        let mut tiered_events = HashSet::new();
         for (event_name, event) in events {
-            if let Some(price) = event.get("eventPriceUsd").and_then(Value::as_f64) {
-                if !price.is_finite() || price < 0.0 {
-                    bail!("Apify run returned an invalid price for event {event_name}");
-                }
+            if let Some(price) = configured_event_price(event_name, event)? {
                 event_prices.insert(event_name.clone(), price);
-            } else if event
-                .get("eventTieredPricingUsd")
-                .and_then(Value::as_object)
-                .is_some()
-            {
-                tiered_events.insert(event_name.clone());
             }
         }
 
@@ -194,7 +183,7 @@ impl ChargingBudget {
                 if !max_total_charge_usd.is_finite() || max_total_charge_usd < 0.0 {
                     bail!("Apify run returned an invalid spending limit");
                 }
-                Some(max_total_charge_usd)
+                (max_total_charge_usd > 0.0).then_some(max_total_charge_usd)
             }
         };
 
@@ -212,6 +201,8 @@ impl ChargingBudget {
             }
             let price = event_prices
                 .get(event_name)
+                .copied()
+                .or_else(|| (event_name == DEFAULT_DATASET_ITEM_EVENT).then_some(0.0))
                 .ok_or_else(|| anyhow!("Missing price for charged event {event_name}"))?;
             charged_usd += price * count as f64;
         }
@@ -221,18 +212,46 @@ impl ChargingBudget {
 
         Ok(Self::PayPerEvent(PayPerEventBudget {
             event_prices,
-            tiered_events,
             charged_usd,
             max_total_charge_usd,
         }))
     }
 }
 
-impl PayPerEventBudget {
-    pub fn is_tier_priced_event(&self, event_name: &str) -> bool {
-        self.tiered_events.contains(event_name)
+fn configured_event_price(event_name: &str, event: &Value) -> Result<Option<f64>> {
+    if let Some(flat_price) = event.get("eventPriceUsd").filter(|price| !price.is_null()) {
+        let price = flat_price
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run returned an invalid price for event {event_name}"))?;
+        if !price.is_finite() || price < 0.0 {
+            bail!("Apify run returned an invalid price for event {event_name}");
+        }
+        return Ok(Some(price));
     }
 
+    let Some(tiered_prices) = event
+        .get("eventTieredPricingUsd")
+        .and_then(Value::as_object)
+    else {
+        return Ok(None);
+    };
+    let mut highest_price: Option<f64> = None;
+    for (tier, tiered_price) in tiered_prices {
+        let price = tiered_price
+            .get("tieredEventPriceUsd")
+            .and_then(Value::as_f64)
+            .ok_or_else(|| anyhow!("Invalid {tier} price for charged event {event_name}"))?;
+        if !price.is_finite() || price < 0.0 {
+            bail!("Invalid {tier} price for charged event {event_name}");
+        }
+        highest_price = Some(highest_price.map_or(price, |highest| highest.max(price)));
+    }
+    highest_price
+        .map(Some)
+        .ok_or_else(|| anyhow!("Apify run did not provide tier prices for event {event_name}"))
+}
+
+impl PayPerEventBudget {
     pub fn affordable_items(&self, requested: usize) -> Result<usize> {
         let result_item_price = self.event_price(ITEM_RESULT_CHARGE_EVENT)?;
         let default_item_price = self.event_price(DEFAULT_DATASET_ITEM_EVENT)?;
@@ -270,12 +289,10 @@ impl PayPerEventBudget {
     }
 
     fn event_price(&self, event_name: &str) -> Result<f64> {
-        if self.is_tier_priced_event(event_name) {
-            return Ok(0.0);
-        }
         self.event_prices
             .get(event_name)
             .copied()
+            .or_else(|| (event_name == DEFAULT_DATASET_ITEM_EVENT).then_some(0.0))
             .ok_or_else(|| anyhow!("Apify run did not provide a price for event {event_name}"))
     }
 }
@@ -485,8 +502,8 @@ mod tests {
     }
 
     #[test]
-    fn tier_priced_result_and_dataset_events_follow_charging_manager_behavior() {
-        let mut run = ppe_run(0.006, json!({"apify-actor-start": 1}));
+    fn tiered_events_use_highest_tier_prices_for_current_and_prior_charges() {
+        let mut run = ppe_run(0.006, json!({"apify-actor-start": 1, "item-result": 1}));
         let events = run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
             .as_object_mut()
             .unwrap();
@@ -505,9 +522,26 @@ mod tests {
             panic!("expected PPE budget");
         };
 
-        assert_eq!(budget.affordable_items(3).unwrap(), 3);
+        assert_eq!(budget.affordable_items(3).unwrap(), 1);
         budget.record_saved_items(1).unwrap();
-        assert_eq!(budget.affordable_items(3).unwrap(), 3);
+        assert_eq!(budget.affordable_items(3).unwrap(), 0);
+    }
+
+    #[test]
+    fn missing_default_dataset_price_contributes_zero_to_budget() {
+        let mut run = ppe_run(
+            0.0052,
+            json!({"apify-actor-start": 1, "apify-default-dataset-item": 1}),
+        );
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            .as_object_mut()
+            .unwrap()
+            .remove(DEFAULT_DATASET_ITEM_EVENT);
+        let ChargingBudget::PayPerEvent(budget) = ChargingBudget::from_run(&run).unwrap() else {
+            panic!("expected PPE budget");
+        };
+
+        assert_eq!(budget.affordable_items(2).unwrap(), 1);
     }
 
     #[test]
@@ -533,12 +567,12 @@ mod tests {
     }
 
     #[test]
-    fn zero_spending_limit_has_no_remaining_budget() {
+    fn zero_spending_limit_is_unbounded() {
         let zero = ppe_run(0.0, json!({"apify-actor-start": 1}));
         let ChargingBudget::PayPerEvent(budget) = ChargingBudget::from_run(&zero).unwrap() else {
             panic!("expected PPE budget");
         };
-        assert_eq!(budget.affordable_items(10).unwrap(), 0);
+        assert_eq!(budget.affordable_items(10).unwrap(), 10);
     }
 
     #[test]

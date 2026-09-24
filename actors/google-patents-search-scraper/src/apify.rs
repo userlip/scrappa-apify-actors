@@ -366,10 +366,7 @@ mod tests {
         );
         assert_eq!(
             affordable_dataset_items(
-                &priced_run(
-                    0.26,
-                    json!({"apify-actor-start":1,"custom-patent-event":1})
-                ),
+                &priced_run(0.26, json!({"apify-actor-start":1,"custom-patent-event":1})),
                 5
             )
             .unwrap(),
@@ -380,8 +377,7 @@ mod tests {
     #[test]
     fn treats_zero_max_total_charge_as_unbounded() {
         assert_eq!(
-            affordable_dataset_items(&priced_run(0.0, json!({"apify-actor-start":1})), 5)
-                .unwrap(),
+            affordable_dataset_items(&priced_run(0.0, json!({"apify-actor-start":1})), 5).unwrap(),
             5
         );
     }

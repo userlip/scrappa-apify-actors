@@ -306,11 +306,11 @@ fn ppe_budget_includes_custom_and_default_dataset_item_charges() {
 }
 
 #[test]
-fn ppe_zero_limit_is_enforced_and_missing_or_null_limits_are_unbounded() {
+fn ppe_zero_limit_is_unbounded_and_missing_or_null_limits_are_unbounded() {
     let zero_limit = PricingState::from_run(&ppe_run(0.0, json!({}))).unwrap();
-    assert_eq!(zero_limit.max_total_charge_usd, 0.0);
-    assert_eq!(zero_limit.max_charges_for_price(0.0012), Some(0));
-    assert!(!zero_limit.should_push_item(Some(JOB_RESULT_CHARGE_EVENT)));
+    assert_eq!(zero_limit.max_total_charge_usd, f64::INFINITY);
+    assert_eq!(zero_limit.max_charges_for_price(0.0012), None);
+    assert!(zero_limit.should_push_item(Some(JOB_RESULT_CHARGE_EVENT)));
 
     let mut missing_limit = ppe_run(1.0, json!({}));
     missing_limit["data"]["options"]
@@ -554,50 +554,60 @@ async fn actor_run_preserves_auth_batch_results_dataset_output_and_success_charg
 }
 
 #[tokio::test]
-async fn actor_run_stops_when_zero_ppe_limit_is_set() {
+async fn actor_run_zero_ppe_limit_is_unbounded_and_publishes_results() {
     let input = json!({
         "urls": [
             "linkedin.com/jobs/view/first",
             "linkedin.com/jobs/view/second"
         ]
     });
-    let (base, server) = start_actor_mock(input, ppe_run(0.0, json!({})), 4).await;
+    let (base, server) = start_actor_mock(input, ppe_run(0.0, json!({})), 9).await;
     let http = Client::builder().timeout(REQUEST_TIMEOUT).build().unwrap();
     let config = mock_config(&base);
     let apify = ApifyClient::new(http.clone(), &config.apify);
 
-    let status_message = run(&config, &apify, http).await.unwrap().unwrap();
-    assert_eq!(
-        status_message,
-        "Charge limit reached after saving 0 of 1 LinkedIn job detail results."
-    );
+    assert_eq!(run(&config, &apify, http).await.unwrap(), None);
 
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 4);
+    assert_eq!(requests.len(), 9);
     assert_eq!(
         requests
             .iter()
             .filter(|request| request_line(request).contains("GET /api/linkedin/job?"))
             .count(),
-        1
+        2
+    );
+
+    let dataset_requests: Vec<_> = requests
+        .iter()
+        .filter(|request| {
+            request_line(request).starts_with("POST /v2/datasets/test-dataset/items ")
+        })
+        .collect();
+    assert_eq!(dataset_requests.len(), 2);
+    assert_eq!(
+        request_body(dataset_requests[0])["title"],
+        "Senior Engineer"
     );
     assert_eq!(
-        requests
-            .iter()
-            .filter(|request| request_line(request)
-                .starts_with("POST /v2/datasets/test-dataset/items "))
-            .count(),
-        0
+        request_body(dataset_requests[1])["title"],
+        "Senior Engineer"
     );
-    assert_eq!(
-        requests
-            .iter()
-            .filter(
-                |request| request_line(request).starts_with("POST /v2/actor-runs/test-run/charge ")
-            )
-            .count(),
-        0
-    );
+
+    let charge_requests: Vec<_> = requests
+        .iter()
+        .filter(|request| request_line(request).starts_with("POST /v2/actor-runs/test-run/charge "))
+        .collect();
+    assert_eq!(charge_requests.len(), 2);
+    for (index, request) in charge_requests.iter().enumerate() {
+        assert_eq!(
+            request_body(request),
+            json!({ "eventName": "job-result", "count": 1 })
+        );
+        assert!(request_text(request)
+            .contains(&format!("idempotency-key: test-run-job-result-{index}")));
+    }
+
     let output = requests
         .iter()
         .find(|request| {
@@ -606,8 +616,11 @@ async fn actor_run_stops_when_zero_ppe_limit_is_set() {
         .unwrap();
     assert_eq!(
         request_body(output),
-        json!({ "requested": 2, "succeeded": 0, "failed": 0 })
+        json!({ "requested": 2, "succeeded": 2, "failed": 0 })
     );
+    assert!(!requests
+        .iter()
+        .any(|request| request_line(request).starts_with("PUT /v2/actor-runs/test-run ")));
 }
 
 #[tokio::test]

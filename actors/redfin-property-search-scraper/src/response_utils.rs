@@ -28,10 +28,7 @@ pub(crate) fn property_listings(response: &Value) -> Vec<Value> {
 }
 
 pub(crate) fn search_count(response: &Value) -> Option<f64> {
-    first_number([
-        response.pointer("/data/count"),
-        response.get("count"),
-    ])
+    first_number([response.pointer("/data/count"), response.get("count")])
 }
 
 pub(crate) fn dataset_item(
@@ -43,9 +40,21 @@ pub(crate) fn dataset_item(
     let property_type = first_number([property.get("property_type")]);
     let request_status = first_number([params.get("status")]);
 
-    insert(&mut item, "property_id", numeric_value(property.get("property_id")));
-    insert(&mut item, "listing_id", numeric_value(property.get("listing_id")));
-    insert(&mut item, "address", first_string([property.get("address")]));
+    insert(
+        &mut item,
+        "property_id",
+        numeric_value(property.get("property_id")),
+    );
+    insert(
+        &mut item,
+        "listing_id",
+        numeric_value(property.get("listing_id")),
+    );
+    insert(
+        &mut item,
+        "address",
+        first_string([property.get("address")]),
+    );
     insert(&mut item, "city", first_string([property.get("city")]));
     insert(&mut item, "state", first_string([property.get("state")]));
     insert(&mut item, "zip", first_string([property.get("zip")]));
@@ -53,15 +62,39 @@ pub(crate) fn dataset_item(
     insert(&mut item, "beds", numeric_value(property.get("beds")));
     insert(&mut item, "baths", numeric_value(property.get("baths")));
     insert(&mut item, "sqft", numeric_value(property.get("sqft")));
-    insert(&mut item, "lot_size", numeric_value(property.get("lot_size")));
-    insert(&mut item, "year_built", numeric_value(property.get("year_built")));
+    insert(
+        &mut item,
+        "lot_size",
+        numeric_value(property.get("lot_size")),
+    );
+    insert(
+        &mut item,
+        "year_built",
+        numeric_value(property.get("year_built")),
+    );
     insert(&mut item, "property_type", number_value(property_type));
-    insert(&mut item, "property_type_label", label(property_type, PROPERTY_TYPE_LABELS));
+    insert(
+        &mut item,
+        "property_type_label",
+        label(property_type, PROPERTY_TYPE_LABELS),
+    );
     insert(&mut item, "status", first_string([property.get("status")]));
-    insert(&mut item, "latitude", numeric_value(property.get("latitude")));
-    insert(&mut item, "longitude", numeric_value(property.get("longitude")));
+    insert(
+        &mut item,
+        "latitude",
+        numeric_value(property.get("latitude")),
+    );
+    insert(
+        &mut item,
+        "longitude",
+        numeric_value(property.get("longitude")),
+    );
     insert(&mut item, "url", first_string([property.get("url")]));
-    insert(&mut item, "mls_number", first_string([property.get("mls_number")]));
+    insert(
+        &mut item,
+        "mls_number",
+        first_string([property.get("mls_number")]),
+    );
     item.insert("request_search_index".to_owned(), Value::from(search_index));
 
     for field in [
@@ -127,14 +160,29 @@ fn numeric_value_raw(value: &Value) -> Option<f64> {
 }
 
 fn parse_js_number(value: &str) -> Option<f64> {
-    if let Some(hex) = value.strip_prefix("0x").or_else(|| value.strip_prefix("0X")) {
-        return u64::from_str_radix(hex, 16).ok().map(|number| number as f64);
+    if let Some(hex) = value
+        .strip_prefix("0x")
+        .or_else(|| value.strip_prefix("0X"))
+    {
+        return u64::from_str_radix(hex, 16)
+            .ok()
+            .map(|number| number as f64);
     }
-    if let Some(binary) = value.strip_prefix("0b").or_else(|| value.strip_prefix("0B")) {
-        return u64::from_str_radix(binary, 2).ok().map(|number| number as f64);
+    if let Some(binary) = value
+        .strip_prefix("0b")
+        .or_else(|| value.strip_prefix("0B"))
+    {
+        return u64::from_str_radix(binary, 2)
+            .ok()
+            .map(|number| number as f64);
     }
-    if let Some(octal) = value.strip_prefix("0o").or_else(|| value.strip_prefix("0O")) {
-        return u64::from_str_radix(octal, 8).ok().map(|number| number as f64);
+    if let Some(octal) = value
+        .strip_prefix("0o")
+        .or_else(|| value.strip_prefix("0O"))
+    {
+        return u64::from_str_radix(octal, 8)
+            .ok()
+            .map(|number| number as f64);
     }
     value.parse().ok()
 }
@@ -143,7 +191,9 @@ fn number_value(value: Option<f64>) -> Value {
     let Some(value) = value else {
         return Value::Null;
     };
-    let number = if value.fract() == 0.0 && (i64::MIN as f64..9_223_372_036_854_775_808.0).contains(&value) {
+    let number = if value.fract() == 0.0
+        && (i64::MIN as f64..9_223_372_036_854_775_808.0).contains(&value)
+    {
         Number::from(value as i64)
     } else if value.fract() == 0.0 && (0.0..18_446_744_073_709_551_616.0).contains(&value) {
         Number::from(value as u64)
@@ -183,7 +233,10 @@ mod tests {
         let wrapped = json!({"data":{"properties":[{"property_id":1}],"count":"12"},"properties":[{"property_id":2}],"count":3});
         assert_eq!(property_listings(&wrapped), vec![json!({"property_id":1})]);
         assert_eq!(search_count(&wrapped), Some(12.0));
-        assert_eq!(property_listings(&json!({"properties":[{"property_id":2}]})), vec![json!({"property_id":2})]);
+        assert_eq!(
+            property_listings(&json!({"properties":[{"property_id":2}]})),
+            vec![json!({"property_id":2})]
+        );
         assert!(property_listings(&json!({"data":{}})).is_empty());
         assert_eq!(search_count(&json!({"count":"Infinity"})), None);
     }
@@ -194,14 +247,19 @@ mod tests {
             "region_id":16163,"region_type":6,"market":"seattle","min_price":100000,
             "max_price":900000,"num_beds":2,"num_baths":1.5,"property_types":"1,2",
             "status":9,"sold_within_days":30,"num_homes":50,"page":1
-        })).unwrap();
-        let item = dataset_item(&json!({
-            "property_id":"12345","listing_id":"67890","address":"123 Main St","city":"Seattle",
-            "state":"WA","zip":98101,"price":"850000","beds":"3","baths":"2.5",
-            "sqft":"1800","lot_size":"5000","year_built":"1925","property_type":"1",
-            "status":"Active","latitude":"47.6097","longitude":"-122.3331","url":"https://redfin.test/12345",
-            "mls_number":123456,"future_field":"preserved"
-        }), &params, 1);
+        }))
+        .unwrap();
+        let item = dataset_item(
+            &json!({
+                "property_id":"12345","listing_id":"67890","address":"123 Main St","city":"Seattle",
+                "state":"WA","zip":98101,"price":"850000","beds":"3","baths":"2.5",
+                "sqft":"1800","lot_size":"5000","year_built":"1925","property_type":"1",
+                "status":"Active","latitude":"47.6097","longitude":"-122.3331","url":"https://redfin.test/12345",
+                "mls_number":123456,"future_field":"preserved"
+            }),
+            &params,
+            1,
+        );
         assert_eq!(item["property_id"], 12345);
         assert_eq!(item["zip"], "98101");
         assert_eq!(item["price"], 850000);
@@ -220,7 +278,11 @@ mod tests {
             ("region_type".to_owned(), json!(6)),
             ("market".to_owned(), json!("seattle")),
         ]);
-        let item = dataset_item(&json!({"property_id":"Infinity","price":"-Infinity","latitude":"NaN"}), &params, 0);
+        let item = dataset_item(
+            &json!({"property_id":"Infinity","price":"-Infinity","latitude":"NaN"}),
+            &params,
+            0,
+        );
         assert!(item["property_id"].is_null());
         assert!(item["price"].is_null());
         assert!(item["latitude"].is_null());

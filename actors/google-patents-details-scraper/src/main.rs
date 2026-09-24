@@ -476,7 +476,7 @@ impl DatasetBudget {
         {
             bail!("Apify run returned invalid charging values");
         }
-
+        let max_charge = max_charge.filter(|value| *value != 0.0);
         let counts = data
             .get("chargedEventCounts")
             .and_then(Value::as_object)
@@ -906,10 +906,10 @@ mod tests {
     }
 
     #[test]
-    fn dataset_budget_respects_an_explicit_zero_charge_cap() {
-        let budget = DatasetBudget::from_run(&pricing_run(Some(0.0), 0, 0)).unwrap();
-        assert_eq!(budget.max_charge, Some(0.0));
-        assert_eq!(budget.affordable_items(10), 0);
+    fn dataset_budget_treats_a_zero_charge_cap_as_unlimited() {
+        let budget = DatasetBudget::from_run(&pricing_run(Some(0.0), 10, 1)).unwrap();
+        assert_eq!(budget.max_charge, None);
+        assert_eq!(budget.affordable_items(10), 10);
     }
 
     #[test]

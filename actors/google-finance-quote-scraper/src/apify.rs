@@ -1,7 +1,10 @@
 use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::{Value, json};
-use std::{collections::{HashMap, HashSet}, time::Duration};
+use std::{
+    collections::{HashMap, HashSet},
+    time::Duration,
+};
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
@@ -19,8 +22,8 @@ pub struct ApifyConfig {
 
 impl ApifyConfig {
     pub fn from_env() -> Result<Self> {
-        let api_base_url = std::env::var("APIFY_API_PUBLIC_BASE_URL")
-            .unwrap_or_else(|_| APIFY_API_DEFAULT.into());
+        let api_base_url =
+            std::env::var("APIFY_API_PUBLIC_BASE_URL").unwrap_or_else(|_| APIFY_API_DEFAULT.into());
         let token = required_env("APIFY_TOKEN")?;
         let run_id = required_env("ACTOR_RUN_ID")?;
         let store_id = required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID")?;
@@ -302,7 +305,11 @@ impl ActorPricing {
     fn max_charges_by_price(&self, price: f64, total_charged: f64) -> u64 {
         let count = (self.max_total_charge_usd - total_charged) / price;
         if !count.is_finite() {
-            return if count.is_sign_positive() { u64::MAX } else { 0 };
+            return if count.is_sign_positive() {
+                u64::MAX
+            } else {
+                0
+            };
         }
         let rounded = (count * 10_000.0).round() / 10_000.0;
         rounded.floor().max(0.0).min(u64::MAX as f64) as u64
@@ -347,8 +354,8 @@ mod tests {
 
     #[test]
     fn allows_a_result_when_the_combined_custom_and_dataset_charges_fit() {
-        let plan = pricing(0.01, json!({"other-result": 1}))
-            .plan_default_dataset_item("quote-result");
+        let plan =
+            pricing(0.01, json!({"other-result": 1})).plan_default_dataset_item("quote-result");
         assert_eq!(
             plan,
             DatasetItemChargePlan {
@@ -361,8 +368,8 @@ mod tests {
 
     #[test]
     fn refuses_a_result_when_the_run_is_already_over_budget() {
-        let plan = pricing(0.001, json!({"other-result": 1}))
-            .plan_default_dataset_item("quote-result");
+        let plan =
+            pricing(0.001, json!({"other-result": 1})).plan_default_dataset_item("quote-result");
         assert_eq!(
             plan,
             DatasetItemChargePlan {
@@ -375,8 +382,8 @@ mod tests {
 
     #[test]
     fn mirrors_the_sdk_boundary_rule_when_no_event_is_affordable_yet_spend_is_at_limit() {
-        let plan = pricing(0.0012, json!({"quote-result": 1}))
-            .plan_default_dataset_item("quote-result");
+        let plan =
+            pricing(0.0012, json!({"quote-result": 1})).plan_default_dataset_item("quote-result");
         assert!(plan.keep_item);
         assert!(plan.charge_quote_result);
         assert_eq!(plan.expected_charged_count, 2);

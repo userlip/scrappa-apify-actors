@@ -272,7 +272,9 @@ impl PpeBudget {
         if price < 0.0 || !price.is_finite() {
             return 0;
         }
-        let available = (self.max_total_charge_usd - self.total_charged_amount()) / price;
+        let spent = self.total_charged_amount();
+        let tolerance = f64::EPSILON * self.max_total_charge_usd.max(spent).max(1.0);
+        let available = (self.max_total_charge_usd - spent + tolerance) / price;
         if available <= 0.0 {
             return 0;
         }
@@ -455,6 +457,15 @@ mod tests {
         })
     }
 
+    fn decimal_run(max_charge: f64, dataset_price: f64, counts: Value) -> Value {
+        let mut run = run(max_charge, counts);
+        let events = &mut run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"];
+        events["route-result"]["eventPriceUsd"] = json!(0.1);
+        events["apify-default-dataset-item"]["eventPriceUsd"] = json!(dataset_price);
+        events["apify-actor-start"]["eventPriceUsd"] = json!(0.2);
+        run
+    }
+
     #[test]
     fn reads_ppe_budget_and_accounts_for_custom_and_dataset_event_prices() {
         let mut budget =
@@ -497,6 +508,23 @@ mod tests {
         run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["apify-actor-start"]
             ["eventPriceUsd"] = json!(0.00000049);
         let budget = PpeBudget::from_run(&run).unwrap();
+
+        assert!(!budget.can_push_one_item());
+    }
+
+    #[test]
+    fn admits_exact_decimal_boundaries_for_combined_and_prior_charges() {
+        let combined = PpeBudget::from_run(&decimal_run(0.3, 0.2, json!({}))).unwrap();
+        assert!(combined.can_push_one_item());
+
+        let prior_charge =
+            PpeBudget::from_run(&decimal_run(0.3, 0.0, json!({ "apify-actor-start": 1 }))).unwrap();
+        assert!(prior_charge.can_push_one_item());
+    }
+
+    #[test]
+    fn rejects_a_decimal_result_that_exceeds_the_budget() {
+        let budget = PpeBudget::from_run(&decimal_run(0.299999999, 0.2, json!({}))).unwrap();
 
         assert!(!budget.can_push_one_item());
     }

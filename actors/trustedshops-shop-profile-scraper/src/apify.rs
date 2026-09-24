@@ -25,6 +25,27 @@ pub struct PushDataResult {
     pub status_message: Option<String>,
 }
 
+#[derive(Debug)]
+pub struct PostWriteChargeFailure {
+    pub saved_count: usize,
+    source: anyhow::Error,
+}
+
+impl std::fmt::Display for PostWriteChargeFailure {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            formatter,
+            "TrustedShops shop profile was saved, but its Apify charge could not be confirmed: {}",
+            self.source
+        )
+    }
+}
+
+impl std::error::Error for PostWriteChargeFailure {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(self.source.as_ref())
+    }
+}
 impl ApifyClient {
     pub fn new(base_url: &str, token: String) -> Result<Self> {
         let base_url =
@@ -115,7 +136,7 @@ impl ApifyClient {
 
         let custom_charge = charging.charge_event(SHOP_PROFILE_RESULT_CHARGE_EVENT);
         let dataset_charge = charging.charge_event(DEFAULT_DATASET_ITEM_CHARGE_EVENT);
-        let charge_error = if custom_charge.charged_count > 0
+        if custom_charge.charged_count > 0
             && charging.is_priced_event(SHOP_PROFILE_RESULT_CHARGE_EVENT)
         {
             self.charge_event(
@@ -124,28 +145,23 @@ impl ApifyClient {
                 custom_charge.charged_count,
             )
             .await
-            .err()
-        } else {
-            None
-        };
+            .map_err(|source| {
+                anyhow::Error::new(PostWriteChargeFailure {
+                    saved_count: 1,
+                    source,
+                })
+            })?;
+        }
 
         let charged_count = custom_charge.charged_count + dataset_charge.charged_count;
         let limit_reached =
             custom_charge.event_charge_limit_reached || dataset_charge.event_charge_limit_reached;
-        let saved_count = if charge_error.is_some() {
-            1
-        } else if limit_reached {
+        let saved_count = if limit_reached {
             charged_count.min(1)
         } else {
             1
         };
-        let status_message = if let Some(error) = charge_error {
-            Some(format!(
-                "TrustedShops shop profile was saved, but its Apify charge could not be confirmed: {error}"
-            ))
-        } else {
-            limit_reached.then(|| charge_limit_message(saved_count, 1))
-        };
+        let status_message = limit_reached.then(|| charge_limit_message(saved_count, 1));
 
         Ok(PushDataResult {
             saved_count,
@@ -469,7 +485,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn persistent_charge_failures_keep_the_dataset_result_counted_as_saved() {
+    async fn charge_retries_exhausted_after_dataset_write_returns_saved_row_error() {
         let server = MockServer::start(vec![
             MockResponse::json(201, json!({})),
             MockResponse::json(503, json!({"error":"temporary failure"})),
@@ -479,7 +495,7 @@ mod tests {
         let apify = client(&server);
         let mut charging = charging(0.15, json!({}));
 
-        let result = apify
+        let error = apify
             .push_charged_item(
                 "test-run",
                 "test-dataset",
@@ -487,17 +503,29 @@ mod tests {
                 &mut charging,
             )
             .await
-            .unwrap();
+            .unwrap_err();
 
-        assert_eq!(result.saved_count, 1);
-        assert!(result.status_message.as_deref().is_some_and(|message| {
-            message.contains("was saved") && message.contains("charge could not be confirmed")
-        }));
+        assert_eq!(
+            error
+                .downcast_ref::<PostWriteChargeFailure>()
+                .unwrap()
+                .saved_count,
+            1
+        );
+        assert!(error.to_string().contains("shop profile was saved"));
+        assert!(error.to_string().contains("charge could not be confirmed"));
         let requests = server.requests();
         assert_eq!(requests.len(), 4);
         assert_eq!(
             request_parts(&requests[0]).1,
             "/v2/datasets/test-dataset/items"
+        );
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.starts_with("POST /v2/datasets/test-dataset/items "))
+                .count(),
+            1
         );
         let keys = requests[1..]
             .iter()

@@ -41,8 +41,9 @@ impl BillingState {
         };
         let pricing_info: Value = serde_json::from_str(&pricing)
             .map_err(|error| anyhow!("APIFY_ACTOR_PRICING_INFO was not valid JSON: {error}"))?;
-        let charged_counts: Value = serde_json::from_str(&charged_counts)
-            .map_err(|error| anyhow!("APIFY_CHARGED_ACTOR_EVENT_COUNTS was not valid JSON: {error}"))?;
+        let charged_counts: Value = serde_json::from_str(&charged_counts).map_err(|error| {
+            anyhow!("APIFY_CHARGED_ACTOR_EVENT_COUNTS was not valid JSON: {error}")
+        })?;
         let charged_counts = charged_counts
             .as_object()
             .ok_or_else(|| anyhow!("APIFY_CHARGED_ACTOR_EVENT_COUNTS must be a JSON object"))?;
@@ -50,9 +51,9 @@ impl BillingState {
             .ok()
             .filter(|value| !value.is_empty())
             .map(|value| {
-                value.parse::<f64>().map_err(|_| {
-                    anyhow!("ACTOR_MAX_TOTAL_CHARGE_USD must be a number")
-                })
+                value
+                    .parse::<f64>()
+                    .map_err(|_| anyhow!("ACTOR_MAX_TOTAL_CHARGE_USD must be a number"))
             })
             .transpose()?
             .filter(|value| *value > 0.0)
@@ -65,10 +66,8 @@ impl BillingState {
         charged_event_counts: &serde_json::Map<String, Value>,
         max_total_charge_usd: f64,
     ) -> Result<Self> {
-        let is_pay_per_event = pricing_info
-            .get("pricingModel")
-            .and_then(Value::as_str)
-            == Some("PAY_PER_EVENT");
+        let is_pay_per_event =
+            pricing_info.get("pricingModel").and_then(Value::as_str) == Some("PAY_PER_EVENT");
         let mut event_prices = HashMap::new();
         if is_pay_per_event {
             let events = pricing_info
@@ -81,7 +80,9 @@ impl BillingState {
                     None => highest_tier_event_price(event, event_name)?,
                 };
                 if !price.is_finite() || price < 0.0 {
-                    return Err(anyhow!("Apify run returned an invalid price for event {event_name}"));
+                    return Err(anyhow!(
+                        "Apify run returned an invalid price for event {event_name}"
+                    ));
                 }
                 event_prices.insert(event_name.clone(), price);
             }
@@ -108,8 +109,16 @@ impl BillingState {
         self.is_pay_per_event
     }
 
-    pub(crate) fn charge_limit_status(&self, total_results: usize, search_index: usize) -> Option<String> {
-        if !self.is_pay_per_event || self.max_charges_within_limit(PROPERTY_RESULT_EVENT).is_none_or(|count| count > 0) {
+    pub(crate) fn charge_limit_status(
+        &self,
+        total_results: usize,
+        search_index: usize,
+    ) -> Option<String> {
+        if !self.is_pay_per_event
+            || self
+                .max_charges_within_limit(PROPERTY_RESULT_EVENT)
+                .is_none_or(|count| count > 0)
+        {
             return None;
         }
         Some(format!(
@@ -122,9 +131,18 @@ impl BillingState {
         if !self.is_pay_per_event {
             return true;
         }
-        let event_price = self.event_prices.get(PROPERTY_RESULT_EVENT).copied().unwrap_or(0.0);
-        let dataset_price = self.event_prices.get(DEFAULT_DATASET_ITEM_EVENT).copied().unwrap_or(0.0);
-        self.max_charges_at_price(event_price + dataset_price).is_none_or(|count| count > 0)
+        let event_price = self
+            .event_prices
+            .get(PROPERTY_RESULT_EVENT)
+            .copied()
+            .unwrap_or(0.0);
+        let dataset_price = self
+            .event_prices
+            .get(DEFAULT_DATASET_ITEM_EVENT)
+            .copied()
+            .unwrap_or(0.0);
+        self.max_charges_at_price(event_price + dataset_price)
+            .is_none_or(|count| count > 0)
     }
 
     pub(crate) fn record_dataset_item(&mut self) {
@@ -143,11 +161,17 @@ impl BillingState {
         [PROPERTY_RESULT_EVENT, DEFAULT_DATASET_ITEM_EVENT]
             .iter()
             .filter(|event| self.event_prices.contains_key(**event))
-            .any(|event| self.max_charges_within_limit(event).is_some_and(|count| count == 0))
+            .any(|event| {
+                self.max_charges_within_limit(event)
+                    .is_some_and(|count| count == 0)
+            })
     }
 
     fn record_event(&mut self, event_name: &str) {
-        *self.charged_event_counts.entry(event_name.to_owned()).or_default() += 1;
+        *self
+            .charged_event_counts
+            .entry(event_name.to_owned())
+            .or_default() += 1;
     }
 
     fn max_charges_within_limit(&self, event_name: &str) -> Option<usize> {
@@ -195,9 +219,15 @@ fn highest_tier_event_price(event: &Value, event_name: &str) -> Result<f64> {
             let price = pricing
                 .get("tieredEventPriceUsd")
                 .and_then(Value::as_f64)
-                .ok_or_else(|| anyhow!("Apify run did not provide the {tier} tier price for event {event_name}"))?;
+                .ok_or_else(|| {
+                    anyhow!(
+                        "Apify run did not provide the {tier} tier price for event {event_name}"
+                    )
+                })?;
             if !price.is_finite() || price < 0.0 {
-                return Err(anyhow!("Apify run returned an invalid {tier} tier price for event {event_name}"));
+                return Err(anyhow!(
+                    "Apify run returned an invalid {tier} tier price for event {event_name}"
+                ));
             }
             Ok(price)
         })
@@ -207,7 +237,12 @@ fn highest_tier_event_price(event: &Value, event_name: &str) -> Result<f64> {
         .ok_or_else(|| anyhow!("Apify run did not provide the price for event {event_name}"))
 }
 
-pub(crate) fn charge_limit_message(search_index: usize, saved: usize, requested: usize, charged: usize) -> String {
+pub(crate) fn charge_limit_message(
+    search_index: usize,
+    saved: usize,
+    requested: usize,
+    charged: usize,
+) -> String {
     if charged >= 1 {
         format!(
             "Charge limit reached after saving {saved} of {requested} Redfin property result(s) for search {}.",
@@ -270,7 +305,8 @@ mod tests {
 
     #[test]
     fn tracks_remaining_charge_budget_across_custom_and_dataset_events() {
-        let mut billing = BillingState::from_run(&ppe_run(0.60, json!({"property-result":1}))).unwrap();
+        let mut billing =
+            BillingState::from_run(&ppe_run(0.60, json!({"property-result":1}))).unwrap();
         assert_eq!(billing.charge_limit_status(2, 1), None);
         assert!(billing.can_write_property_result());
         billing.record_dataset_item();

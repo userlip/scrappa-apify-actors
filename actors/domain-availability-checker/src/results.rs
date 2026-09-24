@@ -1,13 +1,13 @@
-use serde_json::{Map, Value, json};
+use serde_json::{json, Map, Value};
 
 pub fn success_item(
     response: &Value,
     input_domain: &str,
     requested_domain: &str,
 ) -> Result<Value, String> {
-    let response = response.as_object().ok_or_else(|| {
-        "Scrappa domain availability response was not a JSON object".to_owned()
-    })?;
+    let response = response
+        .as_object()
+        .ok_or_else(|| "Scrappa domain availability response was not a JSON object".to_owned())?;
     let mut result = json!({
         "success": true,
         "input_domain": input_domain,
@@ -43,7 +43,10 @@ pub fn failure_item(
 ) -> Value {
     let mut result = Map::new();
     result.insert("success".to_owned(), Value::Bool(false));
-    result.insert("input_domain".to_owned(), Value::String(input_domain.to_owned()));
+    result.insert(
+        "input_domain".to_owned(),
+        Value::String(input_domain.to_owned()),
+    );
     result.insert(
         "domain".to_owned(),
         domain.map_or(Value::Null, |domain| Value::String(domain.to_owned())),

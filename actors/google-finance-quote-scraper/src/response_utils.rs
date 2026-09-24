@@ -13,15 +13,17 @@ fn empty_record() -> &'static Map<String, Value> {
 }
 
 fn array(value: Option<&Value>) -> &[Value] {
-    value.and_then(Value::as_array).map(Vec::as_slice).unwrap_or(&[])
+    value
+        .and_then(Value::as_array)
+        .map(Vec::as_slice)
+        .unwrap_or(&[])
 }
 
 fn first_string<'a>(values: impl IntoIterator<Item = Option<&'a Value>>) -> Option<&'a str> {
-    values.into_iter().flatten().find_map(|value| {
-        value
-            .as_str()
-            .filter(|value| !value.trim().is_empty())
-    })
+    values
+        .into_iter()
+        .flatten()
+        .find_map(|value| value.as_str().filter(|value| !value.trim().is_empty()))
 }
 
 fn javascript_number(value: &str) -> Option<f64> {
@@ -30,9 +32,15 @@ fn javascript_number(value: &str) -> Option<f64> {
         return None;
     }
 
-    let radix_value = if let Some(value) = value.strip_prefix("0x").or_else(|| value.strip_prefix("0X")) {
+    let radix_value = if let Some(value) = value
+        .strip_prefix("0x")
+        .or_else(|| value.strip_prefix("0X"))
+    {
         Some((value, 16))
-    } else if let Some(value) = value.strip_prefix("0b").or_else(|| value.strip_prefix("0B")) {
+    } else if let Some(value) = value
+        .strip_prefix("0b")
+        .or_else(|| value.strip_prefix("0B"))
+    {
         Some((value, 2))
     } else {
         value
@@ -41,7 +49,9 @@ fn javascript_number(value: &str) -> Option<f64> {
             .map(|value| (value, 8))
     };
     if let Some((digits, radix)) = radix_value {
-        return u64::from_str_radix(digits, radix).ok().map(|number| number as f64);
+        return u64::from_str_radix(digits, radix)
+            .ok()
+            .map(|number| number as f64);
     }
 
     value.parse::<f64>().ok()
@@ -175,13 +185,9 @@ pub fn build_quote_dataset_item(response: &Value, params: &Map<String, Value>) -
     );
     item.insert(
         "name".into(),
-        first_string([
-            summary.get("name"),
-            summary.get("title"),
-            about.get("name"),
-        ])
-        .map(|value| Value::String(value.to_owned()))
-        .unwrap_or(Value::Null),
+        first_string([summary.get("name"), summary.get("title"), about.get("name")])
+            .map(|value| Value::String(value.to_owned()))
+            .unwrap_or(Value::Null),
     );
     item.insert(
         "current_price".into(),
@@ -192,13 +198,10 @@ pub fn build_quote_dataset_item(response: &Value, params: &Map<String, Value>) -
     );
     item.insert(
         "currency".into(),
-        first_string([
-            summary.get("currency"),
-            key_stats.get("currency"),
-        ])
-        .or_else(|| first_array_string(summary.get("extensions")))
-        .map(|value| Value::String(value.to_owned()))
-        .unwrap_or(Value::Null),
+        first_string([summary.get("currency"), key_stats.get("currency")])
+            .or_else(|| first_array_string(summary.get("extensions")))
+            .map(|value| Value::String(value.to_owned()))
+            .unwrap_or(Value::Null),
     );
     item.insert(
         "price_change".into(),
@@ -236,13 +239,7 @@ pub fn build_quote_dataset_item(response: &Value, params: &Map<String, Value>) -
     {
         item.insert("pagination".into(), pagination.clone());
     }
-    for field in [
-        "symbol",
-        "exchange",
-        "period_type",
-        "hl",
-        "gl",
-    ] {
+    for field in ["symbol", "exchange", "period_type", "hl", "gl"] {
         let request_field = format!("request_{field}");
         item.insert(
             request_field,
@@ -328,7 +325,10 @@ mod tests {
         assert_eq!(item["symbol"], "VOO");
         assert_eq!(item["current_price"], 125.0);
         assert_eq!(item["custom_summary_field"], "kept");
-        assert_eq!(item["pagination"], json!({"current_page": 1, "has_next_page": false}));
+        assert_eq!(
+            item["pagination"],
+            json!({"current_page": 1, "has_next_page": false})
+        );
         assert_eq!(item["financials"], json!([]));
         assert_eq!(item["news"], json!([]));
         assert_eq!(item["related_tickers"], json!([]));

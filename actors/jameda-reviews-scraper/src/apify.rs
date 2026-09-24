@@ -192,23 +192,32 @@ pub fn chargeable_event_capacity(
     if !unit_price.is_finite() {
         bail!("Apify run returned an invalid dataset item price");
     }
-    if unit_price == 0.0 {
-        return Ok(Some(usize::MAX));
-    }
 
-    let Some(max_charge) = max_total_charge_from_env
+    let max_charge_from_options = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => None,
+        Some(Value::Number(number)) => Some(
+            number
+                .as_f64()
+                .ok_or_else(|| anyhow!("Apify run returned an invalid maximum total charge"))?,
+        ),
+        Some(_) => bail!("Apify run returned an invalid maximum total charge"),
+    };
+    if max_charge_from_options.is_some_and(|charge| !charge.is_finite() || charge < 0.0) {
+        bail!("Apify run returned an invalid maximum total charge");
+    }
+    let max_charge_from_options = max_charge_from_options.filter(|charge| *charge != 0.0);
+    let max_charge_from_env = max_total_charge_from_env
         .map(parse_max_total_charge)
         .transpose()?
-        .flatten()
-        .or_else(|| {
-            data.pointer("/options/maxTotalChargeUsd")
-                .and_then(Value::as_f64)
-        })
-    else {
+        .flatten();
+    let Some(max_charge) = max_charge_from_env.or(max_charge_from_options) else {
         return Ok(Some(usize::MAX));
     };
     if !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned an invalid maximum total charge");
+    }
+    if unit_price == 0.0 {
+        return Ok(Some(usize::MAX));
     }
 
     let counts = data
@@ -363,16 +372,20 @@ mod tests {
     }
 
     #[test]
-    fn returns_zero_capacity_when_total_charge_limit_is_zero() {
+    fn zero_run_limit_is_unlimited_and_runtime_cap_takes_precedence() {
         let run_option_limit = pricing_run(json!(0), json!({ "apify-actor-start": 1 }));
         assert_eq!(
             chargeable_event_capacity(&run_option_limit, EVENT, None).unwrap(),
-            Some(0)
+            Some(usize::MAX)
+        );
+        assert_eq!(
+            chargeable_event_capacity(&run_option_limit, EVENT, Some("0.0422")).unwrap(),
+            Some(4)
         );
 
-        let run_runtime_limit = pricing_run(json!(1), json!({ "apify-actor-start": 1 }));
+        let positive_run_limit = pricing_run(json!(1), json!({ "apify-actor-start": 1 }));
         assert_eq!(
-            chargeable_event_capacity(&run_runtime_limit, EVENT, Some("0")).unwrap(),
+            chargeable_event_capacity(&positive_run_limit, EVENT, Some("0")).unwrap(),
             Some(0)
         );
     }
@@ -388,6 +401,11 @@ mod tests {
 
         let invalid_limit = pricing_run(json!(1), json!({}));
         assert!(chargeable_event_capacity(&invalid_limit, EVENT, Some("-1")).is_err());
+        let negative_run_limit = pricing_run(json!(-1), json!({}));
+        assert!(chargeable_event_capacity(&negative_run_limit, EVENT, None).is_err());
+
+        let malformed_run_limit = pricing_run(json!("1"), json!({}));
+        assert!(chargeable_event_capacity(&malformed_run_limit, EVENT, None).is_err());
     }
 
     #[test]

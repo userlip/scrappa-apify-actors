@@ -474,9 +474,7 @@ mod tests {
             }
         );
         budget.record_charge(DOCTOR_RESULT_CHARGE_EVENT, 1).unwrap();
-        budget
-            .record_charge(DATASET_ITEM_CHARGE_EVENT, 1)
-            .unwrap();
+        budget.record_charge(DATASET_ITEM_CHARGE_EVENT, 1).unwrap();
         assert_eq!(
             budget.plan_charge(DOCTOR_RESULT_CHARGE_EVENT, 1).unwrap(),
             ChargeDecision {
@@ -571,7 +569,10 @@ mod tests {
             .remove("apify-default-dataset-item");
         let budget = PpeBudget::from_run(&missing_dataset_item_price).unwrap();
         assert_eq!(
-            budget.plan_charge(DOCTOR_RESULT_CHARGE_EVENT, 2).unwrap().charged_count,
+            budget
+                .plan_charge(DOCTOR_RESULT_CHARGE_EVENT, 2)
+                .unwrap()
+                .charged_count,
             2
         );
         assert!(!is_pay_per_event(

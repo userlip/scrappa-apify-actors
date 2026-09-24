@@ -59,15 +59,9 @@ async fn push_charged_items(
                 apify
                     .push_data(&config.dataset_id, &items[..saved_count])
                     .await?;
-                if ppe_budget.is_tier_priced_event(ITEM_RESULT_CHARGE_EVENT) {
-                    println!(
-                        "Skipped the direct charge for tier-priced event {ITEM_RESULT_CHARGE_EVENT}; it is not chargeable through the flat-price API path."
-                    );
-                } else {
-                    apify
-                        .charge_event(&config.actor_run_id, ITEM_RESULT_CHARGE_EVENT, saved_count)
-                        .await?;
-                }
+                apify
+                    .charge_event(&config.actor_run_id, ITEM_RESULT_CHARGE_EVENT, saved_count)
+                    .await?;
                 ppe_budget.record_saved_items(saved_count)?;
             }
 
@@ -606,7 +600,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn tier_priced_result_event_saves_items_without_flat_price_charge() {
+    async fn tier_priced_items_are_charged_and_limited_by_the_highest_tier_price() {
         let server = MockServer::start(vec![
             mock_response(
                 200,
@@ -632,6 +626,8 @@ mod tests {
                 tiered_ppe_run_response(0.006, json!({"apify-actor-start": 1})),
             ),
             mock_response(201, json!({})),
+            mock_response(201, json!({})),
+            mock_response(200, json!({})),
             mock_response(200, json!({})),
         ]);
         let config = actor_config(&server.base_url);
@@ -646,20 +642,31 @@ mod tests {
         run_actor(&apify, &scrappa, &config).await.unwrap();
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 5);
+        assert_eq!(requests.len(), 7);
         assert_eq!(
             request_parts(&requests[3]).0,
             "/v2/datasets/test-dataset/items"
         );
         let saved_rows: Value = serde_json::from_str(request_parts(&requests[3]).1).unwrap();
-        assert_eq!(saved_rows.as_array().unwrap().len(), 2);
-        assert!(requests
-            .iter()
-            .all(|request| !request.starts_with("POST /v2/actor-runs/test-run/charge ")));
+        assert_eq!(saved_rows.as_array().unwrap().len(), 1);
+        assert_eq!(saved_rows[0]["id"], json!("first"));
         assert_eq!(
             request_parts(&requests[4]).0,
-            "/v2/key-value-stores/test-store/records/OUTPUT"
+            "/v2/actor-runs/test-run/charge"
         );
+        assert_eq!(
+            serde_json::from_str::<Value>(request_parts(&requests[4]).1).unwrap(),
+            json!({"eventName": "item-result", "count": 1})
+        );
+        let output: Value = serde_json::from_str(request_parts(&requests[5]).1).unwrap();
+        assert_eq!(output["items_extracted"], json!(1));
+        assert_eq!(
+            output["status_message"],
+            json!("Charge limit reached after saving 1 of 2 Vinted result(s) on page 1.")
+        );
+        assert_eq!(request_parts(&requests[6]).0, "/v2/actor-runs/test-run");
+        let status: Value = serde_json::from_str(request_parts(&requests[6]).1).unwrap();
+        assert_eq!(status["isStatusMessageTerminal"], json!(true));
     }
 
     #[tokio::test]

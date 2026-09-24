@@ -402,14 +402,24 @@ mod tests {
         assert_eq!(apify_requests.len(), 4);
         let (method, path, body) = request_parts(&apify_requests[2]);
         assert_eq!((method, path), ("POST", "/v2/datasets/dataset/items"));
-        assert_eq!(serde_json::from_str::<Value>(body).unwrap().as_array().unwrap().len(), 3);
+        assert_eq!(
+            serde_json::from_str::<Value>(body)
+                .unwrap()
+                .as_array()
+                .unwrap()
+                .len(),
+            3
+        );
         let (_, path, body) = request_parts(&apify_requests[3]);
         assert_eq!(path, "/v2/key-value-stores/store/records/OUTPUT");
-        assert_eq!(serde_json::from_str::<Value>(body).unwrap(), json!([
-            {"position":1,"title":"Coffee"},
-            {"position":2,"title":"Beans"},
-            {"position":3,"title":"Cup"}
-        ]));
+        assert_eq!(
+            serde_json::from_str::<Value>(body).unwrap(),
+            json!([
+                {"position":1,"title":"Coffee"},
+                {"position":2,"title":"Beans"},
+                {"position":3,"title":"Cup"}
+            ])
+        );
     }
 
     #[tokio::test]

@@ -38,9 +38,7 @@ impl fmt::Display for ScrappaError {
             Self::HttpStatus { status, message } => {
                 write!(formatter, "Scrappa API error ({status}): {message}")
             }
-            Self::Transport(message) | Self::InvalidJson(message) => {
-                formatter.write_str(message)
-            }
+            Self::Transport(message) | Self::InvalidJson(message) => formatter.write_str(message),
         }
     }
 }
@@ -58,12 +56,15 @@ pub struct ScrappaClient {
 
 impl ScrappaClient {
     pub fn new(base_url: &str, api_key: String, timeout: Duration) -> Result<Self, ScrappaError> {
-        let base_url = Url::parse(base_url)
-            .map_err(|error| ScrappaError::Transport(format!("Invalid Scrappa API URL: {error}")))?;
+        let base_url = Url::parse(base_url).map_err(|error| {
+            ScrappaError::Transport(format!("Invalid Scrappa API URL: {error}"))
+        })?;
         let http = Client::builder()
             .timeout(timeout)
             .build()
-            .map_err(|error| ScrappaError::Transport(format!("Could not create Scrappa HTTP client: {error}")))?;
+            .map_err(|error| {
+                ScrappaError::Transport(format!("Could not create Scrappa HTTP client: {error}"))
+            })?;
         Ok(Self {
             http,
             base_url,
@@ -135,15 +136,20 @@ impl ScrappaClient {
             .text()
             .await
             .map_err(|error| self.map_request_error(error))?;
-        serde_json::from_str(&body)
-            .map_err(|error| ScrappaError::InvalidJson(format!("Scrappa API returned invalid JSON: {error}")))
+        serde_json::from_str(&body).map_err(|error| {
+            ScrappaError::InvalidJson(format!("Scrappa API returned invalid JSON: {error}"))
+        })
     }
 
     fn endpoint_url(&self, endpoint: &str) -> Result<Url, ScrappaError> {
         let mut url = self.base_url.clone();
         let segments = endpoint.trim_start_matches('/').split('/');
         url.path_segments_mut()
-            .map_err(|_| ScrappaError::Transport("Scrappa API base URL cannot contain path segments".to_owned()))?
+            .map_err(|_| {
+                ScrappaError::Transport(
+                    "Scrappa API base URL cannot contain path segments".to_owned(),
+                )
+            })?
             .pop_if_empty()
             .extend(segments);
         Ok(url)
@@ -208,7 +214,11 @@ fn parse_json_error(body: &str, fallback: &str) -> Option<String> {
             let Some(messages) = messages.as_array() else {
                 continue;
             };
-            let messages = messages.iter().map(js_string).collect::<Vec<_>>().join(", ");
+            let messages = messages
+                .iter()
+                .map(js_string)
+                .collect::<Vec<_>>()
+                .join(", ");
             if !messages.is_empty() {
                 details.push(format!("{field}: {messages}"));
             }
@@ -272,8 +282,12 @@ mod tests {
         assert_eq!(response["jobs"][0]["title"], "Engineer");
         let requests = server.requests();
         assert!(requests[0].starts_with("GET /google/jobs?q=software+engineer&gl=us HTTP/1.1"));
-        assert!(requests[0].to_ascii_lowercase().contains("x-api-key: scrappa-test-key"));
-        assert!(requests[0].to_ascii_lowercase().contains("user-agent: thescrappa-google-jobs-scraper/1.0"));
+        assert!(requests[0]
+            .to_ascii_lowercase()
+            .contains("x-api-key: scrappa-test-key"));
+        assert!(requests[0]
+            .to_ascii_lowercase()
+            .contains("user-agent: thescrappa-google-jobs-scraper/1.0"));
     }
 
     #[tokio::test]
@@ -311,10 +325,7 @@ mod tests {
         let error = http_client.get("/google/jobs", &[], 1).await.unwrap_err();
         assert!(matches!(error, ScrappaError::Timeout(_)));
         assert!(error.is_retryable());
-        assert_eq!(
-            get_retry_delay_ms(1, 250),
-            2_250
-        );
+        assert_eq!(get_retry_delay_ms(1, 250), 2_250);
         assert_eq!(get_retry_delay_ms(2, 500), 4_500);
         assert_eq!(get_retry_delay_ms(4, 750), 10_000);
     }

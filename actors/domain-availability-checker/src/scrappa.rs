@@ -23,7 +23,10 @@ impl fmt::Display for ScrappaError {
             }
             Self::Network(message) => write!(formatter, "Scrappa API network error: {message}"),
             Self::Timeout { timeout_ms } => {
-                write!(formatter, "Scrappa API request timed out after {timeout_ms}ms")
+                write!(
+                    formatter,
+                    "Scrappa API request timed out after {timeout_ms}ms"
+                )
             }
             Self::Other(message) => formatter.write_str(message),
         }
@@ -50,7 +53,13 @@ impl ScrappaError {
     }
 
     pub fn is_per_domain_failure(&self) -> bool {
-        matches!(self, Self::Http { status: 400 | 404 | 422, .. })
+        matches!(
+            self,
+            Self::Http {
+                status: 400 | 404 | 422,
+                ..
+            }
+        )
     }
 
     pub fn http_status(&self) -> Option<u16> {
@@ -132,7 +141,9 @@ impl ScrappaClient {
             if error.is_timeout() {
                 self.timeout_error()
             } else {
-                ScrappaError::Other(format!("Could not parse Scrappa API JSON response: {error}"))
+                ScrappaError::Other(format!(
+                    "Could not parse Scrappa API JSON response: {error}"
+                ))
             }
         })
     }
@@ -155,7 +166,13 @@ impl ScrappaClient {
         if let Ok(Value::Object(error_data)) = serde_json::from_str::<Value>(&body) {
             return Ok(format_json_error(&error_data, &fallback));
         }
-        Ok(body.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(500).collect())
+        Ok(body
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .chars()
+            .take(500)
+            .collect())
     }
 
     fn request_error(&self, error: reqwest::Error) -> ScrappaError {
@@ -233,13 +250,13 @@ fn js_string(value: &Value) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use reqwest::StatusCode;
     use std::{
         io::{Read, Write},
         net::{TcpListener, TcpStream},
         sync::mpsc::{self, Receiver},
         thread,
     };
-    use reqwest::StatusCode;
 
     struct MockServer {
         base_url: String,
@@ -329,7 +346,9 @@ mod tests {
         for request in requests {
             assert!(request.starts_with("GET /api/domains/availability?domain=example.com "));
             assert!(request.to_ascii_lowercase().contains("x-api-key: test-key"));
-            assert!(request.to_ascii_lowercase().contains("accept: application/json"));
+            assert!(request
+                .to_ascii_lowercase()
+                .contains("accept: application/json"));
             assert!(request
                 .to_ascii_lowercase()
                 .contains("user-agent: thescrappa-domain-availability-checker/1.0"));

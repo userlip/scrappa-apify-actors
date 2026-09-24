@@ -574,12 +574,16 @@ async fn dataset_failure_keeps_the_charge_journal_and_does_not_replay() {
     .await
     .unwrap_err();
 
-    assert!(error.to_string().contains("dataset item publication failed"));
+    assert!(error
+        .to_string()
+        .contains("dataset item publication failed"));
     let requests = server.await.unwrap();
     assert_eq!(
         requests
             .iter()
-            .filter(|request| request.head.starts_with("POST /v2/actor-runs/test-run/charge"))
+            .filter(|request| request
+                .head
+                .starts_with("POST /v2/actor-runs/test-run/charge"))
             .count(),
         1
     );
@@ -643,7 +647,9 @@ async fn does_not_replay_an_ambiguous_dataset_post_when_recovery_finds_no_row() 
     assert_eq!(
         requests
             .iter()
-            .filter(|request| request.head.starts_with("POST /v2/actor-runs/test-run/charge"))
+            .filter(|request| request
+                .head
+                .starts_with("POST /v2/actor-runs/test-run/charge"))
             .count(),
         1
     );
@@ -679,11 +685,9 @@ async fn charges_before_publishing_and_journals_each_confirmed_step() {
         .head
         .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
     assert!(
-        requests
-            .iter()
-            .position(|request| request
-                .head
-                .starts_with("POST /v2/actor-runs/test-run/charge"))
+        requests.iter().position(|request| request
+            .head
+            .starts_with("POST /v2/actor-runs/test-run/charge"))
             < requests
                 .iter()
                 .position(|request| request.head.starts_with("POST /v2/datasets/dataset/items"))

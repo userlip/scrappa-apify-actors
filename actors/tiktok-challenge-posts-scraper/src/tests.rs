@@ -599,10 +599,28 @@ fn ppe_capacity_accounts_for_prior_charges_and_the_custom_event_price() {
         pricing.available_capacity(DEFAULT_DATASET_ITEM_EVENT, 10),
         8
     );
+}
 
-    let zero_budget =
-        RunPricing::from_run_response(&pricing_response(json!(0), json!({}))).unwrap();
-    assert_eq!(zero_budget.available_capacity(RESULT_EVENT, 10), 0);
+#[test]
+fn zero_missing_and_null_caps_are_unlimited_but_positive_caps_are_enforced() {
+    let zero = RunPricing::from_run_response(&pricing_response(json!(0), json!({}))).unwrap();
+    assert_eq!(zero.available_capacity(RESULT_EVENT, 10), 10);
+
+    let null = RunPricing::from_run_response(&pricing_response(Value::Null, json!({}))).unwrap();
+    assert_eq!(null.available_capacity(RESULT_EVENT, 10), 10);
+
+    let mut missing_run = pricing_response(Value::Null, json!({}));
+    missing_run["data"]["options"]
+        .as_object_mut()
+        .unwrap()
+        .remove("maxTotalChargeUsd");
+    let missing = RunPricing::from_run_response(&missing_run).unwrap();
+    assert_eq!(missing.available_capacity(RESULT_EVENT, 10), 10);
+
+    let positive =
+        RunPricing::from_run_response(&pricing_response(json!(0.001), json!({ "other-event": 1 })))
+            .unwrap();
+    assert_eq!(positive.available_capacity(RESULT_EVENT, 10), 3);
 }
 
 #[tokio::test]

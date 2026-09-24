@@ -430,7 +430,10 @@ mod tests {
         for request in [first, second] {
             let request_url = request_url(&request);
             assert_eq!(request_url.path(), "/api/jameda/search");
-            let query = request_url.query_pairs().into_owned().collect::<HashMap<_, _>>();
+            let query = request_url
+                .query_pairs()
+                .into_owned()
+                .collect::<HashMap<_, _>>();
             assert_eq!(query.get("q").map(String::as_str), Some("Hals & Nase"));
             assert_eq!(query.get("loc").map(String::as_str), Some("München"));
             assert_eq!(query.get("per_page").map(String::as_str), Some("28"));

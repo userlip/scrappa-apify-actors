@@ -5,12 +5,12 @@ mod scrappa;
 
 use std::{env, process, time::Duration};
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{anyhow, Context, Result};
 use apify::{ApifyClient, ChargeBudget};
 use input::get_domain_requests;
 use results::{failure_item, success_item};
 use scrappa::ScrappaClient;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_millis(25_000);
 const DOMAIN_RESULT_CHARGE_EVENT: &str = "domain-result";
@@ -67,14 +67,8 @@ impl ActorConfig {
                 .filter(|key| !key.is_empty())
                 .unwrap_or_else(|| "INPUT".to_owned()),
             scrappa_api_key,
-            apify_base_url: env_or_default(
-                "APIFY_API_PUBLIC_BASE_URL",
-                "https://api.apify.com",
-            ),
-            scrappa_base_url: env_or_default(
-                "SCRAPPA_API_BASE_URL",
-                "https://scrappa.co/api",
-            ),
+            apify_base_url: env_or_default("APIFY_API_PUBLIC_BASE_URL", "https://api.apify.com"),
+            scrappa_base_url: env_or_default("SCRAPPA_API_BASE_URL", "https://scrappa.co/api"),
         })
     }
 }
@@ -121,11 +115,9 @@ async fn run_actor(apify: &ApifyClient, config: &ActorConfig) -> Result<()> {
             failure_item(&message, None, &request.input_domain, None)
         } else if let Some(message) = fatal_service_failure_message.as_deref() {
             failure_item(&message, None, &request.input_domain, domain)
-        } else if let Some(message) = domain_charge_limit_status(
-            &charge_budget,
-            succeeded + failed,
-            total,
-        ) {
+        } else if let Some(message) =
+            domain_charge_limit_status(&charge_budget, succeeded + failed, total)
+        {
             println!("{message}");
             status_message = Some(message.clone());
             failure_item(&message, None, &request.input_domain, domain)
@@ -204,7 +196,9 @@ async fn run_actor(apify: &ApifyClient, config: &ActorConfig) -> Result<()> {
     } else {
         json!({ "requested": total, "succeeded": succeeded, "failed": failed })
     };
-    apify.set_output(&config.key_value_store_id, &output).await?;
+    apify
+        .set_output(&config.key_value_store_id, &output)
+        .await?;
 
     println!("Domain availability checks completed successfully");
     println!(
@@ -258,8 +252,8 @@ async fn publish_domain_result(
     item: &Value,
 ) -> Result<bool> {
     let is_success = item.get("success") == Some(&Value::Bool(true));
-    let event_name = (budget.is_pay_per_event() && is_success)
-        .then_some(DOMAIN_RESULT_CHARGE_EVENT);
+    let event_name =
+        (budget.is_pay_per_event() && is_success).then_some(DOMAIN_RESULT_CHARGE_EVENT);
     if !budget.can_push_item(event_name) {
         return Ok(false);
     }
@@ -267,9 +261,7 @@ async fn publish_domain_result(
     apify.push_dataset_item(&config.dataset_id, item).await?;
     budget.record_dataset_item();
     if let Some(event_name) = event_name {
-        apify
-            .charge_event(&config.actor_run_id, event_name)
-            .await?;
+        apify.charge_event(&config.actor_run_id, event_name).await?;
         budget.record_charge(event_name);
     }
     Ok(true)

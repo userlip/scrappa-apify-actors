@@ -530,11 +530,7 @@ mod tests {
                 usize::MAX
             );
             assert_eq!(
-                manager.calculate_push_data_count(
-                    LISTING_DETAIL_RESULT_CHARGE_EVENT,
-                    true,
-                    3
-                ),
+                manager.calculate_push_data_count(LISTING_DETAIL_RESULT_CHARGE_EVENT, true, 3),
                 3
             );
         }

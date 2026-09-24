@@ -167,7 +167,9 @@ fn validate_scrappa_response(status: u16, body: &str) -> Result<Value> {
     let (data, is_json) = parse_response_body(body, status);
     let message = response_message(&data);
     if is_authentication_failure(status, &data) {
-        bail!("Scrappa API authentication failed: {message}. Check the SCRAPPA_API_KEY Actor secret.");
+        bail!(
+            "Scrappa API authentication failed: {message}. Check the SCRAPPA_API_KEY Actor secret."
+        );
     }
     if status >= 500 {
         bail!("Scrappa API returned HTTP {status}: {message}");
@@ -222,11 +224,7 @@ fn enrich_post(post: &Value, requested_username: &str) -> Value {
     Value::Object(item)
 }
 
-fn affordable_dataset_items(
-    run: &Value,
-    requested: usize,
-    already_saved: u64,
-) -> Result<usize> {
+fn affordable_dataset_items(run: &Value, requested: usize, already_saved: u64) -> Result<usize> {
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
@@ -537,7 +535,9 @@ async fn main() -> ExitCode {
 
 async fn run() -> Result<()> {
     let config = Config::from_env()?;
-    let http = Client::builder().build().context("Could not create HTTP client")?;
+    let http = Client::builder()
+        .build()
+        .context("Could not create HTTP client")?;
     run_actor(&http, &config).await
 }
 

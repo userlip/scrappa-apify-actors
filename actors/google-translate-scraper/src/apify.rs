@@ -284,25 +284,16 @@ impl TranslationOutput for ApifyTranslationOutput<'_> {
             });
         }
 
-        // Confirm custom PPE charges before making successful results visible in the dataset.
+        // Check charge configuration before persisting the result, then charge only after
+        // Apify confirms the dataset append.
         for event_name in &plan.events_to_charge {
-            if event_name == DEFAULT_DATASET_ITEM_CHARGE_EVENT {
-                continue;
-            }
-            if !self.charging.has_event_price(event_name) {
+            if event_name != DEFAULT_DATASET_ITEM_CHARGE_EVENT
+                && !self.charging.has_event_price(event_name)
+            {
                 return Err(format!(
                     "Apify PAY_PER_EVENT run did not provide a price for required event {event_name}"
                 ));
             }
-
-            let idempotency_key = format!(
-                "{}-{}-translation-{}",
-                self.client.actor_run_id, event_name, item.index
-            );
-            self.client
-                .charge_event(event_name, 1, &idempotency_key)
-                .await?;
-            self.charging.record_charge(event_name, 1)?;
         }
 
         self.client.push_dataset_item(item).await?;
@@ -313,6 +304,21 @@ impl TranslationOutput for ApifyTranslationOutput<'_> {
         {
             self.charging
                 .record_charge(DEFAULT_DATASET_ITEM_CHARGE_EVENT, 1)?;
+        }
+
+        for event_name in &plan.events_to_charge {
+            if event_name == DEFAULT_DATASET_ITEM_CHARGE_EVENT {
+                continue;
+            }
+
+            let idempotency_key = format!(
+                "{}-{}-translation-{}",
+                self.client.actor_run_id, event_name, item.index
+            );
+            self.client
+                .charge_event(event_name, 1, &idempotency_key)
+                .await?;
+            self.charging.record_charge(event_name, 1)?;
         }
 
         Ok(PushTranslationResult {
@@ -365,4 +371,225 @@ fn required_env(name: &str) -> Result<String, String> {
         .ok()
         .filter(|value| !value.is_empty())
         .ok_or_else(|| format!("Required environment variable {name} is missing"))
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        collections::BTreeMap,
+        io::{Read, Write},
+        net::{TcpListener, TcpStream},
+        sync::mpsc::{self, Receiver, Sender},
+        thread::{self, JoinHandle},
+    };
+
+    use super::*;
+
+    struct MockRequest {
+        method: String,
+        target: String,
+        headers: BTreeMap<String, String>,
+        body: String,
+    }
+
+    struct MockServer {
+        base_url: String,
+        requests: Receiver<MockRequest>,
+        stop: Sender<()>,
+        thread: Option<JoinHandle<()>>,
+    }
+
+    impl MockServer {
+        fn start(responses: Vec<(u16, String)>) -> Self {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let address = listener.local_addr().unwrap();
+            listener.set_nonblocking(true).unwrap();
+            let (sender, requests) = mpsc::channel();
+            let (stop, stopped) = mpsc::channel();
+            let thread = thread::spawn(move || {
+                let mut served = 0;
+                loop {
+                    match listener.accept() {
+                        Ok((mut stream, _)) => {
+                            let request = read_mock_request(&mut stream);
+                            sender.send(request).unwrap();
+                            let (status, body) = responses
+                                .get(served)
+                                .cloned()
+                                .unwrap_or((500, String::new()));
+                            served += 1;
+                            let reason = match status {
+                                200 => "OK",
+                                201 => "Created",
+                                500 => "Internal Server Error",
+                                _ => "Error",
+                            };
+                            write!(
+                                stream,
+                                "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                                body.len()
+                            )
+                            .unwrap();
+                        }
+                        Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                            if !matches!(stopped.try_recv(), Err(mpsc::TryRecvError::Empty)) {
+                                break;
+                            }
+                            thread::sleep(std::time::Duration::from_millis(1));
+                        }
+                        Err(error) => panic!("mock server accept failed: {error}"),
+                    }
+                }
+            });
+            Self {
+                base_url: format!("http://{address}"),
+                requests,
+                stop,
+                thread: Some(thread),
+            }
+        }
+
+        fn finish(mut self) -> Vec<MockRequest> {
+            let _ = self.stop.send(());
+            self.thread.take().unwrap().join().unwrap();
+            self.requests.try_iter().collect()
+        }
+    }
+
+    fn read_mock_request(stream: &mut TcpStream) -> MockRequest {
+        let mut bytes = Vec::new();
+        let mut buffer = [0; 4096];
+        loop {
+            let header_end = bytes.windows(4).position(|window| window == b"\r\n\r\n");
+            if let Some(header_end) = header_end {
+                let header_text = String::from_utf8_lossy(&bytes[..header_end]);
+                let content_length = header_text
+                    .lines()
+                    .skip(1)
+                    .filter_map(|line| line.split_once(':'))
+                    .find(|(name, _)| name.eq_ignore_ascii_case("content-length"))
+                    .and_then(|(_, value)| value.trim().parse::<usize>().ok())
+                    .unwrap_or(0);
+                if bytes.len() >= header_end + 4 + content_length {
+                    break;
+                }
+            }
+            let count = stream.read(&mut buffer).unwrap();
+            assert!(count > 0, "mock request ended before its body was read");
+            bytes.extend_from_slice(&buffer[..count]);
+        }
+        let header_end = bytes
+            .windows(4)
+            .position(|window| window == b"\r\n\r\n")
+            .unwrap();
+        let header_text = String::from_utf8_lossy(&bytes[..header_end]);
+        let mut lines = header_text.lines();
+        let mut request_line = lines.next().unwrap().split_whitespace();
+        let method = request_line.next().unwrap().to_owned();
+        let target = request_line.next().unwrap().to_owned();
+        let headers = lines
+            .filter_map(|line| line.split_once(':'))
+            .map(|(name, value)| (name.to_ascii_lowercase(), value.trim().to_owned()))
+            .collect();
+        let body = String::from_utf8(bytes[header_end + 4..].to_vec()).unwrap();
+        MockRequest {
+            method,
+            target,
+            headers,
+            body,
+        }
+    }
+
+    fn apify_client(base_url: &str) -> ApifyClient {
+        ApifyClient::new(
+            base_url,
+            "test-token".to_owned(),
+            "store-id".to_owned(),
+            "dataset-id".to_owned(),
+            "test-run".to_owned(),
+            "INPUT".to_owned(),
+        )
+        .unwrap()
+    }
+
+    fn ppe_charging() -> ChargingManager {
+        ChargingManager::from_run(&json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "translation-result": {"eventPriceUsd": 0.00025},
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.0001}
+                    }}
+                },
+                "options": {"maxTotalChargeUsd": 0.001},
+                "chargedEventCounts": {}
+            }
+        }))
+        .unwrap()
+    }
+
+    fn translation_item() -> TranslationDatasetItem {
+        TranslationDatasetItem {
+            success: true,
+            index: 3,
+            text: "Good morning".to_owned(),
+            translated_text: Some("Guten Morgen".to_owned()),
+            source: "en".to_owned(),
+            target: "de".to_owned(),
+            error: None,
+            status_code: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn saves_dataset_item_before_charging_translation_result() {
+        let server = MockServer::start(vec![(201, String::new()), (200, String::new())]);
+        let client = apify_client(&server.base_url);
+        let mut output = ApifyTranslationOutput::new(&client, ppe_charging());
+
+        let result = output
+            .push_translation_result(&translation_item())
+            .await
+            .unwrap();
+        assert!(result.saved);
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(requests[0].method, "POST");
+        assert_eq!(requests[0].target, "/v2/datasets/dataset-id/items");
+        assert_eq!(requests[1].method, "POST");
+        assert_eq!(requests[1].target, "/v2/actor-runs/test-run/charge");
+        assert_eq!(
+            requests[1].headers["idempotency-key"],
+            "test-run-translation-result-translation-3"
+        );
+        assert_eq!(
+            serde_json::from_str::<Value>(&requests[1].body).unwrap(),
+            json!({"eventName": "translation-result", "count": 1})
+        );
+    }
+
+    #[tokio::test]
+    async fn does_not_charge_or_retry_when_dataset_append_fails() {
+        let server = MockServer::start(vec![(500, "dataset failed".to_owned())]);
+        let client = apify_client(&server.base_url);
+        let mut output = ApifyTranslationOutput::new(&client, ppe_charging());
+
+        let error = output
+            .push_translation_result(&translation_item())
+            .await
+            .unwrap_err();
+        assert!(error.contains("Apify API error (500)"));
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0].method, "POST");
+        assert_eq!(requests[0].target, "/v2/datasets/dataset-id/items");
+        assert!(
+            requests
+                .iter()
+                .all(|request| request.target != "/v2/actor-runs/test-run/charge")
+        );
+    }
 }

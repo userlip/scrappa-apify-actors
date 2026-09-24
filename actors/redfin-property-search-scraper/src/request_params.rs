@@ -30,9 +30,9 @@ pub(crate) fn build_search_requests(input: &Value) -> Result<Vec<SearchRequest>>
             .iter()
             .enumerate()
             .map(|(index, search)| {
-                let search = search.as_object().ok_or_else(|| {
-                    anyhow!("searches[{index}] must be an object")
-                })?;
+                let search = search
+                    .as_object()
+                    .ok_or_else(|| anyhow!("searches[{index}] must be an object"))?;
                 Ok(SearchRequest {
                     params: build_single_search_params(search, &format!("searches[{index}]."))?,
                     index,
@@ -53,17 +53,28 @@ pub(crate) fn build_search_requests(input: &Value) -> Result<Vec<SearchRequest>>
     Ok(vec![SearchRequest { params, index: 0 }])
 }
 
-fn build_single_search_params(input: &Map<String, Value>, prefix: &str) -> Result<Map<String, Value>> {
-    let region_id = clean_required_integer(input.get("region_id"), &format!("{prefix}region_id"), 1.0, None)?;
+fn build_single_search_params(
+    input: &Map<String, Value>,
+    prefix: &str,
+) -> Result<Map<String, Value>> {
+    let region_id = clean_required_integer(
+        input.get("region_id"),
+        &format!("{prefix}region_id"),
+        1.0,
+        None,
+    )?;
     let region_type = clean_enum_integer(
         input.get("region_type"),
         &format!("{prefix}region_type"),
         VALID_REGION_TYPES,
     )?
     .ok_or_else(|| anyhow!("{prefix}region_type is required"))?;
-    let market = clean_required_string(input.get("market"), &format!("{prefix}market"), 30)?
-        .to_lowercase();
-    if !market.bytes().all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit()) {
+    let market =
+        clean_required_string(input.get("market"), &format!("{prefix}market"), 30)?.to_lowercase();
+    if !market
+        .bytes()
+        .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit())
+    {
         return Err(anyhow!(
             "{prefix}market must contain only lowercase letters and numbers"
         ));
@@ -74,22 +85,44 @@ fn build_single_search_params(input: &Map<String, Value>, prefix: &str) -> Resul
     params.insert("region_type".to_owned(), number_value(region_type));
     params.insert("market".to_owned(), Value::String(market));
 
-    let min_price = clean_integer(input.get("min_price"), &format!("{prefix}min_price"), 0.0, None)?;
-    let max_price = clean_integer(input.get("max_price"), &format!("{prefix}max_price"), 0.0, None)?;
+    let min_price = clean_integer(
+        input.get("min_price"),
+        &format!("{prefix}min_price"),
+        0.0,
+        None,
+    )?;
+    let max_price = clean_integer(
+        input.get("max_price"),
+        &format!("{prefix}max_price"),
+        0.0,
+        None,
+    )?;
     if matches!((min_price, max_price), (Some(min), Some(max)) if max < min) {
-        return Err(anyhow!("{prefix}max_price must be greater than or equal to min_price"));
+        return Err(anyhow!(
+            "{prefix}max_price must be greater than or equal to min_price"
+        ));
     }
     insert_number(&mut params, "min_price", min_price);
     insert_number(&mut params, "max_price", max_price);
     insert_number(
         &mut params,
         "num_beds",
-        clean_integer(input.get("num_beds"), &format!("{prefix}num_beds"), 0.0, Some(10.0))?,
+        clean_integer(
+            input.get("num_beds"),
+            &format!("{prefix}num_beds"),
+            0.0,
+            Some(10.0),
+        )?,
     );
     insert_number(
         &mut params,
         "num_baths",
-        clean_number(input.get("num_baths"), &format!("{prefix}num_baths"), 0.0, 10.0)?,
+        clean_number(
+            input.get("num_baths"),
+            &format!("{prefix}num_baths"),
+            0.0,
+            10.0,
+        )?,
     );
     if let Some(property_types) = clean_comma_separated_property_types(
         input.get("property_types"),
@@ -100,17 +133,31 @@ fn build_single_search_params(input: &Map<String, Value>, prefix: &str) -> Resul
     insert_number(
         &mut params,
         "status",
-        clean_enum_integer(input.get("status"), &format!("{prefix}status"), VALID_STATUSES)?,
+        clean_enum_integer(
+            input.get("status"),
+            &format!("{prefix}status"),
+            VALID_STATUSES,
+        )?,
     );
     insert_number(
         &mut params,
         "sold_within_days",
-        clean_integer(input.get("sold_within_days"), &format!("{prefix}sold_within_days"), 1.0, Some(365.0))?,
+        clean_integer(
+            input.get("sold_within_days"),
+            &format!("{prefix}sold_within_days"),
+            1.0,
+            Some(365.0),
+        )?,
     );
     insert_number(
         &mut params,
         "num_homes",
-        clean_integer(input.get("num_homes"), &format!("{prefix}num_homes"), 1.0, Some(MAX_NUM_HOMES))?,
+        clean_integer(
+            input.get("num_homes"),
+            &format!("{prefix}num_homes"),
+            1.0,
+            Some(MAX_NUM_HOMES),
+        )?,
     );
     insert_number(
         &mut params,
@@ -145,7 +192,12 @@ fn clean_required_string(value: Option<&Value>, field: &str, max_length: usize) 
     clean_string(value, field, max_length)?.ok_or_else(|| anyhow!("{field} is required"))
 }
 
-fn clean_integer(value: Option<&Value>, field: &str, min: f64, max: Option<f64>) -> Result<Option<f64>> {
+fn clean_integer(
+    value: Option<&Value>,
+    field: &str,
+    min: f64,
+    max: Option<f64>,
+) -> Result<Option<f64>> {
     let Some(value) = value else {
         return Ok(None);
     };
@@ -193,21 +245,39 @@ fn clean_number(value: Option<&Value>, field: &str, min: f64, max: f64) -> Resul
 }
 
 fn parse_js_number(value: &str) -> Option<f64> {
-    if let Some(hex) = value.strip_prefix("0x").or_else(|| value.strip_prefix("0X")) {
-        return u64::from_str_radix(hex, 16).ok().map(|number| number as f64);
+    if let Some(hex) = value
+        .strip_prefix("0x")
+        .or_else(|| value.strip_prefix("0X"))
+    {
+        return u64::from_str_radix(hex, 16)
+            .ok()
+            .map(|number| number as f64);
     }
-    if let Some(binary) = value.strip_prefix("0b").or_else(|| value.strip_prefix("0B")) {
-        return u64::from_str_radix(binary, 2).ok().map(|number| number as f64);
+    if let Some(binary) = value
+        .strip_prefix("0b")
+        .or_else(|| value.strip_prefix("0B"))
+    {
+        return u64::from_str_radix(binary, 2)
+            .ok()
+            .map(|number| number as f64);
     }
-    if let Some(octal) = value.strip_prefix("0o").or_else(|| value.strip_prefix("0O")) {
-        return u64::from_str_radix(octal, 8).ok().map(|number| number as f64);
+    if let Some(octal) = value
+        .strip_prefix("0o")
+        .or_else(|| value.strip_prefix("0O"))
+    {
+        return u64::from_str_radix(octal, 8)
+            .ok()
+            .map(|number| number as f64);
     }
     value.parse().ok()
 }
 
 fn validate_range(number: f64, field: &str, min: f64, max: Option<f64>) -> Result<()> {
     if number < min || max.is_some_and(|max| number > max) {
-        let range = max.map_or_else(|| format!("at least {min}"), |max| format!("between {min} and {max}"));
+        let range = max.map_or_else(
+            || format!("at least {min}"),
+            |max| format!("between {min} and {max}"),
+        );
         return Err(anyhow!("{field} must be {range}"));
     }
     Ok(())
@@ -222,14 +292,21 @@ fn clean_enum_integer(value: Option<&Value>, field: &str, values: &[f64]) -> Res
     let number = clean_integer(value, field, 0.0, None)?;
     if let Some(number) = number {
         if !values.contains(&number) {
-            let allowed = values.iter().map(|value| format_number(*value)).collect::<Vec<_>>().join(", ");
+            let allowed = values
+                .iter()
+                .map(|value| format_number(*value))
+                .collect::<Vec<_>>()
+                .join(", ");
             return Err(anyhow!("{field} must be one of: {allowed}"));
         }
     }
     Ok(number)
 }
 
-fn clean_comma_separated_property_types(value: Option<&Value>, field: &str) -> Result<Option<String>> {
+fn clean_comma_separated_property_types(
+    value: Option<&Value>,
+    field: &str,
+) -> Result<Option<String>> {
     let Some(value) = clean_string(value, field, 20)? else {
         return Ok(None);
     };
@@ -298,13 +375,21 @@ fn value_string(value: Option<&Value>) -> String {
         Some(Value::Number(value)) => value.to_string(),
         Some(Value::Bool(value)) => value.to_string(),
         Some(Value::Null) | None => "null".to_owned(),
-        Some(Value::Array(values)) => values.iter().map(|value| value_string(Some(value))).collect::<Vec<_>>().join(","),
+        Some(Value::Array(values)) => values
+            .iter()
+            .map(|value| value_string(Some(value)))
+            .collect::<Vec<_>>()
+            .join(","),
         Some(Value::Object(_)) => "[object Object]".to_owned(),
     }
 }
 
 fn format_number(value: f64) -> String {
-    if value.fract() == 0.0 { format!("{value:.0}") } else { value.to_string() }
+    if value.fract() == 0.0 {
+        format!("{value:.0}")
+    } else {
+        value.to_string()
+    }
 }
 
 #[cfg(test)]
@@ -328,7 +413,8 @@ mod tests {
         let batch = build_search_requests(&json!({"market":"ignored", "searches":[
             {"region_id":16163,"region_type":6,"market":"seattle","num_homes":25},
             {"region_id":11203,"region_type":6,"market":"socal","min_price":500000}
-        ]})).unwrap();
+        ]}))
+        .unwrap();
         assert_eq!(batch.len(), 2);
         assert_eq!(batch[1].index, 1);
         assert_eq!(batch[1].params["region_id"], 11203);
@@ -338,44 +424,99 @@ mod tests {
     #[test]
     fn validates_required_and_optional_fields() {
         for (input, message) in [
-            (json!({"region_type":6,"market":"seattle"}), "region_id is required"),
-            (json!({"region_id":16163,"market":"seattle"}), "region_type is required"),
-            (json!({"region_id":16163,"region_type":6,"market":""}), "market is required"),
-            (json!({"region_id":16163,"region_type":99,"market":"seattle"}), "region_type must be one of: 1, 2, 4, 5, 6"),
-            (json!({"region_id":16163,"region_type":6,"market":"Seattle WA"}), "market must contain only lowercase letters and numbers"),
-            (json!({"region_id":16163,"region_type":6,"market":"seattle","min_price":500,"max_price":400}), "max_price must be greater than or equal to min_price"),
-            (json!({"region_id":16163,"region_type":6,"market":"seattle","property_types":"1,9"}), "property_types must be comma-separated numbers 1-8"),
-            (json!({"region_id":16163,"region_type":6,"market":"seattle","num_homes":451}), "num_homes must be between 1 and 450"),
+            (
+                json!({"region_type":6,"market":"seattle"}),
+                "region_id is required",
+            ),
+            (
+                json!({"region_id":16163,"market":"seattle"}),
+                "region_type is required",
+            ),
+            (
+                json!({"region_id":16163,"region_type":6,"market":""}),
+                "market is required",
+            ),
+            (
+                json!({"region_id":16163,"region_type":99,"market":"seattle"}),
+                "region_type must be one of: 1, 2, 4, 5, 6",
+            ),
+            (
+                json!({"region_id":16163,"region_type":6,"market":"Seattle WA"}),
+                "market must contain only lowercase letters and numbers",
+            ),
+            (
+                json!({"region_id":16163,"region_type":6,"market":"seattle","min_price":500,"max_price":400}),
+                "max_price must be greater than or equal to min_price",
+            ),
+            (
+                json!({"region_id":16163,"region_type":6,"market":"seattle","property_types":"1,9"}),
+                "property_types must be comma-separated numbers 1-8",
+            ),
+            (
+                json!({"region_id":16163,"region_type":6,"market":"seattle","num_homes":451}),
+                "num_homes must be between 1 and 450",
+            ),
         ] {
-            assert!(build_search_requests(&input).unwrap_err().to_string().contains(message));
+            assert!(build_search_requests(&input)
+                .unwrap_err()
+                .to_string()
+                .contains(message));
         }
     }
 
     #[test]
     fn validates_batch_constraints_and_integer_forms() {
         for (input, message) in [
-            (json!({"searches":[]}), "searches must include at least one search"),
-            (json!({"searches":["seattle"]}), "searches[0] must be an object"),
-            (json!({"region_id":1,"region_type":6,"market":"seattle","searches":"x"}), "searches must be an array of search objects"),
-            (json!({"searches":(0..26).map(|_| json!({"region_id":1,"region_type":6,"market":"seattle"})).collect::<Vec<_>>()}), "searches cannot include more than 25 searches"),
-            (json!({"region_id":"1.2","region_type":6,"market":"seattle"}), "region_id must be an integer"),
+            (
+                json!({"searches":[]}),
+                "searches must include at least one search",
+            ),
+            (
+                json!({"searches":["seattle"]}),
+                "searches[0] must be an object",
+            ),
+            (
+                json!({"region_id":1,"region_type":6,"market":"seattle","searches":"x"}),
+                "searches must be an array of search objects",
+            ),
+            (
+                json!({"searches":(0..26).map(|_| json!({"region_id":1,"region_type":6,"market":"seattle"})).collect::<Vec<_>>()}),
+                "searches cannot include more than 25 searches",
+            ),
+            (
+                json!({"region_id":"1.2","region_type":6,"market":"seattle"}),
+                "region_id must be an integer",
+            ),
         ] {
-            assert!(build_search_requests(&input).unwrap_err().to_string().contains(message));
+            assert!(build_search_requests(&input)
+                .unwrap_err()
+                .to_string()
+                .contains(message));
         }
-        let requests = build_search_requests(&json!({"region_id":" 001 ","region_type":"6","market":"seattle","num_baths":"0x2"})).unwrap();
+        let requests = build_search_requests(
+            &json!({"region_id":" 001 ","region_type":"6","market":"seattle","num_baths":"0x2"}),
+        )
+        .unwrap();
         assert_eq!(requests[0].params["region_id"], 1);
         assert_eq!(requests[0].params["num_baths"], 2);
     }
 
     #[test]
     fn formats_request_description_with_sorted_filters() {
-        let requests = build_search_requests(&json!({"region_id":16163,"region_type":6,"market":"seattle","page":2,"num_homes":50})).unwrap();
-        assert_eq!(describe_search(&requests[0].params), "region 16163 (seattle, type 6) (num_homes=50, page=2)");
+        let requests = build_search_requests(
+            &json!({"region_id":16163,"region_type":6,"market":"seattle","page":2,"num_homes":50}),
+        )
+        .unwrap();
+        assert_eq!(
+            describe_search(&requests[0].params),
+            "region 16163 (seattle, type 6) (num_homes=50, page=2)"
+        );
     }
 
     #[test]
     fn actor_input_prefill_defaults_remain_unchanged() {
-        let schema: Value = serde_json::from_str(include_str!("../.actor/input_schema.json")).unwrap();
+        let schema: Value =
+            serde_json::from_str(include_str!("../.actor/input_schema.json")).unwrap();
         let properties = schema.get("properties").unwrap();
         assert_eq!(properties["region_id"]["default"], 16163);
         assert_eq!(properties["region_type"]["default"], "6");

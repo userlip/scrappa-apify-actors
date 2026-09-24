@@ -33,7 +33,10 @@ impl ActorConfig {
             key_value_store_id: required_env("ACTOR_DEFAULT_KEY_VALUE_STORE_ID")?,
             dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID")?,
             input_key: env_or_default("ACTOR_INPUT_KEY", "INPUT"),
-            scrappa_api_base_url: env_or_default("SCRAPPA_API_BASE_URL", crate::scrappa::DEFAULT_API_BASE_URL),
+            scrappa_api_base_url: env_or_default(
+                "SCRAPPA_API_BASE_URL",
+                crate::scrappa::DEFAULT_API_BASE_URL,
+            ),
             scrappa_api_key: env::var("SCRAPPA_API_KEY").unwrap_or_default(),
         })
     }
@@ -161,7 +164,7 @@ impl ApifyClient {
                         retry_count += 1;
                         continue;
                     }
-                    require_apify_success(response, "event charge") .await?;
+                    require_apify_success(response, "event charge").await?;
                     return Ok(());
                 }
                 Err(error) if retry_count < MAX_RETRIES => {
@@ -213,7 +216,9 @@ impl ApifyClient {
                     retry_count += 1;
                     continue;
                 }
-                Err(error) => return Err(error).with_context(|| format!("Apify {operation} request failed")),
+                Err(error) => {
+                    return Err(error).with_context(|| format!("Apify {operation} request failed"))
+                }
             };
             if apify_retry_delay("GET", response.status(), retry_count).is_some() {
                 drop(response);
@@ -236,7 +241,10 @@ async fn require_apify_success(response: Response, operation: &str) -> Result<Re
     }
     let status = response.status();
     let body = response.text().await.unwrap_or_default();
-    Err(anyhow!("Apify {operation} failed ({}): {body}", status.as_u16()))
+    Err(anyhow!(
+        "Apify {operation} failed ({}): {body}",
+        status.as_u16()
+    ))
 }
 
 fn apify_retry_delay(method: &str, status: StatusCode, retry_count: usize) -> Option<Duration> {
@@ -252,9 +260,9 @@ fn apify_retry_delay(method: &str, status: StatusCode, retry_count: usize) -> Op
 fn endpoint_url(base_url: &str, path: &[&str]) -> Result<Url> {
     let mut url = Url::parse(&format!("{}/", base_url.trim_end_matches('/')))
         .with_context(|| format!("Invalid Apify API base URL: {base_url}"))?;
-    let mut segments = url
-        .path_segments_mut()
-        .map_err(|_| anyhow!("Apify API base URL cannot contain a query or fragment: {base_url}"))?;
+    let mut segments = url.path_segments_mut().map_err(|_| {
+        anyhow!("Apify API base URL cannot contain a query or fragment: {base_url}")
+    })?;
     segments.pop_if_empty();
     segments.extend(path.iter().copied());
     drop(segments);
@@ -265,27 +273,46 @@ fn endpoint_url(base_url: &str, path: &[&str]) -> Result<Url> {
 mod tests {
     use super::*;
     use serde_json::json;
-    use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::TcpListener};
+    use tokio::{
+        io::{AsyncReadExt, AsyncWriteExt},
+        net::TcpListener,
+    };
 
     async fn read_request(stream: &mut tokio::net::TcpStream) -> Vec<u8> {
         let mut request = Vec::new();
         let mut chunk = [0; 2048];
         loop {
             let read = stream.read(&mut chunk).await.unwrap();
-            if read == 0 { break; }
+            if read == 0 {
+                break;
+            }
             request.extend_from_slice(&chunk[..read]);
-            let Some(body_start) = request.windows(4).position(|part| part == b"\r\n\r\n").map(|position| position + 4) else { continue; };
+            let Some(body_start) = request
+                .windows(4)
+                .position(|part| part == b"\r\n\r\n")
+                .map(|position| position + 4)
+            else {
+                continue;
+            };
             let headers = String::from_utf8_lossy(&request[..body_start]);
-            let content_length = headers.lines().find_map(|line| {
-                let (name, value) = line.split_once(':')?;
-                name.eq_ignore_ascii_case("content-length").then(|| value.trim().parse::<usize>().unwrap_or_default())
-            }).unwrap_or_default();
-            if request.len() >= body_start + content_length { break; }
+            let content_length = headers
+                .lines()
+                .find_map(|line| {
+                    let (name, value) = line.split_once(':')?;
+                    name.eq_ignore_ascii_case("content-length")
+                        .then(|| value.trim().parse::<usize>().unwrap_or_default())
+                })
+                .unwrap_or_default();
+            if request.len() >= body_start + content_length {
+                break;
+            }
         }
         request
     }
 
-    async fn server(responses: Vec<(u16, String)>) -> (String, tokio::task::JoinHandle<Vec<Vec<u8>>>) {
+    async fn server(
+        responses: Vec<(u16, String)>,
+    ) -> (String, tokio::task::JoinHandle<Vec<Vec<u8>>>) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let handle = tokio::spawn(async move {
@@ -293,7 +320,10 @@ mod tests {
             for (status, body) in responses {
                 let (mut stream, _) = listener.accept().await.unwrap();
                 requests.push(read_request(&mut stream).await);
-                let reason = StatusCode::from_u16(status).unwrap().canonical_reason().unwrap_or("Unknown");
+                let reason = StatusCode::from_u16(status)
+                    .unwrap()
+                    .canonical_reason()
+                    .unwrap_or("Unknown");
                 let response = format!("HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len());
                 stream.write_all(response.as_bytes()).await.unwrap();
             }
@@ -322,26 +352,35 @@ mod tests {
         let input = client(base_url).get_input().await.unwrap().unwrap();
         assert_eq!(input["region_id"], 16163);
         let request = String::from_utf8(server.await.unwrap().remove(0)).unwrap();
-        assert!(request.starts_with("GET /prefix/v2/key-value-stores/store-1/records/INPUT HTTP/1.1"));
-        assert!(request.to_lowercase().contains("authorization: bearer test-token"));
+        assert!(
+            request.starts_with("GET /prefix/v2/key-value-stores/store-1/records/INPUT HTTP/1.1")
+        );
+        assert!(request
+            .to_lowercase()
+            .contains("authorization: bearer test-token"));
     }
 
     #[tokio::test]
     async fn publishes_dataset_rows_and_charges_with_idempotency_key() {
-        let (base_url, server) = server(vec![
-            (201, String::new()),
-            (201, "{}".to_owned()),
-        ]).await;
+        let (base_url, server) = server(vec![(201, String::new()), (201, "{}".to_owned())]).await;
         let client = client(base_url);
-        client.push_dataset_items(&[json!({"id":1}), json!({"id":2})]).await.unwrap();
-        client.charge_event("property-result", "run-1-property-result-0-0").await.unwrap();
+        client
+            .push_dataset_items(&[json!({"id":1}), json!({"id":2})])
+            .await
+            .unwrap();
+        client
+            .charge_event("property-result", "run-1-property-result-0-0")
+            .await
+            .unwrap();
         let requests = server.await.unwrap();
         let dataset_request = String::from_utf8(requests[0].clone()).unwrap();
         assert!(dataset_request.starts_with("POST /prefix/v2/datasets/dataset-1/items HTTP/1.1"));
         assert!(dataset_request.contains(r#"[{"id":1},{"id":2}]"#));
         let charge_request = String::from_utf8(requests[1].clone()).unwrap();
         assert!(charge_request.starts_with("POST /prefix/v2/actor-runs/run-1/charge HTTP/1.1"));
-        assert!(charge_request.to_lowercase().contains("idempotency-key: run-1-property-result-0-0"));
+        assert!(charge_request
+            .to_lowercase()
+            .contains("idempotency-key: run-1-property-result-0-0"));
         assert!(charge_request.contains(r#""eventName":"property-result""#));
         assert!(charge_request.contains(r#""count":1"#));
     }
@@ -368,7 +407,10 @@ mod tests {
         ]).await;
         let client = client(base_url);
         let run = client.get_run().await.unwrap();
-        assert_eq!(run.pointer("/data/pricingInfo/pricingModel").unwrap(), "FREE");
+        assert_eq!(
+            run.pointer("/data/pricingInfo/pricingModel").unwrap(),
+            "FREE"
+        );
         let input = client.get_input().await.unwrap();
         assert_eq!(input, None);
         assert_eq!(server.await.unwrap().len(), 3);

@@ -24,9 +24,7 @@ fn clean_string(
         return Ok(None);
     }
     if trimmed.encode_utf16().count() > max_length {
-        return Err(format!(
-            "{field} must be {max_length} characters or fewer"
-        ));
+        return Err(format!("{field} must be {max_length} characters or fewer"));
     }
     Ok(Some(trimmed.to_owned()))
 }
@@ -86,8 +84,7 @@ pub fn build_google_finance_quote_params(input: &Value) -> Result<RequestParams,
                     && country.bytes().all(|byte| byte.is_ascii_lowercase())
             }
             None => {
-                normalized.len() == 2
-                    && normalized.bytes().all(|byte| byte.is_ascii_lowercase())
+                normalized.len() == 2 && normalized.bytes().all(|byte| byte.is_ascii_lowercase())
             }
         };
         if !valid {
@@ -152,13 +149,16 @@ mod tests {
     #[test]
     fn normalizes_a_complete_quote_request() {
         assert_eq!(
-            serde_json::Value::Object(build_google_finance_quote_params(&json!({
-                "symbol": " aapl ",
-                "exchange": " nasdaq ",
-                "period_type": "ANNUAL",
-                "hl": "EN",
-                "gl": "US",
-            })).unwrap()),
+            serde_json::Value::Object(
+                build_google_finance_quote_params(&json!({
+                    "symbol": " aapl ",
+                    "exchange": " nasdaq ",
+                    "period_type": "ANNUAL",
+                    "hl": "EN",
+                    "gl": "US",
+                }))
+                .unwrap()
+            ),
             json!({
                 "symbol": "AAPL",
                 "exchange": "NASDAQ",
@@ -189,8 +189,7 @@ mod tests {
             "hl must be a valid language code such as en, de, or zh-cn"
         );
         assert_eq!(
-            build_google_finance_quote_params(&json!({"symbol": "AAPL", "gl": "usa"}))
-                .unwrap_err(),
+            build_google_finance_quote_params(&json!({"symbol": "AAPL", "gl": "usa"})).unwrap_err(),
             "gl must be 2 characters or fewer"
         );
     }

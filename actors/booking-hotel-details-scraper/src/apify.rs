@@ -481,7 +481,11 @@ mod tests {
     }
 
     fn write_response(stream: &mut TcpStream, status: u16) {
-        let reason = if status == 201 { "Created" } else { "Internal Server Error" };
+        let reason = if status == 201 {
+            "Created"
+        } else {
+            "Internal Server Error"
+        };
         write!(
             stream,
             "HTTP/1.1 {status} {reason}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
@@ -527,6 +531,9 @@ mod tests {
         let rows = server.finish();
 
         assert_eq!(rows, vec![item]);
-        assert!(result.is_err(), "the timed-out append should be returned as an error");
+        assert!(
+            result.is_err(),
+            "the timed-out append should be returned as an error"
+        );
     }
 }
