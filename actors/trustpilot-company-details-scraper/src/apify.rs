@@ -1,7 +1,7 @@
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::{json, Value};
-use std::{collections::HashMap, env, time::Duration};
+use std::{collections::HashMap, env, error::Error, fmt, time::Duration};
 use tokio::time::sleep;
 
 pub const COMPANY_DETAIL_RESULT_EVENT: &str = "company-detail-result";
@@ -32,6 +32,20 @@ pub struct PushResult {
     pub saved_count: usize,
     pub status_message: Option<String>,
 }
+
+#[derive(Debug)]
+pub struct CompanyDetailChargeUnconfirmed;
+
+impl fmt::Display for CompanyDetailChargeUnconfirmed {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "Dataset row was saved, but the company-detail-result charge could not be confirmed"
+        )
+    }
+}
+
+impl Error for CompanyDetailChargeUnconfirmed {}
 
 impl ApifyClient {
     pub fn from_env() -> Result<Self> {
@@ -222,12 +236,13 @@ impl ApifyClient {
             return Ok(charge_limit_result(0));
         }
 
-        self.push_dataset_item(item).await?;
-        budget.record_charge(DEFAULT_DATASET_ITEM_EVENT)?;
-
         let url = self.resource_url(&["actor-runs", &self.actor_run_id, "charge"])?;
         let idempotency_key = format!("{}-company-detail-result-{item_index}", self.actor_run_id);
         let body = json!({"eventName": COMPANY_DETAIL_RESULT_EVENT, "count": 1});
+        self.push_dataset_item(item).await?;
+        budget
+            .record_charge(DEFAULT_DATASET_ITEM_EVENT)
+            .context(CompanyDetailChargeUnconfirmed)?;
         let response = self
             .retrying_request(
                 || {
@@ -237,8 +252,11 @@ impl ApifyClient {
                 },
                 "charge company detail result",
             )
-            .await?;
-        successful_response(response, "charge company detail result").await?;
+            .await
+            .context(CompanyDetailChargeUnconfirmed)?;
+        successful_response(response, "charge company detail result")
+            .await
+            .context(CompanyDetailChargeUnconfirmed)?;
         budget.record_charge(COMPANY_DETAIL_RESULT_EVENT)?;
 
         let status_message = if !budget.can_charge_next_item()? {
