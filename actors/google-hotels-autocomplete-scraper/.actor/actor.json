@@ -5,7 +5,6 @@
   "description": "Discover Google Hotels destinations and accommodations with normalized suggestions, property tokens, thumbnails, and ready-to-use hotel-search links.",
   "version": "1.0",
   "buildTag": "latest",
-  "meta": { "templateId": "ts-start" },
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },

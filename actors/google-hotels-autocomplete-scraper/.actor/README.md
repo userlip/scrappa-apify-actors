@@ -28,4 +28,10 @@ Use location rows for destination discovery. Pass an accommodation row's `proper
 
 Results cost **$0.00025 each** through the `hotel-suggestion-result` event. Only successfully saved dataset rows are charged. A single `OUTPUT` record summarizes partial query failures; there are no per-result key-value-store writes.
 
-This Actor is a thin wrapper around `GET https://scrappa.co/api/google-hotels/autocomplete`. For higher-volume usage, [upgrade to Scrappa's direct API](https://scrappa.co) to avoid Apify run overhead and connect autocomplete directly to the Google Hotels Search endpoint.
+This Actor is a thin Rust wrapper around `GET https://scrappa.co/api/google-hotels/autocomplete`. Each request has a 30-second deadline and up to three attempts for timeouts, connection failures, transient HTTP statuses, and explicitly retryable 403 responses. The Actor continues after individual query failures and writes one `OUTPUT` run summary unless every query fails.
+
+For higher-volume usage, [upgrade to Scrappa's direct API](https://scrappa.co) to avoid Apify run overhead and connect autocomplete directly to the Google Hotels Search endpoint.
+
+## Development
+
+Run focused tests with `cargo test --locked`. Build the local Actor image with `docker build -f .actor/Dockerfile -t google-hotels-autocomplete-scraper .`.
