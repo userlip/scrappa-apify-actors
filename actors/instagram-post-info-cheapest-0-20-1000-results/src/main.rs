@@ -576,11 +576,9 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
 
     let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
         None | Some(Value::Null) => return Ok(requested),
-        Some(value) => match value.as_f64() {
-            Some(0.0) => return Ok(requested),
-            Some(max_charge) => max_charge,
-            None => bail!("Apify run did not provide a valid spending limit"),
-        },
+        Some(value) => value
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run did not provide a valid spending limit"))?,
     };
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
@@ -622,6 +620,9 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
     }
     if item_price == 0.0 {
         return Ok(requested);
+    }
+    if max_charge == 0.0 {
+        return Ok(0);
     }
 
     let tolerance = f64::EPSILON * max_charge.max(1.0);

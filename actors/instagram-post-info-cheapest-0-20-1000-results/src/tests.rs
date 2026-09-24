@@ -270,7 +270,7 @@ fn free_pricing_allows_requested_dataset_items() {
 }
 
 #[test]
-fn missing_null_and_zero_spending_limits_are_unbounded() {
+fn missing_and_null_spending_limits_are_unbounded() {
     let mut run = run_pricing(0.0001, 100);
     run["data"]["options"]
         .as_object_mut()
@@ -278,11 +278,26 @@ fn missing_null_and_zero_spending_limits_are_unbounded() {
         .remove("maxTotalChargeUsd");
     assert_eq!(affordable_dataset_items(&run, 1).unwrap(), 1);
 
-    for max_charge in [Value::Null, json!(0)] {
-        let mut run = run_pricing(0.0001, 100);
-        run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
-        assert_eq!(affordable_dataset_items(&run, 1).unwrap(), 1);
-    }
+    let mut run = run_pricing(0.0001, 100);
+    run["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+    assert_eq!(affordable_dataset_items(&run, 1).unwrap(), 1);
+}
+
+#[test]
+fn zero_spending_limit_blocks_dataset_items() {
+    let run = json!({
+        "data": {
+            "pricingInfo": {
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.0002}
+                }}
+            },
+            "options": {"maxTotalChargeUsd": 0.0},
+            "chargedEventCounts": {}
+        }
+    });
+    assert_eq!(affordable_dataset_items(&run, 3).unwrap(), 0);
 }
 
 #[tokio::test]
@@ -552,9 +567,14 @@ async fn actor_publishes_dataset_item_for_free_and_unbounded_ppe_runs() {
         .remove("maxTotalChargeUsd");
     let mut ppe_null_limit = run_pricing(1.0, 0);
     ppe_null_limit["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
-    let ppe_zero_limit = run_pricing(1.0, 0);
+    let ppe_positive_limit = run_pricing(1.0, 0);
 
-    for run in [free_run, ppe_without_limit, ppe_null_limit, ppe_zero_limit] {
+    for run in [
+        free_run,
+        ppe_without_limit,
+        ppe_null_limit,
+        ppe_positive_limit,
+    ] {
         let output = json!({"success": true, "data": {"shortcode": "CODE"}});
         let (base_url, server) = start_mock_server(vec![
             MockResponse::json(200, json!({"shortcode": "CODE"})),
@@ -577,6 +597,30 @@ async fn actor_publishes_dataset_item_for_free_and_unbounded_ppe_runs() {
             output
         );
     }
+}
+
+#[tokio::test]
+async fn zero_ppe_budget_keeps_output_but_skips_dataset_item() {
+    let output = json!({"success": true, "data": {"shortcode": "CODE"}});
+    let mut run = run_pricing(0.0, 0);
+    run["data"]["chargedEventCounts"] = json!({});
+    let (base_url, server) = start_mock_server(vec![
+        MockResponse::json(200, json!({"shortcode": "CODE"})),
+        MockResponse::json(200, output.clone()),
+        MockResponse::json(201, json!({})),
+        MockResponse::json(200, run),
+    ])
+    .await;
+
+    run_actor_with_config(config(base_url)).await.unwrap();
+
+    let requests = server.await.unwrap();
+    assert_eq!(requests.len(), 4);
+    assert!(requests[2].path.ends_with("/records/OUTPUT"));
+    assert_eq!(requests[3].path, "/v2/actor-runs/run-1");
+    assert!(requests
+        .iter()
+        .all(|request| !request.path.starts_with("/v2/datasets/")));
 }
 
 #[tokio::test]
