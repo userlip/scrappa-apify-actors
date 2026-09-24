@@ -144,13 +144,13 @@ impl ActorApi {
     async fn write_dataset_items(&self, items: &[Value]) -> Result<()> {
         let url = self.api_url(&["v2", "datasets", &self.config.default_dataset_id, "items"])?;
         let response = self
-            .send_with_retries("Apify dataset write", || {
-                self.http
-                    .post(url.clone())
-                    .bearer_auth(&self.config.apify_token)
-                    .json(items)
-            })
-            .await?;
+            .http
+            .post(url)
+            .bearer_auth(&self.config.apify_token)
+            .json(items)
+            .send()
+            .await
+            .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await
     }
 
@@ -564,6 +564,67 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn retries_price_point_charge_with_the_same_idempotency_key() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let _ = read_http_request(&mut stream).await;
+            write_http_response(
+                &mut stream,
+                200,
+                &serde_json::to_string(&run(serde_json::Value::Null, json!({}))).unwrap(),
+            )
+            .await;
+
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let (headers, _) = read_http_request(&mut stream).await;
+            assert!(headers.starts_with("POST /v2/datasets/dataset-id/items "));
+            write_http_response(&mut stream, 201, "{}").await;
+
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let (headers, body) = read_http_request(&mut stream).await;
+            assert!(headers.starts_with("POST /v2/actor-runs/run-id/charge "));
+            let idempotency_key = headers
+                .lines()
+                .find_map(|line| {
+                    let (name, value) = line.split_once(':')?;
+                    name.eq_ignore_ascii_case("idempotency-key")
+                        .then(|| value.trim().to_owned())
+                })
+                .unwrap();
+            let charge = serde_json::from_slice::<Value>(&body).unwrap();
+            assert_eq!(charge, json!({"eventName": "price-point", "count": 1}));
+            write_http_response(&mut stream, 503, "temporary error").await;
+
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let (headers, body) = read_http_request(&mut stream).await;
+            assert!(headers.starts_with("POST /v2/actor-runs/run-id/charge "));
+            let retry_key = headers
+                .lines()
+                .find_map(|line| {
+                    let (name, value) = line.split_once(':')?;
+                    name.eq_ignore_ascii_case("idempotency-key")
+                        .then(|| value.trim().to_owned())
+                })
+                .unwrap();
+            assert_eq!(retry_key, idempotency_key);
+            assert_eq!(serde_json::from_slice::<Value>(&body).unwrap(), charge);
+            write_http_response(&mut stream, 200, "{}").await;
+        });
+
+        let api = actor_api(address, Duration::ZERO);
+        let result = api
+            .push_dataset_items(&[json!({"symbol": "AAPL", "date": 1})])
+            .await
+            .unwrap();
+
+        assert_eq!(result.charged_count, 1);
+        assert!(!result.event_charge_limit_reached);
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
     async fn retries_apify_api_server_errors_before_writing_non_ppe_results() {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
@@ -605,6 +666,67 @@ mod tests {
         assert_eq!(result.charged_count, 1);
         assert!(!result.event_charge_limit_reached);
         server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn does_not_retry_dataset_append_after_lost_response() {
+        assert_dataset_append_is_not_retried(None).await;
+    }
+
+    #[tokio::test]
+    async fn does_not_retry_dataset_append_after_server_error() {
+        assert_dataset_append_is_not_retried(Some(503)).await;
+    }
+
+    async fn assert_dataset_append_is_not_retried(response_status: Option<u16>) {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let items = [json!({"symbol": "AAPL", "date": 1})];
+        let api = actor_api(address, Duration::ZERO);
+        let mut write = tokio::spawn(async move { api.push_dataset_items(&items).await });
+
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let _ = read_http_request(&mut stream).await;
+        write_http_response(
+            &mut stream,
+            200,
+            r#"{"data":{"pricingInfo":{"pricingModel":"FREE"}}}"#,
+        )
+        .await;
+
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let (headers, body) = read_http_request(&mut stream).await;
+        assert!(headers.starts_with("POST /v2/datasets/dataset-id/items "));
+        let mut persisted_rows = serde_json::from_slice::<Vec<Value>>(&body).unwrap();
+        if let Some(status) = response_status {
+            write_http_response(&mut stream, status, "temporary error").await;
+        } else {
+            drop(stream);
+        }
+
+        let retried = tokio::select! {
+            result = &mut write => {
+                assert!(
+                    result.unwrap().is_err(),
+                    "an ambiguous append failure must remain an error"
+                );
+                false
+            }
+            retry = listener.accept() => {
+                let (mut stream, _) = retry.unwrap();
+                let (_, body) = read_http_request(&mut stream).await;
+                persisted_rows.extend(serde_json::from_slice::<Vec<Value>>(&body).unwrap());
+                write_http_response(&mut stream, 201, "{}").await;
+                true
+            }
+        };
+
+        if retried {
+            write.await.unwrap().unwrap();
+        }
+
+        assert!(!retried, "an ambiguous append must not be replayed");
+        assert_eq!(persisted_rows.len(), 1, "the batch was persisted only once");
     }
 
     fn run(
