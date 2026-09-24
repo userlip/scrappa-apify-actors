@@ -322,21 +322,26 @@ mod tests {
     }
 
     fn normal_ppe_run(max_charge: f64) -> (u16, String) {
-        json_response(
-            200,
-            json!({
-                "data": {
-                    "pricingInfo": {
-                        "pricingModel": "PAY_PER_EVENT",
-                        "pricingPerEvent": {"actorChargeEvents": {
-                            "apify-default-dataset-item": {"eventPriceUsd": 0.1}
-                        }}
-                    },
-                    "chargedEventCounts": {},
-                    "options": {"maxTotalChargeUsd": max_charge}
-                }
-            }),
-        )
+        ppe_run(Some(json!(max_charge)))
+    }
+
+    fn ppe_run(max_charge: Option<Value>) -> (u16, String) {
+        let mut run = json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.1}
+                    }},
+                },
+                "chargedEventCounts": {},
+                "options": {}
+            }
+        });
+        if let Some(max_charge) = max_charge {
+            run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
+        }
+        json_response(200, run)
     }
 
     #[test]
@@ -512,6 +517,49 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn saves_billable_results_when_the_ppe_charge_cap_is_unset_null_or_zero() {
+        for max_charge in [None, Some(Value::Null), Some(json!(0.0))] {
+            let input = json!({
+                "queries": [{"query": "first"}, {"query": "second"}],
+                "max_results_per_query": 2
+            });
+            let response = json!({
+                "data": [
+                    {"position": 1, "title": "First result"},
+                    {"position": 2, "title": "Second result"}
+                ]
+            });
+            let (base_url, server) = mock_server(vec![
+                input_response(input),
+                json_response(200, response.clone()),
+                ppe_run(max_charge),
+                (201, String::new()),
+                json_response(200, response),
+                (201, String::new()),
+                (201, String::new()),
+            ]);
+
+            run_actor(&test_config(&base_url)).await.unwrap();
+            let requests = server.join().unwrap();
+            assert_eq!(requests.len(), 7);
+            assert_eq!(request_body(&requests[3]).as_array().unwrap().len(), 2);
+            assert_eq!(request_body(&requests[5]).as_array().unwrap().len(), 2);
+            assert_eq!(
+                request_body(&requests[6]),
+                json!({
+                    "requests": [{"query": "first"}, {"query": "second"}],
+                    "queries_requested": 2,
+                    "queries_fetched": 2,
+                    "results_extracted": 4,
+                    "results_saved": 4,
+                    "max_results_per_query": 2,
+                    "charge_limit_reached": false
+                })
+            );
+        }
+    }
+
+    #[tokio::test]
     async fn does_not_retry_dataset_post_when_the_response_is_transient() {
         let (base_url, server) = mock_server(vec![
             normal_ppe_run(0.1),
@@ -522,7 +570,11 @@ mod tests {
 
         let result = tokio::time::timeout(
             Duration::from_secs(1),
-            client.push_data("test-dataset", &[json!({"title": "First result"})], &mut budget),
+            client.push_data(
+                "test-dataset",
+                &[json!({"title": "First result"})],
+                &mut budget,
+            ),
         )
         .await
         .expect("dataset POST should return without a retry");
@@ -531,12 +583,16 @@ mod tests {
         assert_eq!(budget.remaining_items(), 1);
         let requests = server.join().unwrap();
         assert_eq!(requests.len(), 2);
-        assert!(requests[0].to_ascii_lowercase().starts_with(
-            "get /v2/actor-runs/test-run http/1.1"
-        ));
-        assert!(requests[1]
-            .to_ascii_lowercase()
-            .starts_with("post /v2/datasets/test-dataset/items http/1.1"));
+        assert!(
+            requests[0]
+                .to_ascii_lowercase()
+                .starts_with("get /v2/actor-runs/test-run http/1.1")
+        );
+        assert!(
+            requests[1]
+                .to_ascii_lowercase()
+                .starts_with("post /v2/datasets/test-dataset/items http/1.1")
+        );
     }
 
     #[tokio::test]

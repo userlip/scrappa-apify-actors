@@ -198,11 +198,19 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<DatasetBudg
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => None,
+        Some(value) => {
+            let max_charge = value
+                .as_f64()
+                .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
+            if !max_charge.is_finite() || max_charge < 0.0 {
+                bail!("Apify run returned invalid charging values");
+            }
+            (max_charge > 0.0).then_some(max_charge)
+        }
+    };
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -250,11 +258,15 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<DatasetBudg
     if !spent.is_finite() {
         bail!("Apify run returned invalid charged totals");
     }
-    let tolerance = f64::EPSILON * max_charge.max(1.0);
-    let available_charge = (max_charge - spent + tolerance).max(0.0);
-    let affordable = (available_charge / item_price).floor();
-    let remaining_items = if affordable.is_finite() {
-        (affordable as usize).min(requested)
+    let remaining_items = if let Some(max_charge) = max_charge {
+        let tolerance = f64::EPSILON * max_charge.max(1.0);
+        let available_charge = (max_charge - spent + tolerance).max(0.0);
+        let affordable = (available_charge / item_price).floor();
+        if affordable.is_finite() {
+            (affordable as usize).min(requested)
+        } else {
+            requested
+        }
     } else {
         requested
     };
@@ -282,7 +294,11 @@ mod tests {
     use serde_json::json;
 
     fn run(max_charge: f64, charged_counts: Value) -> Value {
-        json!({
+        run_with_max_charge(Some(json!(max_charge)), charged_counts)
+    }
+
+    fn run_with_max_charge(max_charge: Option<Value>, charged_counts: Value) -> Value {
+        let mut run = json!({
             "data": {
                 "pricingInfo": {
                     "pricingModel": "PAY_PER_EVENT",
@@ -292,15 +308,39 @@ mod tests {
                     }}
                 },
                 "chargedEventCounts": charged_counts,
-                "options": {"maxTotalChargeUsd": max_charge}
+                "options": {}
             }
-        })
+        });
+        if let Some(max_charge) = max_charge {
+            run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
+        }
+        run
     }
 
     #[test]
     fn caps_rows_by_the_remaining_ppe_charge() {
         let budget = affordable_dataset_items(&run(0.25, json!({"other-event": 1})), 10).unwrap();
         assert_eq!(budget.remaining_items(), 2);
+    }
+
+    #[test]
+    fn treats_a_missing_maximum_charge_as_unlimited() {
+        let budget = affordable_dataset_items(&run_with_max_charge(None, json!({})), 10).unwrap();
+        assert_eq!(budget.remaining_items(), 10);
+    }
+
+    #[test]
+    fn treats_a_null_maximum_charge_as_unlimited() {
+        let budget =
+            affordable_dataset_items(&run_with_max_charge(Some(Value::Null), json!({})), 10)
+                .unwrap();
+        assert_eq!(budget.remaining_items(), 10);
+    }
+
+    #[test]
+    fn treats_a_zero_maximum_charge_as_unlimited() {
+        let budget = affordable_dataset_items(&run(0.0, json!({})), 10).unwrap();
+        assert_eq!(budget.remaining_items(), 10);
     }
 
     #[test]
