@@ -924,7 +924,13 @@ mod tests {
             .unwrap_err()
             .to_string()
             .contains("Search query is required"));
-        assert!(include_str!("../.actor/input_schema.json")
-            .contains("\"prefill\": \"best restaurants in new york\""));
+        let schema: Value =
+            serde_json::from_str(include_str!("../.actor/input_schema.json")).unwrap();
+        assert_eq!(
+            schema
+                .pointer("/properties/query/prefill")
+                .and_then(Value::as_str),
+            Some("best restaurants in new york")
+        );
     }
 }
