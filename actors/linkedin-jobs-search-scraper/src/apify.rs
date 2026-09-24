@@ -181,14 +181,16 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
     let item_price = event_price(events, "apify-default-dataset-item")?;
     let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
-        Some(Value::Null) => return Ok(requested),
+        None | Some(Value::Null) => return Ok(requested),
         Some(value) => value
             .as_f64()
             .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
-        None => return Err(anyhow!("Apify run did not provide the spending limit")),
     };
     if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
+    }
+    if max_charge == 0.0 {
+        return Ok(requested);
     }
 
     let counts = data
@@ -263,8 +265,8 @@ mod tests {
     use super::affordable_dataset_items;
     use serde_json::{json, Value};
 
-    fn run(max_charge: f64, charged_counts: serde_json::Value) -> serde_json::Value {
-        json!({
+    fn run(max_charge: Option<Value>, charged_counts: Value) -> Value {
+        let mut run = json!({
             "data": {
                 "pricingInfo": {
                     "pricingModel": "PAY_PER_EVENT",
@@ -274,41 +276,63 @@ mod tests {
                     }}
                 },
                 "chargedEventCounts": charged_counts,
-                "options": {"maxTotalChargeUsd": max_charge}
+                "options": {}
             }
-        })
+        });
+        if let Some(max_charge) = max_charge {
+            run["data"]["options"]["maxTotalChargeUsd"] = max_charge;
+        }
+        run
     }
 
     #[test]
     fn ppe_capacity_counts_spend_from_all_events() {
-        let run = run(0.001, json!({"apify-actor-start": 1}));
-        assert_eq!(affordable_dataset_items(&run, 10).unwrap(), 3);
+        let run = run(
+            Some(json!(0.001)),
+            json!({"apify-default-dataset-item": 1, "apify-actor-start": 1}),
+        );
+        assert_eq!(affordable_dataset_items(&run, 10).unwrap(), 2);
     }
 
     #[test]
-    fn ppe_capacity_caps_at_requested_items_and_zero_budget() {
+    fn ppe_capacity_respects_requested_count_and_exhausted_positive_limit() {
         assert_eq!(
-            affordable_dataset_items(&run(1.0, json!({})), 2).unwrap(),
+            affordable_dataset_items(&run(Some(json!(1.0)), json!({})), 2).unwrap(),
             2
         );
         assert_eq!(
-            affordable_dataset_items(&run(0.0001, json!({"apify-actor-start": 1})), 2).unwrap(),
+            affordable_dataset_items(
+                &run(Some(json!(0.0001)), json!({"apify-actor-start": 1})),
+                2
+            )
+            .unwrap(),
             0
         );
     }
 
     #[test]
     fn ppe_capacity_allows_free_default_items() {
-        let mut run = run(0.0001, json!({}));
+        let mut run = run(Some(json!(0.0001)), json!({}));
         run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
             ["apify-default-dataset-item"]["eventPriceUsd"] = json!(0.0);
         assert_eq!(affordable_dataset_items(&run, 7).unwrap(), 7);
     }
 
     #[test]
-    fn ppe_capacity_is_unbounded_when_the_run_has_no_spending_limit() {
-        let mut run = run(0.001, json!({}));
-        run["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+    fn ppe_capacity_is_unbounded_when_the_spending_limit_is_missing() {
+        let run = run(None, json!({"apify-actor-start": 1}));
+        assert_eq!(affordable_dataset_items(&run, 7).unwrap(), 7);
+    }
+
+    #[test]
+    fn ppe_capacity_is_unbounded_when_the_spending_limit_is_null() {
+        let run = run(Some(Value::Null), json!({"apify-actor-start": 1}));
+        assert_eq!(affordable_dataset_items(&run, 7).unwrap(), 7);
+    }
+
+    #[test]
+    fn ppe_capacity_is_unbounded_when_the_spending_limit_is_zero() {
+        let run = run(Some(json!(0)), json!({"apify-actor-start": 1}));
         assert_eq!(affordable_dataset_items(&run, 7).unwrap(), 7);
     }
 
