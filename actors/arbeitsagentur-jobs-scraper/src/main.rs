@@ -258,11 +258,21 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        Some(Value::Number(max_charge)) => {
+            let max_charge = max_charge
+                .as_f64()
+                .ok_or_else(|| anyhow!("Apify run did not provide a valid spending limit"))?;
+            if max_charge == 0.0 {
+                f64::INFINITY
+            } else {
+                max_charge
+            }
+        }
+        None | Some(Value::Null) => f64::INFINITY,
+        _ => bail!("Apify run did not provide a valid spending limit"),
+    };
+    if !item_price.is_finite() || item_price < 0.0 || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -291,7 +301,7 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
     if !spent.is_finite() {
         bail!("Apify run returned invalid charged totals");
     }
-    if item_price == 0.0 {
+    if item_price == 0.0 || max_charge.is_infinite() {
         return Ok(requested);
     }
 
@@ -1311,13 +1321,43 @@ mod tests {
     }
 
     #[test]
-    fn pay_per_event_budget_counts_all_events_and_only_allows_affordable_items() {
-        let run = mock_priced_run(0.0006, json!({"other-event": 1}));
-        assert_eq!(affordable_dataset_items(&run, 3).unwrap(), 1);
+    fn zero_max_total_charge_is_unbounded() {
         assert_eq!(
             affordable_dataset_items(&mock_priced_run(0.0, json!({})), 3).unwrap(),
-            0
+            3
         );
+    }
+
+    #[test]
+    fn omitted_max_total_charge_is_unbounded() {
+        let mut run = mock_priced_run(0.0, json!({}));
+        run["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+        assert_eq!(affordable_dataset_items(&run, 3).unwrap(), 3);
+    }
+
+    #[test]
+    fn null_max_total_charge_is_unbounded() {
+        let mut run = mock_priced_run(0.0, json!({}));
+        run["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+        assert_eq!(affordable_dataset_items(&run, 3).unwrap(), 3);
+    }
+
+    #[test]
+    fn positive_max_total_charge_counts_existing_event_charges() {
+        let run = mock_priced_run(0.0006, json!({"other-event": 1}));
+        assert_eq!(affordable_dataset_items(&run, 3).unwrap(), 1);
+
+        assert_eq!(
+            affordable_dataset_items(&mock_priced_run(0.0006, json!({})), 3).unwrap(),
+            2
+        );
+    }
+
+    #[test]
+    fn free_dataset_items_fit_a_zero_charge_limit() {
         let free_items = json!({
             "data": {
                 "pricingInfo": {
@@ -1331,6 +1371,10 @@ mod tests {
             }
         });
         assert_eq!(affordable_dataset_items(&free_items, 3).unwrap(), 3);
+    }
+
+    #[test]
+    fn pay_per_event_budget_rejects_non_ppe_runs() {
         assert!(affordable_dataset_items(&json!({"data": {}}), 1)
             .unwrap_err()
             .to_string()
