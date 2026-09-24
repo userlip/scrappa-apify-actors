@@ -6,7 +6,7 @@ use url::Url;
 
 use crate::test_support::*;
 use crate::{
-    apify::{dataset_batches, ApifyClient, APIFY_REQUEST_TIMEOUT},
+    apify::{dataset_batches, ApifyClient, APIFY_REQUEST_TIMEOUT, DATASET_BATCH_MAX_BYTES},
     budget::{load_charge_budget, ChargeBudget, RESULT_EVENT, SEARCH_EVENT},
     config::SCRAPPA_API_DEFAULT,
     input::build_search_url,
@@ -431,13 +431,36 @@ async fn dataset_writes_do_not_retry_ambiguous_or_transient_failures() {
 #[test]
 fn dataset_writes_split_batches_below_apify_payload_limit() {
     let items = vec![
-        json!({"payload":"a".repeat(2_400_000)}),
-        json!({"payload":"b".repeat(2_400_000)}),
+        json!({"payload":"a".repeat(2_600_000)}),
+        json!({"payload":"b".repeat(2_600_000)}),
     ];
     let batches = dataset_batches(&items).unwrap();
     assert_eq!(batches.len(), 2);
     assert_eq!(batches[0].len(), 1);
     assert_eq!(batches[1].len(), 1);
+    assert!(batches
+        .iter()
+        .all(|batch| { serde_json::to_vec(batch).unwrap().len() <= DATASET_BATCH_MAX_BYTES }));
+}
+
+#[tokio::test]
+async fn dataset_writes_accept_a_4_6_mb_single_item_payload() {
+    let items = vec![json!({"payload":"a".repeat(4_600_000)})];
+    let server = MockServer::start(vec![response(201, "{}")]);
+    let config = config(&server);
+    let http = client(APIFY_REQUEST_TIMEOUT);
+    ApifyClient::new(&http, &config)
+        .push_dataset_items(&items)
+        .await
+        .unwrap();
+
+    let requests = server.requests();
+    assert_eq!(requests.len(), 1);
+    let (method, path, _, body) = request_parts(&requests[0]);
+    assert_eq!(method, "POST");
+    assert_eq!(path, "/v2/datasets/test-dataset/items");
+    assert!(body.len() > 4_500_000);
+    assert!(body.len() <= DATASET_BATCH_MAX_BYTES);
 }
 
 #[test]
