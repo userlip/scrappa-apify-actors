@@ -11,6 +11,18 @@ use crate::config::{
     DEFAULT_DATASET_ITEM_EVENT, OUTPUT_KEY,
 };
 
+fn retry_delay(attempt: usize) -> Duration {
+    Duration::from_millis((500_u64 << attempt.min(6)).min(30_000))
+}
+
+#[cfg(test)]
+pub(crate) fn max_retry_sequence_duration() -> Duration {
+    let retry_delays = (0..APIFY_MAX_RETRIES).fold(Duration::ZERO, |elapsed, attempt| {
+        elapsed + retry_delay(attempt)
+    });
+    APIFY_REQUEST_TIMEOUT * (APIFY_MAX_RETRIES as u32 + 1) + retry_delays
+}
+
 #[derive(Default)]
 pub(crate) struct PpeBudget {
     pub(crate) is_pay_per_event: bool,
@@ -204,25 +216,30 @@ impl ApifyClient {
                         && (response.status() == StatusCode::TOO_MANY_REQUESTS
                             || response.status().is_server_error()) =>
                 {
-                    sleep(Duration::from_millis(
-                        (500_u64 << attempt.min(6)).min(30_000),
-                    ))
-                    .await;
+                    sleep(retry_delay(attempt)).await;
                 }
                 Ok(response) => return Ok(response),
                 Err(error)
                     if attempt < APIFY_MAX_RETRIES
                         && (error.is_connect() || error.is_timeout() || error.is_request()) =>
                 {
-                    sleep(Duration::from_millis(
-                        (500_u64 << attempt.min(6)).min(30_000),
-                    ))
-                    .await;
+                    sleep(retry_delay(attempt)).await;
                 }
                 Err(error) => return Err(error).with_context(|| format!("{operation} failed")),
             }
         }
         unreachable!("the retry loop returns after its final attempt")
+    }
+
+    async fn send_once<F>(&self, operation: &str, build_request: F) -> Result<Response>
+    where
+        F: FnOnce() -> RequestBuilder,
+    {
+        // Dataset inserts append rows, so retrying after a lost response can duplicate data and PPE charges.
+        build_request()
+            .send()
+            .await
+            .with_context(|| format!("{operation} failed"))
     }
 
     async fn successful_response(&self, response: Response, operation: &str) -> Result<Response> {
@@ -284,7 +301,7 @@ impl ApifyClient {
     pub(crate) async fn push_dataset_item(&self, config: &ActorConfig, item: &Value) -> Result<()> {
         let url = self.resource_url(&["datasets", &config.dataset_id, "items"])?;
         let response = self
-            .send_with_retries("Apify dataset write", || {
+            .send_once("Apify dataset write", || {
                 self.request(reqwest::Method::POST, url.clone()).json(item)
             })
             .await?;

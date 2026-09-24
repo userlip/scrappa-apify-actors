@@ -11,8 +11,8 @@ pub(crate) const CHALLENGE_DETAIL_CHARGE_EVENT: &str = "challenge-detail-result"
 pub(crate) const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 pub(crate) const MAX_ENTITIES: usize = 100;
 pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-pub(crate) const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-pub(crate) const APIFY_MAX_RETRIES: usize = 8;
+pub(crate) const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(8);
+pub(crate) const APIFY_MAX_RETRIES: usize = 2;
 
 pub(crate) struct ActorConfig {
     pub(crate) apify_api_base_url: Url,
