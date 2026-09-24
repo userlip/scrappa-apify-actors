@@ -428,6 +428,10 @@ mod tests {
         (pieces.next().unwrap(), pieces.next().unwrap())
     }
 
+    fn request_url(request: &str) -> url::Url {
+        url::Url::parse(&format!("http://localhost{}", request_line(request).1)).unwrap()
+    }
+
     fn request_body(request: &str) -> &str {
         request
             .split_once("\r\n\r\n")
@@ -527,9 +531,16 @@ mod tests {
 
         let scrappa_requests = scrappa_server.finish();
         assert_eq!(scrappa_requests.len(), 1);
-        assert!(request_line(&scrappa_requests[0])
-            .1
-            .starts_with("/api/jameda/search?q=Zahnarzt&loc=Berlin&per_page=28&page=1"));
+        let request_url = request_url(&scrappa_requests[0]);
+        assert_eq!(request_url.path(), "/api/jameda/search");
+        let query = request_url
+            .query_pairs()
+            .into_owned()
+            .collect::<std::collections::HashMap<_, _>>();
+        assert_eq!(query.get("q").map(String::as_str), Some("Zahnarzt"));
+        assert_eq!(query.get("loc").map(String::as_str), Some("Berlin"));
+        assert_eq!(query.get("per_page").map(String::as_str), Some("28"));
+        assert_eq!(query.get("page").map(String::as_str), Some("1"));
         assert!(scrappa_requests[0]
             .to_ascii_lowercase()
             .contains("x-api-key: test-scrappa-key"));
