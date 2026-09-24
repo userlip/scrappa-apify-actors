@@ -8,10 +8,10 @@ mod scrappa;
 use anyhow::{anyhow, bail, Result};
 use apify::{ActorConfig, ApifyActor, ApifyClient, RunPricing};
 use input::parse_input;
-use scrape::{is_total_failure, scrape_challenge};
+use scrape::{is_total_failure, scrape_challenges};
 use scrappa::ScrappaClient;
 use serde_json::Value;
-use std::{collections::HashSet, env, process::ExitCode};
+use std::{env, process::ExitCode};
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -42,17 +42,9 @@ async fn run_actor() -> Result<()> {
     let requests = parse_input(&input)?;
     let client = ScrappaClient::from_env(api_key)?;
     let mut actor = ApifyActor::new(api, pricing);
-    let mut summaries = Vec::new();
-    let mut seen_video_ids = HashSet::new();
-
-    for request in &requests {
-        let summary = scrape_challenge(&client, &mut actor, request, &mut seen_video_ids).await;
+    let summaries = scrape_challenges(&client, &mut actor, &requests).await?;
+    for summary in &summaries {
         println!("{}", summary.to_json());
-        let reached_charge_limit = summary.status == "charge-limit-reached";
-        summaries.push(summary);
-        if reached_charge_limit {
-            break;
-        }
     }
 
     let saved = summaries

@@ -358,11 +358,17 @@ impl RunPricing {
         })
     }
 
-    pub fn available_capacity(&self, event_name: &str, requested: usize) -> usize {
+    pub fn available_result_capacity(&self, requested: usize) -> usize {
         if !self.is_pay_per_event {
             return requested;
         }
-        requested.min(self.available_for_event(event_name))
+        let price = self.prices.get(RESULT_EVENT).copied().unwrap_or(0.0)
+            + self
+                .prices
+                .get(DEFAULT_DATASET_ITEM_EVENT)
+                .copied()
+                .unwrap_or(0.0);
+        requested.min(self.max_count_by_price(price))
     }
 
     fn available_for_event(&self, event_name: &str) -> usize {
@@ -385,12 +391,17 @@ impl RunPricing {
         if available <= 0.0 {
             return 0;
         }
-        let rounded = (available * 10_000.0).round() / 10_000.0;
-        if rounded >= usize::MAX as f64 {
+        let capacity = available.floor();
+        let mut capacity = if capacity >= usize::MAX as f64 {
             usize::MAX
         } else {
-            rounded.floor() as usize
+            capacity as usize
+        };
+        let total = self.total_charged_amount();
+        while capacity > 0 && total + price * capacity as f64 > self.max_total_charge_usd {
+            capacity -= 1;
         }
+        capacity
     }
 
     fn total_charged_amount(&self) -> f64 {
@@ -481,7 +492,7 @@ impl ApifyActor {
 
 impl ResultsSink for ApifyActor {
     fn available_capacity(&self, requested: usize) -> usize {
-        self.pricing.available_capacity(RESULT_EVENT, requested)
+        self.pricing.available_result_capacity(requested)
     }
 
     async fn push_videos(&mut self, rows: &[Value]) -> Result<PushResult> {

@@ -4,6 +4,7 @@ use crate::{
     response::{get_video_id, js_string, parse_page},
     scrappa::{PostsParams, ScrappaApi},
 };
+use anyhow::{Context, Result};
 use chrono::{SecondsFormat, Utc};
 use serde_json::{json, Value};
 use std::collections::HashSet;
@@ -41,7 +42,7 @@ pub async fn scrape_challenge<C, S>(
     sink: &mut S,
     request: &ChallengeRequest,
     seen_ids: &mut HashSet<String>,
-) -> ChallengeSummary
+) -> Result<ChallengeSummary>
 where
     C: ScrappaApi,
     S: ResultsSink,
@@ -57,7 +58,14 @@ where
     while saved < request.result_limit && pages < MAX_PAGES_PER_CHALLENGE {
         let capacity = sink.available_capacity(request.result_limit - saved);
         if capacity == 0 {
-            return summary(request, "charge-limit-reached", saved, pages, cursor, None);
+            return Ok(summary(
+                request,
+                "charge-limit-reached",
+                saved,
+                pages,
+                cursor,
+                None,
+            ));
         }
 
         let count = request
@@ -75,14 +83,14 @@ where
         {
             Ok(response) => response,
             Err(error) => {
-                return summary(
+                return Ok(summary(
                     request,
                     "failed",
                     saved,
                     pages,
                     cursor,
                     Some(error.to_string()),
-                );
+                ));
             }
         };
         pages += 1;
@@ -95,7 +103,14 @@ where
                     .map(js_string)
                     .unwrap_or_else(|| "Unknown error".to_owned());
                 let error = format!("Scrappa API code {}: {message}", js_string(code));
-                return summary(request, "failed", saved, pages, cursor, Some(error));
+                return Ok(summary(
+                    request,
+                    "failed",
+                    saved,
+                    pages,
+                    cursor,
+                    Some(error),
+                ));
             }
         }
 
@@ -133,32 +148,39 @@ where
             })
             .collect::<Vec<_>>();
 
-        let push = match sink.push_videos(&rows).await {
-            Ok(push) => push,
-            Err(error) => {
-                return summary(
-                    request,
-                    "failed",
-                    saved,
-                    pages,
-                    cursor,
-                    Some(error.to_string()),
-                );
-            }
-        };
+        let push = sink.push_videos(&rows).await.with_context(|| {
+            format!(
+                "Failed to save results for challenge {}",
+                request.challenge_id
+            )
+        })?;
         remember_saved_ids(&rows, push, seen_ids);
         saved += push.saved;
         cursor = page.cursor;
 
         if push.limit_reached {
-            return summary(request, "charge-limit-reached", saved, pages, cursor, None);
+            return Ok(summary(
+                request,
+                "charge-limit-reached",
+                saved,
+                pages,
+                cursor,
+                None,
+            ));
         }
         if !page.has_more || cursor.is_none() {
-            return summary(request, "succeeded", saved, pages, cursor, None);
+            return Ok(summary(request, "succeeded", saved, pages, cursor, None));
         }
         let next_cursor = cursor.as_ref().expect("cursor checked above");
         if !seen_cursors.insert(next_cursor.clone()) {
-            return summary(request, "pagination-stalled", saved, pages, cursor, None);
+            return Ok(summary(
+                request,
+                "pagination-stalled",
+                saved,
+                pages,
+                cursor,
+                None,
+            ));
         }
     }
 
@@ -167,7 +189,31 @@ where
     } else {
         "page-limit-reached"
     };
-    summary(request, status, saved, pages, cursor, None)
+    Ok(summary(request, status, saved, pages, cursor, None))
+}
+
+pub async fn scrape_challenges<C, S>(
+    client: &C,
+    sink: &mut S,
+    requests: &[ChallengeRequest],
+) -> Result<Vec<ChallengeSummary>>
+where
+    C: ScrappaApi,
+    S: ResultsSink,
+{
+    let mut summaries = Vec::new();
+    let mut seen_ids = HashSet::new();
+
+    for request in requests {
+        let result = scrape_challenge(client, sink, request, &mut seen_ids).await?;
+        let reached_charge_limit = result.status == "charge-limit-reached";
+        summaries.push(result);
+        if reached_charge_limit {
+            break;
+        }
+    }
+
+    Ok(summaries)
 }
 
 fn remember_saved_ids(rows: &[Value], result: PushResult, seen_ids: &mut HashSet<String>) {

@@ -1,12 +1,10 @@
 use super::*;
 use crate::{
-    apify::{
-        ApifyActor, ApifyClient, RetryPolicy, RunPricing, DEFAULT_DATASET_ITEM_EVENT, RESULT_EVENT,
-    },
+    apify::{ApifyActor, ApifyClient, RetryPolicy, RunPricing},
     input::{parse_input, ChallengeRequest},
     ports::{PushResult, ResultsSink},
     response::{get_video_id, js_string, parse_page},
-    scrape::{is_total_failure, scrape_challenge, ChallengeSummary},
+    scrape::{is_total_failure, scrape_challenge, scrape_challenges, ChallengeSummary},
     scrappa::{PostsParams, ScrappaApi, ScrappaClient},
 };
 use anyhow::{anyhow, Result};
@@ -384,7 +382,8 @@ async fn scrape_paginates_deduplicates_and_saves_one_row_per_charged_video() {
         })),
         &mut seen,
     )
-    .await;
+    .await
+    .unwrap();
 
     assert_eq!(result.status, "succeeded");
     assert_eq!(result.videos_saved, 3);
@@ -419,7 +418,8 @@ async fn scrape_checks_charge_capacity_before_fetching_a_page() {
         &request(json!({"challenge_id": "123"})),
         &mut seen,
     )
-    .await;
+    .await
+    .unwrap();
 
     assert_eq!(result.status, "charge-limit-reached");
     assert_eq!(result.pages_fetched, 0);
@@ -445,7 +445,8 @@ async fn scrape_continues_over_duplicate_only_pages_when_cursor_advances() {
         })),
         &mut seen,
     )
-    .await;
+    .await
+    .unwrap();
 
     assert_eq!(result.status, "succeeded");
     assert_eq!(result.videos_saved, 2);
@@ -469,14 +470,16 @@ async fn scrape_deduplicates_across_challenges_in_one_run() {
         &request(json!({"challenge_id": "1"})),
         &mut seen,
     )
-    .await;
+    .await
+    .unwrap();
     let second = scrape_challenge(
         &second_client,
         &mut sink,
         &request(json!({"challenge_id": "2"})),
         &mut seen,
     )
-    .await;
+    .await
+    .unwrap();
 
     assert_eq!(first.videos_saved, 1);
     assert_eq!(second.videos_saved, 0);
@@ -498,7 +501,8 @@ async fn scrape_reports_repeated_initial_cursors_and_the_hard_page_ceiling() {
         &request(json!({"challenge_id": "123", "cursor": "10"})),
         &mut seen,
     )
-    .await;
+    .await
+    .unwrap();
     assert_eq!(stalled.status, "pagination-stalled");
     assert_eq!(stalled.pages_fetched, 1);
 
@@ -517,7 +521,8 @@ async fn scrape_reports_repeated_initial_cursors_and_the_hard_page_ceiling() {
         })),
         &mut HashSet::new(),
     )
-    .await;
+    .await
+    .unwrap();
     assert_eq!(limited.status, "page-limit-reached");
     assert_eq!(limited.pages_fetched, 100);
 }
@@ -532,7 +537,8 @@ async fn scrape_isolates_upstream_failures_and_marks_only_total_failure_as_actor
         &request(json!({"challenge_id": "123"})),
         &mut HashSet::new(),
     )
-    .await;
+    .await
+    .unwrap();
     assert_eq!(failed.status, "failed");
     assert_eq!(
         failed.error.as_deref(),
@@ -561,7 +567,8 @@ async fn scrape_isolates_upstream_failures_and_marks_only_total_failure_as_actor
         &request(json!({"challenge_id": "789"})),
         &mut HashSet::new(),
     )
-    .await;
+    .await
+    .unwrap();
     assert_eq!(network_failure.status, "failed");
     assert_eq!(
         network_failure.error.as_deref(),
@@ -589,20 +596,16 @@ fn pricing_response(max_total_charge_usd: Value, counts: Value) -> Value {
 }
 
 #[test]
-fn ppe_capacity_accounts_for_prior_charges_and_the_custom_event_price() {
+fn ppe_capacity_accounts_for_prior_charges_and_both_row_events() {
     let pricing =
         RunPricing::from_run_response(&pricing_response(json!(0.001), json!({"other-event": 1})))
             .unwrap();
 
-    assert_eq!(pricing.available_capacity(RESULT_EVENT, 10), 3);
-    assert_eq!(
-        pricing.available_capacity(DEFAULT_DATASET_ITEM_EVENT, 10),
-        8
-    );
+    assert_eq!(pricing.available_result_capacity(10), 2);
 
     let zero_budget =
         RunPricing::from_run_response(&pricing_response(json!(0), json!({}))).unwrap();
-    assert_eq!(zero_budget.available_capacity(RESULT_EVENT, 10), 0);
+    assert_eq!(zero_budget.available_result_capacity(10), 0);
 }
 
 #[tokio::test]
@@ -632,7 +635,7 @@ async fn ppe_does_not_write_when_remaining_budget_cannot_cover_both_row_events()
         }
     }))
     .unwrap();
-    assert_eq!(pricing.available_capacity(RESULT_EVENT, 1), 1);
+    assert_eq!(pricing.available_result_capacity(1), 0);
 
     let mut actor = ApifyActor::new(api, pricing);
     assert_eq!(
@@ -669,7 +672,7 @@ async fn ppe_does_not_write_when_remaining_budget_cannot_cover_both_row_events()
         }
     }))
     .unwrap();
-    assert_eq!(pricing.available_capacity(RESULT_EVENT, 1), 1);
+    assert_eq!(pricing.available_result_capacity(1), 0);
 
     let mut actor = ApifyActor::new(api, pricing);
     assert_eq!(
@@ -682,6 +685,49 @@ async fn ppe_does_not_write_when_remaining_budget_cannot_cover_both_row_events()
     assert!(rounding_server.requests().is_empty());
 }
 
+#[tokio::test]
+async fn ppe_combined_row_cost_stops_before_scrappa_fetch() {
+    let server = MockServer::start(|_| (200, String::new())).await;
+    let api = ApifyClient::with_retry_policy(
+        actor_config(server.url.clone()),
+        RetryPolicy {
+            retries: 0,
+            minimum_delay: Duration::ZERO,
+        },
+        Duration::from_secs(2),
+    )
+    .unwrap();
+    let pricing = RunPricing::from_run_response(&json!({
+        "data": {
+            "pricingInfo": {
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "challenge-post-result": {"eventPriceUsd": 0.00025},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.00025}
+                }}
+            },
+            "options": {"maxTotalChargeUsd": 0.00025},
+            "chargedEventCounts": {}
+        }
+    }))
+    .unwrap();
+    let mut actor = ApifyActor::new(api, pricing);
+    let client = MockScrappa::with_responses([]);
+    let summaries = scrape_challenges(
+        &client,
+        &mut actor,
+        &[request(json!({"challenge_id": "1"}))],
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(actor.available_capacity(1), 0);
+    assert_eq!(summaries[0].status, "charge-limit-reached");
+    assert_eq!(summaries[0].pages_fetched, 0);
+    assert!(client.calls().is_empty());
+    assert!(server.requests().is_empty());
+}
+
 #[test]
 fn non_ppe_runs_keep_unbounded_dataset_capacity() {
     let pricing = RunPricing::from_run_response(&json!({
@@ -692,7 +738,7 @@ fn non_ppe_runs_keep_unbounded_dataset_capacity() {
         }
     }))
     .unwrap();
-    assert_eq!(pricing.available_capacity(RESULT_EVENT, 2_000), 2_000);
+    assert_eq!(pricing.available_result_capacity(2_000), 2_000);
 }
 
 #[derive(Debug, Clone)]
@@ -991,6 +1037,73 @@ async fn ppe_push_stores_then_charges_each_result_once_with_retry_idempotency() 
         .get("authorization")
         .map(String::as_str)
         == Some("Bearer test-apify-token")));
+}
+
+#[tokio::test]
+async fn failed_custom_charge_stops_later_challenges_after_dataset_commit() {
+    let stored_rows = Arc::new(AtomicUsize::new(0));
+    let stored_rows_counter = stored_rows.clone();
+    let server = MockServer::start(move |request| {
+        if request.path == "/v2/datasets/dataset-test/items" {
+            let rows: Value = serde_json::from_slice(&request.body).unwrap();
+            stored_rows_counter.fetch_add(rows.as_array().unwrap().len(), Ordering::SeqCst);
+            return (200, String::new());
+        }
+        if request.path == "/v2/actor-runs/run-test/charge" {
+            return (503, r#"{"error":"charge unavailable"}"#.to_owned());
+        }
+        (404, "{}".to_owned())
+    })
+    .await;
+    let api = ApifyClient::with_retry_policy(
+        actor_config(server.url.clone()),
+        RetryPolicy {
+            retries: 1,
+            minimum_delay: Duration::ZERO,
+        },
+        Duration::from_secs(2),
+    )
+    .unwrap();
+    let pricing = RunPricing::from_run_response(&json!({
+        "data": {
+            "pricingInfo": {
+                "pricingModel": "PAY_PER_EVENT",
+                "pricingPerEvent": {"actorChargeEvents": {
+                    "challenge-post-result": {"eventPriceUsd": 0.00025},
+                    "apify-default-dataset-item": {"eventPriceUsd": 0.00025}
+                }}
+            },
+            "options": {"maxTotalChargeUsd": 0.001},
+            "chargedEventCounts": {}
+        }
+    }))
+    .unwrap();
+    let mut actor = ApifyActor::new(api, pricing);
+    let client = MockScrappa::with_responses([
+        json!({"code": 0, "data": {"videos": [{"video_id": "shared"}]}}),
+        json!({"code": 0, "data": {"videos": [{"video_id": "shared"}]}}),
+    ]);
+    let requests = [
+        request(json!({"challenge_id": "1"})),
+        request(json!({"challenge_id": "2"})),
+    ];
+
+    let error = scrape_challenges(&client, &mut actor, &requests)
+        .await
+        .unwrap_err();
+
+    assert!(error
+        .to_string()
+        .contains("Failed to save results for challenge 1"));
+    assert_eq!(client.calls().len(), 1);
+    assert_eq!(client.calls()[0].challenge_id, "1");
+    assert_eq!(stored_rows.load(Ordering::SeqCst), 1);
+    let requests = server.requests();
+    assert_eq!(requests.len(), 3);
+    assert_eq!(requests[0].path, "/v2/datasets/dataset-test/items");
+    assert!(requests[1..]
+        .iter()
+        .all(|request| request.path == "/v2/actor-runs/run-test/charge"));
 }
 
 #[tokio::test]
