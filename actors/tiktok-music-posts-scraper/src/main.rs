@@ -653,8 +653,21 @@ fn affordable_dataset_items(
         .and_then(Value::as_str)
         != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        return Ok(requested);
     }
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        Some(Value::Null) | None => return Ok(requested),
+        Some(value) => value
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
+    };
+    if max_charge == 0.0 {
+        return Ok(requested);
+    }
+    if !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
@@ -669,17 +682,6 @@ fn affordable_dataset_items(
     }
     if item_price == 0.0 {
         return Ok(requested);
-    }
-
-    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
-        Some(Value::Null) => return Ok(requested),
-        Some(value) => value
-            .as_f64()
-            .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?,
-        None => bail!("Apify run did not provide the spending limit"),
-    };
-    if !max_charge.is_finite() || max_charge < 0.0 {
-        bail!("Apify run returned invalid charging values");
     }
 
     let counts = data
@@ -1118,16 +1120,33 @@ mod tests {
     }
 
     #[test]
-    fn prices_default_dataset_rows_against_all_charged_events() {
+    fn positive_spending_limit_accounts_for_other_charged_events_and_saved_rows() {
         let run = value(&pricing_body(Some(0.101), json!({ "start-event": 1 })));
         assert_eq!(affordable_dataset_items(&run, 5, 0).unwrap(), 3);
         assert_eq!(affordable_dataset_items(&run, 1, 3).unwrap(), 0);
     }
 
     #[test]
-    fn allows_uncapped_runs_and_zero_price_dataset_events() {
+    fn allows_non_ppe_runs_without_pricing_event_details() {
+        let run = json!({ "data": { "pricingInfo": { "pricingModel": "FREE" } } });
+        assert_eq!(affordable_dataset_items(&run, 50, 0).unwrap(), 50);
+    }
+
+    #[test]
+    fn treats_missing_null_and_zero_spending_limits_as_uncapped() {
+        let mut missing_limit = value(&pricing_body(Some(1.0), json!({})));
+        missing_limit["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+        assert_eq!(affordable_dataset_items(&missing_limit, 50, 0).unwrap(), 50);
+
         let uncapped = value(&pricing_body(None, json!({})));
         assert_eq!(affordable_dataset_items(&uncapped, 50, 0).unwrap(), 50);
+
+        let zero_limit = value(&pricing_body(Some(0.0), json!({})));
+        assert_eq!(affordable_dataset_items(&zero_limit, 50, 0).unwrap(), 50);
+
         let mut free_event = value(&pricing_body(Some(0.0), json!({})));
         free_event["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
             [DEFAULT_DATASET_ITEM_EVENT]["eventPriceUsd"] = json!(0);
