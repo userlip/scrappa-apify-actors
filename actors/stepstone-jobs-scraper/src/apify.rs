@@ -157,13 +157,23 @@ fn affordable_dataset_items(run: &Value) -> Result<usize> {
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => None,
+        Some(value) => Some(
+            value
+                .as_f64()
+                .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?,
+        ),
+    };
+    if !item_price.is_finite()
+        || item_price < 0.0
+        || max_charge.is_some_and(|value| !value.is_finite() || value < 0.0)
+    {
         bail!("Apify run returned invalid charging values");
     }
+    let Some(max_charge) = max_charge.filter(|value| *value > 0.0) else {
+        return Ok(usize::MAX);
+    };
 
     let charged_events = data
         .get("chargedEventCounts")
@@ -244,6 +254,22 @@ mod tests {
         )
     }
 
+    fn pricing_run(options: Value) -> Value {
+        json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.1},
+                        "other-event": {"eventPriceUsd": 0.05}
+                    }}
+                },
+                "options": options,
+                "chargedEventCounts": {}
+            }
+        })
+    }
+
     fn client(server: &MockServer) -> ApifyClient {
         ApifyClient::new(
             &server.base_url,
@@ -298,20 +324,39 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn zero_budget_skips_the_dataset_post() {
-        let server = MockServer::start(vec![pricing_response(0.0, json!({}))]);
+    async fn zero_max_total_charge_is_unlimited_for_dataset_writes() {
+        let server = MockServer::start(vec![
+            pricing_response(0.0, json!({})),
+            MockResponse::json(201, json!({})),
+        ]);
         let apify = client(&server);
         let mut budget = apify.dataset_item_budget().await.unwrap();
-        assert_eq!(budget, 0);
+        assert_eq!(budget, usize::MAX);
 
         assert_eq!(
             apify
                 .push_data(&[json!({"id": "first"})], &mut budget)
                 .await
                 .unwrap(),
-            0
+            1
         );
-        assert_eq!(server.requests().len(), 1);
+        assert_eq!(server.requests().len(), 2);
+    }
+
+    #[test]
+    fn missing_max_total_charge_is_unlimited() {
+        assert_eq!(
+            affordable_dataset_items(&pricing_run(json!({}))).unwrap(),
+            usize::MAX
+        );
+    }
+
+    #[test]
+    fn null_max_total_charge_is_unlimited() {
+        assert_eq!(
+            affordable_dataset_items(&pricing_run(json!({"maxTotalChargeUsd": null}))).unwrap(),
+            usize::MAX
+        );
     }
 
     #[test]
