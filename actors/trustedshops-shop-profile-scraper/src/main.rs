@@ -414,6 +414,57 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn keeps_persisted_profile_saved_when_charge_retries_are_exhausted() {
+        let tsid = "XFB15FFBDE1DEE7A55D292A7D48598A6A";
+        let source_url = format!("https://www.trustedshops.de/bewertung/info_{tsid}.html");
+        let server = MockServer::start(vec![
+            MockResponse::json(200, json!({"urls":[source_url]})),
+            MockResponse::json(
+                200,
+                json!({
+                    "response":{"data":{"shop":{"tsId":tsid,"name":"Example Shop","url":"example-shop.de"}}}
+                }),
+            ),
+            MockResponse::json(201, json!({})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+            MockResponse::json(503, json!({"error":"temporary failure"})),
+            MockResponse::json(200, json!({})),
+            MockResponse::json(200, json!({})),
+        ]);
+        let config = test_config(&server.base_url);
+        let apify =
+            ApifyClient::new(&config.apify_api_base_url, config.apify_token.clone()).unwrap();
+        let mut charging = ChargingManager::from_run(&pricing_response());
+
+        run_actor_with_charging(&config, &apify, &mut charging)
+            .await
+            .unwrap();
+
+        let requests = server.requests();
+        let output: Value = serde_json::from_str(request_parts(&requests[6]).2).unwrap();
+        assert_eq!(output["profiles_requested"], 1);
+        assert_eq!(output["profiles_saved"], 1);
+        assert_eq!(output["profiles_failed"], 0);
+        assert!(output["failures"].as_array().unwrap().is_empty());
+        assert!(
+            output["status_message"]
+                .as_str()
+                .unwrap()
+                .contains("shop profile was saved, but its Apify charge could not be confirmed")
+        );
+
+        let status: Value = serde_json::from_str(request_parts(&requests[7]).2).unwrap();
+        assert_eq!(status["isStatusMessageTerminal"], true);
+        assert!(
+            status["statusMessage"]
+                .as_str()
+                .unwrap()
+                .contains("Apify charge could not be confirmed")
+        );
+    }
+
+    #[tokio::test]
     async fn reports_invalid_inputs_and_keeps_the_summary_before_failing_the_run() {
         let server = MockServer::start(vec![
             MockResponse::json(
