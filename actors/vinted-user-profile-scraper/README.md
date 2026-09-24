@@ -21,7 +21,7 @@ For higher-volume workloads or direct API integration, use the [Scrappa API](htt
 | `user_ids` | array or CSV string | No | Multiple Vinted user IDs. Singular and batch fields can be combined |
 | `country` | string | No | Vinted market code. Defaults to `FR` |
 
-The Actor trims and deduplicates IDs in input order, validates numeric IDs and country codes, and accepts at most 100 unique IDs per run. It processes up to 32 profiles concurrently, with two 15-second Scrappa attempts and bounded Apify dataset and charge requests; the worst-case request budget keeps the maximum batch within the Actor's 600-second runtime. Supported countries are `FR`, `DE`, `ES`, `IT`, `NL`, `BE`, `AT`, `PL`, `CZ`, `LT`, `LU`, `SK`, `HU`, `RO`, `PT`, `SE`, `DK`, `FI`, and `US`.
+The Actor trims and deduplicates IDs in input order, validates numeric IDs and country codes, and accepts at most 100 unique IDs per run. It runs at most eight Scrappa requests concurrently and overlaps fetching with up to 32 bounded profile workflows for dataset writes and PPE charges. Each Scrappa request gets two 15-second attempts; the runtime budget accounts for Apify write and charge deadlines within the Actor's 600-second timeout. Supported countries are `FR`, `DE`, `ES`, `IT`, `NL`, `BE`, `AT`, `PL`, `CZ`, `LT`, `LU`, `SK`, `HU`, `RO`, `PT`, `SE`, `DK`, `FI`, and `US`.
 
 ### Batch example
 

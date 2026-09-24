@@ -7,7 +7,7 @@ use url::Url;
 
 use crate::{
     request_params::VintedUserProfileRequest,
-    runtime_budget::{retry_delay_ms, APIFY_MAX_ATTEMPTS, APIFY_REQUEST_TIMEOUT_MS},
+    runtime_budget::{retry_delay_ms, APIFY_CHARGE_MAX_ATTEMPTS, APIFY_REQUEST_TIMEOUT_MS},
 };
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
@@ -300,7 +300,7 @@ impl ApifyClient {
             self.actor_run_id, request.index
         );
 
-        for attempt in 0..APIFY_MAX_ATTEMPTS {
+        for attempt in 0..APIFY_CHARGE_MAX_ATTEMPTS {
             let response = self
                 .request(Method::POST, url.clone())
                 .header("idempotency-key", &idempotency_key)
@@ -314,7 +314,7 @@ impl ApifyClient {
             match response {
                 Ok(response) if response.status().is_success() => return Ok(()),
                 Ok(response)
-                    if attempt + 1 < APIFY_MAX_ATTEMPTS
+                    if attempt + 1 < APIFY_CHARGE_MAX_ATTEMPTS
                         && retryable_apify_status(response.status()) =>
                 {
                     drop(response);
@@ -324,7 +324,7 @@ impl ApifyClient {
                     return Err(apify_error(response, "profile result charge").await);
                 }
                 Err(error)
-                    if attempt + 1 < APIFY_MAX_ATTEMPTS
+                    if attempt + 1 < APIFY_CHARGE_MAX_ATTEMPTS
                         && (error.is_timeout() || error.is_connect()) =>
                 {
                     tokio::time::sleep(Duration::from_millis(retry_delay_ms(attempt))).await;

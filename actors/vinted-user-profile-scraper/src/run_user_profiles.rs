@@ -1,14 +1,19 @@
-use std::{cmp::min, collections::HashMap};
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
 
 use anyhow::{anyhow, Result};
 use serde_json::json;
-use tokio::task::JoinSet;
+use tokio::{sync::Semaphore, task::JoinSet};
 
 use crate::{
     apify::{ApifyClient, ChargeBudget},
     request_params::VintedUserProfileRequest,
     response_utils::{build_vinted_user_profile_dataset_item, get_vinted_user_profile},
-    runtime_budget::{PROFILE_REQUEST_CONCURRENCY, SCRAPPA_MAX_ATTEMPTS},
+    runtime_budget::{
+        PROFILE_REQUEST_CONCURRENCY, PROFILE_WORKFLOW_CONCURRENCY, SCRAPPA_MAX_ATTEMPTS,
+    },
     scrappa::{ScrappaClient, ScrappaError},
 };
 
@@ -18,6 +23,13 @@ pub struct VintedUserProfileRunSummary {
     pub succeeded: usize,
     pub failed: usize,
     pub status_message: Option<String>,
+}
+
+enum ProfileResult {
+    Saved { request_index: usize },
+    Failed,
+    ActorFailure(String),
+    SkippedAfterActorFailure,
 }
 
 pub async fn run_vinted_user_profiles(
@@ -48,141 +60,78 @@ pub async fn run_vinted_user_profiles(
             break;
         }
 
-        // Each request in the batch reserves one possible PPE result charge.
-        let batch_size = min(
-            PROFILE_REQUEST_CONCURRENCY,
-            min(
-                requests.len() - offset,
-                budget.capacity().unwrap_or(PROFILE_REQUEST_CONCURRENCY),
-            ),
-        );
+        let remaining_requests = requests.len() - offset;
+        // Reserve one affordable result event for each workflow in this wave.
+        let batch_size = remaining_requests.min(budget.capacity().unwrap_or(remaining_requests));
         let batch = &requests[offset..offset + batch_size];
         offset += batch_size;
+        let stop_workers = Arc::new(AtomicBool::new(false));
+        let workflow_slots = Arc::new(Semaphore::new(PROFILE_WORKFLOW_CONCURRENCY));
+        let scrappa_slots = Arc::new(Semaphore::new(PROFILE_REQUEST_CONCURRENCY));
+        let charges_profile_results = budget.charges_profile_results();
         let mut tasks = JoinSet::new();
         for (batch_index, request) in batch.iter().cloned().enumerate() {
+            let actor = actor.clone();
             let client = client.clone();
+            let stop_workers = stop_workers.clone();
+            let workflow_slots = workflow_slots.clone();
+            let scrappa_slots = scrappa_slots.clone();
             tasks.spawn(async move {
-                println!(
-                    "Fetching Vinted user profile {} in {}",
-                    request.user_id, request.country
-                );
-                let response = client.get(&request, SCRAPPA_MAX_ATTEMPTS).await;
-                (batch_index, response)
+                let result = process_vinted_user_profile(
+                    actor,
+                    client,
+                    request,
+                    charges_profile_results,
+                    workflow_slots,
+                    scrappa_slots,
+                    stop_workers,
+                )
+                .await;
+                (batch_index, result)
             });
         }
 
-        let mut responses = HashMap::with_capacity(batch.len());
+        let mut results = (0..batch.len())
+            .map(|_| None)
+            .collect::<Vec<Option<ProfileResult>>>();
         let mut actor_level_failure = None;
         while let Some(result) = tasks.join_next().await {
-            let (batch_index, response) =
+            let (batch_index, result) =
                 result.map_err(|error| anyhow!("Vinted profile worker failed: {error}"))?;
-            if let Err(error) = &response {
-                if error.is_auth_failure() {
-                    actor_level_failure.get_or_insert_with(|| error.to_string());
-                }
+            if let ProfileResult::ActorFailure(error) = &result {
+                actor_level_failure.get_or_insert_with(|| error.clone());
             }
-            responses.insert(batch_index, response);
+            results[batch_index] = Some(result);
         }
 
         if let Some(error) = actor_level_failure {
             return Err(anyhow!("{error}"));
         }
 
-        let charge_results = budget.charges_profile_results();
-        let mut save_tasks = JoinSet::new();
-        for (batch_index, request) in batch.iter().enumerate() {
-            let response = responses
-                .remove(&batch_index)
-                .ok_or_else(|| anyhow!("Vinted profile worker returned no response"))?;
-
-            let response = match response {
-                Ok(response) => response,
-                Err(error) => {
-                    log_profile_failure(request, &error);
-                    failed += 1;
-                    continue;
-                }
-            };
-            let profile = match get_vinted_user_profile(&response) {
-                Ok(profile) => profile,
-                Err(error) => {
-                    eprintln!(
-                        "Vinted user profile request {} failed: {error}",
-                        request.index + 1
-                    );
-                    failed += 1;
-                    continue;
-                }
-            };
-            let item = build_vinted_user_profile_dataset_item(profile, request, &response);
-            let actor = actor.clone();
-            let request = request.clone();
-            save_tasks.spawn(async move {
-                let result =
-                    save_vinted_user_profile_result(&actor, &request, item, charge_results).await;
-                (batch_index, result)
-            });
-        }
-
-        let mut save_results = HashMap::with_capacity(save_tasks.len());
-        let mut save_failure = None;
-        while let Some(result) = save_tasks.join_next().await {
-            match result {
-                Ok((batch_index, result)) => {
-                    if let ProfileSaveResult::ChargeFailure(error) = &result {
-                        save_failure.get_or_insert_with(|| anyhow!(error.clone()));
-                    }
-                    save_results.insert(batch_index, result);
-                }
-                Err(error) => {
-                    save_failure.get_or_insert_with(|| {
-                        anyhow!("Vinted profile save worker failed: {error}")
-                    });
-                }
-            }
-        }
-
-        if let Some(error) = save_failure {
-            return Err(error);
-        }
-
-        for (batch_index, request) in batch.iter().enumerate() {
-            let Some(result) = save_results.remove(&batch_index) else {
-                continue;
-            };
-            match result {
-                ProfileSaveResult::DatasetFailure(error) => {
-                    eprintln!(
-                        "Vinted user profile request {} failed: {error}",
-                        request.index + 1
-                    );
-                    failed += 1;
-                }
-                ProfileSaveResult::ChargeFailure(_) => {
-                    unreachable!("charge failures return the actor-level error above")
-                }
-                ProfileSaveResult::Saved => {
-                    if charge_results {
-                        budget.event_charge_succeeded();
-                    }
+        for result in results {
+            match result.unwrap_or(ProfileResult::SkippedAfterActorFailure) {
+                ProfileResult::Saved { request_index } => {
                     succeeded += 1;
-                    println!("Saved Vinted user profile result {}", request.index + 1);
+                    budget.event_charge_succeeded();
+                    println!("Saved Vinted user profile result {}", request_index + 1);
 
                     if budget.capacity() == Some(0) {
-                        let message = charge_limit_after_result(request.index);
+                        let message = charge_limit_after_result(request_index);
                         println!(
                             "{message} {}",
                             json!({
                                 "event": "user-profile-result",
                                 "charged_count": 1,
                                 "requested_count": 1,
-                                "request_index": request.index,
+                                "request_index": request_index,
                             })
                         );
                         status_message = Some(message);
-                        break;
                     }
                 }
+                ProfileResult::Failed => failed += 1,
+                ProfileResult::ActorFailure(_) => unreachable!("actor failures return above"),
+                ProfileResult::SkippedAfterActorFailure => {}
             }
         }
     }
@@ -195,32 +144,100 @@ pub async fn run_vinted_user_profiles(
     })
 }
 
-enum ProfileSaveResult {
-    Saved,
-    DatasetFailure(String),
-    ChargeFailure(String),
-}
-
-async fn save_vinted_user_profile_result(
-    actor: &ApifyClient,
-    request: &VintedUserProfileRequest,
-    item: serde_json::Value,
-    charge_result: bool,
-) -> ProfileSaveResult {
-    if let Err(error) = actor.push_dataset_item(&item).await {
-        return ProfileSaveResult::DatasetFailure(format!("{error:#}"));
+async fn process_vinted_user_profile(
+    actor: ApifyClient,
+    client: ScrappaClient,
+    request: VintedUserProfileRequest,
+    charges_profile_results: bool,
+    workflow_slots: Arc<Semaphore>,
+    scrappa_slots: Arc<Semaphore>,
+    stop_workers: Arc<AtomicBool>,
+) -> ProfileResult {
+    let _workflow_slot = match workflow_slots.acquire_owned().await {
+        Ok(permit) => permit,
+        Err(error) => {
+            stop_workers.store(true, Ordering::SeqCst);
+            return ProfileResult::ActorFailure(format!(
+                "Could not acquire a Vinted profile worker slot: {error}"
+            ));
+        }
+    };
+    if stop_workers.load(Ordering::SeqCst) {
+        return ProfileResult::SkippedAfterActorFailure;
     }
 
-    if charge_result {
-        if let Err(error) = actor.charge_user_profile_result(request).await {
-            return ProfileSaveResult::ChargeFailure(format!(
+    let scrappa_slot = match scrappa_slots.acquire_owned().await {
+        Ok(permit) => permit,
+        Err(error) => {
+            stop_workers.store(true, Ordering::SeqCst);
+            return ProfileResult::ActorFailure(format!(
+                "Could not acquire a Scrappa request slot: {error}"
+            ));
+        }
+    };
+    if stop_workers.load(Ordering::SeqCst) {
+        return ProfileResult::SkippedAfterActorFailure;
+    }
+
+    println!(
+        "Fetching Vinted user profile {} in {}",
+        request.user_id, request.country
+    );
+    let response = client.get(&request, SCRAPPA_MAX_ATTEMPTS).await;
+    drop(scrappa_slot);
+
+    let response = match response {
+        Ok(response) => response,
+        Err(error) if error.is_auth_failure() => {
+            stop_workers.store(true, Ordering::SeqCst);
+            return ProfileResult::ActorFailure(error.to_string());
+        }
+        Err(error) => {
+            log_profile_failure(&request, &error);
+            return ProfileResult::Failed;
+        }
+    };
+    if stop_workers.load(Ordering::SeqCst) {
+        eprintln!(
+            "Skipping Vinted user profile request {} after an actor-level failure.",
+            request.index + 1
+        );
+        return ProfileResult::SkippedAfterActorFailure;
+    }
+
+    let profile = match get_vinted_user_profile(&response) {
+        Ok(profile) => profile,
+        Err(error) => {
+            eprintln!(
+                "Vinted user profile request {} failed: {error}",
+                request.index + 1
+            );
+            return ProfileResult::Failed;
+        }
+    };
+    let item = build_vinted_user_profile_dataset_item(profile, &request, &response);
+
+    if let Err(error) = actor.push_dataset_item(&item).await {
+        eprintln!(
+            "Vinted user profile request {} failed: {error:#}",
+            request.index + 1
+        );
+        return ProfileResult::Failed;
+    }
+
+    if charges_profile_results {
+        if let Err(error) = actor.charge_user_profile_result(&request).await {
+            stop_workers.store(true, Ordering::SeqCst);
+            return ProfileResult::ActorFailure(format!(
                 "Vinted user profile request {} was saved but charging its result failed: {error:#}",
                 request.index + 1
             ));
         }
     }
 
-    ProfileSaveResult::Saved
+    ProfileResult::Saved {
+        request_index: request.index,
+    }
 }
 
 fn log_profile_failure(request: &VintedUserProfileRequest, error: &ScrappaError) {
@@ -354,7 +371,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn appends_and_charges_profiles_concurrently_within_reserved_capacity() {
+    async fn pipelines_profile_persistence_within_reserved_capacity() {
         let profile_response = r#"{"success":true,"data":{"user":{"id":1,"login":"seller","profile_url":"https://www.vinted.de/member/1"}}}"#;
         let (scrappa_base_url, scrappa_server) = mock_server(vec![
             (200, profile_response.into()),
