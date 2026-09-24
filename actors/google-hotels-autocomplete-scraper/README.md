@@ -50,4 +50,15 @@ Results use the `hotel-suggestion-result` pay-per-event charge at **$0.00025 per
 
 ## Direct API upgrade
 
-This Actor is a thin wrapper around `GET https://scrappa.co/api/google-hotels/autocomplete`. For higher-volume workflows, use the [Scrappa API](https://scrappa.co) directly to avoid Apify run overhead and feed returned property tokens or links into Scrappa's Google Hotels Search endpoint.
+This Actor is a thin Rust wrapper around `GET https://scrappa.co/api/google-hotels/autocomplete`. For higher-volume workflows, use the [Scrappa API](https://scrappa.co) directly to avoid Apify run overhead and feed returned property tokens or links into Scrappa's Google Hotels Search endpoint.
+
+Each Scrappa request has a 30-second deadline and up to three attempts for timeouts, connection failures, transient HTTP statuses, and explicitly retryable 403 responses. The Actor's 180-second run timeout remains configured in `.actor/actor.json`.
+
+In `PAY_PER_EVENT` runs, the Actor charges `hotel-suggestion-result` for each suggestion row it publishes. It checks all current run charges against `maxTotalChargeUsd` before fetching each query, then caps saved rows to the remaining budget. It records one `OUTPUT` summary in the default key-value store and does not write per-result key-value records.
+
+## Development
+
+```bash
+cargo test --locked
+docker build -f .actor/Dockerfile -t google-hotels-autocomplete-scraper .
+```
