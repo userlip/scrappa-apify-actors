@@ -17,6 +17,7 @@ pub struct MockResponse {
     content_type: String,
     body: String,
     delay: Duration,
+    body_delay: Duration,
 }
 
 impl MockResponse {
@@ -27,6 +28,7 @@ impl MockResponse {
             content_type: "application/json; charset=utf-8".to_owned(),
             body: body.to_owned(),
             delay: Duration::ZERO,
+            body_delay: Duration::ZERO,
         }
     }
 
@@ -37,6 +39,7 @@ impl MockResponse {
             content_type: "text/plain; charset=utf-8".to_owned(),
             body: body.to_owned(),
             delay: Duration::ZERO,
+            body_delay: Duration::ZERO,
         }
     }
 
@@ -47,6 +50,7 @@ impl MockResponse {
             content_type: "text/plain; charset=utf-8".to_owned(),
             body: body.to_owned(),
             delay: Duration::ZERO,
+            body_delay: Duration::ZERO,
         }
     }
 
@@ -57,6 +61,18 @@ impl MockResponse {
             content_type: "text/plain; charset=utf-8".to_owned(),
             body: body.to_owned(),
             delay: Duration::from_millis(delay_ms),
+            body_delay: Duration::ZERO,
+        }
+    }
+
+    pub fn delayed_body_text(delay_ms: u64, status: u16, reason: &str, body: &str) -> Self {
+        Self {
+            status,
+            reason: reason.to_owned(),
+            content_type: "text/plain; charset=utf-8".to_owned(),
+            body: body.to_owned(),
+            delay: Duration::ZERO,
+            body_delay: Duration::from_millis(delay_ms),
         }
     }
 }
@@ -104,15 +120,16 @@ async fn serve_request(
     let request = read_http_request(&mut stream).await;
     requests.lock().unwrap().push(request);
     tokio::time::sleep(response.delay).await;
-    let wire_response = format!(
-        "HTTP/1.1 {} {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+    let headers = format!(
+        "HTTP/1.1 {} {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
         response.status,
         response.reason,
         response.content_type,
-        response.body.len(),
-        response.body
+        response.body.len()
     );
-    let _ = stream.write_all(wire_response.as_bytes()).await;
+    let _ = stream.write_all(headers.as_bytes()).await;
+    tokio::time::sleep(response.body_delay).await;
+    let _ = stream.write_all(response.body.as_bytes()).await;
 }
 
 async fn read_http_request(stream: &mut TcpStream) -> String {

@@ -110,34 +110,43 @@ impl ScrappaWebScraperClient {
     }
 
     pub async fn scrape_json(&self, params: &WebScraperParams) -> Result<Value, ScrappaError> {
-        let response = self.fetch_response(params, "application/json").await?;
-        response
-            .json::<Value>()
-            .await
-            .map_err(|error| ScrappaError::ResponseBody(error.to_string()))
+        match self
+            .fetch_body(params, "application/json", ResponseBodyType::Json)
+            .await?
+        {
+            ScrappaResponseBody::Json(response) => Ok(response),
+            ScrappaResponseBody::Text(_) => unreachable!("JSON requests return JSON bodies"),
+        }
     }
 
     pub async fn scrape_markdown(&self, params: &WebScraperParams) -> Result<String, ScrappaError> {
-        let response = self
-            .fetch_response(params, "text/markdown, text/plain;q=0.9, */*;q=0.8")
-            .await?;
-        response
-            .text()
-            .await
-            .map_err(|error| ScrappaError::ResponseBody(error.to_string()))
+        match self
+            .fetch_body(
+                params,
+                "text/markdown, text/plain;q=0.9, */*;q=0.8",
+                ResponseBodyType::Text,
+            )
+            .await?
+        {
+            ScrappaResponseBody::Text(response) => Ok(response),
+            ScrappaResponseBody::Json(_) => unreachable!("Markdown requests return text bodies"),
+        }
     }
 
-    async fn fetch_response(
+    async fn fetch_body(
         &self,
         params: &WebScraperParams,
         accept: &str,
-    ) -> Result<Response, ScrappaError> {
+        body_type: ResponseBodyType,
+    ) -> Result<ScrappaResponseBody, ScrappaError> {
         let url = build_request_url(&self.base_url, params)?;
         let mut last_error = None;
 
         for attempt in 1..=self.max_attempts {
-            match tokio::time::timeout(self.timeout, self.send_once(url.clone(), accept)).await {
-                Ok(Ok(response)) => return Ok(response),
+            match tokio::time::timeout(self.timeout, self.send_once(url.clone(), accept, body_type))
+                .await
+            {
+                Ok(Ok(response_body)) => return Ok(response_body),
                 Ok(Err(error)) => last_error = Some(error),
                 Err(_) => {
                     last_error = Some(ScrappaError::Timeout {
@@ -164,7 +173,12 @@ impl ScrappaWebScraperClient {
         Err(last_error.expect("at least one request attempt is configured"))
     }
 
-    async fn send_once(&self, url: Url, accept: &str) -> Result<Response, ScrappaError> {
+    async fn send_once(
+        &self,
+        url: Url,
+        accept: &str,
+        body_type: ResponseBodyType,
+    ) -> Result<ScrappaResponseBody, ScrappaError> {
         let request = self
             .http
             .get(url)
@@ -180,11 +194,33 @@ impl ScrappaWebScraperClient {
             })?;
 
         if response.status().is_success() {
-            return Ok(response);
+            return match body_type {
+                ResponseBodyType::Json => response
+                    .json::<Value>()
+                    .await
+                    .map(ScrappaResponseBody::Json)
+                    .map_err(|error| ScrappaError::ResponseBody(error.to_string())),
+                ResponseBodyType::Text => response
+                    .text()
+                    .await
+                    .map(ScrappaResponseBody::Text)
+                    .map_err(|error| ScrappaError::ResponseBody(error.to_string())),
+            };
         }
 
         Err(build_http_error(response).await)
     }
+}
+
+#[derive(Clone, Copy)]
+enum ResponseBodyType {
+    Json,
+    Text,
+}
+
+enum ScrappaResponseBody {
+    Json(Value),
+    Text(String),
 }
 
 fn build_request_url(base_url: &Url, params: &WebScraperParams) -> Result<Url, ScrappaError> {
@@ -424,5 +460,35 @@ mod tests {
         let client = build_client(server.base_url(), Duration::from_millis(10), 1);
         let error = client.scrape_json(&json_params(None)).await.unwrap_err();
         assert!(matches!(error, ScrappaError::Timeout { .. }));
+    }
+
+    #[tokio::test]
+    async fn bounds_response_body_by_the_configured_timeout_and_retries_it() {
+        let server = start_mock_server(vec![
+            MockResponse::delayed_body_text(100, 200, "OK", r#"{"success":true}"#),
+            MockResponse::json(200, r#"{"success":true}"#),
+        ])
+        .await;
+        let client = build_client(server.base_url(), Duration::from_millis(10), 2);
+
+        assert_eq!(
+            client.scrape_json(&json_params(None)).await.unwrap(),
+            json!({"success": true})
+        );
+        assert_eq!(server.requests().await.len(), 2);
+
+        let server = start_mock_server(vec![MockResponse::delayed_body_text(
+            100, 200, "OK", "too slow",
+        )])
+        .await;
+        let client = build_client(server.base_url(), Duration::from_millis(10), 1);
+        let params = WebScraperParams {
+            url: "https://example.com".to_owned(),
+            include_html: None,
+            response_type: ResponseType::Markdown,
+        };
+        let error = client.scrape_markdown(&params).await.unwrap_err();
+        assert!(matches!(error, ScrappaError::Timeout { .. }));
+        assert_eq!(server.requests().await.len(), 1);
     }
 }

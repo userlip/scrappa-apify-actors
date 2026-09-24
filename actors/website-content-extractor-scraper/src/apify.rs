@@ -132,6 +132,12 @@ impl ApifyClient {
 
         let success = item.get("success").and_then(Value::as_bool) == Some(true);
         let should_charge = billing.is_pay_per_event && success;
+        let should_record_dataset_item_charge = billing.is_pay_per_event
+            && billing.pricing.as_ref().is_some_and(|pricing| {
+                pricing
+                    .event_prices
+                    .contains_key(DEFAULT_DATASET_ITEM_CHARGE_EVENT)
+            });
         if billing.is_pay_per_event {
             let pricing = billing
                 .pricing
@@ -142,9 +148,10 @@ impl ApifyClient {
             }
         }
 
-        billing
-            .dataset_writes
-            .insert(idempotency_key.to_owned(), DatasetWriteState::AppendAttempted);
+        billing.dataset_writes.insert(
+            idempotency_key.to_owned(),
+            DatasetWriteState::AppendAttempted,
+        );
         self.write_dataset_item(item).await?;
         billing.dataset_writes.insert(
             idempotency_key.to_owned(),
@@ -153,7 +160,7 @@ impl ApifyClient {
             },
         );
 
-        if billing.is_pay_per_event {
+        if should_record_dataset_item_charge {
             billing
                 .budget
                 .record_charge(DEFAULT_DATASET_ITEM_CHARGE_EVENT)?;
@@ -304,7 +311,13 @@ impl ChargeBudget {
             *current = (*current).max(expected_event_count);
         }
 
-        let mut pending_charges = vec![DEFAULT_DATASET_ITEM_CHARGE_EVENT];
+        let mut pending_charges = Vec::with_capacity(2);
+        if pricing
+            .event_prices
+            .contains_key(DEFAULT_DATASET_ITEM_CHARGE_EVENT)
+        {
+            pending_charges.push(DEFAULT_DATASET_ITEM_CHARGE_EVENT);
+        }
         if success {
             pending_charges.push(URL_RESULT_CHARGE_EVENT);
         }
@@ -337,9 +350,7 @@ impl ChargeBudget {
             bail!("Apify run returned invalid charged totals");
         }
 
-        let Some(max_total_charge_usd) = pricing
-            .max_total_charge_usd
-            .filter(|limit| *limit > 0.0)
+        let Some(max_total_charge_usd) = pricing.max_total_charge_usd.filter(|limit| *limit > 0.0)
         else {
             return Ok(true);
         };
@@ -390,6 +401,8 @@ impl RunPricing {
                     bail!("Invalid price for charged event {event_name}");
                 }
                 event_prices.insert(event_name.to_owned(), price);
+            } else if event_name == DEFAULT_DATASET_ITEM_CHARGE_EVENT {
+                bail!("Apify run did not provide a flat price for charged event {event_name}");
             }
         }
 
@@ -542,16 +555,31 @@ mod tests {
         let run_pricing = pricing(0.0005, json!({"apify-actor-start": 1}));
         let mut budget = ChargeBudget::new(run_pricing.charged_event_counts.clone());
 
-        assert!(budget
-            .can_save_dataset_item(&run_pricing, true)
-            .unwrap());
+        assert!(budget.can_save_dataset_item(&run_pricing, true).unwrap());
         budget
             .record_charge(DEFAULT_DATASET_ITEM_CHARGE_EVENT)
             .unwrap();
         budget.record_charge(URL_RESULT_CHARGE_EVENT).unwrap();
-        assert!(!budget
-            .can_save_dataset_item(&run_pricing, true)
-            .unwrap());
+        assert!(!budget.can_save_dataset_item(&run_pricing, true).unwrap());
+    }
+
+    #[test]
+    fn ppe_budget_allows_charges_when_default_dataset_event_is_disabled() {
+        let run_pricing = RunPricing {
+            max_total_charge_usd: Some(0.0004),
+            event_prices: [
+                ("apify-actor-start".to_owned(), 0.0001),
+                (URL_RESULT_CHARGE_EVENT.to_owned(), 0.0002),
+            ]
+            .into_iter()
+            .collect(),
+            charged_event_counts: serde_json::from_value(json!({"apify-actor-start": 1})).unwrap(),
+        };
+        let mut budget = ChargeBudget::new(run_pricing.charged_event_counts.clone());
+
+        assert!(budget.can_save_dataset_item(&run_pricing, true).unwrap());
+        budget.record_charge(URL_RESULT_CHARGE_EVENT).unwrap();
+        assert!(!budget.can_save_dataset_item(&run_pricing, true).unwrap());
     }
 
     #[test]
@@ -571,9 +599,7 @@ mod tests {
             }),
         );
 
-        assert!(budget
-            .can_save_dataset_item(&updated, true)
-            .unwrap());
+        assert!(budget.can_save_dataset_item(&updated, true).unwrap());
     }
 
     #[test]
@@ -590,9 +616,7 @@ mod tests {
         };
         let mut budget = ChargeBudget::new(HashMap::new());
 
-        assert!(budget
-            .can_save_dataset_item(&run_pricing, true)
-            .unwrap());
+        assert!(budget.can_save_dataset_item(&run_pricing, true).unwrap());
     }
 
     #[tokio::test]
@@ -662,9 +686,48 @@ mod tests {
         let requests = server.requests().await;
         assert_eq!(requests.len(), 2);
         assert!(requests[1].starts_with("POST /api/v2/datasets/test-dataset/items HTTP/1.1"));
-        assert!(requests
-            .iter()
-            .all(|request| !request.starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1")));
+        assert!(requests.iter().all(
+            |request| !request.starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1")
+        ));
+    }
+
+    #[tokio::test]
+    async fn saves_ppe_rows_when_default_dataset_charge_event_is_disabled() {
+        let mut run = ppe_run();
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            .as_object_mut()
+            .unwrap()
+            .remove(DEFAULT_DATASET_ITEM_CHARGE_EVENT);
+        let run_body = serde_json::to_string(&run).unwrap();
+        let server = start_mock_server(vec![
+            MockResponse::json(200, &run_body),
+            MockResponse::text(201, ""),
+            MockResponse::text(201, ""),
+        ])
+        .await;
+        let client = apify_client(server.base_url());
+        let mut billing = client.get_billing_state().await.unwrap();
+
+        assert_eq!(
+            client
+                .push_dataset_item(
+                    &json!({"success": true, "input_url": "https://example.com"}),
+                    &mut billing,
+                    "test-run:url-result:0",
+                )
+                .await
+                .unwrap(),
+            DatasetWriteResult::Saved
+        );
+        assert!(!billing
+            .budget
+            .locally_charged
+            .contains_key(DEFAULT_DATASET_ITEM_CHARGE_EVENT));
+
+        let requests = server.requests().await;
+        assert_eq!(requests.len(), 3);
+        assert!(requests[1].starts_with("POST /api/v2/datasets/test-dataset/items HTTP/1.1"));
+        assert!(requests[2].starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1"));
     }
 
     #[tokio::test]
@@ -693,27 +756,55 @@ mod tests {
         let requests = server.requests().await;
         assert_eq!(requests.len(), 2);
         assert!(requests[1].starts_with("POST /api/v2/datasets/test-dataset/items HTTP/1.1"));
-        assert!(requests
-            .iter()
-            .all(|request| !request.starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1")));
+        assert!(requests.iter().all(
+            |request| !request.starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1")
+        ));
     }
 
     #[test]
     fn sdk_unlimited_caps_treat_zero_null_and_missing_as_unlimited() {
         let mut zero = ppe_run();
         zero["data"]["options"]["maxTotalChargeUsd"] = json!(0.0);
-        assert_eq!(RunPricing::from_run(&zero).unwrap().max_total_charge_usd, None);
+        assert_eq!(
+            RunPricing::from_run(&zero).unwrap().max_total_charge_usd,
+            None
+        );
 
         let mut null = ppe_run();
         null["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
-        assert_eq!(RunPricing::from_run(&null).unwrap().max_total_charge_usd, None);
+        assert_eq!(
+            RunPricing::from_run(&null).unwrap().max_total_charge_usd,
+            None
+        );
 
         let mut missing = ppe_run();
         missing["data"]["options"]
             .as_object_mut()
             .unwrap()
             .remove("maxTotalChargeUsd");
-        assert_eq!(RunPricing::from_run(&missing).unwrap().max_total_charge_usd, None);
+        assert_eq!(
+            RunPricing::from_run(&missing).unwrap().max_total_charge_usd,
+            None
+        );
+    }
+
+    #[test]
+    fn rejects_tiered_default_dataset_event_prices() {
+        let mut run = ppe_run();
+        let event = run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            [DEFAULT_DATASET_ITEM_CHARGE_EVENT]
+            .as_object_mut()
+            .unwrap();
+        event.remove("eventPriceUsd");
+        event.insert(
+            "eventTieredPricingUsd".to_owned(),
+            json!({"FREE": {"tieredEventPriceUsd": 0.0002}}),
+        );
+
+        assert!(RunPricing::from_run(&run)
+            .unwrap_err()
+            .to_string()
+            .contains("flat price"));
     }
 
     #[tokio::test]
