@@ -9,6 +9,7 @@ use url::Url;
 
 pub const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 pub const RESULT_CHARGE_EVENT: &str = "hotel-suggestion-result";
+const DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 const APIFY_MAX_ATTEMPTS: u8 = 3;
 const DATASET_POST_MAX_BYTES: usize = 4 * 1024 * 1024;
@@ -23,6 +24,7 @@ pub enum PricingMode {
 pub struct EventBudget {
     event_name: String,
     event_price_usd: f64,
+    dataset_item_price_usd: f64,
     charged_usd: f64,
     max_total_charge_usd: Option<f64>,
 }
@@ -55,6 +57,26 @@ impl EventBudget {
             })?;
         if !event_price_usd.is_finite() || event_price_usd < 0.0 {
             bail!("Apify run returned an invalid {RESULT_CHARGE_EVENT} event price");
+        }
+        let dataset_item_price_usd = events
+            .get(DATASET_ITEM_CHARGE_EVENT)
+            .map(|event| {
+                event
+                    .get("eventPriceUsd")
+                    .and_then(Value::as_f64)
+                    .ok_or_else(|| {
+                        anyhow!(
+                            "Apify run did not provide the {DATASET_ITEM_CHARGE_EVENT} event price"
+                        )
+                    })
+            })
+            .transpose()?
+            .unwrap_or(0.0);
+        if !dataset_item_price_usd.is_finite() || dataset_item_price_usd < 0.0 {
+            bail!("Apify run returned an invalid {DATASET_ITEM_CHARGE_EVENT} event price");
+        }
+        if !(event_price_usd + dataset_item_price_usd).is_finite() {
+            bail!("Apify run returned invalid combined result event prices");
         }
 
         let counts = data
@@ -99,6 +121,7 @@ impl EventBudget {
         Ok(PricingMode::PayPerEvent(Self {
             event_name: RESULT_CHARGE_EVENT.to_owned(),
             event_price_usd,
+            dataset_item_price_usd,
             charged_usd,
             max_total_charge_usd,
         }))
@@ -112,7 +135,8 @@ impl EventBudget {
         let Some(max_total_charge_usd) = self.max_total_charge_usd else {
             return requested;
         };
-        if self.event_price_usd == 0.0 {
+        let row_price_usd = self.event_price_usd + self.dataset_item_price_usd;
+        if row_price_usd == 0.0 {
             return requested;
         }
 
@@ -121,7 +145,7 @@ impl EventBudget {
         if remaining_usd + tolerance < 0.0 {
             return 0;
         }
-        let count = ((remaining_usd + tolerance) / self.event_price_usd).floor();
+        let count = ((remaining_usd + tolerance) / row_price_usd).floor();
         if !count.is_finite() || count >= usize::MAX as f64 {
             requested
         } else {
@@ -130,7 +154,7 @@ impl EventBudget {
     }
 
     pub fn record_charge(&mut self, count: usize) {
-        self.charged_usd += count as f64 * self.event_price_usd;
+        self.charged_usd += count as f64 * (self.event_price_usd + self.dataset_item_price_usd);
     }
 }
 
@@ -518,22 +542,37 @@ mod tests {
 
     #[test]
     fn caps_event_budget_after_including_all_prior_charges() {
-        let run = run_data(
-            json!(0.00275),
+        let mut run = run_data(
+            json!(0.0033),
             json!({
                 "hotel-suggestion-result": 1,
+                "apify-default-dataset-item": 2,
                 "other-event": 2
             }),
         );
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            [DATASET_ITEM_CHARGE_EVENT] = json!({"eventPriceUsd": 0.0002});
         let PricingMode::PayPerEvent(mut budget) = EventBudget::from_run(&run, None).unwrap()
         else {
             panic!("expected pay-per-event pricing");
         };
 
         assert_eq!(budget.event_name(), RESULT_CHARGE_EVENT);
-        assert_eq!(budget.affordable_count(100), 2);
-        budget.record_charge(2);
+        assert_eq!(budget.affordable_count(100), 1);
+        budget.record_charge(1);
         assert_eq!(budget.affordable_count(1), 0);
+    }
+
+    #[test]
+    fn caps_rows_by_the_combined_result_and_dataset_item_prices() {
+        let mut run = run_data(json!(0.0009), json!({}));
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            [DATASET_ITEM_CHARGE_EVENT] = json!({"eventPriceUsd": 0.0002});
+        let PricingMode::PayPerEvent(budget) = EventBudget::from_run(&run, None).unwrap() else {
+            panic!("expected pay-per-event pricing");
+        };
+
+        assert_eq!(budget.affordable_count(100), 2);
     }
 
     #[test]
@@ -682,11 +721,14 @@ mod tests {
             "run-test".to_owned(),
             "INPUT".to_owned(),
         );
-        let run = run_data(json!(0.0005), json!({}));
+        let mut run = run_data(json!(0.0005), json!({}));
+        run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            [DATASET_ITEM_CHARGE_EVENT] = json!({"eventPriceUsd": 0.00025});
         let PricingMode::PayPerEvent(mut budget) = EventBudget::from_run(&run, None).unwrap()
         else {
             panic!("expected pay-per-event pricing");
         };
+        assert_eq!(budget.affordable_count(2), 1);
 
         let error = apify
             .push_charged_dataset_items(
@@ -702,10 +744,10 @@ mod tests {
         assert!(error
             .to_string()
             .contains("Apify dataset item publication failed"));
-        assert_eq!(budget.affordable_count(2), 2);
-        assert!(server
-            .next_request()
-            .starts_with("POST /v2/datasets/dataset-test/items HTTP/1.1"));
+        assert_eq!(budget.affordable_count(2), 1);
+        let dataset = server.next_request();
+        assert!(dataset.starts_with("POST /v2/datasets/dataset-test/items HTTP/1.1"));
+        assert!(dataset.contains(r#"[{"value":"Berlin"}]"#));
     }
 
     #[tokio::test]
