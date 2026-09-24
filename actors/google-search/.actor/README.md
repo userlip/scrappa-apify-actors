@@ -12,7 +12,7 @@ Extract Google Search results at scale. Get organic results, knowledge panels, P
 - **Inline Content** - Videos, images, and other embedded results
 - **Geo-targeting** - Search from any location worldwide
 - **Language Support** - Interface and results in any language
-- **Pagination** - Retrieve multiple pages of results
+- **Pagination** - Retrieve a selected results page with the start offset
 
 ## Input
 
@@ -26,6 +26,8 @@ Extract Google Search results at scale. Get organic results, knowledge panels, P
 | `amount` | integer | No | Number of results (1-100, default: 10) |
 | `tbs` | string | No | Time filter (qdr:h, qdr:d, qdr:w, qdr:m, qdr:y) |
 | `tbm` | string | No | Search type (nws, vid, isch, shop) |
+
+The actor also accepts google_domain and safe, plus the legacy API parameters lr, cr, uule, nfpr, and filter. These values are forwarded when supplied.
 
 ## Output
 
@@ -80,8 +82,8 @@ The complete response is saved to the `OUTPUT` key, including:
 
 ## Pricing
 
-$0.30 per 1,000 results. No additional API keys required.
+Apify pay-per-event pricing charges the configured result event for each item written to the default dataset. Dataset writes respect the remaining run charge budget. When only tiered prices are available, the actor budgets against the highest listed rate. No additional API keys are required from users.
 
-## Support
+## Development
 
-For issues or questions, contact us through Apify.
+This is a standalone Rust 1.90 project. Run focused tests with cargo test --locked from this directory. Build the production image locally with docker build -f .actor/Dockerfile -t google-search-scraper:local .
