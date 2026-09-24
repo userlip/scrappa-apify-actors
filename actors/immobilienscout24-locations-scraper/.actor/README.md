@@ -39,6 +39,9 @@ Queries are fetched in ordered batches of 10. When a charge limit is reached,
 writes stop immediately, although requests already started in that batch may
 finish without producing output.
 
+Saved rows are available in the default dataset and as a JSON array in the
+default key-value store under `OUTPUT`.
+
 This Actor charges **$0.25 per 1,000 successful location rows** through the
 `location-result` event. For higher-volume workflows and direct API access,
 use the [Scrappa ImmobilienScout24 API](https://scrappa.co/api/immobilienscout24).

@@ -1,0 +1,15 @@
+[package]
+name = "immobilienscout24-locations-scraper"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.85"
+publish = false
+
+[dependencies]
+anyhow = "1"
+futures = "0.3"
+rand = "0.8"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+url = "2"
