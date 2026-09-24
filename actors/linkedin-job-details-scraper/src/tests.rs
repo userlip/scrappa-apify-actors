@@ -306,10 +306,11 @@ fn ppe_budget_includes_custom_and_default_dataset_item_charges() {
 }
 
 #[test]
-fn ppe_zero_missing_and_null_limits_are_unbounded_but_positive_limits_are_preserved() {
+fn ppe_zero_limit_is_enforced_and_missing_or_null_limits_are_unbounded() {
     let zero_limit = PricingState::from_run(&ppe_run(0.0, json!({}))).unwrap();
-    assert_eq!(zero_limit.max_total_charge_usd, f64::INFINITY);
-    assert_eq!(zero_limit.max_charges_for_price(0.0012), None);
+    assert_eq!(zero_limit.max_total_charge_usd, 0.0);
+    assert_eq!(zero_limit.max_charges_for_price(0.0012), Some(0));
+    assert!(!zero_limit.should_push_item(Some(JOB_RESULT_CHARGE_EVENT)));
 
     let mut missing_limit = ppe_run(1.0, json!({}));
     missing_limit["data"]["options"]
@@ -396,6 +397,10 @@ fn ppe_budget_skips_rows_when_the_combined_charge_exceeds_the_limit() {
     let insufficient_remaining_budget = ppe_run(0.0011, json!({}));
     let pricing = PricingState::from_run(&insufficient_remaining_budget).unwrap();
     assert!(!pricing.should_push_item(Some(JOB_RESULT_CHARGE_EVENT)));
+
+    let mut charge_limited = PricingState::from_run(&ppe_run(0.0005, json!({}))).unwrap();
+    let charge = charge_limited.register_charge(JOB_RESULT_CHARGE_EVENT, 1);
+    assert_eq!(charge.charged_count, 0);
 
     let over_limit = ppe_run(
         0.0011,
@@ -549,43 +554,49 @@ async fn actor_run_preserves_auth_batch_results_dataset_output_and_success_charg
 }
 
 #[tokio::test]
-async fn actor_run_treats_zero_ppe_limit_as_unbounded_for_batch_results() {
+async fn actor_run_stops_when_zero_ppe_limit_is_set() {
     let input = json!({
         "urls": [
             "linkedin.com/jobs/view/first",
             "linkedin.com/jobs/view/second"
         ]
     });
-    let (base, server) = start_actor_mock(input, ppe_run(0.0, json!({})), 9).await;
+    let (base, server) = start_actor_mock(input, ppe_run(0.0, json!({})), 4).await;
     let http = Client::builder().timeout(REQUEST_TIMEOUT).build().unwrap();
     let config = mock_config(&base);
     let apify = ApifyClient::new(http.clone(), &config.apify);
 
-    let status_message = run(&config, &apify, http).await.unwrap();
-    assert_eq!(status_message, None);
+    let status_message = run(&config, &apify, http).await.unwrap().unwrap();
+    assert_eq!(
+        status_message,
+        "Charge limit reached after saving 0 of 1 LinkedIn job detail results."
+    );
 
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 9);
+    assert_eq!(requests.len(), 4);
     assert_eq!(
         requests
             .iter()
             .filter(|request| request_line(request).contains("GET /api/linkedin/job?"))
             .count(),
-        2
+        1
     );
     assert_eq!(
         requests
             .iter()
-            .filter(|request| request_line(request).starts_with("POST /v2/datasets/test-dataset/items "))
+            .filter(|request| request_line(request)
+                .starts_with("POST /v2/datasets/test-dataset/items "))
             .count(),
-        2
+        0
     );
     assert_eq!(
         requests
             .iter()
-            .filter(|request| request_line(request).starts_with("POST /v2/actor-runs/test-run/charge "))
+            .filter(
+                |request| request_line(request).starts_with("POST /v2/actor-runs/test-run/charge ")
+            )
             .count(),
-        2
+        0
     );
     let output = requests
         .iter()
@@ -595,7 +606,7 @@ async fn actor_run_treats_zero_ppe_limit_as_unbounded_for_batch_results() {
         .unwrap();
     assert_eq!(
         request_body(output),
-        json!({ "requested": 2, "succeeded": 2, "failed": 0 })
+        json!({ "requested": 2, "succeeded": 0, "failed": 0 })
     );
 }
 
@@ -649,7 +660,7 @@ async fn actor_run_stops_at_the_ppe_limit_and_sets_terminal_status() {
 #[tokio::test]
 async fn actor_run_does_not_publish_when_combined_charge_exceeds_limit() {
     let input = json!({ "url": "linkedin.com/jobs/view/1234567890" });
-    let (base, server) = start_actor_mock(input, ppe_run(0.0011, json!({})), 6).await;
+    let (base, server) = start_actor_mock(input, ppe_run(0.0011, json!({})), 4).await;
     let http = Client::builder().timeout(REQUEST_TIMEOUT).build().unwrap();
     let config = mock_config(&base);
     let apify = ApifyClient::new(http.clone(), &config.apify);
@@ -665,14 +676,17 @@ async fn actor_run_does_not_publish_when_combined_charge_exceeds_limit() {
     assert_eq!(
         requests
             .iter()
-            .filter(|request| request_line(request).starts_with("POST /v2/datasets/test-dataset/items "))
+            .filter(|request| request_line(request)
+                .starts_with("POST /v2/datasets/test-dataset/items "))
             .count(),
         0
     );
     assert_eq!(
         requests
             .iter()
-            .filter(|request| request_line(request).starts_with("POST /v2/actor-runs/test-run/charge "))
+            .filter(
+                |request| request_line(request).starts_with("POST /v2/actor-runs/test-run/charge ")
+            )
             .count(),
         0
     );

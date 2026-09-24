@@ -68,12 +68,6 @@ impl PricingState {
         if max_total_charge_usd.is_nan() || max_total_charge_usd < 0.0 {
             bail!("Apify run returned an invalid spending limit");
         }
-        // Apify's SDK resolves its default zero spending limit to no limit.
-        let max_total_charge_usd = if max_total_charge_usd == 0.0 {
-            f64::INFINITY
-        } else {
-            max_total_charge_usd
-        };
 
         Ok(Self {
             is_pay_per_event,
@@ -133,14 +127,9 @@ impl PricingState {
 
     pub(crate) fn register_charge(&mut self, event_name: &str, count: usize) -> ChargeRecord {
         let max_charges = self.max_event_charges_within_limit(event_name);
-        let total_before_charge = self.total_charged_amount();
         let charged_count = match max_charges {
             None => count,
-            Some(max_charges) if count <= max_charges => count,
-            Some(max_charges) if total_before_charge <= self.max_total_charge_usd => {
-                max_charges.saturating_add(1)
-            }
-            Some(_) => 0,
+            Some(max_charges) => count.min(max_charges),
         };
 
         if charged_count > 0 {
