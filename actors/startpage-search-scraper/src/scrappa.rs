@@ -15,6 +15,8 @@ impl ScrappaClient {
     pub fn new(api_key: String, base_url: String) -> Result<Self> {
         let client = Client::builder()
             .timeout(REQUEST_TIMEOUT)
+            // Avoid implicit protocol retries for cost-bearing search GETs.
+            .retry(reqwest::retry::never())
             .build()
             .context("Could not create Scrappa HTTP client")?;
         Ok(Self {
