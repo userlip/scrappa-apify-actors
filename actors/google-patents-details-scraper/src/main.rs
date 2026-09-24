@@ -444,11 +444,12 @@ impl DatasetBudget {
         let data = run
             .get("data")
             .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-        if data
+        let pricing_model = data
             .pointer("/pricingInfo/pricingModel")
             .and_then(Value::as_str)
-            != Some("PAY_PER_EVENT")
-        {
+            .filter(|pricing_model| !pricing_model.is_empty())
+            .ok_or_else(|| anyhow!("Apify run did not provide a valid pricing model"))?;
+        if pricing_model != "PAY_PER_EVENT" {
             return Ok(Self::uncapped());
         }
         let event_prices = data
@@ -915,8 +916,12 @@ mod tests {
     }
 
     #[test]
-    fn invalid_ppe_run_pricing_fails_closed() {
+    fn missing_or_invalid_pricing_model_fails_closed() {
         assert!(DatasetBudget::from_run(&json!({"data": {}})).is_err());
+        assert!(
+            DatasetBudget::from_run(&json!({"data": {"pricingInfo": {"pricingModel": 123}}}))
+                .is_err()
+        );
         let mut run = pricing_run(Some(1.0), 0, 0);
         run["data"]["chargedEventCounts"]["unknown-event"] = json!(1);
         assert!(DatasetBudget::from_run(&run)
