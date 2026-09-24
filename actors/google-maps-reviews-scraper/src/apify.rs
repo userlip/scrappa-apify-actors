@@ -167,13 +167,29 @@ fn affordable_dataset_items(run: &Value) -> Result<usize> {
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-    if data
+    let pricing_model = data
         .pointer("/pricingInfo/pricingModel")
         .and_then(Value::as_str)
-        != Some("PAY_PER_EVENT")
-    {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        .ok_or_else(|| anyhow!("Apify run did not provide a pricing model"))?;
+    if pricing_model != "PAY_PER_EVENT" {
+        return Ok(usize::MAX);
     }
+    let Some(max_charge_value) = data.pointer("/options/maxTotalChargeUsd") else {
+        return Ok(usize::MAX);
+    };
+    if max_charge_value.is_null() {
+        return Ok(usize::MAX);
+    }
+    let max_charge = max_charge_value
+        .as_f64()
+        .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
+    if !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned an invalid spending limit");
+    }
+    if max_charge == 0.0 {
+        return Ok(usize::MAX);
+    }
+
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
@@ -183,11 +199,7 @@ fn affordable_dataset_items(run: &Value) -> Result<usize> {
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
 
@@ -251,9 +263,8 @@ mod tests {
     use serde_json::{json, Value};
     use std::time::Duration;
 
-    fn pricing(max_charge: f64, charged_events: Value) -> Value {
-        json!({
-            "data": {
+    fn pay_per_event_run(max_charge: Option<Value>, charged_events: Value) -> Value {
+        let mut data = json!({
                 "pricingInfo": {
                     "pricingModel": "PAY_PER_EVENT",
                     "pricingPerEvent": {"actorChargeEvents": {
@@ -261,10 +272,12 @@ mod tests {
                         "apify-actor-start": {"eventPriceUsd": 0.05}
                     }}
                 },
-                "options": {"maxTotalChargeUsd": max_charge},
                 "chargedEventCounts": charged_events
-            }
-        })
+        });
+        if let Some(max_charge) = max_charge {
+            data["options"]["maxTotalChargeUsd"] = max_charge;
+        }
+        json!({"data": data})
     }
 
     fn client(base_url: String) -> ApifyClient {
@@ -280,16 +293,28 @@ mod tests {
     }
 
     #[test]
-    fn capacity_respects_prior_charges_and_the_run_limit() {
-        let run = pricing(
-            0.25,
+    fn non_pay_per_event_runs_have_no_dataset_item_budget() {
+        let run = json!({"data": {"pricingInfo": {"pricingModel": "FIXED_PRICE"}}});
+        assert_eq!(affordable_dataset_items(&run).unwrap(), usize::MAX);
+    }
+
+    #[test]
+    fn missing_null_and_zero_caps_are_unlimited() {
+        for max_charge in [None, Some(Value::Null), Some(json!(0))] {
+            assert_eq!(
+                affordable_dataset_items(&pay_per_event_run(max_charge, json!({}))).unwrap(),
+                usize::MAX
+            );
+        }
+    }
+
+    #[test]
+    fn positive_cap_accounts_for_charges_across_event_types() {
+        let run = pay_per_event_run(
+            Some(json!(0.25)),
             json!({"apify-default-dataset-item": 1, "apify-actor-start": 1}),
         );
         assert_eq!(affordable_dataset_items(&run).unwrap(), 1);
-        assert_eq!(
-            affordable_dataset_items(&pricing(0.0, json!({}))).unwrap(),
-            0
-        );
     }
 
     #[test]
@@ -319,7 +344,7 @@ mod tests {
     #[tokio::test]
     async fn caps_dataset_writes_and_publishes_output() {
         let server = MockServer::start(vec![
-            MockResponse::json(200, pricing(0.15, json!({}))),
+            MockResponse::json(200, pay_per_event_run(Some(json!(0.15)), json!({}))),
             MockResponse::json(201, json!({})),
             MockResponse::json(201, json!({})),
         ]);
