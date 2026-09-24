@@ -17,9 +17,8 @@ use scrappa::ScrappaClient;
 async fn run() -> Result<()> {
     let config = ActorConfig::from_env()?;
     let actor = ApifyClient::new(&config)?;
-    let input: Value = actor
-        .get_input()
-        .await?
+    let (input, budget) = tokio::try_join!(actor.get_input(), actor.get_charge_budget())?;
+    let input: Value = input
         .filter(|input| !input.is_null())
         .ok_or_else(|| anyhow!("Input is required"))?;
     let requests = build_vinted_user_profile_requests(&input)?;
@@ -27,7 +26,6 @@ async fn run() -> Result<()> {
     println!("Running {} Vinted user profile request(s)", requests.len());
     println!("First request: {}", describe_request(&requests[0]));
 
-    let budget = actor.get_charge_budget().await?;
     let client = ScrappaClient::new(config.scrappa_api_key, config.scrappa_api_base.as_deref())?;
     let summary = run_vinted_user_profiles(&actor, &client, &requests, budget).await?;
 

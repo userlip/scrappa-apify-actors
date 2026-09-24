@@ -10,5 +10,5 @@ anyhow = "1"
 fastrand = "2"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 serde_json = { version = "1", features = ["preserve_order"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
 url = "2"
