@@ -444,11 +444,12 @@ impl DatasetBudget {
         let data = run
             .get("data")
             .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-        if data
+        let pricing_model = data
             .pointer("/pricingInfo/pricingModel")
             .and_then(Value::as_str)
-            != Some("PAY_PER_EVENT")
-        {
+            .filter(|pricing_model| !pricing_model.is_empty())
+            .ok_or_else(|| anyhow!("Apify run did not provide a valid pricing model"))?;
+        if pricing_model != "PAY_PER_EVENT" {
             return Ok(Self::uncapped());
         }
         let event_prices = data
@@ -462,12 +463,11 @@ impl DatasetBudget {
             .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
         let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
             None | Some(Value::Null) => None,
-            Some(Value::Number(number)) => {
-                let max_charge = number
+            Some(Value::Number(number)) => Some(
+                number
                     .as_f64()
-                    .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?;
-                (max_charge != 0.0).then_some(max_charge)
-            }
+                    .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
+            ),
             Some(_) => bail!("Apify run returned an invalid spending limit"),
         };
         if !item_price.is_finite()
@@ -881,8 +881,8 @@ mod tests {
     }
 
     #[test]
-    fn free_dataset_items_fit_under_a_positive_spending_limit() {
-        let mut run = pricing_run(Some(0.0001), 0, 0);
+    fn free_dataset_items_fit_under_a_zero_spending_limit() {
+        let mut run = pricing_run(Some(0.0), 0, 0);
         run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"][DATASET_ITEM_EVENT]
             ["eventPriceUsd"] = json!(0.0);
         let budget = DatasetBudget::from_run(&run).unwrap();
@@ -890,20 +890,26 @@ mod tests {
     }
 
     #[test]
-    fn dataset_budget_treats_zero_null_and_missing_caps_as_unlimited() {
+    fn dataset_budget_treats_null_and_missing_caps_as_unlimited() {
         let null_cap = pricing_run(None, 0, 0);
-        let zero_cap = pricing_run(Some(0.0), 0, 0);
         let mut absent_cap = pricing_run(Some(0.0005), 0, 0);
         absent_cap["data"]["options"]
             .as_object_mut()
             .unwrap()
             .remove("maxTotalChargeUsd");
 
-        for run in [&zero_cap, &null_cap, &absent_cap] {
+        for run in [&null_cap, &absent_cap] {
             let budget = DatasetBudget::from_run(run).unwrap();
             assert_eq!(budget.max_charge, None);
             assert_eq!(budget.affordable_items(10), 10);
         }
+    }
+
+    #[test]
+    fn dataset_budget_respects_an_explicit_zero_charge_cap() {
+        let budget = DatasetBudget::from_run(&pricing_run(Some(0.0), 0, 0)).unwrap();
+        assert_eq!(budget.max_charge, Some(0.0));
+        assert_eq!(budget.affordable_items(10), 0);
     }
 
     #[test]
@@ -915,8 +921,12 @@ mod tests {
     }
 
     #[test]
-    fn invalid_ppe_run_pricing_fails_closed() {
+    fn missing_or_invalid_pricing_model_fails_closed() {
         assert!(DatasetBudget::from_run(&json!({"data": {}})).is_err());
+        assert!(
+            DatasetBudget::from_run(&json!({"data": {"pricingInfo": {"pricingModel": 123}}}))
+                .is_err()
+        );
         let mut run = pricing_run(Some(1.0), 0, 0);
         run["data"]["chargedEventCounts"]["unknown-event"] = json!(1);
         assert!(DatasetBudget::from_run(&run)
