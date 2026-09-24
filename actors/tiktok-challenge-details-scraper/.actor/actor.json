@@ -4,10 +4,9 @@
   "title": "TikTok Hashtag & Challenge Details Scraper",
   "description": "Resolve known TikTok hashtags and challenge IDs into authoritative metadata through Scrappa.",
   "version": "1.0", "buildTag": "latest",
-  "meta": { "templateId": "ts-start" },
   "input": "./input_schema.json", "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
-  "defaultMemoryMbytes": 128,
+  "resources": { "memoryMbytes": 128 },
   "defaultRunOptions": { "timeoutSecs": 120 },
   "storages": { "dataset": { "actorSpecification": 1, "views": {
     "challenge_details": {
