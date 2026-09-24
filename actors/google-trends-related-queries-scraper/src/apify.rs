@@ -11,6 +11,7 @@ use url::Url;
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 const RELATED_RESULT_CHARGE_EVENT: &str = "related-result";
+const DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 
 pub struct ApifyConfig {
     api_base_url: Url,
@@ -116,7 +117,7 @@ impl ApifyClient {
             });
         }
 
-        let charged_count = affordable_event_count(&run, RELATED_RESULT_CHARGE_EVENT, items.len())?;
+        let charged_count = affordable_event_count(&run, items.len())?;
         if charged_count == 0 {
             return Ok(DatasetPushResult {
                 charged_count,
@@ -124,9 +125,9 @@ impl ApifyClient {
             });
         }
 
+        self.write_dataset_items(&items[..charged_count]).await?;
         self.charge_event(RELATED_RESULT_CHARGE_EVENT, charged_count)
             .await?;
-        self.write_dataset_items(&items[..charged_count]).await?;
         Ok(DatasetPushResult {
             charged_count,
             event_charge_limit_reached: charged_count < items.len(),
@@ -282,7 +283,7 @@ async fn ensure_success(response: Response, operation: &str) -> Result<()> {
     );
 }
 
-fn affordable_event_count(run: &Value, event_name: &str, requested: usize) -> Result<usize> {
+fn affordable_event_count(run: &Value, requested: usize) -> Result<usize> {
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
@@ -290,12 +291,22 @@ fn affordable_event_count(run: &Value, event_name: &str, requested: usize) -> Re
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
         .and_then(Value::as_object)
         .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
-    let item_price = event_price(
-        events
-            .get(event_name)
-            .ok_or_else(|| anyhow!("Apify run did not provide the {event_name} event price"))?,
-        event_name,
+    let related_result_price = event_price(
+        events.get(RELATED_RESULT_CHARGE_EVENT).ok_or_else(|| {
+            anyhow!("Apify run did not provide the {RELATED_RESULT_CHARGE_EVENT} event price")
+        })?,
+        RELATED_RESULT_CHARGE_EVENT,
     )?;
+    let dataset_item_price = event_price(
+        events.get(DATASET_ITEM_CHARGE_EVENT).ok_or_else(|| {
+            anyhow!("Apify run did not provide the {DATASET_ITEM_CHARGE_EVENT} event price")
+        })?,
+        DATASET_ITEM_CHARGE_EVENT,
+    )?;
+    let item_price = related_result_price + dataset_item_price;
+    if !item_price.is_finite() {
+        bail!("Apify run returned invalid charging values");
+    }
     let Some(max_charge_value) = data.pointer("/options/maxTotalChargeUsd") else {
         return Ok(requested);
     };
@@ -366,6 +377,131 @@ fn event_price(event: &Value, event_name: &str) -> Result<f64> {
 mod tests {
     use super::*;
     use serde_json::json;
+    use std::{
+        io::{Read, Write},
+        net::{TcpListener, TcpStream},
+        sync::{
+            Arc, Mutex,
+            atomic::{AtomicBool, Ordering},
+        },
+        thread,
+        time::Duration,
+    };
+
+    struct MockServer {
+        base_url: Url,
+        requests: Arc<Mutex<Vec<String>>>,
+        stopped: Arc<AtomicBool>,
+        thread: Option<thread::JoinHandle<()>>,
+    }
+
+    impl MockServer {
+        fn start(pricing: Value) -> Self {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            listener.set_nonblocking(true).unwrap();
+            let address = listener.local_addr().unwrap();
+            let requests = Arc::new(Mutex::new(Vec::new()));
+            let server_requests = Arc::clone(&requests);
+            let stopped = Arc::new(AtomicBool::new(false));
+            let server_stopped = Arc::clone(&stopped);
+            let thread = thread::spawn(move || {
+                while !server_stopped.load(Ordering::Relaxed) {
+                    match listener.accept() {
+                        Ok((mut stream, _)) => {
+                            let request = read_request(&mut stream).unwrap();
+                            let first_line = request.lines().next().unwrap_or_default().to_owned();
+                            server_requests.lock().unwrap().push(request);
+                            let (status, reason, body) = if first_line
+                                .starts_with("GET /v2/actor-runs/test-run ")
+                            {
+                                (200, "OK", pricing.to_string())
+                            } else if first_line
+                                .starts_with("POST /v2/datasets/test-dataset/items ")
+                            {
+                                (503, "Service Unavailable", "storage unavailable".to_owned())
+                            } else if first_line.starts_with("POST /v2/actor-runs/test-run/charge ")
+                            {
+                                (200, "OK", "{}".to_owned())
+                            } else {
+                                (404, "Not Found", "not found".to_owned())
+                            };
+                            let response = format!(
+                                "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                                body.len()
+                            );
+                            stream.write_all(response.as_bytes()).unwrap();
+                        }
+                        Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                            thread::sleep(Duration::from_millis(5));
+                        }
+                        Err(_) => break,
+                    }
+                }
+            });
+            Self {
+                base_url: Url::parse(&format!("http://{address}")).unwrap(),
+                requests,
+                stopped,
+                thread: Some(thread),
+            }
+        }
+
+        fn requests(&self) -> Vec<String> {
+            self.requests.lock().unwrap().clone()
+        }
+    }
+
+    impl Drop for MockServer {
+        fn drop(&mut self) {
+            self.stopped.store(true, Ordering::Relaxed);
+            if let Some(thread) = self.thread.take() {
+                let _ = thread.join();
+            }
+        }
+    }
+
+    fn read_request(stream: &mut TcpStream) -> std::io::Result<String> {
+        let mut bytes = Vec::new();
+        let mut buffer = [0; 4096];
+        let mut content_length = 0;
+        loop {
+            let read = stream.read(&mut buffer)?;
+            if read == 0 {
+                break;
+            }
+            bytes.extend_from_slice(&buffer[..read]);
+            if let Some(header_end) = bytes.windows(4).position(|window| window == b"\r\n\r\n") {
+                if content_length == 0 {
+                    let headers = String::from_utf8_lossy(&bytes[..header_end]);
+                    content_length = headers
+                        .lines()
+                        .find_map(|line| {
+                            let (name, value) = line.split_once(':')?;
+                            name.eq_ignore_ascii_case("content-length")
+                                .then(|| value.trim().parse::<usize>().ok())
+                                .flatten()
+                        })
+                        .unwrap_or(0);
+                }
+                if bytes.len() >= header_end + 4 + content_length {
+                    break;
+                }
+            }
+        }
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
+    }
+
+    fn client(server: &MockServer) -> ApifyClient {
+        ApifyClient::new(ApifyConfig {
+            api_base_url: server.base_url.clone(),
+            api_token: "test-token".to_owned(),
+            key_value_store_id: "test-store".to_owned(),
+            dataset_id: "test-dataset".to_owned(),
+            actor_run_id: "test-run".to_owned(),
+            input_key: "INPUT".to_owned(),
+        })
+        .unwrap()
+    }
 
     fn run(max_charge: Value, counts: Value) -> Value {
         json!({
@@ -374,6 +510,7 @@ mod tests {
                     "pricingModel":"PAY_PER_EVENT",
                     "pricingPerEvent":{"actorChargeEvents":{
                         "related-result":{"eventPriceUsd":0.10},
+                        "apify-default-dataset-item":{"eventPriceUsd":0.05},
                         "other":{"eventPriceUsd":0.20}
                     }}
                 },
@@ -386,34 +523,33 @@ mod tests {
     #[test]
     fn caps_rows_using_all_existing_event_charges() {
         let run = run(json!(0.60), json!({"related-result":1,"other":1}));
-        assert_eq!(
-            affordable_event_count(&run, "related-result", 5).unwrap(),
-            3
-        );
+        assert_eq!(affordable_event_count(&run, 5).unwrap(), 2);
+    }
+
+    #[test]
+    fn combined_related_and_dataset_item_prices_fit_the_cap() {
+        let run = run(json!(0.25), json!({}));
+        assert_eq!(affordable_event_count(&run, 5).unwrap(), 1);
     }
 
     #[test]
     fn allows_all_rows_without_a_limit_and_handles_zero_price() {
         assert_eq!(
-            affordable_event_count(&run(Value::Null, json!({})), "related-result", 9).unwrap(),
+            affordable_event_count(&run(Value::Null, json!({})), 9).unwrap(),
             9
         );
         let mut free_run = run(json!(0.0), json!({}));
         free_run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["related-result"]
             ["eventPriceUsd"] = json!(0.0);
-        assert_eq!(
-            affordable_event_count(&free_run, "related-result", 9).unwrap(),
-            9
-        );
+        free_run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["apify-default-dataset-item"]
+            ["eventPriceUsd"] = json!(0.0);
+        assert_eq!(affordable_event_count(&free_run, 9).unwrap(), 9);
     }
 
     #[test]
     fn reports_no_affordable_rows_when_other_charges_used_the_budget() {
         let run = run(json!(0.19), json!({"other":1}));
-        assert_eq!(
-            affordable_event_count(&run, "related-result", 5).unwrap(),
-            0
-        );
+        assert_eq!(affordable_event_count(&run, 5).unwrap(), 0);
     }
 
     #[test]
@@ -424,12 +560,34 @@ mod tests {
             .unwrap()
             .remove("related-result");
         assert!(
-            affordable_event_count(&missing_event_run, "related-result", 2)
+            affordable_event_count(&missing_event_run, 2)
                 .unwrap_err()
                 .to_string()
                 .contains("event price")
         );
         let invalid_count_run = run(json!(1.0), json!({"other":-1}));
-        assert!(affordable_event_count(&invalid_count_run, "related-result", 2).is_err());
+        assert!(affordable_event_count(&invalid_count_run, 2).is_err());
+    }
+
+    #[tokio::test]
+    async fn failed_dataset_write_does_not_charge_related_results() {
+        let server = MockServer::start(run(json!(1.0), json!({})));
+        let apify = client(&server);
+
+        let error = apify
+            .push_dataset_items(&[json!({"result_kind":"query"})])
+            .await
+            .unwrap_err();
+
+        assert!(
+            error
+                .to_string()
+                .contains("Apify dataset write failed with 503")
+        );
+        let requests = server.requests();
+        assert_eq!(requests.len(), 2);
+        assert!(requests[0].starts_with("GET /v2/actor-runs/test-run "));
+        assert!(requests[1].starts_with("POST /v2/datasets/test-dataset/items "));
+        assert!(requests.iter().all(|request| !request.contains("/charge ")));
     }
 }
