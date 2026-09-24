@@ -2,8 +2,8 @@
 
 Get Redfin home value estimates, low/high value ranges, last sale context,
 property specs, and comparable sales by Redfin property ID. The actor is a thin
-Apify wrapper around Scrappa's Redfin valuation API and saves one dataset item
-per successful valuation.
+Rust Apify wrapper around Scrappa's Redfin valuation API and saves one dataset
+item per saved valuation result.
 If a property is unavailable or Scrappa returns a recoverable per-property
 error, the actor still writes a dataset item for that property with
 `success: false`, `status`, and `message` fields so batch consumers can reconcile
