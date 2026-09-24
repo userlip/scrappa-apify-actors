@@ -49,8 +49,18 @@ class Handler(BaseHTTPRequestHandler):
                     "pricingInfo": {
                         "pricingModel": "PAY_PER_EVENT",
                         "pricingPerEvent": {"actorChargeEvents": {
-                            "property-result": {"eventPriceUsd": 0.0003},
-                            "apify-default-dataset-item": {"eventPriceUsd": 0.0},
+                            "property-result": {"eventTieredPricingUsd": {
+                                "FREE": {"tieredEventPriceUsd": 0.0003},
+                                "BRONZE": {"tieredEventPriceUsd": 0.00025},
+                                "SILVER": {"tieredEventPriceUsd": 0.00022},
+                                "GOLD": {"tieredEventPriceUsd": 0.0002},
+                            }},
+                            "apify-default-dataset-item": {"eventTieredPricingUsd": {
+                                "FREE": {"tieredEventPriceUsd": 0.0},
+                                "BRONZE": {"tieredEventPriceUsd": 0.0},
+                                "SILVER": {"tieredEventPriceUsd": 0.0},
+                                "GOLD": {"tieredEventPriceUsd": 0.0},
+                            }},
                         }},
                     },
                     "chargedEventCounts": {},

@@ -76,10 +76,10 @@ impl BillingState {
                 .and_then(Value::as_object)
                 .ok_or_else(|| anyhow!("Apify run did not provide event prices"))?;
             for (event_name, event) in events {
-                let price = event
-                    .get("eventPriceUsd")
-                    .and_then(Value::as_f64)
-                    .ok_or_else(|| anyhow!("Apify run did not provide the price for event {event_name}"))?;
+                let price = match event.get("eventPriceUsd").and_then(Value::as_f64) {
+                    Some(price) => price,
+                    None => highest_tier_event_price(event, event_name)?,
+                };
                 if !price.is_finite() || price < 0.0 {
                     return Err(anyhow!("Apify run returned an invalid price for event {event_name}"));
                 }
@@ -180,6 +180,33 @@ impl BillingState {
     }
 }
 
+fn highest_tier_event_price(event: &Value, event_name: &str) -> Result<f64> {
+    let tiers = event
+        .get("eventTieredPricingUsd")
+        .and_then(Value::as_object)
+        .filter(|tiers| !tiers.is_empty())
+        .ok_or_else(|| anyhow!("Apify run did not provide the price for event {event_name}"))?;
+
+    // The run pricing table doesn't identify the current user's tier, so use the highest
+    // configured rate to keep the local budget guard from underestimating any tier's charge.
+    tiers
+        .iter()
+        .map(|(tier, pricing)| {
+            let price = pricing
+                .get("tieredEventPriceUsd")
+                .and_then(Value::as_f64)
+                .ok_or_else(|| anyhow!("Apify run did not provide the {tier} tier price for event {event_name}"))?;
+            if !price.is_finite() || price < 0.0 {
+                return Err(anyhow!("Apify run returned an invalid {tier} tier price for event {event_name}"));
+            }
+            Ok(price)
+        })
+        .collect::<Result<Vec<_>>>()?
+        .into_iter()
+        .max_by(f64::total_cmp)
+        .ok_or_else(|| anyhow!("Apify run did not provide the price for event {event_name}"))
+}
+
 pub(crate) fn charge_limit_message(search_index: usize, saved: usize, requested: usize, charged: usize) -> String {
     if charged >= 1 {
         format!(
@@ -215,6 +242,32 @@ mod tests {
         })
     }
 
+    fn tiered_ppe_run(max_total: f64, counts: Value) -> Value {
+        json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel":"PAY_PER_EVENT",
+                    "pricingPerEvent":{"actorChargeEvents":{
+                        "property-result":{"eventTieredPricingUsd":{
+                            "FREE":{"tieredEventPriceUsd":0.30},
+                            "BRONZE":{"tieredEventPriceUsd":0.25},
+                            "SILVER":{"tieredEventPriceUsd":0.22},
+                            "GOLD":{"tieredEventPriceUsd":0.20}
+                        }},
+                        "apify-default-dataset-item":{"eventTieredPricingUsd":{
+                            "FREE":{"tieredEventPriceUsd":0.05},
+                            "BRONZE":{"tieredEventPriceUsd":0.04},
+                            "SILVER":{"tieredEventPriceUsd":0.03},
+                            "GOLD":{"tieredEventPriceUsd":0.02}
+                        }}
+                    }}
+                },
+                "chargedEventCounts":counts,
+                "options":{"maxTotalChargeUsd":max_total}
+            }
+        })
+    }
+
     #[test]
     fn tracks_remaining_charge_budget_across_custom_and_dataset_events() {
         let mut billing = BillingState::from_run(&ppe_run(0.60, json!({"property-result":1}))).unwrap();
@@ -241,6 +294,17 @@ mod tests {
         });
         let billing = BillingState::from_run(&run).unwrap();
         assert!(billing.charge_limit_status(0, 0).is_none());
+        assert!(!billing.can_write_property_result());
+    }
+
+    #[test]
+    fn accepts_tiered_event_prices_and_guards_budget_with_highest_tier_rate() {
+        let billing = BillingState::from_run(&tiered_ppe_run(0.349, json!({}))).unwrap();
+
+        assert!(billing.is_pay_per_event());
+        assert!(billing.should_charge_property_result());
+        assert_eq!(billing.event_prices[PROPERTY_RESULT_EVENT], 0.30);
+        assert_eq!(billing.event_prices[DEFAULT_DATASET_ITEM_EVENT], 0.05);
         assert!(!billing.can_write_property_result());
     }
 
