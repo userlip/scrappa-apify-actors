@@ -10,6 +10,7 @@ use crate::batch_runner::{RouteSaveResult, RouteWriter};
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const ROUTE_RESULT_EVENT: &str = "route-result";
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
+const MAX_ROUTE_CHARGE_ATTEMPTS: usize = 3;
 
 pub struct ApifyConfig {
     pub api_base: Url,
@@ -106,15 +107,49 @@ impl ApifyClient {
 
     async fn charge_route_result(&self, idempotency_key: &str) -> Result<()> {
         let url = self.endpoint(&["actor-runs", &self.config.run_id, "charge"])?;
-        let response = self
-            .request(Method::POST, url)
-            .header("idempotency-key", idempotency_key)
-            .json(&json!({ "eventName": ROUTE_RESULT_EVENT, "count": 1 }))
-            .send()
-            .await
-            .context("Apify route-result charge request failed")?;
-        successful_response(response, "route-result charge").await?;
-        Ok(())
+        let mut last_error = None;
+
+        for attempt in 1..=MAX_ROUTE_CHARGE_ATTEMPTS {
+            let response = self
+                .request(Method::POST, url.clone())
+                .header("idempotency-key", idempotency_key)
+                .json(&json!({ "eventName": ROUTE_RESULT_EVENT, "count": 1 }))
+                .send()
+                .await;
+
+            let (error, should_retry) = match response {
+                Ok(response) => {
+                    let status = response.status();
+                    match successful_response(response, "route-result charge").await {
+                        Ok(_) => return Ok(()),
+                        Err(error) => (error, is_retryable_charge_status(status)),
+                    }
+                }
+                Err(error) => {
+                    let should_retry = error.is_timeout() || error.is_connect();
+                    (
+                        anyhow!(error).context("Apify route-result charge request failed"),
+                        should_retry,
+                    )
+                }
+            };
+
+            last_error = Some(error);
+            if !should_retry || attempt == MAX_ROUTE_CHARGE_ATTEMPTS {
+                break;
+            }
+
+            let delay = route_charge_retry_delay(attempt);
+            eprintln!(
+                "Apify route-result charge failed. Retrying attempt {}/{} in {}ms.",
+                attempt + 1,
+                MAX_ROUTE_CHARGE_ATTEMPTS,
+                delay.as_millis()
+            );
+            tokio::time::sleep(delay).await;
+        }
+
+        Err(last_error.unwrap_or_else(|| anyhow!("Apify route-result charge attempts exhausted")))
     }
 
     pub async fn set_status_message(&self, message: &str) -> Result<()> {
@@ -131,6 +166,16 @@ impl ApifyClient {
         successful_response(response, "status message update").await?;
         Ok(())
     }
+}
+
+fn is_retryable_charge_status(status: StatusCode) -> bool {
+    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
+}
+
+fn route_charge_retry_delay(failed_attempt: usize) -> Duration {
+    Duration::from_millis(
+        250_u64.saturating_mul(2_u64.saturating_pow(failed_attempt.saturating_sub(1) as u32)),
+    )
 }
 
 #[derive(Debug)]
@@ -500,6 +545,49 @@ mod tests {
         let budget = PpeBudget::from_run(&run(0.002999999, json!({}))).unwrap();
 
         assert!(!budget.can_push_one_item());
+    }
+
+    #[tokio::test]
+    async fn retries_a_transient_route_charge_after_writing_the_dataset_row() {
+        let (api_base, server) = mock_server(vec![
+            (201, "{}".to_owned()),
+            (
+                503,
+                r#"{"error":{"message":"temporary outage"}}"#.to_owned(),
+            ),
+            (201, "{}".to_owned()),
+        ]);
+        let apify = client(&api_base);
+        let mut budget = PpeBudget::from_run(&run(0.01, json!({}))).unwrap();
+        let row = json!({ "request_index": 2, "alternative_index": 1 });
+        let mut writer = ApifyRouteWriter::new(&apify, &mut budget, "run");
+
+        let saved = writer.save(&row).await.unwrap();
+
+        assert_eq!(
+            saved,
+            RouteSaveResult {
+                saved: true,
+                charged_count: 1,
+                charge_limit_reached: false,
+            }
+        );
+        let requests = server.join().unwrap();
+        assert_eq!(requests.len(), 3);
+        assert!(requests[0].starts_with("POST /v2/datasets/dataset/items HTTP/1.1\r\n"));
+        assert_eq!(request_body(&requests[0]), json!([row]));
+        for request in &requests[1..] {
+            assert!(request.starts_with("POST /v2/actor-runs/run/charge HTTP/1.1\r\n"));
+            assert!(has_header(
+                request,
+                "idempotency-key",
+                "run-route-result-2-1"
+            ));
+            assert_eq!(
+                request_body(request),
+                json!({ "eventName": "route-result", "count": 1 })
+            );
+        }
     }
 
     #[test]
