@@ -70,4 +70,6 @@ If TikTok rejects, expires, or region-locks an ad URL, the actor still writes a 
 
 This actor calls Scrappa's `/api/tiktok/ads/details` endpoint. The scraping work runs on Scrappa infrastructure; Apify is used for input validation, orchestration, and dataset output.
 
+The actor charges the configured `apify-default-dataset-item` event for each saved dataset row, including not-found and error rows. Before each lookup, it reads the run's event prices, charged event counts, and `maxTotalChargeUsd`; URLs beyond the remaining dataset-item budget are not fetched or written. The actor requires Apify `PAY_PER_EVENT` pricing for the default dataset item. It writes results to the default dataset and does not create a separate `OUTPUT` key-value record.
+
 The Scrappa API docs also show the shorter Creative Center form `https://ads.tiktok.com/business/creativecenter/topads/7221117041168252930/`. TikTok currently serves many live ad detail pages with `/pc/en` appended, and this actor accepts both forms.
