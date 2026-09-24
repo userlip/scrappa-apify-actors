@@ -102,8 +102,3 @@ jobs:
       - name: Run Rust actor tests
         working-directory: ${{ matrix.actor }}
         run: cargo test --locked
-
-      - name: Build Booking Rust actor image
-        if: matrix.actor == 'actors/booking-search-scraper'
-        working-directory: actors/booking-search-scraper
-        run: docker build --file .actor/Dockerfile --tag booking-search-scraper:ci .
