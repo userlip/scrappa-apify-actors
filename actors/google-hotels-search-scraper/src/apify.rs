@@ -193,7 +193,22 @@ fn affordable_dataset_items(
         .and_then(Value::as_str)
         != Some("PAY_PER_EVENT")
     {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        return Ok(requested);
+    }
+    let Some(max_charge_value) = data
+        .pointer("/options/maxTotalChargeUsd")
+        .filter(|value| !value.is_null())
+    else {
+        return Ok(requested);
+    };
+    let max_charge = max_charge_value
+        .as_f64()
+        .ok_or_else(|| anyhow!("Apify run did not provide a numeric spending limit"))?;
+    if !max_charge.is_finite() || max_charge < 0.0 {
+        bail!("Apify run returned invalid charging values");
+    }
+    if max_charge == 0.0 {
+        return Ok(requested);
     }
     let events = data
         .pointer("/pricingInfo/pricingPerEvent/actorChargeEvents")
@@ -204,11 +219,7 @@ fn affordable_dataset_items(
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
-    if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
+    if !item_price.is_finite() || item_price < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
     let counts = data
@@ -311,10 +322,40 @@ mod tests {
     }
 
     #[test]
-    fn limits_rows_by_remaining_run_spend_including_other_events() {
+    fn limits_rows_by_positive_combined_event_spending_cap() {
         let run = run(1.75);
         let mut budget = DatasetBudget::default();
         assert_eq!(affordable_dataset_items(&run, 10, &mut budget).unwrap(), 3);
+    }
+
+    #[test]
+    fn allows_dataset_items_for_non_pay_per_event_runs() {
+        let run = json!({
+            "data": {
+                "pricingInfo": {"pricingModel": "FLAT_RATE"}
+            }
+        });
+        let mut budget = DatasetBudget::default();
+
+        assert_eq!(affordable_dataset_items(&run, 4, &mut budget).unwrap(), 4);
+    }
+
+    #[test]
+    fn treats_missing_null_and_zero_spending_caps_as_unlimited() {
+        let mut missing_cap = run(3.0);
+        missing_cap["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+
+        let mut null_cap = run(3.0);
+        null_cap["data"]["options"]["maxTotalChargeUsd"] = Value::Null;
+
+        let zero_cap = run(0.0);
+        for run in [missing_cap, null_cap, zero_cap] {
+            let mut budget = DatasetBudget::default();
+            assert_eq!(affordable_dataset_items(&run, 4, &mut budget).unwrap(), 4);
+        }
     }
 
     #[test]
@@ -337,14 +378,8 @@ mod tests {
     }
 
     #[test]
-    fn rejects_missing_or_invalid_pay_per_event_metadata() {
+    fn rejects_missing_event_prices_for_positive_pay_per_event_caps() {
         let mut budget = DatasetBudget::default();
-        assert!(
-            affordable_dataset_items(&json!({"data": {}}), 1, &mut budget)
-                .unwrap_err()
-                .to_string()
-                .contains("not configured for pay-per-event")
-        );
         assert!(affordable_dataset_items(
             &json!({
                 "data": {
