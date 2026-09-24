@@ -153,12 +153,22 @@ fn affordable_dataset_items(
     let data = run
         .get("data")
         .ok_or_else(|| anyhow!("Apify run pricing is missing"))?;
-    if data
+    let pricing_model = data
         .pointer("/pricingInfo/pricingModel")
         .and_then(Value::as_str)
-        != Some("PAY_PER_EVENT")
-    {
-        bail!("Apify run is not configured for pay-per-event pricing");
+        .ok_or_else(|| anyhow!("Apify run did not provide the pricing model"))?;
+    if pricing_model != "PAY_PER_EVENT" {
+        return Ok(requested);
+    }
+
+    let max_charge = match data.pointer("/options/maxTotalChargeUsd") {
+        None | Some(Value::Null) => return Ok(requested),
+        Some(value) => value
+            .as_f64()
+            .ok_or_else(|| anyhow!("Apify run returned an invalid spending limit"))?,
+    };
+    if max_charge == 0.0 {
+        return Ok(requested);
     }
 
     let events = data
@@ -170,10 +180,6 @@ fn affordable_dataset_items(
         .and_then(|event| event.get("eventPriceUsd"))
         .and_then(Value::as_f64)
         .ok_or_else(|| anyhow!("Apify run did not provide the dataset item price"))?;
-    let max_charge = data
-        .pointer("/options/maxTotalChargeUsd")
-        .and_then(Value::as_f64)
-        .ok_or_else(|| anyhow!("Apify run did not provide the spending limit"))?;
     if !item_price.is_finite() || item_price < 0.0 || !max_charge.is_finite() || max_charge < 0.0 {
         bail!("Apify run returned invalid charging values");
     }
@@ -257,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn available_rows_include_other_charged_events_and_local_writes() {
+    fn positive_spending_limit_counts_custom_events_and_local_writes() {
         let run = run_pricing(
             0.001,
             json!({
@@ -269,8 +275,38 @@ mod tests {
     }
 
     #[test]
-    fn free_default_item_event_does_not_limit_rows() {
+    fn zero_spending_limit_is_unlimited() {
+        let run = run_pricing(0.0, json!({}));
+        assert_eq!(affordable_dataset_items(&run, 7, 0).unwrap(), 7);
+    }
+
+    #[test]
+    fn missing_spending_limit_is_unlimited() {
+        let mut run = run_pricing(1.0, json!({}));
+        run["data"]["options"]
+            .as_object_mut()
+            .unwrap()
+            .remove("maxTotalChargeUsd");
+        assert_eq!(affordable_dataset_items(&run, 7, 0).unwrap(), 7);
+    }
+
+    #[test]
+    fn null_spending_limit_is_unlimited() {
+        let mut run = run_pricing(1.0, json!({}));
+        run["data"]["options"]["maxTotalChargeUsd"] = serde_json::Value::Null;
+        assert_eq!(affordable_dataset_items(&run, 7, 0).unwrap(), 7);
+    }
+
+    #[test]
+    fn non_ppe_pricing_does_not_apply_event_budget() {
         let mut run = run_pricing(0.0, json!({}));
+        run["data"]["pricingInfo"]["pricingModel"] = json!("PRICE_PER_UNIT");
+        assert_eq!(affordable_dataset_items(&run, 7, 0).unwrap(), 7);
+    }
+
+    #[test]
+    fn free_default_item_event_does_not_limit_rows() {
+        let mut run = run_pricing(0.001, json!({}));
         run["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
             ["apify-default-dataset-item"]["eventPriceUsd"] = json!(0.0);
         assert_eq!(affordable_dataset_items(&run, 7, 0).unwrap(), 7);
@@ -281,7 +317,7 @@ mod tests {
         assert!(affordable_dataset_items(&json!({ "data": {} }), 1, 0)
             .unwrap_err()
             .to_string()
-            .contains("pay-per-event"));
+            .contains("pricing model"));
 
         let run = run_pricing(1.0, json!({ "unknown-event": 1 }));
         assert!(affordable_dataset_items(&run, 1, 0)
