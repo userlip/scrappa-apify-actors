@@ -5,14 +5,14 @@ use reqwest::{header, Client, Method, Response, StatusCode};
 use serde_json::{json, Value};
 use url::Url;
 
-use crate::{request_params::VintedUserProfileRequest, runtime_budget::retry_delay_ms};
+use crate::{
+    request_params::VintedUserProfileRequest,
+    runtime_budget::{retry_delay_ms, APIFY_MAX_ATTEMPTS, APIFY_REQUEST_TIMEOUT_MS},
+};
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const VINTED_USER_PROFILE_RESULT_CHARGE_EVENT: &str = "user-profile-result";
 const DEFAULT_DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
-const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const APIFY_MAX_ATTEMPTS: usize = 2;
-
 pub struct ActorConfig {
     pub apify_api_base: Url,
     pub scrappa_api_base: Option<String>,
@@ -192,6 +192,7 @@ pub fn charge_budget_from_run(run: &Value) -> Result<ChargeBudget> {
     })
 }
 
+#[derive(Clone)]
 pub struct ApifyClient {
     http: Client,
     base_url: Url,
@@ -205,7 +206,7 @@ pub struct ApifyClient {
 impl ApifyClient {
     pub fn new(config: &ActorConfig) -> Result<Self> {
         let http = Client::builder()
-            .timeout(APIFY_REQUEST_TIMEOUT)
+            .timeout(Duration::from_millis(APIFY_REQUEST_TIMEOUT_MS))
             .build()
             .context("Could not create Apify HTTP client")?;
 
