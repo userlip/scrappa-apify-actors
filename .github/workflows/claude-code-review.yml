@@ -1,4 +1,4 @@
-# Managed reviewer workflow version: 2026.09.01.1
+# Managed reviewer workflow version: 2026.09.25.3
 name: Claude Code Review
 
 on:
@@ -348,35 +348,75 @@ jobs:
           set -euo pipefail
           : "${RUNNER_MANAGER_URL:?RUNNER_MANAGER_URL is required}"
 
-          oidc_response="$(curl -fsSL \
-            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${RUNNER_MANAGER_URL%/}")"
-
-          oidc_token="$(jq -er '.value | select(type == "string" and length > 0)' <<< "$oidc_response")"
-
           broker_response_file="$(mktemp)"
           trap 'rm -f "$broker_response_file"' EXIT
+          broker_failure() {
+            local reason="AI backend broker rejected this review (HTTP ${broker_status})."
+            local broker_message=""
+            local LC_ALL=C
+            local safe_login_regex='^Codex account [A-Za-z0-9_+@.-][A-Za-z0-9 _+@.-]{0,79} needs to sign in again at https://ci\.marin\.sh/ci/codex-accounts\.$'
+            local safe_quota_reset_regex='^(All Codex accounts have used their (weekly|5-hour|five-hour|5h) limit|Codex (weekly|5-hour|five-hour|5h) limit reached)\. Earliest reset: [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2} UTC \([A-Za-z0-9_+@.-][A-Za-z0-9 _+@.-]{0,79}\)\.$'
+            local safe_quota_unknown_regex='^(All Codex accounts have used their (weekly|5-hour|five-hour|5h) limit|Codex (weekly|5-hour|five-hour|5h) limit reached)\. (Earliest reset: )?Reset time unavailable\.( \([A-Za-z0-9_+@.-][A-Za-z0-9 _+@.-]{0,79}\)\.)?$'
+            if [[ "$broker_curl_exit" -ne 0 || "$broker_status" == "502" || "$broker_status" == "504" || "$broker_status" =~ ^5[0-9][0-9]$ ]]; then
+              reason="AI broker unreachable."
+            elif [[ "$broker_status" == "429" ]]; then
+              broker_message="$(jq -r 'if (.message | type) == "string" then .message[0:512] else "" end' "$broker_response_file" 2>/dev/null || true)"
+              if [[ "$broker_message" =~ $safe_login_regex || "$broker_message" =~ $safe_quota_reset_regex || "$broker_message" =~ $safe_quota_unknown_regex ]]; then
+                reason="$broker_message"
+              else
+                reason="Codex accounts have no available capacity; check quota and sign-in status."
+              fi
+            elif [[ "$broker_status" == "401" || "$broker_status" == "403" ]]; then
+              broker_message="$(jq -r 'if (.message | type) == "string" then .message[0:512] else "" end' "$broker_response_file" 2>/dev/null || true)"
+              if [[ "$broker_message" =~ $safe_login_regex ]]; then
+                reason="$broker_message"
+              else
+                reason="AI backend authentication was rejected (HTTP ${broker_status})."
+              fi
+            fi
+            printf '%s\n' "$reason" > "${RUNNER_TEMP}/ai-review-failure-reason"
+            echo "::error::AI backend broker request failed; see the Step Summary for a safe reason."
+            exit 1
+          }
+
           broker_status=0
           for attempt in $(seq 1 21); do
-            broker_status="$(curl -sS -o "$broker_response_file" -w '%{http_code}' -X POST \
+            oidc_response="$(curl -fsSL --connect-timeout 10 --max-time 20 \
+              -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${RUNNER_MANAGER_URL%/}")"
+
+            oidc_token="$(jq -er '.value | select(type == "string" and length > 0)' <<< "$oidc_response")"
+
+            broker_curl_exit=0
+            broker_status="$(curl --connect-timeout 10 --max-time 75 -sS -o "$broker_response_file" -w '%{http_code}' -X POST \
               -H "Authorization: Bearer ${oidc_token}" \
               -H "Accept: application/json" \
               -H "X-Runner-Review-Capabilities: claude,codex-auth-v1" \
-              "${RUNNER_MANAGER_URL%/}/api/broker/claude-code/token")"
+              "${RUNNER_MANAGER_URL%/}/api/broker/claude-code/token")" || broker_curl_exit=$?
+
+            if [[ "$broker_curl_exit" -ne 0 ]]; then
+              broker_failure
+            fi
+
+            if [[ "$broker_status" == "502" || "$broker_status" == "504" ]]; then
+              # The upstream may have issued a lease before the gateway lost its response.
+              broker_failure
+            fi
 
             if [[ "$broker_status" -ge 200 && "$broker_status" -lt 300 ]]; then
               break
             fi
 
-            broker_message="$(jq -r '.message // "Unknown broker error."' "$broker_response_file" 2>/dev/null || echo 'Unknown broker error.')"
             if [[ ("$broker_status" == "429" || "$broker_status" == "503") && "$attempt" -lt 21 ]]; then
-              echo "::notice::AI backend is temporarily unavailable (HTTP ${broker_status}): ${broker_message} Retrying in 15 seconds."
+              echo "::notice::AI backend broker is temporarily unavailable (HTTP ${broker_status}); retrying in 15 seconds."
               sleep 15
               continue
             fi
 
-            echo "::error::AI backend broker rejected this review (HTTP ${broker_status}): ${broker_message}"
-            exit 1
+            if [[ "$broker_status" -ge 500 ]]; then
+              broker_failure
+            fi
+            broker_failure
           done
           broker_response="$(cat "$broker_response_file")"
 
@@ -880,38 +920,23 @@ jobs:
             GIT_CONFIG_GLOBAL="$git_global_config" HOME="$skills_home" timeout 900 codex "${codex_args[@]}" < "$prompt_file" > "$events_file" 2> "$error_file"
           }
 
-          show_codex_failure() {
-            if [[ -s "$error_file" ]]; then
-              tail -c 4000 "$error_file" || true
-            fi
-
-            structured_error="$(jq -r 'select(.type == "error" or .type == "turn.failed") | .message // (.error | if type == "object" then .message else . end) // empty' "$events_file" 2>/dev/null | tail -c 4000)"
-            if [[ -n "$structured_error" ]]; then
-              printf '%s\n' "$structured_error"
-            elif [[ ! -s "$error_file" ]]; then
-              echo 'Codex exited without a structured error message.'
-            fi
-          }
 
           if ! run_codex; then
             printf '\nThe first Codex review attempt failed. Retry the review from the existing checkout and context.\n' >> "$prompt_file"
             if ! run_codex; then
               echo "::error::Codex review failed twice."
-              show_codex_failure
               exit 1
             fi
           fi
 
           if [[ ! -s "$result_file" ]] || ! jq -e 'select(.type == "turn.completed")' "$events_file" >/dev/null; then
             echo "::error::Codex did not produce a completed review result."
-            show_codex_failure
             exit 1
           fi
 
           if ! head -n 1 "$result_file" | grep -Fxq 'REVIEW_STATUS: complete'; then
             printf 'failed\ncodex\n%s\n' "${{ steps.ai-config.outputs.display_name }}" > "${RUNNER_TEMP}/review-health"
             echo "::error::Codex completed without a semantically verified review."
-            head -c 4000 "$result_file" || true
             exit 1
           fi
 
@@ -971,10 +996,12 @@ jobs:
         id: claude-review-result
         continue-on-error: true
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          conclusion="${{ steps.claude-review.outputs.conclusion }}"
+          conclusion="${{ steps.claude-review.outcome }}"
           execution_file="${{ steps.claude-review.outputs.execution_file }}"
           if [[ "$conclusion" != "success" ]]; then
             echo "::error::Claude Code action concluded with ${conclusion:-no conclusion}."
@@ -990,8 +1017,15 @@ jobs:
             exit 0
           fi
 
+          if jq -e '.[-1].type == "result" and .[-1].subtype == "success" and ((.[-1].is_error // false) == false)' "$execution_file" >/dev/null &&
+             gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments?per_page=100" |
+               jq -s -e --arg run_url "/actions/runs/${GITHUB_RUN_ID}" \
+                 --argjson since "$(($(stat -c %Y "$execution_file") - 120))" \
+                 'add | any(.[]; .user.login == "github-actions[bot]" and ((.updated_at | fromdateiso8601) >= $since) and ((.body // "") | contains($run_url) and contains("### PR Review")))' >/dev/null; then
+            exit 0
+          fi
+
           echo "::error::Claude Code returned an error result even though the action concluded successfully."
-          jq -c '.[-1]' "$execution_file" || true
           exit 1
 
       - name: Retry Claude Code Review
@@ -1042,10 +1076,12 @@ jobs:
         id: claude-review-retry-result
         continue-on-error: true
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          conclusion="${{ steps.claude-review-retry.outputs.conclusion }}"
+          conclusion="${{ steps.claude-review-retry.outcome }}"
           execution_file="${{ steps.claude-review-retry.outputs.execution_file }}"
           if [[ "$conclusion" != "success" ]]; then
             echo "::error::Claude Code retry concluded with ${conclusion:-no conclusion}."
@@ -1061,8 +1097,15 @@ jobs:
             exit 0
           fi
 
+          if jq -e '.[-1].type == "result" and .[-1].subtype == "success" and ((.[-1].is_error // false) == false)' "$execution_file" >/dev/null &&
+             gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments?per_page=100" |
+               jq -s -e --arg run_url "/actions/runs/${GITHUB_RUN_ID}" \
+                 --argjson since "$(($(stat -c %Y "$execution_file") - 120))" \
+                 'add | any(.[]; .user.login == "github-actions[bot]" and ((.updated_at | fromdateiso8601) >= $since) and ((.body // "") | contains($run_url) and contains("### PR Review")))' >/dev/null; then
+            exit 0
+          fi
+
           echo "::error::Claude Code retry returned an error result even though the action concluded successfully."
-          jq -c '.[-1]' "$execution_file" || true
           exit 1
 
       - name: Run Claude Code Review with custom backend
@@ -1144,24 +1187,7 @@ jobs:
           {
             echo "**Claude Code Review custom backend failed** —— [View job](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
             echo
-            echo "Exit status: $status"
-            echo "Backend: ${AI_TOKEN_TYPE}, model: ${ANTHROPIC_MODEL:-default}, base URL: ${ANTHROPIC_BASE_URL:-default}"
-            echo "Token fingerprint: sha256:${AI_TOKEN_FINGERPRINT}, length: ${AI_TOKEN_LENGTH}"
-            echo
-            if [[ -s "$error_log" ]]; then
-              echo "stderr:"
-              echo '```text'
-              tail -c 4000 "$error_log"
-              echo
-              echo '```'
-            fi
-            if [[ -s "$output_jsonl" ]]; then
-              echo "stdout:"
-              echo '```text'
-              tail -c 4000 "$output_jsonl"
-              echo
-              echo '```'
-            fi
+            echo "Review could not be completed. See the failed workflow steps for the safe failure reason."
           } > "$body_file"
           jq -n --rawfile body "$body_file" '{ body: $body }' \
             | curl -fsSL \
@@ -1178,10 +1204,12 @@ jobs:
         id: claude-review-custom-result
         continue-on-error: true
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          conclusion="${{ steps.claude-review-custom.outputs.conclusion }}"
+          conclusion="${{ steps.claude-review-custom.outcome }}"
           execution_file="${{ steps.claude-review-custom.outputs.execution_file }}"
           if [[ "$conclusion" != "success" ]]; then
             echo "::error::Claude Code custom backend concluded with ${conclusion:-no conclusion}."
@@ -1197,8 +1225,15 @@ jobs:
             exit 0
           fi
 
+          if jq -e '.[-1].type == "result" and .[-1].subtype == "success" and ((.[-1].is_error // false) == false)' "$execution_file" >/dev/null &&
+             gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments?per_page=100" |
+               jq -s -e --arg run_url "/actions/runs/${GITHUB_RUN_ID}" \
+                 --argjson since "$(($(stat -c %Y "$execution_file") - 120))" \
+                 'add | any(.[]; .user.login == "github-actions[bot]" and ((.updated_at | fromdateiso8601) >= $since) and ((.body // "") | contains($run_url) and contains("### PR Review")))' >/dev/null; then
+            exit 0
+          fi
+
           echo "::error::Claude Code custom backend returned an error result even though the action concluded successfully."
-          jq -c '.[-1]' "$execution_file" || true
           exit 1
 
       - name: Post Claude Code Review custom backend result
@@ -1209,6 +1244,10 @@ jobs:
           EXECUTION_FILE: ${{ steps.claude-review-custom.outputs.execution_file }}
         run: |
           set -euo pipefail
+
+          if ! jq -e '.[-1].result | type == "string" and startswith("REVIEW_STATUS: complete")' "$EXECUTION_FILE" >/dev/null; then
+            exit 0  # The action already posted the verified review comment.
+          fi
 
           result="$(jq -er '.[-1].result | select(type == "string" and length > 0) | sub("^REVIEW_STATUS: complete\\n?"; "")' "$EXECUTION_FILE")"
           body_file="$(mktemp)"
@@ -1309,24 +1348,7 @@ jobs:
           {
             echo "**Claude Code Review custom backend retry failed** —— [View job](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
             echo
-            echo "Exit status: $status"
-            echo "Backend: ${AI_TOKEN_TYPE}, model: ${ANTHROPIC_MODEL:-default}, base URL: ${ANTHROPIC_BASE_URL:-default}"
-            echo "Token fingerprint: sha256:${AI_TOKEN_FINGERPRINT}, length: ${AI_TOKEN_LENGTH}"
-            echo
-            if [[ -s "$error_log" ]]; then
-              echo "stderr:"
-              echo '```text'
-              tail -c 4000 "$error_log"
-              echo
-              echo '```'
-            fi
-            if [[ -s "$output_jsonl" ]]; then
-              echo "stdout:"
-              echo '```text'
-              tail -c 4000 "$output_jsonl"
-              echo
-              echo '```'
-            fi
+            echo "Review could not be completed. See the failed workflow steps for the safe failure reason."
           } > "$body_file"
           jq -n --rawfile body "$body_file" '{ body: $body }' \
             | curl -fsSL \
@@ -1343,10 +1365,12 @@ jobs:
         id: claude-review-custom-retry-result
         continue-on-error: true
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          conclusion="${{ steps.claude-review-custom-retry.outputs.conclusion }}"
+          conclusion="${{ steps.claude-review-custom-retry.outcome }}"
           execution_file="${{ steps.claude-review-custom-retry.outputs.execution_file }}"
           if [[ "$conclusion" != "success" ]]; then
             echo "::error::Claude Code custom backend retry concluded with ${conclusion:-no conclusion}."
@@ -1362,8 +1386,15 @@ jobs:
             exit 0
           fi
 
+          if jq -e '.[-1].type == "result" and .[-1].subtype == "success" and ((.[-1].is_error // false) == false)' "$execution_file" >/dev/null &&
+             gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments?per_page=100" |
+               jq -s -e --arg run_url "/actions/runs/${GITHUB_RUN_ID}" \
+                 --argjson since "$(($(stat -c %Y "$execution_file") - 120))" \
+                 'add | any(.[]; .user.login == "github-actions[bot]" and ((.updated_at | fromdateiso8601) >= $since) and ((.body // "") | contains($run_url) and contains("### PR Review")))' >/dev/null; then
+            exit 0
+          fi
+
           echo "::error::Claude Code custom backend retry returned an error result even though the action concluded successfully."
-          jq -c '.[-1]' "$execution_file" || true
           exit 1
 
       - name: Post Claude Code Review custom backend retry result
@@ -1374,6 +1405,10 @@ jobs:
           EXECUTION_FILE: ${{ steps.claude-review-custom-retry.outputs.execution_file }}
         run: |
           set -euo pipefail
+
+          if ! jq -e '.[-1].result | type == "string" and startswith("REVIEW_STATUS: complete")' "$EXECUTION_FILE" >/dev/null; then
+            exit 0  # The action already posted the verified review comment.
+          fi
 
           result="$(jq -er '.[-1].result | select(type == "string" and length > 0) | sub("^REVIEW_STATUS: complete\\n?"; "")' "$EXECUTION_FILE")"
           body_file="$(mktemp)"
@@ -1569,28 +1604,14 @@ jobs:
           fi
           codex_args+=(-)
 
-          show_codex_backup_failure() {
-            if [[ -s "$error_file" ]]; then
-              tail -c 4000 "$error_file" || true
-            fi
-
-            structured_error="$(jq -r 'select(.type == "error" or .type == "turn.failed") | .message // (.error | if type == "object" then .message else . end) // empty' "$events_file" 2>/dev/null | tail -c 4000)"
-            if [[ -n "$structured_error" ]]; then
-              printf '%s\n' "$structured_error"
-            elif [[ ! -s "$error_file" ]]; then
-              echo 'Backup Codex exited without a structured error message.'
-            fi
-          }
 
           if ! GIT_CONFIG_GLOBAL="$git_global_config" HOME="$skills_home" timeout 900 codex "${codex_args[@]}" < "$prompt_file" > "$events_file" 2> "$error_file"; then
             echo "::error::Backup Codex review failed."
-            show_codex_backup_failure
             exit 1
           fi
 
           if [[ ! -s "$result_file" ]] || ! jq -e 'select(.type == "turn.completed")' "$events_file" >/dev/null; then
             echo "::error::Backup Codex did not produce a completed review result."
-            show_codex_backup_failure
             exit 1
           fi
 
@@ -1658,10 +1679,12 @@ jobs:
         id: claude-review-backup-oauth-result
         continue-on-error: true
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          conclusion="${{ steps.claude-review-backup-oauth.outputs.conclusion }}"
+          conclusion="${{ steps.claude-review-backup-oauth.outcome }}"
           execution_file="${{ steps.claude-review-backup-oauth.outputs.execution_file }}"
           if [[ "$conclusion" != "success" ]]; then
             echo "::error::Claude Code backup concluded with ${conclusion:-no conclusion}."
@@ -1677,8 +1700,15 @@ jobs:
             exit 0
           fi
 
+          if jq -e '.[-1].type == "result" and .[-1].subtype == "success" and ((.[-1].is_error // false) == false)' "$execution_file" >/dev/null &&
+             gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments?per_page=100" |
+               jq -s -e --arg run_url "/actions/runs/${GITHUB_RUN_ID}" \
+                 --argjson since "$(($(stat -c %Y "$execution_file") - 120))" \
+                 'add | any(.[]; .user.login == "github-actions[bot]" and ((.updated_at | fromdateiso8601) >= $since) and ((.body // "") | contains($run_url) and contains("### PR Review")))' >/dev/null; then
+            exit 0
+          fi
+
           echo "::error::Claude Code backup returned an error result even though the action concluded successfully."
-          jq -c '.[-1]' "$execution_file" || true
           exit 1
 
       - name: Run Claude Code Review with backup custom backend
@@ -1729,10 +1759,12 @@ jobs:
         id: claude-review-backup-custom-result
         continue-on-error: true
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          conclusion="${{ steps.claude-review-backup-custom.outputs.conclusion }}"
+          conclusion="${{ steps.claude-review-backup-custom.outcome }}"
           execution_file="${{ steps.claude-review-backup-custom.outputs.execution_file }}"
           if [[ "$conclusion" != "success" ]]; then
             echo "::error::Claude Code backup custom backend concluded with ${conclusion:-no conclusion}."
@@ -1748,9 +1780,88 @@ jobs:
             exit 0
           fi
 
+          if jq -e '.[-1].type == "result" and .[-1].subtype == "success" and ((.[-1].is_error // false) == false)' "$execution_file" >/dev/null &&
+             gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.pull_request.number }}/comments?per_page=100" |
+               jq -s -e --arg run_url "/actions/runs/${GITHUB_RUN_ID}" \
+                 --argjson since "$(($(stat -c %Y "$execution_file") - 120))" \
+                 'add | any(.[]; .user.login == "github-actions[bot]" and ((.updated_at | fromdateiso8601) >= $since) and ((.body // "") | contains($run_url) and contains("### PR Review")))' >/dev/null; then
+            exit 0
+          fi
+
           echo "::error::Claude Code backup custom backend returned an error result even though the action concluded successfully."
-          jq -c '.[-1]' "$execution_file" || true
           exit 1
+
+      - name: Classify AI review failure reason
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          REVIEW_TOOLS_OUTCOME: ${{ steps.review-tools.outcome }}
+          REVIEW_WORKFLOW_OUTCOME: ${{ steps.review-workflow.outcome }}
+          REVIEW_CONTEXT_OUTCOME: ${{ steps.review-context.outcome }}
+          REVIEW_PREFLIGHT_OUTCOME: ${{ steps.reviewer-preflight.outcome }}
+          AI_CONFIG_OUTCOME: ${{ steps.ai-config.outcome }}
+          CODEX_PRIMARY_OUTCOME: ${{ steps.codex-review.outcome }}
+          CODEX_BACKUP_OUTCOME: ${{ steps.codex-review-backup.outcome }}
+          CLAUDE_PRIMARY_RESULT_OUTCOME: ${{ steps.claude-review-result.outcome }}
+          CLAUDE_RETRY_RESULT_OUTCOME: ${{ steps.claude-review-retry-result.outcome }}
+          CLAUDE_CUSTOM_RESULT_OUTCOME: ${{ steps.claude-review-custom-result.outcome }}
+          CLAUDE_CUSTOM_RETRY_RESULT_OUTCOME: ${{ steps.claude-review-custom-retry-result.outcome }}
+          CLAUDE_BACKUP_OAUTH_RESULT_OUTCOME: ${{ steps.claude-review-backup-oauth-result.outcome }}
+          CLAUDE_BACKUP_CUSTOM_RESULT_OUTCOME: ${{ steps.claude-review-backup-custom-result.outcome }}
+          BACKUP_AVAILABLE: ${{ steps.claude-review-backup.outputs.available }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          reason_file="${RUNNER_TEMP}/ai-review-failure-reason"
+          [[ -s "$reason_file" ]] && exit 0
+
+          codex_detail=''
+          for diagnostic_file in \
+            "${RUNNER_TEMP}/codex-review-error.log" \
+            "${RUNNER_TEMP}/codex-review-backup-error.log"; do
+            [[ -s "$diagnostic_file" ]] || continue
+            codex_detail+=$'\n'"$(tail -c 8192 "$diagnostic_file" 2>/dev/null || true)"
+          done
+          if command -v jq >/dev/null 2>&1; then
+            for event_file in \
+              "${RUNNER_TEMP}/codex-review-events.jsonl" \
+              "${RUNNER_TEMP}/codex-review-backup-events.jsonl"; do
+              [[ -s "$event_file" ]] || continue
+              codex_detail+=$'\n'"$(jq -r 'select(.type == "error" or .type == "turn.failed") | if (.message | type) == "string" then .message elif (.error | type) == "string" then .error elif (.error.message | type) == "string" then .error.message else empty end' "$event_file" 2>/dev/null | tail -c 8192 || true)"
+            done
+          fi
+
+          reason=''
+          if grep -Eiq "you've hit your usage limit" <<< "$codex_detail"; then
+            reset_at="$(printf '%s\n' "$codex_detail" | sed -nE '/usage limit/I s/.*try again at ([A-Z][a-z]{2} [0-9]{1,2}(st|nd|rd|th)?, [0-9]{4} [0-9]{1,2}:[0-9]{2} (AM|PM)).*/\1/p' | head -n 1)"
+            if [[ -n "$reset_at" ]]; then
+              reason="Codex account has reached its usage limit; next reset: ${reset_at}."
+            else
+              reason="Codex account has reached its usage limit; reset time unavailable."
+            fi
+          elif grep -Eiq 'refresh token was already used|401[[:space:]]+Unauthorized' <<< "$codex_detail"; then
+            reason="Codex account needs to sign in again: https://ci.marin.sh/ci/codex-accounts."
+          elif [[ "$AI_CONFIG_OUTCOME" == "failure" ]]; then
+            reason="AI backend broker could not provide a usable account configuration."
+          elif [[ "$CODEX_PRIMARY_OUTCOME" == "failure" || "$CODEX_BACKUP_OUTCOME" == "failure" ]]; then
+            reason="Codex review could not be completed for an unclassified reason."
+          elif [[ "$CLAUDE_PRIMARY_RESULT_OUTCOME" == "failure" || "$CLAUDE_RETRY_RESULT_OUTCOME" == "failure" || "$CLAUDE_CUSTOM_RESULT_OUTCOME" == "failure" || "$CLAUDE_CUSTOM_RETRY_RESULT_OUTCOME" == "failure" || "$CLAUDE_BACKUP_OAUTH_RESULT_OUTCOME" == "failure" || "$CLAUDE_BACKUP_CUSTOM_RESULT_OUTCOME" == "failure" ]]; then
+            reason="Claude Code review could not be completed for an unclassified reason."
+          elif [[ "$BACKUP_AVAILABLE" == "false" ]]; then
+            reason="The primary AI review failed and no backup account is configured."
+          elif [[ "$REVIEW_TOOLS_OUTCOME" == "failure" ]]; then
+            reason="AI review tools could not be installed."
+          elif [[ "$REVIEW_WORKFLOW_OUTCOME" == "failure" ]]; then
+            reason="The workflow safety check failed before review."
+          elif [[ "$REVIEW_CONTEXT_OUTCOME" == "failure" ]]; then
+            reason="The pull request review context could not be prepared."
+          elif [[ "$REVIEW_PREFLIGHT_OUTCOME" == "failure" ]]; then
+            reason="The reviewer preflight check failed before contacting the AI backend."
+          else
+            reason="No safe, specific AI review failure reason was classified."
+          fi
+
+          printf '%s\n' "$reason" > "$reason_file"
 
       - name: Report reviewer health
         if: ${{ always() && steps.review-workflow.outputs.changed != 'true' && steps.review-context.outcome != 'skipped' }}
@@ -1788,10 +1899,11 @@ jobs:
             message="Reviewer did not produce a semantically verified result. Preflight: ${{ steps.reviewer-preflight.outcome }}; backend config: ${{ steps.ai-config.outcome }}; Codex: ${{ steps.codex-review.outcome }}."
           fi
 
-          oidc_response="$(curl -fsSL \
+          oidc_response="$(curl -fsSL --connect-timeout 10 --max-time 20 \
             -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${RUNNER_MANAGER_URL%/}")"
           oidc_token="$(jq -er '.value' <<< "$oidc_response")"
+          health_curl_exit=0
           jq -n \
             --arg status "$status" \
             --arg backend "$backend" \
@@ -1799,12 +1911,18 @@ jobs:
             --arg run_url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --arg message "$message" \
             '{status: $status, backend: $backend, account: $account, run_url: $run_url, message: $message}' \
-            | curl -fsSL -X POST \
+            | curl -fsSL --connect-timeout 10 --max-time 20 -X POST \
               -H "Authorization: Bearer ${oidc_token}" \
               -H "Accept: application/json" \
               -H "Content-Type: application/json" \
               --data-binary @- \
-              "${RUNNER_MANAGER_URL%/}/api/broker/reviewer/health" >/dev/null
+              "${RUNNER_MANAGER_URL%/}/api/broker/reviewer/health" >/dev/null || health_curl_exit=$?
+
+          if [[ "$health_curl_exit" -ne 0 ]]; then
+            echo "::error::Reviewer health could not be recorded (curl ${health_curl_exit}); review status: ${status}."
+            printf '### Reviewer health reporting failed\n\nRunner-manager status API failed (curl %s). Review status: %s.\n' "$health_curl_exit" "$status" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
       - name: Persist refreshed Codex authentication and release accounts
         if: ${{ always() && steps.ai-config.outcome == 'success' && (steps.ai-config.outputs.codex_account_uuid != '' || steps.ai-config.outputs.backup_codex_account_uuid != '') }}
@@ -1877,14 +1995,26 @@ jobs:
           find "${RUNNER_TEMP}" -maxdepth 1 -type f -name 'codex-lease-*.json' -delete
 
       - name: Warn when AI review is unavailable
-        if: ${{ steps.review-tools.outcome == 'failure' || steps.review-workflow.outcome == 'failure' || steps.review-context.outcome == 'failure' || steps.reviewer-preflight.outcome == 'failure' || steps.ai-config.outcome == 'failure' || steps.claude-review-backup.outputs.available == 'false' || (steps.ai-config.outputs.backup_token_type == 'CODEX_AUTH_JSON' && steps.codex-review-backup.outcome == 'failure') || (steps.ai-config.outputs.backup_token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review-backup-oauth-result.outcome == 'failure') || ((steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_API_KEY' || steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_AUTH_TOKEN') && steps.claude-review-backup-custom-result.outcome == 'failure') }}
+        if: ${{ always() && (steps.review-tools.outcome == 'failure' || steps.review-workflow.outcome == 'failure' || steps.review-context.outcome == 'failure' || steps.reviewer-preflight.outcome == 'failure' || steps.ai-config.outcome == 'failure' || steps.claude-review-backup.outputs.available == 'false' || (steps.ai-config.outputs.backup_token_type == 'CODEX_AUTH_JSON' && steps.codex-review-backup.outcome == 'failure') || (steps.ai-config.outputs.backup_token_type == 'CLAUDE_CODE_OAUTH_TOKEN' && steps.claude-review-backup-oauth-result.outcome == 'failure') || ((steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_API_KEY' || steps.ai-config.outputs.backup_token_type == 'ANTHROPIC_AUTH_TOKEN') && steps.claude-review-backup-custom-result.outcome == 'failure')) }}
         shell: bash
         run: |
-          echo "::error::AI review is currently unavailable because a required workflow prerequisite, AI service, or authentication configuration is unavailable."
+          reason_file="${RUNNER_TEMP}/ai-review-failure-reason"
+          if [[ -s "$reason_file" ]]; then
+            reason="$(LC_ALL=C tr -cd '[:alnum:][:space:]().,:/@+_-' < "$reason_file" | head -c 512 | tr '\r\n' ' ')"
+          else
+            reason="No safe, specific failure reason was recorded; inspect the earlier workflow steps."
+          fi
+          [[ -n "$reason" ]] || reason="No safe, specific failure reason was recorded; inspect the earlier workflow steps."
+
+          command_reason="${reason//%/%25}"
+          command_reason="${command_reason//$'\r'/%0D}"
+          command_reason="${command_reason//$'\n'/%0A}"
+          printf '::error::AI review is currently unavailable: %s\n' "$command_reason"
           {
             echo "## AI review unavailable"
             echo
-            echo "The configured AI review failed because its authenticated pull request context, workflow safety check, AI service, broker, or authentication configuration is currently unavailable to this repository."
-            echo "Please restore the missing workflow prerequisite or AI backend access before relying on this workflow for automated review."
+            printf '**Reason:** %s\n' "$reason"
+            echo
+            echo "Please restore the required AI backend access before relying on this workflow for automated review."
           } >> "$GITHUB_STEP_SUMMARY"
           exit 1
