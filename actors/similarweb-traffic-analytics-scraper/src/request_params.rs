@@ -4,7 +4,7 @@ use anyhow::{anyhow, bail, Result};
 use serde_json::Value;
 use url::Url;
 
-const MAX_DOMAINS_PER_RUN: usize = 100;
+const MAX_DOMAINS_PER_RUN: usize = 1000;
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct SimilarwebTrafficRequest {
@@ -247,14 +247,26 @@ mod tests {
         .unwrap();
         assert_eq!(requests.len(), 1);
 
-        let domains = (0..101)
+        let domains = (0..1001)
             .map(|index| format!("site{index}.example"))
             .collect::<Vec<_>>();
+        assert_eq!(
+            build_similarweb_traffic_requests(&json!({"domains": &domains[..101]}))
+                .unwrap()
+                .len(),
+            101
+        );
+        assert_eq!(
+            build_similarweb_traffic_requests(&json!({"domains": &domains[..1000]}))
+                .unwrap()
+                .len(),
+            1000
+        );
         assert!(
             build_similarweb_traffic_requests(&json!({"domains":domains}))
                 .unwrap_err()
                 .to_string()
-                .contains("more than 100 unique domains")
+                .contains("more than 1000 unique domains")
         );
     }
 
