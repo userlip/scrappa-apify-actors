@@ -8,6 +8,8 @@ use url::Url;
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube/search";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
+const SCRAPPA_RETRY_BASE_DELAY: Duration = Duration::from_secs(2);
 const MAX_LIMIT: u64 = 20;
 
 struct ActorConfig {
@@ -216,7 +218,43 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     response_json(response, "Apify INPUT request").await
 }
 
-async fn fetch_search_results(client: &Client, config: &ActorConfig, url: &Url) -> Result<Value> {
+struct FetchError {
+    error: anyhow::Error,
+    retryable: bool,
+}
+
+impl FetchError {
+    fn retryable(error: anyhow::Error) -> Self {
+        Self {
+            error,
+            retryable: true,
+        }
+    }
+
+    fn fatal(error: anyhow::Error) -> Self {
+        Self {
+            error,
+            retryable: false,
+        }
+    }
+}
+
+fn timeout_error() -> anyhow::Error {
+    anyhow!(
+        "Scrappa API request timed out after {}s",
+        SCRAPPA_REQUEST_TIMEOUT.as_secs()
+    )
+}
+
+fn is_retryable_status(status: u16) -> bool {
+    matches!(status, 408 | 429 | 500 | 502 | 503 | 504)
+}
+
+async fn fetch_search_attempt(
+    client: &Client,
+    config: &ActorConfig,
+    url: &Url,
+) -> std::result::Result<Value, FetchError> {
     let response = client
         .get(url.clone())
         .header("X-API-Key", &config.scrappa_api_key)
@@ -225,33 +263,61 @@ async fn fetch_search_results(client: &Client, config: &ActorConfig, url: &Url) 
         .send()
         .await
         .map_err(|error| {
-            if error.is_timeout() {
-                anyhow!(
-                    "Scrappa API request timed out after {}s",
-                    SCRAPPA_REQUEST_TIMEOUT.as_secs()
-                )
+            FetchError::retryable(if error.is_timeout() {
+                timeout_error()
             } else {
                 anyhow!("Scrappa API request failed: {error}")
-            }
+            })
         })?;
     let status = response.status();
     if !status.is_success() {
         let reason = status.canonical_reason().unwrap_or("Unknown status");
-        bail!(
+        let error = anyhow!(
             "Scrappa API request failed with {} {reason}",
             status.as_u16()
         );
+        return Err(if is_retryable_status(status.as_u16()) {
+            FetchError::retryable(error)
+        } else {
+            FetchError::fatal(error)
+        });
     }
     response.json().await.map_err(|error| {
         if error.is_timeout() {
-            anyhow!(
-                "Scrappa API request timed out after {}s",
-                SCRAPPA_REQUEST_TIMEOUT.as_secs()
-            )
+            FetchError::retryable(timeout_error())
         } else {
-            anyhow!("Scrappa API response was not valid JSON: {error}")
+            FetchError::fatal(anyhow!("Scrappa API response was not valid JSON: {error}"))
         }
     })
+}
+
+/// Retries transient Scrappa failures (network errors, timeouts, 408/429/5xx).
+/// Worst case stays well inside Apify's 300-second QA window:
+/// 3 x 60s attempts + 2s + 4s backoff.
+async fn fetch_search_results(
+    client: &Client,
+    config: &ActorConfig,
+    url: &Url,
+    retry_base_delay: Duration,
+) -> Result<Value> {
+    let mut attempt = 1;
+    loop {
+        match fetch_search_attempt(client, config, url).await {
+            Ok(data) => return Ok(data),
+            Err(failure) if failure.retryable && attempt < SCRAPPA_MAX_ATTEMPTS => {
+                let delay = retry_base_delay * 2u32.pow(attempt - 1);
+                eprintln!(
+                    "{:#}. Retrying attempt {}/{SCRAPPA_MAX_ATTEMPTS} in {}ms.",
+                    failure.error,
+                    attempt + 1,
+                    delay.as_millis()
+                );
+                tokio::time::sleep(delay).await;
+                attempt += 1;
+            }
+            Err(failure) => return Err(failure.error),
+        }
+    }
 }
 
 fn response_results(data: &Value) -> Result<Value> {
@@ -409,6 +475,14 @@ async fn push_dataset_items(
 }
 
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
+    run_actor_with_retry_delay(client, config, SCRAPPA_RETRY_BASE_DELAY).await
+}
+
+async fn run_actor_with_retry_delay(
+    client: &Client,
+    config: &ActorConfig,
+    retry_base_delay: Duration,
+) -> Result<()> {
     let input = get_input(client, config).await?;
     let request = build_search_request(
         &input,
@@ -417,7 +491,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     )?;
     println!("Fetching from: {}", request.url);
 
-    let data = fetch_search_results(client, config, &request.url).await?;
+    let data = fetch_search_results(client, config, &request.url, retry_base_delay).await?;
     let results = response_results(&data)?;
     let requested = result_count(&results);
     let capacity = run_dataset_capacity(client, config, requested).await?;
@@ -966,6 +1040,64 @@ mod tests {
                 .iter()
                 .all(|request| !request.starts_with("POST /v2/datasets/")));
         }
+    }
+
+    #[tokio::test]
+    async fn transient_scrappa_503_is_retried_then_succeeds() {
+        let rows = two_search_rows();
+        let server = MockServer::start(vec![
+            response(200, r#"{"q":"test query"}"#),
+            response(503, r#"{"error":"youtube_upstream_unavailable"}"#),
+            response(200, &json!({"results": rows}).to_string()),
+            pricing_response(1.0),
+            response(201, "{}"),
+        ]);
+        run_actor_with_retry_delay(&client(), &mock_config(&server.base_url), Duration::ZERO)
+            .await
+            .unwrap();
+
+        let requests = server.requests();
+        assert_eq!(requests.len(), 5);
+        assert!(request_parts(&requests[1])
+            .1
+            .starts_with("/api/youtube/search?"));
+        assert!(request_parts(&requests[2])
+            .1
+            .starts_with("/api/youtube/search?"));
+        let saved: Value = serde_json::from_str(request_parts(&requests[4]).2).unwrap();
+        assert_eq!(saved, rows);
+    }
+
+    #[tokio::test]
+    async fn persistent_scrappa_503_fails_after_max_attempts() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"q":"test query"}"#),
+            response(503, "{}"),
+            response(503, "{}"),
+            response(503, "{}"),
+        ]);
+        let error =
+            run_actor_with_retry_delay(&client(), &mock_config(&server.base_url), Duration::ZERO)
+                .await
+                .unwrap_err();
+
+        assert!(format!("{error:#}").contains("503"));
+        assert_eq!(server.requests().len(), 1 + SCRAPPA_MAX_ATTEMPTS as usize);
+    }
+
+    #[tokio::test]
+    async fn client_errors_are_not_retried() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"q":"test query"}"#),
+            response(400, r#"{"error":"bad request"}"#),
+        ]);
+        let error =
+            run_actor_with_retry_delay(&client(), &mock_config(&server.base_url), Duration::ZERO)
+                .await
+                .unwrap_err();
+
+        assert!(format!("{error:#}").contains("400"));
+        assert_eq!(server.requests().len(), 2);
     }
 
     #[tokio::test]
