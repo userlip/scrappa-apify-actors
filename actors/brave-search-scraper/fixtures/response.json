@@ -1,0 +1,19 @@
+{
+  "search_information": {
+    "query_displayed": "example climate research"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Example climate research",
+      "link": "https://example.com/research",
+      "redirect_link": "https://example.com/research",
+      "displayed_link": "example.com/research",
+      "snippet": "Synthetic research summary for fixture tests.",
+      "source": "example.com"
+    }
+  ],
+  "related_searches": [],
+  "related_questions": [],
+  "engine_used": "brave"
+}

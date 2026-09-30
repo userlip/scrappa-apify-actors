@@ -1,0 +1,32 @@
+{
+  "search_parameters": {
+    "engine": "semrush_domain_overview",
+    "domain": "example.com"
+  },
+  "domain": "example.com",
+  "covered": true,
+  "coverage": {
+    "domain_metrics": true,
+    "backlink_counts": true,
+    "website_traffic": true
+  },
+  "semrush_rank": 12345,
+  "organic_keywords": 1200,
+  "organic_traffic": 25000,
+  "organic_traffic_cost": 18000,
+  "authority_score": 72,
+  "backlinks_count": 5000,
+  "referring_domains_count": 650,
+  "website": {
+    "domain": "example.com",
+    "country": "us",
+    "visits": 48000,
+    "engagement": {
+      "pages_per_visit": 3.1,
+      "avg_visit_duration_seconds": 180,
+      "bounce_rate": 0.44
+    },
+    "visits_history": [],
+    "device_history": []
+  }
+}

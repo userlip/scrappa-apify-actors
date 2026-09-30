@@ -1,0 +1,141 @@
+{
+  "slug": "semrush-competitors-scraper",
+  "title": "Semrush Competitors Scraper",
+  "description": "Semrush Competitors Scraper collects structured data from Scrappa's /semrush/domain/competitors endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/semrush/domain/competitors",
+  "openapiPath": "/semrush/domain/competitors",
+  "mode": "list",
+  "batch": {
+    "field": "domains",
+    "valueField": "domain",
+    "apiParam": "domain",
+    "pathParam": null,
+    "title": "Domains",
+    "description": "Batch input entries. Each domain is sent as the domain value."
+  },
+  "parameters": [
+    {
+      "input": "domain",
+      "apiParam": "domain",
+      "location": "query",
+      "required": true,
+      "title": "Domain",
+      "schema": {
+        "type": "string",
+        "description": "Root domain or subdomain to analyze",
+        "maxLength": 253,
+        "pattern": "^(?=.{1,253}$)[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$"
+      }
+    }
+  ],
+  "resultPointer": "/competitors",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_domain"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "domains": [
+      {
+        "domain": "wikipedia.org"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "domain": "wikipedia.org"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "semrush_domain_competitors",
+      "domain": "wikipedia.org"
+    },
+    "covered": true,
+    "summary": {
+      "domain": "wikipedia.org",
+      "authority_score": 95,
+      "visits": 1000000
+    },
+    "competitors": [
+      {
+        "domain": "example.org",
+        "authority_score": 70,
+        "visits": 25000,
+        "semrush_rank": 54321
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "domain",
+      "label": "Domain",
+      "format": "text"
+    },
+    {
+      "name": "authority_score",
+      "label": "Authority Score",
+      "format": "number"
+    },
+    {
+      "name": "visits",
+      "label": "Visits",
+      "format": "text"
+    },
+    {
+      "name": "semrush_rank",
+      "label": "Semrush Rank",
+      "format": "number"
+    }
+  ],
+  "seo": {
+    "h1": "Semrush Competitors Scraper",
+    "intro": "Find domains Semrush identifies as organic search competitors, with traffic and Authority Score data.",
+    "keywords": [
+      "Semrush Competitors Scraper",
+      "domain",
+      "authority_score",
+      "visits",
+      "/semrush/domain/competitors API"
+    ],
+    "useCases": [
+      "SEO competitor discovery",
+      "Market mapping",
+      "Domain benchmarking"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "domain",
+        "description": "Result website domain."
+      },
+      {
+        "name": "authority_score",
+        "description": "Semrush Authority Score."
+      },
+      {
+        "name": "visits",
+        "description": "Estimated monthly website visits."
+      },
+      {
+        "name": "semrush_rank",
+        "description": "Semrush domain rank."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "semrush-domain-overview-scraper",
+        "title": "Semrush Domain Overview Scraper"
+      },
+      {
+        "slug": "similarweb-traffic-analytics-scraper",
+        "title": "Similarweb Traffic Analytics Scraper"
+      }
+    ]
+  }
+}

@@ -1,0 +1,286 @@
+{
+  "slug": "apple-app-store-app-details-scraper",
+  "title": "Apple App Store App Details Scraper",
+  "description": "Apple App Store App Details Scraper collects structured data from Scrappa's /apple/app-store/details endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/apple/app-store/details",
+  "openapiPath": "/apple/app-store/details",
+  "mode": "single",
+  "batch": {
+    "field": "product_ids",
+    "valueField": "product_id",
+    "apiParam": "product_id",
+    "pathParam": null,
+    "title": "Product Ids",
+    "description": "Batch input entries. Each product_id is sent as the product_id value."
+  },
+  "parameters": [
+    {
+      "input": "id",
+      "apiParam": "id",
+      "location": "query",
+      "required": false,
+      "title": "ID",
+      "schema": {
+        "type": "string",
+        "description": "Scrappa id parameter.",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    },
+    {
+      "input": "product_id",
+      "apiParam": "product_id",
+      "location": "query",
+      "required": true,
+      "title": "Product ID",
+      "schema": {
+        "type": "string",
+        "description": "Apple product id (numeric adam id; UMC ids also accepted for movies/TV)",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    },
+    {
+      "input": "store",
+      "apiParam": "store",
+      "location": "query",
+      "required": false,
+      "title": "Store",
+      "schema": {
+        "type": "string",
+        "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts",
+        "enum": [
+          "apps",
+          "mac",
+          "books",
+          "audiobooks",
+          "movies",
+          "tv",
+          "music",
+          "podcasts"
+        ],
+        "default": "apps"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "description": "Two-letter Apple storefront country code (default: us)",
+        "minLength": 2,
+        "maxLength": 2,
+        "default": "us"
+      }
+    },
+    {
+      "input": "season_id",
+      "apiParam": "season_id",
+      "location": "query",
+      "required": false,
+      "title": "Season ID",
+      "schema": {
+        "type": "string",
+        "description": "TV season id; returns the season product instead of the show",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    },
+    {
+      "input": "num",
+      "apiParam": "num",
+      "location": "query",
+      "required": false,
+      "title": "NUM",
+      "schema": {
+        "type": "integer",
+        "description": "Requested review result count per page",
+        "minimum": 1,
+        "maximum": 50
+      }
+    },
+    {
+      "input": "offset",
+      "apiParam": "offset",
+      "location": "query",
+      "required": false,
+      "title": "Offset",
+      "schema": {
+        "type": "integer",
+        "description": "Scrappa offset parameter.",
+        "minimum": 0
+      }
+    },
+    {
+      "input": "next_page_token",
+      "apiParam": "next_page_token",
+      "location": "query",
+      "required": false,
+      "title": "Next Page Token",
+      "schema": {
+        "type": "string",
+        "description": "Review pagination token from a previous response",
+        "maxLength": 100
+      }
+    }
+  ],
+  "resultPointer": null,
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_product_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "product_ids": [
+      {
+        "product_id": "1232780281"
+      }
+    ],
+    "country": "us",
+    "store": "apps",
+    "maxResults": 20
+  },
+  "testParams": {
+    "product_id": "1232780281",
+    "country": "us"
+  },
+  "fixture": {
+    "search_parameters": {
+      "product_id": "1234567890",
+      "country": "us",
+      "store": "apps",
+      "engine": "apple_app_store"
+    },
+    "product": {
+      "id": "1234567890",
+      "store": "apps",
+      "title": "Example Notes",
+      "artist": "Example Studio",
+      "url": "https://apps.apple.com/app/example-notes/id1234567890",
+      "rating": 4.8,
+      "rating_count": 250,
+      "privacy": {
+        "privacyTypes": [
+          {
+            "dataCategories": [
+              "Contact Info"
+            ],
+            "description": "Synthetic privacy label.",
+            "identifier": "example",
+            "privacyType": "data_used_to_track_you",
+            "purposes": [
+              "Analytics"
+            ]
+          }
+        ]
+      }
+    },
+    "ratings": {
+      "rating_count": 250,
+      "rating_average": 4.8,
+      "histogram": [
+        1,
+        2,
+        3,
+        10,
+        234
+      ],
+      "total_reviews": 120
+    },
+    "similar": [],
+    "more_by_developer": [],
+    "reviews": [],
+    "reviews_pagination": {
+      "offset": 0,
+      "limit": 20,
+      "next_offset": 20,
+      "end_of_history": true
+    }
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "artist",
+      "label": "Artist",
+      "format": "text"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "number"
+    },
+    {
+      "name": "rating_count",
+      "label": "Rating Count",
+      "format": "number"
+    },
+    {
+      "name": "privacy",
+      "label": "Privacy",
+      "format": "text"
+    }
+  ],
+  "seo": {
+    "h1": "Apple App Store App Details Scraper",
+    "intro": "Retrieve Apple App Store product details, ratings, privacy labels, reviews, and related apps.",
+    "keywords": [
+      "Apple App Store App Details Scraper",
+      "title",
+      "artist",
+      "rating",
+      "/apple/app-store/details API"
+    ],
+    "useCases": [
+      "App intelligence",
+      "Privacy label review",
+      "Product catalog enrichment"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "title",
+        "description": "Result title or listing name."
+      },
+      {
+        "name": "artist",
+        "description": "App developer or listed artist."
+      },
+      {
+        "name": "rating",
+        "description": "Average product or app rating."
+      },
+      {
+        "name": "rating_count",
+        "description": "Number of ratings."
+      },
+      {
+        "name": "privacy",
+        "description": "Apple privacy label information."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "apple-app-store-search-scraper",
+        "title": "Apple App Store Search Scraper"
+      },
+      {
+        "slug": "google-play-reviews-scraper",
+        "title": "Google Play Reviews Scraper"
+      }
+    ]
+  }
+}

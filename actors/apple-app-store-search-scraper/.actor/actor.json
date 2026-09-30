@@ -1,0 +1,61 @@
+{
+  "actorSpecification": 1,
+  "name": "apple-app-store-search-scraper",
+  "title": "Apple App Store Search Scraper",
+  "description": "Apple App Store Search Scraper collects structured data from Scrappa's /apple/app-store/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "title",
+              "artist",
+              "rating",
+              "rating_count",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "artist": {
+                "label": "Artist",
+                "format": "text"
+              },
+              "rating": {
+                "label": "Rating",
+                "format": "number"
+              },
+              "rating_count": {
+                "label": "Rating Count",
+                "format": "number"
+              },
+              "url": {
+                "label": "Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

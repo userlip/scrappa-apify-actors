@@ -1,0 +1,49 @@
+{
+  "title": "Semrush Competitors Scraper",
+  "description": "Semrush Competitors Scraper collects structured data from Scrappa's /semrush/domain/competitors endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "domains"
+  ],
+  "properties": {
+    "domains": {
+      "title": "Domains",
+      "type": "array",
+      "description": "Batch input entries. Each domain is sent as the domain value.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "domain": "wikipedia.org"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "domain"
+        ],
+        "properties": {
+          "domain": {
+            "title": "Domain",
+            "type": "string",
+            "description": "Root domain or subdomain to analyze",
+            "maxLength": 253,
+            "pattern": "^(?=.{1,253}$)[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

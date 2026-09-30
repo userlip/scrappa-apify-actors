@@ -1,0 +1,61 @@
+{
+  "actorSpecification": 1,
+  "name": "semrush-domain-overview-scraper",
+  "title": "Semrush Domain Overview Scraper",
+  "description": "Semrush Domain Overview Scraper collects structured data from Scrappa's /semrush/domain/overview endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "domain",
+              "semrush_rank",
+              "organic_keywords",
+              "organic_traffic",
+              "authority_score"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "domain": {
+                "label": "Domain",
+                "format": "text"
+              },
+              "semrush_rank": {
+                "label": "Semrush Rank",
+                "format": "number"
+              },
+              "organic_keywords": {
+                "label": "Organic Keywords",
+                "format": "number"
+              },
+              "organic_traffic": {
+                "label": "Organic Traffic",
+                "format": "number"
+              },
+              "authority_score": {
+                "label": "Authority Score",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

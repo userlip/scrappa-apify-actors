@@ -1,0 +1,217 @@
+{
+  "slug": "apple-app-store-search-scraper",
+  "title": "Apple App Store Search Scraper",
+  "description": "Apple App Store Search Scraper collects structured data from Scrappa's /apple/app-store/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/apple/app-store/search",
+  "openapiPath": "/apple/app-store/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Queries",
+    "description": "Batch input entries. Each query is sent as the query value."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Query",
+      "schema": {
+        "type": "string",
+        "description": "Search term (q is accepted as an alias)",
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "store",
+      "apiParam": "store",
+      "location": "query",
+      "required": false,
+      "title": "Store",
+      "schema": {
+        "type": "string",
+        "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts",
+        "enum": [
+          "apps",
+          "mac",
+          "books",
+          "audiobooks",
+          "movies",
+          "tv",
+          "music",
+          "podcasts"
+        ],
+        "default": "apps"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "description": "Two-letter Apple storefront country code (default: us)",
+        "minLength": 2,
+        "maxLength": 2,
+        "default": "us"
+      }
+    },
+    {
+      "input": "limit",
+      "apiParam": "limit",
+      "location": "query",
+      "required": false,
+      "title": "Limit",
+      "schema": {
+        "type": "integer",
+        "description": "Maximum number of results",
+        "minimum": 1,
+        "maximum": 200,
+        "default": 20
+      }
+    }
+  ],
+  "resultPointer": "/results",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "notion"
+      }
+    ],
+    "country": "us",
+    "store": "apps",
+    "limit": 10,
+    "maxResults": 20
+  },
+  "testParams": {
+    "query": "notion",
+    "country": "us"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "apple_app_store_search",
+      "query": "sample notes app",
+      "store": "apps",
+      "country": "us",
+      "limit": 10
+    },
+    "results": [
+      {
+        "id": "1234567890",
+        "type": "apps",
+        "title": "Example Notes",
+        "artist": "Example Studio",
+        "artist_id": "12345",
+        "description": "A synthetic product description.",
+        "url": "https://apps.apple.com/app/example-notes/id1234567890",
+        "artwork": "https://example.com/app.png",
+        "genres": [
+          "Productivity"
+        ],
+        "price": 0,
+        "formatted_price": "Free",
+        "currency": "USD",
+        "rating": 4.8,
+        "rating_count": 250,
+        "release_date": "2025-01-01",
+        "version": "1.0",
+        "content_rating": "4+",
+        "seller": "Example Studio"
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "artist",
+      "label": "Artist",
+      "format": "text"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "number"
+    },
+    {
+      "name": "rating_count",
+      "label": "Rating Count",
+      "format": "number"
+    },
+    {
+      "name": "url",
+      "label": "Url",
+      "format": "link"
+    }
+  ],
+  "seo": {
+    "h1": "Apple App Store Search Scraper",
+    "intro": "Search Apple App Store listings by keyword and return app metadata, ratings, pricing, and links.",
+    "keywords": [
+      "Apple App Store Search Scraper",
+      "title",
+      "artist",
+      "rating",
+      "/apple/app-store/search API"
+    ],
+    "useCases": [
+      "App market research",
+      "App discovery",
+      "Ratings and pricing analysis"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "title",
+        "description": "Result title or listing name."
+      },
+      {
+        "name": "artist",
+        "description": "App developer or listed artist."
+      },
+      {
+        "name": "rating",
+        "description": "Average product or app rating."
+      },
+      {
+        "name": "rating_count",
+        "description": "Number of ratings."
+      },
+      {
+        "name": "url",
+        "description": "Canonical result URL."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "apple-app-store-app-details-scraper",
+        "title": "Apple App Store App Details Scraper"
+      },
+      {
+        "slug": "google-search-scraper",
+        "title": "Google Search Scraper"
+      }
+    ]
+  }
+}

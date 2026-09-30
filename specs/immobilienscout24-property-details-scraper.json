@@ -1,0 +1,184 @@
+{
+  "slug": "immobilienscout24-property-details-scraper",
+  "title": "ImmobilienScout24 Property Details Scraper",
+  "description": "ImmobilienScout24 Property Details Scraper collects structured data from Scrappa's /immobilienscout24/property/{id} endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/immobilienscout24/property/{id}",
+  "openapiPath": "/immobilienscout24/property/{id}",
+  "mode": "single",
+  "batch": {
+    "field": "property_ids",
+    "valueField": "id",
+    "apiParam": "",
+    "pathParam": "id",
+    "title": "Property Ids",
+    "description": "Batch input entries. Each id is sent as the id value."
+  },
+  "parameters": [
+    {
+      "input": "id",
+      "apiParam": "id",
+      "location": "path",
+      "required": true,
+      "title": "ID",
+      "schema": {
+        "type": "string",
+        "description": "ImmobilienScout24 property ID (digits only)."
+      }
+    }
+  ],
+  "resultPointer": null,
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "property_ids": [
+      {
+        "id": "170528322"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "id": "170528322"
+  },
+  "fixture": {
+    "success": true,
+    "id": "170000001",
+    "title": "Example apartment in Example City",
+    "description": "Synthetic property description.",
+    "type": "apartment",
+    "is_tenant_network": false,
+    "price": {
+      "cold_rent": 900,
+      "warm_rent": 1100,
+      "cold_rent_formatted": "€900",
+      "warm_rent_formatted": "€1,100",
+      "deposit": 1800,
+      "currency": "EUR"
+    },
+    "details": {
+      "rooms": 2,
+      "size_m2": 68,
+      "floor": 2,
+      "available_from": "2026-10-01",
+      "year_built": 2018
+    },
+    "address": {
+      "street": "Example Street",
+      "postal_code": "10115",
+      "city": "Example City",
+      "district": "Example District",
+      "lat": 52.53,
+      "lon": 13.38
+    },
+    "features": [
+      "balcony",
+      "elevator"
+    ],
+    "energy_class": "B",
+    "images": [
+      {
+        "url": "https://example.com/room.jpg",
+        "caption": "Living room"
+      }
+    ],
+    "agent": {
+      "name": "Example Realty",
+      "logo_url": "https://example.com/logo.png"
+    },
+    "url": "https://www.immobilienscout24.de/expose/170000001"
+  },
+  "tableFields": [
+    {
+      "name": "id",
+      "label": "Id",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "details",
+      "label": "Details",
+      "format": "text"
+    },
+    {
+      "name": "address",
+      "label": "Address",
+      "format": "text"
+    },
+    {
+      "name": "url",
+      "label": "Url",
+      "format": "link"
+    }
+  ],
+  "seo": {
+    "h1": "ImmobilienScout24 Property Details Scraper",
+    "intro": "Retrieve detailed ImmobilienScout24 property data by listing ID.",
+    "keywords": [
+      "ImmobilienScout24 Property Details Scraper",
+      "id",
+      "title",
+      "price",
+      "/immobilienscout24/property/{id} API"
+    ],
+    "useCases": [
+      "Property listing enrichment",
+      "Real estate research",
+      "Listing change monitoring"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "id",
+        "description": "Source property or product identifier."
+      },
+      {
+        "name": "title",
+        "description": "Result title or listing name."
+      },
+      {
+        "name": "price",
+        "description": "Listed product or property price."
+      },
+      {
+        "name": "details",
+        "description": "Property size, rooms, floor, and availability."
+      },
+      {
+        "name": "address",
+        "description": "Property address fields when supplied."
+      },
+      {
+        "name": "url",
+        "description": "Canonical result URL."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "immobilienscout24-search-scraper",
+        "title": "Immobilienscout24 Search Scraper"
+      },
+      {
+        "slug": "redfin-property-details-scraper",
+        "title": "Redfin Property Details Scraper"
+      }
+    ]
+  }
+}

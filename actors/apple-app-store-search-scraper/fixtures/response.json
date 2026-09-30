@@ -1,0 +1,33 @@
+{
+  "search_parameters": {
+    "engine": "apple_app_store_search",
+    "query": "sample notes app",
+    "store": "apps",
+    "country": "us",
+    "limit": 10
+  },
+  "results": [
+    {
+      "id": "1234567890",
+      "type": "apps",
+      "title": "Example Notes",
+      "artist": "Example Studio",
+      "artist_id": "12345",
+      "description": "A synthetic product description.",
+      "url": "https://apps.apple.com/app/example-notes/id1234567890",
+      "artwork": "https://example.com/app.png",
+      "genres": [
+        "Productivity"
+      ],
+      "price": 0,
+      "formatted_price": "Free",
+      "currency": "USD",
+      "rating": 4.8,
+      "rating_count": 250,
+      "release_date": "2025-01-01",
+      "version": "1.0",
+      "content_rating": "4+",
+      "seller": "Example Studio"
+    }
+  ]
+}

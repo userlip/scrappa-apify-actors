@@ -1,0 +1,56 @@
+{
+  "actorSpecification": 1,
+  "name": "semrush-competitors-scraper",
+  "title": "Semrush Competitors Scraper",
+  "description": "Semrush Competitors Scraper collects structured data from Scrappa's /semrush/domain/competitors endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "domain",
+              "authority_score",
+              "visits",
+              "semrush_rank"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "domain": {
+                "label": "Domain",
+                "format": "text"
+              },
+              "authority_score": {
+                "label": "Authority Score",
+                "format": "number"
+              },
+              "visits": {
+                "label": "Visits",
+                "format": "text"
+              },
+              "semrush_rank": {
+                "label": "Semrush Rank",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "slug": "google-lens-scraper",
+  "title": "Google Lens Visual Search Scraper",
+  "description": "Google Lens Visual Search Scraper collects structured data from Scrappa's /google/lens endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/google/lens",
+  "openapiPath": "/google/lens",
+  "mode": "list",
+  "batch": {
+    "field": "image_urls",
+    "valueField": "url",
+    "apiParam": "url",
+    "pathParam": null,
+    "title": "Image Urls",
+    "description": "Batch input entries. Each url is sent as the url value."
+  },
+  "parameters": [
+    {
+      "input": "url",
+      "apiParam": "url",
+      "location": "query",
+      "required": true,
+      "title": "URL",
+      "schema": {
+        "type": "string",
+        "description": "Public HTTPS URL for the image to search.",
+        "maxLength": 2048
+      }
+    },
+    {
+      "input": "q",
+      "apiParam": "q",
+      "location": "query",
+      "required": false,
+      "title": "Q",
+      "schema": {
+        "type": "string",
+        "description": "Optional text used to refine visual or product matches.",
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "type",
+      "apiParam": "type",
+      "location": "query",
+      "required": false,
+      "title": "Type",
+      "schema": {
+        "type": "string",
+        "description": "One of `all`, `products`, `exact_matches`, or `visual_matches`.",
+        "enum": [
+          "all",
+          "products",
+          "exact_matches",
+          "visual_matches"
+        ],
+        "default": "all"
+      },
+      "editor": "select"
+    }
+  ],
+  "resultPointer": "/visual_matches",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_url"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "image_urls": [
+      {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
+  },
+  "fixture": {
+    "search_parameters": {
+      "url": "https://example.com/image.jpg",
+      "q": null,
+      "type": "all"
+    },
+    "visual_matches": [
+      {
+        "source": "Example Store",
+        "title": "Example blue ceramic mug",
+        "link": "https://example.com/mug",
+        "thumbnail": "https://example.com/mug.jpg",
+        "price": "$18.00",
+        "position": 1
+      }
+    ],
+    "exact_matches": [],
+    "related_content": []
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "link",
+      "label": "Link",
+      "format": "link"
+    },
+    {
+      "name": "source",
+      "label": "Source",
+      "format": "text"
+    },
+    {
+      "name": "thumbnail",
+      "label": "Thumbnail",
+      "format": "text"
+    },
+    {
+      "name": "position",
+      "label": "Position",
+      "format": "number"
+    }
+  ],
+  "seo": {
+    "h1": "Google Lens Visual Search Scraper",
+    "intro": "Find visually similar products and pages with Google Lens image search.",
+    "keywords": [
+      "Google Lens Visual Search Scraper",
+      "title",
+      "link",
+      "source",
+      "/google/lens API"
+    ],
+    "useCases": [
+      "Visual product discovery",
+      "Image source research",
+      "Reverse image lookup"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "title",
+        "description": "Result title or listing name."
+      },
+      {
+        "name": "link",
+        "description": "Result destination URL."
+      },
+      {
+        "name": "source",
+        "description": "Publisher, seller, or source name."
+      },
+      {
+        "name": "thumbnail",
+        "description": "Thumbnail returned for this Google Lens Visual Search Scraper result."
+      },
+      {
+        "name": "position",
+        "description": "Position of the result on the source page."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-images-scraper",
+        "title": "Google Images Scraper"
+      },
+      {
+        "slug": "google-shopping-scraper",
+        "title": "Google Shopping Scraper"
+      }
+    ]
+  }
+}

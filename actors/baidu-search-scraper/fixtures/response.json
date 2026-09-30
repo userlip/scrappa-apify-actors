@@ -1,0 +1,29 @@
+{
+  "search_parameters": {
+    "engine": "baidu_search",
+    "query": "sample topic",
+    "page": 1,
+    "limit": 10
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "result_type": "organic",
+      "title": "示例页面",
+      "link": "https://example.com/zh",
+      "displayed_link": "example.com",
+      "snippet": "Synthetic Chinese search result.",
+      "source": "example.com",
+      "category": "web",
+      "date": "2026-01-01"
+    }
+  ],
+  "special_results": [],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "results_on_page": 1,
+    "has_more": false,
+    "next_page": 2
+  }
+}

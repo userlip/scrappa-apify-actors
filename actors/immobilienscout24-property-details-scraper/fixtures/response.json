@@ -1,0 +1,47 @@
+{
+  "success": true,
+  "id": "170000001",
+  "title": "Example apartment in Example City",
+  "description": "Synthetic property description.",
+  "type": "apartment",
+  "is_tenant_network": false,
+  "price": {
+    "cold_rent": 900,
+    "warm_rent": 1100,
+    "cold_rent_formatted": "€900",
+    "warm_rent_formatted": "€1,100",
+    "deposit": 1800,
+    "currency": "EUR"
+  },
+  "details": {
+    "rooms": 2,
+    "size_m2": 68,
+    "floor": 2,
+    "available_from": "2026-10-01",
+    "year_built": 2018
+  },
+  "address": {
+    "street": "Example Street",
+    "postal_code": "10115",
+    "city": "Example City",
+    "district": "Example District",
+    "lat": 52.53,
+    "lon": 13.38
+  },
+  "features": [
+    "balcony",
+    "elevator"
+  ],
+  "energy_class": "B",
+  "images": [
+    {
+      "url": "https://example.com/room.jpg",
+      "caption": "Living room"
+    }
+  ],
+  "agent": {
+    "name": "Example Realty",
+    "logo_url": "https://example.com/logo.png"
+  },
+  "url": "https://www.immobilienscout24.de/expose/170000001"
+}

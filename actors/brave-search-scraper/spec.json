@@ -1,0 +1,222 @@
+{
+  "slug": "brave-search-scraper",
+  "title": "Brave Search Scraper",
+  "description": "Brave Search Scraper collects structured data from Scrappa's /brave/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/brave/search",
+  "openapiPath": "/brave/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Queries",
+    "description": "Batch input entries. Each query is sent as the query value."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Query",
+      "schema": {
+        "type": "string",
+        "description": "Search query (max 500 characters).",
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "language",
+      "apiParam": "language",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "description": "Language filter. Accepts english/deutsch/... or ISO codes such as en, de. Default: all.",
+        "enum": [
+          "english",
+          "deutsch",
+          "french",
+          "spanish",
+          "italian",
+          "portuguese",
+          "dutch",
+          "russian",
+          "chinese",
+          "japanese",
+          "arabic",
+          "all",
+          "en",
+          "de",
+          "fr",
+          "es",
+          "it",
+          "pt",
+          "nl",
+          "ru",
+          "zh",
+          "ja",
+          "ar"
+        ],
+        "default": "all"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "description": "Result page number (1-10). Default: 1.",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 1
+      }
+    },
+    {
+      "input": "include_html",
+      "apiParam": "include_html",
+      "location": "query",
+      "required": false,
+      "title": "Include Html",
+      "schema": {
+        "type": "boolean",
+        "description": "Set to true to include the raw Brave HTML in the response. Default: false."
+      }
+    },
+    {
+      "input": "q",
+      "apiParam": "q",
+      "location": "query",
+      "required": false,
+      "title": "Q",
+      "schema": {
+        "type": "string",
+        "description": "Alias for query. Prefer query for new integrations."
+      }
+    }
+  ],
+  "resultPointer": "/organic_results",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "best crm software"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "query": "best crm software"
+  },
+  "fixture": {
+    "search_information": {
+      "query_displayed": "example climate research"
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "title": "Example climate research",
+        "link": "https://example.com/research",
+        "redirect_link": "https://example.com/research",
+        "displayed_link": "example.com/research",
+        "snippet": "Synthetic research summary for fixture tests.",
+        "source": "example.com"
+      }
+    ],
+    "related_searches": [],
+    "related_questions": [],
+    "engine_used": "brave"
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "link",
+      "label": "Link",
+      "format": "link"
+    },
+    {
+      "name": "snippet",
+      "label": "Snippet",
+      "format": "text"
+    },
+    {
+      "name": "displayed_link",
+      "label": "Displayed Link",
+      "format": "text"
+    },
+    {
+      "name": "position",
+      "label": "Position",
+      "format": "number"
+    }
+  ],
+  "seo": {
+    "h1": "Brave Search Scraper",
+    "intro": "Search Brave results by keyword and collect organic links, snippets, and related queries.",
+    "keywords": [
+      "Brave Search Scraper",
+      "title",
+      "link",
+      "snippet",
+      "/brave/search API"
+    ],
+    "useCases": [
+      "Search result monitoring",
+      "Brand and competitor research",
+      "Lead discovery"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "title",
+        "description": "Result title or listing name."
+      },
+      {
+        "name": "link",
+        "description": "Result destination URL."
+      },
+      {
+        "name": "snippet",
+        "description": "Text excerpt shown with the result."
+      },
+      {
+        "name": "displayed_link",
+        "description": "Readable URL shown by the search engine."
+      },
+      {
+        "name": "position",
+        "description": "Position of the result on the source page."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      },
+      {
+        "slug": "google-search-scraper",
+        "title": "Google Search Scraper"
+      }
+    ]
+  }
+}

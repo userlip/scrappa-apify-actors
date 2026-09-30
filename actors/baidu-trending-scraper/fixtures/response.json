@@ -1,0 +1,21 @@
+{
+  "search_parameters": {
+    "engine": "baidu_trending",
+    "tab": "realtime"
+  },
+  "trending_searches": [
+    {
+      "position": 1,
+      "query": "synthetic search trend",
+      "title": "Synthetic search trend",
+      "link": "https://example.com/trend",
+      "description": null,
+      "is_top": false
+    }
+  ],
+  "available_tabs": [],
+  "search_information": {
+    "tab": "realtime",
+    "item_count": 1
+  }
+}

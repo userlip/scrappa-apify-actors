@@ -1,0 +1,24 @@
+{
+  "search_information": {
+    "query_displayed": "how do heat pumps work",
+    "search_url": "https://www.google.com/search?q=how+do+heat+pumps+work"
+  },
+  "ai_overview": {
+    "text_blocks": [
+      {
+        "type": "paragraph",
+        "snippet": "A synthetic explanation of heat pumps.",
+        "snippet_markdown": "A synthetic explanation of heat pumps."
+      }
+    ],
+    "sections": [
+      {
+        "title": "Basic operation",
+        "places": []
+      }
+    ]
+  },
+  "text": "A synthetic explanation of heat pumps.",
+  "markdown": "A synthetic explanation of heat pumps.",
+  "service_used": "google"
+}

@@ -1,0 +1,12 @@
+{
+  "flights": [
+    {
+      "origin": "JFK"
+    }
+  ],
+  "destination": "LAX",
+  "departure_date": "2026-11-14",
+  "tripType": "one-way",
+  "maxResults": 20,
+  "maxPages": 2
+}

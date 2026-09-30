@@ -1,0 +1,91 @@
+{
+  "title": "TikTok User Search Scraper",
+  "description": "TikTok User Search Scraper collects structured data from Scrappa's /tiktok/user/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "keywords"
+  ],
+  "properties": {
+    "keywords": {
+      "title": "Keywords",
+      "type": "array",
+      "description": "Batch input entries. Each keywords is sent as the keywords value.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "keywords": "cooking"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "keywords"
+        ],
+        "properties": {
+          "keywords": {
+            "title": "Keywords",
+            "type": "string",
+            "description": "Search text for public TikTok users. Use a username fragment, brand name, creator niche, product category, or campaign keyword.",
+            "maxLength": 255,
+            "editor": "textfield"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer",
+            "description": "Number of user matches to return for the page, up to 50.",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "editor": "number"
+          },
+          "cursor": {
+            "title": "Cursor",
+            "type": "string",
+            "description": "Pagination cursor from the previous response. Pass this value with the same `keywords` query when `hasMore` is true.",
+            "maxLength": 100,
+            "default": "0",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "count": {
+      "title": "Count",
+      "type": "integer",
+      "description": "Number of user matches to return for the page, up to 50.",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10,
+      "editor": "number"
+    },
+    "cursor": {
+      "title": "Cursor",
+      "type": "string",
+      "description": "Pagination cursor from the previous response. Pass this value with the same `keywords` query when `hasMore` is true.",
+      "maxLength": 100,
+      "default": "0",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 2
+    }
+  }
+}

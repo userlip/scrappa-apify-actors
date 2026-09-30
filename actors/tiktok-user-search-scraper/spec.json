@@ -1,0 +1,192 @@
+{
+  "slug": "tiktok-user-search-scraper",
+  "title": "TikTok User Search Scraper",
+  "description": "TikTok User Search Scraper collects structured data from Scrappa's /tiktok/user/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/tiktok/user/search",
+  "openapiPath": "/tiktok/user/search",
+  "mode": "list",
+  "batch": {
+    "field": "keywords",
+    "valueField": "keywords",
+    "apiParam": "keywords",
+    "pathParam": null,
+    "title": "Keywords",
+    "description": "Batch input entries. Each keywords is sent as the keywords value."
+  },
+  "parameters": [
+    {
+      "input": "keywords",
+      "apiParam": "keywords",
+      "location": "query",
+      "required": true,
+      "title": "Keywords",
+      "schema": {
+        "type": "string",
+        "description": "Search text for public TikTok users. Use a username fragment, brand name, creator niche, product category, or campaign keyword.",
+        "maxLength": 255
+      }
+    },
+    {
+      "input": "count",
+      "apiParam": "count",
+      "location": "query",
+      "required": false,
+      "title": "Count",
+      "schema": {
+        "type": "integer",
+        "description": "Number of user matches to return for the page, up to 50.",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 10
+      }
+    },
+    {
+      "input": "cursor",
+      "apiParam": "cursor",
+      "location": "query",
+      "required": false,
+      "title": "Cursor",
+      "schema": {
+        "type": "string",
+        "description": "Pagination cursor from the previous response. Pass this value with the same `keywords` query when `hasMore` is true.",
+        "maxLength": 100,
+        "default": "0"
+      }
+    }
+  ],
+  "resultPointer": "/data/user_list",
+  "fallbackResultPointers": [
+    "/data/users"
+  ],
+  "pagination": {
+    "kind": "cursor",
+    "param": "cursor",
+    "start": "0",
+    "nextPointer": "/data/cursor",
+    "hasMorePointer": "/data/hasMore",
+    "maxPages": 5
+  },
+  "enrichment": {
+    "field": "input_keywords"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 2,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "keywords": [
+      {
+        "keywords": "cooking"
+      }
+    ],
+    "maxResults": 20,
+    "maxPages": 2,
+    "count": 10,
+    "cursor": "0"
+  },
+  "testParams": {
+    "keywords": "cooking"
+  },
+  "fixture": {
+    "code": 0,
+    "msg": "success",
+    "processed_time": 1.1,
+    "data": {
+      "user_list": [
+        {
+          "user": {
+            "user_id": "1234567890123456789",
+            "unique_id": "sample_creator",
+            "nickname": "Sample Creator",
+            "avatar": "https://example.com/avatar.jpg"
+          },
+          "stats": {
+            "follower_count": 25000,
+            "verified": false
+          }
+        }
+      ],
+      "cursor": "20",
+      "hasMore": true
+    }
+  },
+  "tableFields": [
+    {
+      "name": "user_id",
+      "label": "User Id",
+      "format": "text"
+    },
+    {
+      "name": "unique_id",
+      "label": "Unique Id",
+      "format": "text"
+    },
+    {
+      "name": "nickname",
+      "label": "Nickname",
+      "format": "text"
+    },
+    {
+      "name": "follower_count",
+      "label": "Follower Count",
+      "format": "number"
+    },
+    {
+      "name": "verified",
+      "label": "Verified",
+      "format": "text"
+    }
+  ],
+  "seo": {
+    "h1": "TikTok User Search Scraper",
+    "intro": "Search public TikTok accounts by keyword and collect profile, follower, and verification fields.",
+    "keywords": [
+      "TikTok User Search Scraper",
+      "user_id",
+      "unique_id",
+      "nickname",
+      "/tiktok/user/search API"
+    ],
+    "useCases": [
+      "Creator discovery",
+      "Influencer research",
+      "Social listening and brand monitoring"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "user_id",
+        "description": "TikTok user identifier."
+      },
+      {
+        "name": "unique_id",
+        "description": "Public TikTok handle."
+      },
+      {
+        "name": "nickname",
+        "description": "Public profile display name."
+      },
+      {
+        "name": "follower_count",
+        "description": "Follower count returned for the account."
+      },
+      {
+        "name": "verified",
+        "description": "Whether the public account is marked verified."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "tiktok-profile-scraper",
+        "title": "Tiktok Profile Scraper"
+      },
+      {
+        "slug": "tiktok-search-scraper",
+        "title": "Tiktok Search Scraper"
+      }
+    ]
+  }
+}

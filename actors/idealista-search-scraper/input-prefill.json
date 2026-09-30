@@ -1,0 +1,12 @@
+{
+  "location_ids": [
+    {
+      "location_id": "0-EU-ES-28-07-001-079"
+    }
+  ],
+  "country": "es",
+  "operation": "sale",
+  "property_type": "homes",
+  "maxResults": 20,
+  "maxPages": 2
+}

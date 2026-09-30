@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "data": {
+    "elementList": [
+      {
+        "propertyCode": "10000001",
+        "thumbnail": "https://example.com/property.jpg",
+        "numPhotos": 8,
+        "price": 250000,
+        "propertyType": "flat",
+        "operation": "sale",
+        "size": 75,
+        "rooms": 3,
+        "bathrooms": 1,
+        "municipality": "Example City",
+        "province": "Example Province",
+        "country": "Spain",
+        "locationId": "example-location",
+        "latitude": 40.4,
+        "longitude": -3.7,
+        "url": "https://www.idealista.com/en/inmueble/10000001/",
+        "description": "Synthetic property description."
+      }
+    ],
+    "total": 1,
+    "totalPages": 1,
+    "actualPage": 1,
+    "itemsPerPage": 5,
+    "paginable": false
+  }
+}

@@ -1,0 +1,200 @@
+{
+  "slug": "baidu-search-scraper",
+  "title": "Baidu Search Scraper",
+  "description": "Baidu Search Scraper collects structured data from Scrappa's /baidu/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/baidu/search",
+  "openapiPath": "/baidu/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Queries",
+    "description": "Batch input entries. Each query is sent as the query value."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Query",
+      "schema": {
+        "type": "string",
+        "description": "Search query.",
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "limit",
+      "apiParam": "limit",
+      "location": "query",
+      "required": false,
+      "title": "Results Per Page",
+      "schema": {
+        "type": "integer",
+        "description": "Maximum Baidu results to request on each page.",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 10
+      }
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "description": "1-based Baidu result page.",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 1
+      }
+    }
+  ],
+  "resultPointer": "/organic_results",
+  "fallbackResultPointers": [
+    "/results"
+  ],
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "nextPointer": "/pagination/next_page",
+    "hasMorePointer": "/pagination/has_more",
+    "maxPages": 5
+  },
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 2,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "apple iphone"
+      }
+    ],
+    "limit": 10,
+    "page": 1,
+    "maxResults": 20,
+    "maxPages": 2
+  },
+  "testParams": {
+    "query": "apple iphone"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "baidu_search",
+      "query": "sample topic",
+      "page": 1,
+      "limit": 10
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "result_type": "organic",
+        "title": "示例页面",
+        "link": "https://example.com/zh",
+        "displayed_link": "example.com",
+        "snippet": "Synthetic Chinese search result.",
+        "source": "example.com",
+        "category": "web",
+        "date": "2026-01-01"
+      }
+    ],
+    "special_results": [],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "results_on_page": 1,
+      "has_more": false,
+      "next_page": 2
+    }
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "link",
+      "label": "Link",
+      "format": "link"
+    },
+    {
+      "name": "snippet",
+      "label": "Snippet",
+      "format": "text"
+    },
+    {
+      "name": "source",
+      "label": "Source",
+      "format": "text"
+    },
+    {
+      "name": "position",
+      "label": "Position",
+      "format": "number"
+    }
+  ],
+  "seo": {
+    "h1": "Baidu Search Scraper",
+    "intro": "Search Baidu results with structured titles, snippets, source details, and links.",
+    "keywords": [
+      "Baidu Search Scraper",
+      "title",
+      "link",
+      "snippet",
+      "/baidu/search API"
+    ],
+    "useCases": [
+      "China market research",
+      "Chinese-language SEO monitoring",
+      "Search result collection"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "title",
+        "description": "Result title or listing name."
+      },
+      {
+        "name": "link",
+        "description": "Result destination URL."
+      },
+      {
+        "name": "snippet",
+        "description": "Text excerpt shown with the result."
+      },
+      {
+        "name": "source",
+        "description": "Publisher, seller, or source name."
+      },
+      {
+        "name": "position",
+        "description": "Position of the result on the source page."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      },
+      {
+        "slug": "brave-search-scraper",
+        "title": "Brave Search Scraper"
+      }
+    ]
+  }
+}

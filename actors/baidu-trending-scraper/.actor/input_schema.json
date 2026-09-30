@@ -1,0 +1,61 @@
+{
+  "title": "Baidu Trending Searches Scraper",
+  "description": "Baidu Trending Searches Scraper collects structured data from Scrappa's /baidu/trending endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "tabs"
+  ],
+  "properties": {
+    "tabs": {
+      "title": "Tabs",
+      "type": "array",
+      "description": "Batch input entries. Each tab is sent as the tab value.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "tab": "realtime"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "tab"
+        ],
+        "properties": {
+          "tab": {
+            "title": "Trending Tab",
+            "type": "string",
+            "description": "Baidu trending board to read.",
+            "enum": [
+              "homepage",
+              "realtime",
+              "livelihood",
+              "finance",
+              "sports",
+              "new_entertainment",
+              "internation_news",
+              "challenge",
+              "movie",
+              "teleplay",
+              "novel",
+              "drama"
+            ],
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

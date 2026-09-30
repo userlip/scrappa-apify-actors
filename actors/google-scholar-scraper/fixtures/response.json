@@ -1,0 +1,44 @@
+{
+  "success": true,
+  "data": {
+    "search_parameters": {
+      "engine": "google_scholar",
+      "q": "sample transformer paper",
+      "hl": "en",
+      "start": 0,
+      "num": 10,
+      "scisbd": 0
+    },
+    "search_information": {
+      "query_displayed": "sample transformer paper",
+      "total_results": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "title": "An Example Study of Attention Models",
+        "result_id": "example-paper-1",
+        "link": "https://example.com/paper",
+        "snippet": "A synthetic paper abstract for the fixture.",
+        "publication_info": {
+          "summary": "Example Journal, 2025",
+          "authors": [
+            "Sample Author"
+          ]
+        },
+        "resources": []
+      }
+    ],
+    "pagination": {
+      "current": 1,
+      "start": 0,
+      "num": 10,
+      "next_start": 10,
+      "has_next": false,
+      "pages": []
+    }
+  },
+  "meta": {
+    "duration_ms": 1
+  }
+}

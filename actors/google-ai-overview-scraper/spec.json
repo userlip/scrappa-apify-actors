@@ -1,0 +1,205 @@
+{
+  "slug": "google-ai-overview-scraper",
+  "title": "Google AI Overview Scraper",
+  "description": "Google AI Overview Scraper collects structured data from Scrappa's /search-ai-overview endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/search-ai-overview",
+  "openapiPath": "/search-ai-overview",
+  "mode": "single",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Queries",
+    "description": "Batch input entries. Each query is sent as the query value."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Query",
+      "schema": {
+        "type": "string",
+        "description": "Search query sent to Google AI Mode.",
+        "minLength": 1,
+        "maxLength": 2048
+      }
+    },
+    {
+      "input": "hl",
+      "apiParam": "hl",
+      "location": "query",
+      "required": false,
+      "title": "HL",
+      "schema": {
+        "type": "string",
+        "description": "Interface language code (2 letters, e.g. en, de).",
+        "minLength": 2,
+        "maxLength": 2
+      }
+    },
+    {
+      "input": "gl",
+      "apiParam": "gl",
+      "location": "query",
+      "required": false,
+      "title": "GL",
+      "schema": {
+        "type": "string",
+        "description": "Country code (2 letters, e.g. us, de).",
+        "minLength": 2,
+        "maxLength": 2
+      }
+    },
+    {
+      "input": "google_domain",
+      "apiParam": "google_domain",
+      "location": "query",
+      "required": false,
+      "title": "Google Domain",
+      "schema": {
+        "type": "string",
+        "description": "Google domain (e.g. google.de).",
+        "maxLength": 100,
+        "pattern": "^google\\.(?:[a-z]{2}|com|com\\.[a-z]{2}|co\\.[a-z]{2})$"
+      }
+    },
+    {
+      "input": "uule",
+      "apiParam": "uule",
+      "location": "query",
+      "required": false,
+      "title": "Uule",
+      "schema": {
+        "type": "string",
+        "description": "Encoded location, passed through when provided.",
+        "maxLength": 500
+      }
+    }
+  ],
+  "resultPointer": null,
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "how does solar power work"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "query": "how does solar power work"
+  },
+  "fixture": {
+    "search_information": {
+      "query_displayed": "how do heat pumps work",
+      "search_url": "https://www.google.com/search?q=how+do+heat+pumps+work"
+    },
+    "ai_overview": {
+      "text_blocks": [
+        {
+          "type": "paragraph",
+          "snippet": "A synthetic explanation of heat pumps.",
+          "snippet_markdown": "A synthetic explanation of heat pumps."
+        }
+      ],
+      "sections": [
+        {
+          "title": "Basic operation",
+          "places": []
+        }
+      ]
+    },
+    "text": "A synthetic explanation of heat pumps.",
+    "markdown": "A synthetic explanation of heat pumps.",
+    "service_used": "google"
+  },
+  "tableFields": [
+    {
+      "name": "query_displayed",
+      "label": "Query Displayed",
+      "format": "text"
+    },
+    {
+      "name": "text",
+      "label": "Text",
+      "format": "text"
+    },
+    {
+      "name": "markdown",
+      "label": "Markdown",
+      "format": "text"
+    },
+    {
+      "name": "ai_overview",
+      "label": "Ai Overview",
+      "format": "text"
+    },
+    {
+      "name": "service_used",
+      "label": "Service Used",
+      "format": "text"
+    }
+  ],
+  "seo": {
+    "h1": "Google AI Overview Scraper",
+    "intro": "Fetch the Google AI Overview and answer text for a search query.",
+    "keywords": [
+      "Google AI Overview Scraper",
+      "query_displayed",
+      "text",
+      "markdown",
+      "/search-ai-overview API"
+    ],
+    "useCases": [
+      "Search answer monitoring",
+      "Research summaries",
+      "SEO and answer-engine analysis"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "query_displayed",
+        "description": "Search phrase displayed by Google."
+      },
+      {
+        "name": "text",
+        "description": "Review or result text."
+      },
+      {
+        "name": "markdown",
+        "description": "Formatted AI Overview answer text."
+      },
+      {
+        "name": "ai_overview",
+        "description": "Ai overview returned for this Google AI Overview Scraper result."
+      },
+      {
+        "name": "service_used",
+        "description": "Scrappa service used for the response."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-scholar-scraper",
+        "title": "Google Scholar Scraper"
+      },
+      {
+        "slug": "google-search-scraper",
+        "title": "Google Search Scraper"
+      }
+    ]
+  }
+}

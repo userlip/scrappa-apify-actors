@@ -1,0 +1,369 @@
+{
+  "slug": "google-play-reviews-scraper",
+  "title": "Google Play Reviews Scraper",
+  "description": "Google Play Reviews Scraper collects structured data from Scrappa's /google/play/product/reviews endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/google/play/product/reviews",
+  "openapiPath": "/google/play/product/reviews",
+  "mode": "list",
+  "batch": {
+    "field": "product_ids",
+    "valueField": "id",
+    "apiParam": "id",
+    "pathParam": null,
+    "title": "Product Ids",
+    "description": "Batch input entries. Each id is sent as the id value."
+  },
+  "parameters": [
+    {
+      "input": "id",
+      "apiParam": "id",
+      "location": "query",
+      "required": true,
+      "title": "ID",
+      "schema": {
+        "type": "string",
+        "description": "Legacy alias for product_id.",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    },
+    {
+      "input": "product_id",
+      "apiParam": "product_id",
+      "location": "query",
+      "required": false,
+      "title": "Product ID",
+      "schema": {
+        "type": "string",
+        "description": "Google Play product id. For apps this is the package name.",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    },
+    {
+      "input": "url",
+      "apiParam": "url",
+      "location": "query",
+      "required": false,
+      "title": "URL",
+      "schema": {
+        "type": "string",
+        "description": "Google Play URL of the item. Alternative to supplying the product identifier.",
+        "maxLength": 1000
+      }
+    },
+    {
+      "input": "hl",
+      "apiParam": "hl",
+      "location": "query",
+      "required": false,
+      "title": "HL",
+      "schema": {
+        "type": "string",
+        "description": "Interface language code (e.g. en, de).",
+        "maxLength": 10,
+        "default": "en"
+      }
+    },
+    {
+      "input": "gl",
+      "apiParam": "gl",
+      "location": "query",
+      "required": false,
+      "title": "GL",
+      "schema": {
+        "type": "string",
+        "description": "Country code for the storefront (2 letters, e.g. us, de).",
+        "minLength": 2,
+        "maxLength": 2,
+        "default": "US"
+      }
+    },
+    {
+      "input": "store",
+      "apiParam": "store",
+      "location": "query",
+      "required": false,
+      "title": "Store",
+      "schema": {
+        "type": "string",
+        "description": "Google Play store vertical: apps, movies, tv, books, or audiobooks.",
+        "enum": [
+          "apps",
+          "movies",
+          "tv",
+          "books",
+          "audiobooks"
+        ],
+        "default": "apps"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "season_id",
+      "apiParam": "season_id",
+      "location": "query",
+      "required": false,
+      "title": "Season ID",
+      "schema": {
+        "type": "string",
+        "description": "TV season id for Google Play TV products.",
+        "maxLength": 255
+      }
+    },
+    {
+      "input": "all_reviews",
+      "apiParam": "all_reviews",
+      "location": "query",
+      "required": false,
+      "title": "All Reviews",
+      "schema": {
+        "type": "boolean",
+        "description": "Request Google Play review-expanded product pages when available.",
+        "default": true
+      }
+    },
+    {
+      "input": "platform",
+      "apiParam": "platform",
+      "location": "query",
+      "required": false,
+      "title": "Platform",
+      "schema": {
+        "type": "string",
+        "description": "Review platform filter, such as phone, tablet, tv, chromebook, watch, or car.",
+        "enum": [
+          "phone",
+          "tablet",
+          "tv",
+          "chromebook",
+          "watch",
+          "car"
+        ]
+      },
+      "editor": "select"
+    },
+    {
+      "input": "rating",
+      "apiParam": "rating",
+      "location": "query",
+      "required": false,
+      "title": "Rating",
+      "schema": {
+        "type": "string",
+        "description": "Review rating filter from 1 to 5.",
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ]
+      },
+      "editor": "select"
+    },
+    {
+      "input": "sort_by",
+      "apiParam": "sort_by",
+      "location": "query",
+      "required": false,
+      "title": "Sort By",
+      "schema": {
+        "type": "string",
+        "description": "Review sort mode, such as 1, 2, 3, most_relevant, newest, or rating.",
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "most_relevant",
+          "newest",
+          "rating"
+        ],
+        "default": "newest"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "num",
+      "apiParam": "num",
+      "location": "query",
+      "required": false,
+      "title": "NUM",
+      "schema": {
+        "type": "integer",
+        "description": "Requested review result count for clients that need SerpApi-compatible parameters.",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    {
+      "input": "next_page_token",
+      "apiParam": "next_page_token",
+      "location": "query",
+      "required": false,
+      "title": "Next Page Token",
+      "schema": {
+        "type": "string",
+        "description": "Review pagination token for clients that need SerpApi-compatible parameters.",
+        "maxLength": 1000,
+        "default": ""
+      }
+    }
+  ],
+  "resultPointer": "/reviews",
+  "fallbackResultPointers": [],
+  "pagination": {
+    "kind": "cursor",
+    "param": "next_page_token",
+    "start": "",
+    "nextPointer": "/reviews_pagination/next_page_token",
+    "nextPointers": [
+      "/next_page_token"
+    ],
+    "endPointer": "/reviews_pagination/end_of_history",
+    "maxPages": 5
+  },
+  "enrichment": {
+    "field": "input_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 2,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "product_ids": [
+      {
+        "id": "com.spotify.music"
+      }
+    ],
+    "all_reviews": true,
+    "num": 20,
+    "sort_by": "newest",
+    "hl": "en",
+    "gl": "US",
+    "store": "apps",
+    "maxResults": 20,
+    "maxPages": 2
+  },
+  "testParams": {
+    "id": "com.spotify.music",
+    "all_reviews": true,
+    "num": 20,
+    "sort_by": "newest",
+    "hl": "en",
+    "gl": "US"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "google_play_product_reviews",
+      "product_id": "com.example.notes",
+      "id": "com.example.notes",
+      "store": "apps",
+      "hl": "en",
+      "gl": "US"
+    },
+    "app": {
+      "app_id": "com.example.notes",
+      "title": "Example Notes",
+      "developer": "Example Studio",
+      "url": "https://play.google.com/store/apps/details?id=com.example.notes"
+    },
+    "reviews": [
+      {
+        "review_id": "synthetic-review-1",
+        "author": "Example Reviewer",
+        "rating": 5,
+        "title": "Useful app",
+        "text": "A synthetic review for this fixture.",
+        "date": "2026-01-02",
+        "helpful_votes": 2,
+        "version": "1.0"
+      }
+    ],
+    "reviews_pagination": {
+      "next_page_token": "synthetic-next-token",
+      "end_of_history": false
+    },
+    "next_page_token": "synthetic-next-token"
+  },
+  "tableFields": [
+    {
+      "name": "author",
+      "label": "Author",
+      "format": "text"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "number"
+    },
+    {
+      "name": "text",
+      "label": "Text",
+      "format": "text"
+    },
+    {
+      "name": "date",
+      "label": "Date",
+      "format": "text"
+    },
+    {
+      "name": "review_id",
+      "label": "Review Id",
+      "format": "text"
+    }
+  ],
+  "seo": {
+    "h1": "Google Play Reviews Scraper",
+    "intro": "Collect public Google Play reviews for app and media products with pagination.",
+    "keywords": [
+      "Google Play Reviews Scraper",
+      "author",
+      "rating",
+      "text",
+      "/google/play/product/reviews API"
+    ],
+    "useCases": [
+      "App review analysis",
+      "Release feedback monitoring",
+      "Product sentiment research"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "author",
+        "description": "Public reviewer label returned by the source."
+      },
+      {
+        "name": "rating",
+        "description": "Average product or app rating."
+      },
+      {
+        "name": "text",
+        "description": "Review or result text."
+      },
+      {
+        "name": "date",
+        "description": "Review or publication date."
+      },
+      {
+        "name": "review_id",
+        "description": "Review identifier when returned."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-search-scraper",
+        "title": "Google Search Scraper"
+      },
+      {
+        "slug": "apple-app-store-app-details-scraper",
+        "title": "Apple App Store App Details Scraper"
+      }
+    ]
+  }
+}

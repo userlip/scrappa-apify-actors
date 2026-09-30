@@ -1,0 +1,244 @@
+{
+  "slug": "bing-search-scraper",
+  "title": "Bing Search Scraper",
+  "description": "Bing Search Scraper collects structured data from Scrappa's /bing/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/bing/search",
+  "openapiPath": "/bing/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Queries",
+    "description": "Batch input entries. Each query is sent as the query value."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Query",
+      "schema": {
+        "type": "string",
+        "description": "Search query (max 500 characters).",
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "description": "Page number (1-50).",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 1
+      }
+    },
+    {
+      "input": "num",
+      "apiParam": "num",
+      "location": "query",
+      "required": false,
+      "title": "NUM",
+      "schema": {
+        "type": "integer",
+        "description": "Results per page (1-50).",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 10
+      }
+    },
+    {
+      "input": "site",
+      "apiParam": "site",
+      "location": "query",
+      "required": false,
+      "title": "Site",
+      "schema": {
+        "type": "string",
+        "description": "Restrict results to this domain, e.g. example.com.",
+        "maxLength": 253
+      }
+    },
+    {
+      "input": "filetype",
+      "apiParam": "filetype",
+      "location": "query",
+      "required": false,
+      "title": "Filetype",
+      "schema": {
+        "type": "string",
+        "description": "Restrict results to this file extension, e.g. pdf.",
+        "maxLength": 20,
+        "pattern": "^[a-zA-Z0-9]+$"
+      }
+    },
+    {
+      "input": "safe",
+      "apiParam": "safe",
+      "location": "query",
+      "required": false,
+      "title": "Safe",
+      "schema": {
+        "type": "string",
+        "description": "SafeSearch level: off, moderate or strict.",
+        "enum": [
+          "off",
+          "moderate",
+          "strict"
+        ],
+        "default": "moderate"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "hl",
+      "apiParam": "hl",
+      "location": "query",
+      "required": false,
+      "title": "HL",
+      "schema": {
+        "type": "string",
+        "description": "Language code, e.g. en or en-GB.",
+        "maxLength": 20,
+        "pattern": "^[a-zA-Z]{2,3}(-[a-zA-Z]{2})?$"
+      }
+    },
+    {
+      "input": "include_html",
+      "apiParam": "include_html",
+      "location": "query",
+      "required": false,
+      "title": "Include Html",
+      "schema": {
+        "type": "boolean",
+        "description": "Set to true to include the raw HTML in the response. Default: false."
+      }
+    }
+  ],
+  "resultPointer": "/data",
+  "fallbackResultPointers": [
+    "/results"
+  ],
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "best crm software"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "query": "best crm software"
+  },
+  "fixture": {
+    "data": [
+      {
+        "position": 1,
+        "title": "Example project management tools",
+        "description": "Compare project management platforms for distributed teams.",
+        "url": "https://example.com/tools",
+        "domain": "example.com"
+      }
+    ],
+    "people_also_search_for": [],
+    "people_also_ask": [],
+    "knowledge_graph": null,
+    "see_results_about": null,
+    "twitter_card": null,
+    "results_on_page": 1,
+    "source": "bing"
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "description",
+      "label": "Description",
+      "format": "text"
+    },
+    {
+      "name": "url",
+      "label": "Url",
+      "format": "link"
+    },
+    {
+      "name": "domain",
+      "label": "Domain",
+      "format": "text"
+    },
+    {
+      "name": "position",
+      "label": "Position",
+      "format": "number"
+    }
+  ],
+  "seo": {
+    "h1": "Bing Search Scraper",
+    "intro": "Search Bing web results by keyword for SERP monitoring, competitor research, and discovery workflows.",
+    "keywords": [
+      "Bing Search Scraper",
+      "title",
+      "description",
+      "url",
+      "/bing/search API"
+    ],
+    "useCases": [
+      "SERP tracking",
+      "Competitor research",
+      "Lead discovery"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "title",
+        "description": "Result title or listing name."
+      },
+      {
+        "name": "description",
+        "description": "Source description or snippet."
+      },
+      {
+        "name": "url",
+        "description": "Canonical result URL."
+      },
+      {
+        "name": "domain",
+        "description": "Result website domain."
+      },
+      {
+        "name": "position",
+        "description": "Position of the result on the source page."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-search-scraper",
+        "title": "Google Search Scraper"
+      },
+      {
+        "slug": "brave-search-scraper",
+        "title": "Brave Search Scraper"
+      }
+    ]
+  }
+}

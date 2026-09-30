@@ -1,0 +1,296 @@
+{
+  "title": "Google Play Reviews Scraper",
+  "description": "Google Play Reviews Scraper collects structured data from Scrappa's /google/play/product/reviews endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "product_ids"
+  ],
+  "properties": {
+    "product_ids": {
+      "title": "Product Ids",
+      "type": "array",
+      "description": "Batch input entries. Each id is sent as the id value.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "id": "com.spotify.music"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "string",
+            "description": "Legacy alias for product_id.",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "editor": "textfield"
+          },
+          "product_id": {
+            "title": "Product ID",
+            "type": "string",
+            "description": "Google Play product id. For apps this is the package name.",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "editor": "textfield"
+          },
+          "url": {
+            "title": "URL",
+            "type": "string",
+            "description": "Google Play URL of the item. Alternative to supplying the product identifier.",
+            "maxLength": 1000,
+            "editor": "textfield"
+          },
+          "hl": {
+            "title": "HL",
+            "type": "string",
+            "description": "Interface language code (e.g. en, de).",
+            "maxLength": 10,
+            "default": "en",
+            "editor": "textfield"
+          },
+          "gl": {
+            "title": "GL",
+            "type": "string",
+            "description": "Country code for the storefront (2 letters, e.g. us, de).",
+            "minLength": 2,
+            "maxLength": 2,
+            "default": "US",
+            "editor": "textfield"
+          },
+          "store": {
+            "title": "Store",
+            "type": "string",
+            "description": "Google Play store vertical: apps, movies, tv, books, or audiobooks.",
+            "enum": [
+              "apps",
+              "movies",
+              "tv",
+              "books",
+              "audiobooks"
+            ],
+            "default": "apps",
+            "editor": "select"
+          },
+          "season_id": {
+            "title": "Season ID",
+            "type": "string",
+            "description": "TV season id for Google Play TV products.",
+            "maxLength": 255,
+            "editor": "textfield"
+          },
+          "all_reviews": {
+            "title": "All Reviews",
+            "type": "boolean",
+            "description": "Request Google Play review-expanded product pages when available.",
+            "default": true,
+            "editor": "checkbox"
+          },
+          "platform": {
+            "title": "Platform",
+            "type": "string",
+            "description": "Review platform filter, such as phone, tablet, tv, chromebook, watch, or car.",
+            "enum": [
+              "phone",
+              "tablet",
+              "tv",
+              "chromebook",
+              "watch",
+              "car"
+            ],
+            "editor": "select"
+          },
+          "rating": {
+            "title": "Rating",
+            "type": "string",
+            "description": "Review rating filter from 1 to 5.",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "editor": "select"
+          },
+          "sort_by": {
+            "title": "Sort By",
+            "type": "string",
+            "description": "Review sort mode, such as 1, 2, 3, most_relevant, newest, or rating.",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "most_relevant",
+              "newest",
+              "rating"
+            ],
+            "default": "newest",
+            "editor": "select"
+          },
+          "num": {
+            "title": "NUM",
+            "type": "integer",
+            "description": "Requested review result count for clients that need SerpApi-compatible parameters.",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20,
+            "editor": "number"
+          },
+          "next_page_token": {
+            "title": "Next Page Token",
+            "type": "string",
+            "description": "Review pagination token for clients that need SerpApi-compatible parameters.",
+            "maxLength": 1000,
+            "default": "",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "product_id": {
+      "title": "Product ID",
+      "type": "string",
+      "description": "Google Play product id. For apps this is the package name.",
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "editor": "textfield"
+    },
+    "url": {
+      "title": "URL",
+      "type": "string",
+      "description": "Google Play URL of the item. Alternative to supplying the product identifier.",
+      "maxLength": 1000,
+      "editor": "textfield"
+    },
+    "hl": {
+      "title": "HL",
+      "type": "string",
+      "description": "Interface language code (e.g. en, de).",
+      "maxLength": 10,
+      "default": "en",
+      "editor": "textfield"
+    },
+    "gl": {
+      "title": "GL",
+      "type": "string",
+      "description": "Country code for the storefront (2 letters, e.g. us, de).",
+      "minLength": 2,
+      "maxLength": 2,
+      "default": "US",
+      "editor": "textfield"
+    },
+    "store": {
+      "title": "Store",
+      "type": "string",
+      "description": "Google Play store vertical: apps, movies, tv, books, or audiobooks.",
+      "enum": [
+        "apps",
+        "movies",
+        "tv",
+        "books",
+        "audiobooks"
+      ],
+      "default": "apps",
+      "editor": "select"
+    },
+    "season_id": {
+      "title": "Season ID",
+      "type": "string",
+      "description": "TV season id for Google Play TV products.",
+      "maxLength": 255,
+      "editor": "textfield"
+    },
+    "all_reviews": {
+      "title": "All Reviews",
+      "type": "boolean",
+      "description": "Request Google Play review-expanded product pages when available.",
+      "default": true,
+      "editor": "checkbox"
+    },
+    "platform": {
+      "title": "Platform",
+      "type": "string",
+      "description": "Review platform filter, such as phone, tablet, tv, chromebook, watch, or car.",
+      "enum": [
+        "phone",
+        "tablet",
+        "tv",
+        "chromebook",
+        "watch",
+        "car"
+      ],
+      "editor": "select"
+    },
+    "rating": {
+      "title": "Rating",
+      "type": "string",
+      "description": "Review rating filter from 1 to 5.",
+      "enum": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "editor": "select"
+    },
+    "sort_by": {
+      "title": "Sort By",
+      "type": "string",
+      "description": "Review sort mode, such as 1, 2, 3, most_relevant, newest, or rating.",
+      "enum": [
+        "1",
+        "2",
+        "3",
+        "most_relevant",
+        "newest",
+        "rating"
+      ],
+      "default": "newest",
+      "editor": "select"
+    },
+    "num": {
+      "title": "NUM",
+      "type": "integer",
+      "description": "Requested review result count for clients that need SerpApi-compatible parameters.",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20,
+      "editor": "number"
+    },
+    "next_page_token": {
+      "title": "Next Page Token",
+      "type": "string",
+      "description": "Review pagination token for clients that need SerpApi-compatible parameters.",
+      "maxLength": 1000,
+      "default": "",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 2
+    }
+  }
+}

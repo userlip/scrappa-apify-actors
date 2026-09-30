@@ -1,0 +1,11 @@
+{
+  "keywords": [
+    {
+      "keywords": "cooking"
+    }
+  ],
+  "maxResults": 20,
+  "maxPages": 2,
+  "count": 10,
+  "cursor": "0"
+}

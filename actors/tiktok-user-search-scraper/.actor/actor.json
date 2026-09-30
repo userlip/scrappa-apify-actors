@@ -1,0 +1,61 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-user-search-scraper",
+  "title": "TikTok User Search Scraper",
+  "description": "TikTok User Search Scraper collects structured data from Scrappa's /tiktok/user/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "user_id",
+              "unique_id",
+              "nickname",
+              "follower_count",
+              "verified"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "user_id": {
+                "label": "User Id",
+                "format": "text"
+              },
+              "unique_id": {
+                "label": "Unique Id",
+                "format": "text"
+              },
+              "nickname": {
+                "label": "Nickname",
+                "format": "text"
+              },
+              "follower_count": {
+                "label": "Follower Count",
+                "format": "number"
+              },
+              "verified": {
+                "label": "Verified",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

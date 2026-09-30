@@ -1,0 +1,9 @@
+{
+  "queries": [
+    {
+      "q": "running shoes"
+    }
+  ],
+  "maxResults": 20,
+  "maxPages": 2
+}

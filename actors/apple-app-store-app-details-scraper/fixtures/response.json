@@ -1,0 +1,53 @@
+{
+  "search_parameters": {
+    "product_id": "1234567890",
+    "country": "us",
+    "store": "apps",
+    "engine": "apple_app_store"
+  },
+  "product": {
+    "id": "1234567890",
+    "store": "apps",
+    "title": "Example Notes",
+    "artist": "Example Studio",
+    "url": "https://apps.apple.com/app/example-notes/id1234567890",
+    "rating": 4.8,
+    "rating_count": 250,
+    "privacy": {
+      "privacyTypes": [
+        {
+          "dataCategories": [
+            "Contact Info"
+          ],
+          "description": "Synthetic privacy label.",
+          "identifier": "example",
+          "privacyType": "data_used_to_track_you",
+          "purposes": [
+            "Analytics"
+          ]
+        }
+      ]
+    }
+  },
+  "ratings": {
+    "rating_count": 250,
+    "rating_average": 4.8,
+    "histogram": [
+      1,
+      2,
+      3,
+      10,
+      234
+    ],
+    "total_reviews": 120
+  },
+  "similar": [],
+  "more_by_developer": [],
+  "reviews": [],
+  "reviews_pagination": {
+    "offset": 0,
+    "limit": 20,
+    "next_offset": 20,
+    "end_of_history": true
+  }
+}

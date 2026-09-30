@@ -122,7 +122,12 @@
   "endpoint": "/google/play/product/reviews",
   "batch_param": "id",
   "test_params": {
-   "id": "com.spotify.music"
+   "id": "com.spotify.music",
+   "all_reviews": true,
+   "num": 20,
+   "sort_by": "newest",
+   "hl": "en",
+   "gl": "US"
   },
   "mode": "list",
   "categories": [
@@ -216,7 +221,9 @@
   "title": "Baidu Trending Searches Scraper",
   "endpoint": "/baidu/trending",
   "batch_param": null,
-  "test_params": {},
+  "test_params": {
+   "tab": "realtime"
+  },
   "mode": "list",
   "categories": [
    "SEO_TOOLS",
@@ -1322,7 +1329,7 @@
   "endpoint": "/semrush/domain/competitors",
   "batch_param": "domain",
   "test_params": {
-   "domain": "notion.so"
+   "domain": "wikipedia.org"
   },
   "mode": "list",
   "categories": [

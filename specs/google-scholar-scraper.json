@@ -1,0 +1,293 @@
+{
+  "slug": "google-scholar-scraper",
+  "title": "Google Scholar Scraper",
+  "description": "Google Scholar Scraper collects structured data from Scrappa's /google/scholar endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/google/scholar",
+  "openapiPath": "/google/scholar",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "q",
+    "apiParam": "q",
+    "pathParam": null,
+    "title": "Queries",
+    "description": "Batch input entries. Each q is sent as the q value."
+  },
+  "parameters": [
+    {
+      "input": "q",
+      "apiParam": "q",
+      "location": "query",
+      "required": true,
+      "title": "Q",
+      "schema": {
+        "type": "string",
+        "description": "Scholar search query. Optional when cites or cluster is supplied.",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "hl",
+      "apiParam": "hl",
+      "location": "query",
+      "required": false,
+      "title": "HL",
+      "schema": {
+        "type": "string",
+        "description": "Two-letter interface language, optionally with a region. Defaults to en.",
+        "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+        "default": "en"
+      }
+    },
+    {
+      "input": "start",
+      "apiParam": "start",
+      "location": "query",
+      "required": false,
+      "title": "Start",
+      "schema": {
+        "type": "integer",
+        "description": "Zero-based result offset from 0 to 990. Defaults to 0.",
+        "minimum": 0,
+        "maximum": 990,
+        "default": 0
+      }
+    },
+    {
+      "input": "num",
+      "apiParam": "num",
+      "location": "query",
+      "required": false,
+      "title": "NUM",
+      "schema": {
+        "type": "integer",
+        "description": "Results per request from 1 to 20. Defaults to 10.",
+        "minimum": 1,
+        "maximum": 20,
+        "default": 10
+      }
+    },
+    {
+      "input": "as_ylo",
+      "apiParam": "as_ylo",
+      "location": "query",
+      "required": false,
+      "title": "As Ylo",
+      "schema": {
+        "type": "integer",
+        "description": "Earliest publication year to include.",
+        "minimum": 1000,
+        "maximum": 2100
+      }
+    },
+    {
+      "input": "as_yhi",
+      "apiParam": "as_yhi",
+      "location": "query",
+      "required": false,
+      "title": "As Yhi",
+      "schema": {
+        "type": "integer",
+        "description": "Latest publication year to include.",
+        "minimum": 1000,
+        "maximum": 2100
+      }
+    },
+    {
+      "input": "scisbd",
+      "apiParam": "scisbd",
+      "location": "query",
+      "required": false,
+      "title": "Scisbd",
+      "schema": {
+        "type": "integer",
+        "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions.",
+        "enum": [
+          "0",
+          "1",
+          "2"
+        ],
+        "default": "0"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "cites",
+      "apiParam": "cites",
+      "location": "query",
+      "required": false,
+      "title": "Cites",
+      "schema": {
+        "type": "string",
+        "description": "Numeric publication ID for a cited-by search. May be combined with q.",
+        "pattern": "^\\d{1,30}$"
+      }
+    },
+    {
+      "input": "cluster",
+      "apiParam": "cluster",
+      "location": "query",
+      "required": false,
+      "title": "Cluster",
+      "schema": {
+        "type": "string",
+        "description": "Numeric publication ID for an all-versions search. Must be used alone.",
+        "pattern": "^\\d{1,30}$"
+      }
+    }
+  ],
+  "resultPointer": "/data/organic_results",
+  "fallbackResultPointers": [],
+  "pagination": {
+    "kind": "page",
+    "param": "start",
+    "start": 0,
+    "step": 10,
+    "nextPointer": "/data/pagination/next_start",
+    "hasMorePointer": "/data/pagination/has_next",
+    "maxPages": 10
+  },
+  "enrichment": {
+    "field": "input_q"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 2,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "q": "transformer attention"
+      }
+    ],
+    "maxResults": 20,
+    "maxPages": 2
+  },
+  "testParams": {
+    "q": "transformer attention"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "search_parameters": {
+        "engine": "google_scholar",
+        "q": "sample transformer paper",
+        "hl": "en",
+        "start": 0,
+        "num": 10,
+        "scisbd": 0
+      },
+      "search_information": {
+        "query_displayed": "sample transformer paper",
+        "total_results": 1
+      },
+      "organic_results": [
+        {
+          "position": 1,
+          "title": "An Example Study of Attention Models",
+          "result_id": "example-paper-1",
+          "link": "https://example.com/paper",
+          "snippet": "A synthetic paper abstract for the fixture.",
+          "publication_info": {
+            "summary": "Example Journal, 2025",
+            "authors": [
+              "Sample Author"
+            ]
+          },
+          "resources": []
+        }
+      ],
+      "pagination": {
+        "current": 1,
+        "start": 0,
+        "num": 10,
+        "next_start": 10,
+        "has_next": false,
+        "pages": []
+      }
+    },
+    "meta": {
+      "duration_ms": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "link",
+      "label": "Link",
+      "format": "link"
+    },
+    {
+      "name": "snippet",
+      "label": "Snippet",
+      "format": "text"
+    },
+    {
+      "name": "publication_info",
+      "label": "Publication Info",
+      "format": "text"
+    },
+    {
+      "name": "result_id",
+      "label": "Result Id",
+      "format": "text"
+    }
+  ],
+  "seo": {
+    "h1": "Google Scholar Scraper",
+    "intro": "Search Google Scholar for academic papers, citations, author details, and publication links.",
+    "keywords": [
+      "Google Scholar Scraper",
+      "title",
+      "link",
+      "snippet",
+      "/google/scholar API"
+    ],
+    "useCases": [
+      "Literature discovery",
+      "Citation research",
+      "Academic landscape analysis"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "title",
+        "description": "Result title or listing name."
+      },
+      {
+        "name": "link",
+        "description": "Result destination URL."
+      },
+      {
+        "name": "snippet",
+        "description": "Text excerpt shown with the result."
+      },
+      {
+        "name": "publication_info",
+        "description": "Publication, authors, and citation context."
+      },
+      {
+        "name": "result_id",
+        "description": "Stable result identifier when provided."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-search-scraper",
+        "title": "Google Search Scraper"
+      },
+      {
+        "slug": "google-patents-search-scraper",
+        "title": "Google Patents Search Scraper"
+      }
+    ]
+  }
+}

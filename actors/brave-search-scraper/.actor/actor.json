@@ -1,0 +1,61 @@
+{
+  "actorSpecification": 1,
+  "name": "brave-search-scraper",
+  "title": "Brave Search Scraper",
+  "description": "Brave Search Scraper collects structured data from Scrappa's /brave/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "title",
+              "link",
+              "snippet",
+              "displayed_link",
+              "position"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "link": {
+                "label": "Link",
+                "format": "link"
+              },
+              "snippet": {
+                "label": "Snippet",
+                "format": "text"
+              },
+              "displayed_link": {
+                "label": "Displayed Link",
+                "format": "text"
+              },
+              "position": {
+                "label": "Position",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

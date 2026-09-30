@@ -1,0 +1,111 @@
+{
+  "title": "Google AI Overview Scraper",
+  "description": "Google AI Overview Scraper collects structured data from Scrappa's /search-ai-overview endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Queries",
+      "type": "array",
+      "description": "Batch input entries. Each query is sent as the query value.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "query": "how does solar power work"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string",
+            "description": "Search query sent to Google AI Mode.",
+            "minLength": 1,
+            "maxLength": 2048,
+            "editor": "textfield"
+          },
+          "hl": {
+            "title": "HL",
+            "type": "string",
+            "description": "Interface language code (2 letters, e.g. en, de).",
+            "minLength": 2,
+            "maxLength": 2,
+            "editor": "textfield"
+          },
+          "gl": {
+            "title": "GL",
+            "type": "string",
+            "description": "Country code (2 letters, e.g. us, de).",
+            "minLength": 2,
+            "maxLength": 2,
+            "editor": "textfield"
+          },
+          "google_domain": {
+            "title": "Google Domain",
+            "type": "string",
+            "description": "Google domain (e.g. google.de).",
+            "maxLength": 100,
+            "pattern": "^google\\.(?:[a-z]{2}|com|com\\.[a-z]{2}|co\\.[a-z]{2})$",
+            "editor": "textfield"
+          },
+          "uule": {
+            "title": "Uule",
+            "type": "string",
+            "description": "Encoded location, passed through when provided.",
+            "maxLength": 500,
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "hl": {
+      "title": "HL",
+      "type": "string",
+      "description": "Interface language code (2 letters, e.g. en, de).",
+      "minLength": 2,
+      "maxLength": 2,
+      "editor": "textfield"
+    },
+    "gl": {
+      "title": "GL",
+      "type": "string",
+      "description": "Country code (2 letters, e.g. us, de).",
+      "minLength": 2,
+      "maxLength": 2,
+      "editor": "textfield"
+    },
+    "google_domain": {
+      "title": "Google Domain",
+      "type": "string",
+      "description": "Google domain (e.g. google.de).",
+      "maxLength": 100,
+      "pattern": "^google\\.(?:[a-z]{2}|com|com\\.[a-z]{2}|co\\.[a-z]{2})$",
+      "editor": "textfield"
+    },
+    "uule": {
+      "title": "Uule",
+      "type": "string",
+      "description": "Encoded location, passed through when provided.",
+      "maxLength": 500,
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

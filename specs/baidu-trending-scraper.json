@@ -1,0 +1,164 @@
+{
+  "slug": "baidu-trending-scraper",
+  "title": "Baidu Trending Searches Scraper",
+  "description": "Baidu Trending Searches Scraper collects structured data from Scrappa's /baidu/trending endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/baidu/trending",
+  "openapiPath": "/baidu/trending",
+  "mode": "list",
+  "batch": {
+    "field": "tabs",
+    "valueField": "tab",
+    "apiParam": "tab",
+    "pathParam": null,
+    "title": "Tabs",
+    "description": "Batch input entries. Each tab is sent as the tab value."
+  },
+  "parameters": [
+    {
+      "input": "tab",
+      "apiParam": "tab",
+      "location": "query",
+      "required": true,
+      "title": "Trending Tab",
+      "schema": {
+        "type": "string",
+        "description": "Baidu trending board to read.",
+        "enum": [
+          "homepage",
+          "realtime",
+          "livelihood",
+          "finance",
+          "sports",
+          "new_entertainment",
+          "internation_news",
+          "challenge",
+          "movie",
+          "teleplay",
+          "novel",
+          "drama"
+        ]
+      },
+      "editor": "select"
+    }
+  ],
+  "resultPointer": "/trending_searches",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_tab"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "tabs": [
+      {
+        "tab": "realtime"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "tab": "realtime"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "baidu_trending",
+      "tab": "realtime"
+    },
+    "trending_searches": [
+      {
+        "position": 1,
+        "query": "synthetic search trend",
+        "title": "Synthetic search trend",
+        "link": "https://example.com/trend",
+        "description": null,
+        "is_top": false
+      }
+    ],
+    "available_tabs": [],
+    "search_information": {
+      "tab": "realtime",
+      "item_count": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "query",
+      "label": "Query",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "position",
+      "label": "Position",
+      "format": "number"
+    },
+    {
+      "name": "link",
+      "label": "Link",
+      "format": "link"
+    },
+    {
+      "name": "is_top",
+      "label": "Is Top",
+      "format": "text"
+    }
+  ],
+  "seo": {
+    "h1": "Baidu Trending Searches Scraper",
+    "intro": "Collect trending searches from Baidu trend boards by tab.",
+    "keywords": [
+      "Baidu Trending Searches Scraper",
+      "query",
+      "title",
+      "position",
+      "/baidu/trending API"
+    ],
+    "useCases": [
+      "Chinese trend monitoring",
+      "Content planning",
+      "News and topic discovery"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "query",
+        "description": "Search phrase or trending term associated with the result."
+      },
+      {
+        "name": "title",
+        "description": "Result title or listing name."
+      },
+      {
+        "name": "position",
+        "description": "Position of the result on the source page."
+      },
+      {
+        "name": "link",
+        "description": "Result destination URL."
+      },
+      {
+        "name": "is_top",
+        "description": "Is top returned for this Baidu Trending Searches Scraper result."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "baidu-search-scraper",
+        "title": "Baidu Search Scraper"
+      },
+      {
+        "slug": "google-news-scraper",
+        "title": "Google News Scraper"
+      }
+    ]
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "slug": "semrush-domain-overview-scraper",
+  "title": "Semrush Domain Overview Scraper",
+  "description": "Semrush Domain Overview Scraper collects structured data from Scrappa's /semrush/domain/overview endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "endpoint": "/semrush/domain/overview",
+  "openapiPath": "/semrush/domain/overview",
+  "mode": "single",
+  "batch": {
+    "field": "domains",
+    "valueField": "domain",
+    "apiParam": "domain",
+    "pathParam": null,
+    "title": "Domains",
+    "description": "Batch input entries. Each domain is sent as the domain value."
+  },
+  "parameters": [
+    {
+      "input": "domain",
+      "apiParam": "domain",
+      "location": "query",
+      "required": true,
+      "title": "Domain",
+      "schema": {
+        "type": "string",
+        "description": "Root domain or subdomain to analyze",
+        "maxLength": 253,
+        "pattern": "^(?=.{1,253}$)[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$"
+      }
+    }
+  ],
+  "resultPointer": null,
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_domain"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "domains": [
+      {
+        "domain": "notion.so"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "domain": "notion.so"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "semrush_domain_overview",
+      "domain": "example.com"
+    },
+    "domain": "example.com",
+    "covered": true,
+    "coverage": {
+      "domain_metrics": true,
+      "backlink_counts": true,
+      "website_traffic": true
+    },
+    "semrush_rank": 12345,
+    "organic_keywords": 1200,
+    "organic_traffic": 25000,
+    "organic_traffic_cost": 18000,
+    "authority_score": 72,
+    "backlinks_count": 5000,
+    "referring_domains_count": 650,
+    "website": {
+      "domain": "example.com",
+      "country": "us",
+      "visits": 48000,
+      "engagement": {
+        "pages_per_visit": 3.1,
+        "avg_visit_duration_seconds": 180,
+        "bounce_rate": 0.44
+      },
+      "visits_history": [],
+      "device_history": []
+    }
+  },
+  "tableFields": [
+    {
+      "name": "domain",
+      "label": "Domain",
+      "format": "text"
+    },
+    {
+      "name": "semrush_rank",
+      "label": "Semrush Rank",
+      "format": "number"
+    },
+    {
+      "name": "organic_keywords",
+      "label": "Organic Keywords",
+      "format": "number"
+    },
+    {
+      "name": "organic_traffic",
+      "label": "Organic Traffic",
+      "format": "number"
+    },
+    {
+      "name": "authority_score",
+      "label": "Authority Score",
+      "format": "number"
+    }
+  ],
+  "seo": {
+    "h1": "Semrush Domain Overview Scraper",
+    "intro": "Retrieve Semrush domain overview metrics for organic search, backlinks, and traffic.",
+    "keywords": [
+      "Semrush Domain Overview Scraper",
+      "domain",
+      "semrush_rank",
+      "organic_keywords",
+      "/semrush/domain/overview API"
+    ],
+    "useCases": [
+      "SEO competitor analysis",
+      "Domain research",
+      "Organic visibility tracking"
+    ],
+    "fieldDescriptions": [
+      {
+        "name": "domain",
+        "description": "Result website domain."
+      },
+      {
+        "name": "semrush_rank",
+        "description": "Semrush domain rank."
+      },
+      {
+        "name": "organic_keywords",
+        "description": "Estimated organic keyword count."
+      },
+      {
+        "name": "organic_traffic",
+        "description": "Estimated monthly organic visits."
+      },
+      {
+        "name": "authority_score",
+        "description": "Semrush Authority Score."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "semrush-competitors-scraper",
+        "title": "Semrush Competitors Scraper"
+      },
+      {
+        "slug": "similarweb-traffic-analytics-scraper",
+        "title": "Similarweb Traffic Analytics Scraper"
+      }
+    ]
+  }
+}

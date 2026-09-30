@@ -1,0 +1,19 @@
+{
+  "search_parameters": {
+    "url": "https://example.com/image.jpg",
+    "q": null,
+    "type": "all"
+  },
+  "visual_matches": [
+    {
+      "source": "Example Store",
+      "title": "Example blue ceramic mug",
+      "link": "https://example.com/mug",
+      "thumbnail": "https://example.com/mug.jpg",
+      "price": "$18.00",
+      "position": 1
+    }
+  ],
+  "exact_matches": [],
+  "related_content": []
+}

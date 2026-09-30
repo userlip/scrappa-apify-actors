@@ -1,0 +1,61 @@
+{
+  "actorSpecification": 1,
+  "name": "google-play-reviews-scraper",
+  "title": "Google Play Reviews Scraper",
+  "description": "Google Play Reviews Scraper collects structured data from Scrappa's /google/play/product/reviews endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "author",
+              "rating",
+              "text",
+              "date",
+              "review_id"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "author": {
+                "label": "Author",
+                "format": "text"
+              },
+              "rating": {
+                "label": "Rating",
+                "format": "number"
+              },
+              "text": {
+                "label": "Text",
+                "format": "text"
+              },
+              "date": {
+                "label": "Date",
+                "format": "text"
+              },
+              "review_id": {
+                "label": "Review Id",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

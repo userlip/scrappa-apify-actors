@@ -1,0 +1,26 @@
+{
+  "search_parameters": {
+    "q": "example headphones",
+    "gl": "us",
+    "hl": "en",
+    "start": 0,
+    "device": "desktop"
+  },
+  "shopping_results": [
+    {
+      "position": 1,
+      "category": "Electronics",
+      "title": "Example Wireless Headphones",
+      "source": "Example Store",
+      "thumbnail": "https://example.com/product.jpg",
+      "price": "$49.00",
+      "rating": 4.6,
+      "reviews": 120
+    }
+  ],
+  "pagination": {
+    "current_page": 1,
+    "start": 0,
+    "next_start": 50
+  }
+}

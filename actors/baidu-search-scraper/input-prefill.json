@@ -1,0 +1,11 @@
+{
+  "queries": [
+    {
+      "query": "apple iphone"
+    }
+  ],
+  "limit": 10,
+  "page": 1,
+  "maxResults": 20,
+  "maxPages": 2
+}
