@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-maps-business-details-scraper",
-  "title": "Google Maps Business Details",
-  "description": "Extract detailed Google Maps business information including ratings, reviews, photos, hours, contact details, and more. Fetches live data for one or many business locations.",
+  "title": "Google Maps Business Details Scraper for Sales",
+  "description": "Collect local business profiles, locations, and contact fields from Google Maps. Results can include `name`, `rating`, `review_count`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "icon": "🏢",

@@ -1,76 +1,110 @@
-# Jameda Doctor Details Scraper
+# Jameda Doctor Details Scraper for Lead Research
 
-Enrich Jameda doctor profile URLs with structured doctor details using Scrappa's live `jameda-doctor-details` endpoint. The actor is a thin Apify wrapper: Scrappa performs the scraping, while Apify handles input validation, batching, dataset output, and paid result events.
+The Jameda Doctor Details Scraper for Lead Research collects public record details and identifying fields from Jameda. Provide the fields listed below; the actor saves source fields such as `doctor_name`, `title`, `specialty`, and `rating` to an Apify dataset.
 
-## What You Get
+## What data can you extract?
 
-For each successful doctor URL, the actor saves one dataset item with the original Scrappa response plus convenient top-level fields:
+The dataset contains fields returned by Jameda. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
 
-- Doctor name, title, specialty, description, and profile URL
-- Rating and review count
-- Clinic, phone, website, address, city, postal code, and coordinates
-- Opening hours, services, accepted patients, focus areas, conditions, languages, and booking IDs
-- Request URL, response source, and scrape timestamp
+| Field | Type | Description |
+| --- | --- | --- |
+| `doctor_name` | text | Doctor returned for this result. |
+| `title` | text | Title returned for this result. |
+| `specialty` | text | Specialty returned for this result. |
+| `rating` | text | Rating returned for this result. |
+| `rating_number` | number | Rating Number returned for this result. |
+| `review_count` | text | Reviews returned for this result. |
+| `review_count_number` | number | Review Count returned for this result. |
+| `clinic_name` | text | Clinic returned for this result. |
+| `phone` | text | Phone returned for this result. |
+| `website_url` | link | Website returned for this result. |
+| `address` | text | Address returned for this result. |
+| `city` | text | City returned for this result. |
+| `postal_code` | text | Postal Code returned for this result. |
+| `latitude` | number | Latitude returned for this result. |
+| `longitude` | number | Longitude returned for this result. |
+| `services_count` | number | Services returned for this result. |
+| `focus_areas_count` | number | Focus Areas returned for this result. |
+| `conditions_count` | number | Conditions returned for this result. |
+| `languages_count` | number | Languages returned for this result. |
+| `doctor_url` | link | Jameda Profile returned for this result. |
+| `requested_doctor_url` | link | Requested URL returned for this result. |
+| `response_source` | text | Source returned for this result. |
+| `scraped_at` | date | Scraped At returned for this result. |
 
-## Input
+## Use cases
 
-Use `doctorUrls` for batch runs. `doctorUrl` is supported for compatibility with single-profile workflows.
+- Collect public record details and identifying fields to support lead generation.
+- Compare records across the input queries or entities you provide.
+- Export structured results to research and reporting workflows.
+
+## How to use
+
+1. Open the **Input** tab and use the example JSON below.
+2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `doctorUrls` and start with a short list.
+3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
 
 ```json
 {
   "doctorUrls": [
-    "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
-    "/markus-lietzau-msc/zahnarzt/berlin"
-  ]
+    "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin"
+  ],
+  "doctorUrl": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin"
 }
 ```
 
-Each URL can be a full `https://www.jameda.de/...` URL or a Jameda profile path. Duplicate URLs are processed once.
+Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
 
-## Output Example
+## Output example
+
+This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
 
 ```json
 {
-  "doctor_name": "Markus Lietzau M.Sc.",
-  "specialty": "Zahnarzt",
-  "rating": "1,0",
-  "rating_number": 1,
-  "review_count": "52",
-  "review_count_number": 52,
-  "clinic_name": "Praxis Markus Lietzau M.Sc. Zahnarzt",
-  "phone": "+49 ...",
-  "address": "Berlin",
-  "city": "Berlin",
-  "latitude": 52.5,
-  "longitude": 13.4,
-  "services": [],
-  "accepted_patients": [],
-  "focus_areas": [],
-  "conditions": [],
-  "languages": [],
-  "booking_ids": {},
-  "doctor_url": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
-  "requested_doctor_url": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
-  "response_source": "scrappa",
-  "scraped_at": "2026-06-20T00:00:00Z"
+  "doctor_name": "Example value",
+  "title": "Example result",
+  "specialty": "Example value",
+  "rating": "4.7",
+  "rating_number": 4.7,
+  "review_count": "42",
+  "review_count_number": 42
 }
 ```
 
-The exact fields depend on what is available on the live Jameda profile.
+## Input fields
 
-The actor calls Scrappa once per normalized doctor URL. The endpoint returns one profile per request and does not use a pagination cursor. On pay-per-event runs, the actor charges its `doctor-profile-result` event before publishing the profile row. Failed or uncertain dataset writes are reconciled with a read and are never replayed, preventing duplicate rows. A positive `maxTotalChargeUsd` caps the combined custom-event and default dataset-item charges. An absent, null, or zero limit is unbounded. A compact request and failure summary is saved to `OUTPUT`.
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `doctorUrls` | array of string | No | Recommended. Process many Jameda doctor profile URLs in one Apify run. Each successful doctor URL produces one dataset item. Constraints: maximum 100 items. |
+| `doctorUrl` | string | No | Backward-compatible single Jameda doctor profile URL or path. Prefer Doctor URLs for normal usage, especially when enriching more than one profile. |
 
-## Local Development
+## Pricing
 
-Run the Rust actor tests from this directory with `cargo test --locked`. Build the Apify image with `docker build -f .actor/Dockerfile -t jameda-doctor-details-scraper .`. Run `python3 test/local_image_smoke.py` to build and exercise the production image against local Apify and Scrappa mocks. The actor reads input from the default key-value store and writes dataset items plus the `OUTPUT` record through the Apify API.
+**Current live price:** $0.30 per 1,000 results.
 
-## Direct API Upgrade
+The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
 
-Need higher throughput, lower latency, or direct backend integration? Use the same endpoint through Scrappa directly:
+## FAQ
 
-```bash
-curl "https://scrappa.co/api/jameda/doctor-details?doctor_url=https%3A%2F%2Fwww.jameda.de%2Fmarkus-lietzau-msc%2Fzahnarzt%2Fberlin" \
-  -H "X-API-Key: YOUR_SCRAPPA_API_KEY"
-```
+### Is it legal to scrape this data?
 
-Scrappa keeps the scraping workload on Scrappa infrastructure; this Apify actor is only a marketplace wrapper around the API.
+This Actor is intended for data that is publicly available from Jameda. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+
+### What limits should I expect?
+
+Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+
+### Can I run it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~jameda-doctor-details-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+
+### What happens if a request fails?
+
+Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+
+## Related Scrappa Actors
+
+- [Jameda Search Scraper for Lead Generation](https://apify.com/thescrappa/jameda-search-scraper)
+- [Jameda Reviews Scraper for Lead Research](https://apify.com/thescrappa/jameda-reviews-scraper)
+- [Google Maps Search Scraper for Lead Research](https://apify.com/thescrappa/google-maps-search-scraper)
+- [Google Maps Reviews Scraper for Local Reputation](https://apify.com/thescrappa/google-maps-reviews-scraper)

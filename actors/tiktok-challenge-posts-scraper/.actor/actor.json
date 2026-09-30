@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-challenge-posts-scraper",
-  "title": "TikTok Hashtag Videos Scraper",
-  "description": "Batch TikTok challenge video scraper for campaign monitoring and hashtag research, powered by Scrappa.",
+  "title": "TikTok Hashtag Videos Scraper for Creator Research",
+  "description": "Collect hashtag and challenge video records from TikTok. Results can include `video_id`, `aweme_id`, `title`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

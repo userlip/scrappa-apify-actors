@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-trends-autocomplete-scraper",
-  "title": "Google Trends Autocomplete Scraper",
-  "description": "Get Google Trends autocomplete suggestions for SEO keyword research, content planning, and market monitoring. Extract one dataset row per suggestion from Scrappa's Google Trends Autocomplete API.",
+  "title": "Google Trends Autocomplete Scraper for SEO",
+  "description": "Collect search suggestions and related terms from Google Trends. Results can include `position`, `suggestion`, `type`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

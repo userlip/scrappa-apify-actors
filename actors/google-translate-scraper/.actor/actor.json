@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-translate-scraper",
-  "title": "Google Translate Scraper",
-  "description": "Translate text in bulk through Scrappa's Google Translate API. Batch multiple text items in one Apify run and export one dataset item per translation.",
+  "title": "Google Translate Scraper for Localization",
+  "description": "Translate supplied text with Google Translate and return translated text and detected language data. Results can include `success`, `index`, `text`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

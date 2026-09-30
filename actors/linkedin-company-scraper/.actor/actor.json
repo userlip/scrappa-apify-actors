@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "linkedin-company-scraper",
-  "title": "LinkedIn Company Scraper - $0.30/1k results",
-  "description": "Scrape public LinkedIn company pages. Get company info, employees, posts, funding, locations, and specialties. No LinkedIn login required.",
+  "title": "LinkedIn Company Scraper for Lead Research",
+  "description": "Collect company profiles and firmographic details from LinkedIn. Results can include `name`, `industry`, `size`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

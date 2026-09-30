@@ -11,7 +11,7 @@
       "editor": "textfield",
       "pattern": "^\\d+$",
       "maxLength": 32,
-      "prefill": "1234567890"
+      "prefill": "10198495179"
     },
     "item_ids": {
       "title": "Item IDs",
@@ -30,8 +30,48 @@
       "type": "string",
       "description": "Vinted country market.",
       "editor": "select",
-      "enum": ["FR", "DE", "ES", "IT", "NL", "BE", "AT", "PL", "CZ", "LT", "LU", "SK", "HU", "RO", "PT", "SE", "DK", "FI", "US"],
-      "enumTitles": ["France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Austria", "Poland", "Czech Republic", "Lithuania", "Luxembourg", "Slovakia", "Hungary", "Romania", "Portugal", "Sweden", "Denmark", "Finland", "United States"],
+      "enum": [
+        "FR",
+        "DE",
+        "ES",
+        "IT",
+        "NL",
+        "BE",
+        "AT",
+        "PL",
+        "CZ",
+        "LT",
+        "LU",
+        "SK",
+        "HU",
+        "RO",
+        "PT",
+        "SE",
+        "DK",
+        "FI",
+        "US"
+      ],
+      "enumTitles": [
+        "France",
+        "Germany",
+        "Spain",
+        "Italy",
+        "Netherlands",
+        "Belgium",
+        "Austria",
+        "Poland",
+        "Czech Republic",
+        "Lithuania",
+        "Luxembourg",
+        "Slovakia",
+        "Hungary",
+        "Romania",
+        "Portugal",
+        "Sweden",
+        "Denmark",
+        "Finland",
+        "United States"
+      ],
       "default": "FR"
     }
   }

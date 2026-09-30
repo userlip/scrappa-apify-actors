@@ -1,53 +1,109 @@
-# TikTok Video Details Scraper
+# TikTok Video Details Scraper for Creator Research
 
-Apify actor for Scrappa's `/api/tiktok/video` endpoint. It fetches TikTok video metadata, author details, engagement metrics, covers, music fields, and playback or download URLs. Scrappa performs the scraping; the actor accepts batches and writes one dataset item per processed URL.
+The TikTok Video Details Scraper for Creator Research collects public video metadata and engagement counts from TikTok. Provide one or more public URLs; the actor saves source fields such as `title`, `author`, `play_count`, and `digg_count` to an Apify dataset.
 
-## Local Development
+## What data can you extract?
 
-```bash
-cargo test --locked
-cargo build --release --locked
-docker build -f .actor/Dockerfile -t tiktok-video-scraper:local .
-```
+The dataset contains fields returned by TikTok. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
 
-## Example Input
+| Field | Type | Description |
+| --- | --- | --- |
+| `title` | text | Caption returned for this result. |
+| `author` | object | Author returned for this result. |
+| `play_count` | number | Views returned for this result. |
+| `digg_count` | number | Likes returned for this result. |
+| `comment_count` | number | Comments returned for this result. |
+| `share_count` | number | Shares returned for this result. |
+| `download_count` | number | Downloads returned for this result. |
+| `collect_count` | number | Saves returned for this result. |
+| `duration` | number | Duration returned for this result. |
+| `create_time` | number | Created returned for this result. |
+| `aweme_id` | text | Aweme ID returned for this result. |
+| `id` | text | Video ID returned for this result. |
+| `play` | link | No Watermark URL returned for this result. |
+| `wmplay` | link | Watermark URL returned for this result. |
+| `hdplay` | link | HD URL returned for this result. |
+| `cover` | link | Cover returned for this result. |
+| `request_url` | link | Request URL returned for this result. |
+| `request_index` | number | Request # returned for this result. |
+| `request_hd` | boolean | HD Requested returned for this result. |
+| `result_found` | boolean | Found returned for this result. |
+| `error_message` | text | Error returned for this result. |
+
+## Use cases
+
+- Collect public video metadata and engagement counts for video and creator research.
+- Review returned titles, channels, timestamps, or engagement fields.
+- Export video records to a content planning or analysis workflow.
+
+## How to use
+
+1. Open the **Input** tab and use the example JSON below.
+2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `urls` and start with a short list.
+3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
 
 ```json
 {
   "urls": [
-    "https://www.tiktok.com/@tiktok/video/7568510388342443294",
-    "https://vm.tiktok.com/ZGeqDY4yL/"
-  ],
-  "hd": true
+    "https://www.tiktok.com/@tiktok/video/7568510388342443294"
+  ]
 }
 ```
 
-You can also provide `url` for single-URL API compatibility. `urls` is preferred because batching amortizes Apify run startup costs while Scrappa performs the scraping work.
+Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
 
-## Output
+## Output example
 
-Each requested TikTok URL is saved as one dataset item. Successful rows include the raw Scrappa video fields plus:
+This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
 
 ```json
 {
-  "request_url": "https://www.tiktok.com/@tiktok/video/7568510388342443294",
-  "request_index": 1,
-  "request_hd": true,
-  "result_found": true,
-  "processed_time": 1.23
+  "title": "Example result",
+  "author": {},
+  "play_count": 42,
+  "digg_count": 42,
+  "comment_count": 42,
+  "share_count": 42,
+  "download_count": 42
 }
 ```
 
-If Scrappa returns no video data or an individual lookup fails, the actor pushes a row with `result_found: false`. Failed lookup rows include `error_message`; each row retains the original request order and uses a one-based `request_index`.
+## Input fields
 
-The actor reads input from the run's `INPUT` key-value-store record and writes results to the default dataset.
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `urls` | array of string | No | One or more TikTok video URLs, photo URLs, short URLs, or numeric video IDs. The actor pushes one dataset item for each requested URL. Constraints: minimum 1 items; maximum 100 items. |
+| `url` | string | No | Legacy single URL field for API callers. Ignored when TikTok Video URLs is provided. |
+| `hd` | boolean | No | Ask Scrappa to include HD playback fields when upstream data is available. |
 
-## Errors and Limits
+## Pricing
 
-Each Scrappa request has a 60-second deadline. Individual Scrappa HTTP errors, API error codes, malformed responses, and timeouts are saved as error rows; the actor continues with the next affordable request. Input, Apify pricing, and dataset-storage errors fail the run. Safe Apify input and pricing GET requests retry up to two times on network errors, HTTP 429, and server errors. Dataset POSTs are not retried to avoid duplicate rows.
+**Current live price:** $0.20 per 1,000 results.
 
-The actor checks the run's pay-per-event pricing and existing charged events before saving results. It stops at the first URL that would exceed `maxTotalChargeUsd`; each dataset item is charged automatically as the default dataset-item event.
+The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
 
-## Publication Pricing Gate
+## FAQ
 
-Before publishing this actor publicly, schedule paid Apify monetization as `PAY_PER_EVENT` on the default dataset-item event at `$0.0002/result` (`$0.20/1k results`), or the earliest Apify-allowed activation date if immediate pricing is blocked. Verify `pricingInfos` through the Apify API before public launch.
+### Is it legal to scrape this data?
+
+This Actor is intended for data that is publicly available from TikTok. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+
+### What limits should I expect?
+
+Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+
+### Can I run it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~tiktok-video-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+
+### What happens if a request fails?
+
+Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+
+## Related Scrappa Actors
+
+- [TikTok Ads Scraper for Campaign Research](https://apify.com/thescrappa/tiktok-ads-scraper)
+- [TikTok Hashtag & Challenge Details Scraper](https://apify.com/thescrappa/tiktok-challenge-details-scraper)
+- [TikTok Hashtag Videos Scraper for Creator Research](https://apify.com/thescrappa/tiktok-challenge-posts-scraper)
+- [TikTok Challenge Search Scraper for Trends](https://apify.com/thescrappa/tiktok-challenge-search-scraper)
+- [TikTok Comments Scraper for Audience Research](https://apify.com/thescrappa/tiktok-comments-scraper)

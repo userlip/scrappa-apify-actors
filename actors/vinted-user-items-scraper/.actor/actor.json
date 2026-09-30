@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "vinted-user-items-scraper",
-  "title": "Vinted User Items Scraper",
-  "description": "Fetch listed items from one or more Vinted seller user IDs for inventory monitoring, reseller research, and competitor tracking.",
+  "title": "Vinted User Items Scraper for Product Research",
+  "description": "Collect public records and structured source fields from Vinted. Results can include `id`, `title`, `price_amount`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

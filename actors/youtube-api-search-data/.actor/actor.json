@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "youtube-api-search-data",
-  "title": "YouTube Search Data Scraper",
-  "description": "Search YouTube by query and filter results by type, sort order, duration, upload date, content type, features, limit, and continuation token.",
+  "title": "YouTube Search Results Scraper for Video Analysis",
+  "description": "Collect video, channel, and search result data from YouTube. Results can include `type`, `id`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

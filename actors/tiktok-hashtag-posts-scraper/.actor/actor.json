@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-hashtag-posts-scraper",
-  "title": "TikTok Hashtag Posts Scraper",
-  "description": "TikTok hashtag scraper for extracting public posts by hashtag, hashtag URL, or challenge ID. Get captions, engagement metrics, author metadata, timestamps, and pagination cursors through Scrappa.",
+  "title": "TikTok Hashtag Posts Scraper for Creator Research",
+  "description": "Collect hashtag and challenge video records from TikTok. Results can include `desc`, `author`, `digg_count`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "kleinanzeigen-search-scraper",
-  "title": "Kleinanzeigen Search Scraper",
-  "description": "Search Kleinanzeigen listings by query, location, category, page, and EUR price range. Supports batch searches in one run and saves each listing as one charged dataset item.",
+  "title": "Kleinanzeigen Search Scraper for Product Research",
+  "description": "Collect marketplace listings, prices, and item details from Kleinanzeigen. Results can include `id`, `title`, `price`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

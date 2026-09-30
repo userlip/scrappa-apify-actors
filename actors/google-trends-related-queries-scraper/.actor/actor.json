@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-trends-related-queries-scraper",
-  "title": "Google Trends Related Queries Scraper",
-  "description": "Find Google Trends related queries and topics for SEO keyword research, content planning, and market monitoring. Extract top and rising query/topic rows from Scrappa's Google Trends Related Queries API.",
+  "title": "Google Trends Related Queries Scraper for SEO",
+  "description": "Collect related queries and topic interest data from Google Trends. Results can include `position`, `result_kind`, `type`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

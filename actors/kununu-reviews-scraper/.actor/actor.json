@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "kununu-reviews-scraper",
-  "title": "Kununu Reviews Scraper",
-  "description": "Scrape Kununu company reviews by company slug or URL. Supports batch companies in one run and saves each employee or candidate review as one charged dataset item.",
+  "title": "Kununu Reviews Scraper for Campaign Research",
+  "description": "Collect reviews, ratings, and comment details from kununu. Results can include `company_name`, `company_country`, `company_slug`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

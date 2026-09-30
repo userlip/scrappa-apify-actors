@@ -1,41 +1,121 @@
-# ImmobilienScout24 Search Scraper
+# ImmobilienScout24 Search Scraper for Real Estate
 
-Rust Apify actor wrapper for Scrappa's `GET /api/immobilienscout24/search`
-endpoint. Scraping stays on Scrappa infrastructure. The actor writes one Apify
-dataset item per returned property listing and charges the `property-result`
-event for saved listings in pay-per-event runs.
+The ImmobilienScout24 Search Scraper for Real Estate collects property listings, prices, and locations from ImmobilienScout24. Provide the fields listed below; the actor saves source fields such as `title`, `price`, `price_formatted`, and `rooms` to an Apify dataset.
 
-## Input
+## What data can you extract?
+
+The dataset contains fields returned by ImmobilienScout24. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `title` | text | Title returned for this result. |
+| `price` | number | Price returned for this result. |
+| `price_formatted` | text | Price Text returned for this result. |
+| `rooms` | number | Rooms returned for this result. |
+| `rooms_max` | number | Rooms Max returned for this result. |
+| `size_m2` | number | Size m2 returned for this result. |
+| `size_m2_max` | number | Size m2 Max returned for this result. |
+| `address` | text | Address returned for this result. |
+| `latitude` | number | Latitude returned for this result. |
+| `longitude` | number | Longitude returned for this result. |
+| `url` | link | Expose URL returned for this result. |
+| `online_id` | text | Online ID returned for this result. |
+| `id` | text | Listing ID returned for this result. |
+| `image_url` | image | Image returned for this result. |
+| `is_private` | boolean | Private Seller returned for this result. |
+| `published` | text | Published returned for this result. |
+| `request_location` | text | Request Location returned for this result. |
+| `request_type` | text | Search Type returned for this result. |
+| `request_price_min` | number | Min Price returned for this result. |
+| `request_price_max` | number | Max Price returned for this result. |
+| `request_rooms_min` | number | Min Rooms returned for this result. |
+| `request_rooms_max` | number | Max Rooms returned for this result. |
+| `request_size_min` | number | Min Size returned for this result. |
+| `request_size_max` | number | Max Size returned for this result. |
+| `request_page` | number | Page returned for this result. |
+| `request_per_page` | number | Per Page returned for this result. |
+
+## Use cases
+
+- Collect property listings, prices, and locations for a target area or property search.
+- Compare listing, price, and location fields across a set of properties.
+- Prepare property research exports for spreadsheets or market reports.
+
+## How to use
+
+1. Open the **Input** tab and use the example JSON below.
+2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
+3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
 
 ```json
 {
   "location": "1276003001",
-  "type": "apartment-rent",
-  "price_max": 1500,
-  "rooms_min": 2,
   "page": 1,
   "per_page": 20
 }
 ```
 
-Supported `type` values:
+Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
 
-- `apartment-rent`
-- `apartment-buy`
-- `house-rent`
-- `house-buy`
+## Output example
 
-Optional filters are `price_min`, `price_max`, `rooms_min`, `rooms_max`,
-`size_min`, and `size_max`.
+This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
 
-## Output
+```json
+{
+  "title": "Example result",
+  "price": 129.99,
+  "price_formatted": "129.99",
+  "rooms": 42,
+  "rooms_max": 42,
+  "size_m2": 42,
+  "size_m2_max": 42
+}
+```
 
-Each dataset item is a property listing from ImmobilienScout24 plus request
-context fields such as `request_location`, `request_type`, `request_page`, and
-the optional filter values used for the run.
+## Input fields
 
-The actor also writes the trimmed Scrappa response to key-value store key
-`OUTPUT` for compatibility with users who expect a single response object.
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `location` | string | Yes | City name, district, postal code, or ImmobilienScout24 geocode. |
+| `type` | string | No | Scrappa ImmobilienScout24 search type. Constraints: allowed values: apartment-rent, apartment-buy, house-rent, house-buy. |
+| `price_min` | integer | No | Minimum price in EUR. Constraints: minimum 0. |
+| `price_max` | integer | No | Maximum price in EUR. Constraints: minimum 0. |
+| `rooms_min` | number | No | Minimum number of rooms, for example 1.5. Constraints: minimum 0. |
+| `rooms_max` | number | No | Maximum number of rooms. Constraints: minimum 0. |
+| `size_min` | integer | No | Minimum floor area in square meters. Constraints: minimum 0. |
+| `size_max` | integer | No | Maximum floor area in square meters. Constraints: minimum 0. |
+| `page` | integer | No | Results page to fetch. Constraints: minimum 1; maximum 10000. |
+| `per_page` | integer | No | Number of listings to request for this page. Constraints: minimum 1; maximum 50. |
 
-The actor retries Scrappa timeouts and HTTP 408, 429, 500, 502, 503, and 504
-responses up to three attempts. Each request has a 90-second deadline.
+## Pricing
+
+**Current live price:** $0.30 per 1,000 results.
+
+The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+
+## FAQ
+
+### Is it legal to scrape this data?
+
+This Actor is intended for data that is publicly available from ImmobilienScout24. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+
+### What limits should I expect?
+
+Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+
+### Can I run it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~immobilienscout24-search-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+
+### What happens if a request fails?
+
+Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+
+## Related Scrappa Actors
+
+- [ImmobilienScout24 Location Autocomplete Scraper](https://apify.com/thescrappa/immobilienscout24-locations-scraper)
+- [ImmobilienScout24 Price Insights Scraper](https://apify.com/thescrappa/immobilienscout24-price-insights-scraper)
+- [Immowelt Property Search Scraper for Real Estate](https://apify.com/thescrappa/immowelt-property-search-scraper)
+- [Redfin Property Details Scraper for Real Estate](https://apify.com/thescrappa/redfin-property-details-scraper)
+- [Redfin Property Search Scraper for Property Buyers](https://apify.com/thescrappa/redfin-property-search-scraper)

@@ -39,8 +39,14 @@
       "type": "string",
       "description": "Unit used for the search radius.",
       "editor": "select",
-      "enum": ["MILES", "KILOMETERS"],
-      "enumTitles": ["Miles", "Kilometers"],
+      "enum": [
+        "MILES",
+        "KILOMETERS"
+      ],
+      "enumTitles": [
+        "Miles",
+        "Kilometers"
+      ],
       "default": "MILES"
     },
     "job_type": {
@@ -48,16 +54,34 @@
       "type": "string",
       "description": "Filter by job type.",
       "editor": "select",
-      "enum": ["full_time", "part_time", "contract", "internship", "remote"],
-      "enumTitles": ["Full-time", "Part-time", "Contract", "Internship", "Remote"]
+      "enum": [
+        "full_time",
+        "part_time",
+        "contract",
+        "internship",
+        "remote"
+      ],
+      "enumTitles": [
+        "Full-time",
+        "Part-time",
+        "Contract",
+        "Internship",
+        "Remote"
+      ]
     },
     "sort": {
       "title": "Sort",
       "type": "string",
       "description": "Sort order for Indeed results.",
       "editor": "select",
-      "enum": ["relevance", "date"],
-      "enumTitles": ["Relevance", "Date"],
+      "enum": [
+        "relevance",
+        "date"
+      ],
+      "enumTitles": [
+        "Relevance",
+        "Date"
+      ],
       "default": "relevance"
     },
     "limit": {
@@ -67,7 +91,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 100,
-      "default": 20
+      "default": 20,
+      "prefill": 5
     },
     "cursor": {
       "title": "Pagination Cursor",

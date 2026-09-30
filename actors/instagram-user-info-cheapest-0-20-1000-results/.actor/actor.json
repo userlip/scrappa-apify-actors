@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "instagram-user-info-cheapest-0-20-1000-results",
   "title": "Instagram User Info | Cheapest $0.20/1k results",
-  "description": "Get public Instagram profile data for up to 100 usernames per run, including biography, follower counts, verification status, and profile pictures.",
+  "description": "Collect public record details and identifying fields from Instagram. Results can include `username`, `full_name`, `biography`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

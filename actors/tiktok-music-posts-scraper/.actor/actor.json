@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-music-posts-scraper",
-  "title": "TikTok Music Posts Scraper",
-  "description": "TikTok music scraper for extracting public videos that use specific music tracks or sounds. Monitor TikTok sound videos, music track posts, creator adoption, captions, engagement metrics, timestamps, and pagination cursors through Scrappa.",
+  "title": "TikTok Music Posts Scraper for Creator Research",
+  "description": "Collect public post text, media links, and engagement counts from TikTok. Results can include `desc`, `author`, `digg_count`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

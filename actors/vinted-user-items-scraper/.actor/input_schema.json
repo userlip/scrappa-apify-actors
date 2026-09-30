@@ -10,7 +10,7 @@
       "description": "Single Vinted seller user ID. Use User IDs for batches.",
       "editor": "textfield",
       "pattern": "^\\d*$",
-      "prefill": "12345678"
+      "prefill": "3132361368"
     },
     "user_ids": {
       "title": "Seller User IDs",
@@ -28,8 +28,48 @@
       "type": "string",
       "description": "Vinted country market.",
       "editor": "select",
-      "enum": ["FR", "DE", "ES", "IT", "NL", "BE", "AT", "PL", "CZ", "LT", "LU", "SK", "HU", "RO", "PT", "SE", "DK", "FI", "US"],
-      "enumTitles": ["France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Austria", "Poland", "Czech Republic", "Lithuania", "Luxembourg", "Slovakia", "Hungary", "Romania", "Portugal", "Sweden", "Denmark", "Finland", "United States"],
+      "enum": [
+        "FR",
+        "DE",
+        "ES",
+        "IT",
+        "NL",
+        "BE",
+        "AT",
+        "PL",
+        "CZ",
+        "LT",
+        "LU",
+        "SK",
+        "HU",
+        "RO",
+        "PT",
+        "SE",
+        "DK",
+        "FI",
+        "US"
+      ],
+      "enumTitles": [
+        "France",
+        "Germany",
+        "Spain",
+        "Italy",
+        "Netherlands",
+        "Belgium",
+        "Austria",
+        "Poland",
+        "Czech Republic",
+        "Lithuania",
+        "Luxembourg",
+        "Slovakia",
+        "Hungary",
+        "Romania",
+        "Portugal",
+        "Sweden",
+        "Denmark",
+        "Finland",
+        "United States"
+      ],
       "default": "FR"
     },
     "page": {
@@ -64,8 +104,18 @@
       "type": "string",
       "description": "Vinted seller inventory sort order.",
       "editor": "select",
-      "enum": ["newest_first", "price_low_to_high", "price_high_to_low", "relevance"],
-      "enumTitles": ["Newest First", "Price Low to High", "Price High to Low", "Relevance"],
+      "enum": [
+        "newest_first",
+        "price_low_to_high",
+        "price_high_to_low",
+        "relevance"
+      ],
+      "enumTitles": [
+        "Newest First",
+        "Price Low to High",
+        "Price High to Low",
+        "Relevance"
+      ],
       "default": "newest_first"
     }
   }

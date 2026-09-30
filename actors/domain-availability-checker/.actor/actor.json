@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "domain-availability-checker",
-  "title": "Domain Availability Checker",
-  "description": "Check domain availability in bulk using RDAP. Great for brand research, SEO projects, domain lists, and registrar pre-checks.",
+  "title": "Domain Availability Checker for Business Sites",
+  "description": "Check domain names against domain registries availability data. Results can include `success`, `domain`, `available`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

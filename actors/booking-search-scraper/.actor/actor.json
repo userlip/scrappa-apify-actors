@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "booking-search-scraper",
-  "title": "Booking.com Search Scraper",
-  "description": "Scrape Booking.com search results with property names, URLs, images, review scores, locations, prices, dates, guests, and rooms.",
+  "title": "Booking.com Search Scraper for Travel Planning",
+  "description": "Collect hotel listings, availability, and property details from Booking.com. Results can include `name`, `url`, `image`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

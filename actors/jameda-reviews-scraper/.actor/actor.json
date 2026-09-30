@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "jameda-reviews-scraper",
-  "title": "Jameda Reviews Scraper",
-  "description": "Extract public Jameda doctor reviews for reputation monitoring, medical provider benchmarking, local SEO research, and patient sentiment workflows.",
+  "title": "Jameda Reviews Scraper for Lead Research",
+  "description": "Collect reviews, ratings, and comment details from Jameda. Results can include `review_id`, `rating`, `rating_number`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

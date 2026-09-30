@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "booking-hotel-details-scraper",
-  "title": "Booking.com Hotel Details Scraper",
-  "description": "Scrape Booking.com property-page details by hotel URL or country/slug with title, canonical URL, hotel schema, aggregate rating, JSON-LD, and parsed metadata.",
+  "title": "Booking.com Hotel Details Scraper for Travel",
+  "description": "Collect hotel listings, availability, and property details from Booking.com. Results can include `title`, `canonical_url`, `hotel_schema`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

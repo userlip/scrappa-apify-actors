@@ -1,38 +1,45 @@
 {
-    "title": "YouTube API Playlist Search",
-    "type": "object",
-    "schemaVersion": 1,
-    "properties": {
-        "q": {
-            "title": "Search query",
-            "type": "string",
-            "description": "Search query for playlists.",
-            "editor": "textfield"
-        },
-        "sort": {
-            "title": "sort",
-            "type": "string",
-            "description": "Sort by: relevance, rating, upload_date, view_count",
-            "editor": "select",
-            "enum": ["relevance", "rating", "upload_date", "view_count"],
-            "prefill": "relevance"
-        },
-        "limit": {
-            "title": "limit",
-            "type": "integer",
-            "description": "Results per page (1-20, default: 20)",
-            "default": 20,
-            "minimum": 1,
-            "maximum": 20
-        },
-        "continuation": {
-            "title": "Continuation token",
-            "type": "string",
-            "description": "Pagination token for next page",
-            "editor": "textfield"
-        }
+  "title": "YouTube API Playlist Search",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "q": {
+      "title": "Search query",
+      "type": "string",
+      "description": "Search phrase used to find YouTube playlists. A broad term such as music is a good starting point.",
+      "editor": "textfield",
+      "prefill": "music"
     },
-    "required": [
-        "q"
-    ]
+    "sort": {
+      "title": "sort",
+      "type": "string",
+      "description": "Sort by: relevance, rating, upload_date, view_count",
+      "editor": "select",
+      "enum": [
+        "relevance",
+        "rating",
+        "upload_date",
+        "view_count"
+      ],
+      "prefill": "relevance"
+    },
+    "limit": {
+      "title": "limit",
+      "type": "integer",
+      "description": "Results per page (1-20, default: 20)",
+      "default": 20,
+      "minimum": 1,
+      "maximum": 20,
+      "prefill": 5
+    },
+    "continuation": {
+      "title": "Continuation token",
+      "type": "string",
+      "description": "Pagination token for next page",
+      "editor": "textfield"
+    }
+  },
+  "required": [
+    "q"
+  ]
 }

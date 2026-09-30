@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "immobilienscout24-price-insights-scraper",
   "title": "ImmobilienScout24 Price Insights Scraper",
-  "description": "Benchmark German property markets with apartment and house rent and purchase prices per square meter for rent-vs-buy research and recurring city comparisons. Batch locations in one run; upgrade to the Scrappa API for larger recurring workloads.",
+  "description": "Collect property estimates, price ranges, and market metrics from ImmobilienScout24. Results can include `location`, `geocode`, `currency`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

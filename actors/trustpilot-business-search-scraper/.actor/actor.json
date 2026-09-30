@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "trustpilot-business-search-scraper",
-  "title": "Trustpilot Business Search Scraper",
-  "description": "Search Trustpilot companies by keyword or browse businesses by category. Extract company names, TrustScores, review counts, claimed status, websites, profile URLs, categories, and location fields.",
+  "title": "Trustpilot Business Search Scraper for Marketing",
+  "description": "Collect search results, names, and source links from Trustpilot. Results can include `business_name`, `identifying_name`, `trust_score`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

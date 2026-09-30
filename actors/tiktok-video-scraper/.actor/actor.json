@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-video-scraper",
-  "title": "TikTok Video Details Scraper",
-  "description": "Extract TikTok video details, author metadata, engagement metrics, covers, music fields, and playback/download URLs from one or more public TikTok video URLs through Scrappa.",
+  "title": "TikTok Video Details Scraper for Creator Research",
+  "description": "Collect public video metadata and engagement counts from TikTok. Results can include `title`, `author`, `play_count`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

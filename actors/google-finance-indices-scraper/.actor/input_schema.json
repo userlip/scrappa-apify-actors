@@ -6,11 +6,31 @@
   "properties": {
     "indices": {
       "title": "Index symbols",
-      "type": ["string", "array"],
+      "type": [
+        "string",
+        "array"
+      ],
       "description": "A comma-separated list or JSON array of up to 3 symbols, for example .INX, .DJI, .IXIC.",
-      "editor": "json"
+      "editor": "json",
+      "prefill": [
+        ".INX"
+      ]
     },
-    "hl": { "title": "Language", "type": "string", "description": "Google Finance language code, such as en or de.", "editor": "textfield", "default": "en" },
-    "gl": { "title": "Country", "type": "string", "description": "Two-letter Google Finance country code, such as us or de.", "editor": "textfield", "default": "us", "minLength": 2, "maxLength": 2 }
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Google Finance language code, such as en or de.",
+      "editor": "textfield",
+      "default": "en"
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter Google Finance country code, such as us or de.",
+      "editor": "textfield",
+      "default": "us",
+      "minLength": 2,
+      "maxLength": 2
+    }
   }
 }

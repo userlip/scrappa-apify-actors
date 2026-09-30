@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-patents-details-scraper",
-  "title": "Google Patents Details Scraper",
-  "description": "Enrich Google Patents publication IDs and URLs with full patent metadata, abstracts, inventors, assignees, dates, citations, and links.",
+  "title": "Google Patents Details Scraper for IP Research",
+  "description": "Collect patent records, inventors, and filing details from Google Patents. Results can include `success`, `input_patent_id`, `normalized_patent_id`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

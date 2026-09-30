@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "trustpilot-company-details-scraper",
-  "title": "Trustpilot Company Details Scraper",
-  "description": "Scrape Trustpilot company profile details by domain. Extract company name, TrustScore, review count, claimed status, categories, location, contact, social media, and metadata for reputation monitoring and competitor research.",
+  "title": "Trustpilot Company Details Scraper for Marketing",
+  "description": "Collect public record details and identifying fields from Trustpilot. Results can include `company_name`, `company_domain`, `trust_score`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

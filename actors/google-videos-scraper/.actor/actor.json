@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-videos-scraper",
-  "title": "Google Videos Scraper",
-  "description": "Search Google Videos with Scrappa. Extract video titles, source URLs, thumbnails, snippets, durations, dates, key moments, localization metadata, and pagination data.",
+  "title": "Google Videos Scraper for Creator Research",
+  "description": "Collect public video metadata and engagement counts from Google Videos. Results can include `position`, `title`, `video_url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

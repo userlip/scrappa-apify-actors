@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-finance-search-scraper",
-  "title": "Google Finance Search Scraper",
-  "description": "Search Google Finance for stocks, ETFs, indices, funds, currencies, and other finance instruments by ticker or company name.",
+  "title": "Google Finance Search Scraper for Market Research",
+  "description": "Collect matching ticker and company records from Google Finance. Results can include `query`, `position`, `name`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

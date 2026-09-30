@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "trustedshops-search-scraper",
-  "title": "Trusted Shops Search Scraper",
-  "description": "Search Trusted Shops shop profiles by keyword and market, including TSID, ratings, review counts, certification status, categories, and profile URLs.",
+  "title": "Trusted Shops Search Scraper for Campaign Research",
+  "description": "Collect search results, names, and source links from Trusted Shops. Results can include `accountName`, `shopName`, `tsID`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

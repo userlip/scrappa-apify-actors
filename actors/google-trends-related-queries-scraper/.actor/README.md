@@ -1,110 +1,104 @@
-# Google Trends Related Queries Scraper
+# Google Trends Related Queries Scraper for SEO
 
-Scrappa-powered Apify Actor for Google Trends related queries and keyword research.
+The Google Trends Related Queries Scraper for SEO collects related queries and topic interest data from Google Trends. Provide a search phrase or a short list of phrases; the actor saves source fields such as `position`, `result_kind`, `type`, and `query` to an Apify dataset.
 
-This actor is focused on one workflow: expand a seed keyword into related Google Trends queries and topics. It is separate from the Google Trends Interest Scraper, which returns interest-over-time timeline points.
+## What data can you extract?
 
-## What You Get
+The dataset contains fields returned by Google Trends. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
 
-- Top and rising related Google Trends queries when available
-- Related Google Trends topics when available
-- One Apify dataset row per related query or topic
-- Request context on every row: source keyword, geo, time range, language, and search type
-- Optional Google Trends autocomplete suggestions in the `OUTPUT` summary
+| Field | Type | Description |
+| --- | --- | --- |
+| `position` | number | # returned for this result. |
+| `result_kind` | text | Kind returned for this result. |
+| `type` | text | Type returned for this result. |
+| `query` | text | Query returned for this result. |
+| `topic` | text | Topic returned for this result. |
+| `topic_type` | text | Topic Type returned for this result. |
+| `value` | number | Value returned for this result. |
+| `formatted_value` | text | Formatted Value returned for this result. |
+| `link` | link | Link returned for this result. |
+| `source_keyword` | text | Source Keyword returned for this result. |
+| `request_geo` | text | Location returned for this result. |
+| `request_time_range` | text | Time Range returned for this result. |
+| `request_hl` | text | Language returned for this result. |
+| `request_search_type` | text | Search Type returned for this result. |
+| `response_time_ms` | number | Response Time returned for this result. |
 
-Google Trends may return sparse or empty related-query data for low-volume keywords. For reliable first tests, use broad keywords such as `coffee`, `bitcoin`, `fitness`, or `tesla`.
+## Use cases
 
-## Input Example
+- Collect related queries and topic interest data to support SEO research.
+- Compare results across search terms, websites, or markets.
+- Export the dataset to a content, keyword, or reporting workflow.
 
-```json
-{
-  "query": "coffee",
-  "geo": "US",
-  "time_range": "1y",
-  "hl": "en",
-  "search_type": "web",
-  "include_autocomplete": false
-}
-```
+## How to use
 
-## Dataset Output
-
-```json
-{
-  "position": 1,
-  "result_kind": "query",
-  "type": "top",
-  "query": "coffee near me",
-  "topic": null,
-  "topic_type": null,
-  "value": 100,
-  "formatted_value": "100",
-  "link": "https://trends.google.com/trends/explore?q=coffee+near+me",
-  "source_keyword": "coffee",
-  "request_geo": "US",
-  "request_time_range": "1y",
-  "request_hl": "en",
-  "request_search_type": "web",
-  "response_time_ms": 623
-}
-```
-
-The `type` field is `top`, `rising`, or `null` depending on the shape returned by Google Trends. Topic rows use `result_kind: "topic"` and preserve the topic category in `topic_type`.
-
-## Use Cases
-
-SEO keyword research:
+1. Open the **Input** tab and use the example JSON below.
+2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
+3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
 
 ```json
 {
-  "query": "project management software",
-  "geo": "US",
-  "time_range": "90d",
-  "hl": "en"
+  "query": "coffee"
 }
 ```
 
-Content planning:
+Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+
+## Output example
+
+This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
 
 ```json
 {
-  "query": "air fryer recipes",
-  "geo": "US",
-  "time_range": "1y",
-  "search_type": "youtube"
+  "position": 42,
+  "result_kind": "Example value",
+  "type": "Example value",
+  "query": "Example result",
+  "topic": "Example value",
+  "topic_type": "Example value",
+  "value": 42
 }
 ```
 
-Market monitoring:
+## Input fields
 
-```json
-{
-  "query": "electric vehicles",
-  "geo": "US",
-  "time_range": "30d",
-  "include_autocomplete": true
-}
-```
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `query` | string | Yes | Keyword or phrase to expand with Google Trends related queries. |
+| `q` | string | No | Alias for query when reusing direct Scrappa API inputs. Apify users should fill Search Query. |
+| `geo` | string | No | Geographic location code, such as US, GB, DE, or Worldwide. |
+| `time_range` | string | No | Time period for related query discovery. Constraints: allowed values: 1h, 4h, 1d, 7d, 30d, 90d, 1y, 5y, all. |
+| `hl` | string | No | Two-letter language code, such as en, de, es, or fr. |
+| `search_type` | string | No | Google Trends vertical to analyze. Constraints: allowed values: web, images, news, youtube, shopping. |
+| `include_autocomplete` | boolean | No | Also call the Google Trends autocomplete endpoint and include suggestions in OUTPUT. Dataset rows remain focused on related queries and topics. |
 
-## Development
+## Pricing
 
-```bash
-npm install
-npm test
-```
+**Current live price:** $0.20 per 1,000 queries.
 
-## Run Locally
+The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
 
-```bash
-SCRAPPA_API_KEY=... npm run build
-SCRAPPA_API_KEY=... apify run --input='{"query":"coffee","geo":"US","time_range":"1y","hl":"en","search_type":"web"}'
-```
+## FAQ
 
-## Scrappa API
+### Is it legal to scrape this data?
 
-This actor is a thin wrapper around Scrappa's Google Trends API. It calls:
+This Actor is intended for data that is publicly available from Google Trends. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
 
-- `GET https://scrappa.co/api/google-trends/related`
-- `GET https://scrappa.co/api/google-trends/autocomplete` only when `include_autocomplete` is true
+### What limits should I expect?
 
-For higher-volume workloads, direct Scrappa API access avoids Apify run overhead while keeping the same underlying data source.
+Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+
+### Can I run it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~google-trends-related-queries-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+
+### What happens if a request fails?
+
+Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+
+## Related Scrappa Actors
+
+- [Google Trends Autocomplete Scraper for SEO](https://apify.com/thescrappa/google-trends-autocomplete-scraper)
+- [Google Trends Interest Scraper for SEO Research](https://apify.com/thescrappa/google-trends-interest-scraper)
+- [Google Images Scraper for Creator Research](https://apify.com/thescrappa/google-images-scraper)
+- [Google Maps Reviews Scraper for Local Reputation](https://apify.com/thescrappa/google-maps-reviews-scraper)

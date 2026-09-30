@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-hotels-search-scraper",
-  "title": "Google Hotels Search Scraper",
-  "description": "Scrape Google Hotels search results with prices, ratings, amenities, booking links, availability dates, and pagination.",
+  "title": "Google Hotels Search Scraper for Travel Planning",
+  "description": "Collect hotel listings, availability, and property details from Google Hotels. Results can include `name`, `type`, `hotel_class`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

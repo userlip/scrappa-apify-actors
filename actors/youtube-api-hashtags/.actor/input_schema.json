@@ -1,54 +1,71 @@
 {
-    "title": "YouTube API Hashtag Search",
-    "type": "object",
-    "schemaVersion": 1,
-    "properties": {
-        "hashtag": {
-            "title": "Hashtag",
-            "type": "string",
-            "description": "Hashtag to search for. The # prefix is optional.",
-            "editor": "textfield"
-        },
-        "sort": {
-            "title": "sort",
-            "type": "string",
-            "description": "Sort by: relevance, rating, upload_date, view_count",
-            "editor": "select",
-            "enum": ["relevance", "rating", "upload_date", "view_count"],
-            "prefill": "relevance"
-        },
-        "duration": {
-            "title": "duration",
-            "type": "string",
-            "description": "Video duration: short, medium, long",
-            "editor": "select",
-            "enum": ["short", "medium", "long"],
-            "prefill": "short"
-        },
-        "upload_date": {
-            "title": "upload date",
-            "type": "string",
-            "description": "Upload date",
-            "editor": "select",
-            "enum": ["hour", "today", "week", "month", "year"],
-            "prefill": "hour"
-        },
-        "limit": {
-            "title": "limit",
-            "type": "integer",
-            "description": "Results per page (1-20, default: 20)",
-            "default": 20,
-            "minimum": 1,
-            "maximum": 20
-        },
-        "continuation": {
-            "title": "Continuation token",
-            "type": "string",
-            "description": "Pagination token for next page",
-            "editor": "textfield"
-        }
+  "title": "YouTube API Hashtag Search",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "hashtag": {
+      "title": "Hashtag",
+      "type": "string",
+      "description": "Public YouTube hashtag to search. Include or omit the # prefix.",
+      "editor": "textfield",
+      "prefill": "music"
     },
-    "required": [
-        "hashtag"
-    ]
+    "sort": {
+      "title": "sort",
+      "type": "string",
+      "description": "Sort by: relevance, rating, upload_date, view_count",
+      "editor": "select",
+      "enum": [
+        "relevance",
+        "rating",
+        "upload_date",
+        "view_count"
+      ],
+      "prefill": "relevance"
+    },
+    "duration": {
+      "title": "duration",
+      "type": "string",
+      "description": "Video duration: short, medium, long",
+      "editor": "select",
+      "enum": [
+        "short",
+        "medium",
+        "long"
+      ],
+      "prefill": "short"
+    },
+    "upload_date": {
+      "title": "upload date",
+      "type": "string",
+      "description": "Upload date",
+      "editor": "select",
+      "enum": [
+        "hour",
+        "today",
+        "week",
+        "month",
+        "year"
+      ],
+      "prefill": "hour"
+    },
+    "limit": {
+      "title": "limit",
+      "type": "integer",
+      "description": "Results per page (1-20, default: 20)",
+      "default": 20,
+      "minimum": 1,
+      "maximum": 20,
+      "prefill": 5
+    },
+    "continuation": {
+      "title": "Continuation token",
+      "type": "string",
+      "description": "Pagination token for next page",
+      "editor": "textfield"
+    }
+  },
+  "required": [
+    "hashtag"
+  ]
 }

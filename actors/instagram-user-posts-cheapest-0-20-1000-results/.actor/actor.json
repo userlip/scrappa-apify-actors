@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "instagram-user-posts-cheapest-0-20-1000-results",
-  "title": "Instagram User Posts | Cheapest $0.20/1k results",
-  "description": "Fetch recent Instagram posts and reels from a public user profile by username, with pagination support through max_id.",
+  "title": "Instagram User Posts Scraper for Audience Research",
+  "description": "Collect public post text, media links, and engagement counts from Instagram. Results can include `request_username`, `id`, `username`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "website-content-extractor-scraper",
-  "title": "Website Content Extractor Scraper",
-  "description": "Extract title, body text, links, emails, images, metadata, raw HTML, or clean markdown from one or more URLs using Scrappa's Web Scraper API.",
+  "title": "Website Content Extractor Scraper for SEO Research",
+  "description": "Collect page text, metadata, links, and content fields from the website URL you provide. Results can include `success`, `input_url`, `url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

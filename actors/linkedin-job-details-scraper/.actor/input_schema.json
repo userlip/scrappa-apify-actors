@@ -11,8 +11,7 @@
       "editor": "stringList",
       "minItems": 1,
       "prefill": [
-        "https://www.linkedin.com/jobs/view/1234567890/",
-        "https://www.linkedin.com/jobs/view/software-engineer-at-example-2345678901/"
+        "https://www.linkedin.com/jobs/view/senior-software-engineer-remote-at-givedirectly-4360951742"
       ],
       "items": {
         "type": "string",
@@ -26,7 +25,7 @@
       "description": "Backward-compatible single job URL. Prefer URLs for normal usage, especially when processing more than one job.",
       "editor": "textfield",
       "minLength": 1,
-      "prefill": "https://www.linkedin.com/jobs/view/1234567890/",
+      "prefill": "https://www.linkedin.com/jobs/view/senior-software-engineer-remote-at-givedirectly-4360951742",
       "pattern": "^(https?://)?((www|m|[a-z]{2,3})\\.)?linkedin\\.com/jobs/view/[^\\s?#]+"
     },
     "use_cache": {

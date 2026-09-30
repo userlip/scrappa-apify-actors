@@ -1,104 +1,93 @@
-# Google Trends Autocomplete Scraper
+# Google Trends Autocomplete Scraper for SEO
 
-Scrappa-powered Apify Actor for Google Trends autocomplete suggestions.
+The Google Trends Autocomplete Scraper for SEO collects search suggestions and related terms from Google Trends. Provide a search phrase or a short list of phrases; the actor saves source fields such as `position`, `suggestion`, `type`, and `source_keyword` to an Apify dataset.
 
-This actor expands one seed keyword into Google Trends suggestions. It is separate from the Google Trends Interest Scraper and Google Trends Related Queries Scraper, and is built for users who need fast keyword ideation before deeper trend analysis.
+## What data can you extract?
 
-Recommended paid pricing: **$0.20 per 1,000 saved suggestions** using the `suggestion-result` pay-per-event charge. Verify active or earliest scheduled paid pricing in Apify before public launch.
+The dataset contains fields returned by Google Trends. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
 
-## What You Get
+| Field | Type | Description |
+| --- | --- | --- |
+| `position` | number | # returned for this result. |
+| `suggestion` | text | Suggestion returned for this result. |
+| `type` | text | Type returned for this result. |
+| `source_keyword` | text | Source Keyword returned for this result. |
+| `request_geo` | text | Location returned for this result. |
+| `request_hl` | text | Language returned for this result. |
+| `response_time_ms` | number | Response Time returned for this result. |
 
-- Google Trends autocomplete suggestions for a seed keyword
-- One Apify dataset row per suggestion
-- Request context on every row: source keyword, location, and language
-- A single `OUTPUT` summary with suggestion counts and the raw Scrappa response when the run is not stopped by a pay-per-event charge limit
+## Use cases
 
-Autocomplete suggestions vary by geography and language. For reliable first tests, use broad keywords such as `tesla`, `coffee`, `bitcoin`, or `fitness`.
+- Collect search suggestions and related terms to support SEO research.
+- Compare results across search terms, websites, or markets.
+- Export the dataset to a content, keyword, or reporting workflow.
 
-## Input Example
+## How to use
 
-```json
-{
-  "query": "tesla",
-  "geo": "US",
-  "hl": "en"
-}
-```
-
-The actor also accepts `q` as an alias for `query` when reusing direct Scrappa API inputs.
-
-## Dataset Output
-
-```json
-{
-  "position": 1,
-  "suggestion": "tesla stock",
-  "type": null,
-  "source_keyword": "tesla",
-  "request_geo": "US",
-  "request_hl": "en",
-  "response_time_ms": 412,
-  "search_parameters": {
-    "q": "tesla",
-    "geo": "US",
-    "hl": "en"
-  }
-}
-```
-
-The actor preserves raw suggestion fields returned by Scrappa, so additional fields may appear in dataset rows when Google Trends provides richer suggestion objects.
-
-## Use Cases
-
-SEO keyword expansion:
+1. Open the **Input** tab and use the example JSON below.
+2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
+3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
 
 ```json
 {
-  "query": "project management software",
-  "geo": "US",
-  "hl": "en"
+  "query": "tesla"
 }
 ```
 
-Content ideation:
+Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+
+## Output example
+
+This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
 
 ```json
 {
-  "query": "air fryer",
-  "geo": "US",
-  "hl": "en"
+  "position": 42,
+  "suggestion": "Example value",
+  "type": "Example value",
+  "source_keyword": "Example result",
+  "request_geo": "Example value",
+  "request_hl": "Example value",
+  "response_time_ms": 42
 }
 ```
 
-Localized market research:
+## Input fields
 
-```json
-{
-  "query": "electric vehicles",
-  "geo": "DE",
-  "hl": "de"
-}
-```
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `query` | string | No | Partial keyword or phrase to expand with Google Trends autocomplete suggestions. |
+| `q` | string | No | Alias for query when reusing direct Scrappa API inputs. Either Search Query or this alias is required. |
+| `geo` | string | No | Geographic location code, such as US, GB, DE, or Worldwide. |
+| `hl` | string | No | Two-letter language code, such as en, de, es, or fr. |
 
-## Development
+## Pricing
 
-```bash
-cargo test --locked
-cargo build --release --locked
-```
+**Current live price:** $0.20 per 1,000 results.
 
-## Run Locally
+The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
 
-```bash
-APIFY_TOKEN=... ACTOR_RUN_ID=... ACTOR_DEFAULT_KEY_VALUE_STORE_ID=... ACTOR_DEFAULT_DATASET_ID=... SCRAPPA_API_KEY=... cargo run --locked
-```
+## FAQ
 
-The actor reads `INPUT` from the configured default key-value store. `APIFY_API_PUBLIC_BASE_URL` and `SCRAPPA_API_BASE_URL` can be overridden for local HTTP mocks.
+### Is it legal to scrape this data?
 
-## Scrappa API
+This Actor is intended for data that is publicly available from Google Trends. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
 
-This actor is a thin wrapper around Scrappa's Google Trends API. It calls:
+### What limits should I expect?
 
-- `GET https://scrappa.co/api/google-trends/autocomplete`
+Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
 
-For higher-volume workloads, direct Scrappa API access avoids Apify run overhead while keeping the same underlying data source.
+### Can I run it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~google-trends-autocomplete-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+
+### What happens if a request fails?
+
+Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+
+## Related Scrappa Actors
+
+- [Google Trends Interest Scraper for SEO Research](https://apify.com/thescrappa/google-trends-interest-scraper)
+- [Google Trends Related Queries Scraper for SEO](https://apify.com/thescrappa/google-trends-related-queries-scraper)
+- [Google Images Scraper for Creator Research](https://apify.com/thescrappa/google-images-scraper)
+- [Google Maps Reviews Scraper for Local Reputation](https://apify.com/thescrappa/google-maps-reviews-scraper)

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-followers-scraper",
-  "title": "TikTok Followers Scraper",
-  "description": "Extract public TikTok follower lists by username, profile URL, or user ID. Get follower IDs, usernames, nicknames, avatars, follower counts, verification status, and pagination tokens through Scrappa.",
+  "title": "TikTok Followers Scraper for Audience Research",
+  "description": "Collect public TikTok follower or following records from TikTok. Results can include `unique_id`, `user_id`, `nickname`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

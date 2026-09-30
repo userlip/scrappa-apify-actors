@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "youtube-api-search-suggestions",
-  "title": "YouTube Search Suggestions Scraper",
-  "description": "Get YouTube autocomplete search suggestions for a query, with optional locale targeting.",
+  "title": "YouTube Search Suggestions Scraper for Creators",
+  "description": "Collect video, channel, and search result data from YouTube. Results can include `query`, `suggestion`, `position`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

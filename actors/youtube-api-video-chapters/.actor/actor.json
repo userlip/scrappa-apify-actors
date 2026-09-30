@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-video-chapters",
-    "title": "YouTube API Video Chapters",
-    "description": "Fetch chapter markers for a YouTube video by video ID through the Scrappa YouTube API.",
+    "title": "YouTube Video Chapters Scraper for Creators",
+    "description": "Collect video chapter titles and time markers from YouTube. Results can include `videoId`, `chapters`, `title`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

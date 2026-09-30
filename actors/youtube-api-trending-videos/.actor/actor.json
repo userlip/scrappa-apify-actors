@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "youtube-api-trending-videos",
-  "title": "YouTube Trending Videos Scraper",
-  "description": "Get YouTube trending videos by category and trending type.",
+  "title": "YouTube Trending Video Scraper for Video Analysis",
+  "description": "Collect video, channel, and search result data from YouTube. Results can include `type`, `id`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

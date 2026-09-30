@@ -1,73 +1,111 @@
-# Vinted Item Details Scraper
+# Vinted Item Details Scraper for Product Research
 
-Fetch full Vinted listing details for one item ID or a batch of item IDs through Scrappa. Use it after Vinted Search to enrich selected listings with descriptions, prices, photos, seller information, condition, availability, favorites, views, and request metadata.
+The Vinted Item Details Scraper for Product Research collects public record details and identifying fields from Vinted. Provide the fields listed below; the actor saves source fields such as `id`, `title`, `description`, and `price_amount` to an Apify dataset.
 
-This actor is intended for paid pay-per-result pricing with the `item-detail-result` event. Recommended launch pricing is **$0.25-$0.30 per 1,000 successful Vinted item detail results** so users pay for usable detail rows, not failed lookups or empty runs.
+## What data can you extract?
 
-## Features
+The dataset contains fields returned by Vinted. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
 
-- Fetch one Vinted item or batch up to 50 item IDs in one Apify run
-- Target 19 Vinted markets: France, Germany, Spain, Italy, Netherlands, Belgium, Austria, Poland, Czech Republic, Lithuania, Luxembourg, Slovakia, Hungary, Romania, Portugal, Sweden, Denmark, Finland, or United States
-- Push one dataset item per processed item ID
-- Charge only successful item detail results with the `item-detail-result` event
-- Return uncharged error rows for item-level failures such as expired or unavailable IDs
-- Keep scraping work on Scrappa infrastructure with a thin Apify wrapper
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | text | Item ID returned for this result. |
+| `title` | text | Title returned for this result. |
+| `description` | text | Description returned for this result. |
+| `price_amount` | text | Price returned for this result. |
+| `price_currency` | text | Currency returned for this result. |
+| `total_item_price` | text | Total Price returned for this result. |
+| `shipping_price` | text | Shipping returned for this result. |
+| `brand_name` | text | Brand returned for this result. |
+| `category_name` | text | Category returned for this result. |
+| `size_name` | text | Size returned for this result. |
+| `condition` | text | Condition returned for this result. |
+| `availability` | text | Availability returned for this result. |
+| `url` | link | Listing URL returned for this result. |
+| `image_url` | image | Image returned for this result. |
+| `seller_login` | text | Seller returned for this result. |
+| `seller_feedback_reputation` | number | Seller Rating returned for this result. |
+| `favourite_count` | number | Favorites returned for this result. |
+| `view_count` | number | Views returned for this result. |
+| `request_item_id` | text | Requested ID returned for this result. |
+| `request_country` | text | Country returned for this result. |
+| `request_index` | number | Request Index returned for this result. |
+| `request_success` | boolean | Success returned for this result. |
+| `error_message` | text | Error returned for this result. |
 
-## Input
+## Use cases
+
+- Collect public record details and identifying fields to research product availability and pricing.
+- Compare item, seller, and listing details across a small search batch.
+- Export marketplace records for catalog or resale analysis.
+
+## How to use
+
+1. Open the **Input** tab and use the example JSON below.
+2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `item_ids` and start with a short list.
+3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+
+```json
+{
+  "item_ids": [
+    "10198495179"
+  ]
+}
+```
+
+Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+
+## Output example
+
+This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
+
+```json
+{
+  "id": "12345678901",
+  "title": "Example cotton sweatshirt",
+  "description": "Example public listing description.",
+  "price_amount": "29.99",
+  "price_currency": "EUR",
+  "total_item_price": "29.99",
+  "shipping_price": "4.99"
+}
+```
+
+## Input fields
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `item_id` | string | No | Single Vinted item ID |
-| `item_ids` | array | No | Batch of Vinted item IDs. Maximum `50` IDs per run |
-| `country` | string | No | Vinted country code. Default `FR` |
+| --- | --- | --- | --- |
+| `item_id` | string | No | Single Vinted item ID. Use item_ids for batches discovered from Vinted Search. |
+| `item_ids` | array of string | No | Batch of Vinted item IDs. One dataset row is written per processed ID. Maximum 50 IDs per run. Constraints: maximum 50 items. |
+| `country` | string | No | Vinted country market. Constraints: allowed values: FR, DE, ES, IT, NL, BE, AT, PL, CZ, LT, LU, SK, HU, RO, PT, SE, DK, FI, US. |
 
-Provide at least one ID through `item_id` or `item_ids`. If both fields are provided, duplicate IDs are processed once.
+## Pricing
 
-## Example Input
+**Current live price:** $0.25 per 1,000 results.
 
-```json
-{
-  "country": "DE",
-  "item_ids": ["1234567890", "1234567891", "1234567892"]
-}
-```
+The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
 
-## Output
+## FAQ
 
-Each processed item ID is saved as one dataset item. Successful rows include normalized fields plus the original Scrappa detail payload:
+### Is it legal to scrape this data?
 
-```json
-{
-  "id": "1234567890",
-  "title": "Nike Air Max 90",
-  "description": "Very good condition...",
-  "price_amount": "45.00",
-  "price_currency": "EUR",
-  "brand_name": "Nike",
-  "category_name": "Shoes",
-  "size_name": "EU 42",
-  "condition": "Very good",
-  "availability": "available",
-  "url": "https://www.vinted.de/items/1234567890-nike-air-max-90",
-  "image_url": "https://images1.vinted.net/t/01_example/image.jpg",
-  "seller_login": "seller123",
-  "favourite_count": 15,
-  "view_count": 234,
-  "request_item_id": "1234567890",
-  "request_country": "DE",
-  "request_index": 0,
-  "request_success": true
-}
-```
+This Actor is intended for data that is publicly available from Vinted. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
 
-If a specific item ID fails while the Scrappa API and actor are healthy, the actor writes an uncharged row with `request_success: false` and `error_message` so batch outputs still line up with the requested IDs.
+### What limits should I expect?
 
-The `OUTPUT` key-value-store record contains only the run summary: requested count, successful result count, failed item count, and country. Dataset rows are the primary output channel.
+Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
 
-## Notes
+### Can I run it through the API or connect it to other tools?
 
-Vinted does not provide a public developer API. This actor returns public marketplace listing data through Scrappa's structured Vinted item details endpoint. For search, seller profiles, shipping data, similar items, higher-volume access, or direct API usage, use Scrappa at https://scrappa.co.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~vinted-item-details-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
 
-## Local development
+### What happens if a request fails?
 
-Run the focused Rust tests from this directory with `cargo test --locked`. Build the production image with `docker build -f .actor/Dockerfile .`. The runtime reads Apify's `APIFY_TOKEN`, `ACTOR_RUN_ID`, `ACTOR_DEFAULT_KEY_VALUE_STORE_ID`, and `ACTOR_DEFAULT_DATASET_ID` variables plus `SCRAPPA_API_KEY`.
+Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+
+## Related Scrappa Actors
+
+- [Kleinanzeigen Listing Details Scraper for Buyers](https://apify.com/thescrappa/kleinanzeigen-listing-details-scraper)
+- [Kleinanzeigen Search Scraper for Product Research](https://apify.com/thescrappa/kleinanzeigen-search-scraper)
+- [Vinted Search Scraper for Product Research](https://apify.com/thescrappa/vinted-search-scraper)
+- [Vinted User Items Scraper for Product Research](https://apify.com/thescrappa/vinted-user-items-scraper)
+- [Vinted User Profile Scraper for Seller Research](https://apify.com/thescrappa/vinted-user-profile-scraper)

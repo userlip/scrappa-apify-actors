@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "immobilienscout24-locations-scraper",
-  "title": "ImmobilienScout24 Location Autocomplete",
-  "description": "Resolve cities, districts, and postal-code queries to ImmobilienScout24 location names, types, and geocodes in one batch run.",
+  "title": "ImmobilienScout24 Location Autocomplete Scraper",
+  "description": "Collect location and place suggestions from ImmobilienScout24. Results can include `geocode`, `name`, `type`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

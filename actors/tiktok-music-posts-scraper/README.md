@@ -1,76 +1,100 @@
-# TikTok Music Posts Scraper
+# TikTok Music Posts Scraper for Creator Research
 
-TikTok Music Posts Scraper is a Rust Apify actor that calls Scrappa's TikTok music posts endpoint. It extracts public TikTok videos that use specific music tracks or sounds. Use it for TikTok sound videos, TikTok music track posts, trend monitoring, creator discovery, campaign research, and content intelligence workflows.
+The TikTok Music Posts Scraper for Creator Research collects public post text, media links, and engagement counts from TikTok. Provide the fields listed below; the actor saves source fields such as `desc`, `author`, `digg_count`, and `comment_count` to an Apify dataset.
 
-## Features
+## What data can you extract?
 
-- Lookup by one or more TikTok music IDs in a single Apify run
-- Fetch a page of public posts for each music track with engagement and media metadata
-- Support pagination via `cursor`
-- Dataset rows optimized for Apify table views
-- One dataset item per returned TikTok post
-- Compact `OUTPUT` summary for compatibility
+The dataset contains fields returned by TikTok. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
 
-## Input
+| Field | Type | Description |
+| --- | --- | --- |
+| `desc` | text | Caption returned for this result. |
+| `author` | object | Author returned for this result. |
+| `digg_count` | number | Likes returned for this result. |
+| `comment_count` | number | Comments returned for this result. |
+| `share_count` | number | Shares returned for this result. |
+| `play_count` | number | Views returned for this result. |
+| `create_time` | number | Created returned for this result. |
+| `aweme_id` | text | Post ID returned for this result. |
+| `request_music_id` | text | Music ID returned for this result. |
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `musicIds` | array of strings | No | TikTok music track IDs. Batch multiple music IDs in one run to reduce Apify run overhead. |
-| `music_id` | string or number | No | Legacy single music ID input. Prefer `musicIds` for new integrations. |
-| `count` | integer | No | Number of posts to return for each music ID. Scrappa accepts `1-50`. |
-| `cursor` | string or number | No | Pagination cursor from a previous run. Leave empty for the first page. The same cursor is applied to every music ID. |
+## Use cases
 
-Provide at least one value in `musicIds` or `music_id`.
+- Collect public post text, media links, and engagement counts for video and creator research.
+- Review returned titles, channels, timestamps, or engagement fields.
+- Export video records to a content planning or analysis workflow.
 
-## Example Input
+## How to use
+
+1. Open the **Input** tab and use the example JSON below.
+2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `musicIds` and start with a short list.
+3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
 
 ```json
 {
-  "musicIds": ["7002634556977908485"],
+  "musicIds": [
+    "7002634556977908485"
+  ],
   "count": 10,
   "cursor": "0"
 }
 ```
 
-## Output
+Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
 
-Each TikTok music post is saved as one dataset item:
+## Output example
+
+This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
 
 ```json
 {
-  "aweme_id": "7568510388342443294",
-  "desc": "Example post caption",
-  "create_time": 1731161993,
-  "digg_count": 12345,
-  "comment_count": 678,
-  "share_count": 90,
-  "play_count": 1234567,
-  "author": {
-    "unique_id": "tiktok",
-    "nickname": "TikTok"
-  },
-  "request_music_id": "7002634556977908485"
+  "desc": "Example value",
+  "author": {},
+  "digg_count": 42,
+  "comment_count": 42,
+  "share_count": 42,
+  "play_count": 42,
+  "create_time": 42
 }
 ```
 
-The `OUTPUT` key-value-store record contains a compact summary with processed music IDs, per-music pagination cursors, and total posts extracted. Dataset output is the primary result channel.
+## Input fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `musicIds` | array of string | No | One or more TikTok music track IDs. Batch multiple music IDs in one run to reduce Apify run overhead. |
+| `music_id` | string | No | Legacy single TikTok music ID input. Prefer musicIds for new integrations. |
+| `count` | integer | No | Number of posts to return for each music ID. Scrappa accepts 1-50. Constraints: minimum 1; maximum 50. |
+| `cursor` | string | No | Pagination cursor from a previous run. Leave empty for the first page. The same cursor is applied to every music ID in this run. |
 
 ## Pricing
 
-This actor is intended for paid per-result usage, aligned with one dataset item per TikTok post returned.
+**Current live price:** $0.20 per 1,000 results.
 
-The actor checks the Apify run's pay-per-event prices and spending limit before writing result rows. It stops fetching additional music IDs when the run cannot charge another dataset item.
+The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
 
-Apify INPUT and run reads, plus the idempotent OUTPUT key-value-store write, retry network errors, HTTP 429, and server errors up to eight times with exponential backoff. Dataset item POSTs are single-attempt because a response can fail after Apify has stored the rows. Scrappa API requests keep the existing single-attempt behavior and 60-second timeout; the actor run timeout remains 120 seconds.
+## FAQ
 
-## Local development
+### Is it legal to scrape this data?
 
-Run the focused Rust tests from this directory with cargo test --locked.
+This Actor is intended for data that is publicly available from TikTok. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
 
-Build the Apify image with docker build -f .actor/Dockerfile -t tiktok-music-posts-scraper .
+### What limits should I expect?
 
-After building, run the local image smoke against a mock Apify and Scrappa server with python3 test/image-smoke.py tiktok-music-posts-scraper.
+Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
 
-## Support
+### Can I run it through the API or connect it to other tools?
 
-For higher-volume usage or direct API access, use Scrappa at https://scrappa.co.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~tiktok-music-posts-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+
+### What happens if a request fails?
+
+Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+
+## Related Scrappa Actors
+
+- [TikTok Ads Scraper for Campaign Research](https://apify.com/thescrappa/tiktok-ads-scraper)
+- [TikTok Hashtag & Challenge Details Scraper](https://apify.com/thescrappa/tiktok-challenge-details-scraper)
+- [TikTok Hashtag Videos Scraper for Creator Research](https://apify.com/thescrappa/tiktok-challenge-posts-scraper)
+- [TikTok Challenge Search Scraper for Trends](https://apify.com/thescrappa/tiktok-challenge-search-scraper)
+- [TikTok Comments Scraper for Audience Research](https://apify.com/thescrappa/tiktok-comments-scraper)

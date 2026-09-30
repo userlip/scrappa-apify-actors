@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "vinted-item-details-scraper",
-  "title": "Vinted Item Details Scraper",
-  "description": "Enrich Vinted item IDs with full listing details including description, price, photos, seller, category, condition, favorites, views, and availability. Built as a thin Scrappa-powered companion to Vinted Search.",
+  "title": "Vinted Item Details Scraper for Product Research",
+  "description": "Collect public record details and identifying fields from Vinted. Results can include `id`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

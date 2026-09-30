@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "kununu-jobs-scraper",
-  "title": "Kununu Jobs Scraper ($0.30/1k results)",
-  "description": "Search Kununu job listings across Germany, Austria, and Switzerland by query, location, company score, workplace model, benefits, and Top Company status.",
+  "title": "Kununu Jobs Scraper for Employer Research",
+  "description": "Collect job listings and job details from kununu. Results can include `title`, `company_name`, `company_score`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "categories": [
     "LEAD_GENERATION",
     "MARKETING",

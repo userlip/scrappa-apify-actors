@@ -1,0 +1,4 @@
+Validated 106 actor Store READMEs and 106 metadata entries.
+README length range: 4668-9014 characters (minimum required: 3,000).
+Pricing lines match the latest live pricing entry for 106 actors.
+All README section, H1, placeholder, related-link, input-example, prefill, metadata-length, actor.json mirror, and inventory checks passed.

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-search-scraper",
-  "title": "TikTok Search Scraper",
-  "description": "Search TikTok videos by keyword, hashtag, product, brand, or creator niche. Extract captions, engagement metrics, author metadata, timestamps, pagination cursors, and raw TikTok video fields through Scrappa.",
+  "title": "TikTok Search Scraper for Audience Research",
+  "description": "Collect search results, names, and source links from TikTok. Results can include `desc`, `author`, `digg_count`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "immobilienscout24-search-scraper",
-  "title": "ImmobilienScout24 Search Scraper",
-  "description": "Scrape ImmobilienScout24 property search listings with prices, rooms, floor area, addresses, coordinates, images, expose URLs, and pagination.",
+  "title": "ImmobilienScout24 Search Scraper for Real Estate",
+  "description": "Collect property listings, prices, and locations from ImmobilienScout24. Results can include `title`, `price`, `price_formatted`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

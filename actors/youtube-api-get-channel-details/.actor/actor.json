@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-details",
-    "title": "YouTube API Get Channel Details",
-    "description": "Fetch YouTube channel details by channel ID.",
+    "title": "YouTube Channel Details Scraper for Creators",
+    "description": "Collect video, channel, and search result data from YouTube. Results can include `channelId`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
     "version": "0.0",
     "buildTag": "latest",
     "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },

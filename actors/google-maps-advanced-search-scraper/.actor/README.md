@@ -1,103 +1,103 @@
-# Google Maps Advanced Search Scraper
+# Google Maps Advanced Search Scraper for Sales
 
-Scrape Google Maps business listings from a precise map area using a search query, coordinates, and zoom level. This actor is built for local lead generation, competitor monitoring, territory research, and workflows where you need results tied to a specific latitude, longitude, and map zoom instead of a broad city-level search.
+The Google Maps Advanced Search Scraper for Sales collects local business details, ratings, and addresses from Google Maps. Provide a search phrase or a short list of phrases; the actor saves source fields such as `name`, `rating`, `review_count`, and `full_address` to an Apify dataset.
 
-Use it when you need Google Maps results for a tight geographic area, a neighborhood, a sales territory, or a coordinate-defined map viewport.
+## What data can you extract?
 
-## What It Does
+The dataset contains fields returned by Google Maps. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
 
-- Searches Google Maps for businesses by keyword, category, or service.
-- Targets results with optional `latitude` and `longitude` center coordinates.
-- Controls local precision with Google Maps-style `zoom` levels from broad area to street-level focus.
-- Supports result limits for quick samples or larger lead lists.
-- Returns business names, ratings, reviews, addresses, websites, phones, coordinates, business types, hours, status, and sample photos when available.
-- Supports language and region targeting with `hl` and `gl`.
+| Field | Type | Description |
+| --- | --- | --- |
+| `name` | text | Name returned for this result. |
+| `rating` | number | Rating returned for this result. |
+| `review_count` | number | Reviews returned for this result. |
+| `full_address` | text | Address returned for this result. |
+| `phone_numbers` | array | Phone numbers returned for this result. |
+| `website` | link | Website returned for this result. |
+| `latitude` | number | Lat returned for this result. |
+| `longitude` | number | Lon returned for this result. |
 
-## Common Use Cases
+## Use cases
 
-- Find "restaurants", "coffee shops", "dentists", "plumbers", or other businesses around exact coordinates.
-- Scrape Google Maps leads inside a neighborhood, shopping district, downtown area, or delivery zone.
-- Compare competitors around store locations, franchise territories, hotels, campuses, or event venues.
-- Build coordinate-based local business datasets for sales prospecting, market mapping, and location intelligence.
-- Run bounds-focused Google Maps research by choosing a center point and zoom level for each target area.
+- Collect local business details, ratings, and addresses to support lead generation.
+- Compare records across the input queries or entities you provide.
+- Export structured results to research and reporting workflows.
 
-## Input
+## How to use
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `query` | string | Yes | Business, category, or service to search for, such as `coffee shops`, `restaurants`, or `dentists`. |
-| `zoom` | integer | Yes | Map zoom level from `3` to `21`. Lower values cover a wider area; higher values target a smaller, more precise area. |
-| `latitude` | number | No | Center latitude for the search area. If omitted, location may be resolved from the query. |
-| `longitude` | number | No | Center longitude for the search area. If omitted, location may be resolved from the query. |
-| `limit` | integer | No | Maximum number of results to return. |
-| `hl` | string | No | Google language code, such as `en`, `de`, `es`, or `fr`. Defaults to `en`. |
-| `gl` | string | No | Google region code, such as `us`, `de`, `fr`, or `uk`. |
-
-## Example Input
+1. Open the **Input** tab and use the example JSON below.
+2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
+3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
 
 ```json
 {
   "query": "coffee shops",
-  "latitude": 40.758,
-  "longitude": -73.9855,
   "zoom": 15,
-  "limit": 50,
-  "hl": "en",
+  "latitude": 40.7128,
+  "longitude": -74.006,
+  "limit": 10,
   "gl": "us"
 }
 ```
 
-## Output
+Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
 
-The actor saves matching businesses to the default dataset. Each result can include:
+## Output example
 
-- `name`
-- `business_id`
-- `place_id`
-- `rating`
-- `review_count`
-- `price_level`
-- `website`
-- `domain`
-- `phone_numbers`
-- `full_address`
-- `district`
-- `latitude`
-- `longitude`
-- `subtypes`
-- `type`
-- `short_description`
-- `opening_hours`
-- `current_status`
-- `photos_sample`
-
-## Example Output
+This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
 
 ```json
 {
-  "name": "Example Coffee",
-  "business_id": "0x89c259...",
-  "place_id": "ChIJ...",
-  "rating": 4.6,
-  "review_count": 842,
-  "website": "https://example.com",
-  "phone_numbers": ["+1 212-555-0100"],
-  "full_address": "123 Example Ave, New York, NY 10036",
-  "latitude": 40.7581,
-  "longitude": -73.9856,
-  "subtypes": ["Coffee shop"],
-  "current_status": "Open"
+  "name": "Example value",
+  "rating": 4.7,
+  "review_count": 42,
+  "full_address": "Example location",
+  "phone_numbers": null,
+  "website": "https://example.com/result/1",
+  "latitude": 40.7128
 }
 ```
 
-## Tips For Coordinate And Bounds-Based Searches
+## Input fields
 
-- Use `latitude` and `longitude` when you need results around an exact point.
-- Use higher zoom levels, such as `15` to `18`, for neighborhood or street-level searches.
-- Use lower zoom levels, such as `10` to `14`, for city or metro-area discovery.
-- For grid or bounds workflows, split your target region into center points and run the actor once per coordinate with the zoom level that matches your desired coverage.
-- Include location words in `query` only when you want Google to interpret a named place; otherwise use coordinates for cleaner area targeting.
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `query` | string | Yes | What to search for (e.g., 'coffee shops', 'restaurants') |
+| `zoom` | integer | Yes | Map zoom level for precision (3=broad overview, 21=street level) Constraints: minimum 3; maximum 21. |
+| `latitude` | number | No | Center latitude for search (optional, auto-resolved from query if blank) |
+| `longitude` | number | No | Center longitude for search (optional, auto-resolved from query if blank) |
+| `limit` | integer | No | Maximum results to return (1 or more) Constraints: minimum 1. |
+| `hl` | string | No | ISO 639-1 language code (e.g., 'en', 'de', 'es', 'fr' or with region 'en-US', 'de-DE') |
+| `gl` | string | No | ISO 3166-1 alpha-2 country code for region-specific results (e.g., 'us', 'de', 'fr', 'uk') |
 
 ## Pricing
 
-$0.30 per 1,000 results. No Google Maps API key required.
+**Current live price:** $5.00 per 1,000 searches; plus $0.30 per 1,000 results.
+
+The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+
+## FAQ
+
+### Is it legal to scrape this data?
+
+This Actor is intended for data that is publicly available from Google Maps. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+
+### What limits should I expect?
+
+Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+
+### Can I run it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~google-maps-advanced-search-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+
+### What happens if a request fails?
+
+Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+
+## Related Scrappa Actors
+
+- [Google Maps Autocomplete Scraper for Local Search](https://apify.com/thescrappa/google-maps-autocomplete-scraper)
+- [Google Maps Business Details Scraper for Sales](https://apify.com/thescrappa/google-maps-business-details-scraper)
+- [Google Maps Directions Scraper for Travel Planning](https://apify.com/thescrappa/google-maps-directions-scraper)
+- [Google Maps Photos Scraper for Place Research](https://apify.com/thescrappa/google-maps-photos-scraper)
+- [Google Maps Reviews Scraper for Local Reputation](https://apify.com/thescrappa/google-maps-reviews-scraper)

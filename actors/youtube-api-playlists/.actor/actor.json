@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-playlists",
-    "title": "YouTube API Playlists",
-    "description": "Search YouTube playlists by query through the Scrappa YouTube API.",
+    "title": "YouTube Playlist Search Scraper for Video Analysis",
+    "description": "Collect playlist metadata, titles, and video counts from YouTube. Results can include `playlistId`, `title`, `url`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

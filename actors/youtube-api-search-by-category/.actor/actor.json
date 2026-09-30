@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "youtube-api-search-by-category",
-  "title": "YouTube Search By Category Scraper",
-  "description": "Get YouTube search results from predefined category searches.",
+  "title": "YouTube Category Search Scraper for Video Analysis",
+  "description": "Collect video, channel, and search result data from YouTube. Results can include `type`, `id`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

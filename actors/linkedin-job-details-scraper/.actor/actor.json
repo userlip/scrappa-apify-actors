@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "linkedin-job-details-scraper",
-  "title": "LinkedIn Job Details Scraper",
-  "description": "Scrape structured public LinkedIn job posting details from one or more job URLs. Get title, company, location, employment type, seniority, posted date, applicants, apply URL, and raw job data. No LinkedIn login required.",
+  "title": "LinkedIn Job Details Scraper for Hiring Teams",
+  "description": "Collect job listings and job details from LinkedIn. Results can include `success`, `title`, `company`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "categories": [
     "LEAD_GENERATION",
     "MARKETING",

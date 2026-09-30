@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "linkedin-search-scraper",
-  "title": "LinkedIn Search Scraper ($0.30/1k results)",
-  "description": "Search public LinkedIn pages through Scrappa. Extract LinkedIn profile, company, post, jobs, and hiring page result URLs with snippets, search metadata, and pagination.",
+  "title": "LinkedIn Search Scraper for Lead Research",
+  "description": "Collect search results, names, and source links from LinkedIn. Results can include `position`, `title`, `link`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

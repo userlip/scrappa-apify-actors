@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-ads-scraper",
-  "title": "TikTok Ads Scraper",
-  "description": "Extract TikTok Creative Center ad details, advertiser fields, creative text, media URLs, landing pages, metadata, and engagement metrics through Scrappa.",
+  "title": "TikTok Ads Scraper for Campaign Research",
+  "description": "Collect TikTok ad creative and campaign details from TikTok. Results can include `ad_id`, `advertiser_name`, `brand_name`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

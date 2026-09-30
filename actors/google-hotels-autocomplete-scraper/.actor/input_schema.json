@@ -11,8 +11,13 @@
       "editor": "stringList",
       "minItems": 1,
       "maxItems": 100,
-      "items": { "type": "string", "maxLength": 200 },
-      "prefill": ["Berlin", "Paris"]
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "prefill": [
+        "Berlin"
+      ]
     },
     "q": {
       "title": "Single Query",
@@ -50,8 +55,16 @@
       "type": "string",
       "description": "Return locations, hotels/accommodations, or both.",
       "editor": "select",
-      "enum": ["location", "hotel", "all"],
-      "enumTitles": ["Locations", "Hotels", "All"],
+      "enum": [
+        "location",
+        "hotel",
+        "all"
+      ],
+      "enumTitles": [
+        "Locations",
+        "Hotels",
+        "All"
+      ],
       "default": "all"
     }
   }
