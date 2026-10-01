@@ -557,7 +557,7 @@
   {
     "id": "EMGCTVXuOBRERiDMf",
     "name": "linkedin-company-scraper",
-    "title": "LinkedIn Company Scraper",
+    "title": "LinkedIn Company Scraper - $0.30/1k results",
     "description": "Look up a LinkedIn company profile with industry, employee size, website and follower count. Use public company profile URLs, individually or as a batch, to compare company details.",
     "seoTitle": "LinkedIn Company Scraper | No Login Needed",
     "seoDescription": "Scrape LinkedIn company pages without login: industry, company size, employee count, website and followers. Batch many company URLs. Export to CSV or JSON.",
@@ -605,7 +605,7 @@
   {
     "id": "87AaxKjjQrK0F0g60",
     "name": "linkedin-profile-scraper",
-    "title": "LinkedIn Profile Scraper",
+    "title": "LinkedIn Profile Scraper - $0.30/1k results",
     "description": "Review a public LinkedIn profile with name, headline, location and follower count. Submit one or more public LinkedIn profile URLs to build a consistent profile dataset.",
     "seoTitle": "LinkedIn Profile Scraper | No Login Needed",
     "seoDescription": "Scrape public LinkedIn profiles without login: name, location, about section, followers and connections. Batch many profile URLs in one run. Export to CSV.",
@@ -617,7 +617,7 @@
   {
     "id": "jGkqg68Hqx9nWDenM",
     "name": "linkedin-search-scraper",
-    "title": "LinkedIn Search Scraper",
+    "title": "LinkedIn Search Scraper ($0.30/1k results)",
     "description": "Find LinkedIn pages through search, with titles, displayed links and result snippets. Add a LinkedIn page type such as profile, company, post or job to the search query.",
     "seoTitle": "LinkedIn Search Scraper | No Login Needed",
     "seoDescription": "Find LinkedIn profiles, companies, posts and jobs by keyword via search. Get titles, links and snippets for prospecting lists. Export to CSV or the API.",

@@ -2,6 +2,11 @@ import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 
+// Store titles may carry a price suffix such as "- $0.30/1k results"; README headings drop it.
+export function headingTitle(title) {
+  return title.replace(/\s*(?:-\s*\$[\d.]+\/1k results|\(\$[\d.]+\/1k results\))$/, '').trim();
+}
+
 const REPO_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const DEFAULT_LIVE_DIR = '/tmp/df3601fd/act';
 const ALLOWED_CATEGORIES = new Set([
@@ -280,7 +285,7 @@ async function main() {
         maximumReadmeLength = Math.max(maximumReadmeLength, readme.length);
         addError(errors, readme.length >= 3000, `${entry.name}: README length ${readme.length} is below 3,000`);
         addError(errors, /^# .+$/m.test(readme), `${entry.name}: missing H1`);
-        addError(errors, /^# .+$/m.exec(readme)?.[0] === `# ${entry.title}`, `${entry.name}: H1 does not match the Store title`);
+        addError(errors, /^# .+$/m.exec(readme)?.[0] === `# ${headingTitle(entry.title)}`, `${entry.name}: H1 does not match the Store title`);
         addError(errors, !readme.includes('—'), `${entry.name}: contains an em dash`);
         addError(errors, !readme.includes('{{'), `${entry.name}: contains a template placeholder`);
         addError(errors, !/\b(?:Rust ports?|QA runs?|run IDs?|build numbers?|maintenance notices?|test fixtures?|internal endpoints?)\b/i.test(readme), `${entry.name}: contains internal jargon`);
