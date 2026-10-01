@@ -1,0 +1,148 @@
+{
+  "title": "Kayak Car Rentals Scraper",
+  "description": "Compare Kayak rental cars with provider, company, vehicle description, quoted price, and booking link. Batch pickup locations and set future collection and return dates.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "pickup_locations"
+  ],
+  "properties": {
+    "pickup_locations": {
+      "title": "Pickup locations",
+      "type": "array",
+      "description": "Airport or city pickup codes for KAYAK rental-car searches.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "pickup": "LAS"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "pickup"
+        ],
+        "properties": {
+          "pickup": {
+            "title": "Pickup",
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "Airport or city code where the rental car is collected.",
+            "editor": "textfield"
+          },
+          "pickup_date": {
+            "title": "Pickup Date",
+            "type": "string",
+            "format": "date",
+            "description": "Rental car pickup date in YYYY-MM-DD format. When omitted, pickup is set to 30 days from today.",
+            "editor": "textfield"
+          },
+          "dropoff_date": {
+            "title": "Dropoff Date",
+            "type": "string",
+            "format": "date",
+            "description": "Rental car drop-off date in YYYY-MM-DD format after pickup. When omitted, drop-off is set to four days after pickup.",
+            "editor": "textfield"
+          },
+          "pickup_hour": {
+            "title": "Pickup Hour",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 23,
+            "description": "Local hour when the rental car is collected.",
+            "editor": "number"
+          },
+          "dropoff_hour": {
+            "title": "Dropoff Hour",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 23,
+            "description": "Local hour when the rental car is returned.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort",
+            "type": "string",
+            "enum": [
+              "rank_a",
+              "price_a"
+            ],
+            "description": "Sort order for returned search results. Accepted values: rank_a, price_a.",
+            "editor": "select"
+          },
+          "price_mode": {
+            "title": "Price Mode",
+            "type": "string",
+            "enum": [
+              "total",
+              "daily"
+            ],
+            "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: total, daily.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "pickup_date": {
+      "title": "Pickup Date",
+      "type": "string",
+      "format": "date",
+      "description": "Rental car pickup date in YYYY-MM-DD format. When omitted, pickup is set to 30 days from today.",
+      "editor": "textfield"
+    },
+    "dropoff_date": {
+      "title": "Dropoff Date",
+      "type": "string",
+      "format": "date",
+      "description": "Rental car drop-off date in YYYY-MM-DD format after pickup. When omitted, drop-off is set to four days after pickup.",
+      "editor": "textfield"
+    },
+    "pickup_hour": {
+      "title": "Pickup Hour",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 23,
+      "description": "Local hour when the rental car is collected.",
+      "editor": "number"
+    },
+    "dropoff_hour": {
+      "title": "Dropoff Hour",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 23,
+      "description": "Local hour when the rental car is returned.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "enum": [
+        "rank_a",
+        "price_a"
+      ],
+      "description": "Sort order for returned search results. Accepted values: rank_a, price_a.",
+      "editor": "select"
+    },
+    "price_mode": {
+      "title": "Price Mode",
+      "type": "string",
+      "enum": [
+        "total",
+        "daily"
+      ],
+      "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: total, daily.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

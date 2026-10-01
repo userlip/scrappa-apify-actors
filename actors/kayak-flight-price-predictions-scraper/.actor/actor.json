@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-flight-price-predictions-scraper",
+  "title": "Kayak Flight Price Predictions Scraper",
+  "description": "Get Kayak flight price predictions by route with date ranges, origin, destination, and minimum fare. Batch airport pairs to compare expected price trends.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "startDate",
+              "endDate",
+              "originAirport",
+              "destinationAirport",
+              "minPrice"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "startDate": {
+                "label": "Start date",
+                "format": "date"
+              },
+              "endDate": {
+                "label": "End date",
+                "format": "date"
+              },
+              "originAirport": {
+                "label": "Origin airport",
+                "format": "text"
+              },
+              "destinationAirport": {
+                "label": "Destination airport",
+                "format": "text"
+              },
+              "minPrice": {
+                "label": "Minimum price",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

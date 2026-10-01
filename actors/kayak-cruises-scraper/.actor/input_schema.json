@@ -1,0 +1,183 @@
+{
+  "title": "Kayak Cruises Scraper",
+  "description": "Browse Kayak cruise sailings with ship, departure port, trip length, itinerary, fare, currency, and region. Batch ocean or river product types and sort offers.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "sailing_types"
+  ],
+  "properties": {
+    "sailing_types": {
+      "title": "Cruise types",
+      "type": "array",
+      "description": "KAYAK cruise product types to retrieve, such as ocean or river sailings.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "product_type": "ocean"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "product_type"
+        ],
+        "properties": {
+          "product_type": {
+            "title": "Product Type",
+            "type": "string",
+            "enum": [
+              "ocean",
+              "river"
+            ],
+            "description": "Cruise product category, such as ocean or river. Accepted values: ocean, river.",
+            "editor": "select"
+          },
+          "min_nights": {
+            "title": "Min Nights",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60,
+            "description": "Minimum number of nights for returned cruise sailings.",
+            "editor": "number"
+          },
+          "adults": {
+            "title": "Adults",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9,
+            "description": "Number of adult travelers included in the search.",
+            "editor": "number"
+          },
+          "children": {
+            "title": "Children",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8,
+            "description": "Number of children traveling on the cruise search.",
+            "editor": "number"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "One-based result page to request.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort",
+            "type": "string",
+            "enum": [
+              "recommended",
+              "price",
+              "duration",
+              "departuredate"
+            ],
+            "description": "Sort order for returned search results. Accepted values: recommended, price, duration, departuredate.",
+            "editor": "select"
+          },
+          "sort_order": {
+            "title": "Sort Order",
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Direction used for the selected result sort. Accepted values: asc, desc.",
+            "editor": "select"
+          },
+          "include_deals": {
+            "title": "Include Deals",
+            "type": "boolean",
+            "description": "Whether to include offers marked as cruise deals.",
+            "editor": "checkbox"
+          },
+          "include_unavailable": {
+            "title": "Include Unavailable",
+            "type": "boolean",
+            "description": "Whether to include sailings marked unavailable.",
+            "editor": "checkbox"
+          }
+        }
+      }
+    },
+    "min_nights": {
+      "title": "Min Nights",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60,
+      "description": "Minimum number of nights for returned cruise sailings.",
+      "editor": "number"
+    },
+    "adults": {
+      "title": "Adults",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9,
+      "description": "Number of adult travelers included in the search.",
+      "editor": "number"
+    },
+    "children": {
+      "title": "Children",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 8,
+      "description": "Number of children traveling on the cruise search.",
+      "editor": "number"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "One-based result page to request.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "enum": [
+        "recommended",
+        "price",
+        "duration",
+        "departuredate"
+      ],
+      "description": "Sort order for returned search results. Accepted values: recommended, price, duration, departuredate.",
+      "editor": "select"
+    },
+    "sort_order": {
+      "title": "Sort Order",
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "description": "Direction used for the selected result sort. Accepted values: asc, desc.",
+      "editor": "select"
+    },
+    "include_deals": {
+      "title": "Include Deals",
+      "type": "boolean",
+      "description": "Whether to include offers marked as cruise deals.",
+      "editor": "checkbox"
+    },
+    "include_unavailable": {
+      "title": "Include Unavailable",
+      "type": "boolean",
+      "description": "Whether to include sailings marked unavailable.",
+      "editor": "checkbox"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

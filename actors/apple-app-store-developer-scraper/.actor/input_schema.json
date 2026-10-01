@@ -1,0 +1,86 @@
+{
+  "title": "Apple App Store Developer Apps Scraper",
+  "description": "List public Apple App Store apps by developer ID with names, genres, prices, ratings, versions, and listing links. Batch developer accounts to map publisher catalogs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "developers"
+  ],
+  "properties": {
+    "developers": {
+      "title": "Developer IDs",
+      "type": "array",
+      "description": "Apple developer or artist IDs whose App Store apps you want to list.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "artist_id": "284882218"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "artist_id"
+        ],
+        "properties": {
+          "artist_id": {
+            "title": "Artist Id",
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "nullable": true,
+            "description": "Apple artist/developer id",
+            "editor": "textfield"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "nullable": true,
+            "description": "Value accepted by the Apple App Store Developer Apps Scraper search.",
+            "editor": "textfield"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "nullable": true,
+            "description": "Kununu country market code, such as de, at, or ch.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "id": {
+      "title": "Id",
+      "type": "string",
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "nullable": true,
+      "description": "Value accepted by the Apple App Store Developer Apps Scraper search.",
+      "editor": "textfield"
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "nullable": true,
+      "description": "Kununu country market code, such as de, at, or ch.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

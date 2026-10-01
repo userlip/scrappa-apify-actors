@@ -1,0 +1,49 @@
+{
+  "title": "Kayak Hotel Details Scraper",
+  "description": "Get Kayak hotel property details with name, address, rating, telephone, description, amenities, and image links. Batch property paths to enrich hotel records.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "hotels"
+  ],
+  "properties": {
+    "hotels": {
+      "title": "KAYAK hotel paths",
+      "type": "array",
+      "description": "KAYAK property paths copied from hotel listing URLs.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "path": "/Las-Vegas-Hotels-Park-MGM-Las-Vegas.15297.ksp"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "properties": {
+          "path": {
+            "title": "Path",
+            "type": "string",
+            "maxLength": 300,
+            "pattern": "^\\/[A-Za-z0-9,._\\/-]+$",
+            "description": "KAYAK property path copied from a hotel or rental search URL.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

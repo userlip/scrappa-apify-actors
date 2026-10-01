@@ -1,0 +1,10 @@
+{
+  "hotels": [
+    {
+      "hotel_id": 15297
+    }
+  ],
+  "sort": "recent",
+  "amount": 10,
+  "maxResults": 10
+}

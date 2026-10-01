@@ -1,0 +1,358 @@
+{
+  "title": "Google Flights Cheapest Dates Scraper",
+  "description": "Find Google Flights’ cheapest date-range option for airport routes with price, airline, stops, duration, and itinerary legs. Batch routes and choose a future search window.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "routes"
+  ],
+  "properties": {
+    "routes": {
+      "title": "Airport routes",
+      "type": "array",
+      "description": "Origin and destination airport codes to compare for the same date range.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "origin": "JFK",
+          "destination": "LAX"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "origin",
+          "destination"
+        ],
+        "properties": {
+          "origin": {
+            "title": "Origin",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "pattern": "^[a-zA-Z]{3}$",
+            "description": "Origin airport code for the route or destination search.",
+            "editor": "textfield"
+          },
+          "destination": {
+            "title": "Destination",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "pattern": "^[a-zA-Z]{3}$",
+            "description": "KAYAK destination code for the vacation-package search.",
+            "editor": "textfield"
+          },
+          "adults": {
+            "title": "Adults",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9,
+            "nullable": true,
+            "description": "Number of adult travelers included in the search.",
+            "editor": "number"
+          },
+          "children": {
+            "title": "Children",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9,
+            "nullable": true,
+            "description": "Number of children traveling on the cruise search.",
+            "editor": "number"
+          },
+          "infants_in_seat": {
+            "title": "Infants In Seat",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9,
+            "nullable": true,
+            "description": "Number of infants in seat (0-9, default: 0)",
+            "editor": "number"
+          },
+          "infants_on_lap": {
+            "title": "Infants On Lap",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9,
+            "nullable": true,
+            "description": "Number of infants on lap (0-9, default: 0)",
+            "editor": "number"
+          },
+          "cabin_class": {
+            "title": "Cabin Class",
+            "type": "string",
+            "enum": [
+              "economy",
+              "premium_economy",
+              "business",
+              "first"
+            ],
+            "nullable": true,
+            "description": "Cabin class: economy, premium_economy, business, or first (default: economy) Accepted values: economy, premium_economy, business, first.",
+            "editor": "select"
+          },
+          "exclude_basic": {
+            "title": "Exclude Basic",
+            "type": "boolean",
+            "nullable": true,
+            "description": "Exclude basic economy fares when searching in economy class (default: false)",
+            "editor": "checkbox"
+          },
+          "max_stops": {
+            "title": "Max Stops",
+            "type": "string",
+            "enum": [
+              "any",
+              "nonstop",
+              "one_or_fewer",
+              "two_or_fewer"
+            ],
+            "nullable": true,
+            "description": "Maximum stops: any, nonstop, one_or_fewer, or two_or_fewer (default: any) Accepted values: any, nonstop, one_or_fewer, two_or_fewer.",
+            "editor": "select"
+          },
+          "hl": {
+            "title": "Hl",
+            "type": "string",
+            "pattern": "^[a-zA-Z]{2}(-[a-zA-Z]{2})?$",
+            "nullable": true,
+            "description": "Language code (e.g., en, de, en-US)",
+            "editor": "textfield"
+          },
+          "gl": {
+            "title": "Gl",
+            "type": "string",
+            "pattern": "^[a-zA-Z]{2}$",
+            "nullable": true,
+            "description": "Country/region code (e.g., us, de, gb)",
+            "editor": "textfield"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "nullable": true,
+            "description": "Currency code for prices (e.g., USD, EUR, GBP)",
+            "editor": "textfield"
+          },
+          "outbound_times": {
+            "title": "Outbound Times",
+            "type": "string",
+            "pattern": "^\\s*(?:[01]?\\d|2[0-3])\\s*,\\s*(?:[01]?\\d|2[0-3])\\s*(?:,\\s*(?:[01]?\\d|2[0-3])\\s*,\\s*(?:[01]?\\d|2[0-3])\\s*)?$",
+            "nullable": true,
+            "description": "Outbound time window as comma-separated hours, e.g. \"6,18\" for departures between 06:00 and 18:00. Two further values narrow the arrival window.",
+            "editor": "textfield"
+          },
+          "bags": {
+            "title": "Bags",
+            "type": "integer",
+            "enum": [
+              "0"
+            ],
+            "nullable": true,
+            "description": "Carry-on bag count. Only 0 is currently supported. Accepted values: 0.",
+            "editor": "select"
+          },
+          "api_version": {
+            "title": "Api Version",
+            "type": "integer",
+            "enum": [
+              "2"
+            ],
+            "description": "Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2.",
+            "editor": "select"
+          },
+          "from_date": {
+            "title": "From Date",
+            "type": "string",
+            "format": "date",
+            "description": "Start of date range in Y-m-d format When omitted, the start date is set to 30 days from today.",
+            "editor": "textfield"
+          },
+          "to_date": {
+            "title": "To Date",
+            "type": "string",
+            "format": "date",
+            "description": "End of date range in Y-m-d format When omitted, the end date is set to seven days after the start date.",
+            "editor": "textfield"
+          },
+          "trip_duration": {
+            "title": "Trip Duration",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "nullable": true,
+            "description": "Duration of trip in days (1-30, default: 7)",
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "destination": {
+      "title": "Destination",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3,
+      "pattern": "^[a-zA-Z]{3}$",
+      "description": "KAYAK destination code for the vacation-package search.",
+      "editor": "textfield"
+    },
+    "adults": {
+      "title": "Adults",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9,
+      "nullable": true,
+      "description": "Number of adult travelers included in the search.",
+      "editor": "number"
+    },
+    "children": {
+      "title": "Children",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9,
+      "nullable": true,
+      "description": "Number of children traveling on the cruise search.",
+      "editor": "number"
+    },
+    "infants_in_seat": {
+      "title": "Infants In Seat",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9,
+      "nullable": true,
+      "description": "Number of infants in seat (0-9, default: 0)",
+      "editor": "number"
+    },
+    "infants_on_lap": {
+      "title": "Infants On Lap",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9,
+      "nullable": true,
+      "description": "Number of infants on lap (0-9, default: 0)",
+      "editor": "number"
+    },
+    "cabin_class": {
+      "title": "Cabin Class",
+      "type": "string",
+      "enum": [
+        "economy",
+        "premium_economy",
+        "business",
+        "first"
+      ],
+      "nullable": true,
+      "description": "Cabin class: economy, premium_economy, business, or first (default: economy) Accepted values: economy, premium_economy, business, first.",
+      "editor": "select"
+    },
+    "exclude_basic": {
+      "title": "Exclude Basic",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Exclude basic economy fares when searching in economy class (default: false)",
+      "editor": "checkbox"
+    },
+    "max_stops": {
+      "title": "Max Stops",
+      "type": "string",
+      "enum": [
+        "any",
+        "nonstop",
+        "one_or_fewer",
+        "two_or_fewer"
+      ],
+      "nullable": true,
+      "description": "Maximum stops: any, nonstop, one_or_fewer, or two_or_fewer (default: any) Accepted values: any, nonstop, one_or_fewer, two_or_fewer.",
+      "editor": "select"
+    },
+    "hl": {
+      "title": "Hl",
+      "type": "string",
+      "pattern": "^[a-zA-Z]{2}(-[a-zA-Z]{2})?$",
+      "nullable": true,
+      "description": "Language code (e.g., en, de, en-US)",
+      "editor": "textfield"
+    },
+    "gl": {
+      "title": "Gl",
+      "type": "string",
+      "pattern": "^[a-zA-Z]{2}$",
+      "nullable": true,
+      "description": "Country/region code (e.g., us, de, gb)",
+      "editor": "textfield"
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3,
+      "nullable": true,
+      "description": "Currency code for prices (e.g., USD, EUR, GBP)",
+      "editor": "textfield"
+    },
+    "outbound_times": {
+      "title": "Outbound Times",
+      "type": "string",
+      "pattern": "^\\s*(?:[01]?\\d|2[0-3])\\s*,\\s*(?:[01]?\\d|2[0-3])\\s*(?:,\\s*(?:[01]?\\d|2[0-3])\\s*,\\s*(?:[01]?\\d|2[0-3])\\s*)?$",
+      "nullable": true,
+      "description": "Outbound time window as comma-separated hours, e.g. \"6,18\" for departures between 06:00 and 18:00. Two further values narrow the arrival window.",
+      "editor": "textfield"
+    },
+    "bags": {
+      "title": "Bags",
+      "type": "integer",
+      "enum": [
+        "0"
+      ],
+      "nullable": true,
+      "description": "Carry-on bag count. Only 0 is currently supported. Accepted values: 0.",
+      "editor": "select"
+    },
+    "api_version": {
+      "title": "Api Version",
+      "type": "integer",
+      "enum": [
+        "2"
+      ],
+      "description": "Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2.",
+      "editor": "select"
+    },
+    "from_date": {
+      "title": "From Date",
+      "type": "string",
+      "format": "date",
+      "description": "Start of date range in Y-m-d format When omitted, the start date is set to 30 days from today.",
+      "editor": "textfield"
+    },
+    "to_date": {
+      "title": "To Date",
+      "type": "string",
+      "format": "date",
+      "description": "End of date range in Y-m-d format When omitted, the end date is set to seven days after the start date.",
+      "editor": "textfield"
+    },
+    "trip_duration": {
+      "title": "Trip Duration",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "nullable": true,
+      "description": "Duration of trip in days (1-30, default: 7)",
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "data": {
+    "title": "Adlon Kempinski Berlin",
+    "canonical_url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+    "aggregate_rating": {
+      "reviewCount": 286,
+      "bestRating": 10,
+      "@type": "AggregateRating",
+      "ratingValue": 9.2
+    },
+    "review_score": {
+      "rating_value": 9.2,
+      "best_rating": 10,
+      "review_count": 286
+    },
+    "parsed": true
+  },
+  "meta": {
+    "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+    "duration_ms": 495,
+    "scraped_at": "2026-09-28T14:22:00Z",
+    "cached": true,
+    "booking_pool_attempts": 1,
+    "booking_pool_stages": [
+      "review-summary"
+    ]
+  }
+}

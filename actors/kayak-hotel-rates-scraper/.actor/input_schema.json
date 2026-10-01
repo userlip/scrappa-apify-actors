@@ -1,0 +1,144 @@
+{
+  "title": "Kayak Hotel Rates Scraper",
+  "description": "Compare Kayak hotel rate groups with room descriptions, booking providers, total prices, and click-through links. Batch hotel IDs and choose future stay dates.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "hotels"
+  ],
+  "properties": {
+    "hotels": {
+      "title": "KAYAK hotel IDs",
+      "type": "array",
+      "description": "KAYAK hotel identifiers whose provider rates you want to compare.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "hotel_id": 15297
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "hotel_id"
+        ],
+        "properties": {
+          "hotel_id": {
+            "title": "Hotel Id",
+            "type": "integer",
+            "minimum": 1,
+            "description": "KAYAK hotel identifier used to retrieve property rates or reviews.",
+            "editor": "number"
+          },
+          "checkin": {
+            "title": "Checkin",
+            "type": "string",
+            "format": "date",
+            "description": "Hotel check-in date in YYYY-MM-DD format. When omitted, check-in is set to 30 days from today.",
+            "editor": "textfield"
+          },
+          "checkout": {
+            "title": "Checkout",
+            "type": "string",
+            "format": "date",
+            "description": "Hotel check-out date in YYYY-MM-DD format, after check-in. When omitted, check-out is set to two days after check-in.",
+            "editor": "textfield"
+          },
+          "adults": {
+            "title": "Adults",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9,
+            "description": "Number of adult travelers included in the search.",
+            "editor": "number"
+          },
+          "rooms": {
+            "title": "Rooms",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "description": "Number of hotel rooms requested.",
+            "editor": "number"
+          },
+          "child_age": {
+            "title": "Child age",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 17,
+            "description": "Age of one child in the hotel search, from 0 to 17.",
+            "editor": "number"
+          },
+          "price_mode": {
+            "title": "Price Mode",
+            "type": "string",
+            "enum": [
+              "total",
+              "nightly"
+            ],
+            "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: total, nightly.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "checkin": {
+      "title": "Checkin",
+      "type": "string",
+      "format": "date",
+      "description": "Hotel check-in date in YYYY-MM-DD format. When omitted, check-in is set to 30 days from today.",
+      "editor": "textfield"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "type": "string",
+      "format": "date",
+      "description": "Hotel check-out date in YYYY-MM-DD format, after check-in. When omitted, check-out is set to two days after check-in.",
+      "editor": "textfield"
+    },
+    "adults": {
+      "title": "Adults",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9,
+      "description": "Number of adult travelers included in the search.",
+      "editor": "number"
+    },
+    "rooms": {
+      "title": "Rooms",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8,
+      "description": "Number of hotel rooms requested.",
+      "editor": "number"
+    },
+    "child_age": {
+      "title": "Child age",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 17,
+      "description": "Age of one child in the hotel search, from 0 to 17.",
+      "editor": "number"
+    },
+    "price_mode": {
+      "title": "Price Mode",
+      "type": "string",
+      "enum": [
+        "total",
+        "nightly"
+      ],
+      "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: total, nightly.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "success": true,
+  "data": {
+    "id": "job-531902",
+    "url": "https://www.kununu.com/de/job/531902",
+    "title": "Senior Data Analyst",
+    "company": {
+      "name": "Northstar Analytics GmbH",
+      "uuid": "e2b0e11a-b612-4d09-b3ee-8c4e76535fc1",
+      "slug": "northstar-analytics",
+      "score": 4.4,
+      "isTopCompany": true,
+      "industryId": 12,
+      "website": "https://northstar-analytics.com",
+      "countryCode": "de"
+    },
+    "description_html": "<p>Build data products and reporting workflows with a collaborative analytics team.</p>",
+    "postedAt": "2026-09-15T08:00:00Z",
+    "activeUntil": "2026-11-15T23:59:00Z",
+    "city": "Berlin",
+    "addressRegion": "Berlin",
+    "employmentTypes": [
+      "Full time"
+    ],
+    "salary": {
+      "currency": "EUR",
+      "minimum": 65000,
+      "maximum": 82000
+    },
+    "industrySalary": {
+      "countryCode": "de",
+      "currency": "EUR",
+      "jobTitle": "Data Analyst",
+      "range": {
+        "average": 64200,
+        "lowerBound": 48000,
+        "upperBound": 91000,
+        "numberOfDataPoints": 1240
+      },
+      "aliases": [
+        "Data Analyst",
+        "Business Analyst"
+      ]
+    },
+    "kununuJobTitle": {
+      "id": 614,
+      "groupId": 77,
+      "title": "Data Analyst"
+    },
+    "application": {
+      "type": "external",
+      "url": "https://northstar-analytics.com/careers/data-analyst"
+    },
+    "satisfaction": {
+      "recommendationRate": {
+        "percentage": 88,
+        "totalReviews": 810,
+        "recommendedTotalReviews": 713,
+        "notRecommendedTotalReviews": 97
+      },
+      "roundedScore": 4,
+      "score": 4.4,
+      "totalReviews": 810
+    },
+    "source": "company-career-page",
+    "paidType": "organic",
+    "industryId": 12,
+    "status": "active",
+    "similarJobs": [
+      {
+        "id": "job-531901",
+        "title": "Analytics Engineer",
+        "url": "https://www.kununu.com/de/job/531901",
+        "postedAt": "2026-09-10T08:00:00Z",
+        "city": "Berlin",
+        "employmentTypes": [
+          "Full time"
+        ],
+        "source": "company-career-page",
+        "company": {
+          "uuid": "e2b0e11a-b612-4d09-b3ee-8c4e76535fc1",
+          "name": "Northstar Analytics GmbH",
+          "slug": "northstar-analytics",
+          "score": 4.4,
+          "isTopCompany": true,
+          "industryId": 12,
+          "countryCode": "de",
+          "website": "https://northstar-analytics.com"
+        },
+        "kununuJobTitle": {
+          "id": 615,
+          "title": "Analytics Engineer",
+          "salaryAverage": 72000,
+          "salaryLowerBound": 56000,
+          "salaryUpperBound": 93000,
+          "salaryDataPoints": 120
+        }
+      }
+    ],
+    "nextJobId": "job-531901"
+  },
+  "meta": {
+    "source": "kununu",
+    "duration_ms": 1320
+  }
+}

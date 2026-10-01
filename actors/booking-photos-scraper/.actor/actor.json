@@ -1,0 +1,44 @@
+{
+  "actorSpecification": 1,
+  "name": "booking-photos-scraper",
+  "title": "Booking.com Hotel Photos Scraper",
+  "description": "Extract public Booking.com hotel photo URLs with the property name and canonical page link. Batch hotel URLs to collect image sources for travel and lodging research.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "url": {
+                "label": "Photo URL",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

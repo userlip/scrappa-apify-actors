@@ -1,0 +1,348 @@
+{
+  "slug": "booking-prices-scraper",
+  "title": "Booking.com Hotel Prices Scraper",
+  "description": "Compare Booking.com hotel prices by destination and stay dates, with property names, quoted prices, review scores, locations, and links. Search several cities in one run.",
+  "endpoint": "/booking/prices",
+  "openapiPath": "/booking/prices",
+  "mode": "list",
+  "batch": {
+    "field": "destinations",
+    "valueField": "ss",
+    "apiParam": "ss",
+    "pathParam": null,
+    "title": "Destinations",
+    "description": "Cities, regions, or destination names to search for Booking.com hotel prices.",
+    "valueDescription": "Ss used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "ss",
+      "apiParam": "ss",
+      "location": "query",
+      "required": true,
+      "title": "Ss",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 200,
+        "description": "Destination, e.g. \"Paris\" or \"New York\"."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "checkin",
+      "apiParam": "checkin",
+      "location": "query",
+      "required": false,
+      "title": "Checkin",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Hotel check-in date in YYYY-MM-DD format."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "checkout",
+      "apiParam": "checkout",
+      "location": "query",
+      "required": false,
+      "title": "Checkout",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Hotel check-out date in YYYY-MM-DD format, after check-in."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "group_adults",
+      "apiParam": "group_adults",
+      "location": "query",
+      "required": false,
+      "title": "Group Adults",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30,
+        "nullable": true,
+        "description": "Number of adults (1-30). Defaults to Booking.com default."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "group_children",
+      "apiParam": "group_children",
+      "location": "query",
+      "required": false,
+      "title": "Group Children",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 20,
+        "nullable": true,
+        "description": "Number of children (0-20)."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "no_rooms",
+      "apiParam": "no_rooms",
+      "location": "query",
+      "required": false,
+      "title": "No Rooms",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30,
+        "nullable": true,
+        "description": "Number of rooms (1-30)."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "dest_id",
+      "apiParam": "dest_id",
+      "location": "query",
+      "required": false,
+      "title": "Dest Id",
+      "schema": {
+        "type": "integer",
+        "nullable": true,
+        "description": "Booking.com destination id when known (e.g. -1456928 for Paris). Helps Booking render resolved city result pages."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "dest_type",
+      "apiParam": "dest_type",
+      "location": "query",
+      "required": false,
+      "title": "Dest Type",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "city",
+          "region",
+          "district",
+          "hotel",
+          "landmark",
+          "airport"
+        ],
+        "nullable": true,
+        "description": "Booking.com destination type when known: city, region, district, hotel, landmark, or airport. Accepted values: city, region, district, hotel, landmark, airport."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "lang",
+      "apiParam": "lang",
+      "location": "query",
+      "required": false,
+      "title": "Lang",
+      "schema": {
+        "type": "string",
+        "maxLength": 10,
+        "nullable": true,
+        "description": "UI language hint (e.g. en-us, de)."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "currency",
+      "apiParam": "currency",
+      "location": "query",
+      "required": false,
+      "title": "Currency",
+      "schema": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "nullable": true,
+        "description": "3-letter currency code (e.g. EUR, USD)."
+      },
+      "editor": "textfield"
+    }
+  ],
+  "resultPointer": "/data/prices",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_ss"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "relativeDateDefaults": [
+    {
+      "input": "checkin",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, check-in is set to 30 days from today."
+    },
+    {
+      "input": "checkout",
+      "base": "checkin",
+      "offsetDays": 2,
+      "description": "When omitted, check-out is set to two days after check-in."
+    }
+  ],
+  "prefill": {
+    "destinations": [
+      {
+        "ss": "Berlin"
+      }
+    ],
+    "group_adults": 2,
+    "no_rooms": 1,
+    "dest_type": "city",
+    "lang": "en-us",
+    "currency": "EUR",
+    "maxResults": 10
+  },
+  "testParams": {
+    "ss": "Berlin",
+    "checkin": "2026-11-14",
+    "checkout": "2026-11-16"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "title": "Hotels in Berlin",
+      "canonical_url": "https://www.booking.com/searchresults.html?ss=Berlin",
+      "prices": [
+        {
+          "name": "The Linden Berlin",
+          "url": "https://www.booking.com/hotel/de/the-linden-berlin.html",
+          "price": "€246",
+          "review_score": "9.1",
+          "location": "Mitte, Berlin",
+          "image": "https://cf.bstatic.com/xdata/images/hotel/square60/berlin-linden.jpg"
+        }
+      ],
+      "total_prices": 25,
+      "parsed": true
+    },
+    "meta": {
+      "url": "https://www.booking.com/searchresults.html?ss=Berlin",
+      "duration_ms": 880,
+      "scraped_at": "2026-09-28T14:22:00Z",
+      "cached": true,
+      "booking_source": "search-results",
+      "booking_pool_stages": [
+        "destination-search",
+        "price-cards"
+      ]
+    }
+  },
+  "tableFields": [
+    {
+      "name": "name",
+      "label": "Hotel",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "text"
+    },
+    {
+      "name": "review_score",
+      "label": "Review score",
+      "format": "text"
+    },
+    {
+      "name": "location",
+      "label": "Location",
+      "format": "text"
+    },
+    {
+      "name": "url",
+      "label": "Booking.com URL",
+      "format": "link"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Booking.com Prices | Hotel Deals",
+    "seoDescription": "Search Booking.com hotel prices by destination and travel dates. Export property names, rates, review scores, locations, and links for future stays.",
+    "intro": "Search Booking.com hotel price cards by destination and future stay dates. Collect property names, quoted prices, review scores, locations, and listing links for comparison.",
+    "useCases": [
+      "Travel planners can compare hotel price cards across destination cities.",
+      "Market analysts can track quoted lodging rates for future stays.",
+      "Travel agencies can create shortlists from public property prices and review scores."
+    ],
+    "howToUse": [
+      "Add a city or destination to each entry in `destinations`.",
+      "Set stay dates, guest counts, and currency, or rely on the relative date defaults.",
+      "Use `maxResults` to limit saved hotel price cards."
+    ],
+    "faqs": [
+      {
+        "question": "Can I search a Booking.com destination ID?",
+        "answer": "Yes. Add `dest_id` and the matching `dest_type` to help resolve a destination when you have its Booking.com ID."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "booking-search-scraper",
+        "title": "Booking.com Search Scraper"
+      },
+      {
+        "slug": "booking-rooms-scraper",
+        "title": "Booking.com Rooms & Rates Scraper"
+      },
+      {
+        "slug": "booking-hotel-details-scraper",
+        "title": "Booking.com Hotel Details Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "name",
+        "type": "String",
+        "description": "Name displayed by the source for this record."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public source or listing URL associated with this record."
+      },
+      {
+        "name": "price",
+        "type": "String",
+        "description": "Quoted price in the currency shown by the source."
+      },
+      {
+        "name": "review_score",
+        "type": "String",
+        "description": "Review Score value associated with this booking.com hotel prices record."
+      },
+      {
+        "name": "location",
+        "type": "String",
+        "description": "Location information reported for this source record."
+      },
+      {
+        "name": "image",
+        "type": "String",
+        "description": "Public image URL supplied by the source."
+      },
+      {
+        "name": "input_ss",
+        "type": "String",
+        "description": "Destination name submitted for the Booking.com price search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "company-2108",
+      "uuid": "0b4f44e3-65a8-4f3a-b435-7c66e5d555c4",
+      "name": "SAP SE",
+      "slug": "sap-se",
+      "url": "https://www.kununu.com/de/sap-se",
+      "industry": 12,
+      "location": {
+        "city": "Walldorf",
+        "countryCode": "de"
+      },
+      "ratings": {
+        "overall": 4.1,
+        "rounded": 4
+      },
+      "reviewCount": 23840,
+      "totalJobs": 126,
+      "isTopCompany": true,
+      "benefits": [
+        "Flexible working hours"
+      ]
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 12,
+      "resultsStart": 1,
+      "resultsEnd": 10,
+      "totalResults": 114,
+      "limit": 10,
+      "offset": 0
+    },
+    "duration_ms": 690,
+    "cached": true,
+    "cached_at": "2026-09-28T14:20:00Z"
+  }
+}

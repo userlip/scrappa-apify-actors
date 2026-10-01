@@ -1,0 +1,11 @@
+{
+  "routes": [
+    {
+      "origin": "JFK",
+      "destination": "LAX"
+    }
+  ],
+  "adults": 1,
+  "cabin_class": "economy",
+  "maxResults": 10
+}

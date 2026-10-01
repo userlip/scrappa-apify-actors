@@ -1,0 +1,293 @@
+{
+  "slug": "apple-app-store-developer-scraper",
+  "title": "Apple App Store Developer Apps Scraper",
+  "description": "List public Apple App Store apps by developer ID with names, genres, prices, ratings, versions, and listing links. Batch developer accounts to map publisher catalogs.",
+  "endpoint": "/apple/app-store/developer",
+  "openapiPath": "/apple/app-store/developer",
+  "mode": "list",
+  "batch": {
+    "field": "developers",
+    "valueField": "artist_id",
+    "apiParam": "artist_id",
+    "pathParam": null,
+    "title": "Developer IDs",
+    "description": "Apple developer or artist IDs whose App Store apps you want to list.",
+    "valueDescription": "Artist Id used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "artist_id",
+      "apiParam": "artist_id",
+      "location": "query",
+      "required": false,
+      "title": "Artist Id",
+      "schema": {
+        "type": "string",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$",
+        "nullable": true,
+        "description": "Apple artist/developer id"
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "id",
+      "apiParam": "id",
+      "location": "query",
+      "required": false,
+      "title": "Id",
+      "schema": {
+        "type": "string",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$",
+        "nullable": true,
+        "description": "Value accepted by the Apple App Store Developer Apps Scraper search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 2,
+        "nullable": true,
+        "description": "Kununu country market code, such as de, at, or ch."
+      },
+      "editor": "textfield"
+    }
+  ],
+  "resultPointer": "/apps",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/id",
+  "enrichment": {
+    "field": "input_artist_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "developers": [
+      {
+        "artist_id": "284882218"
+      }
+    ],
+    "country": "us",
+    "maxResults": 10
+  },
+  "testParams": {
+    "artist_id": "284882218",
+    "country": "us"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "app_store",
+      "artist_id": "284882218",
+      "country": "us"
+    },
+    "developer": {
+      "id": "284882218",
+      "name": "Northstar Mobile, Inc.",
+      "url": "https://apps.apple.com/developer/northstar-mobile/id284882218"
+    },
+    "apps": [
+      {
+        "id": "1234567890",
+        "type": "apps",
+        "title": "Trail Notes: Hiking Planner",
+        "artist": "Northstar Mobile, Inc.",
+        "artist_id": "284882218",
+        "url": "https://apps.apple.com/us/app/trail-notes-hiking-planner/id1234567890",
+        "artwork": "https://is1-ssl.mzstatic.com/image/thumb/app-icon/512x512bb.jpg",
+        "genres": [
+          "Navigation"
+        ],
+        "price": 0,
+        "formatted_price": "Free",
+        "currency": "USD",
+        "rating": 4.7,
+        "rating_count": 18420,
+        "release_date": "2023-05-18",
+        "version": "4.8.1",
+        "content_rating": "4+",
+        "seller": "Northstar Mobile, Inc."
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "id",
+      "label": "Product ID",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "App",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "number"
+    },
+    {
+      "name": "rating_count",
+      "label": "Rating count",
+      "format": "number"
+    },
+    {
+      "name": "url",
+      "label": "App Store URL",
+      "format": "link"
+    }
+  ],
+  "categories": [
+    "ECOMMERCE",
+    "MARKETING"
+  ],
+  "storeCopy": {
+    "seoTitle": "Apple Developer Apps | App Store Listings",
+    "seoDescription": "Find Apple App Store apps by developer ID. Export titles, genres, prices, ratings, versions, and links to map publisher catalogs across developer accounts.",
+    "intro": "List public apps associated with Apple developer accounts and collect product IDs, names, genres, prices, ratings, versions, and links. Batch developer IDs to review publisher catalogs.",
+    "useCases": [
+      "App publishers can audit public apps attached to developer accounts.",
+      "Market analysts can compare product portfolios, prices, and ratings by publisher.",
+      "Mobile researchers can discover related apps from a developer catalog."
+    ],
+    "howToUse": [
+      "Add an Apple artist or developer ID to each entry in `developers`.",
+      "Set a storefront country for the app metadata lookup.",
+      "Export app rows or connect the dataset to a catalog workflow."
+    ],
+    "faqs": [
+      {
+        "question": "Is artist_id the same as an app product ID?",
+        "answer": "No. The artist ID identifies a developer account; each returned app has its own product ID."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "apple-app-store-app-details-scraper",
+        "title": "Apple App Store App Details Scraper"
+      },
+      {
+        "slug": "apple-app-store-search-scraper",
+        "title": "Apple App Store Search Scraper"
+      },
+      {
+        "slug": "apple-app-store-reviews-scraper",
+        "title": "Apple App Store Reviews Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Stable source identifier for this record."
+      },
+      {
+        "name": "type",
+        "type": "String",
+        "description": "Type value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Title displayed by the source for this record."
+      },
+      {
+        "name": "artist",
+        "type": "String",
+        "description": "Artist value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "artist_id",
+        "type": "String",
+        "description": "Artist Id value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public source or listing URL associated with this record."
+      },
+      {
+        "name": "artwork",
+        "type": "String",
+        "description": "Artwork value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "genres",
+        "type": "Array<String>",
+        "description": "Apple category labels assigned to the app."
+      },
+      {
+        "name": "price",
+        "type": "Integer",
+        "description": "Quoted price in the currency shown by the source."
+      },
+      {
+        "name": "formatted_price",
+        "type": "String",
+        "description": "Formatted Price value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "currency",
+        "type": "String",
+        "description": "Three-letter currency code for the quoted amount."
+      },
+      {
+        "name": "rating",
+        "type": "Number",
+        "description": "Rating value reported by the source."
+      },
+      {
+        "name": "rating_count",
+        "type": "Integer",
+        "description": "Rating Count value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "release_date",
+        "type": "String",
+        "description": "Release Date value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "version",
+        "type": "String",
+        "description": "Version value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "content_rating",
+        "type": "String",
+        "description": "Content Rating value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "seller",
+        "type": "String",
+        "description": "Seller value associated with this apple app store developer apps record."
+      },
+      {
+        "name": "input_artist_id",
+        "type": "String",
+        "description": "Apple developer account identifier supplied for this app catalog request."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

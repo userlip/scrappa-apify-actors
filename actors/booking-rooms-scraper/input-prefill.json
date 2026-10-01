@@ -1,0 +1,12 @@
+{
+  "hotels": [
+    {
+      "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+    }
+  ],
+  "group_adults": 2,
+  "no_rooms": 1,
+  "lang": "en-us",
+  "currency": "EUR",
+  "maxResults": 10
+}

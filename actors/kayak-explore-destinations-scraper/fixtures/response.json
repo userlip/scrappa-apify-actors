@@ -1,0 +1,32 @@
+{
+  "success": true,
+  "operation": "explore-destinations",
+  "data": {
+    "results": [
+      {
+        "days": 7,
+        "originAirportCode": "ICT",
+        "dateDepart": "2026-10-31",
+        "dateReturn": "2026-11-07",
+        "airline": "United Airlines",
+        "airlineCode": "UA",
+        "clickoutUrl": "https://www.kayak.com/flights/ICT-LAS/2026-10-31/2026-11-07",
+        "flightMaxStops": 1,
+        "flightMaxDuration": 295,
+        "city": "Las Vegas",
+        "country": "United States",
+        "airport": "Harry Reid International Airport",
+        "imageUrl": "https://images.kayak.com/las-vegas-strip.jpg"
+      }
+    ],
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "duration_ms": 1020,
+    "attempts": 1
+  }
+}

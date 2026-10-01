@@ -1,0 +1,50 @@
+{
+  "success": true,
+  "operation": "hotel-rates",
+  "data": {
+    "results": [
+      {
+        "localizedTitle": "Standard room offers",
+        "numToDisplay": 1,
+        "rows": [
+          {
+            "localizedDescription": "Queen room, 2 guests",
+            "bookingOptions": [
+              {
+                "price": {
+                  "price": 318,
+                  "currency": "USD",
+                  "localizedPrice": "$318"
+                },
+                "totalPrice": {
+                  "price": 318,
+                  "currency": "USD",
+                  "localizedPrice": "$318"
+                },
+                "rateType": "standard",
+                "localizedProviderName": "Booking.com",
+                "providerCode": "booking",
+                "afterclickUrl": {
+                  "url": "https://www.booking.com/hotel/us/park-mgm.html",
+                  "urlType": "booking"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "search_state": {
+      "search_id": "stay-rates-15820"
+    },
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "duration_ms": 920,
+    "attempts": 1
+  }
+}

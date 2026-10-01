@@ -1,0 +1,209 @@
+{
+  "title": "Booking.com Hotel Prices Scraper",
+  "description": "Compare Booking.com hotel prices by destination and stay dates, with property names, quoted prices, review scores, locations, and links. Search several cities in one run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "destinations"
+  ],
+  "properties": {
+    "destinations": {
+      "title": "Destinations",
+      "type": "array",
+      "description": "Cities, regions, or destination names to search for Booking.com hotel prices.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "ss": "Berlin"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "ss"
+        ],
+        "properties": {
+          "ss": {
+            "title": "Ss",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200,
+            "description": "Destination, e.g. \"Paris\" or \"New York\".",
+            "editor": "textfield"
+          },
+          "checkin": {
+            "title": "Checkin",
+            "type": "string",
+            "format": "date",
+            "description": "Hotel check-in date in YYYY-MM-DD format. When omitted, check-in is set to 30 days from today.",
+            "editor": "textfield"
+          },
+          "checkout": {
+            "title": "Checkout",
+            "type": "string",
+            "format": "date",
+            "description": "Hotel check-out date in YYYY-MM-DD format, after check-in. When omitted, check-out is set to two days after check-in.",
+            "editor": "textfield"
+          },
+          "group_adults": {
+            "title": "Group Adults",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "nullable": true,
+            "description": "Number of adults (1-30). Defaults to Booking.com default.",
+            "editor": "number"
+          },
+          "group_children": {
+            "title": "Group Children",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20,
+            "nullable": true,
+            "description": "Number of children (0-20).",
+            "editor": "number"
+          },
+          "no_rooms": {
+            "title": "No Rooms",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "nullable": true,
+            "description": "Number of rooms (1-30).",
+            "editor": "number"
+          },
+          "dest_id": {
+            "title": "Dest Id",
+            "type": "integer",
+            "nullable": true,
+            "description": "Booking.com destination id when known (e.g. -1456928 for Paris). Helps Booking render resolved city result pages.",
+            "editor": "number"
+          },
+          "dest_type": {
+            "title": "Dest Type",
+            "type": "string",
+            "enum": [
+              "city",
+              "region",
+              "district",
+              "hotel",
+              "landmark",
+              "airport"
+            ],
+            "nullable": true,
+            "description": "Booking.com destination type when known: city, region, district, hotel, landmark, or airport. Accepted values: city, region, district, hotel, landmark, airport.",
+            "editor": "select"
+          },
+          "lang": {
+            "title": "Lang",
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true,
+            "description": "UI language hint (e.g. en-us, de).",
+            "editor": "textfield"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "nullable": true,
+            "description": "3-letter currency code (e.g. EUR, USD).",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "checkin": {
+      "title": "Checkin",
+      "type": "string",
+      "format": "date",
+      "description": "Hotel check-in date in YYYY-MM-DD format. When omitted, check-in is set to 30 days from today.",
+      "editor": "textfield"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "type": "string",
+      "format": "date",
+      "description": "Hotel check-out date in YYYY-MM-DD format, after check-in. When omitted, check-out is set to two days after check-in.",
+      "editor": "textfield"
+    },
+    "group_adults": {
+      "title": "Group Adults",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "nullable": true,
+      "description": "Number of adults (1-30). Defaults to Booking.com default.",
+      "editor": "number"
+    },
+    "group_children": {
+      "title": "Group Children",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20,
+      "nullable": true,
+      "description": "Number of children (0-20).",
+      "editor": "number"
+    },
+    "no_rooms": {
+      "title": "No Rooms",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "nullable": true,
+      "description": "Number of rooms (1-30).",
+      "editor": "number"
+    },
+    "dest_id": {
+      "title": "Dest Id",
+      "type": "integer",
+      "nullable": true,
+      "description": "Booking.com destination id when known (e.g. -1456928 for Paris). Helps Booking render resolved city result pages.",
+      "editor": "number"
+    },
+    "dest_type": {
+      "title": "Dest Type",
+      "type": "string",
+      "enum": [
+        "city",
+        "region",
+        "district",
+        "hotel",
+        "landmark",
+        "airport"
+      ],
+      "nullable": true,
+      "description": "Booking.com destination type when known: city, region, district, hotel, landmark, or airport. Accepted values: city, region, district, hotel, landmark, airport.",
+      "editor": "select"
+    },
+    "lang": {
+      "title": "Lang",
+      "type": "string",
+      "maxLength": 10,
+      "nullable": true,
+      "description": "UI language hint (e.g. en-us, de).",
+      "editor": "textfield"
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3,
+      "nullable": true,
+      "description": "3-letter currency code (e.g. EUR, USD).",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

@@ -1,0 +1,259 @@
+{
+  "slug": "kayak-hotel-reviews-scraper",
+  "title": "Kayak Hotel Reviews Scraper",
+  "description": "Collect Kayak hotel review summaries with scores, positive and negative comments, review source, author, and date label. Batch hotel IDs and sort guest feedback.",
+  "endpoint": "/kayak/stays/reviews",
+  "openapiPath": "/kayak/stays/reviews",
+  "mode": "list",
+  "batch": {
+    "field": "hotels",
+    "valueField": "hotel_id",
+    "apiParam": "hotel_id",
+    "pathParam": null,
+    "title": "KAYAK hotel IDs",
+    "description": "KAYAK hotel identifiers whose public guest reviews you want to collect.",
+    "valueDescription": "Hotel Id used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "hotel_id",
+      "apiParam": "hotel_id",
+      "location": "query",
+      "required": true,
+      "title": "Hotel Id",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "KAYAK hotel identifier used to retrieve property rates or reviews."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "recent",
+          "highest",
+          "lowest"
+        ],
+        "description": "Sort order for returned search results. Accepted values: recent, highest, lowest."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "amount",
+      "apiParam": "amount",
+      "location": "query",
+      "required": false,
+      "title": "Amount",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "description": "Qualified KAYAK request parameter."
+      },
+      "editor": "number"
+    }
+  ],
+  "resultPointer": "/data/results",
+  "fallbackResultPointers": [
+    "/data/source_data/kayak/reviews"
+  ],
+  "dedupePointer": "/id",
+  "enrichment": {
+    "field": "input_hotel_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "hotels": [
+      {
+        "hotel_id": 15297
+      }
+    ],
+    "sort": "recent",
+    "amount": 10,
+    "maxResults": 10
+  },
+  "testParams": {
+    "hotel_id": "15297"
+  },
+  "fixture": {
+    "success": true,
+    "operation": "hotel-reviews",
+    "data": {
+      "results": [
+        {
+          "id": "kayak-review-22091",
+          "localizedMonthYear": "September 2026",
+          "score": 4.5,
+          "localizedRatingCategory": "Excellent",
+          "positiveComment": "Comfortable room and convenient access to the city.",
+          "negativeComment": "The lobby was crowded in the afternoon.",
+          "author": "Casey Morgan",
+          "siteLink": "https://www.tripadvisor.com/Hotel_Review-Riverview_Seattle",
+          "siteName": "Tripadvisor",
+          "siteLogo": "https://kayak.com/images/tripadvisor.svg",
+          "internal": false,
+          "localizedScore": "4.5/5"
+        }
+      ],
+      "provenance": {
+        "provider": "kayak",
+        "freshness": "live"
+      }
+    },
+    "meta": {
+      "freshness": "live",
+      "duration_ms": 760,
+      "attempts": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "id",
+      "label": "Review ID",
+      "format": "text"
+    },
+    {
+      "name": "score",
+      "label": "Score",
+      "format": "number"
+    },
+    {
+      "name": "localizedRatingCategory",
+      "label": "Rating category",
+      "format": "text"
+    },
+    {
+      "name": "localizedMonthYear",
+      "label": "Review date",
+      "format": "text"
+    },
+    {
+      "name": "siteName",
+      "label": "Review source",
+      "format": "text"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Hotel Reviews | Guest Ratings",
+    "seoDescription": "Scrape Kayak hotel reviews by hotel ID. Export guest scores, rating labels, comments, source sites, and dates to compare feedback across properties.",
+    "intro": "Collect Kayak hotel review summaries with scores, rating labels, positive and negative comments, source sites, and date labels. Batch hotel IDs to compare guest feedback.",
+    "useCases": [
+      "Hotel analysts can compare public review scores across competing properties.",
+      "Travel researchers can track review themes and source coverage by hotel.",
+      "Hospitality teams can monitor feedback patterns for selected destinations."
+    ],
+    "howToUse": [
+      "Add a KAYAK hotel ID to each entry in `hotels`.",
+      "Choose a review sort order and requested amount.",
+      "Set `maxResults` to cap the saved review rows."
+    ],
+    "faqs": [
+      {
+        "question": "Does this return full reviews from every source?",
+        "answer": "KAYAK may provide review excerpts and source links. Available text and fields depend on each source response."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kayak-hotels-search-scraper",
+        "title": "Kayak Hotels Search Scraper"
+      },
+      {
+        "slug": "kayak-hotel-details-scraper",
+        "title": "Kayak Hotel Details Scraper"
+      },
+      {
+        "slug": "booking-reviews-scraper",
+        "title": "Booking.com Reviews Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Stable source identifier for this record."
+      },
+      {
+        "name": "localizedMonthYear",
+        "type": "String",
+        "description": "Month and year label shown for the review."
+      },
+      {
+        "name": "score",
+        "type": "Number",
+        "description": "Numeric guest score reported by the linked review source."
+      },
+      {
+        "name": "localizedRatingCategory",
+        "type": "String",
+        "description": "Localized rating category associated with the score."
+      },
+      {
+        "name": "positiveComment",
+        "type": "String",
+        "description": "Positive review excerpt returned for the property."
+      },
+      {
+        "name": "negativeComment",
+        "type": "String",
+        "description": "Critical review excerpt returned for the property."
+      },
+      {
+        "name": "author",
+        "type": "String",
+        "description": "Reviewer display name supplied by the source site."
+      },
+      {
+        "name": "siteLink",
+        "type": "String",
+        "description": "Link to the review source page."
+      },
+      {
+        "name": "siteName",
+        "type": "String",
+        "description": "Name of the site that supplied the review."
+      },
+      {
+        "name": "siteLogo",
+        "type": "String",
+        "description": "SiteLogo value associated with this kayak hotel reviews record."
+      },
+      {
+        "name": "internal",
+        "type": "Boolean",
+        "description": "Internal value associated with this kayak hotel reviews record."
+      },
+      {
+        "name": "localizedScore",
+        "type": "String",
+        "description": "LocalizedScore value associated with this kayak hotel reviews record."
+      },
+      {
+        "name": "input_hotel_id",
+        "type": "Integer",
+        "description": "KAYAK hotel identifier submitted for this lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

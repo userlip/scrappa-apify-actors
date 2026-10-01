@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "data": {
+    "title": "Adlon Kempinski Berlin",
+    "canonical_url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+    "rooms": [
+      {
+        "name": "Deluxe King Room",
+        "price": "€279",
+        "occupancy": "2 guests",
+        "beds": "1 king bed",
+        "available": true
+      }
+    ],
+    "total_rooms": 14,
+    "parsed": true
+  },
+  "meta": {
+    "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+    "duration_ms": 680,
+    "scraped_at": "2026-09-28T14:22:00Z",
+    "cached": true,
+    "booking_pool_attempts": 1,
+    "booking_pool_stages": [
+      "room-list"
+    ]
+  }
+}

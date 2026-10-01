@@ -1,0 +1,194 @@
+{
+  "title": "Booking.com Reviews Scraper",
+  "description": "Collect Booking.com guest reviews with scores, titles, comments, reviewer names, stay dates, and languages. Batch hotel URLs and page through public feedback.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "hotels"
+  ],
+  "properties": {
+    "hotels": {
+      "title": "Booking.com hotel URLs",
+      "type": "array",
+      "description": "Hotel listing URLs whose public guest reviews you want to collect.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string",
+            "format": "uri",
+            "maxLength": 4096,
+            "pattern": "#^https?://(?:[a-z0-9-]+\\.)*booking\\.com/hotel/#i",
+            "nullable": true,
+            "description": "Public source page URL used to retrieve this record.",
+            "editor": "textfield"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "nullable": true,
+            "description": "Kununu country market code, such as de, at, or ch.",
+            "editor": "textfield"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 255,
+            "pattern": "^[a-z0-9._-]+(?:\\.html)?$",
+            "nullable": true,
+            "description": "Hotel slug from the Booking.com URL (e.g. ritz-paris). The trailing .html is optional.",
+            "editor": "textfield"
+          },
+          "lang": {
+            "title": "Lang",
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true,
+            "description": "Review language hint (e.g. en-us, de).",
+            "editor": "textfield"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "nullable": true,
+            "description": "3-letter currency code (e.g. EUR, USD).",
+            "editor": "textfield"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "nullable": true,
+            "description": "One-based result page to request.",
+            "editor": "number"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 25,
+            "nullable": true,
+            "description": "Maximum number of company matches requested for this search page.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort",
+            "type": "string",
+            "enum": [
+              "recent_desc",
+              "recent_asc",
+              "score_desc",
+              "score_asc"
+            ],
+            "nullable": true,
+            "description": "Sort order for returned search results. Accepted values: recent_desc, recent_asc, score_desc, score_asc.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "nullable": true,
+      "description": "Kununu country market code, such as de, at, or ch.",
+      "editor": "textfield"
+    },
+    "slug": {
+      "title": "Slug",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 255,
+      "pattern": "^[a-z0-9._-]+(?:\\.html)?$",
+      "nullable": true,
+      "description": "Hotel slug from the Booking.com URL (e.g. ritz-paris). The trailing .html is optional.",
+      "editor": "textfield"
+    },
+    "lang": {
+      "title": "Lang",
+      "type": "string",
+      "maxLength": 10,
+      "nullable": true,
+      "description": "Review language hint (e.g. en-us, de).",
+      "editor": "textfield"
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3,
+      "nullable": true,
+      "description": "3-letter currency code (e.g. EUR, USD).",
+      "editor": "textfield"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "nullable": true,
+      "description": "One-based result page to request.",
+      "editor": "number"
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 25,
+      "nullable": true,
+      "description": "Maximum number of company matches requested for this search page.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "enum": [
+        "recent_desc",
+        "recent_asc",
+        "score_desc",
+        "score_asc"
+      ],
+      "nullable": true,
+      "description": "Sort order for returned search results. Accepted values: recent_desc, recent_asc, score_desc, score_asc.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    }
+  }
+}

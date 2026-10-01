@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "data": {
+    "title": "Adlon Kempinski Berlin",
+    "canonical_url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+    "photos": [
+      {
+        "url": "https://cf.bstatic.com/xdata/images/hotel/max1024x768/berlin-lobby.jpg"
+      }
+    ],
+    "parsed": true
+  },
+  "meta": {
+    "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+    "duration_ms": 520,
+    "scraped_at": "2026-09-28T14:22:00Z",
+    "cached": true,
+    "booking_pool_attempts": 1,
+    "booking_pool_stages": [
+      "property-gallery"
+    ]
+  }
+}

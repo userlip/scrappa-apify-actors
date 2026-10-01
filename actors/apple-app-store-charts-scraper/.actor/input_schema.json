@@ -1,0 +1,142 @@
+{
+  "title": "Apple App Store Top Charts Scraper",
+  "description": "Get Apple App Store chart rankings with position, app title, developer, product ID, genre, and listing URL. Batch chart types or storefronts to compare app visibility.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "charts"
+  ],
+  "properties": {
+    "charts": {
+      "title": "Chart types",
+      "type": "array",
+      "description": "Apple chart types to retrieve for the selected storefront and store.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "chart": "top-free"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "chart"
+        ],
+        "properties": {
+          "chart": {
+            "title": "Chart",
+            "type": "string",
+            "enum": [
+              "top-free",
+              "top-paid",
+              "top-grossing",
+              "most-played",
+              "top-subscriber",
+              "top-episodes"
+            ],
+            "nullable": true,
+            "description": "Chart type: top-free, top-paid, top-grossing, most-played, top-subscriber, or top-episodes. Music serves most-played albums, podcasts serve top shows; the response echoes requested and served chart types Accepted values: top-free, top-paid, top-grossing, most-played, top-subscriber, top-episodes.",
+            "editor": "select"
+          },
+          "store": {
+            "title": "Store",
+            "type": "string",
+            "enum": [
+              "apps",
+              "mac",
+              "books",
+              "audiobooks",
+              "movies",
+              "tv",
+              "music",
+              "podcasts"
+            ],
+            "nullable": true,
+            "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts Accepted values: apps, mac, books, audiobooks, movies, tv, music, podcasts.",
+            "editor": "select"
+          },
+          "genre": {
+            "title": "Genre",
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true,
+            "description": "Apple genre id, passed through to the charts feeds as-is",
+            "editor": "textfield"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "nullable": true,
+            "description": "Kununu country market code, such as de, at, or ch.",
+            "editor": "textfield"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "nullable": true,
+            "description": "Maximum number of company matches requested for this search page.",
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "store": {
+      "title": "Store",
+      "type": "string",
+      "enum": [
+        "apps",
+        "mac",
+        "books",
+        "audiobooks",
+        "movies",
+        "tv",
+        "music",
+        "podcasts"
+      ],
+      "nullable": true,
+      "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts Accepted values: apps, mac, books, audiobooks, movies, tv, music, podcasts.",
+      "editor": "select"
+    },
+    "genre": {
+      "title": "Genre",
+      "type": "string",
+      "maxLength": 100,
+      "nullable": true,
+      "description": "Apple genre id, passed through to the charts feeds as-is",
+      "editor": "textfield"
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "nullable": true,
+      "description": "Kununu country market code, such as de, at, or ch.",
+      "editor": "textfield"
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "nullable": true,
+      "description": "Maximum number of company matches requested for this search page.",
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

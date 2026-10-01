@@ -1,0 +1,64 @@
+{
+  "title": "Kayak Flight Price Predictions Scraper",
+  "description": "Get Kayak flight price predictions by route with date ranges, origin, destination, and minimum fare. Batch airport pairs to compare expected price trends.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "routes"
+  ],
+  "properties": {
+    "routes": {
+      "title": "Flight routes",
+      "type": "array",
+      "description": "Origin and destination airport codes whose price ranges you want to compare.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "origin": "ICT",
+          "destination": "LAS"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "origin",
+          "destination"
+        ],
+        "properties": {
+          "origin": {
+            "title": "Origin",
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "Origin airport code for the route or destination search.",
+            "editor": "textfield"
+          },
+          "destination": {
+            "title": "Destination",
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "KAYAK destination code for the vacation-package search.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "destination": {
+      "title": "Destination",
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "KAYAK destination code for the vacation-package search.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

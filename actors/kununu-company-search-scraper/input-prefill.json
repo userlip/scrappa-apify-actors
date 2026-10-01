@@ -1,0 +1,11 @@
+{
+  "queries": [
+    {
+      "query": "sap"
+    }
+  ],
+  "limit": 10,
+  "maxResults": 10,
+  "maxPages": 1,
+  "country_filter": "de"
+}

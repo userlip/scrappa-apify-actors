@@ -1,0 +1,73 @@
+{
+  "title": "Kununu Company Salaries Scraper",
+  "description": "Collect Kununu salary ranges by employer and country, with job titles, minimums, maximums, medians, averages, and report counts. Batch company slugs for pay comparisons.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "companies",
+    "country"
+  ],
+  "properties": {
+    "companies": {
+      "title": "Company slugs",
+      "type": "array",
+      "description": "Kununu company slugs whose reported salary ranges you want to collect.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "company_slug": "sap"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "company_slug"
+        ],
+        "properties": {
+          "company_slug": {
+            "title": "Company Slug",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Company slug from the public Kununu employer profile URL.",
+            "editor": "textfield"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "enum": [
+              "de",
+              "at",
+              "ch"
+            ],
+            "description": "Kununu country market code, such as de, at, or ch. Accepted values: de, at, ch.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "enum": [
+        "de",
+        "at",
+        "ch"
+      ],
+      "description": "Kununu country market code, such as de, at, or ch. Accepted values: de, at, ch.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

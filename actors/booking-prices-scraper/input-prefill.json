@@ -1,0 +1,13 @@
+{
+  "destinations": [
+    {
+      "ss": "Berlin"
+    }
+  ],
+  "group_adults": 2,
+  "no_rooms": 1,
+  "dest_type": "city",
+  "lang": "en-us",
+  "currency": "EUR",
+  "maxResults": 10
+}

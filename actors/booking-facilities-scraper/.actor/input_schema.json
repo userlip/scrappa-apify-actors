@@ -1,0 +1,209 @@
+{
+  "title": "Booking.com Hotel Facilities Scraper",
+  "description": "Collect Booking.com hotel facilities such as Wi-Fi, pools, fitness options, and restaurants with the property name and page URL. Batch hotels for amenity research.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "hotels"
+  ],
+  "properties": {
+    "hotels": {
+      "title": "Booking.com hotel URLs",
+      "type": "array",
+      "description": "Hotel listing URLs whose public facilities you want to collect.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string",
+            "format": "uri",
+            "maxLength": 4096,
+            "pattern": "#^https?://(?:[a-z0-9-]+\\.)*booking\\.com/hotel/#i",
+            "nullable": true,
+            "description": "Public source page URL used to retrieve this record.",
+            "editor": "textfield"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "nullable": true,
+            "description": "Kununu country market code, such as de, at, or ch.",
+            "editor": "textfield"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 255,
+            "pattern": "^[a-z0-9._-]+(?:\\.html)?$",
+            "nullable": true,
+            "description": "Hotel slug from the Booking.com URL (e.g. ritz-paris). The trailing .html is optional.",
+            "editor": "textfield"
+          },
+          "checkin": {
+            "title": "Checkin",
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Hotel check-in date in YYYY-MM-DD format.",
+            "editor": "textfield"
+          },
+          "checkout": {
+            "title": "Checkout",
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Hotel check-out date in YYYY-MM-DD format, after check-in.",
+            "editor": "textfield"
+          },
+          "group_adults": {
+            "title": "Group Adults",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "nullable": true,
+            "description": "Number of adults (1-30).",
+            "editor": "number"
+          },
+          "group_children": {
+            "title": "Group Children",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20,
+            "nullable": true,
+            "description": "Number of children (0-20).",
+            "editor": "number"
+          },
+          "no_rooms": {
+            "title": "No Rooms",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "nullable": true,
+            "description": "Number of rooms (1-30).",
+            "editor": "number"
+          },
+          "lang": {
+            "title": "Lang",
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true,
+            "description": "Language code for the response (e.g. en-us, de).",
+            "editor": "textfield"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "nullable": true,
+            "description": "Three-letter currency code (e.g. EUR, USD).",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "nullable": true,
+      "description": "Kununu country market code, such as de, at, or ch.",
+      "editor": "textfield"
+    },
+    "slug": {
+      "title": "Slug",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 255,
+      "pattern": "^[a-z0-9._-]+(?:\\.html)?$",
+      "nullable": true,
+      "description": "Hotel slug from the Booking.com URL (e.g. ritz-paris). The trailing .html is optional.",
+      "editor": "textfield"
+    },
+    "checkin": {
+      "title": "Checkin",
+      "type": "string",
+      "format": "date",
+      "nullable": true,
+      "description": "Hotel check-in date in YYYY-MM-DD format.",
+      "editor": "textfield"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "type": "string",
+      "format": "date",
+      "nullable": true,
+      "description": "Hotel check-out date in YYYY-MM-DD format, after check-in.",
+      "editor": "textfield"
+    },
+    "group_adults": {
+      "title": "Group Adults",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "nullable": true,
+      "description": "Number of adults (1-30).",
+      "editor": "number"
+    },
+    "group_children": {
+      "title": "Group Children",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20,
+      "nullable": true,
+      "description": "Number of children (0-20).",
+      "editor": "number"
+    },
+    "no_rooms": {
+      "title": "No Rooms",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "nullable": true,
+      "description": "Number of rooms (1-30).",
+      "editor": "number"
+    },
+    "lang": {
+      "title": "Lang",
+      "type": "string",
+      "maxLength": 10,
+      "nullable": true,
+      "description": "Language code for the response (e.g. en-us, de).",
+      "editor": "textfield"
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3,
+      "nullable": true,
+      "description": "Three-letter currency code (e.g. EUR, USD).",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

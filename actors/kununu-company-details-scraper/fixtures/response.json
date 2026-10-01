@@ -1,0 +1,48 @@
+{
+  "success": true,
+  "data": {
+    "basic_info": {
+      "name": "SAP SE",
+      "uuid": "0b4f44e3-65a8-4f3a-b435-7c66e5d555c4",
+      "slug": "sap-se",
+      "city": "Walldorf",
+      "country": "de",
+      "industry": 12,
+      "employer_segment": "Large enterprise",
+      "url": "https://www.kununu.com/de/sap-se",
+      "website": "https://www.sap.com"
+    },
+    "ratings": {
+      "overall_score": 4.1,
+      "rounded_score": 4,
+      "recommendation_rate": 82,
+      "total_reviews": 23840,
+      "employee_reviews": 20600,
+      "applicant_reviews": 3240,
+      "reviews_with_text": 15200,
+      "reviews_with_response": 4170,
+      "response_time_days": 18,
+      "industry_average_score": 3.8
+    },
+    "structured_data": {
+      "organization": {
+        "@type": "Organization",
+        "name": "SAP SE",
+        "url": "https://www.sap.com",
+        "sameAs": [
+          "https://www.kununu.com/de/sap-se"
+        ]
+      }
+    },
+    "metadata": {
+      "title": "SAP SE Reviews and Ratings",
+      "canonical_url": "https://www.kununu.com/de/sap-se"
+    }
+  },
+  "meta": {
+    "url": "https://www.kununu.com/de/sap-se",
+    "duration_ms": 1020,
+    "scraped_at": "2026-09-28T14:20:00Z",
+    "cached": true
+  }
+}

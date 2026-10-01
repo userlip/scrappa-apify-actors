@@ -1,0 +1,118 @@
+{
+  "title": "Kununu Top Companies Scraper",
+  "description": "Browse Kununu top-company rankings with employer scores, review totals, recommendations, locations, benefits, and award details. Batch country markets and page through results.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "countries"
+  ],
+  "properties": {
+    "countries": {
+      "title": "Countries",
+      "type": "array",
+      "description": "Country markets whose ranked Kununu top-company lists you want to retrieve.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "country": "de"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "country"
+        ],
+        "properties": {
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "enum": [
+              "de",
+              "at",
+              "ch"
+            ],
+            "nullable": true,
+            "description": "Kununu country market code, such as de, at, or ch. Accepted values: de, at, ch.",
+            "editor": "select"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer",
+            "minimum": 2020,
+            "maximum": 2100,
+            "nullable": true,
+            "description": "Kununu top-company award year to request.",
+            "editor": "number"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "nullable": true,
+            "description": "One-based result page to request.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort",
+            "type": "string",
+            "enum": [
+              "number-reviews-desc"
+            ],
+            "nullable": true,
+            "description": "Sort order for returned search results. Accepted values: number-reviews-desc.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "year": {
+      "title": "Year",
+      "type": "integer",
+      "minimum": 2020,
+      "maximum": 2100,
+      "nullable": true,
+      "description": "Kununu top-company award year to request.",
+      "editor": "number"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "nullable": true,
+      "description": "One-based result page to request.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "enum": [
+        "number-reviews-desc"
+      ],
+      "nullable": true,
+      "description": "Sort order for returned search results. Accepted values: number-reviews-desc.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 1
+    }
+  }
+}

@@ -1,0 +1,425 @@
+{
+  "slug": "kayak-explore-destinations-scraper",
+  "title": "Kayak Explore Cheapest Destinations Scraper",
+  "description": "Explore Kayak flight destinations from an origin airport with city, country, date window, airline, stops, duration, and fare-search link. Batch origins and set a map area.",
+  "endpoint": "/kayak/explore/destinations",
+  "openapiPath": "/kayak/explore/destinations",
+  "mode": "list",
+  "batch": {
+    "field": "origins",
+    "valueField": "origin",
+    "apiParam": "origin",
+    "pathParam": null,
+    "title": "Origin airports",
+    "description": "Origin airports whose lowest available destinations you want to explore.",
+    "valueDescription": "Origin used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "origin",
+      "apiParam": "origin",
+      "location": "query",
+      "required": true,
+      "title": "Origin",
+      "schema": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$",
+        "description": "Origin airport code for the route or destination search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "departure_from",
+      "apiParam": "departure_from",
+      "location": "query",
+      "required": false,
+      "title": "Departure From",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "First outbound date in the destination exploration window."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "departure_to",
+      "apiParam": "departure_to",
+      "location": "query",
+      "required": false,
+      "title": "Departure To",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Last outbound date in the destination exploration window."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "return_from",
+      "apiParam": "return_from",
+      "location": "query",
+      "required": false,
+      "title": "Return From",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "First possible return date in the destination exploration window."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "return_to",
+      "apiParam": "return_to",
+      "location": "query",
+      "required": false,
+      "title": "Return To",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Last possible return date in the destination exploration window."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "min_days",
+      "apiParam": "min_days",
+      "location": "query",
+      "required": false,
+      "title": "Min Days",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 60,
+        "description": "Minimum trip length in days for destination suggestions."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "max_days",
+      "apiParam": "max_days",
+      "location": "query",
+      "required": false,
+      "title": "Max Days",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 180,
+        "description": "Maximum trip length in days for destination suggestions."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "stops",
+      "apiParam": "stops",
+      "location": "query",
+      "required": false,
+      "title": "Stops",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 3,
+        "description": "Maximum flight stop count for destination suggestions."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "north_east_lat",
+      "apiParam": "north_east_lat",
+      "location": "query",
+      "required": true,
+      "title": "North East Lat",
+      "schema": {
+        "type": "number",
+        "minimum": -90,
+        "maximum": 90,
+        "description": "Northern latitude of the northeast corner of the destination map area."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "north_east_lng",
+      "apiParam": "north_east_lng",
+      "location": "query",
+      "required": true,
+      "title": "North East Lng",
+      "schema": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180,
+        "description": "Eastern longitude of the northeast corner of the destination map area."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "south_west_lat",
+      "apiParam": "south_west_lat",
+      "location": "query",
+      "required": true,
+      "title": "South West Lat",
+      "schema": {
+        "type": "number",
+        "minimum": -90,
+        "maximum": 90,
+        "description": "Southern latitude of the southwest corner of the destination map area."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "south_west_lng",
+      "apiParam": "south_west_lng",
+      "location": "query",
+      "required": true,
+      "title": "South West Lng",
+      "schema": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180,
+        "description": "Western longitude of the southwest corner of the destination map area."
+      },
+      "editor": "number"
+    }
+  ],
+  "resultPointer": "/data/results",
+  "fallbackResultPointers": [
+    "/data/source_data/kayak/destinations"
+  ],
+  "enrichment": {
+    "field": "input_origin"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "relativeDateDefaults": [
+    {
+      "input": "departure_from",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, the departure window starts 30 days from today."
+    },
+    {
+      "input": "departure_to",
+      "base": "departure_from",
+      "offsetDays": 7,
+      "description": "When omitted, the departure window ends seven days after it starts."
+    },
+    {
+      "input": "return_from",
+      "base": "departure_from",
+      "offsetDays": 7,
+      "description": "When omitted, the return window starts seven days after the first departure date."
+    },
+    {
+      "input": "return_to",
+      "base": "return_from",
+      "offsetDays": 7,
+      "description": "When omitted, the return window ends seven days after it starts."
+    }
+  ],
+  "prefill": {
+    "origins": [
+      {
+        "origin": "ICT"
+      }
+    ],
+    "north_east_lat": 70,
+    "north_east_lng": -50,
+    "south_west_lat": 15,
+    "south_west_lng": -170,
+    "stops": 1,
+    "maxResults": 10
+  },
+  "testParams": {
+    "origin": "ICT",
+    "departure_from": "2026-10-30",
+    "departure_to": "2026-11-29",
+    "return_from": "2026-11-01",
+    "return_to": "2026-12-15",
+    "north_east_lat": "70",
+    "north_east_lng": "-50",
+    "south_west_lat": "15",
+    "south_west_lng": "-170"
+  },
+  "fixture": {
+    "success": true,
+    "operation": "explore-destinations",
+    "data": {
+      "results": [
+        {
+          "days": 7,
+          "originAirportCode": "ICT",
+          "dateDepart": "2026-10-31",
+          "dateReturn": "2026-11-07",
+          "airline": "United Airlines",
+          "airlineCode": "UA",
+          "clickoutUrl": "https://www.kayak.com/flights/ICT-LAS/2026-10-31/2026-11-07",
+          "flightMaxStops": 1,
+          "flightMaxDuration": 295,
+          "city": "Las Vegas",
+          "country": "United States",
+          "airport": "Harry Reid International Airport",
+          "imageUrl": "https://images.kayak.com/las-vegas-strip.jpg"
+        }
+      ],
+      "provenance": {
+        "provider": "kayak",
+        "freshness": "live"
+      }
+    },
+    "meta": {
+      "freshness": "live",
+      "duration_ms": 1020,
+      "attempts": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "city",
+      "label": "Destination",
+      "format": "text"
+    },
+    {
+      "name": "country",
+      "label": "Country",
+      "format": "text"
+    },
+    {
+      "name": "dateDepart",
+      "label": "Departure date",
+      "format": "date"
+    },
+    {
+      "name": "dateReturn",
+      "label": "Return date",
+      "format": "date"
+    },
+    {
+      "name": "airline",
+      "label": "Airline",
+      "format": "text"
+    },
+    {
+      "name": "clickoutUrl",
+      "label": "Flight link",
+      "format": "link"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Explore | Cheapest Destinations",
+    "seoDescription": "Explore Kayak flight destinations by origin and map bounds. Export cities, countries, dates, airlines, stops, and links for choosing flexible trips.",
+    "intro": "Explore Kayak destinations from origin airports with city, country, departure and return windows, airline, stop count, and flight link. Choose a geographic search area.",
+    "useCases": [
+      "Flexible travelers can discover destinations within a selected map area.",
+      "Travel planners can compare candidate cities from several origin airports.",
+      "Fare analysts can review dates and airlines for exploratory trip searches."
+    ],
+    "howToUse": [
+      "Add an origin airport code to each entry in `origins`.",
+      "Set departure and return windows or use the relative date defaults.",
+      "Enter northeast and southwest map bounds, then cap saved destinations with `maxResults`."
+    ],
+    "faqs": [
+      {
+        "question": "How do the map bounds work?",
+        "answer": "Set northeast and southwest latitude and longitude values to describe the geographic area where destinations should be considered."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kayak-flights-scraper",
+        "title": "Kayak Flights Scraper"
+      },
+      {
+        "slug": "google-flights-date-range-scraper",
+        "title": "Google Flights Cheapest Dates Scraper"
+      },
+      {
+        "slug": "kayak-flight-price-predictions-scraper",
+        "title": "Kayak Flight Price Predictions Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "days",
+        "type": "Integer",
+        "description": "Trip length in days for the suggested destination option."
+      },
+      {
+        "name": "originAirportCode",
+        "type": "String",
+        "description": "Airport code used as the departure point."
+      },
+      {
+        "name": "dateDepart",
+        "type": "String",
+        "description": "Suggested outbound travel date."
+      },
+      {
+        "name": "dateReturn",
+        "type": "String",
+        "description": "Suggested return date for the destination option."
+      },
+      {
+        "name": "airline",
+        "type": "String",
+        "description": "Airline name shown for the suggested flight."
+      },
+      {
+        "name": "airlineCode",
+        "type": "String",
+        "description": "Airline code associated with the suggestion."
+      },
+      {
+        "name": "clickoutUrl",
+        "type": "String",
+        "description": "KAYAK flight-search URL for this suggested trip."
+      },
+      {
+        "name": "flightMaxStops",
+        "type": "Integer",
+        "description": "Maximum stop count for the candidate flight."
+      },
+      {
+        "name": "flightMaxDuration",
+        "type": "Integer",
+        "description": "Maximum flight duration reported in minutes."
+      },
+      {
+        "name": "city",
+        "type": "String",
+        "description": "Destination city suggested by KAYAK."
+      },
+      {
+        "name": "country",
+        "type": "String",
+        "description": "Country containing the suggested destination."
+      },
+      {
+        "name": "airport",
+        "type": "String",
+        "description": "Airport name associated with the destination."
+      },
+      {
+        "name": "imageUrl",
+        "type": "String",
+        "description": "Destination image URL returned by KAYAK."
+      },
+      {
+        "name": "input_origin",
+        "type": "String",
+        "description": "Origin airport code submitted for destination exploration."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

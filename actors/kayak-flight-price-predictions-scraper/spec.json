@@ -1,0 +1,203 @@
+{
+  "slug": "kayak-flight-price-predictions-scraper",
+  "title": "Kayak Flight Price Predictions Scraper",
+  "description": "Get Kayak flight price predictions by route with date ranges, origin, destination, and minimum fare. Batch airport pairs to compare expected price trends.",
+  "endpoint": "/kayak/best-time/flight-price-predictions",
+  "openapiPath": "/kayak/best-time/flight-price-predictions",
+  "mode": "list",
+  "batch": {
+    "field": "routes",
+    "valueField": "origin",
+    "apiParam": "origin",
+    "pathParam": null,
+    "title": "Flight routes",
+    "description": "Origin and destination airport codes whose price ranges you want to compare.",
+    "itemRequired": [
+      "destination"
+    ],
+    "enrichBatchItem": true,
+    "valueDescription": "Origin used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "origin",
+      "apiParam": "origin",
+      "location": "query",
+      "required": true,
+      "title": "Origin",
+      "schema": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$",
+        "description": "Origin airport code for the route or destination search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "destination",
+      "apiParam": "destination",
+      "location": "query",
+      "required": true,
+      "title": "Destination",
+      "schema": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$",
+        "description": "KAYAK destination code for the vacation-package search."
+      },
+      "editor": "textfield"
+    }
+  ],
+  "resultPointer": "/data/results",
+  "fallbackResultPointers": [
+    "/data/source_data/kayak/predictions"
+  ],
+  "dedupePointer": "/startDate",
+  "enrichment": {
+    "field": "input_route"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "routes": [
+      {
+        "origin": "ICT",
+        "destination": "LAS"
+      }
+    ],
+    "maxResults": 5
+  },
+  "testParams": {
+    "origin": "ICT",
+    "destination": "LAS"
+  },
+  "fixture": {
+    "success": true,
+    "operation": "flight-price-predictions",
+    "data": {
+      "results": [
+        {
+          "startDate": "2026-10-15",
+          "endDate": "2026-10-22",
+          "originAirport": "ICT",
+          "destinationAirport": "LAS",
+          "minPrice": 189
+        }
+      ],
+      "provenance": {
+        "provider": "kayak",
+        "freshness": "live"
+      }
+    },
+    "meta": {
+      "freshness": "live",
+      "duration_ms": 1350,
+      "attempts": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "startDate",
+      "label": "Start date",
+      "format": "date"
+    },
+    {
+      "name": "endDate",
+      "label": "End date",
+      "format": "date"
+    },
+    {
+      "name": "originAirport",
+      "label": "Origin airport",
+      "format": "text"
+    },
+    {
+      "name": "destinationAirport",
+      "label": "Destination airport",
+      "format": "text"
+    },
+    {
+      "name": "minPrice",
+      "label": "Minimum price",
+      "format": "number"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Flight Price Predictions | Route Trends",
+    "seoDescription": "Review Kayak flight price predictions for airport routes. Export date ranges, origin and destination airports, and minimum fares to compare route trends.",
+    "intro": "Retrieve KAYAK flight price prediction rows for airport routes with date ranges and minimum fares. Batch origin-destination pairs to compare route-level price patterns.",
+    "useCases": [
+      "Travel planners can compare predicted fare periods across routes.",
+      "Fare analysts can review route-level minimum-price patterns.",
+      "Travel agencies can prioritize routes for upcoming customer trips."
+    ],
+    "howToUse": [
+      "Add origin and destination airports to each entry in `routes`.",
+      "Set `maxResults` to keep saved prediction rows within your desired size.",
+      "Compare each date range and minimum price across routes."
+    ],
+    "faqs": [
+      {
+        "question": "Does a prediction guarantee the future ticket price?",
+        "answer": "No. KAYAK price predictions are estimates and can change as inventory and fares change."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kayak-flights-scraper",
+        "title": "Kayak Flights Scraper"
+      },
+      {
+        "slug": "google-flights-date-range-scraper",
+        "title": "Google Flights Cheapest Dates Scraper"
+      },
+      {
+        "slug": "kayak-explore-destinations-scraper",
+        "title": "Kayak Explore Cheapest Destinations Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "startDate",
+        "type": "String",
+        "description": "First date in the prediction period."
+      },
+      {
+        "name": "endDate",
+        "type": "String",
+        "description": "Last date in the prediction period."
+      },
+      {
+        "name": "originAirport",
+        "type": "String",
+        "description": "Airport code used as the route origin."
+      },
+      {
+        "name": "destinationAirport",
+        "type": "String",
+        "description": "Airport code used as the route destination."
+      },
+      {
+        "name": "minPrice",
+        "type": "Integer",
+        "description": "Minimum fare value reported for this date range."
+      },
+      {
+        "name": "input_route",
+        "type": "Object",
+        "description": "Origin and destination airport codes supplied for this route lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

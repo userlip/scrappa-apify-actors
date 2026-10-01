@@ -1,0 +1,54 @@
+{
+  "actorSpecification": 1,
+  "name": "kununu-job-details-scraper",
+  "title": "Kununu Job Details Scraper",
+  "description": "Fetch Kununu job postings with title, employer, location, employment type, salary range, application link, and employer rating context. Batch public job URLs.",
+  "categories": [
+    "JOBS"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "success",
+              "data",
+              "meta"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": {
+                "label": "Success",
+                "format": "text"
+              },
+              "data": {
+                "label": "Job details",
+                "format": "text"
+              },
+              "meta": {
+                "label": "Fetch metadata",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "success": true,
+  "operation": "hotel-search",
+  "data": {
+    "results": [
+      {
+        "resultId": "hotel-15830-1042",
+        "resultType": "hotel",
+        "localizedHotelName": "Park MGM Las Vegas",
+        "stars": 4,
+        "hid": 15297,
+        "geolocation": {
+          "point": {
+            "lat": 36.103,
+            "lng": -115.169
+          },
+          "localizedCity": "Las Vegas"
+        },
+        "rating": {
+          "score": 8.7,
+          "reviewCount": 8420,
+          "localizedRatingCategory": "Excellent"
+        },
+        "detailsUrl": "https://www.kayak.com/Las-Vegas-Hotels-Park-MGM-Las-Vegas.15297.ksp",
+        "url": "https://www.kayak.com/hotels/park-mgm-las-vegas",
+        "providers": [
+          {
+            "localizedProviderName": "Booking.com",
+            "providerCode": "booking",
+            "totalPrice": {
+              "price": 318,
+              "currency": "USD"
+            }
+          }
+        ],
+        "amenities": [
+          {
+            "code": "pool",
+            "localizedName": "Pool"
+          },
+          {
+            "code": "wifi",
+            "localizedName": "Wi-Fi"
+          }
+        ]
+      }
+    ],
+    "search_state": {
+      "search_id": "stay-search-8812",
+      "status": "complete"
+    },
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "duration_ms": 1320,
+    "attempts": 1
+  }
+}

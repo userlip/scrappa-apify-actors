@@ -1,0 +1,315 @@
+{
+  "slug": "kununu-company-search-scraper",
+  "title": "Kununu Company Search Scraper",
+  "description": "Search Kununu company profiles with names, slugs, locations, industry IDs, ratings, review counts, and links. Batch keywords and page through employer matches.",
+  "endpoint": "/kununu/search",
+  "openapiPath": "/kununu/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Company search queries",
+    "description": "Company names or keywords to search across public Kununu employer profiles.",
+    "valueDescription": "Query used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Query",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "Company name or keyword used to search Kununu employer profiles."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "limit",
+      "apiParam": "limit",
+      "location": "query",
+      "required": false,
+      "title": "Limit",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "nullable": true,
+        "description": "Maximum number of company matches requested for this search page."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "offset",
+      "apiParam": "offset",
+      "location": "query",
+      "required": false,
+      "title": "Offset",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "nullable": true,
+        "description": "Number of company matches to skip before returning the next page."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "country_filter",
+      "apiParam": "countries[]",
+      "location": "query",
+      "required": false,
+      "title": "Country filter",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "at",
+          "ch"
+        ],
+        "description": "One Kununu country code used to filter search matches. The code is sent as one countries[] value."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "industry",
+      "apiParam": "industry",
+      "location": "query",
+      "required": false,
+      "title": "Industry",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 44,
+        "nullable": true,
+        "description": "Numeric Kununu industry identifier used to narrow a company search."
+      },
+      "editor": "number"
+    }
+  ],
+  "resultPointer": "/data",
+  "fallbackResultPointers": [],
+  "pagination": {
+    "kind": "page",
+    "param": "offset",
+    "start": 0,
+    "step": 10,
+    "currentPagePointer": "/meta/pagination/currentPage",
+    "totalPagesPointer": "/meta/pagination/totalPages",
+    "maxPages": 20
+  },
+  "defaultMaxPages": 1,
+  "dedupePointer": "/uuid",
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "sap"
+      }
+    ],
+    "limit": 10,
+    "maxResults": 10,
+    "maxPages": 1,
+    "country_filter": "de"
+  },
+  "testParams": {
+    "query": "sap"
+  },
+  "fixture": {
+    "success": true,
+    "data": [
+      {
+        "id": "company-2108",
+        "uuid": "0b4f44e3-65a8-4f3a-b435-7c66e5d555c4",
+        "name": "SAP SE",
+        "slug": "sap-se",
+        "url": "https://www.kununu.com/de/sap-se",
+        "industry": 12,
+        "location": {
+          "city": "Walldorf",
+          "countryCode": "de"
+        },
+        "ratings": {
+          "overall": 4.1,
+          "rounded": 4
+        },
+        "reviewCount": 23840,
+        "totalJobs": 126,
+        "isTopCompany": true,
+        "benefits": [
+          "Flexible working hours"
+        ]
+      }
+    ],
+    "meta": {
+      "pagination": {
+        "currentPage": 1,
+        "totalPages": 12,
+        "resultsStart": 1,
+        "resultsEnd": 10,
+        "totalResults": 114,
+        "limit": 10,
+        "offset": 0
+      },
+      "duration_ms": 690,
+      "cached": true,
+      "cached_at": "2026-09-28T14:20:00Z"
+    }
+  },
+  "tableFields": [
+    {
+      "name": "name",
+      "label": "Company",
+      "format": "text"
+    },
+    {
+      "name": "slug",
+      "label": "Company slug",
+      "format": "text"
+    },
+    {
+      "name": "industry",
+      "label": "Industry ID",
+      "format": "number"
+    },
+    {
+      "name": "ratings",
+      "label": "Ratings",
+      "format": "text"
+    },
+    {
+      "name": "reviewCount",
+      "label": "Review count",
+      "format": "number"
+    },
+    {
+      "name": "url",
+      "label": "Kununu URL",
+      "format": "link"
+    }
+  ],
+  "categories": [
+    "JOBS",
+    "LEAD_GENERATION"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kununu Company Search | Employer Ratings",
+    "seoDescription": "Search Kununu company profiles by name or keyword. Export employer slugs, locations, industry IDs, ratings, review counts, and profile links for research.",
+    "intro": "Search public Kununu company profiles by name or keyword and collect employer slugs, locations, industry IDs, ratings, review totals, and profile links. Batch several searches in one run.",
+    "useCases": [
+      "Recruiters can find employer profiles and review totals by company name.",
+      "Labor-market analysts can compare public ratings across employers.",
+      "B2B researchers can build company lists with location and industry context."
+    ],
+    "howToUse": [
+      "Add a company name or keyword to each entry in `queries`.",
+      "Choose country filters and set `limit` and `maxPages` for each search.",
+      "Use `maxResults` to cap saved company matches across the run."
+    ],
+    "faqs": [
+      {
+        "question": "Can I search for a partial company name?",
+        "answer": "Yes. Use a company name fragment or keyword and review the matched profile names and slugs."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kununu-company-details-scraper",
+        "title": "Kununu Company Profile Scraper"
+      },
+      {
+        "slug": "kununu-company-salaries-scraper",
+        "title": "Kununu Company Salaries Scraper"
+      },
+      {
+        "slug": "kununu-jobs-scraper",
+        "title": "Kununu Jobs Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Stable source identifier for this record."
+      },
+      {
+        "name": "uuid",
+        "type": "String",
+        "description": "Uuid value associated with this kununu company search record."
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "description": "Name displayed by the source for this record."
+      },
+      {
+        "name": "slug",
+        "type": "String",
+        "description": "Short profile or listing identifier used in the source URL."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public source or listing URL associated with this record."
+      },
+      {
+        "name": "industry",
+        "type": "Integer",
+        "description": "Industry value associated with this kununu company search record."
+      },
+      {
+        "name": "location",
+        "type": "Object",
+        "description": "Location information reported for this source record."
+      },
+      {
+        "name": "ratings",
+        "type": "Object",
+        "description": "Rating values or rating counts reported by the source."
+      },
+      {
+        "name": "reviewCount",
+        "type": "Integer",
+        "description": "Number of reviews reported for this company or property."
+      },
+      {
+        "name": "totalJobs",
+        "type": "Integer",
+        "description": "Number of current job listings reported for this employer."
+      },
+      {
+        "name": "isTopCompany",
+        "type": "Boolean",
+        "description": "True when the source marks this employer as a top company."
+      },
+      {
+        "name": "benefits",
+        "type": "Array<String>",
+        "description": "Public benefit labels associated with this employer."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Company name or keyword submitted for the Kununu search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

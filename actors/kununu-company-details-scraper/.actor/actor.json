@@ -1,0 +1,55 @@
+{
+  "actorSpecification": 1,
+  "name": "kununu-company-details-scraper",
+  "title": "Kununu Company Profile Scraper",
+  "description": "Get Kununu company profiles with employer identity, location, industry, overall score, recommendations, review totals, and website. Batch company slugs by country.",
+  "categories": [
+    "JOBS",
+    "LEAD_GENERATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "success",
+              "data",
+              "meta"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": {
+                "label": "Success",
+                "format": "text"
+              },
+              "data": {
+                "label": "Company profile",
+                "format": "text"
+              },
+              "meta": {
+                "label": "Fetch metadata",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

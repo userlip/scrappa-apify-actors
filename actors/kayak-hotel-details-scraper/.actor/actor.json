@@ -1,0 +1,54 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-hotel-details-scraper",
+  "title": "Kayak Hotel Details Scraper",
+  "description": "Get Kayak hotel property details with name, address, rating, telephone, description, amenities, and image links. Batch property paths to enrich hotel records.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "success",
+              "data",
+              "meta"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": {
+                "label": "Success",
+                "format": "text"
+              },
+              "data": {
+                "label": "Property details",
+                "format": "text"
+              },
+              "meta": {
+                "label": "Fetch metadata",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

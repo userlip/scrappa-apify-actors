@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "data": [
+    {
+      "industryId": 12,
+      "location": {
+        "city": "Walldorf",
+        "countryCode": "de"
+      },
+      "logo": "https://assets.kununu.com/logos/northstar.svg",
+      "name": "Northstar Analytics GmbH",
+      "uuid": "e2b0e11a-b612-4d09-b3ee-8c4e76535fc1",
+      "score": {
+        "value": 4.4,
+        "rounded": 4
+      },
+      "slug": "northstar-analytics",
+      "isTopCompany": true,
+      "totalJobs": 34,
+      "totalReviews": 810,
+      "isVerified": true,
+      "recommendationRate": 88,
+      "salarySatisfaction": 4.1,
+      "benefits": [
+        "Flexible hours",
+        "Remote work"
+      ],
+      "type": "company",
+      "awards": [
+        {
+          "name": "Top Company",
+          "detail": "Kununu Top Company Award",
+          "badges": [
+            {
+              "image": "https://assets.kununu.com/badges/top-company.svg",
+              "year": 2026,
+              "name": "Top Company"
+            }
+          ]
+        }
+      ],
+      "scoreBreakdown": [
+        {
+          "id": "work-life-balance",
+          "score": 4.5,
+          "rounded_score": 5
+        }
+      ],
+      "snippets": [
+        {
+          "uuid": "snippet-241",
+          "text": "Supportive team and clear goals."
+        }
+      ],
+      "url": "https://www.kununu.com/de/northstar-analytics"
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 12,
+      "resultsStart": 1,
+      "resultsEnd": 10,
+      "totalResults": 120
+    },
+    "duration_ms": 810,
+    "cached": true,
+    "cached_at": "2026-09-28T14:20:00Z"
+  }
+}

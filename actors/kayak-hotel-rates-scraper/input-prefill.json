@@ -1,0 +1,11 @@
+{
+  "hotels": [
+    {
+      "hotel_id": 15297
+    }
+  ],
+  "adults": 2,
+  "rooms": 1,
+  "price_mode": "total",
+  "maxResults": 10
+}

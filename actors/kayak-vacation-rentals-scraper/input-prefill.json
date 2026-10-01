@@ -1,0 +1,13 @@
+{
+  "rentals": [
+    {
+      "path": "/Seattle-Vacation-Rentals.7054.rental.ksp",
+      "location_id": "7054"
+    }
+  ],
+  "location_type": "city",
+  "adults": 2,
+  "rooms": 1,
+  "sort": "rank_a",
+  "maxResults": 10
+}

@@ -1,0 +1,9 @@
+{
+  "companies": [
+    {
+      "company_slug": "sap"
+    }
+  ],
+  "country": "de",
+  "maxResults": 10
+}

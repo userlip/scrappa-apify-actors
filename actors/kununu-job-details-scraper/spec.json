@@ -1,0 +1,244 @@
+{
+  "slug": "kununu-job-details-scraper",
+  "title": "Kununu Job Details Scraper",
+  "description": "Fetch Kununu job postings with title, employer, location, employment type, salary range, application link, and employer rating context. Batch public job URLs.",
+  "endpoint": "/kununu/job",
+  "openapiPath": "/kununu/job",
+  "mode": "single",
+  "batch": {
+    "field": "jobs",
+    "valueField": "url",
+    "apiParam": "url",
+    "pathParam": null,
+    "title": "Kununu job URLs",
+    "description": "Public Kununu job-posting URLs whose details you want to retrieve.",
+    "valueDescription": "Url used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "url",
+      "apiParam": "url",
+      "location": "query",
+      "required": true,
+      "title": "Url",
+      "schema": {
+        "type": "string",
+        "format": "uri",
+        "pattern": "^https?:\\/\\/(www\\.)?kununu\\.com\\/(job-postings\\/[^\\/]+\\/|[a-z]{2}\\/job\\/).+$",
+        "description": "Public source page URL used to retrieve this record."
+      },
+      "editor": "textfield"
+    }
+  ],
+  "resultPointer": null,
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_url"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "jobs": [
+      {
+        "url": "https://www.kununu.com/de/job/4b83063a-0875-4d72-aed0-5dd03c738ec9"
+      }
+    ],
+    "maxResults": 10
+  },
+  "testParams": {
+    "url": "https://www.kununu.com/de/job/4b83063a-0875-4d72-aed0-5dd03c738ec9"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "id": "job-531902",
+      "url": "https://www.kununu.com/de/job/531902",
+      "title": "Senior Data Analyst",
+      "company": {
+        "name": "Northstar Analytics GmbH",
+        "uuid": "e2b0e11a-b612-4d09-b3ee-8c4e76535fc1",
+        "slug": "northstar-analytics",
+        "score": 4.4,
+        "isTopCompany": true,
+        "industryId": 12,
+        "website": "https://northstar-analytics.com",
+        "countryCode": "de"
+      },
+      "description_html": "<p>Build data products and reporting workflows with a collaborative analytics team.</p>",
+      "postedAt": "2026-09-15T08:00:00Z",
+      "activeUntil": "2026-11-15T23:59:00Z",
+      "city": "Berlin",
+      "addressRegion": "Berlin",
+      "employmentTypes": [
+        "Full time"
+      ],
+      "salary": {
+        "currency": "EUR",
+        "minimum": 65000,
+        "maximum": 82000
+      },
+      "industrySalary": {
+        "countryCode": "de",
+        "currency": "EUR",
+        "jobTitle": "Data Analyst",
+        "range": {
+          "average": 64200,
+          "lowerBound": 48000,
+          "upperBound": 91000,
+          "numberOfDataPoints": 1240
+        },
+        "aliases": [
+          "Data Analyst",
+          "Business Analyst"
+        ]
+      },
+      "kununuJobTitle": {
+        "id": 614,
+        "groupId": 77,
+        "title": "Data Analyst"
+      },
+      "application": {
+        "type": "external",
+        "url": "https://northstar-analytics.com/careers/data-analyst"
+      },
+      "satisfaction": {
+        "recommendationRate": {
+          "percentage": 88,
+          "totalReviews": 810,
+          "recommendedTotalReviews": 713,
+          "notRecommendedTotalReviews": 97
+        },
+        "roundedScore": 4,
+        "score": 4.4,
+        "totalReviews": 810
+      },
+      "source": "company-career-page",
+      "paidType": "organic",
+      "industryId": 12,
+      "status": "active",
+      "similarJobs": [
+        {
+          "id": "job-531901",
+          "title": "Analytics Engineer",
+          "url": "https://www.kununu.com/de/job/531901",
+          "postedAt": "2026-09-10T08:00:00Z",
+          "city": "Berlin",
+          "employmentTypes": [
+            "Full time"
+          ],
+          "source": "company-career-page",
+          "company": {
+            "uuid": "e2b0e11a-b612-4d09-b3ee-8c4e76535fc1",
+            "name": "Northstar Analytics GmbH",
+            "slug": "northstar-analytics",
+            "score": 4.4,
+            "isTopCompany": true,
+            "industryId": 12,
+            "countryCode": "de",
+            "website": "https://northstar-analytics.com"
+          },
+          "kununuJobTitle": {
+            "id": 615,
+            "title": "Analytics Engineer",
+            "salaryAverage": 72000,
+            "salaryLowerBound": 56000,
+            "salaryUpperBound": 93000,
+            "salaryDataPoints": 120
+          }
+        }
+      ],
+      "nextJobId": "job-531901"
+    },
+    "meta": {
+      "source": "kununu",
+      "duration_ms": 1320
+    }
+  },
+  "tableFields": [
+    {
+      "name": "success",
+      "label": "Success",
+      "format": "text"
+    },
+    {
+      "name": "data",
+      "label": "Job details",
+      "format": "text"
+    },
+    {
+      "name": "meta",
+      "label": "Fetch metadata",
+      "format": "text"
+    }
+  ],
+  "categories": [
+    "JOBS"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kununu Job Details | Salary & Employer Data",
+    "seoDescription": "Scrape Kununu job postings by URL. Export job titles, employers, locations, salary ranges, employment types, application links, and company rating context.",
+    "intro": "Retrieve public Kununu job postings with title, employer, location, employment type, salary information, application link, and employer rating context. Batch job URLs in one run.",
+    "useCases": [
+      "Recruiters can review public posting details and application links.",
+      "Job seekers can compare role pay ranges and employer ratings.",
+      "Labor-market researchers can track details across public listings."
+    ],
+    "howToUse": [
+      "Add a public Kununu job-posting URL to each entry in `jobs`.",
+      "Set `maxResults` to cap the number of job records saved.",
+      "Read the posting, employer, salary, and application fields from each result."
+    ],
+    "faqs": [
+      {
+        "question": "Can I use an expired job URL?",
+        "answer": "The source may no longer return full details for expired or removed postings. Use an active public Kununu job URL for the best chance of a complete record."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kununu-jobs-scraper",
+        "title": "Kununu Jobs Scraper"
+      },
+      {
+        "slug": "kununu-company-details-scraper",
+        "title": "Kununu Company Profile Scraper"
+      },
+      {
+        "slug": "kununu-company-salaries-scraper",
+        "title": "Kununu Company Salaries Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when Kununu returned a parsed job detail response."
+      },
+      {
+        "name": "data",
+        "type": "Object",
+        "description": "Job posting, employer, location, compensation, application, and company context."
+      },
+      {
+        "name": "meta",
+        "type": "Object",
+        "description": "Source label and fetch timing for the job detail lookup."
+      },
+      {
+        "name": "input_url",
+        "type": "String",
+        "description": "Hotel or job page URL supplied for this lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

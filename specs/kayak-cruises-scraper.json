@@ -1,0 +1,384 @@
+{
+  "slug": "kayak-cruises-scraper",
+  "title": "Kayak Cruises Scraper",
+  "description": "Browse Kayak cruise sailings with ship, departure port, trip length, itinerary, fare, currency, and region. Batch ocean or river product types and sort offers.",
+  "endpoint": "/kayak/cruises/sailings",
+  "openapiPath": "/kayak/cruises/sailings",
+  "mode": "list",
+  "batch": {
+    "field": "sailing_types",
+    "valueField": "product_type",
+    "apiParam": "product_type",
+    "pathParam": null,
+    "title": "Cruise types",
+    "description": "KAYAK cruise product types to retrieve, such as ocean or river sailings.",
+    "valueDescription": "Product Type used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "min_nights",
+      "apiParam": "min_nights",
+      "location": "query",
+      "required": false,
+      "title": "Min Nights",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 60,
+        "description": "Minimum number of nights for returned cruise sailings."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "adults",
+      "apiParam": "adults",
+      "location": "query",
+      "required": false,
+      "title": "Adults",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9,
+        "description": "Number of adult travelers included in the search."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "children",
+      "apiParam": "children",
+      "location": "query",
+      "required": false,
+      "title": "Children",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 8,
+        "description": "Number of children traveling on the cruise search."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "description": "One-based result page to request."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "recommended",
+          "price",
+          "duration",
+          "departuredate"
+        ],
+        "description": "Sort order for returned search results. Accepted values: recommended, price, duration, departuredate."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "sort_order",
+      "apiParam": "sort_order",
+      "location": "query",
+      "required": false,
+      "title": "Sort Order",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "description": "Direction used for the selected result sort. Accepted values: asc, desc."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "product_type",
+      "apiParam": "product_type",
+      "location": "query",
+      "required": false,
+      "title": "Product Type",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "ocean",
+          "river"
+        ],
+        "description": "Cruise product category, such as ocean or river. Accepted values: ocean, river."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "include_deals",
+      "apiParam": "include_deals",
+      "location": "query",
+      "required": false,
+      "title": "Include Deals",
+      "schema": {
+        "type": "boolean",
+        "description": "Whether to include offers marked as cruise deals."
+      },
+      "editor": "checkbox"
+    },
+    {
+      "input": "include_unavailable",
+      "apiParam": "include_unavailable",
+      "location": "query",
+      "required": false,
+      "title": "Include Unavailable",
+      "schema": {
+        "type": "boolean",
+        "description": "Whether to include sailings marked unavailable."
+      },
+      "editor": "checkbox"
+    }
+  ],
+  "resultPointer": "/data/results",
+  "fallbackResultPointers": [
+    "/data/source_data/kayak/results"
+  ],
+  "dedupePointer": "/id",
+  "enrichment": {
+    "field": "input_product_type"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "sailing_types": [
+      {
+        "product_type": "ocean"
+      }
+    ],
+    "min_nights": 3,
+    "adults": 2,
+    "page": 1,
+    "sort": "recommended",
+    "sort_order": "asc",
+    "maxResults": 10
+  },
+  "testParams": {},
+  "fixture": {
+    "success": true,
+    "operation": "cruise-sailings",
+    "data": {
+      "results": [
+        {
+          "id": "sailing-2027-0418-11",
+          "name": "Pacific Coast Discovery",
+          "currency": "USD",
+          "currencySymbol": "$",
+          "ship": "Aurora Skye",
+          "departurePort": "Los Angeles",
+          "nights": 7,
+          "price": 1249,
+          "regularPrice": 1499,
+          "startDateFormatted": "Apr 18, 2027",
+          "endDateFormatted": "Apr 25, 2027",
+          "regionName": "Mexican Riviera",
+          "regionId": "mexican-riviera",
+          "itinerary": [
+            {
+              "day": 1,
+              "port": "Los Angeles"
+            },
+            {
+              "day": 3,
+              "port": "Cabo San Lucas"
+            }
+          ],
+          "score": 94,
+          "productType": "ocean"
+        }
+      ],
+      "provenance": {
+        "provider": "kayak",
+        "freshness": "live"
+      }
+    },
+    "meta": {
+      "freshness": "live",
+      "duration_ms": 960,
+      "attempts": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "id",
+      "label": "Sailing ID",
+      "format": "text"
+    },
+    {
+      "name": "name",
+      "label": "Cruise",
+      "format": "text"
+    },
+    {
+      "name": "ship",
+      "label": "Ship",
+      "format": "text"
+    },
+    {
+      "name": "departurePort",
+      "label": "Departure port",
+      "format": "text"
+    },
+    {
+      "name": "nights",
+      "label": "Nights",
+      "format": "number"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "currency"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Cruises | Sailing Prices",
+    "seoDescription": "Scrape Kayak cruise sailings with ships, departure ports, itineraries, trip lengths, fares, and regions. Compare ocean or river cruise options.",
+    "intro": "Browse Kayak cruise sailings with ship names, departure ports, trip lengths, itineraries, fares, and regions. Request ocean or river product types in one run.",
+    "useCases": [
+      "Cruise planners can compare sailings by ship, port, length, and fare.",
+      "Travel analysts can monitor cruise inventory across regions.",
+      "Travel agencies can build sailing shortlists for customer itineraries."
+    ],
+    "howToUse": [
+      "Add `ocean` or `river` to each entry in `sailing_types`.",
+      "Set passenger count, minimum nights, page, and sort preferences.",
+      "Use `maxResults` to limit saved sailings."
+    ],
+    "faqs": [
+      {
+        "question": "Can I restrict sailings to a departure port?",
+        "answer": "The available search filters do not include a departure-port input. Returned rows include the port when KAYAK supplies it."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kayak-flights-scraper",
+        "title": "Kayak Flights Scraper"
+      },
+      {
+        "slug": "kayak-hotels-search-scraper",
+        "title": "Kayak Hotels Search Scraper"
+      },
+      {
+        "slug": "kayak-packages-scraper",
+        "title": "Kayak Vacation Packages Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "KAYAK identifier for this cruise sailing."
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "description": "Sailing or cruise itinerary name shown by KAYAK."
+      },
+      {
+        "name": "currency",
+        "type": "String",
+        "description": "Three-letter currency code for the quoted cruise fare."
+      },
+      {
+        "name": "currencySymbol",
+        "type": "String",
+        "description": "Currency symbol displayed with the fare."
+      },
+      {
+        "name": "ship",
+        "type": "String",
+        "description": "Ship assigned to the sailing."
+      },
+      {
+        "name": "departurePort",
+        "type": "String",
+        "description": "Port where the cruise itinerary begins."
+      },
+      {
+        "name": "nights",
+        "type": "Integer",
+        "description": "Number of nights in the sailing itinerary."
+      },
+      {
+        "name": "price",
+        "type": "Integer",
+        "description": "Numeric cruise fare in the reported currency."
+      },
+      {
+        "name": "regularPrice",
+        "type": "Integer",
+        "description": "Regular or reference fare when supplied by KAYAK."
+      },
+      {
+        "name": "startDateFormatted",
+        "type": "String",
+        "description": "Formatted departure date displayed for the sailing."
+      },
+      {
+        "name": "endDateFormatted",
+        "type": "String",
+        "description": "Formatted return date displayed for the sailing."
+      },
+      {
+        "name": "regionName",
+        "type": "String",
+        "description": "Cruise region label associated with the itinerary."
+      },
+      {
+        "name": "regionId",
+        "type": "String",
+        "description": "KAYAK identifier for the cruise region."
+      },
+      {
+        "name": "itinerary",
+        "type": "Array<Object>",
+        "description": "Day-by-day port calls included in the sailing."
+      },
+      {
+        "name": "score",
+        "type": "Integer",
+        "description": "Numeric rating or score reported by the source."
+      },
+      {
+        "name": "productType",
+        "type": "String",
+        "description": "Cruise category such as ocean or river."
+      },
+      {
+        "name": "input_product_type",
+        "type": "String",
+        "description": "Cruise product category requested for the sailing search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

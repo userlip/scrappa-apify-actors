@@ -1,0 +1,54 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-hotel-rates-scraper",
+  "title": "Kayak Hotel Rates Scraper",
+  "description": "Compare Kayak hotel rate groups with room descriptions, booking providers, total prices, and click-through links. Batch hotel IDs and choose future stay dates.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "localizedTitle",
+              "rows",
+              "numToDisplay"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "localizedTitle": {
+                "label": "Rate group",
+                "format": "text"
+              },
+              "rows": {
+                "label": "Room offers",
+                "format": "text"
+              },
+              "numToDisplay": {
+                "label": "Offer count",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

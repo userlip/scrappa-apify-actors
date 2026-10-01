@@ -1,0 +1,270 @@
+{
+  "slug": "kununu-company-salaries-scraper",
+  "title": "Kununu Company Salaries Scraper",
+  "description": "Collect Kununu salary ranges by employer and country, with job titles, minimums, maximums, medians, averages, and report counts. Batch company slugs for pay comparisons.",
+  "endpoint": "/kununu/company-salary",
+  "openapiPath": "/kununu/company-salary",
+  "mode": "list",
+  "batch": {
+    "field": "companies",
+    "valueField": "company_slug",
+    "apiParam": "company_slug",
+    "pathParam": null,
+    "title": "Company slugs",
+    "description": "Kununu company slugs whose reported salary ranges you want to collect.",
+    "valueDescription": "Company Slug used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": true,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "at",
+          "ch"
+        ],
+        "description": "Kununu country market code, such as de, at, or ch. Accepted values: de, at, ch."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "company_slug",
+      "apiParam": "company_slug",
+      "location": "query",
+      "required": true,
+      "title": "Company Slug",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "pattern": "^[a-z0-9-]+$",
+        "description": "Company slug from the public Kununu employer profile URL."
+      },
+      "editor": "textfield"
+    }
+  ],
+  "resultPointer": "/data/ranges",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/jobRoleTitleId",
+  "enrichment": {
+    "field": "input_company_slug"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "companies": [
+      {
+        "company_slug": "sap"
+      }
+    ],
+    "country": "de",
+    "maxResults": 10
+  },
+  "testParams": {
+    "country": "de",
+    "company_slug": "sap"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "comments": {
+        "comments": [
+          {
+            "text": "Salary bands are reviewed each year.",
+            "score": 4,
+            "factor": "Compensation",
+            "review": {
+              "uuid": "salary-review-1092",
+              "type": "employee",
+              "createdAt": "2026-08-18T10:00:00Z",
+              "position": "Software Engineer"
+            }
+          }
+        ],
+        "limit": 6
+      },
+      "compensation": {
+        "industryComparison": 0.12,
+        "scoreRounded": 4,
+        "score": 4.1,
+        "reviewsCount": 670
+      },
+      "currentSort": "salary-highest",
+      "ranges": [
+        {
+          "jobRoleTitleId": 5521,
+          "jobRoleTitle": "Software Engineer",
+          "jobRoleTitleSlug": "software-engineer",
+          "profileRangeMin": 56000,
+          "profileRangeMax": 94000,
+          "profileMedian": 73500,
+          "profileAverage": 74800,
+          "profileNumberOfEntries": 82,
+          "isClaimed": false,
+          "isHighlighted": true
+        }
+      ],
+      "rangesStats": {
+        "highestPaid": {
+          "jobTitle": "Engineering Director",
+          "jobTitleAverage": 132000
+        },
+        "lowestPaid": {
+          "jobTitle": "Office Assistant",
+          "jobTitleAverage": 39000
+        }
+      },
+      "totalCount": 20,
+      "caveat": "Salary amounts reflect employee-submitted information."
+    },
+    "meta": {
+      "company_slug": "sap",
+      "country": "de",
+      "duration_ms": 1180,
+      "cached": true,
+      "cached_at": "2026-09-28T14:20:00Z"
+    }
+  },
+  "tableFields": [
+    {
+      "name": "jobRoleTitle",
+      "label": "Job title",
+      "format": "text"
+    },
+    {
+      "name": "profileRangeMin",
+      "label": "Minimum salary",
+      "format": "number"
+    },
+    {
+      "name": "profileRangeMax",
+      "label": "Maximum salary",
+      "format": "number"
+    },
+    {
+      "name": "profileMedian",
+      "label": "Median salary",
+      "format": "number"
+    },
+    {
+      "name": "profileAverage",
+      "label": "Average salary",
+      "format": "number"
+    },
+    {
+      "name": "profileNumberOfEntries",
+      "label": "Reported entries",
+      "format": "number"
+    }
+  ],
+  "categories": [
+    "JOBS"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kununu Company Salaries | Pay Ranges",
+    "seoDescription": "Scrape Kununu salary ranges by company and country. Export job titles, pay minimums, maximums, medians, averages, and report counts for comparison.",
+    "intro": "Collect company-level Kununu salary ranges with job titles, minimums, maximums, medians, averages, and report counts. Batch employer slugs for pay comparisons by country.",
+    "useCases": [
+      "Compensation teams can benchmark reported pay by job title.",
+      "Labor-market analysts can compare salary ranges across employers.",
+      "Job seekers can research reported pay bands before applying."
+    ],
+    "howToUse": [
+      "Add a Kununu company slug to each entry in `companies`.",
+      "Choose the country for the employer salary data.",
+      "Use `maxResults` to cap saved job-title salary ranges."
+    ],
+    "faqs": [
+      {
+        "question": "Are salary values official employer pay bands?",
+        "answer": "No. Kununu salary figures reflect the information available in its salary pages and may be based on employee-submitted reports."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kununu-company-details-scraper",
+        "title": "Kununu Company Profile Scraper"
+      },
+      {
+        "slug": "kununu-salary-scraper",
+        "title": "Kununu Salary by Job Title Scraper"
+      },
+      {
+        "slug": "kununu-company-search-scraper",
+        "title": "Kununu Company Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "jobRoleTitleId",
+        "type": "Integer",
+        "description": "JobRoleTitleId value associated with this kununu company salaries record."
+      },
+      {
+        "name": "jobRoleTitle",
+        "type": "String",
+        "description": "JobRoleTitle value associated with this kununu company salaries record."
+      },
+      {
+        "name": "jobRoleTitleSlug",
+        "type": "String",
+        "description": "JobRoleTitleSlug value associated with this kununu company salaries record."
+      },
+      {
+        "name": "profileRangeMin",
+        "type": "Integer",
+        "description": "ProfileRangeMin value associated with this kununu company salaries record."
+      },
+      {
+        "name": "profileRangeMax",
+        "type": "Integer",
+        "description": "ProfileRangeMax value associated with this kununu company salaries record."
+      },
+      {
+        "name": "profileMedian",
+        "type": "Integer",
+        "description": "ProfileMedian value associated with this kununu company salaries record."
+      },
+      {
+        "name": "profileAverage",
+        "type": "Integer",
+        "description": "ProfileAverage value associated with this kununu company salaries record."
+      },
+      {
+        "name": "profileNumberOfEntries",
+        "type": "Integer",
+        "description": "ProfileNumberOfEntries value associated with this kununu company salaries record."
+      },
+      {
+        "name": "isClaimed",
+        "type": "Boolean",
+        "description": "IsClaimed value associated with this kununu company salaries record."
+      },
+      {
+        "name": "isHighlighted",
+        "type": "Boolean",
+        "description": "IsHighlighted value associated with this kununu company salaries record."
+      },
+      {
+        "name": "input_company_slug",
+        "type": "String",
+        "description": "Kununu employer profile slug used for this lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

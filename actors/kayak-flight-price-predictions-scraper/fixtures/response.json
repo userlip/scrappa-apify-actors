@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "operation": "flight-price-predictions",
+  "data": {
+    "results": [
+      {
+        "startDate": "2026-10-15",
+        "endDate": "2026-10-22",
+        "originAirport": "ICT",
+        "destinationAirport": "LAS",
+        "minPrice": 189
+      }
+    ],
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "duration_ms": 1350,
+    "attempts": 1
+  }
+}

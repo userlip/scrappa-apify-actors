@@ -1,0 +1,300 @@
+{
+  "title": "Google Play App Details Scraper",
+  "description": "Get Google Play app details with developer, rating, review totals, downloads, category, permissions, and media links. Batch package names by country.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "apps"
+  ],
+  "properties": {
+    "apps": {
+      "title": "Google Play product IDs",
+      "type": "array",
+      "description": "Google Play product IDs or app package names to look up.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "product_id": "com.spotify.music"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "properties": {
+          "product_id": {
+            "title": "Product Id",
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "nullable": true,
+            "description": "Google Play product id. For apps this is the package name.",
+            "editor": "textfield"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "nullable": true,
+            "description": "Legacy alias for product_id.",
+            "editor": "textfield"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string",
+            "format": "uri",
+            "maxLength": 1000,
+            "nullable": true,
+            "description": "Public source page URL used to retrieve this record.",
+            "editor": "textfield"
+          },
+          "hl": {
+            "title": "Hl",
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true,
+            "description": "Interface language code (e.g. en, de).",
+            "editor": "textfield"
+          },
+          "gl": {
+            "title": "Gl",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "nullable": true,
+            "description": "Country code for the storefront (2 letters, e.g. us, de).",
+            "editor": "textfield"
+          },
+          "store": {
+            "title": "Store",
+            "type": "string",
+            "enum": [
+              "apps",
+              "movies",
+              "tv",
+              "books",
+              "audiobooks"
+            ],
+            "nullable": true,
+            "description": "Google Play store vertical: apps, movies, tv, books, or audiobooks. Accepted values: apps, movies, tv, books, audiobooks.",
+            "editor": "select"
+          },
+          "season_id": {
+            "title": "Season Id",
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "TV season id for Google Play TV products.",
+            "editor": "textfield"
+          },
+          "all_reviews": {
+            "title": "All Reviews",
+            "type": "boolean",
+            "nullable": true,
+            "description": "Request Google Play review-expanded product pages when available.",
+            "editor": "checkbox"
+          },
+          "platform": {
+            "title": "Platform",
+            "type": "string",
+            "enum": [
+              "phone",
+              "tablet",
+              "tv",
+              "chromebook",
+              "watch",
+              "car"
+            ],
+            "nullable": true,
+            "description": "Review platform filter, such as phone, tablet, tv, chromebook, watch, or car. Accepted values: phone, tablet, tv, chromebook, watch, car.",
+            "editor": "select"
+          },
+          "rating": {
+            "title": "Rating",
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "nullable": true,
+            "description": "Review rating filter from 1 to 5. Accepted values: 1, 2, 3, 4, 5.",
+            "editor": "select"
+          },
+          "sort_by": {
+            "title": "Sort By",
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "most_relevant",
+              "newest",
+              "rating"
+            ],
+            "nullable": true,
+            "description": "Review sort mode, such as 1, 2, 3, most_relevant, newest, or rating. Accepted values: 1, 2, 3, most_relevant, newest, rating.",
+            "editor": "select"
+          },
+          "num": {
+            "title": "Num",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "nullable": true,
+            "description": "Requested review result count for clients that need SerpApi-compatible parameters.",
+            "editor": "number"
+          },
+          "next_page_token": {
+            "title": "Next Page Token",
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true,
+            "description": "Review pagination token for clients that need SerpApi-compatible parameters.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "id": {
+      "title": "Id",
+      "type": "string",
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "nullable": true,
+      "description": "Legacy alias for product_id.",
+      "editor": "textfield"
+    },
+    "url": {
+      "title": "Url",
+      "type": "string",
+      "format": "uri",
+      "maxLength": 1000,
+      "nullable": true,
+      "description": "Public source page URL used to retrieve this record.",
+      "editor": "textfield"
+    },
+    "hl": {
+      "title": "Hl",
+      "type": "string",
+      "maxLength": 10,
+      "nullable": true,
+      "description": "Interface language code (e.g. en, de).",
+      "editor": "textfield"
+    },
+    "gl": {
+      "title": "Gl",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "nullable": true,
+      "description": "Country code for the storefront (2 letters, e.g. us, de).",
+      "editor": "textfield"
+    },
+    "store": {
+      "title": "Store",
+      "type": "string",
+      "enum": [
+        "apps",
+        "movies",
+        "tv",
+        "books",
+        "audiobooks"
+      ],
+      "nullable": true,
+      "description": "Google Play store vertical: apps, movies, tv, books, or audiobooks. Accepted values: apps, movies, tv, books, audiobooks.",
+      "editor": "select"
+    },
+    "season_id": {
+      "title": "Season Id",
+      "type": "string",
+      "maxLength": 255,
+      "nullable": true,
+      "description": "TV season id for Google Play TV products.",
+      "editor": "textfield"
+    },
+    "all_reviews": {
+      "title": "All Reviews",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Request Google Play review-expanded product pages when available.",
+      "editor": "checkbox"
+    },
+    "platform": {
+      "title": "Platform",
+      "type": "string",
+      "enum": [
+        "phone",
+        "tablet",
+        "tv",
+        "chromebook",
+        "watch",
+        "car"
+      ],
+      "nullable": true,
+      "description": "Review platform filter, such as phone, tablet, tv, chromebook, watch, or car. Accepted values: phone, tablet, tv, chromebook, watch, car.",
+      "editor": "select"
+    },
+    "rating": {
+      "title": "Rating",
+      "type": "string",
+      "enum": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "nullable": true,
+      "description": "Review rating filter from 1 to 5. Accepted values: 1, 2, 3, 4, 5.",
+      "editor": "select"
+    },
+    "sort_by": {
+      "title": "Sort By",
+      "type": "string",
+      "enum": [
+        "1",
+        "2",
+        "3",
+        "most_relevant",
+        "newest",
+        "rating"
+      ],
+      "nullable": true,
+      "description": "Review sort mode, such as 1, 2, 3, most_relevant, newest, or rating. Accepted values: 1, 2, 3, most_relevant, newest, rating.",
+      "editor": "select"
+    },
+    "num": {
+      "title": "Num",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "nullable": true,
+      "description": "Requested review result count for clients that need SerpApi-compatible parameters.",
+      "editor": "number"
+    },
+    "next_page_token": {
+      "title": "Next Page Token",
+      "type": "string",
+      "maxLength": 1000,
+      "nullable": true,
+      "description": "Review pagination token for clients that need SerpApi-compatible parameters.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

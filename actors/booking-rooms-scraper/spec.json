@@ -1,0 +1,344 @@
+{
+  "slug": "booking-rooms-scraper",
+  "title": "Booking.com Rooms & Rates Scraper",
+  "description": "Find Booking.com room options with room names, quoted prices, occupancy, bed setup, and availability. Batch hotel URLs, choose travel dates, and compare stays.",
+  "endpoint": "/booking/rooms",
+  "openapiPath": "/booking/rooms",
+  "mode": "list",
+  "batch": {
+    "field": "hotels",
+    "valueField": "url",
+    "apiParam": "url",
+    "pathParam": null,
+    "title": "Booking.com hotel URLs",
+    "description": "Hotel listing URLs whose room options and availability you want to inspect.",
+    "itemRequired": [
+      "url"
+    ],
+    "valueDescription": "Url used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "url",
+      "apiParam": "url",
+      "location": "query",
+      "required": false,
+      "title": "Url",
+      "schema": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 4096,
+        "pattern": "#^https?://(?:[a-z0-9-]+\\.)*booking\\.com/hotel/#i",
+        "nullable": true,
+        "description": "Public source page URL used to retrieve this record."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 2,
+        "nullable": true,
+        "description": "Kununu country market code, such as de, at, or ch."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "slug",
+      "apiParam": "slug",
+      "location": "query",
+      "required": false,
+      "title": "Slug",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 255,
+        "pattern": "^[a-z0-9._-]+(?:\\.html)?$",
+        "nullable": true,
+        "description": "Hotel slug from the Booking.com URL (e.g. ritz-paris). The trailing .html is optional."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "checkin",
+      "apiParam": "checkin",
+      "location": "query",
+      "required": false,
+      "title": "Checkin",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "nullable": true,
+        "description": "Hotel check-in date in YYYY-MM-DD format."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "checkout",
+      "apiParam": "checkout",
+      "location": "query",
+      "required": false,
+      "title": "Checkout",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "nullable": true,
+        "description": "Hotel check-out date in YYYY-MM-DD format, after check-in."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "group_adults",
+      "apiParam": "group_adults",
+      "location": "query",
+      "required": false,
+      "title": "Group Adults",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30,
+        "nullable": true,
+        "description": "Number of adults (1-30)."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "group_children",
+      "apiParam": "group_children",
+      "location": "query",
+      "required": false,
+      "title": "Group Children",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 20,
+        "nullable": true,
+        "description": "Number of children (0-20)."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "no_rooms",
+      "apiParam": "no_rooms",
+      "location": "query",
+      "required": false,
+      "title": "No Rooms",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30,
+        "nullable": true,
+        "description": "Number of rooms (1-30)."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "lang",
+      "apiParam": "lang",
+      "location": "query",
+      "required": false,
+      "title": "Lang",
+      "schema": {
+        "type": "string",
+        "maxLength": 10,
+        "nullable": true,
+        "description": "UI language hint (e.g. en-us, de)."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "currency",
+      "apiParam": "currency",
+      "location": "query",
+      "required": false,
+      "title": "Currency",
+      "schema": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "nullable": true,
+        "description": "3-letter currency code (e.g. EUR, USD)."
+      },
+      "editor": "textfield"
+    }
+  ],
+  "resultPointer": "/data/rooms",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_url"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "relativeDateDefaults": [
+    {
+      "input": "checkin",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, check-in is set to 30 days from today."
+    },
+    {
+      "input": "checkout",
+      "base": "checkin",
+      "offsetDays": 2,
+      "description": "When omitted, check-out is set to two days after check-in."
+    }
+  ],
+  "prefill": {
+    "hotels": [
+      {
+        "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+      }
+    ],
+    "group_adults": 2,
+    "no_rooms": 1,
+    "lang": "en-us",
+    "currency": "EUR",
+    "maxResults": 10
+  },
+  "testParams": {
+    "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+    "checkin": "2026-11-14",
+    "checkout": "2026-11-16"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "title": "Adlon Kempinski Berlin",
+      "canonical_url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+      "rooms": [
+        {
+          "name": "Deluxe King Room",
+          "price": "€279",
+          "occupancy": "2 guests",
+          "beds": "1 king bed",
+          "available": true
+        }
+      ],
+      "total_rooms": 14,
+      "parsed": true
+    },
+    "meta": {
+      "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+      "duration_ms": 680,
+      "scraped_at": "2026-09-28T14:22:00Z",
+      "cached": true,
+      "booking_pool_attempts": 1,
+      "booking_pool_stages": [
+        "room-list"
+      ]
+    }
+  },
+  "tableFields": [
+    {
+      "name": "name",
+      "label": "Room",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "text"
+    },
+    {
+      "name": "occupancy",
+      "label": "Occupancy",
+      "format": "text"
+    },
+    {
+      "name": "beds",
+      "label": "Beds",
+      "format": "text"
+    },
+    {
+      "name": "available",
+      "label": "Available",
+      "format": "text"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Booking.com Rooms | Room Rates",
+    "seoDescription": "Scrape Booking.com room options by hotel URL and travel dates. Export room names, prices, occupancy, bed details, and availability for stay comparison.",
+    "intro": "Check Booking.com room options for hotel URLs with room names, prices, occupancy, bed descriptions, and availability. Omitted dates default to a future two-night stay.",
+    "useCases": [
+      "Travel planners can compare available room types before choosing a hotel.",
+      "Hospitality analysts can monitor quoted room prices for selected travel dates.",
+      "Booking teams can collect occupancy and bed details for lodging research."
+    ],
+    "howToUse": [
+      "Add one Booking.com hotel URL per entry in `hotels`.",
+      "Set check-in and check-out dates or use the relative date defaults.",
+      "Choose guest counts and currency, then export the room rows."
+    ],
+    "faqs": [
+      {
+        "question": "Are room prices guaranteed?",
+        "answer": "No. Prices and availability can change before booking and depend on the selected dates, guest count, and source response."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "booking-search-scraper",
+        "title": "Booking.com Search Scraper"
+      },
+      {
+        "slug": "booking-hotel-details-scraper",
+        "title": "Booking.com Hotel Details Scraper"
+      },
+      {
+        "slug": "booking-prices-scraper",
+        "title": "Booking.com Hotel Prices Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "name",
+        "type": "String",
+        "description": "Name displayed by the source for this record."
+      },
+      {
+        "name": "price",
+        "type": "String",
+        "description": "Quoted price in the currency shown by the source."
+      },
+      {
+        "name": "occupancy",
+        "type": "String",
+        "description": "Occupancy value associated with this booking.com rooms & rates record."
+      },
+      {
+        "name": "beds",
+        "type": "String",
+        "description": "Beds value associated with this booking.com rooms & rates record."
+      },
+      {
+        "name": "available",
+        "type": "Boolean",
+        "description": "Available value associated with this booking.com rooms & rates record."
+      },
+      {
+        "name": "input_url",
+        "type": "String",
+        "description": "Hotel or job page URL supplied for this lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-car-rentals-scraper",
+  "title": "Kayak Car Rentals Scraper",
+  "description": "Compare Kayak rental cars with provider, company, vehicle description, quoted price, and booking link. Batch pickup locations and set future collection and return dates.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "resultId",
+              "companyName",
+              "title",
+              "price",
+              "clickUrlTemplate"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "resultId": {
+                "label": "Result ID",
+                "format": "text"
+              },
+              "companyName": {
+                "label": "Rental company",
+                "format": "text"
+              },
+              "title": {
+                "label": "Vehicle",
+                "format": "text"
+              },
+              "price": {
+                "label": "Quoted price",
+                "format": "text"
+              },
+              "clickUrlTemplate": {
+                "label": "Booking link",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

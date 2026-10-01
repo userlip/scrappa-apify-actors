@@ -1,0 +1,26 @@
+{
+  "search_parameters": {
+    "product_id": "1232780281",
+    "country": "us",
+    "store": "apps",
+    "engine": "app_store"
+  },
+  "reviews": [
+    {
+      "id": "1846739204",
+      "title": "A reliable trail companion",
+      "author": "Maya Chen",
+      "rating": 5,
+      "text": "Clear maps and useful offline guidance made this a dependable part of weekend hikes.",
+      "date": "2026-09-24T10:15:00-07:00",
+      "is_edited": false
+    }
+  ],
+  "reviews_pagination": {
+    "offset": 0,
+    "limit": 20,
+    "next_offset": 20,
+    "next_page_token": "eyJvZmZzZXQiOjIwfQ",
+    "end_of_history": false
+  }
+}

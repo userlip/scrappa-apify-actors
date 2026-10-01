@@ -1,0 +1,197 @@
+{
+  "title": "Apple App Store Reviews Scraper",
+  "description": "Export Apple App Store reviews with star ratings, titles, review text, author names, and dates. Batch app IDs, choose a storefront, and page through customer feedback.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "apps"
+  ],
+  "properties": {
+    "apps": {
+      "title": "App Store product IDs",
+      "type": "array",
+      "description": "Apple App Store product IDs to collect public customer reviews for.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "product_id": "1232780281"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "properties": {
+          "product_id": {
+            "title": "Product Id",
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "nullable": true,
+            "description": "Apple product id (numeric adam id)",
+            "editor": "textfield"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "nullable": true,
+            "description": "Value accepted by the Apple App Store Reviews Scraper search.",
+            "editor": "textfield"
+          },
+          "store": {
+            "title": "Store",
+            "type": "string",
+            "enum": [
+              "apps",
+              "mac",
+              "books",
+              "audiobooks",
+              "movies",
+              "tv",
+              "music",
+              "podcasts"
+            ],
+            "nullable": true,
+            "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts Accepted values: apps, mac, books, audiobooks, movies, tv, music, podcasts.",
+            "editor": "select"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "nullable": true,
+            "description": "Kununu country market code, such as de, at, or ch.",
+            "editor": "textfield"
+          },
+          "season_id": {
+            "title": "Season Id",
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "nullable": true,
+            "description": "TV season id; returns the season product instead of the show.",
+            "editor": "textfield"
+          },
+          "num": {
+            "title": "Num",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "nullable": true,
+            "description": "Requested review result count per page",
+            "editor": "number"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Number of company matches to skip before returning the next page.",
+            "editor": "number"
+          },
+          "next_page_token": {
+            "title": "Next Page Token",
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true,
+            "description": "Review pagination token from a previous response",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "id": {
+      "title": "Id",
+      "type": "string",
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "nullable": true,
+      "description": "Value accepted by the Apple App Store Reviews Scraper search.",
+      "editor": "textfield"
+    },
+    "store": {
+      "title": "Store",
+      "type": "string",
+      "enum": [
+        "apps",
+        "mac",
+        "books",
+        "audiobooks",
+        "movies",
+        "tv",
+        "music",
+        "podcasts"
+      ],
+      "nullable": true,
+      "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts Accepted values: apps, mac, books, audiobooks, movies, tv, music, podcasts.",
+      "editor": "select"
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "nullable": true,
+      "description": "Kununu country market code, such as de, at, or ch.",
+      "editor": "textfield"
+    },
+    "season_id": {
+      "title": "Season Id",
+      "type": "string",
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "nullable": true,
+      "description": "TV season id; returns the season product instead of the show.",
+      "editor": "textfield"
+    },
+    "num": {
+      "title": "Num",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "nullable": true,
+      "description": "Requested review result count per page",
+      "editor": "number"
+    },
+    "offset": {
+      "title": "Offset",
+      "type": "integer",
+      "minimum": 0,
+      "nullable": true,
+      "description": "Number of company matches to skip before returning the next page.",
+      "editor": "number"
+    },
+    "next_page_token": {
+      "title": "Next Page Token",
+      "type": "string",
+      "maxLength": 100,
+      "nullable": true,
+      "description": "Review pagination token from a previous response",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 1
+    }
+  }
+}

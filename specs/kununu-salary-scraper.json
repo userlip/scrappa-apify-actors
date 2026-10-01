@@ -1,0 +1,238 @@
+{
+  "slug": "kununu-salary-scraper",
+  "title": "Kununu Salary by Job Title Scraper",
+  "description": "Get Kununu salary statistics by job title and country, including average pay, ranges, city comparisons, experience groups, and related roles. Batch titles for research.",
+  "endpoint": "/kununu/salary",
+  "openapiPath": "/kununu/salary",
+  "mode": "single",
+  "batch": {
+    "field": "job_titles",
+    "valueField": "job_title",
+    "apiParam": "job_title",
+    "pathParam": null,
+    "title": "Job titles",
+    "description": "Job titles whose Kununu salary statistics you want to retrieve.",
+    "valueDescription": "Job Title used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "at",
+          "ch"
+        ],
+        "nullable": true,
+        "description": "Kununu country market code, such as de, at, or ch. Accepted values: de, at, ch."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "job_title",
+      "apiParam": "job_title",
+      "location": "query",
+      "required": true,
+      "title": "Job Title",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120,
+        "description": "Job title to resolve to the closest available Kununu salary profile."
+      },
+      "editor": "textfield"
+    }
+  ],
+  "resultPointer": null,
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_job_title"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "job_titles": [
+      {
+        "job_title": "Softwareentwickler"
+      }
+    ],
+    "country": "de",
+    "maxResults": 10
+  },
+  "testParams": {
+    "country": "de",
+    "job_title": "Softwareentwickler"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "jobTitle": {
+        "currentSearchTerm": "Softwareentwickler",
+        "hasSearched": true,
+        "stats": {
+          "jobTitle": "Softwareentwickler",
+          "normalizedJobTitle": "Software Developer",
+          "countryCode": "de",
+          "currency": "EUR",
+          "range": {
+            "average": 64200,
+            "minimum": 48000,
+            "maximum": 91000,
+            "numberOfEntries": 1240
+          },
+          "cities": [
+            {
+              "cityName": "Berlin",
+              "average": 66800,
+              "minBound": 51000,
+              "maxBound": 92000,
+              "numberOfEntries": 210
+            }
+          ],
+          "experienceGraph": {
+            "experienceGroups": [
+              {
+                "experienceGroup": "3 to 5 years",
+                "totalAverage": 65500,
+                "maleAverage": 66200,
+                "femaleAverage": 64200
+              }
+            ]
+          }
+        }
+      },
+      "careerPaths": {
+        "items": {
+          "likelihood": [
+            {
+              "jobTitle": "Senior Software Developer",
+              "likelihood": 0.38,
+              "average": 74800,
+              "numberOfJobs": 520
+            }
+          ]
+        }
+      },
+      "educationLevels": {
+        "items": [
+          {
+            "id": 6,
+            "level": 6,
+            "countryCode": "de",
+            "label": "Bachelor degree"
+          }
+        ]
+      },
+      "caveat": "Salary values are estimates based on available reports."
+    },
+    "meta": {
+      "resolution": {
+        "term": "Softwareentwickler",
+        "matchedTitle": "Software Developer",
+        "slug": "software-developer",
+        "id": 614,
+        "alternatives": [
+          {
+            "id": 615,
+            "title": "Software Engineer",
+            "matchingScore": 0.91
+          }
+        ]
+      },
+      "duration_ms": 1420,
+      "cached": true
+    }
+  },
+  "tableFields": [
+    {
+      "name": "success",
+      "label": "Success",
+      "format": "text"
+    },
+    {
+      "name": "data",
+      "label": "Salary statistics",
+      "format": "text"
+    },
+    {
+      "name": "meta",
+      "label": "Search resolution",
+      "format": "text"
+    }
+  ],
+  "categories": [
+    "JOBS"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kununu Salary | Salary by Job Title",
+    "seoDescription": "Scrape Kununu salary data by job title and country. Export salary ranges, averages, city comparisons, experience groups, and related roles for research.",
+    "intro": "Retrieve Kununu salary statistics by job title and country, including pay ranges, averages, city comparisons, experience groups, and related roles. Batch titles in one run.",
+    "useCases": [
+      "Job seekers can compare reported salary ranges for a target role.",
+      "Compensation teams can review pay differences across cities and experience groups.",
+      "Labor-market analysts can compare related jobs and salary distributions."
+    ],
+    "howToUse": [
+      "Add a job title to each entry in `job_titles`.",
+      "Choose Germany, Austria, or Switzerland for the salary market.",
+      "Review the matched title and salary statistics in the returned object."
+    ],
+    "faqs": [
+      {
+        "question": "What if Kununu matches a different job title?",
+        "answer": "The response includes the resolved title and may include alternatives so you can confirm which statistics were selected."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kununu-company-salaries-scraper",
+        "title": "Kununu Company Salaries Scraper"
+      },
+      {
+        "slug": "kununu-company-details-scraper",
+        "title": "Kununu Company Profile Scraper"
+      },
+      {
+        "slug": "kununu-jobs-scraper",
+        "title": "Kununu Jobs Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when Kununu returned salary statistics for the requested title."
+      },
+      {
+        "name": "data",
+        "type": "Object",
+        "description": "Resolved job-title statistics, salary ranges, city and experience comparisons, and related roles."
+      },
+      {
+        "name": "meta",
+        "type": "Object",
+        "description": "Resolved title, alternatives, fetch timing, and cache status."
+      },
+      {
+        "name": "input_job_title",
+        "type": "String",
+        "description": "Job title submitted for the Kununu salary lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "success": true,
+  "operation": "vacation-packages",
+  "data": {
+    "results": [
+      {
+        "resultId": "package-90117",
+        "localizedHeadline": "Four nights in Las Vegas",
+        "localizedDescription": "Flight and hotel bundle near the Strip",
+        "price": "$389",
+        "totalPrice": "$778",
+        "providerName": "Expedia",
+        "providerCode": "expedia",
+        "clickUrl": "https://www.kayak.com/packages/ICT-LAS/2026-10-31/2026-11-04",
+        "flightLegs": [
+          {
+            "originAirport": "ICT",
+            "destinationAirport": "LAS",
+            "airline": "Southwest Airlines"
+          }
+        ],
+        "hotelData": {
+          "name": "Desert Palm Resort",
+          "nights": 4
+        },
+        "isAd": false
+      }
+    ],
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "duration_ms": 1140,
+    "attempts": 1
+  }
+}

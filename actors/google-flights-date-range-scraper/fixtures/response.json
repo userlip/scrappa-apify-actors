@@ -1,0 +1,28 @@
+{
+  "date_price_combinations": [
+    {
+      "price": 245,
+      "currency": "USD",
+      "total_duration_minutes": 356,
+      "stops": 0,
+      "airline_name": "JetBlue",
+      "departure_date": "2026-10-31",
+      "return_date": "2026-11-07",
+      "legs": [
+        {
+          "departure_airport": "JFK",
+          "arrival_airport": "LAX",
+          "departure_time": "2026-10-31T08:15:00-04:00",
+          "arrival_time": "2026-10-31T11:11:00-07:00",
+          "airline_name": "JetBlue",
+          "flight_number": "B6123"
+        }
+      ]
+    }
+  ],
+  "search_metadata": {
+    "origin": "JFK",
+    "destination": "LAX",
+    "status": "success"
+  }
+}

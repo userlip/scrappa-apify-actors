@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "data": {
+    "stellenangebotsTitel": "Senior Data Analyst (m/w/d)",
+    "stellenangebotsBeschreibung": "Analyze operational data, build clear reporting, and collaborate with product and engineering teams.",
+    "arbeitszeitVollzeit": true,
+    "eintrittszeitraum": "Nach Vereinbarung",
+    "verguetungsangabe": "58.000 bis 72.000 EUR jährlich",
+    "artDerVerguetung": "Jahresgehalt",
+    "festgehalt": true,
+    "vertragsdauer": "Unbefristet",
+    "datumErsteVeroeffentlichung": "2026-09-12",
+    "aenderungsdatum": "2026-09-25",
+    "firma": "Nordstern Energie GmbH",
+    "referenznummer": "12016-10005410012-S",
+    "stellenlokationen": [
+      {
+        "ort": "Berlin",
+        "land": "Deutschland",
+        "plz": "10115"
+      }
+    ]
+  }
+}
