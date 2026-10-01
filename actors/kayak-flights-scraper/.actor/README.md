@@ -140,6 +140,6 @@ Departure defaults to 30 days from the run date. A round-trip return defaults to
 
 ## Related Scrappa Actors
 
-- [Google Flights Search Scraper](https://apify.com/thescrappa/google-flights-search-scraper)
+- [Google Flights Scraper](https://apify.com/thescrappa/google-flights-search-scraper)
 - [Booking.com Search Scraper](https://apify.com/thescrappa/booking-search-scraper)
 - [Booking.com Hotel Details Scraper](https://apify.com/thescrappa/booking-hotel-details-scraper)
