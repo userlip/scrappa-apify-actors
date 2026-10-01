@@ -113,7 +113,7 @@ async function deploy(dir) {
   const finishedBuild = await waitFor('actor-builds', build.id, 900);
   if (finishedBuild.status !== 'SUCCEEDED') throw new Error(`${name}: build ${build.id} ${finishedBuild.status}`);
 
-  const run = await api('POST', `/acts/${actor.id}/runs?build=${build.id}`, prefilledInput(schema));
+  const run = await api('POST', `/acts/${actor.id}/runs?build=${encodeURIComponent(finishedBuild.buildNumber)}`, prefilledInput(schema));
   const finishedRun = await waitFor('actor-runs', run.id, 600);
   await sleep(4000);
   const dataset = await api('GET', `/datasets/${finishedRun.defaultDatasetId}`);
