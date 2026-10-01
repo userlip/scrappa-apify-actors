@@ -91,7 +91,7 @@ Check the run log for the source or input error, correct the input and retry aft
 
 ### How do I choose which podcast videos are returned?
 
-Provide a channel ID in `id` or a comma-separated list in `ids`. Set `sort` to `newest`, `popular` or `oldest`, and use `continuation` when requesting a later page.
+Provide a channel ID in `id` or a comma-separated list in `ids`. Set `sort` to `newest`, `popular` or `oldest`. Use a returned `continuation` token only with one channel ID; the Actor rejects it with multiple IDs.
 
 ## Related Scrappa Actors
 

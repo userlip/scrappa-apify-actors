@@ -4,7 +4,7 @@ Review a Booking.com hotel page with its property name, address, guest rating an
 
 ## What data can you extract?
 
-Each saved row represents one hotel lookup. Structured objects such as `hotel_schema`, `aggregate_rating` and `json_ld` appear when Booking.com exposes them.
+Each saved row represents one hotel lookup. The record includes structured hotel details and Schema.org markup when Booking.com provides them.
 
 | Field | Type | Description |
 | --- | --- | --- |
