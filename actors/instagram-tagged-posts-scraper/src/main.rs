@@ -17,8 +17,8 @@ const DEFAULT_APIFY_URL: &str = "https://api.apify.com";
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const ENTRY_TIME_BUDGET: Duration = Duration::from_secs(100);
-const MAX_RETRY_BACKOFF: Duration = Duration::from_secs(10);
-const MAX_SCRAPPA_RETRIES: usize = 4;
+const MAX_RETRY_BACKOFF: Duration = Duration::from_secs(15);
+const MAX_SCRAPPA_RETRIES: usize = 7;
 const MAX_APIFY_RETRIES: usize = 8;
 const MAX_BATCH_SIZE: usize = 100;
 const MAX_DATASET_PUSH_ITEMS: usize = 500;
@@ -361,7 +361,7 @@ impl Storage {
         let url = self.api_url(&["v2", "actor-runs", run_id])?;
         let response = self
             .send_apify_with_retry("status message update", || {
-                self.authorized(Method::PATCH, url.clone())
+                self.authorized(Method::PUT, url.clone())
                     .json(&json!({"statusMessage": message}))
             })
             .await?;
@@ -1886,7 +1886,7 @@ fn status_message(
 }
 
 fn retry_delay(attempt: usize) -> Duration {
-    Duration::from_millis(500_u64.saturating_mul(2_u64.saturating_pow(attempt as u32)))
+    Duration::from_millis(1_000_u64.saturating_mul(2_u64.saturating_pow(attempt as u32)))
         .min(MAX_RETRY_BACKOFF)
 }
 
@@ -2023,7 +2023,10 @@ async fn execute() -> Result<()> {
         storage.remaining_items == 0,
         charge_limited,
     );
-    storage.set_status_message(&message).await?;
+    // The status message is informational; never fail a run that already saved data because of it.
+    if let Err(error) = storage.set_status_message(&message).await {
+        eprintln!("Warning: could not update the Actor status message: {error:#}");
+    }
 
     if successful_entries == 0 && failed_entries > 0 {
         bail!(
