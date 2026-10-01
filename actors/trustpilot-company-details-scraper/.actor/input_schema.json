@@ -16,7 +16,9 @@
       "type": "array",
       "description": "Batch of company domains to process in one run. Each domain produces one dataset item.",
       "editor": "stringList",
-      "prefill": ["trustpilot.com", "amazon.com"]
+      "prefill": [
+        "trustpilot.com"
+      ]
     },
     "locale": {
       "title": "Locale",
@@ -24,8 +26,56 @@
       "description": "Trustpilot locale used for the company profile page.",
       "editor": "select",
       "default": "en-US",
-      "enum": ["da-DK", "de-AT", "de-CH", "de-DE", "en-AU", "en-CA", "en-GB", "en-IE", "en-NZ", "en-US", "es-ES", "fi-FI", "fr-BE", "nl-BE", "fr-FR", "it-IT", "ja-JP", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "sv-SE"],
-      "enumTitles": ["Danish (Denmark)", "German (Austria)", "German (Switzerland)", "German (Germany)", "English (Australia)", "English (Canada)", "English (United Kingdom)", "English (Ireland)", "English (New Zealand)", "English (United States)", "Spanish (Spain)", "Finnish (Finland)", "French (Belgium)", "Dutch (Belgium)", "French (France)", "Italian (Italy)", "Japanese (Japan)", "Norwegian (Norway)", "Dutch (Netherlands)", "Polish (Poland)", "Portuguese (Brazil)", "Portuguese (Portugal)", "Swedish (Sweden)"]
+      "enum": [
+        "da-DK",
+        "de-AT",
+        "de-CH",
+        "de-DE",
+        "en-AU",
+        "en-CA",
+        "en-GB",
+        "en-IE",
+        "en-NZ",
+        "en-US",
+        "es-ES",
+        "fi-FI",
+        "fr-BE",
+        "nl-BE",
+        "fr-FR",
+        "it-IT",
+        "ja-JP",
+        "nb-NO",
+        "nl-NL",
+        "pl-PL",
+        "pt-BR",
+        "pt-PT",
+        "sv-SE"
+      ],
+      "enumTitles": [
+        "Danish (Denmark)",
+        "German (Austria)",
+        "German (Switzerland)",
+        "German (Germany)",
+        "English (Australia)",
+        "English (Canada)",
+        "English (United Kingdom)",
+        "English (Ireland)",
+        "English (New Zealand)",
+        "English (United States)",
+        "Spanish (Spain)",
+        "Finnish (Finland)",
+        "French (Belgium)",
+        "Dutch (Belgium)",
+        "French (France)",
+        "Italian (Italy)",
+        "Japanese (Japan)",
+        "Norwegian (Norway)",
+        "Dutch (Netherlands)",
+        "Polish (Poland)",
+        "Portuguese (Brazil)",
+        "Portuguese (Portugal)",
+        "Swedish (Sweden)"
+      ]
     },
     "fields": {
       "title": "Fields",

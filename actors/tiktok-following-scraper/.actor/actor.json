@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-following-scraper",
   "title": "TikTok Following Scraper",
-  "description": "Extract the public TikTok accounts a user follows by username, profile URL, or user ID. Get followed account IDs, usernames, nicknames, avatars, follower counts, verification status, and pagination tokens through Scrappa.",
+  "description": "Review public profiles followed by a TikTok account, with usernames and profile details. Choose a public TikTok profile and requested count to list accounts it follows.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

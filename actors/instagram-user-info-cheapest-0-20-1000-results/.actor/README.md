@@ -1,124 +1,100 @@
-# Instagram User Info Scraper
+# Instagram User Info | Cheapest $0.20/1k results
 
-Extract public Instagram profile information by username. This Actor is built for profile lookups, creator research, lead enrichment, competitor monitoring, and quick checks of public Instagram account metadata.
+Review a public Instagram profile with its biography, follower count and account details. Submit one public username or several usernames to retrieve the profiles available to Instagram.
 
-No Instagram login, cookies, proxy setup, or browser session is required. Provide up to 100 usernames and the Actor returns one dataset item for each processed username. The Actor uses a Scrappa API key configured as the `SCRAPPA_API_KEY` environment variable; set this secret if you fork or self-deploy the Actor.
+## What data can you extract?
 
-## What It Does
+Post and profile details reflect information visible on public Instagram pages; optional fields can be absent.
 
-- Public profile identity fields such as username, full name, biography, external URL, profile picture, and category.
-- Audience and activity counts such as followers, following, and media count.
-- Account flags such as verified, private, business, professional, and related public profile indicators when Instagram returns them.
-- Raw response fields from the upstream profile lookup, flattened into one dataset item for easier export and filtering.
+| Field | Type | Description |
+| --- | --- | --- |
+| `username` | text | Username shown for the Instagram profile by Instagram, in the format used by the source; null when it is omitted. |
+| `full_name` | text | Name of the Instagram profile, as shown by Instagram; null when no name is published. |
+| `biography` | text | Profile biography from Instagram for this Instagram profile; null when the source has no text to show. |
+| `follower_count` | number | Number of followers shown by Instagram, as a whole number; zero is possible, and null means no count was reported. |
+| `following_count` | number | Number of followings shown by Instagram, as a whole number; zero is possible, and null means no count was reported. |
+| `media_count` | number | Number of medias shown by Instagram, as a whole number; zero is possible, and null means no count was reported. |
+| `is_verified` | boolean | Whether the source marks the profile as verified; false is a reported value, while null means Instagram provided no flag. |
+| `is_private` | boolean | Whether the account is private; false is a reported value, while null means Instagram provided no flag. |
 
-Private accounts can still return public metadata that is visible without logging in, but this Actor does not bypass privacy restrictions or access private posts.
+## Use cases
+
+- Social teams can review public post captions and engagement details.
+- Brand researchers can compare post data while monitoring a campaign.
+- Creators can archive source-linked posts for a recurring content review.
+
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `usernames` and use the identifier or URL format required by Instagram.
+3. Start the run and open its default dataset to inspect or download the rows.
+
+```json
+{
+  "usernames": [
+    "natgeo",
+    "instagram"
+  ]
+}
+```
+
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
 ## Input
 
-Use the `usernames` list to process up to 100 Instagram accounts in one run. This shares Actor startup and storage overhead across the whole batch. The legacy `username` field remains available for existing integrations.
-
-### Input Fields
-
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `usernames` | Array of strings | Recommended | Up to 100 Instagram usernames. Duplicate handles are fetched once. |
-| `username` | String | No | Backward-compatible single username. An optional leading `@` is normalized automatically. |
+| `usernames` | array of string | No | Recommended. Process multiple usernames in one Actor run so startup and storage overhead are shared across results. Duplicates are fetched once. Constraints: minimum 1 items; maximum 100 items. |
+| `username` | string | No | Backward-compatible single username. Prefer usernames for normal usage, especially when processing more than one profile. |
 
-## Example Input
+## Output example
 
-```json
-{
-  "usernames": ["natgeo", "instagram"]
-}
-```
-
-You can enter the username with or without the `@` symbol. For example, `natgeo` and `@natgeo` are both accepted.
-
-## Output
-
-Each processed username saves one profile object to the default Apify dataset. A batch of 100 usernames therefore produces 100 dataset items. The exact fields can vary depending on what Instagram returns for the profile, but common fields include:
-
-| Field | Description |
-| --- | --- |
-| `username` | Instagram handle. |
-| `full_name` | Display name shown on the profile. |
-| `biography` | Public profile bio text. |
-| `external_url` | Website URL shown on the profile, when available. |
-| `profile_pic_url` | Public profile picture URL, when available. |
-| `follower_count` | Number of followers. |
-| `following_count` | Number of accounts followed. |
-| `media_count` | Number of posts or media items reported for the account. |
-| `is_verified` | Whether the account is verified. |
-| `is_private` | Whether the account is private. |
-| `is_business_account` | Whether Instagram marks the profile as a business account, when available. |
-| `is_professional_account` | Whether Instagram marks the profile as a professional account, when available. |
-| `category_name` | Public category label, when available. |
-
-## Example Output
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "username": "natgeo",
-  "full_name": "National Geographic",
-  "biography": "Experience the world through the eyes of National Geographic photographers.",
-  "external_url": "https://www.nationalgeographic.com/",
-  "follower_count": 280000000,
-  "following_count": 170,
-  "media_count": 30000,
+  "follower_count": 12600,
+  "username": "morgan.creates",
+  "full_name": "Morgan Lee",
+  "biography": "Sharing neighborhood markets, simple recipes and weekend walks.",
+  "following_count": 418,
+  "media_count": 18,
   "is_verified": true,
-  "is_private": false,
-  "profile_pic_url": "https://..."
+  "is_private": false
 }
 ```
-
-## Exporting results
-
-Results are stored in the Actor's default dataset. From Apify, you can export the dataset as:
-
-- JSON
-- CSV
-- Excel
-- XML
-- RSS
-- HTML table
-
-Use JSON for full nested/raw fields, or CSV and Excel when you want spreadsheet-friendly columns for profile research, enrichment, or reporting.
-
-## Authentication
-
-This Actor does not require an Instagram account. It does not ask for Instagram credentials, session cookies, or two-factor authentication codes.
-
-That makes it simple to run in Apify tasks, schedules, and API workflows. It also means the Actor only returns public information available through the profile lookup and does not unlock private account content.
-
-## Common Use Cases
-
-- Enrich a list of Instagram handles with follower counts and bios.
-- Check whether a public account is verified, private, or business-related.
-- Monitor creator, brand, competitor, or publisher profile metadata.
-- Export profile records into a CRM, spreadsheet, or data warehouse.
-- Validate Instagram usernames before running larger data workflows.
-
-## Recommended Workflow
-
-1. Prepare a list of Instagram usernames from your CRM, spreadsheet, research workflow, or another Apify Actor.
-2. Run this Actor once for the complete list (up to 100 usernames per run).
-3. Export the dataset as JSON when you need full raw fields, or CSV/Excel when you need spreadsheet-friendly profile columns.
-4. Join the exported profile data with your existing leads, creator lists, competitor trackers, or enrichment pipeline.
-
-## Tips For Better Results
-
-- Use exact Instagram usernames instead of display names or profile URLs.
-- Keep both `username` and any exported account ID fields in downstream systems so you can deduplicate profile records later.
-- Re-run important profiles periodically if you monitor follower count, biography, verification, or business-account changes.
-- For high-volume enrichment, fill each run with up to 100 usernames before scheduling another run.
 
 ## Pricing
 
-$0.20 per 1,000 results. No Instagram login required. Requires `SCRAPPA_API_KEY` in the Actor environment.
+**Current live price:** $0.20 per 1,000 results.
 
-## Notes and limits
+Each saved dataset record counts as one result.
 
-- Process up to 100 unique usernames per Actor run; batching is recommended to minimize run overhead.
-- Usernames are normalized before lookup, so a leading `@` is removed automatically.
-- Availability of some fields depends on the public data returned for that profile.
-- If Instagram or the upstream profile source does not expose a field for a profile, it may be missing or null in the dataset item.
+## FAQ
+
+### Is it legal to collect public information?
+
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
+
+### How many records will a run return?
+
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+
+### Can I call it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~instagram-user-info-cheapest-0-20-1000-results/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
+
+### What happens when a request fails?
+
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Can Instagram User Info process several usernames together?
+
+Yes. Pass usernames in `usernames` or use `username` for one public profile. Fields such as biography and follower count may be absent from a restricted profile.
+
+## Related Scrappa Actors
+
+- [Instagram Post Info | Cheapest $0.20/1k results](https://apify.com/thescrappa/instagram-post-info-cheapest-0-20-1000-results)
+- [Instagram User Posts Scraper](https://apify.com/thescrappa/instagram-user-posts-cheapest-0-20-1000-results)
+- [Pinterest Search Scraper](https://apify.com/thescrappa/pinterest-search-scraper)
+- [TikTok Search Scraper](https://apify.com/thescrappa/tiktok-search-scraper)

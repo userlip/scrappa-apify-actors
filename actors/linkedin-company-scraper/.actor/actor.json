@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "linkedin-company-scraper",
   "title": "LinkedIn Company Scraper - $0.30/1k results",
-  "description": "Scrape public LinkedIn company pages. Get company info, employees, posts, funding, locations, and specialties. No LinkedIn login required.",
+  "description": "Look up a LinkedIn company profile with industry, employee size, website and follower count. Use public company profile URLs, individually or as a batch, to compare company details.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

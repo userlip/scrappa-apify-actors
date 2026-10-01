@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "vinted-user-profile-scraper",
   "title": "Vinted User Profile Scraper",
-  "description": "Research public Vinted seller identity, reputation, activity, verification, bundle discounts, and marketplace trust signals through Scrappa. Batch seller IDs in one run, then scale up with the Scrappa direct API.",
+  "description": "Look up a Vinted seller profile with username, location, feedback and active item count. Paste the seller or user ID shown in the Input section to retrieve its public record.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

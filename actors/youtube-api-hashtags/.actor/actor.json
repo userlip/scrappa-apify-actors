@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "youtube-api-hashtags",
-  "title": "YouTube API Hashtags",
-  "description": "Search YouTube videos by hashtag through the Scrappa YouTube API.",
+  "title": "YouTube Hashtag Videos Scraper",
+  "description": "Find public YouTube videos for a hashtag, with titles, channels and view counts. Enter a hashtag and optionally set video length, upload time or sort order.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

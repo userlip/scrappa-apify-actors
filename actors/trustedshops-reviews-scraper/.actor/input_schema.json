@@ -1,5 +1,5 @@
 {
-  "title": "TrustedShops Reviews Scraper",
+  "title": "Trusted Shops Reviews Scraper",
   "description": "Extract TrustedShops reviews by batch TSIDs or profile URLs. One dataset item is written and charged per review.",
   "type": "object",
   "schemaVersion": 1,

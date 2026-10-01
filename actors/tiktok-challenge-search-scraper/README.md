@@ -1,60 +1,101 @@
 # TikTok Challenge Search Scraper
 
-TikTok Challenge Search Scraper finds TikTok challenge and hashtag metadata from keywords through Scrappa. Use it to discover challenge IDs before running hashtag-post workflows, monitor topic demand, or build TikTok trend research pipelines.
+Find TikTok challenges by keyword and review their names, IDs and video counts. Enter a challenge keyword to find matching challenge names and IDs for a follow-up lookup.
 
-## Features
+## What data can you extract?
 
-- Search one or more keywords in a single Apify run
-- Return one dataset item per TikTok challenge result
-- Include challenge IDs and names for downstream TikTok hashtag post scraping
-- Preserve raw TikTok challenge fields alongside normalized columns
-- Charge per saved `challenge-result` event when published with pay-per-event pricing
-- Compact `OUTPUT` summary for compatibility
+Captions, profile details and engagement counts reflect public TikTok pages; counts can be hidden or absent.
 
-## Input
+| Field | Type | Description |
+| --- | --- | --- |
+| `challenge_name` | text | Tiktok challenge name shown for the challenge search result by TikTok, in the format used by the source; null when it is omitted. |
+| `challenge_id` | text | TikTok challenge ID for the challenge search result, assigned by TikTok; null when the source does not expose it. |
+| `description` | text | Description text from TikTok for this challenge search result; null when the source has no text to show. |
+| `view_count` | number | Number of video views shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `video_count` | number | Number of videos shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `user_count` | number | Number of participants shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `request_keyword` | text | Search keyword passed to TikTok. This input value is copied into the output row; null when it was not supplied. |
+| `request_count` | number | Requested result count passed to TikTok; A whole-number result count. This input value is copied into the output row; null when it was not supplied. |
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `keywords` | array of strings | No | Preferred batch input. Keyword, topic, niche, product, brand, or hashtag terms to search. |
-| `keyword` | string | No | Legacy single keyword input. Ignored when `keywords` contains valid values. |
-| `count` | integer | No | Number of challenge results to request for each keyword. Scrappa accepts `1-50`. |
+## Use cases
 
-Provide at least one value in `keywords` or `keyword`.
+- Campaign managers can monitor public videos using a TikTok challenge or hashtag.
+- Researchers can compare captions and engagement across posts under a tag.
+- Creators can review examples before planning a themed video.
 
-## Example Input
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `keywords` and use the identifier or URL format required by TikTok.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
-  "keywords": ["cosplay", "fitness"],
+  "keywords": [
+    "cosplay",
+    "fitness"
+  ],
   "count": 10
 }
 ```
 
-## Output
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-Each TikTok challenge is saved as one dataset item:
+## Input
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `keywords` | array of string | No | Keyword, topic, niche, product, brand, or hashtag terms to search. Batch multiple keywords in one run to reduce Apify run overhead. |
+| `keyword` | string | No | Backward-compatible single keyword input for API callers. Ignored when Search Keywords contains valid values. |
+| `count` | integer | No | Number of challenge results to request for each keyword. Scrappa accepts 1-50. Constraints: minimum 1; maximum 50. |
+
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "challenge_id": "1234567890123456789",
-  "challenge_name": "cosplay",
-  "description": "Example TikTok challenge description",
-  "view_count": 123456789,
-  "video_count": 12345,
-  "user_count": 6789,
-  "request_keyword": "cosplay",
-  "request_count": 10
+  "description": "Three ways to style a vintage wool coat for fall. Which look is your favorite?",
+  "view_count": 18400,
+  "challenge_name": "#weekendmarket",
+  "challenge_id": "7348291056172489012",
+  "video_count": 246,
+  "user_count": 12600
 }
 ```
 
-The dataset item also keeps the raw fields returned by Scrappa/TikTok so downstream workflows can use fields that are not shown in the default table view.
-
-The `OUTPUT` key-value-store record contains a compact summary with processed keywords, saved challenge count, and charge-limit status. Dataset output is the primary result channel.
-
 ## Pricing
 
-Publish this actor with Apify pay-per-event pricing using the `challenge-result` event. Suggested starting price: `$0.00025` per saved challenge result (`$0.25/1k results`). Confirm active paid pricing or the earliest allowed scheduled paid pricing in Apify before public launch.
+**Current live price:** $0.25 per 1,000 results.
 
-## Support
+Each saved video, post or comment record counts as one result.
 
-For higher-volume usage or direct API access, use Scrappa at https://scrappa.co.
+## FAQ
+
+### Is it legal to collect public information?
+
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
+
+### How many records will a run return?
+
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+
+### Can I call it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~tiktok-challenge-search-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
+
+### What happens when a request fails?
+
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How can I find a TikTok challenge ID?
+
+Search by a word or phrase in `keyword` or `keywords`. The returned challenge name and ID can then be used with TikTok Hashtag Details or TikTok Hashtag Videos.
+
+## Related Scrappa Actors
+
+- [TikTok Ads Scraper](https://apify.com/thescrappa/tiktok-ads-scraper)
+- [TikTok Hashtag Details Scraper](https://apify.com/thescrappa/tiktok-challenge-details-scraper)
+- [TikTok Hashtag Videos Scraper](https://apify.com/thescrappa/tiktok-challenge-posts-scraper)
+- [TikTok Comments Scraper](https://apify.com/thescrappa/tiktok-comments-scraper)
+- [TikTok Followers Scraper](https://apify.com/thescrappa/tiktok-followers-scraper)

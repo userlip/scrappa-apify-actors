@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "immobilienscout24-locations-scraper",
-  "title": "ImmobilienScout24 Location Autocomplete",
-  "description": "Resolve cities, districts, and postal-code queries to ImmobilienScout24 location names, types, and geocodes in one batch run.",
+  "title": "ImmobilienScout24 Locations Scraper",
+  "description": "Find ImmobilienScout24 city and district suggestions with the location codes used in property searches. Enter a city or district to get matching ImmobilienScout24 location suggestions.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

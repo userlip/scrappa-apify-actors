@@ -2,7 +2,7 @@
     "actorSpecification": 1,
     "name": "youtube-api-channel-podcasts",
     "title": "YouTube Channel Podcasts Scraper",
-    "description": "Fetch podcast videos for a YouTube channel by channel ID, sort order, and continuation token.",
+    "description": "List podcast videos published by a YouTube channel with titles, links, durations and engagement data. Submit a channel ID and choose a sort order to collect videos marked as podcasts.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-statistics",
-    "title": "YouTube API Channel Statistics",
-    "description": "Fetch YouTube channel statistics by channel ID through the Scrappa YouTube API.",
+    "title": "YouTube Channel Statistics Scraper",
+    "description": "Review public YouTube channel totals for views, subscribers and published videos. Provide a channel ID to retrieve the public subscriber, view and video totals currently available.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

@@ -6,13 +6,22 @@
     "category": {
       "title": "Category",
       "type": "array",
-      "description": "Trending category to fetch.",
+      "description": "Optional category filter. Leave this empty to use YouTube’s default trending feed.",
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["education", "music", "gaming", "news", "sports", "entertainment", "howto", "tech", "science"]
-      },
-      "prefill": ["education"]
+        "enum": [
+          "education",
+          "music",
+          "gaming",
+          "news",
+          "sports",
+          "entertainment",
+          "howto",
+          "tech",
+          "science"
+        ]
+      }
     },
     "type": {
       "title": "Trending type",
@@ -21,9 +30,13 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["now"]
+        "enum": [
+          "now"
+        ]
       },
-      "prefill": ["now"]
+      "prefill": [
+        "now"
+      ]
     }
   }
 }

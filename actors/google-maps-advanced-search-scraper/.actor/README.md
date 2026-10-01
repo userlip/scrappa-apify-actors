@@ -1,103 +1,108 @@
 # Google Maps Advanced Search Scraper
 
-Scrape Google Maps business listings from a precise map area using a search query, coordinates, and zoom level. This actor is built for local lead generation, competitor monitoring, territory research, and workflows where you need results tied to a specific latitude, longitude, and map zoom instead of a broad city-level search.
+Find local businesses on Google Maps with names, categories, star ratings and addresses. Set the map center and a business category to find places in a chosen local area.
 
-Use it when you need Google Maps results for a tight geographic area, a neighborhood, a sales territory, or a coordinate-defined map viewport.
+## What data can you extract?
 
-## What It Does
+Business search results reflect the public Google Maps listings returned for the query. Ratings and links appear when Google provides them.
 
-- Searches Google Maps for businesses by keyword, category, or service.
-- Targets results with optional `latitude` and `longitude` center coordinates.
-- Controls local precision with Google Maps-style `zoom` levels from broad area to street-level focus.
-- Supports result limits for quick samples or larger lead lists.
-- Returns business names, ratings, reviews, addresses, websites, phones, coordinates, business types, hours, status, and sample photos when available.
-- Supports language and region targeting with `hl` and `gl`.
+| Field | Type | Description |
+| --- | --- | --- |
+| `name` | text | Name of the Google Maps place, as shown by Google Maps; null when no name is published. |
+| `rating` | number | Rating for this Google Maps place, on a 1-to-5 star scale; null when no score is shown. |
+| `review_count` | number | Number of reviews shown by Google Maps, as a whole number; zero is possible, and null means no count was reported. |
+| `full_address` | text | Full address shown for the Google Maps place by Google Maps, in the format used by the source; null when it is omitted. |
+| `phone_numbers` | array of text | List of phone numbers associated with this Google Maps place on Google Maps; empty when the source returns no entries. |
+| `website` | link | Website url for this Google Maps place on Google Maps; null when the source does not provide a URL. |
+| `latitude` | number | Latitude for this Google Maps place on Google Maps, in decimal degrees; null when the source provides no coordinates. |
+| `longitude` | number | Longitude for this Google Maps place on Google Maps, in decimal degrees; null when the source provides no coordinates. |
 
-## Common Use Cases
+## Use cases
 
-- Find "restaurants", "coffee shops", "dentists", "plumbers", or other businesses around exact coordinates.
-- Scrape Google Maps leads inside a neighborhood, shopping district, downtown area, or delivery zone.
-- Compare competitors around store locations, franchise territories, hotels, campuses, or event venues.
-- Build coordinate-based local business datasets for sales prospecting, market mapping, and location intelligence.
-- Run bounds-focused Google Maps research by choosing a center point and zoom level for each target area.
+- Local sales teams can build prospect lists from businesses in a chosen area.
+- Directory operators can compare addresses, ratings and websites while checking listings.
+- Researchers can map business types across nearby neighborhoods.
 
-## Input
+## How to use
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `query` | string | Yes | Business, category, or service to search for, such as `coffee shops`, `restaurants`, or `dentists`. |
-| `zoom` | integer | Yes | Map zoom level from `3` to `21`. Lower values cover a wider area; higher values target a smaller, more precise area. |
-| `latitude` | number | No | Center latitude for the search area. If omitted, location may be resolved from the query. |
-| `longitude` | number | No | Center longitude for the search area. If omitted, location may be resolved from the query. |
-| `limit` | integer | No | Maximum number of results to return. |
-| `hl` | string | No | Google language code, such as `en`, `de`, `es`, or `fr`. Defaults to `en`. |
-| `gl` | string | No | Google region code, such as `us`, `de`, `fr`, or `uk`. |
-
-## Example Input
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `query` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
   "query": "coffee shops",
-  "latitude": 40.758,
-  "longitude": -73.9855,
   "zoom": 15,
-  "limit": 50,
-  "hl": "en",
+  "latitude": 40.7128,
+  "longitude": -74.006,
+  "limit": 10,
   "gl": "us"
 }
 ```
 
-## Output
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-The actor saves matching businesses to the default dataset. Each result can include:
+## Input
 
-- `name`
-- `business_id`
-- `place_id`
-- `rating`
-- `review_count`
-- `price_level`
-- `website`
-- `domain`
-- `phone_numbers`
-- `full_address`
-- `district`
-- `latitude`
-- `longitude`
-- `subtypes`
-- `type`
-- `short_description`
-- `opening_hours`
-- `current_status`
-- `photos_sample`
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `query` | string | Yes | What to search for (e.g., 'coffee shops', 'restaurants') |
+| `zoom` | integer | Yes | Map zoom level for precision (3=broad overview, 21=street level) Constraints: minimum 3; maximum 21. |
+| `latitude` | number | No | Center latitude for search (optional, auto-resolved from query if blank) |
+| `longitude` | number | No | Center longitude for search (optional, auto-resolved from query if blank) |
+| `limit` | integer | No | Maximum results to return (1 or more) Constraints: minimum 1. |
+| `hl` | string | No | ISO 639-1 language code (e.g., 'en', 'de', 'es', 'fr' or with region 'en-US', 'de-DE') |
+| `gl` | string | No | ISO 3166-1 alpha-2 country code for region-specific results (e.g., 'us', 'de', 'fr', 'uk') |
 
-## Example Output
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "name": "Example Coffee",
-  "business_id": "0x89c259...",
-  "place_id": "ChIJ...",
-  "rating": 4.6,
-  "review_count": 842,
-  "website": "https://example.com",
-  "phone_numbers": ["+1 212-555-0100"],
-  "full_address": "123 Example Ave, New York, NY 10036",
-  "latitude": 40.7581,
-  "longitude": -73.9856,
-  "subtypes": ["Coffee shop"],
-  "current_status": "Open"
+  "phone_numbers": null,
+  "name": "Juniper Street Coffee",
+  "rating": 4.7,
+  "review_count": 184,
+  "full_address": "418 Pine Street, Seattle, WA 98101",
+  "website": "https://northstar.example",
+  "latitude": 47.6101,
+  "longitude": -122.3421
 }
 ```
 
-## Tips For Coordinate And Bounds-Based Searches
-
-- Use `latitude` and `longitude` when you need results around an exact point.
-- Use higher zoom levels, such as `15` to `18`, for neighborhood or street-level searches.
-- Use lower zoom levels, such as `10` to `14`, for city or metro-area discovery.
-- For grid or bounds workflows, split your target region into center points and run the actor once per coordinate with the zoom level that matches your desired coverage.
-- Include location words in `query` only when you want Google to interpret a named place; otherwise use coordinates for cleaner area targeting.
-
 ## Pricing
 
-$0.30 per 1,000 results. No Google Maps API key required.
+**Current live price:** $5.00 per 1,000 searches; plus $0.30 per 1,000 results.
+
+Each processed search or query is counted according to the rate shown above.
+
+## FAQ
+
+### Is it legal to collect public information?
+
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
+
+### How many records will a run return?
+
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+
+### Can I call it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~google-maps-advanced-search-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
+
+### What happens when a request fails?
+
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How do I center a Google Maps Advanced Search?
+
+Set `query` to a business type or phrase and provide the map center with `latitude` and `longitude`. `zoom` and `limit` control the requested local search.
+
+## Related Scrappa Actors
+
+- [Google Maps Autocomplete Scraper](https://apify.com/thescrappa/google-maps-autocomplete-scraper)
+- [Google Maps Business Details Scraper](https://apify.com/thescrappa/google-maps-business-details-scraper)
+- [Google Maps Directions Scraper](https://apify.com/thescrappa/google-maps-directions-scraper)
+- [Google Maps Photos Scraper](https://apify.com/thescrappa/google-maps-photos-scraper)
+- [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)

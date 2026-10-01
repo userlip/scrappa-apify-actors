@@ -9,8 +9,14 @@
       "type": "string",
       "description": "Use company search for name/domain discovery, or category search for Trustpilot category browsing.",
       "editor": "select",
-      "enum": ["company_search", "category"],
-      "enumTitles": ["Company search", "Category businesses"],
+      "enum": [
+        "company_search",
+        "category"
+      ],
+      "enumTitles": [
+        "Company search",
+        "Category businesses"
+      ],
       "default": "company_search"
     },
     "query": {
@@ -36,7 +42,31 @@
       "type": "string",
       "description": "Trustpilot locale for company search.",
       "editor": "select",
-      "enum": ["da-DK", "de-AT", "de-CH", "de-DE", "en-AU", "en-CA", "en-GB", "en-IE", "en-NZ", "en-US", "es-ES", "fi-FI", "fr-BE", "nl-BE", "fr-FR", "it-IT", "ja-JP", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "sv-SE"],
+      "enum": [
+        "da-DK",
+        "de-AT",
+        "de-CH",
+        "de-DE",
+        "en-AU",
+        "en-CA",
+        "en-GB",
+        "en-IE",
+        "en-NZ",
+        "en-US",
+        "es-ES",
+        "fi-FI",
+        "fr-BE",
+        "nl-BE",
+        "fr-FR",
+        "it-IT",
+        "ja-JP",
+        "nb-NO",
+        "nl-NL",
+        "pl-PL",
+        "pt-BR",
+        "pt-PT",
+        "sv-SE"
+      ],
       "default": "en-US"
     },
     "country": {
@@ -95,8 +125,14 @@
       "type": "string",
       "description": "Optional category search sort order.",
       "editor": "select",
-      "enum": ["reviews_count", "latest_review"],
-      "enumTitles": ["Review count", "Latest review"]
+      "enum": [
+        "reviews_count",
+        "latest_review"
+      ],
+      "enumTitles": [
+        "Review count",
+        "Latest review"
+      ]
     },
     "claimed": {
       "title": "Claimed Only",
@@ -111,7 +147,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 50,
-      "default": 20
+      "default": 20,
+      "prefill": 5
     },
     "trustscore": {
       "title": "Category Minimum TrustScore",

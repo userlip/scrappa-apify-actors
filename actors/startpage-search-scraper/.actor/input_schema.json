@@ -3,7 +3,9 @@
   "description": "Batch Startpage SERP searches. Each query returns one dataset item per organic result.",
   "type": "object",
   "schemaVersion": 1,
-  "required": ["queries"],
+  "required": [
+    "queries"
+  ],
   "properties": {
     "queries": {
       "title": "Queries",
@@ -22,7 +24,9 @@
       ],
       "items": {
         "type": "object",
-        "required": ["query"],
+        "required": [
+          "query"
+        ],
         "properties": {
           "query": {
             "title": "Search Query",
@@ -37,8 +41,34 @@
             "type": "string",
             "description": "Startpage language filter.",
             "editor": "select",
-            "enum": ["english", "deutsch", "french", "spanish", "italian", "portuguese", "dutch", "russian", "chinese", "japanese", "arabic", "all"],
-            "enumTitles": ["English", "Deutsch", "French", "Spanish", "Italian", "Portuguese", "Dutch", "Russian", "Chinese", "Japanese", "Arabic", "All"],
+            "enum": [
+              "english",
+              "deutsch",
+              "french",
+              "spanish",
+              "italian",
+              "portuguese",
+              "dutch",
+              "russian",
+              "chinese",
+              "japanese",
+              "arabic",
+              "all"
+            ],
+            "enumTitles": [
+              "English",
+              "Deutsch",
+              "French",
+              "Spanish",
+              "Italian",
+              "Portuguese",
+              "Dutch",
+              "Russian",
+              "Chinese",
+              "Japanese",
+              "Arabic",
+              "All"
+            ],
             "default": "english"
           },
           "page": {
@@ -66,7 +96,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 100,
-      "default": 20
+      "default": 20,
+      "prefill": 5
     }
   }
 }

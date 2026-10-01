@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "jameda-doctor-details-scraper",
   "title": "Jameda Doctor Details Scraper",
-  "description": "Enrich one or more Jameda doctor profile URLs with complete profile details, ratings, clinic, contact, address, coordinates, opening hours, services, accepted patients, focus areas, conditions, languages, and booking IDs.",
+  "description": "Review a Jameda doctor profile with name, specialty, ratings and practice details. Submit one or more public doctor profile URLs to collect specialty and practice information together.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

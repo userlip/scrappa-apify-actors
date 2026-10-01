@@ -13,7 +13,11 @@
       "maxItems": 100,
       "items": {
         "type": "object",
-        "required": ["text", "source", "target"],
+        "required": [
+          "text",
+          "source",
+          "target"
+        ],
         "properties": {
           "text": {
             "title": "Text",
@@ -39,8 +43,11 @@
         }
       },
       "prefill": [
-        { "text": "Good morning", "source": "en", "target": "de" },
-        { "text": "How are you?", "source": "en", "target": "es" }
+        {
+          "text": "Good morning",
+          "source": "en",
+          "target": "de"
+        }
       ]
     },
     "text": {

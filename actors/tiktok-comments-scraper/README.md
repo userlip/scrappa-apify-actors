@@ -1,54 +1,109 @@
 # TikTok Comments Scraper
 
-Extract comments and optional nested replies from public TikTok video URLs through Scrappa. Use it for creator research, campaign monitoring, social listening, sentiment analysis, and comment export workflows.
+Read public TikTok video comments with text, commenter details, likes and replies. Paste a public video URL and choose whether to include replies when the source provides them.
+
+## What data can you extract?
+
+Captions, profile details and engagement counts reflect public TikTok pages; counts can be hidden or absent.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `comment_type` | text | Comment type shown for the video comment by TikTok, in the format used by the source; null when it is omitted. |
+| `text` | text | Text content from TikTok for this video comment; null when the source has no text to show. |
+| `user` | object | Commenter profile with ID, username, display name and avatar from TikTok; null when the source provides no details. |
+| `digg_count` | number | Number of likes shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `reply_count` | number | Number of replies shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `create_time` | number | Creation timestamp for this video comment, as a Unix timestamp in seconds; null if TikTok does not supply it. |
+| `comment_id` | text | comment ID for the video comment, assigned by TikTok; null when the source does not expose it. |
+| `parent_comment_id` | text | parent comment id for the video comment, assigned by TikTok; null when the source does not expose it. |
+| `video_id` | text | video ID for the video comment, assigned by TikTok; null when the source does not expose it. |
+| `video_url` | link | Video url for this video comment on TikTok; null when the source does not provide a URL. |
+
+## Use cases
+
+- Community managers can review public questions and replies under a video.
+- Researchers can compare comment text and engagement to study audience response.
+- Creators can collect feedback before planning a follow-up post.
+
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `url` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
+
+```json
+{
+  "url": "https://www.tiktok.com/@tiktok/video/7568510388342443294",
+  "count": 5
+}
+```
+
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
 ## Input
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| url | string | Yes | Public TikTok video URL |
-| count | integer | No | Number of comments to return, 1-50 |
-| cursor | string | No | Pagination cursor from a previous response |
-| includeReplies | boolean | No | Fetch replies for top-level comments with replies |
-| maxRepliesPerComment | integer | No | Maximum replies to fetch per top-level comment, 1-500 |
+| --- | --- | --- | --- |
+| `url` | string | Yes | Full TikTok video URL to fetch comments from. |
+| `count` | integer | No | Number of comments to return from this page. Scrappa accepts 1-50. Constraints: minimum 1; maximum 50. |
+| `cursor` | string | No | Pagination cursor from a previous run. Leave empty for the first page. |
+| `includeReplies` | boolean | No | When enabled, fetch replies for each top-level comment that has replies. Reply rows are added to the dataset with comment_type='reply' and parent_comment_id. |
+| `maxRepliesPerComment` | integer | No | Maximum replies to fetch for each top-level comment when reply collection is enabled. Scrappa fetches replies in pages of up to 50. Constraints: minimum 1; maximum 500. |
 
-## Example Input
+## Output example
 
-    {
-      "url": "https://www.tiktok.com/@tiktok/video/7568510388342443294",
-      "count": 20,
-      "includeReplies": true,
-      "maxRepliesPerComment": 50
-    }
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
-## Output
+```json
+{
+  "comment_type": "comment",
+  "text": "Three ways to style a vintage wool coat for fall. Which look is your favorite?",
+  "user": {
+    "id": "8042167953",
+    "unique_id": "riley.reads",
+    "nickname": "Riley Park",
+    "avatar": "https://images.example.com/creators/riley-park.jpg"
+  },
+  "digg_count": 864,
+  "reply_count": 4,
+  "create_time": 1790327700,
+  "video_id": "aB3dE5fG7hJ",
+  "comment_id": "comment_demo_04"
+}
+```
 
-Each saved comment is one default dataset item. Top-level comments have comment_type set to comment and null parent fields. Replies have comment_type set to reply with their parent comment ID and text.
+## Pricing
 
-The full top-level comments response is saved to the OUTPUT key-value record, including data.hasMore and data.cursor for the next comment page. When reply collection is enabled and replies are returned, raw reply responses are saved to REPLIES_OUTPUT, grouped by parent comment ID.
+**Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-## Pagination and replies
+Each saved video, post or comment record counts as one result.
 
-Run once without cursor. If OUTPUT.data.hasMore is true, run again with cursor set to OUTPUT.data.cursor. This top-level pagination path is unchanged when includeReplies is enabled.
+## FAQ
 
-Reply collection is sequential. Scrappa requests time out after 60 seconds and are not retried. Apify storage requests retry network failures, HTTP 429, and HTTP 5xx responses up to eight times with exponential backoff starting at 500 milliseconds. The actor's five-minute run timeout remains in place.
+### Is it legal to collect public information?
 
-## Pay-per-event budget
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-Before writing results, the actor reads the run's event prices, charged event counts, and spending limit. It writes only the prefix of dataset rows that fits the remaining budget. Apify's built-in apify-default-dataset-item event charges each row written to the default dataset. Large dataset writes are split into ordered batches under Apify's payload limit. The raw API responses remain available in the key-value outputs.
+### How many records will a run return?
 
-## Local development
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-Run the focused actor tests:
+### Can I call it through the API or connect it to other tools?
 
-    cargo test --locked
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~tiktok-comments-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-Build the production image:
+### What happens when a request fails?
 
-    docker build -f .actor/Dockerfile -t tiktok-comments-scraper .
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
 
-The runtime uses SCRAPPA_API_KEY from Actor settings, the default Apify input key-value record and dataset, and APIFY_TOKEN for storage access. ACTOR_INPUT_KEY can override the input record key; APIFY_API_PUBLIC_BASE_URL and SCRAPPA_API_BASE_URL support local HTTP mocks and default to Apify and Scrappa production APIs.
+### Can TikTok Comments include replies to a comment?
 
-## Support
+Set `includeReplies` to true to request replies, and use `maxRepliesPerComment` to cap replies per comment. A `cursor` can continue a paginated request when the response provides one.
 
-For higher-volume usage or direct API access, use Scrappa at https://scrappa.co.
+## Related Scrappa Actors
+
+- [TikTok Ads Scraper](https://apify.com/thescrappa/tiktok-ads-scraper)
+- [TikTok Hashtag Details Scraper](https://apify.com/thescrappa/tiktok-challenge-details-scraper)
+- [TikTok Hashtag Videos Scraper](https://apify.com/thescrappa/tiktok-challenge-posts-scraper)
+- [TikTok Challenge Search Scraper](https://apify.com/thescrappa/tiktok-challenge-search-scraper)
+- [TikTok Followers Scraper](https://apify.com/thescrappa/tiktok-followers-scraper)

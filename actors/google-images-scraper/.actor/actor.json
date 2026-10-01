@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "google-images-scraper",
   "title": "Google Images Scraper",
-  "description": "Search Google Images with Scrappa. Extract image thumbnails, original image URLs, source pages, dimensions, titles, product flags, filters, and localization metadata.",
+  "description": "Find Google Images results with image links, titles, publishers and dimensions. Choose a region and optional image filters to make a visual search more specific.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

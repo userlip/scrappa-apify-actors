@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "vinted-user-items-scraper",
   "title": "Vinted User Items Scraper",
-  "description": "Fetch listed items from one or more Vinted seller user IDs for inventory monitoring, reseller research, and competitor tracking.",
+  "description": "Browse a Vinted seller’s items with listing titles, brands, condition and prices. Submit multiple user IDs in one run to retrieve records for each target.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

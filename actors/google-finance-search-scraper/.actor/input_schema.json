@@ -23,7 +23,9 @@
         "minLength": 1,
         "maxLength": 255
       },
-      "prefill": ["AAPL", "Tesla"]
+      "prefill": [
+        "AAPL"
+      ]
     },
     "hl": {
       "title": "Language",

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "indeed-jobs-scraper",
-  "title": "Indeed Jobs Scraper ($0.30/1k results)",
-  "description": "Search Indeed job listings with Scrappa. Extract job titles, companies, locations, salaries, descriptions, attributes, apply URLs, and pagination cursors.",
+  "title": "Indeed Jobs Scraper",
+  "description": "Search Indeed job listings with titles, employers, locations and salary ranges when provided. Enter the role and location you want to hire for, then review salary details when Indeed publishes them.",
   "categories": [
     "LEAD_GENERATION",
     "MARKETING",

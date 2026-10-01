@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-video-scraper",
   "title": "TikTok Video Details Scraper",
-  "description": "Extract TikTok video details, author metadata, engagement metrics, covers, music fields, and playback/download URLs from one or more public TikTok video URLs through Scrappa.",
+  "description": "Look up a public TikTok video with its caption, creator and engagement metrics. Paste a public video URL or submit several URLs, then enable the optional HD setting when required.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

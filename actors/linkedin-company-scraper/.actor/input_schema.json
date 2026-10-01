@@ -11,8 +11,7 @@
       "editor": "stringList",
       "minItems": 1,
       "prefill": [
-        "https://www.linkedin.com/company/microsoft",
-        "https://www.linkedin.com/company/openai"
+        "https://www.linkedin.com/company/microsoft"
       ],
       "items": {
         "type": "string",

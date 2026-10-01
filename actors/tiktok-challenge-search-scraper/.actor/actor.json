@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-challenge-search-scraper",
   "title": "TikTok Challenge Search Scraper",
-  "description": "Search TikTok challenges and hashtags by keyword. Discover challenge IDs, names, descriptions, stats, and raw TikTok metadata through Scrappa.",
+  "description": "Find TikTok challenges by keyword and review their names, IDs and video counts. Enter a challenge keyword to find matching challenge names and IDs for a follow-up lookup.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

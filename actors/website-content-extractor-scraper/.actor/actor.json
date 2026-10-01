@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "website-content-extractor-scraper",
-  "title": "Website Content Extractor Scraper",
-  "description": "Extract title, body text, links, emails, images, metadata, raw HTML, or clean markdown from one or more URLs using Scrappa's Web Scraper API.",
+  "title": "Website Content Extractor",
+  "description": "Extract page titles, descriptions, readable text and links from public web pages. Add one or more public page URLs and choose whether to include HTML in the extracted content.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

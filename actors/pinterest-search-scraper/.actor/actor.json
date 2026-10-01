@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "pinterest-search-scraper",
   "title": "Pinterest Search Scraper",
-  "description": "Search Pinterest pins by keyword through Scrappa, with batch query input, pagination bookmark support, and one dataset item per pin.",
+  "description": "Find Pinterest pins with titles, descriptions, image links and source pages. Search a subject or style phrase to find public pins and follow their image links back to the source pages.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

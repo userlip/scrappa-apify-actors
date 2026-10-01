@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-comments-scraper",
   "title": "TikTok Comments Scraper",
-  "description": "Extract comments and optional nested replies from public TikTok video URLs. Get comment text, author details, likes, reply counts, timestamps, parent comment IDs, and pagination cursors through Scrappa.",
+  "description": "Read public TikTok video comments with text, commenter details, likes and replies. Paste a public video URL and choose whether to include replies when the source provides them.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

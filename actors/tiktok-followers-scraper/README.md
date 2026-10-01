@@ -1,27 +1,33 @@
 # TikTok Followers Scraper
 
-Extract public TikTok follower lists for a creator through Scrappa. Use it for audience research, influencer discovery, creator vetting, social graph analysis, and follower sampling workflows.
+Review public profiles following a TikTok account, with usernames and follower counts. Enter a public TikTok username and set the requested count to inspect that account’s followers.
 
-## Features
+## What data can you extract?
 
-- Lookup by TikTok username, full profile URL, or numeric user ID
-- Resolve username inputs to the numeric TikTok `user_id` required by the followers endpoint
-- Fetch a page of public followers with profile and verification metadata
-- Support pagination via Scrappa's `time` marker
-- Dataset rows optimized for Apify table views
-- Full Scrappa response saved to the `OUTPUT` key-value-store record
+Follower profile details are limited to information TikTok makes visible for the requested account.
 
-## Input
+| Field | Type | Description |
+| --- | --- | --- |
+| `unique_id` | text | TikTok username for this profile; null when the account does not expose a username. |
+| `user_id` | text | user ID for the follower profile, assigned by TikTok; null when the source does not expose it. |
+| `nickname` | text | Nickname shown for the follower profile by TikTok, in the format used by the source; null when it is omitted. |
+| `avatar` | image | Profile image url for this follower profile on TikTok; null when the source does not provide a URL. |
+| `follower_count` | number | Number of followers shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `verified` | boolean | Whether the source marks the profile or review as verified; false is a reported value, while null means TikTok provided no flag. |
+| `lookup_unique_id` | text | lookup unique id for the follower profile, assigned by TikTok; null when the source does not expose it. |
+| `lookup_user_id` | text | lookup user id for the follower profile, assigned by TikTok; null when the source does not expose it. |
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `profile` | string | Yes | TikTok username with or without `@`, full profile URL, or numeric user ID. Bare numeric values are treated as user IDs; prefix numeric usernames with `@`. |
-| `count` | integer | No | Number of followers to return. Scrappa accepts `1-50`. |
-| `time` | integer | No | Follower pagination token/time marker from a previous run. Leave empty for the first page. |
+## Use cases
 
-The actor also accepts `cursor` as a compatibility alias and sends it to Scrappa as `time`.
+- Creator managers can review public account connections while mapping a niche community.
+- Researchers can compare profiles and counts across a creator network.
+- Partnership teams can shortlist public accounts for manual review.
 
-## Example Input
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `profile` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -30,33 +36,65 @@ The actor also accepts `cursor` as a compatibility alias and sends it to Scrappa
 }
 ```
 
-## Output
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-Each TikTok follower is saved as one dataset item:
+## Input
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `profile` | string | Yes | TikTok username with or without @, full HTTPS TikTok profile URL, or numeric user ID up to 30 digits. Bare numeric values are treated as user IDs; prefix numeric usernames with @. |
+| `count` | integer | No | Number of followers to return from this page. Scrappa accepts 1-50. Constraints: minimum 1; maximum 50. |
+| `time` | integer | No | Follower pagination token/time marker from a previous run. Leave empty for the first page. The actor also accepts cursor as an alias when provided through API input. Constraints: minimum 0. |
+
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "user_id": "107955",
-  "unique_id": "tiktok",
-  "nickname": "TikTok",
-  "avatar": "https://example.com/avatar.jpeg",
-  "follower_count": 162300000,
+  "follower_count": 12600,
+  "unique_id": "morgan.creates",
+  "user_id": "7210458831",
+  "nickname": "Morgan Creates",
+  "avatar": "https://source.example.com/record/market-guide",
   "verified": true,
-  "lookup_unique_id": "@tiktok",
-  "lookup_user_id": "107955"
+  "lookup_unique_id": "morgan.creates",
+  "lookup_user_id": "7210458831"
 }
 ```
 
-The full API response, including pagination metadata, is saved to `OUTPUT`.
+## Pricing
 
-## Runtime
+**Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-The Rust actor calls Scrappa's `/tiktok/user/profile` endpoint to resolve usernames, then calls `/tiktok/user/followers` with the numeric user ID. Each Scrappa request uses the `X-API-Key` header and a 60-second timeout. The actor does not retry failed upstream requests; the configured Apify run deadline is 120 seconds.
+Each saved video, post or comment record counts as one result.
 
-Each returned follower is written as one default dataset item. For pay-per-event runs with a positive `maxTotalChargeUsd`, the actor reads the event prices and charged event counts and saves only the rows affordable under that cap. Other pricing models and uncapped runs (zero, null, or absent `maxTotalChargeUsd`) save every follower. Apify automatically charges its `apify-default-dataset-item` event for each saved row. `OUTPUT` always keeps the complete Scrappa response, including followers beyond a positive run cap.
+## FAQ
 
-The Rust tests use loopback mocks and a dummy API token. Run them from this directory with `cargo test --locked`. Build the local image from this directory with `docker build -f .actor/Dockerfile -t tiktok-followers-scraper:local .`.
+### Is it legal to collect public information?
 
-## Support
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-For higher-volume usage or direct API access, use Scrappa at https://scrappa.co.
+### How many records will a run return?
+
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+
+### Can I call it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~tiktok-followers-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
+
+### What happens when a request fails?
+
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Which TikTok account does Followers use as its target?
+
+Set `profile` to the public TikTok username whose followers you want to inspect. Use `count` to limit the requested number of profiles; the source may return fewer.
+
+## Related Scrappa Actors
+
+- [TikTok Ads Scraper](https://apify.com/thescrappa/tiktok-ads-scraper)
+- [TikTok Hashtag Details Scraper](https://apify.com/thescrappa/tiktok-challenge-details-scraper)
+- [TikTok Hashtag Videos Scraper](https://apify.com/thescrappa/tiktok-challenge-posts-scraper)
+- [TikTok Challenge Search Scraper](https://apify.com/thescrappa/tiktok-challenge-search-scraper)
+- [TikTok Comments Scraper](https://apify.com/thescrappa/tiktok-comments-scraper)

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "linkedin-post-scraper",
-  "title": "LinkedIn Post Scraper ($0.30/1k results)",
-  "description": "Scrape public LinkedIn posts and articles. Get content, author info, reactions, comments, and related articles. No LinkedIn login required.",
+  "title": "LinkedIn Post Scraper",
+  "description": "Read a public LinkedIn post with its text, author, publication date and reaction count. Paste a public LinkedIn post URL to retrieve its text and engagement details.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

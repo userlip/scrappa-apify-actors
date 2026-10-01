@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "kleinanzeigen-listing-details-scraper",
   "title": "Kleinanzeigen Listing Details Scraper",
-  "description": "Get full Kleinanzeigen listing details by ad ID. Batch up to 100 IDs in one run and save each successful listing as one charged dataset item.",
+  "description": "Look up a Kleinanzeigen listing for its description, price, photos and seller details. Paste a Kleinanzeigen ad ID for details, or use the supported query input to search by phrase.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

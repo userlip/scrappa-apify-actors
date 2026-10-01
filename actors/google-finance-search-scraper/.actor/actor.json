@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "google-finance-search-scraper",
   "title": "Google Finance Search Scraper",
-  "description": "Search Google Finance for stocks, ETFs, indices, funds, currencies, and other finance instruments by ticker or company name.",
+  "description": "Find matching financial instruments on Google Finance by company name or ticker. Look up companies by name or ticker and provide several queries when building a watchlist.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

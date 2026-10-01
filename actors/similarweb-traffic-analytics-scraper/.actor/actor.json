@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "similarweb-traffic-analytics-scraper",
   "title": "Similarweb Traffic Analytics Scraper",
-  "description": "Analyze website traffic, rankings, engagement metrics, traffic sources, top countries, monthly visits, and top keywords for one or more domains.",
+  "description": "Review Similarweb traffic estimates, visit trends, referral shares and country breakdowns. Add several domains to compare estimated visits, traffic sources and audience locations together.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

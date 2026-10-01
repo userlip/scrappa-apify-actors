@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "arbeitsagentur-jobs-scraper",
-  "title": "Arbeitsagentur Jobs Scraper ($0.30/1k results)",
-  "description": "Search official German Federal Employment Agency job listings with Scrappa. Extract job titles, employers, occupations, locations, publication dates, start dates, reference numbers, job URLs, facets, and pagination.",
+  "title": "Arbeitsagentur Jobs Scraper",
+  "description": "Find German job listings from the Federal Employment Agency with titles, employers, locations and work details. Set a job title or occupation and a location, then narrow listings by work type or posting date.",
   "categories": [
     "LEAD_GENERATION",
     "MARKETING",

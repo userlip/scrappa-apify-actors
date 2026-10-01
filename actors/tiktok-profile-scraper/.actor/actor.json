@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-profile-scraper",
   "title": "TikTok Profile Scraper",
-  "description": "Extract public TikTok profile data by username, profile URL, or user ID. Get follower counts, bio, avatar, verification status, region, language, and engagement metrics through Scrappa.",
+  "description": "Look up a public TikTok profile by username, profile URL or numeric user ID. Retrieve its display name, username and available follower counts without searching for posts.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

@@ -1,97 +1,118 @@
 # Google Finance Markets Scraper
 
-Scrape Google Finance market movers, trend rows, and finance news for market monitoring, watchlist enrichment, index dashboards, and trading research workflows. This standalone Rust actor wraps Scrappa's `/api/google-finance/markets` endpoint and writes one Apify dataset item per market row or news result.
+Review Google Finance market movers by section, trend and price movement. Choose the market trend and index view that match the movers you want to review.
 
-## What you get
+## What data can you extract?
 
-- Trend views for indexes, most active, gainers, losers, climate leaders, cryptocurrencies, and currencies
-- Optional regional index filters for Americas, Europe/Middle East/Africa, and Asia-Pacific
-- Finance news returned with trend responses
-- Full Scrappa response saved to key-value store record `OUTPUT`
+Prices and percentage changes follow the currency and units Google Finance displays for each instrument.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `item_type` | text | Category assigned to the market mover by Google Finance; null when Google Finance does not provide the value. |
+| `section` | text | Market section shown for the market mover by Google Finance; null when Google Finance does not provide the value. |
+| `trend` | text | Market trend shown for the market mover by Google Finance; null when Google Finance does not provide the value. |
+| `trend_group` | text | Market trend group shown for the market mover by Google Finance; null when Google Finance does not provide the value. |
+| `position` | number | Result position in the Google Finance market mover list, as a whole number; null when the source does not supply one. |
+| `stock` | text | Ticker symbol shown for the market mover by Google Finance, in the format used by the source; null when it is omitted. |
+| `name` | text | Name of the market mover, as shown by Google Finance; null when no name is published. |
+| `symbol` | text | Ticker symbol shown for the market mover by Google Finance, in the format used by the source; null when it is omitted. |
+| `exchange` | text | Exchange code shown for the market mover by Google Finance; null when Google Finance does not provide the value. |
+| `price` | number | Listed price for this market mover, as a numeric amount in the listing currency; null when Google Finance provides no price. |
+| `currency` | text | Currency code for this market mover, formatted as Google Finance displays it, including the currency when shown; null when unavailable. |
+| `price_movement_direction` | text | Price movement direction shown for the market mover by Google Finance; null when Google Finance does not provide the value. |
+| `price_movement_value` | number | Price movement value shown for the market mover by Google Finance, in the format used by the source; null when it is omitted. |
+| `price_movement_percentage` | number | Price movement percentage reported by Google Finance, as a percentage or share in the source format; null when no estimate is available. |
+| `from_currency` | text | Three-letter currency code, such as USD or EUR; null when Google Finance does not provide the value. |
+| `to_currency` | text | Three-letter currency code, such as USD or EUR; null when Google Finance does not provide the value. |
+| `title` | text | Title of the market mover, as shown by Google Finance; null when no title is published. |
+| `source` | text | Source or language label shown for the market mover by Google Finance, in the format used by the source; null when it is omitted. |
+| `date` | text | Date shown for the market mover shown by Google Finance, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `link` | link | Result link for this market mover on Google Finance; null when the source does not provide a URL. |
+| `snippet` | text | Search snippet from Google Finance for this market mover; null when the source has no text to show. |
+| `thumbnail` | image | Thumbnail url for this market mover on Google Finance; null when the source does not provide a URL. |
+| `request_trend` | text | Market trend passed to Google Finance. This input value is copied into the output row; null when it was not supplied. |
+| `request_index_market` | text | Market index code passed to Google Finance. This input value is copied into the output row; null when it was not supplied. |
+| `request_hl` | text | Interface language code passed to Google Finance; Use a language code such as en or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_gl` | text | Two-letter country or region code passed to Google Finance; Use a two-letter country code such as us or de. This input value is copied into the output row; null when it was not supplied. |
+
+## Use cases
+
+- Investors can compare price movement and market values for tickers they follow.
+- Analysts can chart quotes or historical points beside the symbol and exchange.
+- Finance teams can refresh market data in recurring spreadsheet reports.
+
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Choose a supported `trend` view, such as `gainers` or `losers`, or leave it blank for the market overview. For the indexes view, set `index_market` only when you want a regional filter.
+3. Start the run and open its default dataset to inspect or download the rows.
+
+```json
+{
+  "trend": "gainers"
+}
+```
+
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
 ## Input
 
-Market movers:
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `trend` | string | No | Optional Google Finance trend view. Leave as Market overview for the broad markets page. Constraints: allowed values: , gainers, losers, most-active, indexes, climate-leaders, cryptocurrencies, currencies. |
+| `index_market` | string | No | Regional filter for the indexes trend. Leave as Default unless Trend is indexes. Stale values from other trends are ignored. Constraints: allowed values: , americas, europe-middle-east-africa, asia-pacific. |
+| `hl` | string | No | Google Finance language code, such as en, de, es, or zh-cn. |
+| `gl` | string | No | Two-letter country code, such as us, gb, de, or ca. |
+
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "trend": "gainers",
-  "hl": "en",
-  "gl": "us"
+  "title": "Northstar Market Labs quarterly results",
+  "name": "Northstar Market Labs",
+  "price": 198.53,
+  "date": "1790294400000",
+  "link": "https://search.example.com/results/market-guide",
+  "item_type": "Market mover",
+  "section": "most_active",
+  "trend": "top_gainers"
 }
 ```
 
-Most-active stocks:
+## Pricing
 
-```json
-{
-  "trend": "most-active",
-  "hl": "en",
-  "gl": "us"
-}
-```
+**Current live price:** $0.20 per 1,000 results.
 
-Regional indexes:
+Each saved dataset record counts as one result.
 
-```json
-{
-  "trend": "indexes",
-  "index_market": "americas",
-  "hl": "en",
-  "gl": "us"
-}
-```
+## FAQ
 
-## Output
+### Is it legal to collect public information?
 
-The dataset contains one item per market row or news result:
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-```json
-{
-  "item_type": "market_row",
-  "section": "gainers",
-  "trend": "gainers",
-  "trend_group": null,
-  "position": 1,
-  "stock": "AAPL:NASDAQ",
-  "name": "Apple Inc",
-  "symbol": "AAPL",
-  "exchange": "NASDAQ",
-  "price": 189.98,
-  "currency": "USD",
-  "price_movement_direction": "Up",
-  "price_movement_value": 3.25,
-  "price_movement_percentage": 1.74,
-  "request_trend": "gainers",
-  "request_index_market": null,
-  "request_hl": "en",
-  "request_gl": "us"
-}
-```
+### How many records will a run return?
 
-Trend responses can also include finance news rows:
+The Actor makes one request for the selected market view. The number of rows depends on the source response, and the run's remaining charge budget can limit how many returned records are saved.
 
-```json
-{
-  "item_type": "news_result",
-  "section": "finance-news",
-  "title": "Markets climb as investors weigh earnings",
-  "source": "Example Finance",
-  "date": "2026-05-15 13:30:00",
-  "link": "https://example.com/markets-news",
-  "snippet": "Major indexes moved higher...",
-  "request_trend": "most-active"
-}
-```
+### Can I call it through the API or connect it to other tools?
 
-## Notes
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~google-finance-markets-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-Use `trend` to choose the market view. Trend responses include market rows and may include related finance news. For higher-volume Google Finance data extraction or direct API access, use Scrappa's Google Finance API at `https://scrappa.co/api/google-finance/markets`.
+### What happens when a request fails?
 
-The markets endpoint returns a single response for the selected view, so the actor makes one upstream request per run. Trend result groups, overview sections, and news results in that response are each mapped to dataset rows.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
 
-## Development
+### How do I select a Google Finance market view?
 
-Run the actor's focused Rust tests with `cargo test --locked` from this directory. Build the local image with `docker build -f .actor/Dockerfile -t google-finance-markets-scraper .`.
+Choose a supported `trend` and, when relevant, an `index_market`. The returned movers reflect that view and the locale supplied through the input.
 
-The actor reads its input from the default key-value store's `INPUT` record and writes raw upstream JSON to `OUTPUT`. It calls `https://scrappa.co/api/google-finance/markets` with the `X-API-Key` header, retries transient failures up to three attempts, and applies a 60-second timeout to each Scrappa request.
+## Related Scrappa Actors
+
+- [Google Finance Historical Prices Scraper](https://apify.com/thescrappa/google-finance-historical-prices-scraper)
+- [Google Finance Indices Scraper](https://apify.com/thescrappa/google-finance-indices-scraper)
+- [Google Finance Intraday Scraper](https://apify.com/thescrappa/google-finance-intraday-scraper)
+- [Google Finance Quote Scraper](https://apify.com/thescrappa/google-finance-quote-scraper)
+- [Google Finance Search Scraper](https://apify.com/thescrappa/google-finance-search-scraper)

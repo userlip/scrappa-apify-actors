@@ -1,64 +1,109 @@
 # Google Hotels Autocomplete Scraper
 
-Discover destinations and resolve hotel names before running a full Google Hotels search. This batch-first Actor accepts up to 100 queries in one run and saves one paid dataset row per unique suggestion returned for each source query.
+Find hotel and destination suggestions on Google Hotels before searching for a stay. Use a city, district or hotel name to get a property suggestion that can refine a later stay search.
+
+## What data can you extract?
+
+Suggestions and destination tokens follow the hotel or place name entered; not every suggestion has a property token.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `position` | number | Result position in the Google Hotels source record list, as a whole number; null when the source does not supply one. |
+| `value` | text | Place or hotel name matched by Google Hotels autocomplete; null when the suggestion has no display label. |
+| `autocomplete_suggestion` | text | Full hotel or destination phrase suggested for the input query; null when Google Hotels provides no expanded phrase. |
+| `type` | text | Google Hotels suggestion category, such as location or accommodation; null when no category is supplied. |
+| `property_token` | text | Token Google Hotels uses to identify a property or destination suggestion; null when the match has no token. |
+| `thumbnail` | image | Thumbnail url for this source record on Google Hotels; null when the source does not provide a URL. |
+| `scrappa_google_hotels_link` | link | Scrappa google hotels link for this source record on Google Hotels; null when the source does not provide a URL. |
+| `source_query` | text | Place or hotel name submitted for this autocomplete lookup. |
+| `request_gl` | text | Two-letter country or region code passed to Google Hotels; Use a two-letter country code such as us or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_hl` | text | Interface language code passed to Google Hotels; Use a language code such as en or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_currency` | text | Three-letter currency code passed to Google Hotels; Use a three-letter code such as USD or EUR. This input value is copied into the output row; null when it was not supplied. |
+| `request_type` | text | Requested result type passed to Google Hotels. This input value is copied into the output row; null when it was not supplied. |
+| `response_time_ms` | number | Response time for this Google Hotels lookup, measured in milliseconds; null when no timing value was recorded. |
+
+## Use cases
+
+- Travelers can find recognized destination or hotel names before starting a stay search.
+- Travel teams can help users match a typed city or property name to Google Hotels suggestions.
+- Researchers can compare destination and property suggestions across markets.
+
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `queries` and use the identifier or URL format required by Google Hotels.
+3. Start the run and open its default dataset to inspect or download the rows.
+
+```json
+{
+  "queries": [
+    "Berlin"
+  ]
+}
+```
+
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
 ## Input
 
-```json
-{
-  "queries": ["Berlin", "Paris hotels"],
-  "gl": "de",
-  "hl": "en",
-  "currency": "EUR",
-  "type": "all"
-}
-```
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `queries` | array of string | No | Destination, landmark, area, or hotel-name prefixes. You can also provide a comma-separated string through the API. Constraints: minimum 1 items; maximum 100 items. |
+| `q` | string | No | Compatibility alias for one query. Queries and q are combined and deduplicated when both are provided. |
+| `gl` | string | No | Two-letter Google country code, such as de, us, gb, or fr. |
+| `hl` | string | No | Two-letter language code, such as en, de, es, or fr. |
+| `currency` | string | No | Three-letter currency code used in generated hotel-search links. |
+| `type` | string | No | Return locations, hotels/accommodations, or both. Constraints: allowed values: location, hotel, all. |
 
-`queries` also accepts a comma-separated string through the API. Use `q` for compatibility with a single direct Scrappa API request. When both are supplied, the Actor trims and case-insensitively deduplicates them.
+## Output example
 
-`type` can be `location`, `hotel`, or `all`.
-
-## Output
-
-Each dataset item contains the upstream suggestion plus request context:
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "position": 11,
-  "value": "Park Inn by Radisson Berlin Alexanderplatz",
+  "value": "Juniper House Hotel, Portland",
+  "autocomplete_suggestion": "Juniper House Hotel, Portland",
   "type": "accommodation",
-  "autocomplete_suggestion": "park inn by radisson berlin alexanderplatz",
-  "property_token": "CIABIhAGbzzg4AkIpGfYhokABEKk",
-  "thumbnail": "https://lh3.googleusercontent.com/...",
-  "scrappa_google_hotels_link": "https://scrappa.co/api/google-hotels/search?...",
-  "source_query": "Berlin",
-  "request_gl": "de",
-  "request_hl": "en",
-  "request_currency": "EUR",
-  "request_type": "all",
-  "response_time_ms": 724
+  "property_token": "Cg9qLW1vY2stcHJvcGVydHk",
+  "thumbnail": "https://images.example.com/hotels/juniper-house.jpg",
+  "scrappa_google_hotels_link": "https://hotels.example.com/search?property=juniper-house",
+  "source_query": "Portland, OR",
+  "response_time_ms": 348
 }
 ```
-
-Use location suggestions for destination discovery. Accommodation suggestions can include a `property_token`; pass that token to the [Google Hotels Search Scraper](https://apify.com/thescrappa/google-hotels-search-scraper) to resolve a specific property instead of a broad destination. Thumbnails and property tokens are optional upstream fields.
-
-The Actor continues after an individual query fails and writes a single `OUTPUT` run summary with completed and failed queries. It does not store raw responses or write key-value records per result.
 
 ## Pricing
 
-Results use the `hotel-suggestion-result` pay-per-event charge at **$0.00025 per successfully saved suggestion** ($0.25 per 1,000 results). Failed queries and unsaved rows are not charged.
+**Current live price:** $0.25 per 1,000 results.
 
-## Direct API upgrade
+Each saved autocomplete suggestion row counts as one result.
 
-This Actor is a thin Rust wrapper around `GET https://scrappa.co/api/google-hotels/autocomplete`. For higher-volume workflows, use the [Scrappa API](https://scrappa.co) directly to avoid Apify run overhead and feed returned property tokens or links into Scrappa's Google Hotels Search endpoint.
+## FAQ
 
-Each Scrappa request has a 30-second deadline and up to three attempts for timeouts, connection failures, transient HTTP statuses, and explicitly retryable 403 responses. The Actor's 180-second run timeout remains configured in `.actor/actor.json`.
+### Is it legal to collect public information?
 
-In `PAY_PER_EVENT` runs, the Actor charges `hotel-suggestion-result` for each suggestion row it publishes. It checks all current run charges against `maxTotalChargeUsd` before fetching each query, then caps saved rows to the remaining budget. It records one `OUTPUT` summary in the default key-value store and does not write per-result key-value records.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-## Development
+### How many records will a run return?
 
-```bash
-cargo test --locked
-docker build -f .actor/Dockerfile -t google-hotels-autocomplete-scraper .
-```
+The number of rows depends on the suggestions Google Hotels returns for each query. The Actor does not expose pagination controls.
+
+### Can I call it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~google-hotels-autocomplete-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
+
+### What happens when a request fails?
+
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How do I use a Google Hotels suggestion in a stay search?
+
+Enter a destination or hotel name in `q`. The returned suggestion can include a property token that Google Hotels Search accepts for a more specific lookup.
+
+## Related Scrappa Actors
+
+- [Booking.com Hotel Details Scraper](https://apify.com/thescrappa/booking-hotel-details-scraper)
+- [Booking.com Search Scraper](https://apify.com/thescrappa/booking-search-scraper)
+- [Google Flights Scraper](https://apify.com/thescrappa/google-flights-search-scraper)
+- [Google Hotels Search Scraper](https://apify.com/thescrappa/google-hotels-search-scraper)
+- [Google Maps Directions Scraper](https://apify.com/thescrappa/google-maps-directions-scraper)

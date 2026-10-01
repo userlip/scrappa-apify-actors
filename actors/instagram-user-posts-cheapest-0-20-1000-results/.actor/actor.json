@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "instagram-user-posts-cheapest-0-20-1000-results",
-  "title": "Instagram User Posts | Cheapest $0.20/1k results",
-  "description": "Fetch recent Instagram posts and reels from a public user profile by username, with pagination support through max_id.",
+  "title": "Instagram User Posts Scraper",
+  "description": "List recent public Instagram posts with captions, media types and publication times. Choose a public username and use the returned pagination cursor to continue through available posts.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

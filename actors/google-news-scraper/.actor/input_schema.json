@@ -11,8 +11,7 @@
       "editor": "stringList",
       "maxItems": 10,
       "prefill": [
-        "artificial intelligence",
-        "climate technology"
+        "artificial intelligence"
       ],
       "items": {
         "type": "string",

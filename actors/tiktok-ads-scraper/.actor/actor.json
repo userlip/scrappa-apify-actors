@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-ads-scraper",
   "title": "TikTok Ads Scraper",
-  "description": "Extract TikTok Creative Center ad details, advertiser fields, creative text, media URLs, landing pages, metadata, and engagement metrics through Scrappa.",
+  "description": "Review public TikTok ads from Creative Center Top Ads pages, including advertiser names, copy, calls to action and landing pages. Submit one or more supported URLs to compare ad creatives.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "youtube-api-search-by-category",
-  "title": "YouTube Search By Category Scraper",
-  "description": "Get YouTube search results from predefined category searches.",
+  "title": "YouTube Category Search Scraper",
+  "description": "Find YouTube videos in selected categories with titles, descriptions and channel details. Choose one or more video categories and supported sort, length or upload-time filters.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

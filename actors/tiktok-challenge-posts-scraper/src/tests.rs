@@ -173,9 +173,8 @@ fn actor_configuration_preserves_input_prefill_budget_and_wrapper_resources() {
     );
     assert!(dockerfile.contains("FROM rust:1.90-slim-bookworm AS builder"));
     assert!(!dockerfile.contains("apify/actor-node"));
-    assert!(readme.contains("challenge-post-result"));
-    assert!(readme.contains("$0.00025 per video"));
-    assert!(readme.contains("No per-video key-value-store records are written"));
+    assert!(readme.contains("$0.25 per 1,000 results."));
+    assert!(readme.contains("Each saved video, post or comment record counts as one result."));
 }
 
 #[test]

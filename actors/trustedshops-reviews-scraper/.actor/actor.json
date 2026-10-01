@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "trustedshops-reviews-scraper",
-  "title": "TrustedShops Reviews Scraper",
-  "description": "Scrape TrustedShops shop reviews by TSID or profile URL. Supports batch shops in one run and saves each review as one charged dataset item.",
+  "title": "Trusted Shops Reviews Scraper",
+  "description": "Read Trusted Shops reviews with shop names, ratings, written feedback and posting dates. Use a Trusted Shops shop ID or URL and page through the reviews available for that profile.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

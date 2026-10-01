@@ -58,7 +58,9 @@
       "maxItems": 25,
       "items": {
         "type": "object",
-        "required": ["query"],
+        "required": [
+          "query"
+        ],
         "properties": {
           "query": {
             "title": "Search Query",
@@ -105,12 +107,6 @@
           "query": "iphone",
           "location": "Berlin",
           "page": 1
-        },
-        {
-          "query": "fahrrad",
-          "location": "Hamburg",
-          "page": 1,
-          "price_max": 500
         }
       ]
     }
