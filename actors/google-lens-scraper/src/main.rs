@@ -361,7 +361,7 @@ impl Storage {
         let url = self.api_url(&["v2", "actor-runs", run_id])?;
         let response = self
             .send_apify_with_retry("status message update", || {
-                self.authorized(Method::PATCH, url.clone())
+                self.authorized(Method::PUT, url.clone())
                     .json(&json!({"statusMessage": message}))
             })
             .await?;
@@ -2023,7 +2023,10 @@ async fn execute() -> Result<()> {
         storage.remaining_items == 0,
         charge_limited,
     );
-    storage.set_status_message(&message).await?;
+    // The status message is informational; never fail a run that already saved data because of it.
+    if let Err(error) = storage.set_status_message(&message).await {
+        eprintln!("Warning: could not update the Actor status message: {error:#}");
+    }
 
     if successful_entries == 0 && failed_entries > 0 {
         bail!(
