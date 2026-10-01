@@ -1,8 +1,8 @@
 {
   "success": true,
   "id": "170000001",
-  "title": "Example apartment in Example City",
-  "description": "Synthetic property description.",
+  "title": "Bright two-bedroom apartment near Stadtpark",
+  "description": "A sunny apartment with a balcony, elevator access, and a renovated kitchen.",
   "type": "apartment",
   "is_tenant_network": false,
   "price": {
@@ -21,10 +21,10 @@
     "year_built": 2018
   },
   "address": {
-    "street": "Example Street",
-    "postal_code": "10115",
-    "city": "Example City",
-    "district": "Example District",
+    "street": "Friedrichstrasse 18",
+    "postal_code": "10117",
+    "city": "Berlin",
+    "district": "Mitte",
     "lat": 52.53,
     "lon": 13.38
   },
@@ -35,13 +35,13 @@
   "energy_class": "B",
   "images": [
     {
-      "url": "https://example.com/room.jpg",
+      "url": "https://www.immobilienscout24.de/expose/170000001/images/room-1",
       "caption": "Living room"
     }
   ],
   "agent": {
-    "name": "Example Realty",
-    "logo_url": "https://example.com/logo.png"
+    "name": "Nordlicht Immobilien",
+    "logo_url": "https://www.immobilienscout24.de/expose/170000001/images/agent-logo"
   },
   "url": "https://www.immobilienscout24.de/expose/170000001"
 }

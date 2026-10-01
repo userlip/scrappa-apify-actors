@@ -1,6 +1,6 @@
 {
   "title": "Bing Search Scraper",
-  "description": "Bing Search Scraper collects structured data from Scrappa's /bing/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Search Bing for ranked titles, page snippets, domains, and links. Batch multiple keywords in one run to monitor rankings, compare competitors, or gather source pages.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -8,15 +8,15 @@
   ],
   "properties": {
     "queries": {
-      "title": "Queries",
+      "title": "Search queries",
       "type": "array",
-      "description": "Batch input entries. Each query is sent as the query value.",
+      "description": "Bing search phrases. Add one object per phrase.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
       "prefill": [
         {
-          "query": "best crm software"
+          "query": "python tutorial"
         }
       ],
       "items": {
@@ -26,7 +26,7 @@
         ],
         "properties": {
           "query": {
-            "title": "Query",
+            "title": "Search query",
             "type": "string",
             "description": "Search query (max 500 characters).",
             "maxLength": 500,
@@ -42,7 +42,7 @@
             "editor": "number"
           },
           "num": {
-            "title": "NUM",
+            "title": "Results per page",
             "type": "integer",
             "description": "Results per page (1-50).",
             "minimum": 1,
@@ -78,7 +78,7 @@
             "editor": "select"
           },
           "hl": {
-            "title": "HL",
+            "title": "Language",
             "type": "string",
             "description": "Language code, e.g. en or en-GB.",
             "maxLength": 20,
@@ -86,7 +86,7 @@
             "editor": "textfield"
           },
           "include_html": {
-            "title": "Include Html",
+            "title": "Include raw HTML",
             "type": "boolean",
             "description": "Set to true to include the raw HTML in the response. Default: false.",
             "editor": "checkbox"
@@ -104,7 +104,7 @@
       "editor": "number"
     },
     "num": {
-      "title": "NUM",
+      "title": "Results per page",
       "type": "integer",
       "description": "Results per page (1-50).",
       "minimum": 1,
@@ -140,7 +140,7 @@
       "editor": "select"
     },
     "hl": {
-      "title": "HL",
+      "title": "Language",
       "type": "string",
       "description": "Language code, e.g. en or en-GB.",
       "maxLength": 20,
@@ -148,7 +148,7 @@
       "editor": "textfield"
     },
     "include_html": {
-      "title": "Include Html",
+      "title": "Include raw HTML",
       "type": "boolean",
       "description": "Set to true to include the raw HTML in the response. Default: false.",
       "editor": "checkbox"

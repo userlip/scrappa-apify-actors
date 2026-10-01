@@ -1,6 +1,6 @@
 {
   "title": "Google AI Overview Scraper",
-  "description": "Google AI Overview Scraper collects structured data from Scrappa's /search-ai-overview endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Capture Google AI Overview answers, answer sections, and query context when available. Batch queries to compare answer coverage and organize observations about AI search results.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -8,9 +8,9 @@
   ],
   "properties": {
     "queries": {
-      "title": "Queries",
+      "title": "Search queries",
       "type": "array",
-      "description": "Batch input entries. Each query is sent as the query value.",
+      "description": "Questions or phrases to check for Google AI Overview content.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
@@ -26,7 +26,7 @@
         ],
         "properties": {
           "query": {
-            "title": "Query",
+            "title": "Search query",
             "type": "string",
             "description": "Search query sent to Google AI Mode.",
             "minLength": 1,
@@ -34,7 +34,7 @@
             "editor": "textfield"
           },
           "hl": {
-            "title": "HL",
+            "title": "Language",
             "type": "string",
             "description": "Interface language code (2 letters, e.g. en, de).",
             "minLength": 2,
@@ -42,7 +42,7 @@
             "editor": "textfield"
           },
           "gl": {
-            "title": "GL",
+            "title": "Country",
             "type": "string",
             "description": "Country code (2 letters, e.g. us, de).",
             "minLength": 2,
@@ -68,7 +68,7 @@
       }
     },
     "hl": {
-      "title": "HL",
+      "title": "Language",
       "type": "string",
       "description": "Interface language code (2 letters, e.g. en, de).",
       "minLength": 2,
@@ -76,7 +76,7 @@
       "editor": "textfield"
     },
     "gl": {
-      "title": "GL",
+      "title": "Country",
       "type": "string",
       "description": "Country code (2 letters, e.g. us, de).",
       "minLength": 2,

@@ -1,7 +1,7 @@
 {
   "slug": "brave-search-scraper",
   "title": "Brave Search Scraper",
-  "description": "Brave Search Scraper collects structured data from Scrappa's /brave/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Search Brave for ranked web results with titles, snippets, source domains, and links. Submit multiple queries in one run to compare independent search results or track page visibility.",
   "endpoint": "/brave/search",
   "openapiPath": "/brave/search",
   "mode": "list",
@@ -10,8 +10,9 @@
     "valueField": "query",
     "apiParam": "query",
     "pathParam": null,
-    "title": "Queries",
-    "description": "Batch input entries. Each query is sent as the query value."
+    "title": "Search queries",
+    "description": "Brave search phrases. Add one object per phrase.",
+    "valueDescription": "query used to run this search."
   },
   "parameters": [
     {
@@ -19,7 +20,7 @@
       "apiParam": "query",
       "location": "query",
       "required": true,
-      "title": "Query",
+      "title": "Search query",
       "schema": {
         "type": "string",
         "description": "Search query (max 500 characters).",
@@ -83,7 +84,7 @@
       "apiParam": "include_html",
       "location": "query",
       "required": false,
-      "title": "Include Html",
+      "title": "Include raw HTML",
       "schema": {
         "type": "boolean",
         "description": "Set to true to include the raw Brave HTML in the response. Default: false."
@@ -94,7 +95,7 @@
       "apiParam": "q",
       "location": "query",
       "required": false,
-      "title": "Q",
+      "title": "Search query",
       "schema": {
         "type": "string",
         "description": "Alias for query. Prefer query for new integrations."
@@ -132,12 +133,12 @@
     "organic_results": [
       {
         "position": 1,
-        "title": "Example climate research",
-        "link": "https://example.com/research",
-        "redirect_link": "https://example.com/research",
-        "displayed_link": "example.com/research",
-        "snippet": "Synthetic research summary for fixture tests.",
-        "source": "example.com"
+        "title": "Heat Island Cooling Strategies",
+        "link": "https://www.epa.gov/heatislands/heat-island-cooling-strategies",
+        "redirect_link": "https://www.epa.gov/heatislands/heat-island-cooling-strategies",
+        "displayed_link": "epa.gov/heatislands",
+        "snippet": "Trees, reflective surfaces, and green roofs can help lower urban temperatures.",
+        "source": "U.S. Environmental Protection Agency"
       }
     ],
     "related_searches": [],
@@ -171,41 +172,28 @@
       "format": "number"
     }
   ],
-  "seo": {
-    "h1": "Brave Search Scraper",
-    "intro": "Search Brave results by keyword and collect organic links, snippets, and related queries.",
-    "keywords": [
-      "Brave Search Scraper",
-      "title",
-      "link",
-      "snippet",
-      "/brave/search API"
-    ],
+  "dedupePointer": "/link",
+  "categories": [
+    "SEO_TOOLS"
+  ],
+  "storeCopy": {
+    "seoTitle": "Brave Search Scraper | Web Results",
+    "seoDescription": "Search Brave by keyword for ranked links, snippets, domains, and source labels. Compare independent results and track page visibility across queries.",
+    "intro": "Collect Brave result positions, links, snippets, redirect links, and displayed domains for a batch of phrases. Optional language and HTML inputs refine collection.",
     "useCases": [
-      "Search result monitoring",
-      "Brand and competitor research",
-      "Lead discovery"
+      "SEO teams can compare Brave result positions and snippets across queries.",
+      "Editorial teams can gather publisher links for a topic.",
+      "Search analysts can monitor page visibility on Brave."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add one phrase to `queries` for each search.",
+      "Choose a language or request HTML when needed.",
+      "Run the Actor and export result rows from the dataset."
+    ],
+    "faqs": [
       {
-        "name": "title",
-        "description": "Result title or listing name."
-      },
-      {
-        "name": "link",
-        "description": "Result destination URL."
-      },
-      {
-        "name": "snippet",
-        "description": "Text excerpt shown with the result."
-      },
-      {
-        "name": "displayed_link",
-        "description": "Readable URL shown by the search engine."
-      },
-      {
-        "name": "position",
-        "description": "Position of the result on the source page."
+        "question": "Is raw result HTML included by default?",
+        "answer": "No. Set `include_html` to true only when your workflow needs the source HTML response."
       }
     ],
     "relatedActors": [
@@ -214,8 +202,59 @@
         "title": "Bing Search Scraper"
       },
       {
-        "slug": "google-search-scraper",
-        "title": "Google Search Scraper"
+        "slug": "baidu-search-scraper",
+        "title": "Baidu Search Scraper"
+      },
+      {
+        "slug": "google-lens-scraper",
+        "title": "Google Lens Visual Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Brave search-result rank for the page, starting at 1."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Page title displayed by Brave Search."
+      },
+      {
+        "name": "link",
+        "type": "String",
+        "description": "Destination page URL for the Brave result."
+      },
+      {
+        "name": "redirect_link",
+        "type": "String",
+        "description": "Source redirect URL supplied for the result link."
+      },
+      {
+        "name": "displayed_link",
+        "type": "String",
+        "description": "Shortened host or address shown in the Brave result."
+      },
+      {
+        "name": "snippet",
+        "type": "String",
+        "description": "Text excerpt Brave Search displays for the page."
+      },
+      {
+        "name": "source",
+        "type": "String",
+        "description": "Publisher or website label attached to the result."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Search phrase submitted to Brave for this result set."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when these Brave search results were collected."
       }
     ]
   }

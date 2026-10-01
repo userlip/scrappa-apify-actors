@@ -2,7 +2,11 @@
   "actorSpecification": 1,
   "name": "baidu-trending-scraper",
   "title": "Baidu Trending Searches Scraper",
-  "description": "Baidu Trending Searches Scraper collects structured data from Scrappa's /baidu/trending endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Track Baidu trending searches with topic text, rank, descriptions, and source links. Choose a trending board and collect a fresh batch of topics to monitor search interest in China.",
+  "categories": [
+    "SEO_TOOLS",
+    "MARKETING"
+  ],
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",
@@ -49,7 +53,7 @@
                 "format": "link"
               },
               "is_top": {
-                "label": "Is Top",
+                "label": "Top Trend",
                 "format": "text"
               }
             }

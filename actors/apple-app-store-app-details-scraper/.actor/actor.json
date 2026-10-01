@@ -2,7 +2,10 @@
   "actorSpecification": 1,
   "name": "apple-app-store-app-details-scraper",
   "title": "Apple App Store App Details Scraper",
-  "description": "Apple App Store App Details Scraper collects structured data from Scrappa's /apple/app-store/details endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Get Apple App Store app details with publisher, price, rating, privacy labels, version, and related apps. Batch product IDs with a storefront country to enrich app catalogs or compare listings.",
+  "categories": [
+    "ECOMMERCE"
+  ],
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

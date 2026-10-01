@@ -1,6 +1,6 @@
 {
   "title": "Semrush Competitors Scraper",
-  "description": "Semrush Competitors Scraper collects structured data from Scrappa's /semrush/domain/competitors endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Find organic competitors for a domain with Authority Score, estimated monthly visits, and Semrush Rank. Batch domains in one run to map competing sites or prioritize SEO analysis.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -10,7 +10,7 @@
     "domains": {
       "title": "Domains",
       "type": "array",
-      "description": "Batch input entries. Each domain is sent as the domain value.",
+      "description": "Domains for which to find organic search competitors.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,

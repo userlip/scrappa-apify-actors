@@ -7,12 +7,12 @@
       {
         "user": {
           "user_id": "1234567890123456789",
-          "unique_id": "sample_creator",
-          "nickname": "Sample Creator",
-          "avatar": "https://example.com/avatar.jpg"
+          "unique_id": "trailmixlab",
+          "nickname": "Trail Mix Lab",
+          "avatar": "https://cdn.trailmixlab.social/profile/avatar-512.jpg"
         },
         "stats": {
-          "follower_count": 25000,
+          "follower_count": 28700,
           "verified": false
         }
       }

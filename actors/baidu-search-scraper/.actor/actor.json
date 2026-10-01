@@ -2,7 +2,10 @@
   "actorSpecification": 1,
   "name": "baidu-search-scraper",
   "title": "Baidu Search Scraper",
-  "description": "Baidu Search Scraper collects structured data from Scrappa's /baidu/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Search Baidu for ranked pages, snippets, source domains, dates, and destination links. Batch Chinese-language queries to monitor visibility or compare search results by topic.",
+  "categories": [
+    "SEO_TOOLS"
+  ],
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

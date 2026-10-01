@@ -1,7 +1,7 @@
 {
   "slug": "semrush-domain-overview-scraper",
   "title": "Semrush Domain Overview Scraper",
-  "description": "Semrush Domain Overview Scraper collects structured data from Scrappa's /semrush/domain/overview endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Get Semrush-style domain metrics for keywords, visits, traffic value, authority, backlinks, and referring domains. Batch websites to benchmark search visibility or assess competitors.",
   "endpoint": "/semrush/domain/overview",
   "openapiPath": "/semrush/domain/overview",
   "mode": "single",
@@ -11,7 +11,8 @@
     "apiParam": "domain",
     "pathParam": null,
     "title": "Domains",
-    "description": "Batch input entries. Each domain is sent as the domain value."
+    "description": "Domains for which to retrieve an overview.",
+    "valueDescription": "domain used to run this search."
   },
   "parameters": [
     {
@@ -55,9 +56,9 @@
   "fixture": {
     "search_parameters": {
       "engine": "semrush_domain_overview",
-      "domain": "example.com"
+      "domain": "notion.so"
     },
-    "domain": "example.com",
+    "domain": "notion.so",
     "covered": true,
     "coverage": {
       "domain_metrics": true,
@@ -72,7 +73,7 @@
     "backlinks_count": 5000,
     "referring_domains_count": 650,
     "website": {
-      "domain": "example.com",
+      "domain": "notion.so",
       "country": "us",
       "visits": 48000,
       "engagement": {
@@ -80,8 +81,26 @@
         "avg_visit_duration_seconds": 180,
         "bounce_rate": 0.44
       },
-      "visits_history": [],
-      "device_history": []
+      "visits_history": [
+        {
+          "month": "2025-01",
+          "visits": 118000
+        },
+        {
+          "month": "2025-02",
+          "visits": 124000
+        }
+      ],
+      "device_history": [
+        {
+          "device": "desktop",
+          "share": 0.67
+        },
+        {
+          "device": "mobile",
+          "share": 0.33
+        }
+      ]
     }
   },
   "tableFields": [
@@ -111,41 +130,28 @@
       "format": "number"
     }
   ],
-  "seo": {
-    "h1": "Semrush Domain Overview Scraper",
-    "intro": "Retrieve Semrush domain overview metrics for organic search, backlinks, and traffic.",
-    "keywords": [
-      "Semrush Domain Overview Scraper",
-      "domain",
-      "semrush_rank",
-      "organic_keywords",
-      "/semrush/domain/overview API"
-    ],
+  "categories": [
+    "SEO_TOOLS",
+    "MARKETING"
+  ],
+  "storeCopy": {
+    "seoTitle": "Semrush Domain Overview | SEO Metrics",
+    "seoDescription": "Collect Semrush metrics for organic keywords, traffic, authority, and backlinks. Benchmark domains and enrich competitor research with visibility data.",
+    "intro": "Retrieve a domain overview with organic search metrics, backlink counts, traffic estimates, and available engagement history. Submit multiple domains in one run.",
     "useCases": [
-      "SEO competitor analysis",
-      "Domain research",
-      "Organic visibility tracking"
+      "SEO consultants can benchmark traffic, keywords, authority, and backlinks.",
+      "Marketing teams can compare traffic and engagement trends for target websites.",
+      "Sales teams can enrich company research with organic visibility metrics."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add one root domain or subdomain to `domains` for each overview.",
+      "Set `maxResults` to cap saved domain records.",
+      "Read overview metrics and website engagement fields."
+    ],
+    "faqs": [
       {
-        "name": "domain",
-        "description": "Result website domain."
-      },
-      {
-        "name": "semrush_rank",
-        "description": "Semrush domain rank."
-      },
-      {
-        "name": "organic_keywords",
-        "description": "Estimated organic keyword count."
-      },
-      {
-        "name": "organic_traffic",
-        "description": "Estimated monthly organic visits."
-      },
-      {
-        "name": "authority_score",
-        "description": "Semrush Authority Score."
+        "question": "Can the overview contain missing metrics?",
+        "answer": "Yes. Coverage varies by domain and region. Check `covered` and `coverage` before comparing metrics."
       }
     ],
     "relatedActors": [
@@ -156,6 +162,82 @@
       {
         "slug": "similarweb-traffic-analytics-scraper",
         "title": "Similarweb Traffic Analytics Scraper"
+      },
+      {
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "search_parameters",
+        "type": "Object",
+        "description": "Domain and market database selected for this Semrush overview."
+      },
+      {
+        "name": "domain",
+        "type": "String",
+        "description": "Website domain summarized by the overview."
+      },
+      {
+        "name": "covered",
+        "type": "Boolean",
+        "description": "True when Semrush returned coverage for this domain and market."
+      },
+      {
+        "name": "coverage",
+        "type": "Object",
+        "description": "Availability indicators for domain, backlink, and traffic metrics."
+      },
+      {
+        "name": "semrush_rank",
+        "type": "Integer",
+        "description": "Semrush global rank reported for the domain."
+      },
+      {
+        "name": "organic_keywords",
+        "type": "Integer",
+        "description": "Estimated number of keywords bringing organic search visits."
+      },
+      {
+        "name": "organic_traffic",
+        "type": "Integer",
+        "description": "Estimated monthly visits from organic search."
+      },
+      {
+        "name": "organic_traffic_cost",
+        "type": "Integer",
+        "description": "Estimated monthly value of the organic search traffic."
+      },
+      {
+        "name": "authority_score",
+        "type": "Integer",
+        "description": "Semrush Authority Score for the analyzed domain."
+      },
+      {
+        "name": "backlinks_count",
+        "type": "Integer",
+        "description": "Total backlinks reported for the domain."
+      },
+      {
+        "name": "referring_domains_count",
+        "type": "Integer",
+        "description": "Number of unique domains linking to the website."
+      },
+      {
+        "name": "website",
+        "type": "Object",
+        "description": "Website details such as country, visits, engagement, and traffic history."
+      },
+      {
+        "name": "input_domain",
+        "type": "String",
+        "description": "Website domain submitted for the overview lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this domain overview was collected."
       }
     ]
   }

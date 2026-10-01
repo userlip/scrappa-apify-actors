@@ -1,6 +1,6 @@
 {
   "title": "Idealista Property Search Scraper",
-  "description": "Idealista Property Search Scraper collects structured data from Scrappa's /idealista/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Search Idealista listings with prices, size, rooms, photos, location, and links. Batch location searches and page through property results across supported European markets.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -11,9 +11,9 @@
   ],
   "properties": {
     "location_ids": {
-      "title": "Location Ids",
+      "title": "Locations",
       "type": "array",
-      "description": "Batch input entries. Each location_id is sent as the location_id value.",
+      "description": "Idealista location IDs to search.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
@@ -114,14 +114,14 @@
           "order": {
             "title": "Order",
             "type": "string",
-            "description": "Scrappa order parameter.",
+            "description": "Sort direction or ordering mode for property results.",
             "maxLength": 40,
             "editor": "textfield"
           },
           "sort": {
             "title": "Sort",
             "type": "string",
-            "description": "Scrappa sort parameter.",
+            "description": "Listing sort mode, such as price or publication date.",
             "enum": [
               "asc",
               "desc"
@@ -132,7 +132,7 @@
           "quality": {
             "title": "Quality",
             "type": "string",
-            "description": "Scrappa quality parameter.",
+            "description": "Filter results by listing quality when supported.",
             "enum": [
               "high",
               "low"
@@ -142,14 +142,14 @@
           "gallery": {
             "title": "Gallery",
             "type": "boolean",
-            "description": "Scrappa gallery parameter.",
+            "description": "Filter for listings that include gallery photos.",
             "default": false,
             "editor": "checkbox"
           },
           "locale": {
             "title": "Locale",
             "type": "string",
-            "description": "Scrappa locale parameter.",
+            "description": "Language and regional formatting for the listing search.",
             "maxLength": 8,
             "editor": "textfield"
           },
@@ -193,70 +193,70 @@
           "home_type": {
             "title": "Home Type",
             "type": "string",
-            "description": "Scrappa home_type parameter.",
+            "description": "Idealista home subtype, such as an apartment or house.",
             "maxLength": 40,
             "editor": "textfield"
           },
           "bank_offer": {
             "title": "Bank Offer",
             "type": "string",
-            "description": "Scrappa bank_offer parameter.",
+            "description": "Filter listings associated with a bank offer.",
             "maxLength": 40,
             "editor": "textfield"
           },
           "advertiser_type": {
             "title": "Advertiser Type",
             "type": "string",
-            "description": "Scrappa advertiser_type parameter.",
+            "description": "Filter results by advertiser category.",
             "maxLength": 40,
             "editor": "textfield"
           },
           "min_price": {
             "title": "Min Price",
             "type": "integer",
-            "description": "Scrappa min_price parameter.",
+            "description": "Minimum asking price for a property listing.",
             "minimum": 0,
             "editor": "number"
           },
           "max_price": {
             "title": "Max Price",
             "type": "integer",
-            "description": "Scrappa max_price parameter.",
+            "description": "Maximum asking price for a property listing.",
             "minimum": 0,
             "editor": "number"
           },
           "min_size": {
             "title": "Min Size",
             "type": "integer",
-            "description": "Scrappa min_size parameter.",
+            "description": "Minimum property area in square metres.",
             "minimum": 0,
             "editor": "number"
           },
           "max_size": {
             "title": "Max Size",
             "type": "integer",
-            "description": "Scrappa max_size parameter.",
+            "description": "Maximum property area in square metres.",
             "minimum": 0,
             "editor": "number"
           },
           "min_rooms": {
             "title": "Min Rooms",
             "type": "integer",
-            "description": "Scrappa min_rooms parameter.",
+            "description": "Minimum room count for a property listing.",
             "minimum": 0,
             "editor": "number"
           },
           "max_rooms": {
             "title": "Max Rooms",
             "type": "integer",
-            "description": "Scrappa max_rooms parameter.",
+            "description": "Maximum room count for a property listing.",
             "minimum": 0,
             "editor": "number"
           },
           "shape": {
             "title": "Shape",
             "type": "string",
-            "description": "Scrappa shape parameter.",
+            "description": "Geographic search shape used to restrict Idealista results.",
             "editor": "textfield"
           }
         }
@@ -340,14 +340,14 @@
     "order": {
       "title": "Order",
       "type": "string",
-      "description": "Scrappa order parameter.",
+      "description": "Sort direction or ordering mode for property results.",
       "maxLength": 40,
       "editor": "textfield"
     },
     "sort": {
       "title": "Sort",
       "type": "string",
-      "description": "Scrappa sort parameter.",
+      "description": "Listing sort mode, such as price or publication date.",
       "enum": [
         "asc",
         "desc"
@@ -358,7 +358,7 @@
     "quality": {
       "title": "Quality",
       "type": "string",
-      "description": "Scrappa quality parameter.",
+      "description": "Filter results by listing quality when supported.",
       "enum": [
         "high",
         "low"
@@ -368,14 +368,14 @@
     "gallery": {
       "title": "Gallery",
       "type": "boolean",
-      "description": "Scrappa gallery parameter.",
+      "description": "Filter for listings that include gallery photos.",
       "default": false,
       "editor": "checkbox"
     },
     "locale": {
       "title": "Locale",
       "type": "string",
-      "description": "Scrappa locale parameter.",
+      "description": "Language and regional formatting for the listing search.",
       "maxLength": 8,
       "editor": "textfield"
     },
@@ -419,70 +419,70 @@
     "home_type": {
       "title": "Home Type",
       "type": "string",
-      "description": "Scrappa home_type parameter.",
+      "description": "Idealista home subtype, such as an apartment or house.",
       "maxLength": 40,
       "editor": "textfield"
     },
     "bank_offer": {
       "title": "Bank Offer",
       "type": "string",
-      "description": "Scrappa bank_offer parameter.",
+      "description": "Filter listings associated with a bank offer.",
       "maxLength": 40,
       "editor": "textfield"
     },
     "advertiser_type": {
       "title": "Advertiser Type",
       "type": "string",
-      "description": "Scrappa advertiser_type parameter.",
+      "description": "Filter results by advertiser category.",
       "maxLength": 40,
       "editor": "textfield"
     },
     "min_price": {
       "title": "Min Price",
       "type": "integer",
-      "description": "Scrappa min_price parameter.",
+      "description": "Minimum asking price for a property listing.",
       "minimum": 0,
       "editor": "number"
     },
     "max_price": {
       "title": "Max Price",
       "type": "integer",
-      "description": "Scrappa max_price parameter.",
+      "description": "Maximum asking price for a property listing.",
       "minimum": 0,
       "editor": "number"
     },
     "min_size": {
       "title": "Min Size",
       "type": "integer",
-      "description": "Scrappa min_size parameter.",
+      "description": "Minimum property area in square metres.",
       "minimum": 0,
       "editor": "number"
     },
     "max_size": {
       "title": "Max Size",
       "type": "integer",
-      "description": "Scrappa max_size parameter.",
+      "description": "Maximum property area in square metres.",
       "minimum": 0,
       "editor": "number"
     },
     "min_rooms": {
       "title": "Min Rooms",
       "type": "integer",
-      "description": "Scrappa min_rooms parameter.",
+      "description": "Minimum room count for a property listing.",
       "minimum": 0,
       "editor": "number"
     },
     "max_rooms": {
       "title": "Max Rooms",
       "type": "integer",
-      "description": "Scrappa max_rooms parameter.",
+      "description": "Maximum room count for a property listing.",
       "minimum": 0,
       "editor": "number"
     },
     "shape": {
       "title": "Shape",
       "type": "string",
-      "description": "Scrappa shape parameter.",
+      "description": "Geographic search shape used to restrict Idealista results.",
       "editor": "textfield"
     },
     "maxResults": {

@@ -1,6 +1,6 @@
 {
   "title": "Baidu Search Scraper",
-  "description": "Baidu Search Scraper collects structured data from Scrappa's /baidu/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Search Baidu for ranked pages, snippets, source domains, dates, and destination links. Batch Chinese-language queries to monitor visibility or compare search results by topic.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -8,9 +8,9 @@
   ],
   "properties": {
     "queries": {
-      "title": "Queries",
+      "title": "Search queries",
       "type": "array",
-      "description": "Batch input entries. Each query is sent as the query value.",
+      "description": "Baidu search phrases. Add one object per phrase.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
@@ -26,7 +26,7 @@
         ],
         "properties": {
           "query": {
-            "title": "Query",
+            "title": "Search query",
             "type": "string",
             "description": "Search query.",
             "maxLength": 500,

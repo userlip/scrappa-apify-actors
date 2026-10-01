@@ -1,7 +1,7 @@
 {
   "slug": "baidu-search-scraper",
   "title": "Baidu Search Scraper",
-  "description": "Baidu Search Scraper collects structured data from Scrappa's /baidu/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Search Baidu for ranked pages, snippets, source domains, dates, and destination links. Batch Chinese-language queries to monitor visibility or compare search results by topic.",
   "endpoint": "/baidu/search",
   "openapiPath": "/baidu/search",
   "mode": "list",
@@ -10,8 +10,9 @@
     "valueField": "query",
     "apiParam": "query",
     "pathParam": null,
-    "title": "Queries",
-    "description": "Batch input entries. Each query is sent as the query value."
+    "title": "Search queries",
+    "description": "Baidu search phrases. Add one object per phrase.",
+    "valueDescription": "query used to run this search."
   },
   "parameters": [
     {
@@ -19,7 +20,7 @@
       "apiParam": "query",
       "location": "query",
       "required": true,
-      "title": "Query",
+      "title": "Search query",
       "schema": {
         "type": "string",
         "description": "Search query.",
@@ -104,13 +105,13 @@
       {
         "position": 1,
         "result_type": "organic",
-        "title": "示例页面",
-        "link": "https://example.com/zh",
-        "displayed_link": "example.com",
-        "snippet": "Synthetic Chinese search result.",
-        "source": "example.com",
+        "title": "对象存储 OSS - 阿里云",
+        "link": "https://www.aliyun.com/product/oss",
+        "displayed_link": "aliyun.com/product/oss",
+        "snippet": "Store and retrieve files with scalable cloud object storage from Alibaba Cloud.",
+        "source": "Alibaba Cloud",
         "category": "web",
-        "date": "2026-01-01"
+        "date": "2026-09-18"
       }
     ],
     "special_results": [],
@@ -149,44 +150,35 @@
       "format": "number"
     }
   ],
-  "seo": {
-    "h1": "Baidu Search Scraper",
-    "intro": "Search Baidu results with structured titles, snippets, source details, and links.",
-    "keywords": [
-      "Baidu Search Scraper",
-      "title",
-      "link",
-      "snippet",
-      "/baidu/search API"
-    ],
+  "dedupePointer": "/link",
+  "categories": [
+    "SEO_TOOLS"
+  ],
+  "storeCopy": {
+    "seoTitle": "Baidu Search Scraper | SERP API",
+    "seoDescription": "Search Baidu by query for ranked pages, snippets, source domains, dates, and links. Monitor Chinese search visibility and compare rank changes.",
+    "intro": "Collect Baidu results for multiple phrases, including rank, title, snippet, source, and destination link. Page limits bound collection for each search.",
     "useCases": [
-      "China market research",
-      "Chinese-language SEO monitoring",
-      "Search result collection"
+      "China-focused SEO teams can check page positions for priority queries.",
+      "Content strategists can compare snippets and competing domains by topic.",
+      "Publishers can review how Baidu categorizes and dates indexed pages."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add a query object for each phrase in `queries`.",
+      "Set `limit` and the starting `page`; use `maxPages` to bound collection.",
+      "Compare position, snippet, source, and link fields in the dataset."
+    ],
+    "faqs": [
       {
-        "name": "title",
-        "description": "Result title or listing name."
-      },
-      {
-        "name": "link",
-        "description": "Result destination URL."
-      },
-      {
-        "name": "snippet",
-        "description": "Text excerpt shown with the result."
-      },
-      {
-        "name": "source",
-        "description": "Publisher, seller, or source name."
-      },
-      {
-        "name": "position",
-        "description": "Position of the result on the source page."
+        "question": "How many pages can one query collect?",
+        "answer": "Set `maxPages` up to the Actor limit. `maxResults` caps saved rows across every query."
       }
     ],
     "relatedActors": [
+      {
+        "slug": "baidu-trending-scraper",
+        "title": "Baidu Trending Searches Scraper"
+      },
       {
         "slug": "bing-search-scraper",
         "title": "Bing Search Scraper"
@@ -194,6 +186,63 @@
       {
         "slug": "brave-search-scraper",
         "title": "Brave Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Baidu search-result rank for this page, starting at 1."
+      },
+      {
+        "name": "result_type",
+        "type": "String",
+        "description": "Baidu result category, such as an organic page or special result."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Page title displayed for the Baidu search result."
+      },
+      {
+        "name": "link",
+        "type": "String",
+        "description": "Destination URL opened by the Baidu search result."
+      },
+      {
+        "name": "displayed_link",
+        "type": "String",
+        "description": "Host or shortened address Baidu displays below the result title."
+      },
+      {
+        "name": "snippet",
+        "type": "String",
+        "description": "Text excerpt Baidu displays for the matching page."
+      },
+      {
+        "name": "source",
+        "type": "String",
+        "description": "Publisher or site name associated with the result."
+      },
+      {
+        "name": "category",
+        "type": "String",
+        "description": "Content category assigned to this Baidu result when available."
+      },
+      {
+        "name": "date",
+        "type": "String",
+        "description": "Publication or crawl date displayed with the result, when provided."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Chinese or multilingual search phrase submitted to Baidu."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when these Baidu results were collected."
       }
     ]
   }

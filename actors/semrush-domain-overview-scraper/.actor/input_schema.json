@@ -1,6 +1,6 @@
 {
   "title": "Semrush Domain Overview Scraper",
-  "description": "Semrush Domain Overview Scraper collects structured data from Scrappa's /semrush/domain/overview endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Get Semrush-style domain metrics for keywords, visits, traffic value, authority, backlinks, and referring domains. Batch websites to benchmark search visibility or assess competitors.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -10,7 +10,7 @@
     "domains": {
       "title": "Domains",
       "type": "array",
-      "description": "Batch input entries. Each domain is sent as the domain value.",
+      "description": "Domains for which to retrieve an overview.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,

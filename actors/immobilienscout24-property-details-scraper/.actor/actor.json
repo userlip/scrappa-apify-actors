@@ -2,7 +2,10 @@
   "actorSpecification": 1,
   "name": "immobilienscout24-property-details-scraper",
   "title": "ImmobilienScout24 Property Details Scraper",
-  "description": "ImmobilienScout24 Property Details Scraper collects structured data from Scrappa's /immobilienscout24/property/{id} endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Get ImmobilienScout24 listing details such as rent, rooms, address, features, energy class, and images by property ID. Batch IDs to enrich housing records or review German listings.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",
@@ -34,7 +37,7 @@
             "component": "table",
             "properties": {
               "id": {
-                "label": "Id",
+                "label": "ID",
                 "format": "text"
               },
               "title": {
@@ -54,7 +57,7 @@
                 "format": "text"
               },
               "url": {
-                "label": "Url",
+                "label": "URL",
                 "format": "link"
               }
             }

@@ -1,9 +1,9 @@
 {
   "search_parameters": {
     "engine": "semrush_domain_overview",
-    "domain": "example.com"
+    "domain": "notion.so"
   },
-  "domain": "example.com",
+  "domain": "notion.so",
   "covered": true,
   "coverage": {
     "domain_metrics": true,
@@ -18,7 +18,7 @@
   "backlinks_count": 5000,
   "referring_domains_count": 650,
   "website": {
-    "domain": "example.com",
+    "domain": "notion.so",
     "country": "us",
     "visits": 48000,
     "engagement": {
@@ -26,7 +26,25 @@
       "avg_visit_duration_seconds": 180,
       "bounce_rate": 0.44
     },
-    "visits_history": [],
-    "device_history": []
+    "visits_history": [
+      {
+        "month": "2025-01",
+        "visits": 118000
+      },
+      {
+        "month": "2025-02",
+        "visits": 124000
+      }
+    ],
+    "device_history": [
+      {
+        "device": "desktop",
+        "share": 0.67
+      },
+      {
+        "device": "mobile",
+        "share": 0.33
+      }
+    ]
   }
 }

@@ -16,17 +16,24 @@
     "organic_results": [
       {
         "position": 1,
-        "title": "An Example Study of Attention Models",
-        "result_id": "example-paper-1",
-        "link": "https://example.com/paper",
-        "snippet": "A synthetic paper abstract for the fixture.",
+        "title": "How Search Interfaces Shape Literature Reviews",
+        "result_id": "GS-2025-01842",
+        "link": "https://scholar.google.com/scholar?cluster=1748293102842",
+        "snippet": "This study compares citation discovery and screening workflows across digital research libraries.",
         "publication_info": {
-          "summary": "Example Journal, 2025",
+          "summary": "Journal of Digital Scholarship, 2025",
           "authors": [
-            "Sample Author"
+            "Priya Menon",
+            "Rafael Costa"
           ]
         },
-        "resources": []
+        "resources": [
+          {
+            "title": "Open access article",
+            "file_format": "PDF",
+            "link": "https://repository.uni-muenster.de/document/1842"
+          }
+        ]
       }
     ],
     "pagination": {
@@ -35,7 +42,10 @@
       "num": 10,
       "next_start": 10,
       "has_next": false,
-      "pages": []
+      "pages": [
+        1,
+        2
+      ]
     }
   },
   "meta": {

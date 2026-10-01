@@ -4,7 +4,7 @@
     "elementList": [
       {
         "propertyCode": "10000001",
-        "thumbnail": "https://example.com/property.jpg",
+        "thumbnail": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c",
         "numPhotos": 8,
         "price": 250000,
         "propertyType": "flat",
@@ -12,14 +12,14 @@
         "size": 75,
         "rooms": 3,
         "bathrooms": 1,
-        "municipality": "Example City",
-        "province": "Example Province",
+        "municipality": "Madrid",
+        "province": "Madrid",
         "country": "Spain",
-        "locationId": "example-location",
+        "locationId": "0-EU-ES-28",
         "latitude": 40.4,
         "longitude": -3.7,
         "url": "https://www.idealista.com/en/inmueble/10000001/",
-        "description": "Synthetic property description."
+        "description": "Bright three-room apartment with a balcony near public transport."
       }
     ],
     "total": 1,

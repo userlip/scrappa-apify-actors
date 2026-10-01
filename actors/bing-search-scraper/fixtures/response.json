@@ -2,10 +2,10 @@
   "data": [
     {
       "position": 1,
-      "title": "Example project management tools",
-      "description": "Compare project management platforms for distributed teams.",
-      "url": "https://example.com/tools",
-      "domain": "example.com"
+      "title": "Getting Started",
+      "description": "Learn Python basics, from installing the interpreter to writing your first program.",
+      "url": "https://www.python.org/about/gettingstarted/",
+      "domain": "python.org"
     }
   ],
   "people_also_search_for": [],

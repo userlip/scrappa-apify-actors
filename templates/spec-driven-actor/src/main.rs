@@ -1,12 +1,13 @@
 use std::{
     collections::{HashMap, HashSet},
     env, fs,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::ExitCode,
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
 use anyhow::{Context, Result, anyhow, bail};
+use httpdate::parse_http_date;
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::{Map, Value, json};
 use tokio::time::sleep;
@@ -14,10 +15,14 @@ use tokio::time::sleep;
 const DEFAULT_SCRAPPA_URL: &str = "https://scrappa.co/api";
 const DEFAULT_APIFY_URL: &str = "https://api.apify.com";
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
-const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
+const ENTRY_TIME_BUDGET: Duration = Duration::from_secs(100);
+const MAX_RETRY_BACKOFF: Duration = Duration::from_secs(10);
 const MAX_SCRAPPA_RETRIES: usize = 4;
 const MAX_APIFY_RETRIES: usize = 8;
 const MAX_BATCH_SIZE: usize = 100;
+const MAX_DATASET_PUSH_ITEMS: usize = 500;
+const MAX_DATASET_PUSH_BYTES: usize = 5 * 1024 * 1024;
 const USER_AGENT: &str = "ScrappaApifyActor/1.0 (+https://scrappa.co)";
 
 const SPEC_JSON: &str = include_str!("../spec.json");
@@ -28,13 +33,15 @@ const FIXTURE_JSON: &str = include_str!("../fixtures/response.json");
 struct ActorSpec {
     title: String,
     endpoint: String,
-    endpoint_by_input: HashMap<String, HashMap<String, String>>,
-    endpoint_by_input_default: Option<String>,
+    endpoint_selectors: Vec<EndpointSelector>,
     mode: String,
     batch: BatchSpec,
     parameters: Vec<ParameterSpec>,
     result_pointer: Option<String>,
     fallback_result_pointers: Vec<String>,
+    flatten_pointers: HashMap<String, String>,
+    dedupe_pointer: Option<String>,
+    relative_date_defaults: Vec<RelativeDateDefault>,
     pagination: Option<PaginationSpec>,
     enrichment: EnrichmentSpec,
     max_results: MaxResultsSpec,
@@ -47,6 +54,29 @@ struct BatchSpec {
     value_field: String,
     api_param: String,
     path_param: Option<String>,
+    item_required: Vec<String>,
+    enrich_batch_item: bool,
+}
+
+#[derive(Debug)]
+struct EndpointSelector {
+    input: String,
+    default: Option<String>,
+    choices: Vec<EndpointChoice>,
+}
+
+#[derive(Debug)]
+struct EndpointChoice {
+    value: String,
+    endpoint: String,
+}
+
+#[derive(Debug)]
+struct RelativeDateDefault {
+    input: String,
+    base: String,
+    offset_days: i64,
+    endpoints: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -56,6 +86,7 @@ struct ParameterSpec {
     location: String,
     required: bool,
     required_for_endpoints: Vec<String>,
+    available_for_endpoints: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -91,6 +122,12 @@ struct RequestEntry {
     value: Value,
     params: Map<String, Value>,
     path_params: Map<String, Value>,
+}
+
+#[derive(Debug, Default)]
+struct PushResult {
+    saved: usize,
+    charge_limited: bool,
 }
 
 struct Storage {
@@ -132,10 +169,9 @@ impl Storage {
             let local_next_item = fs::read_dir(&dataset_dir)
                 .context("Could not read the local Apify dataset directory")?
                 .filter_map(std::result::Result::ok)
-                .filter(|entry| {
-                    entry.path().extension().and_then(|ext| ext.to_str()) == Some("json")
-                })
-                .count();
+                .filter_map(|entry| dataset_index_from_path(&entry.path()))
+                .max()
+                .unwrap_or(0);
             return Ok(Self {
                 http,
                 local_root: Some(local_root),
@@ -212,17 +248,32 @@ impl Storage {
         let mut allowed = apify_dataset_budget(&run, requested)?;
 
         if let Some(max_paid_items) = configured_paid_item_limit()? {
-            allowed = allowed.min(remaining_paid_dataset_items(&run, max_paid_items)?);
+            let pricing_model = run
+                .pointer("/data/pricingInfo/pricingModel")
+                .or_else(|| run.pointer("/pricingInfo/pricingModel"))
+                .and_then(Value::as_str)
+                .unwrap_or_default();
+            let remaining_paid_items = if pricing_model == "PRICE_PER_DATASET_ITEM" {
+                remaining_paid_items_for_model(
+                    &run,
+                    max_paid_items,
+                    pricing_model,
+                    Some(self.current_dataset_item_count().await?),
+                )?
+            } else {
+                remaining_paid_items_for_model(&run, max_paid_items, pricing_model, None)?
+            };
+            allowed = allowed.min(remaining_paid_items);
         }
 
         self.remaining_items = allowed;
         Ok(())
     }
 
-    async fn push_items(&mut self, items: &[Value]) -> Result<usize> {
+    async fn push_items(&mut self, items: &[Value]) -> Result<PushResult> {
         let count = items.len().min(self.remaining_items);
         if count == 0 {
-            return Ok(0);
+            return Ok(PushResult::default());
         }
 
         if let Some(root) = &self.local_root {
@@ -239,20 +290,65 @@ impl Storage {
                     )
                 })?;
             }
+            self.remaining_items -= count;
+            return Ok(PushResult {
+                saved: count,
+                charge_limited: false,
+            });
         } else {
             let dataset_id = self.dataset_id.as_deref().unwrap_or_default();
             let url = self.api_url(&["v2", "datasets", dataset_id, "items"])?;
-            let response = self
-                .authorized(Method::POST, url)
-                .json(&items[..count])
-                .send()
-                .await
-                .context("Could not write items to the Apify dataset")?;
-            require_success(response, "write dataset items").await?;
+            let chunks = dataset_item_chunks(&items[..count])?;
+            let mut saved = 0;
+            for (body, chunk_count) in chunks {
+                let response = self
+                    .authorized(Method::POST, url.clone())
+                    .header(reqwest::header::CONTENT_TYPE, "application/json")
+                    .body(body)
+                    .send()
+                    .await
+                    .context("Could not write items to the Apify dataset")?;
+                if !response.status().is_success() {
+                    let status = response.status();
+                    let body = response.text().await.unwrap_or_default();
+                    if charge_limit_response(status, &body) {
+                        eprintln!(
+                            "Apify stopped accepting dataset items (HTTP {status}); ending the run without retrying the push"
+                        );
+                        self.remaining_items = self.remaining_items.saturating_sub(saved);
+                        return Ok(PushResult {
+                            saved,
+                            charge_limited: true,
+                        });
+                    }
+                    bail!("Apify returned HTTP {status} while writing dataset items");
+                }
+                saved += chunk_count;
+            }
+            self.remaining_items -= saved;
+            return Ok(PushResult {
+                saved,
+                charge_limited: false,
+            });
         }
+    }
 
-        self.remaining_items -= count;
-        Ok(count)
+    async fn current_dataset_item_count(&self) -> Result<usize> {
+        let dataset_id = self.dataset_id.as_deref().unwrap_or_default();
+        let mut url = self.api_url(&["v2", "datasets", dataset_id])?;
+        url.query_pairs_mut().append_pair("fields", "itemCount");
+        let response = self
+            .send_apify_with_retry("dataset item count request", || {
+                self.authorized(Method::GET, url.clone())
+            })
+            .await?;
+        let dataset = response_json(response, "read dataset item count").await?;
+        dataset
+            .pointer("/data/itemCount")
+            .or_else(|| dataset.get("itemCount"))
+            .and_then(Value::as_u64)
+            .map(|count| count as usize)
+            .ok_or_else(|| anyhow!("Apify dataset response did not include itemCount"))
     }
 
     async fn set_status_message(&self, message: &str) -> Result<()> {
@@ -294,7 +390,9 @@ impl Storage {
     {
         for attempt in 0..=MAX_APIFY_RETRIES {
             match request().send().await {
-                Ok(response) if should_retry(response.status()) && attempt < MAX_APIFY_RETRIES => {
+                Ok(response)
+                    if should_retry_apify(response.status()) && attempt < MAX_APIFY_RETRIES =>
+                {
                     let delay = retry_delay(attempt);
                     eprintln!(
                         "Apify {operation} returned {}; retrying after {}ms",
@@ -320,6 +418,71 @@ impl Storage {
         }
         bail!("Apify {operation} request exhausted its retry loop")
     }
+}
+
+fn dataset_item_chunks(items: &[Value]) -> Result<Vec<(Vec<u8>, usize)>> {
+    let mut chunks = Vec::new();
+    let mut current = Vec::<Vec<u8>>::new();
+    let mut current_bytes = 2_usize;
+
+    for item in items {
+        let encoded = serde_json::to_vec(item).context("Could not serialize a dataset item")?;
+        if encoded.len() + 2 > MAX_DATASET_PUSH_BYTES {
+            bail!("A dataset item exceeds the 5 MB Apify push limit");
+        }
+        let separator_bytes = usize::from(!current.is_empty());
+        if !current.is_empty()
+            && (current.len() >= MAX_DATASET_PUSH_ITEMS
+                || current_bytes + separator_bytes + encoded.len() > MAX_DATASET_PUSH_BYTES)
+        {
+            chunks.push((encode_dataset_chunk(&current), current.len()));
+            current.clear();
+            current_bytes = 2;
+        }
+        current_bytes += usize::from(!current.is_empty()) + encoded.len();
+        current.push(encoded);
+    }
+
+    if !current.is_empty() {
+        chunks.push((encode_dataset_chunk(&current), current.len()));
+    }
+    Ok(chunks)
+}
+
+fn encode_dataset_chunk(items: &[Vec<u8>]) -> Vec<u8> {
+    let byte_count = items.iter().map(Vec::len).sum::<usize>() + items.len() + 1;
+    let mut body = Vec::with_capacity(byte_count);
+    body.push(b'[');
+    for (index, item) in items.iter().enumerate() {
+        if index > 0 {
+            body.push(b',');
+        }
+        body.extend_from_slice(item);
+    }
+    body.push(b']');
+    body
+}
+
+fn charge_limit_response(status: StatusCode, body: &str) -> bool {
+    if status == StatusCode::PAYMENT_REQUIRED || status == StatusCode::FORBIDDEN {
+        return true;
+    }
+    let body = body.to_ascii_lowercase();
+    [
+        "charge limit",
+        "spending limit",
+        "maximum charge",
+        "max total charge",
+    ]
+    .iter()
+    .any(|phrase| body.contains(phrase))
+}
+
+fn dataset_index_from_path(path: &Path) -> Option<usize> {
+    if path.extension().and_then(|extension| extension.to_str()) != Some("json") {
+        return None;
+    }
+    path.file_stem()?.to_str()?.parse::<usize>().ok()
 }
 
 fn required_env(name: &str) -> Result<String> {
@@ -399,15 +562,31 @@ fn parse_spec() -> Result<ActorSpec> {
                     .filter_map(Value::as_str)
                     .map(str::to_owned)
                     .collect(),
+                available_for_endpoints: parameter_object
+                    .get("availableForEndpoints")
+                    .and_then(Value::as_array)
+                    .into_iter()
+                    .flatten()
+                    .filter_map(Value::as_str)
+                    .map(str::to_owned)
+                    .collect(),
             })
         })
         .collect::<Result<Vec<_>>>()?;
-    let endpoint_by_input = object
-        .get("endpointByInput")
-        .and_then(Value::as_object)
-        .into_iter()
-        .flatten()
-        .map(|(input, choices)| {
+    let mut endpoint_selectors = Vec::new();
+    if let Some(selectors) = object.get("endpointSelectors") {
+        let selectors = selectors
+            .as_array()
+            .ok_or_else(|| anyhow!("Compiled Actor endpointSelectors must be an array"))?;
+        endpoint_selectors = selectors
+            .iter()
+            .map(parse_endpoint_selector)
+            .collect::<Result<Vec<_>>>()?;
+    } else if let Some(selector) = object.get("endpointSelector") {
+        endpoint_selectors.push(parse_endpoint_selector(selector)?);
+    } else if let Some(legacy_selectors) = object.get("endpointByInput").and_then(Value::as_object)
+    {
+        for (input, choices) in legacy_selectors {
             let choices = choices
                 .as_object()
                 .ok_or_else(|| anyhow!("Endpoint choices for {input} must be an object"))?
@@ -416,12 +595,25 @@ fn parse_spec() -> Result<ActorSpec> {
                     let endpoint = endpoint
                         .as_str()
                         .ok_or_else(|| anyhow!("Endpoint choice must be a string"))?;
-                    Ok((value.clone(), endpoint.to_owned()))
+                    Ok(EndpointChoice {
+                        value: value.clone(),
+                        endpoint: endpoint.to_owned(),
+                    })
                 })
-                .collect::<Result<HashMap<_, _>>>()?;
-            Ok((input.clone(), choices))
-        })
-        .collect::<Result<HashMap<_, _>>>()?;
+                .collect::<Result<Vec<_>>>()?;
+            endpoint_selectors.push(EndpointSelector {
+                input: input.clone(),
+                default: object
+                    .get("endpointByInputDefault")
+                    .and_then(Value::as_str)
+                    .map(str::to_owned),
+                choices,
+            });
+        }
+    }
+    if endpoint_selectors.len() > 1 {
+        bail!("Compiled Actor specs may define only one endpoint selector");
+    }
     let pagination = object
         .get("pagination")
         .filter(|value| !value.is_null())
@@ -472,6 +664,46 @@ fn parse_spec() -> Result<ActorSpec> {
         .get("enrichment")
         .and_then(Value::as_object)
         .ok_or_else(|| anyhow!("Compiled Actor spec is missing enrichment"))?;
+    let flatten_pointers = object
+        .get("flattenPointers")
+        .and_then(Value::as_object)
+        .into_iter()
+        .flatten()
+        .filter_map(|(name, pointer)| {
+            pointer
+                .as_str()
+                .map(|value| (name.clone(), value.to_owned()))
+        })
+        .collect();
+    let relative_date_defaults = object
+        .get("relativeDateDefaults")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .map(|rule| {
+            Ok(RelativeDateDefault {
+                input: rule
+                    .get("input")
+                    .and_then(Value::as_str)
+                    .ok_or_else(|| anyhow!("Relative date default is missing input"))?
+                    .to_owned(),
+                base: rule
+                    .get("base")
+                    .and_then(Value::as_str)
+                    .unwrap_or("today")
+                    .to_owned(),
+                offset_days: rule.get("offsetDays").and_then(Value::as_i64).unwrap_or(0),
+                endpoints: rule
+                    .get("endpoints")
+                    .and_then(Value::as_array)
+                    .into_iter()
+                    .flatten()
+                    .filter_map(Value::as_str)
+                    .map(str::to_owned)
+                    .collect(),
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
     let max_results = object
         .get("maxResults")
         .and_then(Value::as_object)
@@ -480,11 +712,7 @@ fn parse_spec() -> Result<ActorSpec> {
     Ok(ActorSpec {
         title: string("title")?,
         endpoint: string("endpoint")?,
-        endpoint_by_input,
-        endpoint_by_input_default: object
-            .get("endpointByInputDefault")
-            .and_then(Value::as_str)
-            .map(str::to_owned),
+        endpoint_selectors,
         mode: string("mode")?,
         batch: BatchSpec {
             field: batch_string("field")?,
@@ -494,6 +722,18 @@ fn parse_spec() -> Result<ActorSpec> {
                 .get("pathParam")
                 .and_then(Value::as_str)
                 .map(str::to_owned),
+            item_required: batch
+                .get("itemRequired")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .map(str::to_owned)
+                .collect(),
+            enrich_batch_item: batch
+                .get("enrichBatchItem")
+                .and_then(Value::as_bool)
+                .unwrap_or(false),
         },
         parameters,
         result_pointer: object
@@ -508,6 +748,12 @@ fn parse_spec() -> Result<ActorSpec> {
             .filter_map(Value::as_str)
             .map(str::to_owned)
             .collect(),
+        flatten_pointers,
+        dedupe_pointer: object
+            .get("dedupePointer")
+            .and_then(Value::as_str)
+            .map(str::to_owned),
+        relative_date_defaults,
         pagination,
         enrichment: EnrichmentSpec {
             field: enrichment
@@ -552,6 +798,45 @@ fn configured_paid_item_limit() -> Result<Option<usize>> {
     }
 }
 
+fn parse_endpoint_selector(value: &Value) -> Result<EndpointSelector> {
+    let selector = value
+        .as_object()
+        .ok_or_else(|| anyhow!("Compiled Actor endpoint selector must be an object"))?;
+    let input = selector
+        .get("input")
+        .and_then(Value::as_str)
+        .ok_or_else(|| anyhow!("Compiled Actor endpoint selector is missing input"))?
+        .to_owned();
+    let choices = selector
+        .get("choices")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .map(|choice| {
+            Ok(EndpointChoice {
+                value: choice
+                    .get("value")
+                    .and_then(Value::as_str)
+                    .ok_or_else(|| anyhow!("Compiled endpoint choice is missing value"))?
+                    .to_owned(),
+                endpoint: choice
+                    .get("endpoint")
+                    .and_then(Value::as_str)
+                    .ok_or_else(|| anyhow!("Compiled endpoint choice is missing endpoint"))?
+                    .to_owned(),
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(EndpointSelector {
+        input,
+        default: selector
+            .get("default")
+            .and_then(Value::as_str)
+            .map(str::to_owned),
+        choices,
+    })
+}
+
 fn remaining_paid_dataset_items(run: &Value, max_paid_items: usize) -> Result<usize> {
     let data = run.get("data").unwrap_or(run);
     let charged_items = data
@@ -569,31 +854,21 @@ fn remaining_paid_dataset_items(run: &Value, max_paid_items: usize) -> Result<us
     Ok(max_paid_items.saturating_sub(charged_items))
 }
 
+fn remaining_paid_items_for_model(
+    run: &Value,
+    max_paid_items: usize,
+    pricing_model: &str,
+    dataset_item_count: Option<usize>,
+) -> Result<usize> {
+    if pricing_model == "PRICE_PER_DATASET_ITEM" {
+        let item_count = dataset_item_count
+            .ok_or_else(|| anyhow!("Apify dataset itemCount is required for this pricing model"))?;
+        return Ok(max_paid_items.saturating_sub(item_count));
+    }
+    remaining_paid_dataset_items(run, max_paid_items)
+}
+
 fn apify_dataset_budget(run: &Value, requested: usize) -> Result<usize> {
-    let data = run.get("data").unwrap_or(run);
-    let pricing = data.get("pricingInfo").unwrap_or(&Value::Null);
-    if pricing.get("pricingModel").and_then(Value::as_str) != Some("PAY_PER_EVENT") {
-        return Ok(requested);
-    }
-
-    let events = pricing
-        .pointer("/pricingPerEvent/actorChargeEvents")
-        .and_then(Value::as_object)
-        .ok_or_else(|| anyhow!("Apify run pricing did not include event prices"))?;
-    let item_price = events
-        .get(DATASET_ITEM_EVENT)
-        .and_then(|event| event.get("eventPriceUsd"))
-        .and_then(Value::as_f64)
-        .ok_or_else(|| {
-            anyhow!("Apify run pricing did not include the default dataset item event")
-        })?;
-    if !item_price.is_finite() || item_price < 0.0 {
-        bail!("Apify run pricing returned an invalid dataset item price");
-    }
-    if item_price == 0.0 {
-        return Ok(requested);
-    }
-
     let environment_max_charge = match env::var("ACTOR_MAX_TOTAL_CHARGE_USD") {
         Ok(value) => Some(
             value
@@ -605,18 +880,62 @@ fn apify_dataset_budget(run: &Value, requested: usize) -> Result<usize> {
             return Err(error).context("ACTOR_MAX_TOTAL_CHARGE_USD was not valid Unicode");
         }
     };
-    let max_charge = environment_max_charge.or_else(|| {
-        data.pointer("/options/maxTotalChargeUsd")
-            .and_then(Value::as_f64)
-    });
-    if max_charge.is_some_and(|value| !value.is_finite() || value < 0.0) {
-        bail!("Apify run returned an invalid maximum charge");
+    apify_dataset_budget_with_limit(run, requested, environment_max_charge)
+}
+
+fn apify_dataset_budget_with_limit(
+    run: &Value,
+    requested: usize,
+    environment_max_charge: Option<f64>,
+) -> Result<usize> {
+    let data = run.get("data").unwrap_or(run);
+    let pricing = data.get("pricingInfo").unwrap_or(&Value::Null);
+    let run_max_charge = data
+        .pointer("/options/maxTotalChargeUsd")
+        .filter(|value| !value.is_null())
+        .map(parse_charge_limit)
+        .transpose()?;
+    for limit in [environment_max_charge, run_max_charge]
+        .into_iter()
+        .flatten()
+    {
+        if !limit.is_finite() || limit < 0.0 {
+            bail!("Apify run returned an invalid maximum charge");
+        }
     }
-    let Some(max_charge) = max_charge.filter(|value| *value > 0.0) else {
+    let max_charge = match (environment_max_charge, run_max_charge) {
+        (Some(environment), Some(run)) => Some(environment.min(run)),
+        (Some(environment), None) => Some(environment),
+        (None, Some(run)) => Some(run),
+        (None, None) => None,
+    };
+    let Some(max_charge) = max_charge else {
         return Ok(requested);
     };
-    if !max_charge.is_finite() {
-        bail!("Apify run returned an invalid maximum charge");
+
+    let pricing_model = pricing
+        .get("pricingModel")
+        .and_then(Value::as_str)
+        .unwrap_or("unknown");
+    if pricing_model != "PAY_PER_EVENT" {
+        bail!(
+            "Cannot safely apply ACTOR_MAX_TOTAL_CHARGE_USD for Apify pricing model {pricing_model}"
+        );
+    }
+
+    let events = pricing
+        .pointer("/pricingPerEvent/actorChargeEvents")
+        .and_then(Value::as_object)
+        .ok_or_else(|| anyhow!("Apify run pricing did not include event prices"))?;
+    let item_price = events
+        .get(DATASET_ITEM_EVENT)
+        .map(|event| event_price_for_budget(event, DATASET_ITEM_EVENT))
+        .transpose()?
+        .ok_or_else(|| {
+            anyhow!("Apify run pricing did not include the default dataset item event")
+        })?;
+    if item_price == 0.0 {
+        return Ok(requested);
     }
 
     let counts = data
@@ -632,19 +951,70 @@ fn apify_dataset_budget(run: &Value, requested: usize) -> Result<usize> {
         if count == 0 {
             continue;
         }
-        let price = events
+        let event = events
             .get(event_name)
-            .and_then(|event| event.get("eventPriceUsd"))
-            .and_then(Value::as_f64)
             .ok_or_else(|| anyhow!("Apify run did not provide a price for a charged event"))?;
-        if !price.is_finite() || price < 0.0 {
-            bail!("Apify run provided invalid event pricing");
-        }
-        spent += price * count as f64;
+        spent += event_price_for_budget(event, event_name)? * count as f64;
+    }
+    if !spent.is_finite() {
+        bail!("Apify run returned invalid charged totals");
     }
 
-    let remaining_charge = (max_charge - spent).max(0.0);
-    Ok(((remaining_charge / item_price).floor() as usize).min(requested))
+    let tolerance = f64::EPSILON * max_charge.max(1.0);
+    Ok((0..=requested)
+        .rev()
+        .find(|count| spent + *count as f64 * item_price <= max_charge + tolerance)
+        .unwrap_or(0))
+}
+
+fn event_price_for_budget(event: &Value, event_name: &str) -> Result<f64> {
+    let tiered_prices = event
+        .get("eventTieredPricingUsd")
+        .and_then(Value::as_object)
+        .filter(|prices| !prices.is_empty());
+    if let Some(tiered_prices) = tiered_prices {
+        return tiered_prices
+            .iter()
+            .map(|(tier, tiered_price)| {
+                let price = tiered_price
+                    .get("tieredEventPriceUsd")
+                    .and_then(Value::as_f64)
+                    .ok_or_else(|| {
+                        anyhow!("Apify run provided an invalid {tier} price for {event_name}")
+                    })?;
+                if !price.is_finite() || price < 0.0 {
+                    bail!("Apify run provided an invalid {tier} price for {event_name}");
+                }
+                Ok(price)
+            })
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .reduce(f64::max)
+            .ok_or_else(|| {
+                anyhow!("Apify run did not provide a usable price for event {event_name}")
+            });
+    }
+
+    if let Some(price) = event.get("eventPriceUsd").and_then(Value::as_f64) {
+        if !price.is_finite() || price < 0.0 {
+            bail!("Apify run returned an invalid price for event {event_name}");
+        }
+        return Ok(price);
+    }
+    bail!("Apify run did not provide a usable price for event {event_name}")
+}
+
+fn parse_charge_limit(value: &Value) -> Result<f64> {
+    let limit = match value {
+        Value::Number(number) => number.as_f64(),
+        Value::String(value) => value.trim().parse::<f64>().ok(),
+        _ => None,
+    }
+    .ok_or_else(|| anyhow!("Apify run returned an invalid maximum charge"))?;
+    if !limit.is_finite() || limit < 0.0 {
+        bail!("Apify run returned an invalid maximum charge");
+    }
+    Ok(limit)
 }
 
 fn parse_requests(input: &Value, spec: &ActorSpec) -> Result<Vec<RequestEntry>> {
@@ -670,7 +1040,7 @@ fn parse_requests(input: &Value, spec: &ActorSpec) -> Result<Vec<RequestEntry>> 
         .iter()
         .enumerate()
         .map(|(index, entry)| {
-            let value = batch_value(entry, &spec.batch.value_field).ok_or_else(|| {
+            let batch_value = batch_value(entry, &spec.batch.value_field).ok_or_else(|| {
                 anyhow!(
                     "{} entry {} is missing {}",
                     spec.batch.field,
@@ -678,7 +1048,7 @@ fn parse_requests(input: &Value, spec: &ActorSpec) -> Result<Vec<RequestEntry>> 
                     spec.batch.value_field
                 )
             })?;
-            if value.is_null() || value.as_str().is_some_and(str::is_empty) {
+            if batch_value.is_null() || batch_value.as_str().is_some_and(str::is_empty) {
                 bail!(
                     "{} entry {} has an empty {}",
                     spec.batch.field,
@@ -687,15 +1057,48 @@ fn parse_requests(input: &Value, spec: &ActorSpec) -> Result<Vec<RequestEntry>> 
                 );
             }
 
+            let mut input_values = object.clone();
+            if let Some(entry_object) = entry.as_object() {
+                for (name, value) in entry_object {
+                    input_values.insert(name.clone(), value.clone());
+                }
+            }
+            apply_relative_date_defaults(
+                &mut input_values,
+                &spec.relative_date_defaults,
+                &endpoint,
+            )?;
+            for field in &spec.batch.item_required {
+                if input_values
+                    .get(field)
+                    .is_none_or(|value| value.is_null() || value.as_str() == Some(""))
+                {
+                    bail!(
+                        "{} entry {} requires {}",
+                        spec.batch.field,
+                        index + 1,
+                        field
+                    );
+                }
+            }
+
             let mut params = Map::new();
             let mut path_params = Map::new();
             for parameter in &spec.parameters {
+                if !parameter.available_for_endpoints.is_empty()
+                    && !parameter
+                        .available_for_endpoints
+                        .iter()
+                        .any(|fragment| endpoint.contains(fragment))
+                {
+                    continue;
+                }
                 let source = entry
                     .as_object()
                     .and_then(|entry_object| entry_object.get(&parameter.input))
-                    .or_else(|| object.get(&parameter.input));
+                    .or_else(|| input_values.get(&parameter.input));
                 let source = if parameter.input == spec.batch.value_field {
-                    Some(&value)
+                    Some(&batch_value)
                 } else {
                     source
                 };
@@ -709,20 +1112,109 @@ fn parse_requests(input: &Value, spec: &ActorSpec) -> Result<Vec<RequestEntry>> 
                 }
             }
             if let Some(path_param) = &spec.batch.path_param {
-                path_params.insert(path_param.clone(), value.clone());
+                path_params.insert(path_param.clone(), batch_value.clone());
             } else if !spec.batch.api_param.is_empty() {
-                params.insert(spec.batch.api_param.clone(), value.clone());
+                params.insert(spec.batch.api_param.clone(), batch_value.clone());
             }
 
             validate_required_params(&params, &path_params, &endpoint, spec, index)?;
             Ok(RequestEntry {
                 endpoint: endpoint.clone(),
-                value,
+                value: if spec.batch.enrich_batch_item {
+                    entry.clone()
+                } else {
+                    batch_value
+                },
                 params,
                 path_params,
             })
         })
         .collect()
+}
+
+fn apply_relative_date_defaults(
+    values: &mut Map<String, Value>,
+    defaults: &[RelativeDateDefault],
+    endpoint: &str,
+) -> Result<()> {
+    let today = (SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
+        / 86_400) as i64;
+
+    for default in defaults {
+        if !default.endpoints.is_empty()
+            && !default
+                .endpoints
+                .iter()
+                .any(|fragment| endpoint.contains(fragment))
+        {
+            continue;
+        }
+        if values
+            .get(&default.input)
+            .is_some_and(|value| !value.is_null() && value.as_str() != Some(""))
+        {
+            continue;
+        }
+        let base_day = if default.base == "today" {
+            today
+        } else {
+            let base_value = values
+                .get(&default.base)
+                .and_then(Value::as_str)
+                .ok_or_else(|| {
+                    anyhow!(
+                        "Relative date default for {} requires {}",
+                        default.input,
+                        default.base
+                    )
+                })?;
+            parse_iso_date(base_value)
+                .ok_or_else(|| anyhow!("{} must be a date in YYYY-MM-DD format", default.base))?
+        };
+        let date = format_iso_date(base_day.saturating_add(default.offset_days));
+        values.insert(default.input.clone(), Value::String(date));
+    }
+    Ok(())
+}
+
+fn parse_iso_date(date: &str) -> Option<i64> {
+    let mut parts = date.split('-');
+    let year = parts.next()?.parse::<i64>().ok()?;
+    let month = parts.next()?.parse::<i64>().ok()?;
+    let day = parts.next()?.parse::<i64>().ok()?;
+    if parts.next().is_some() || !(1..=12).contains(&month) || !(1..=31).contains(&day) {
+        return None;
+    }
+    let adjusted_year = year - i64::from(month <= 2);
+    let era = if adjusted_year >= 0 {
+        adjusted_year
+    } else {
+        adjusted_year - 399
+    } / 400;
+    let year_of_era = adjusted_year - era * 400;
+    let adjusted_month = month + if month > 2 { -3 } else { 9 };
+    let day_of_year = (153 * adjusted_month + 2) / 5 + day - 1;
+    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
+    let days = era * 146_097 + day_of_era - 719_468;
+    (format_iso_date(days) == date).then_some(days)
+}
+
+fn format_iso_date(days: i64) -> String {
+    let z = days + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let day_of_era = z - era * 146_097;
+    let year_of_era =
+        (day_of_era - day_of_era / 1_460 + day_of_era / 36_524 - day_of_era / 146_096) / 365;
+    let mut year = year_of_era + era * 400;
+    let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+    let month_prime = (5 * day_of_year + 2) / 153;
+    let day = day_of_year - (153 * month_prime + 2) / 5 + 1;
+    let month = month_prime + if month_prime < 10 { 3 } else { -9 };
+    year += i64::from(month <= 2);
+    format!("{year:04}-{month:02}-{day:02}")
 }
 
 fn batch_value(entry: &Value, value_field: &str) -> Option<Value> {
@@ -741,11 +1233,22 @@ fn validate_required_params(
     index: usize,
 ) -> Result<()> {
     for parameter in &spec.parameters {
-        let required = parameter.required
+        let available = parameter.available_for_endpoints.is_empty()
             || parameter
-                .required_for_endpoints
+                .available_for_endpoints
                 .iter()
                 .any(|fragment| endpoint.contains(fragment));
+        if !available {
+            continue;
+        }
+        let required = if parameter.required_for_endpoints.is_empty() {
+            parameter.required
+        } else {
+            parameter
+                .required_for_endpoints
+                .iter()
+                .any(|fragment| endpoint.contains(fragment))
+        };
         if !required {
             continue;
         }
@@ -776,19 +1279,29 @@ fn validate_required_params(
 }
 
 fn selected_endpoint(input: &Value, spec: &ActorSpec) -> Result<String> {
-    let Some(by_input) = spec.endpoint_by_input.iter().next() else {
+    if spec.endpoint_selectors.len() > 1 {
+        bail!("Only one endpoint selector can be configured");
+    }
+    let Some(selector) = spec.endpoint_selectors.first() else {
         return Ok(spec.endpoint.clone());
     };
-    let (input_field, choices) = by_input;
     let selected = input
-        .get(input_field)
-        .and_then(Value::as_str)
-        .or(spec.endpoint_by_input_default.as_deref())
-        .ok_or_else(|| anyhow!("Input field {input_field} is required"))?;
-    choices
-        .get(selected)
-        .cloned()
-        .ok_or_else(|| anyhow!("Unsupported {input_field} value {selected}"))
+        .get(&selector.input)
+        .filter(|value| !value.is_null())
+        .map(|value| {
+            value
+                .as_str()
+                .ok_or_else(|| anyhow!("Input field {} must be a string", selector.input))
+        })
+        .transpose()?
+        .or(selector.default.as_deref())
+        .ok_or_else(|| anyhow!("Input field {} is required", selector.input))?;
+    selector
+        .choices
+        .iter()
+        .find(|choice| choice.value == selected)
+        .map(|choice| choice.endpoint.clone())
+        .ok_or_else(|| anyhow!("Unsupported {} value {selected}", selector.input))
 }
 
 fn max_results(input: &Value, spec: &ActorSpec) -> Result<usize> {
@@ -896,8 +1409,17 @@ fn format_timestamp(seconds: u64) -> String {
 
 fn has_next_page(response: &Value, page_had_rows: bool, pagination: &PaginationSpec) -> bool {
     if let Some(end_pointer) = &pagination.end_pointer {
-        if response.pointer(end_pointer).and_then(Value::as_bool) == Some(true) {
+        if response
+            .pointer(end_pointer)
+            .and_then(truthy_flag)
+            .unwrap_or(false)
+        {
             return false;
+        }
+    }
+    if let Some(pointer) = &pagination.has_more_pointer {
+        if let Some(has_more) = response.pointer(pointer).and_then(truthy_flag) {
+            return has_more;
         }
     }
     if let (Some(current), Some(total)) = (
@@ -905,33 +1427,48 @@ fn has_next_page(response: &Value, page_had_rows: bool, pagination: &PaginationS
             .current_page_pointer
             .as_ref()
             .and_then(|pointer| response.pointer(pointer))
-            .and_then(Value::as_u64),
+            .and_then(numeric_page),
         pagination
             .total_pages_pointer
             .as_ref()
             .and_then(|pointer| response.pointer(pointer))
-            .and_then(Value::as_u64),
+            .and_then(numeric_page),
     ) {
         return current < total;
-    }
-    if let Some(pointer) = &pagination.has_more_pointer {
-        if let Some(has_more) = response.pointer(pointer).and_then(Value::as_bool) {
-            return has_more;
-        }
     }
     for pointer in pagination
         .next_pointer
         .iter()
         .chain(pagination.next_pointers.iter())
     {
-        if response
-            .pointer(pointer)
-            .is_some_and(|value| !value.is_null() && value.as_str() != Some(""))
-        {
+        if response.pointer(pointer).is_some_and(|value| {
+            !value.is_null() && value.as_str() != Some("") && value.as_str() != Some("0")
+        }) {
             return true;
         }
     }
     page_had_rows
+}
+
+fn truthy_flag(value: &Value) -> Option<bool> {
+    match value {
+        Value::Bool(value) => Some(*value),
+        Value::Number(value) => value.as_f64().map(|value| value != 0.0),
+        Value::String(value) => match value.trim().to_ascii_lowercase().as_str() {
+            "" | "0" | "false" => Some(false),
+            "1" | "true" => Some(true),
+            _ => Some(true),
+        },
+        _ => None,
+    }
+}
+
+fn numeric_page(value: &Value) -> Option<i64> {
+    match value {
+        Value::Number(value) => value.as_i64(),
+        Value::String(value) => value.trim().parse::<i64>().ok(),
+        _ => None,
+    }
 }
 
 fn next_page_value(
@@ -944,7 +1481,15 @@ fn next_page_value(
         .iter()
         .chain(pagination.next_pointers.iter())
     {
-        if let Some(value) = response.pointer(pointer).filter(|value| !value.is_null()) {
+        if let Some(value) = response
+            .pointer(pointer)
+            .filter(|value| !value.is_null() && value.as_str() != Some(""))
+        {
+            if pagination.kind == "page" {
+                if let Some(page) = numeric_page(value) {
+                    return json!(page);
+                }
+            }
             return value.clone();
         }
     }
@@ -956,6 +1501,14 @@ fn next_page_value(
                 .unwrap_or(0)
                 .saturating_add(pagination.step.max(1));
             json!(next)
+        }
+        Value::String(value) if pagination.kind == "page" => {
+            json!(
+                value
+                    .parse::<i64>()
+                    .unwrap_or(0)
+                    .saturating_add(pagination.step.max(1))
+            )
         }
         Value::String(value) if pagination.kind == "cursor" => json!(value),
         _ => pagination.start.clone(),
@@ -1016,7 +1569,10 @@ async fn request_scrappa(
 ) -> Result<Value, EntryFailure> {
     let mut params = entry.params.clone();
     let mut seen_pages = HashSet::new();
+    let mut seen_rows = HashSet::new();
     let mut pending_items = Vec::new();
+    let mut previous_response_page = None;
+    let deadline = Instant::now() + ENTRY_TIME_BUDGET;
     let mut page = 0;
     loop {
         let mut request_params = params.clone();
@@ -1047,15 +1603,38 @@ async fn request_scrappa(
             }
         }
 
-        let response = send_scrappa_with_retry(http, url, api_key).await?;
+        let response = send_scrappa_with_retry(http, url, api_key, deadline).await?;
         let body = response.text().await.map_err(|_| EntryFailure::Request)?;
         let response: Value = serde_json::from_str(&body).map_err(|_| EntryFailure::InvalidJson)?;
+        if let Some(message) = response_failure_message(&response) {
+            return Err(EntryFailure::Upstream(message));
+        }
+
+        if let Some(pagination) = &spec.pagination {
+            if let Some(response_page) = pagination
+                .current_page_pointer
+                .as_ref()
+                .and_then(|pointer| response.pointer(pointer))
+                .and_then(numeric_page)
+            {
+                if response_page_did_not_advance(previous_response_page, response_page) {
+                    break;
+                }
+                previous_response_page = Some(response_page);
+            }
+        }
+
         let rows = response_items(&response, spec);
         let page_had_rows = !rows.is_empty();
-        pending_items.extend(
-            rows.into_iter()
-                .take(row_limit.saturating_sub(pending_items.len())),
-        );
+        for row in rows {
+            if is_duplicate_row(&row, spec.dedupe_pointer.as_deref(), &mut seen_rows) {
+                continue;
+            }
+            pending_items.push(flatten_item(row, &spec.flatten_pointers));
+            if pending_items.len() >= row_limit {
+                break;
+            }
+        }
 
         let Some(pagination) = &spec.pagination else {
             break;
@@ -1067,10 +1646,14 @@ async fn request_scrappa(
         {
             break;
         }
-        params.insert(
-            pagination.param.clone(),
-            next_page_value(&response, &request_params, pagination),
-        );
+        let next = next_page_value(&response, &request_params, pagination);
+        if request_params
+            .get(&pagination.param)
+            .is_some_and(|current| value_to_string(current) == value_to_string(&next))
+        {
+            break;
+        }
+        params.insert(pagination.param.clone(), next);
         page += 1;
     }
 
@@ -1082,60 +1665,237 @@ async fn request_scrappa(
     Ok(Value::Array(items))
 }
 
+fn is_duplicate_row(row: &Value, pointer: Option<&str>, seen: &mut HashSet<String>) -> bool {
+    let Some(key) = pointer
+        .and_then(|pointer| row.pointer(pointer))
+        .filter(|value| !value.is_null())
+        .map(Value::to_string)
+    else {
+        return false;
+    };
+    !seen.insert(key)
+}
+
+fn response_page_did_not_advance(previous: Option<i64>, current: i64) -> bool {
+    previous.is_some_and(|previous| current <= previous)
+}
+
+fn flatten_item(item: Value, fields: &HashMap<String, String>) -> Value {
+    let mut object = match item {
+        Value::Object(object) => object,
+        value => {
+            let mut object = Map::new();
+            object.insert("value".to_owned(), value);
+            object
+        }
+    };
+    for (name, pointer) in fields {
+        if let Some(value) = Value::Object(object.clone()).pointer(pointer).cloned() {
+            object.insert(name.clone(), value);
+        }
+    }
+    Value::Object(object)
+}
+
+fn response_failure_message(response: &Value) -> Option<String> {
+    let success_failed = response.get("success").and_then(Value::as_bool) == Some(false);
+    let nonzero_code = response.get("code").is_some_and(|code| match code {
+        Value::Number(number) => number.as_f64().is_some_and(|value| value != 0.0),
+        Value::String(value) => value.parse::<f64>().is_ok_and(|value| value != 0.0),
+        _ => false,
+    });
+    if !success_failed && !nonzero_code {
+        return None;
+    }
+    response_error_message(response).or_else(|| {
+        Some(if success_failed {
+            "Scrappa returned success=false".to_owned()
+        } else {
+            "Scrappa returned a non-zero response code".to_owned()
+        })
+    })
+}
+
+fn response_error_message(response: &Value) -> Option<String> {
+    response
+        .get("message")
+        .and_then(Value::as_str)
+        .or_else(|| response.pointer("/error/message").and_then(Value::as_str))
+        .or_else(|| response.get("error").and_then(Value::as_str))
+        .and_then(sanitize_upstream_message)
+}
+
+fn sanitize_upstream_message(message: &str) -> Option<String> {
+    let mut safe = message
+        .chars()
+        .filter(|character| !character.is_control())
+        .collect::<String>();
+    safe = safe.split_whitespace().collect::<Vec<_>>().join(" ");
+    let lower = safe.to_ascii_lowercase();
+    let redaction_markers = ["http://", "https://", "x-api-key", "authorization:"];
+    if let Some(end) = redaction_markers
+        .iter()
+        .filter_map(|marker| lower.find(marker))
+        .min()
+    {
+        safe.truncate(end);
+        safe = safe.trim_end().to_owned();
+    }
+    let safe = safe.chars().take(300).collect::<String>();
+    (!safe.is_empty()).then_some(safe)
+}
+
 #[derive(Debug)]
 enum EntryFailure {
-    Http(StatusCode),
+    Http(StatusCode, Option<String>),
     Request,
     InvalidJson,
+    Upstream(String),
+    TimedOut,
 }
 
 async fn send_scrappa_with_retry(
     http: &Client,
     url: Url,
     api_key: &str,
+    deadline: Instant,
 ) -> Result<Response, EntryFailure> {
-    for attempt in 0..=MAX_SCRAPPA_RETRIES {
-        let result = http
+    let mut attempt = 0;
+    loop {
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            return Err(EntryFailure::TimedOut);
+        }
+
+        let response = http
             .get(url.clone())
+            .timeout(remaining.min(REQUEST_TIMEOUT))
             .header("X-API-KEY", api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .send()
             .await;
-        match result {
-            Ok(response) if should_retry(response.status()) && attempt < MAX_SCRAPPA_RETRIES => {
-                let delay = retry_delay(attempt);
+        match response {
+            Ok(response)
+                if should_retry_scrappa(response.status()) && attempt < MAX_SCRAPPA_RETRIES =>
+            {
+                let retry_after = response
+                    .headers()
+                    .get(reqwest::header::RETRY_AFTER)
+                    .and_then(|value| value.to_str().ok())
+                    .and_then(parse_retry_after);
+                let delay = retry_delay(attempt)
+                    .max(retry_after.unwrap_or_default())
+                    .min(MAX_RETRY_BACKOFF);
+                if delay >= deadline.saturating_duration_since(Instant::now()) {
+                    return Err(EntryFailure::TimedOut);
+                }
                 eprintln!(
-                    "Scrappa returned {}; retrying after {}ms",
+                    "Scrappa returned HTTP {}; retrying after {}ms",
                     response.status(),
                     delay.as_millis()
                 );
                 sleep(delay).await;
+                attempt += 1;
             }
             Ok(response) if !response.status().is_success() => {
                 let status = response.status();
-                return Err(EntryFailure::Http(status));
+                let body = response.text().await.unwrap_or_default();
+                let message = serde_json::from_str::<Value>(&body)
+                    .ok()
+                    .and_then(|value| response_error_message(&value));
+                return Err(EntryFailure::Http(status, message));
             }
             Ok(response) => return Ok(response),
-            Err(_) if attempt < MAX_SCRAPPA_RETRIES => {
+            Err(error) if error.is_connect() && attempt < MAX_SCRAPPA_RETRIES => {
                 let delay = retry_delay(attempt);
+                if delay >= deadline.saturating_duration_since(Instant::now()) {
+                    return Err(EntryFailure::TimedOut);
+                }
                 eprintln!(
-                    "Scrappa request failed; retrying after {}ms",
+                    "Scrappa connection failed; retrying after {}ms",
                     delay.as_millis()
                 );
                 sleep(delay).await;
+                attempt += 1;
+            }
+            Err(error) if error.is_timeout() && deadline <= Instant::now() => {
+                return Err(EntryFailure::TimedOut);
             }
             Err(_) => return Err(EntryFailure::Request),
         }
     }
-    Err(EntryFailure::Request)
 }
 
-fn should_retry(status: StatusCode) -> bool {
+fn should_retry_apify(status: StatusCode) -> bool {
     status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
+}
+
+fn should_retry_scrappa(status: StatusCode) -> bool {
+    matches!(
+        status,
+        StatusCode::TOO_MANY_REQUESTS
+            | StatusCode::BAD_GATEWAY
+            | StatusCode::SERVICE_UNAVAILABLE
+            | StatusCode::GATEWAY_TIMEOUT
+    )
+}
+
+fn status_message(
+    saved_items: usize,
+    successful_entries: usize,
+    failed_entry_indexes: &[usize],
+    budget_exhausted: bool,
+    charge_limited: bool,
+) -> String {
+    let mut message = if charge_limited {
+        format!(
+            "Apify stopped accepting dataset writes; saved {saved_items} result(s) before the limit."
+        )
+    } else if saved_items > 0 {
+        format!(
+            "Completed {successful_entries} successful request(s); saved {saved_items} result(s)."
+        )
+    } else if successful_entries > 0 {
+        format!("Completed {successful_entries} successful request(s); no results were found.")
+    } else if failed_entry_indexes.is_empty() && budget_exhausted {
+        "No requests were sent because the result budget is exhausted.".to_owned()
+    } else {
+        "No batch entries succeeded.".to_owned()
+    };
+
+    if failed_entry_indexes.is_empty() {
+        message.push_str(" 0 failed entries.");
+    } else {
+        let indices = failed_entry_indexes
+            .iter()
+            .map(usize::to_string)
+            .collect::<Vec<_>>()
+            .join(", ");
+        message.push_str(&format!(
+            " {} failed entr{} (input {}).",
+            failed_entry_indexes.len(),
+            if failed_entry_indexes.len() == 1 {
+                "y"
+            } else {
+                "ies"
+            },
+            indices
+        ));
+    }
+    message
 }
 
 fn retry_delay(attempt: usize) -> Duration {
     Duration::from_millis(500_u64.saturating_mul(2_u64.saturating_pow(attempt as u32)))
+        .min(MAX_RETRY_BACKOFF)
+}
+
+fn parse_retry_after(value: &str) -> Option<Duration> {
+    if let Ok(seconds) = value.trim().parse::<u64>() {
+        return Some(Duration::from_secs(seconds));
+    }
+    let retry_at = parse_http_date(value).ok()?;
+    retry_at.duration_since(SystemTime::now()).ok()
 }
 
 async fn response_json(response: Response, operation: &str) -> Result<Value> {
@@ -1182,8 +1942,10 @@ async fn execute() -> Result<()> {
     );
     let mut successful_entries = 0;
     let mut failed_entries = 0;
+    let mut failed_entry_indexes = Vec::new();
     let mut saved_items = 0;
     let mut empty_entries = 0;
+    let mut charge_limited = false;
 
     for (index, entry) in requests.iter().enumerate() {
         if saved_items >= requested_max || storage.remaining_items == 0 {
@@ -1213,16 +1975,28 @@ async fn execute() -> Result<()> {
                     continue;
                 }
                 let pushed = storage.push_items(&items).await?;
-                saved_items += pushed;
-                println!("Batch entry {} saved {} dataset item(s)", index + 1, pushed);
+                saved_items += pushed.saved;
+                println!(
+                    "Batch entry {} saved {} dataset item(s)",
+                    index + 1,
+                    pushed.saved
+                );
+                if pushed.charge_limited {
+                    charge_limited = true;
+                    break;
+                }
             }
             Err(failure) => {
                 failed_entries += 1;
+                failed_entry_indexes.push(index + 1);
                 match failure {
-                    EntryFailure::Http(status) => eprintln!(
-                        "Batch entry {} failed with Scrappa HTTP {}",
+                    EntryFailure::Http(status, message) => eprintln!(
+                        "Batch entry {} failed with Scrappa HTTP {}{}",
                         index + 1,
-                        status
+                        status,
+                        message
+                            .map(|message| format!(": {message}"))
+                            .unwrap_or_default()
                     ),
                     EntryFailure::Request => eprintln!(
                         "Batch entry {} failed after Scrappa request retries",
@@ -1231,10 +2005,25 @@ async fn execute() -> Result<()> {
                     EntryFailure::InvalidJson => {
                         eprintln!("Batch entry {} returned invalid Scrappa JSON", index + 1)
                     }
+                    EntryFailure::Upstream(message) => {
+                        eprintln!("Batch entry {} failed: {}", index + 1, message)
+                    }
+                    EntryFailure::TimedOut => {
+                        eprintln!("Batch entry {} exceeded the Scrappa time budget", index + 1)
+                    }
                 }
             }
         }
     }
+
+    let message = status_message(
+        saved_items,
+        successful_entries,
+        &failed_entry_indexes,
+        storage.remaining_items == 0,
+        charge_limited,
+    );
+    storage.set_status_message(&message).await?;
 
     if successful_entries == 0 && failed_entries > 0 {
         bail!(
@@ -1242,21 +2031,6 @@ async fn execute() -> Result<()> {
             requests.len()
         );
     }
-
-    let message = if saved_items == 0 && successful_entries == 0 {
-        "No requests were sent because the result budget is exhausted.".to_owned()
-    } else if saved_items == 0 {
-        format!(
-            "Completed {} successful request(s). No results were found.",
-            successful_entries
-        )
-    } else {
-        format!(
-            "Completed {} successful request(s); saved {} result(s).",
-            successful_entries, saved_items
-        )
-    };
-    storage.set_status_message(&message).await?;
     if failed_entries > 0 {
         println!(
             "{} request entr{} failed; successful entries were retained",
@@ -1369,6 +2143,246 @@ mod tests {
     }
 
     #[test]
+    fn accepts_numeric_and_string_has_more_flags() {
+        let pagination = PaginationSpec {
+            kind: "cursor".to_owned(),
+            param: "cursor".to_owned(),
+            start: json!("0"),
+            step: 1,
+            next_pointer: Some("/data/cursor".to_owned()),
+            next_pointers: Vec::new(),
+            has_more_pointer: Some("/data/hasMore".to_owned()),
+            end_pointer: None,
+            current_page_pointer: None,
+            total_pages_pointer: None,
+            max_pages: 3,
+        };
+
+        for value in [json!(0), json!("0")] {
+            assert!(!has_next_page(
+                &json!({"data": {"cursor": "200", "hasMore": value}}),
+                true,
+                &pagination
+            ));
+        }
+        for value in [json!(1), json!("1")] {
+            assert!(has_next_page(
+                &json!({"data": {"cursor": "200", "hasMore": value}}),
+                true,
+                &pagination
+            ));
+        }
+    }
+
+    #[test]
+    fn explicit_false_has_more_wins_over_page_totals() {
+        let pagination = PaginationSpec {
+            kind: "page".to_owned(),
+            param: "page".to_owned(),
+            start: json!(1),
+            step: 1,
+            next_pointer: None,
+            next_pointers: Vec::new(),
+            has_more_pointer: Some("/hasMore".to_owned()),
+            end_pointer: None,
+            current_page_pointer: Some("/currentPage".to_owned()),
+            total_pages_pointer: Some("/totalPages".to_owned()),
+            max_pages: 5,
+        };
+        let response = json!({"hasMore": "0", "currentPage": "2", "totalPages": "5"});
+        assert!(!has_next_page(&response, true, &pagination));
+    }
+
+    #[test]
+    fn pagination_coerces_numeric_strings_and_stops_when_page_does_not_advance() {
+        assert_eq!(numeric_page(&json!("12")), Some(12));
+        assert_eq!(numeric_page(&json!(12)), Some(12));
+        assert!(response_page_did_not_advance(Some(2), 2));
+        assert!(response_page_did_not_advance(Some(2), 1));
+        assert!(!response_page_did_not_advance(Some(2), 3));
+    }
+
+    #[test]
+    fn flags_scrappa_success_and_code_errors_and_sanitizes_their_message() {
+        assert_eq!(
+            response_failure_message(&json!({
+                "success": false,
+                "error": {"message": "date range cannot exceed 14 days"}
+            })),
+            Some("date range cannot exceed 14 days".to_owned())
+        );
+        assert_eq!(
+            response_failure_message(&json!({"code": 422, "message": "invalid request"})),
+            Some("invalid request".to_owned())
+        );
+        assert_eq!(
+            response_failure_message(&json!({"success": true, "code": 0})),
+            None
+        );
+
+        let long = format!(
+            "{}{}",
+            "x".repeat(290),
+            " https://example.invalid/?token=secret"
+        );
+        let safe = sanitize_upstream_message(&long).unwrap();
+        assert_eq!(safe.chars().count(), 290);
+        assert!(!safe.contains("https://"));
+        assert!(!safe.contains("token=secret"));
+    }
+
+    #[test]
+    fn flattens_nested_fields_and_deduplicates_only_configured_ids() {
+        let flattened = flatten_item(
+            json!({"user": {"user_id": "42"}, "stats": {"follower_count": 90}}),
+            &HashMap::from([
+                ("user_id".to_owned(), "/user/user_id".to_owned()),
+                (
+                    "follower_count".to_owned(),
+                    "/stats/follower_count".to_owned(),
+                ),
+            ]),
+        );
+        assert_eq!(flattened["user_id"], "42");
+        assert_eq!(flattened["follower_count"], 90);
+        assert_eq!(flattened["user"]["user_id"], "42");
+
+        let mut seen = HashSet::new();
+        assert!(!is_duplicate_row(
+            &json!({"id": "a"}),
+            Some("/id"),
+            &mut seen
+        ));
+        assert!(is_duplicate_row(
+            &json!({"id": "a"}),
+            Some("/id"),
+            &mut seen
+        ));
+        assert!(!is_duplicate_row(&json!({"id": "b"}), None, &mut seen));
+    }
+
+    #[test]
+    fn relative_date_defaults_resolve_from_today_or_another_input_date() {
+        let mut values = Map::from_iter([("departure_date".to_owned(), json!("2027-01-01"))]);
+        apply_relative_date_defaults(
+            &mut values,
+            &[RelativeDateDefault {
+                input: "return_date".to_owned(),
+                base: "departure_date".to_owned(),
+                offset_days: 4,
+                endpoints: Vec::new(),
+            }],
+            "/kayak/flights/round-trip",
+        )
+        .unwrap();
+        assert_eq!(values["return_date"], "2027-01-05");
+        assert_eq!(
+            parse_iso_date("2024-02-29").map(format_iso_date),
+            Some("2024-02-29".to_owned())
+        );
+        assert_eq!(parse_iso_date("2027-02-29"), None);
+    }
+
+    #[test]
+    fn kayak_route_batch_applies_only_the_selected_trip_dates_before_requests() {
+        let spec = parse_spec().unwrap();
+        if spec.endpoint != "/kayak/flights/one-way" {
+            return;
+        }
+        let one_way_input: Value =
+            serde_json::from_str(include_str!("../input-prefill.json")).unwrap();
+        let one_way = parse_requests(&one_way_input, &spec).unwrap().remove(0);
+        assert_eq!(one_way.endpoint, "/kayak/flights/one-way");
+        assert_eq!(one_way.params["origin"], "JFK");
+        assert_eq!(one_way.params["destination"], "LAX");
+        assert!(one_way.params.get("departure_date").is_some());
+        assert!(one_way.params.get("return_date").is_none());
+
+        let mut round_trip_input = one_way_input;
+        round_trip_input["tripType"] = json!("round-trip");
+        let round_trip = parse_requests(&round_trip_input, &spec).unwrap().remove(0);
+        assert_eq!(round_trip.endpoint, "/kayak/flights/round-trip");
+        assert!(round_trip.params.get("departure_date").is_some());
+        assert!(round_trip.params.get("return_date").is_some());
+        assert!(
+            round_trip.params["return_date"].as_str().unwrap()
+                > round_trip.params["departure_date"].as_str().unwrap()
+        );
+    }
+
+    #[test]
+    fn chunks_dataset_pushes_by_item_count_and_serialized_size() {
+        let items = (0..501).map(|id| json!({"id": id})).collect::<Vec<_>>();
+        let chunks = dataset_item_chunks(&items).unwrap();
+        assert_eq!(chunks.len(), 2);
+        assert_eq!(chunks[0].1, 500);
+        assert_eq!(chunks[1].1, 1);
+        assert!(
+            chunks
+                .iter()
+                .all(|(body, _)| body.len() <= MAX_DATASET_PUSH_BYTES)
+        );
+
+        let large_item = json!({"value": "x".repeat(MAX_DATASET_PUSH_BYTES)});
+        assert!(dataset_item_chunks(&[large_item]).is_err());
+    }
+
+    #[test]
+    fn recognizes_charge_denials_and_local_numeric_dataset_indexes() {
+        assert!(charge_limit_response(StatusCode::PAYMENT_REQUIRED, ""));
+        assert!(charge_limit_response(StatusCode::FORBIDDEN, ""));
+        assert!(charge_limit_response(
+            StatusCode::BAD_REQUEST,
+            "maximum charge reached"
+        ));
+        assert!(!charge_limit_response(
+            StatusCode::BAD_REQUEST,
+            "invalid item"
+        ));
+        assert_eq!(
+            dataset_index_from_path(Path::new("000000014.json")),
+            Some(14)
+        );
+        assert_eq!(dataset_index_from_path(Path::new("other.json")), None);
+        assert_eq!(dataset_index_from_path(Path::new("000000099.txt")), None);
+    }
+
+    #[test]
+    fn retries_only_scrappa_transients_and_honors_retry_after() {
+        assert!(should_retry_scrappa(StatusCode::TOO_MANY_REQUESTS));
+        assert!(should_retry_scrappa(StatusCode::BAD_GATEWAY));
+        assert!(should_retry_scrappa(StatusCode::SERVICE_UNAVAILABLE));
+        assert!(should_retry_scrappa(StatusCode::GATEWAY_TIMEOUT));
+        assert!(!should_retry_scrappa(StatusCode::INTERNAL_SERVER_ERROR));
+        assert!(!should_retry_scrappa(StatusCode::UNPROCESSABLE_ENTITY));
+        assert_eq!(parse_retry_after("3"), Some(Duration::from_secs(3)));
+        assert_eq!(
+            retry_delay(0)
+                .max(Duration::from_secs(30))
+                .min(MAX_RETRY_BACKOFF),
+            MAX_RETRY_BACKOFF
+        );
+        assert!(retry_delay(100) <= MAX_RETRY_BACKOFF);
+    }
+
+    #[test]
+    fn status_message_reports_charge_stops_and_failed_entry_indexes() {
+        assert_eq!(
+            status_message(0, 1, &[], false, true),
+            "Apify stopped accepting dataset writes; saved 0 result(s) before the limit. 0 failed entries."
+        );
+        assert_eq!(
+            status_message(3, 1, &[2, 4], false, false),
+            "Completed 1 successful request(s); saved 3 result(s). 2 failed entries (input 2, 4)."
+        );
+        assert_eq!(
+            status_message(0, 0, &[1], false, false),
+            "No batch entries succeeded. 1 failed entry (input 1)."
+        );
+        assert!(status_message(0, 1, &[], false, false).contains("no results were found"));
+    }
+
+    #[test]
     fn computes_pay_per_event_budget_from_existing_charges() {
         let run = json!({
             "data": {
@@ -1383,7 +2397,7 @@ mod tests {
                 "options": {"maxTotalChargeUsd": 0.35}
             }
         });
-        assert_eq!(apify_dataset_budget(&run, 10).unwrap(), 1);
+        assert_eq!(apify_dataset_budget(&run, 10).unwrap(), 2);
     }
 
     #[test]
@@ -1399,6 +2413,77 @@ mod tests {
         assert_eq!(remaining_paid_dataset_items(&run, 10).unwrap(), 7);
         assert_eq!(remaining_paid_dataset_items(&run, 2).unwrap(), 0);
         assert_eq!(remaining_paid_dataset_items(&run, 0).unwrap(), 0);
+        assert_eq!(
+            remaining_paid_items_for_model(&run, 10, "PRICE_PER_DATASET_ITEM", Some(7)).unwrap(),
+            3
+        );
+    }
+
+    #[test]
+    fn refuses_an_unresolved_cost_budget_instead_of_allowing_all_requested_items() {
+        let dataset_item_pricing = json!({
+            "data": {
+                "pricingInfo": {"pricingModel": "PRICE_PER_DATASET_ITEM"},
+                "options": {"maxTotalChargeUsd": 0.25}
+            }
+        });
+        assert!(apify_dataset_budget_with_limit(&dataset_item_pricing, 10, None).is_err());
+
+        let unresolved_event_price = json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {}}
+                },
+                "options": {"maxTotalChargeUsd": 0.25}
+            }
+        });
+        assert!(apify_dataset_budget_with_limit(&unresolved_event_price, 10, None).is_err());
+    }
+
+    #[test]
+    fn uses_the_highest_tiered_dataset_item_price_for_budgeting() {
+        let run = json!({
+            "data": {
+                "pricingInfo": {
+                    "pricingModel": "PAY_PER_EVENT",
+                    "pricingPerEvent": {"actorChargeEvents": {
+                        "apify-default-dataset-item": {"eventPriceUsd": 0.01, "eventTieredPricingUsd": {
+                            "BRONZE": {"tieredEventPriceUsd": 0.05},
+                            "GOLD": {"tieredEventPriceUsd": 0.12}
+                        }}
+                    }}
+                },
+                "chargedEventCounts": {},
+                "options": {"maxTotalChargeUsd": 0.25}
+            }
+        });
+        assert_eq!(apify_dataset_budget_with_limit(&run, 10, None).unwrap(), 2);
+    }
+
+    #[test]
+    fn rejects_invalid_run_charge_limits_instead_of_ignoring_them() {
+        let run = json!({
+            "data": {
+                "pricingInfo": {"pricingModel": "PAY_PER_EVENT"},
+                "options": {"maxTotalChargeUsd": "not-a-price"}
+            }
+        });
+        assert!(apify_dataset_budget_with_limit(&run, 10, None).is_err());
+        assert_eq!(parse_charge_limit(&json!("0.25")).unwrap(), 0.25);
+        assert!(parse_charge_limit(&json!(-0.1)).is_err());
+
+        let null_limit = json!({
+            "data": {
+                "pricingInfo": {"pricingModel": "PRICE_PER_DATASET_ITEM"},
+                "options": {"maxTotalChargeUsd": null}
+            }
+        });
+        assert_eq!(
+            apify_dataset_budget_with_limit(&null_limit, 10, None).unwrap(),
+            10
+        );
+        assert!(apify_dataset_budget_with_limit(&null_limit, 10, Some(0.25)).is_err());
     }
 
     #[test]

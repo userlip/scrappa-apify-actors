@@ -1,7 +1,7 @@
 {
   "slug": "google-shopping-scraper",
   "title": "Google Shopping Scraper",
-  "description": "Google Shopping Scraper collects structured data from Scrappa's /google/shopping endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Search Google Shopping for product offers, merchants, prices, ratings, and review counts. Batch product phrases in one run to compare retail listings or monitor prices.",
   "endpoint": "/google/shopping",
   "openapiPath": "/google/shopping",
   "mode": "list",
@@ -10,8 +10,9 @@
     "valueField": "q",
     "apiParam": "q",
     "pathParam": null,
-    "title": "Queries",
-    "description": "Batch input entries. Each q is sent as the q value."
+    "title": "Product queries",
+    "description": "Product phrases to search in Google Shopping.",
+    "valueDescription": "q used to run this search."
   },
   "parameters": [
     {
@@ -19,7 +20,7 @@
       "apiParam": "q",
       "location": "query",
       "required": true,
-      "title": "Q",
+      "title": "Search query",
       "schema": {
         "type": "string",
         "description": "Product search query.",
@@ -31,7 +32,7 @@
       "apiParam": "gl",
       "location": "query",
       "required": false,
-      "title": "GL",
+      "title": "Country",
       "schema": {
         "type": "string",
         "description": "Two-letter country code. Default: us.",
@@ -45,7 +46,7 @@
       "apiParam": "hl",
       "location": "query",
       "required": false,
-      "title": "HL",
+      "title": "Language",
       "schema": {
         "type": "string",
         "description": "Two-letter interface language. Default: en.",
@@ -179,12 +180,12 @@
       {
         "position": 1,
         "category": "Electronics",
-        "title": "Example Wireless Headphones",
-        "source": "Example Store",
-        "thumbnail": "https://example.com/product.jpg",
-        "price": "$49.00",
+        "title": "Soundcore Space One Wireless Headphones",
+        "source": "Soundcore Store",
+        "thumbnail": "https://cdn.soundcore.com/products/space-one/black-front.jpg",
+        "price": "$99.99",
         "rating": 4.6,
-        "reviews": 120
+        "reviews": 1842
       }
     ],
     "pagination": {
@@ -220,51 +221,93 @@
       "format": "number"
     }
   ],
-  "seo": {
-    "h1": "Google Shopping Scraper",
-    "intro": "Find product listings from Google Shopping with seller, price, rating, and product details.",
-    "keywords": [
-      "Google Shopping Scraper",
-      "title",
-      "source",
-      "price",
-      "/google/shopping API"
-    ],
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "storeCopy": {
+    "seoTitle": "Google Shopping Scraper | Product Prices",
+    "seoDescription": "Search Google Shopping by product keyword and collect offers, merchants, prices, ratings, and review counts. Compare listings and monitor retail pricing.",
+    "intro": "Collect Shopping offers for multiple phrases. Results include product names, merchants, prices, ratings, review totals, categories, and thumbnails.",
     "useCases": [
-      "Product price monitoring",
-      "Catalog research",
-      "Retail competitor analysis"
+      "Retail teams can compare merchant offers and displayed prices.",
+      "E-commerce analysts can track ratings and review counts across products.",
+      "Category managers can collect product links for assortment reviews."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add one product phrase to `queries` for each Shopping search.",
+      "Use `maxPages` to bound collection and `maxResults` to cap offers.",
+      "Compare merchant, price, rating, and review fields."
+    ],
+    "faqs": [
       {
-        "name": "title",
-        "description": "Result title or listing name."
-      },
-      {
-        "name": "source",
-        "description": "Publisher, seller, or source name."
-      },
-      {
-        "name": "price",
-        "description": "Listed product or property price."
-      },
-      {
-        "name": "rating",
-        "description": "Average product or app rating."
-      },
-      {
-        "name": "reviews",
-        "description": "Review count when provided."
+        "question": "Are prices normalized to one currency?",
+        "answer": "The Actor returns source price text. Use the displayed market and currency context when comparing offers."
       }
     ],
     "relatedActors": [
+      {
+        "slug": "google-lens-scraper",
+        "title": "Google Lens Visual Search Scraper"
+      },
       {
         "slug": "apple-app-store-search-scraper",
         "title": "Apple App Store Search Scraper"
       },
       {
-        "slug": "google-search-scraper",
-        "title": "Google Search Scraper"
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Position of the offer in Google Shopping results, starting at 1."
+      },
+      {
+        "name": "category",
+        "type": "String",
+        "description": "Product category assigned to the shopping offer."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Product name displayed for this Google Shopping offer."
+      },
+      {
+        "name": "source",
+        "type": "String",
+        "description": "Merchant name selling the product."
+      },
+      {
+        "name": "thumbnail",
+        "type": "String",
+        "description": "Product image preview URL supplied with the offer."
+      },
+      {
+        "name": "price",
+        "type": "String",
+        "description": "Displayed offer price and currency when provided by the merchant."
+      },
+      {
+        "name": "rating",
+        "type": "Number",
+        "description": "Average customer rating shown for the product."
+      },
+      {
+        "name": "reviews",
+        "type": "Integer",
+        "description": "Number of customer reviews shown for the product."
+      },
+      {
+        "name": "input_q",
+        "type": "String",
+        "description": "Product search phrase submitted to Google Shopping."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this shopping offer was collected."
       }
     ]
   }

@@ -1,7 +1,7 @@
 {
   "slug": "baidu-trending-scraper",
   "title": "Baidu Trending Searches Scraper",
-  "description": "Baidu Trending Searches Scraper collects structured data from Scrappa's /baidu/trending endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Track Baidu trending searches with topic text, rank, descriptions, and source links. Choose a trending board and collect a fresh batch of topics to monitor search interest in China.",
   "endpoint": "/baidu/trending",
   "openapiPath": "/baidu/trending",
   "mode": "list",
@@ -10,8 +10,9 @@
     "valueField": "tab",
     "apiParam": "tab",
     "pathParam": null,
-    "title": "Tabs",
-    "description": "Batch input entries. Each tab is sent as the tab value."
+    "title": "Trending boards",
+    "description": "Baidu trending board names to collect.",
+    "valueDescription": "tab used to run this search."
   },
   "parameters": [
     {
@@ -19,7 +20,7 @@
       "apiParam": "tab",
       "location": "query",
       "required": true,
-      "title": "Trending Tab",
+      "title": "Trending board",
       "schema": {
         "type": "string",
         "description": "Baidu trending board to read.",
@@ -73,11 +74,11 @@
     "trending_searches": [
       {
         "position": 1,
-        "query": "synthetic search trend",
-        "title": "Synthetic search trend",
-        "link": "https://example.com/trend",
-        "description": null,
-        "is_top": false
+        "query": "portable air conditioner",
+        "title": "Portable air conditioners",
+        "link": "https://www.baidu.com/s?wd=%E4%BE%BF%E6%90%BA%E5%BC%8F%E7%A9%BA%E8%B0%83",
+        "description": "Search interest is rising for compact cooling options for apartments and home offices.",
+        "is_top": true
       }
     ],
     "available_tabs": [],
@@ -109,45 +110,33 @@
     },
     {
       "name": "is_top",
-      "label": "Is Top",
+      "label": "Top Trend",
       "format": "text"
     }
   ],
-  "seo": {
-    "h1": "Baidu Trending Searches Scraper",
-    "intro": "Collect trending searches from Baidu trend boards by tab.",
-    "keywords": [
-      "Baidu Trending Searches Scraper",
-      "query",
-      "title",
-      "position",
-      "/baidu/trending API"
-    ],
+  "dedupePointer": "/query",
+  "categories": [
+    "SEO_TOOLS",
+    "MARKETING"
+  ],
+  "storeCopy": {
+    "seoTitle": "Baidu Trending Searches | Topic Data",
+    "seoDescription": "Track Baidu trending boards with ranked topics and source links. Monitor emerging search interest in China and export topics for market analysis.",
+    "intro": "Read current topics from selected Baidu trending boards. Each row includes rank, topic text, a result title and link, and the board indicator when available.",
     "useCases": [
-      "Chinese trend monitoring",
-      "Content planning",
-      "News and topic discovery"
+      "Trend analysts can spot rising topics by board and rank.",
+      "Editors can use current Baidu topics to plan local news and content calendars.",
+      "Market teams can track changing interest around products and public topics."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add one Baidu trending board name to `tabs` for each board.",
+      "Set `maxResults` to cap topic rows saved.",
+      "Run the Actor and review topic, title, position, and link fields."
+    ],
+    "faqs": [
       {
-        "name": "query",
-        "description": "Search phrase or trending term associated with the result."
-      },
-      {
-        "name": "title",
-        "description": "Result title or listing name."
-      },
-      {
-        "name": "position",
-        "description": "Position of the result on the source page."
-      },
-      {
-        "name": "link",
-        "description": "Result destination URL."
-      },
-      {
-        "name": "is_top",
-        "description": "Is top returned for this Baidu Trending Searches Scraper result."
+        "question": "Which trending boards can I request?",
+        "answer": "Use a board value supported by the source, such as `realtime`; rows reflect the topics currently available."
       }
     ],
     "relatedActors": [
@@ -156,8 +145,54 @@
         "title": "Baidu Search Scraper"
       },
       {
-        "slug": "google-news-scraper",
-        "title": "Google News Scraper"
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      },
+      {
+        "slug": "google-trends-interest-scraper",
+        "title": "Google Trends Interest Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Rank of this topic on the selected Baidu trending board."
+      },
+      {
+        "name": "query",
+        "type": "String",
+        "description": "Search phrase or topic currently trending on Baidu."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Headline shown for this Baidu trend, when the board provides one."
+      },
+      {
+        "name": "link",
+        "type": "String",
+        "description": "Baidu page linked from the trending topic."
+      },
+      {
+        "name": "description",
+        "type": "String or null",
+        "description": "Short context or summary shown alongside the trend."
+      },
+      {
+        "name": "is_top",
+        "type": "Boolean",
+        "description": "True when Baidu marks the topic as a leading trend."
+      },
+      {
+        "name": "input_tab",
+        "type": "String",
+        "description": "Baidu trending board selected for this collection."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this trending topic was collected."
       }
     ]
   }

@@ -2,9 +2,9 @@
   "success": true,
   "flights": [
     {
-      "resultId": "synthetic-flight-1",
+      "resultId": "FL-JFK-LAX-20261114-01",
       "type": "ONE_WAY",
-      "shareableId": "example-route",
+      "shareableId": "8f31b7",
       "shareableUrl": "https://www.kayak.com/flights/JFK-LAX/2026-11-14",
       "legs": [
         {

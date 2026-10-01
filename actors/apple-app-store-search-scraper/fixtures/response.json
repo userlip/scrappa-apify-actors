@@ -10,12 +10,12 @@
     {
       "id": "1234567890",
       "type": "apps",
-      "title": "Example Notes",
-      "artist": "Example Studio",
+      "title": "Pocket Notes: Daily Planner",
+      "artist": "Northstar Mobile Studio",
       "artist_id": "12345",
-      "description": "A synthetic product description.",
-      "url": "https://apps.apple.com/app/example-notes/id1234567890",
-      "artwork": "https://example.com/app.png",
+      "description": "Organize daily tasks, quick notes, and reminders in one simple planner.",
+      "url": "https://apps.apple.com/us/app/pocket-notes-daily-planner/id1234567890",
+      "artwork": "https://cdn.northstarmobile.dev/apps/pocket-notes/icon-512.png",
       "genres": [
         "Productivity"
       ],
@@ -27,7 +27,7 @@
       "release_date": "2025-01-01",
       "version": "1.0",
       "content_rating": "4+",
-      "seller": "Example Studio"
+      "seller": "Northstar Mobile Studio"
     }
   ]
 }

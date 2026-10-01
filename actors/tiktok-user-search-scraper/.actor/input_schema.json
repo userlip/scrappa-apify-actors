@@ -1,6 +1,6 @@
 {
   "title": "TikTok User Search Scraper",
-  "description": "TikTok User Search Scraper collects structured data from Scrappa's /tiktok/user/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Search public TikTok profiles by keyword and collect handles, display names, follower counts, and verification status. Batch topics to find creators in a niche or map public profiles.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -10,7 +10,7 @@
     "keywords": {
       "title": "Keywords",
       "type": "array",
-      "description": "Batch input entries. Each keywords is sent as the keywords value.",
+      "description": "Keywords, account fragments, or creator niches to search.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
@@ -26,7 +26,7 @@
         ],
         "properties": {
           "keywords": {
-            "title": "Keywords",
+            "title": "Keyword",
             "type": "string",
             "description": "Search text for public TikTok users. Use a username fragment, brand name, creator niche, product category, or campaign keyword.",
             "maxLength": 255,

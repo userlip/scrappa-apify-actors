@@ -2,7 +2,10 @@
   "actorSpecification": 1,
   "name": "kayak-flights-scraper",
   "title": "Kayak Flights Scraper",
-  "description": "Kayak Flights Scraper collects structured data from Scrappa's /kayak/flights/one-way endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Get Kayak one-way or round-trip itineraries with flight legs, travel times, provider counts, and shareable links. Add several origin-destination routes in one run to compare fares or plan trips.",
+  "categories": [
+    "TRAVEL"
+  ],
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",
@@ -33,7 +36,7 @@
             "component": "table",
             "properties": {
               "resultId": {
-                "label": "Result Id",
+                "label": "Result ID",
                 "format": "text"
               },
               "type": {
@@ -41,7 +44,7 @@
                 "format": "text"
               },
               "shareableUrl": {
-                "label": "Shareable Url",
+                "label": "Shareable URL",
                 "format": "link"
               },
               "legs": {
@@ -49,7 +52,7 @@
                 "format": "text"
               },
               "totalProviders": {
-                "label": "Totalproviders",
+                "label": "Total Providers",
                 "format": "number"
               }
             }

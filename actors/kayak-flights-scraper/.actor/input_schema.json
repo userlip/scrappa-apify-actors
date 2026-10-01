@@ -1,31 +1,30 @@
 {
   "title": "Kayak Flights Scraper",
-  "description": "Kayak Flights Scraper collects structured data from Scrappa's /kayak/flights/one-way endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Get Kayak one-way or round-trip itineraries with flight legs, travel times, provider counts, and shareable links. Add several origin-destination routes in one run to compare fares or plan trips.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
-    "flights",
-    "destination",
-    "departure_date",
-    "tripType"
+    "flights"
   ],
   "properties": {
     "flights": {
-      "title": "Flights",
+      "title": "Flight routes",
       "type": "array",
-      "description": "Batch input entries. Each origin is sent as the origin value.",
+      "description": "Flight routes with an origin and destination for each search.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
       "prefill": [
         {
-          "origin": "JFK"
+          "origin": "JFK",
+          "destination": "LAX"
         }
       ],
       "items": {
         "type": "object",
         "required": [
-          "origin"
+          "origin",
+          "destination"
         ],
         "properties": {
           "origin": {
@@ -43,9 +42,9 @@
             "editor": "textfield"
           },
           "departure_date": {
-            "title": "Departure Date",
+            "title": "Departure date",
             "type": "string",
-            "description": "Departure date in YYYY-MM-DD format.",
+            "description": "Departure date in YYYY-MM-DD format. When omitted, departure is set to 30 days from today.",
             "editor": "textfield"
           },
           "adults": {
@@ -149,9 +148,9 @@
             "editor": "checkbox"
           },
           "return_date": {
-            "title": "Return Date",
+            "title": "Return date",
             "type": "string",
-            "description": "Return date in YYYY-MM-DD format. Required when tripType is round-trip.",
+            "description": "Return date in YYYY-MM-DD format. Required when tripType is round-trip. Required for Round trip searches. When omitted for a round trip, return is set to 4 days after departure.",
             "editor": "textfield"
           }
         }
@@ -165,9 +164,9 @@
       "editor": "textfield"
     },
     "departure_date": {
-      "title": "Departure Date",
+      "title": "Departure date",
       "type": "string",
-      "description": "Departure date in YYYY-MM-DD format.",
+      "description": "Departure date in YYYY-MM-DD format. When omitted, departure is set to 30 days from today.",
       "editor": "textfield"
     },
     "adults": {
@@ -271,15 +270,15 @@
       "editor": "checkbox"
     },
     "return_date": {
-      "title": "Return Date",
+      "title": "Return date",
       "type": "string",
-      "description": "Return date in YYYY-MM-DD format. Required when tripType is round-trip.",
+      "description": "Return date in YYYY-MM-DD format. Required when tripType is round-trip. Required for Round trip searches. When omitted for a round trip, return is set to 4 days after departure.",
       "editor": "textfield"
     },
     "tripType": {
-      "title": "Trip Type",
+      "title": "Trip type",
       "type": "string",
-      "description": "Choose the flight search route. Round trips also require return_date.",
+      "description": "Choose a one-way or round-trip search. Round-trip routes use a return date.",
       "editor": "select",
       "enum": [
         "one-way",

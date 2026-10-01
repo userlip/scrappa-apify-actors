@@ -2,7 +2,10 @@
   "actorSpecification": 1,
   "name": "apple-app-store-search-scraper",
   "title": "Apple App Store Search Scraper",
-  "description": "Apple App Store Search Scraper collects structured data from Scrappa's /apple/app-store/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Search the Apple App Store for app names, publishers, prices, ratings, categories, and links. Submit several search phrases in one run to build catalogs or compare storefront listings.",
+  "categories": [
+    "ECOMMERCE"
+  ],
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",
@@ -49,7 +52,7 @@
                 "format": "number"
               },
               "url": {
-                "label": "Url",
+                "label": "URL",
                 "format": "link"
               }
             }

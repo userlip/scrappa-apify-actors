@@ -1,6 +1,6 @@
 {
   "title": "Baidu Trending Searches Scraper",
-  "description": "Baidu Trending Searches Scraper collects structured data from Scrappa's /baidu/trending endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Track Baidu trending searches with topic text, rank, descriptions, and source links. Choose a trending board and collect a fresh batch of topics to monitor search interest in China.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -8,9 +8,9 @@
   ],
   "properties": {
     "tabs": {
-      "title": "Tabs",
+      "title": "Trending boards",
       "type": "array",
-      "description": "Batch input entries. Each tab is sent as the tab value.",
+      "description": "Baidu trending board names to collect.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
@@ -26,7 +26,7 @@
         ],
         "properties": {
           "tab": {
-            "title": "Trending Tab",
+            "title": "Trending board",
             "type": "string",
             "description": "Baidu trending board to read.",
             "enum": [

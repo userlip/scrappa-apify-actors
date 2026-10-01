@@ -1,77 +1,112 @@
 # Bing Search Scraper
 
-Search Bing web results by keyword for SERP monitoring, competitor research, and discovery workflows.
+Collect ranked Bing web results for a batch of phrases. Optional language, domain, file type, and SafeSearch filters focus each search.
 
-## Data you get
+## What data can you extract?
 
-- **title**: Result title or listing name.
-- **description**: Source description or snippet.
-- **url**: Canonical result URL.
-- **domain**: Result website domain.
-- **position**: Position of the result on the source page.
+| Field | Type | Description |
+| --- | --- | --- |
+| `position` | Integer | Bing search-result rank for the page, starting at 1. |
+| `title` | String | Page title shown in the Bing search result. |
+| `description` | String | Snippet text Bing displays beneath the matching page title. |
+| `url` | String | Destination URL for the page returned by Bing. |
+| `domain` | String | Website host for this Bing result, without its page path. |
+| `input_query` | String | Search phrase submitted to Bing for this result set. |
+| `scraped_at` | String | UTC date and time when these Bing search results were collected. |
 
 ## Use cases
 
-- SERP tracking
-- Competitor research
-- Lead discovery
+- SEO managers can monitor positions and snippets for target queries.
+- Content teams can collect useful publisher pages and source domains.
+- Competitor analysts can compare which sites appear for commercial searches.
 
 ## How to use
 
-Add one or more entries to **queries**. Each entry maps its **query** value to the Scrappa **query** input. Shared endpoint options can be set at the top level.
+1. Add one phrase per object in `queries`.
+2. Set optional filters such as `site`, `filetype`, `safe`, or `hl`.
+3. Use `maxResults` to cap saved rows across the batch.
 
 ```json
 {
   "queries": [
     {
-      "query": "best crm software"
+      "query": "python tutorial"
     }
   ],
   "maxResults": 20
 }
 ```
 
-## Output example
+## Input
 
-This synthetic example shows the response fields and the input value attached to each result.
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `queries` | Array\<object\> | Yes | Bing search phrases. Add one object per phrase. |
+| `queries[].query` | string | Yes per entry | Search query \(max 500 characters\). |
+| `queries[].page` | integer | No | Page number \(1-50\). |
+| `queries[].num` | integer | No | Results per page \(1-50\). |
+| `queries[].site` | string | No | Restrict results to this domain, e.g. example.com. |
+| `queries[].filetype` | string | No | Restrict results to this file extension, e.g. pdf. |
+| `queries[].safe` | string | No | SafeSearch level: off, moderate or strict. |
+| `queries[].hl` | string | No | Language code, e.g. en or en-GB. |
+| `queries[].include_html` | boolean | No | Set to true to include the raw HTML in the response. Default: false. |
+| `page` | integer | No | Page number \(1-50\). |
+| `num` | integer | No | Results per page \(1-50\). |
+| `site` | string | No | Restrict results to this domain, e.g. example.com. |
+| `filetype` | string | No | Restrict results to this file extension, e.g. pdf. |
+| `safe` | string | No | SafeSearch level: off, moderate or strict. |
+| `hl` | string | No | Language code, e.g. en or en-GB. |
+| `include_html` | boolean | No | Set to true to include the raw HTML in the response. Default: false. |
+| `maxResults` | integer | No | Maximum dataset items to save across this entire run. |
+
+## Output example
 
 ```json
 {
   "position": 1,
-  "title": "Example project management tools",
-  "description": "Compare project management platforms for distributed teams.",
-  "url": "https://example.com/tools",
-  "domain": "example.com",
-  "input_query": "best crm software",
-  "scraped_at": "2026-01-01T00:00:00Z"
+  "title": "Getting Started",
+  "description": "Learn Python basics, from installing the interpreter to writing your first program.",
+  "url": "https://www.python.org/about/gettingstarted/",
+  "domain": "python.org",
+  "input_query": "python tutorial",
+  "scraped_at": "2026-10-01T12:00:00Z"
 }
 ```
 
 ## Pricing
 
-$0.30 per 1,000 results. The Actor writes one dataset item for each result.
+$0.30 per 1,000 results. Apify saves one dataset item per result and applies the Actor’s per-result price to saved items.
 
-The Actor saves up to **maxResults** dataset items across the run.
+Set **maxResults** to cap the number of dataset items saved in one run.
 
 ## FAQ
 
-### Is scraping this data legal?
+### Is scraping this information legal?
 
-Scraping rules depend on the source, the data, and how you use it. Review the applicable laws, source terms, and privacy requirements for your use case. You are responsible for your collection and use of the data.
+Rules depend on the source, location, data type, and intended use. Check applicable laws and source terms, and make sure your workflow follows privacy and data protection requirements.
 
-### Are there request limits?
+### What limits apply?
 
-You can submit up to 100 batch entries per run. Set **maxResults** to cap saved rows. Scrappa API limits and source availability also apply.
+Submit up to 100 batch entries per run. Use **maxResults** to cap saved items. Results also depend on source availability and your Scrappa API plan.
 
-### Can I use the output with integrations or the API?
+### Can I start runs through the Apify API?
 
-Yes. Read results from the Apify dataset, use the Apify API or client libraries, or connect the dataset to your existing data workflow. Each row includes **input_query** and **scraped_at** for traceability.
+Yes. Send a POST request to `https://api.apify.com/v2/acts/thescrappa~bing-search-scraper/runs` with your Actor input, or use an Apify client library. Read the output from the run dataset.
 
-## Related Actors
+### Can I connect the results to other tools?
 
-- [Google Search Scraper](https://apify.com/thescrappa/google-search-scraper)
+Yes. Apify integrations and APIs can pass dataset results to Make, Zapier, n8n, Google Sheets, and other data workflows.
+
+### What happens when one input fails?
+
+The Actor logs a short source error and continues with the remaining entries. Transient rate limits and gateway errors are retried; if every entry fails, the run reports an error.
+
+### Can I restrict results to one website?
+
+Yes. Set `site` to a domain such as `example.com` to focus the query on that site.
+
+## Related Scrappa Actors
+
 - [Brave Search Scraper](https://apify.com/thescrappa/brave-search-scraper)
-
-## Search terms
-
-`Bing Search Scraper`, `title`, `description`, `url`, `/bing/search API`
+- [Baidu Search Scraper](https://apify.com/thescrappa/baidu-search-scraper)
+- [Google Scholar Scraper](https://apify.com/thescrappa/google-scholar-scraper)

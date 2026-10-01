@@ -1,7 +1,7 @@
 {
   "slug": "google-lens-scraper",
   "title": "Google Lens Visual Search Scraper",
-  "description": "Google Lens Visual Search Scraper collects structured data from Scrappa's /google/lens endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Find Google Lens matches from public image URLs, including titles, sources, thumbnails, links, and prices. Submit several images per run to discover visually similar products or pages.",
   "endpoint": "/google/lens",
   "openapiPath": "/google/lens",
   "mode": "list",
@@ -10,8 +10,9 @@
     "valueField": "url",
     "apiParam": "url",
     "pathParam": null,
-    "title": "Image Urls",
-    "description": "Batch input entries. Each url is sent as the url value."
+    "title": "Image URLs",
+    "description": "Public image URLs to use for visual search.",
+    "valueDescription": "url used to run this search."
   },
   "parameters": [
     {
@@ -19,7 +20,7 @@
       "apiParam": "url",
       "location": "query",
       "required": true,
-      "title": "URL",
+      "title": "Image URL",
       "schema": {
         "type": "string",
         "description": "Public HTTPS URL for the image to search.",
@@ -31,7 +32,7 @@
       "apiParam": "q",
       "location": "query",
       "required": false,
-      "title": "Q",
+      "title": "Search query",
       "schema": {
         "type": "string",
         "description": "Optional text used to refine visual or product matches.",
@@ -84,17 +85,17 @@
   },
   "fixture": {
     "search_parameters": {
-      "url": "https://example.com/image.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png",
       "q": null,
       "type": "all"
     },
     "visual_matches": [
       {
-        "source": "Example Store",
-        "title": "Example blue ceramic mug",
-        "link": "https://example.com/mug",
-        "thumbnail": "https://example.com/mug.jpg",
-        "price": "$18.00",
+        "source": "Cedar & Clay",
+        "title": "Cobalt Blue Stoneware Mug",
+        "link": "https://cedarandclay.co/products/cobalt-blue-stoneware-mug",
+        "thumbnail": "https://cdn.cedarandclay.co/products/cobalt-mug/front-1200.jpg",
+        "price": "$28.00",
         "position": 1
       }
     ],
@@ -128,51 +129,84 @@
       "format": "number"
     }
   ],
-  "seo": {
-    "h1": "Google Lens Visual Search Scraper",
-    "intro": "Find visually similar products and pages with Google Lens image search.",
-    "keywords": [
-      "Google Lens Visual Search Scraper",
-      "title",
-      "link",
-      "source",
-      "/google/lens API"
-    ],
+  "dedupePointer": "/link",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "storeCopy": {
+    "seoTitle": "Google Lens Search | Visual Matches",
+    "seoDescription": "Find visual matches from public image URLs with titles, sources, thumbnails, links, and prices. Use results for product discovery and catalog research.",
+    "intro": "Submit public image links to find similar pages and products. Rows include match titles, source labels, thumbnails, links, prices when present, and rank.",
     "useCases": [
-      "Visual product discovery",
-      "Image source research",
-      "Reverse image lookup"
+      "E-commerce teams can find comparable products from catalog photos.",
+      "Visual search specialists can map source pages and merchants for an image.",
+      "Product researchers can compare visual matches, prices, and thumbnails."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add one public image URL to `image_urls` for each search.",
+      "Set `q` or `type` to refine the search when supported.",
+      "Review matched source, image, link, and price fields."
+    ],
+    "faqs": [
       {
-        "name": "title",
-        "description": "Result title or listing name."
-      },
-      {
-        "name": "link",
-        "description": "Result destination URL."
-      },
-      {
-        "name": "source",
-        "description": "Publisher, seller, or source name."
-      },
-      {
-        "name": "thumbnail",
-        "description": "Thumbnail returned for this Google Lens Visual Search Scraper result."
-      },
-      {
-        "name": "position",
-        "description": "Position of the result on the source page."
+        "question": "Do all visual matches include a price?",
+        "answer": "No. A price appears only when the matched result contains price information."
       }
     ],
     "relatedActors": [
       {
-        "slug": "google-images-scraper",
-        "title": "Google Images Scraper"
-      },
-      {
         "slug": "google-shopping-scraper",
         "title": "Google Shopping Scraper"
+      },
+      {
+        "slug": "apple-app-store-search-scraper",
+        "title": "Apple App Store Search Scraper"
+      },
+      {
+        "slug": "brave-search-scraper",
+        "title": "Brave Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "source",
+        "type": "String",
+        "description": "Website or merchant name associated with the visual match."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Product or page title associated with this Google Lens match."
+      },
+      {
+        "name": "link",
+        "type": "String",
+        "description": "Destination page URL for the visually similar result."
+      },
+      {
+        "name": "thumbnail",
+        "type": "String",
+        "description": "Preview image URL returned for the visual match."
+      },
+      {
+        "name": "price",
+        "type": "String",
+        "description": "Displayed product price and currency when Google Lens finds one."
+      },
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Position of the visual match in the returned list, starting at 1."
+      },
+      {
+        "name": "input_url",
+        "type": "String",
+        "description": "Public image URL submitted to Google Lens for visual search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this visual match was collected."
       }
     ]
   }

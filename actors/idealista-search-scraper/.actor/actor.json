@@ -2,7 +2,10 @@
   "actorSpecification": 1,
   "name": "idealista-search-scraper",
   "title": "Idealista Property Search Scraper",
-  "description": "Idealista Property Search Scraper collects structured data from Scrappa's /idealista/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Search Idealista listings with prices, size, rooms, photos, location, and links. Batch location searches and page through property results across supported European markets.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",
@@ -34,7 +37,7 @@
             "component": "table",
             "properties": {
               "propertyCode": {
-                "label": "Propertycode",
+                "label": "Property Code",
                 "format": "text"
               },
               "price": {
@@ -54,7 +57,7 @@
                 "format": "text"
               },
               "url": {
-                "label": "Url",
+                "label": "URL",
                 "format": "link"
               }
             }

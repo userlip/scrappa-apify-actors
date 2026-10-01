@@ -1,7 +1,7 @@
 {
   "slug": "immobilienscout24-property-details-scraper",
   "title": "ImmobilienScout24 Property Details Scraper",
-  "description": "ImmobilienScout24 Property Details Scraper collects structured data from Scrappa's /immobilienscout24/property/{id} endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Get ImmobilienScout24 listing details such as rent, rooms, address, features, energy class, and images by property ID. Batch IDs to enrich housing records or review German listings.",
   "endpoint": "/immobilienscout24/property/{id}",
   "openapiPath": "/immobilienscout24/property/{id}",
   "mode": "single",
@@ -10,8 +10,9 @@
     "valueField": "id",
     "apiParam": "",
     "pathParam": "id",
-    "title": "Property Ids",
-    "description": "Batch input entries. Each id is sent as the id value."
+    "title": "Property IDs",
+    "description": "Numeric ImmobilienScout24 listing IDs to look up.",
+    "valueDescription": "id used to run this search."
   },
   "parameters": [
     {
@@ -53,8 +54,8 @@
   "fixture": {
     "success": true,
     "id": "170000001",
-    "title": "Example apartment in Example City",
-    "description": "Synthetic property description.",
+    "title": "Bright two-bedroom apartment near Stadtpark",
+    "description": "A sunny apartment with a balcony, elevator access, and a renovated kitchen.",
     "type": "apartment",
     "is_tenant_network": false,
     "price": {
@@ -73,10 +74,10 @@
       "year_built": 2018
     },
     "address": {
-      "street": "Example Street",
-      "postal_code": "10115",
-      "city": "Example City",
-      "district": "Example District",
+      "street": "Friedrichstrasse 18",
+      "postal_code": "10117",
+      "city": "Berlin",
+      "district": "Mitte",
       "lat": 52.53,
       "lon": 13.38
     },
@@ -87,20 +88,20 @@
     "energy_class": "B",
     "images": [
       {
-        "url": "https://example.com/room.jpg",
+        "url": "https://www.immobilienscout24.de/expose/170000001/images/room-1",
         "caption": "Living room"
       }
     ],
     "agent": {
-      "name": "Example Realty",
-      "logo_url": "https://example.com/logo.png"
+      "name": "Nordlicht Immobilien",
+      "logo_url": "https://www.immobilienscout24.de/expose/170000001/images/agent-logo"
     },
     "url": "https://www.immobilienscout24.de/expose/170000001"
   },
   "tableFields": [
     {
       "name": "id",
-      "label": "Id",
+      "label": "ID",
       "format": "text"
     },
     {
@@ -125,59 +126,127 @@
     },
     {
       "name": "url",
-      "label": "Url",
+      "label": "URL",
       "format": "link"
     }
   ],
-  "seo": {
-    "h1": "ImmobilienScout24 Property Details Scraper",
-    "intro": "Retrieve detailed ImmobilienScout24 property data by listing ID.",
-    "keywords": [
-      "ImmobilienScout24 Property Details Scraper",
-      "id",
-      "title",
-      "price",
-      "/immobilienscout24/property/{id} API"
-    ],
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "storeCopy": {
+    "seoTitle": "ImmobilienScout24 Details | Property Data",
+    "seoDescription": "Get ImmobilienScout24 property details, rent, rooms, address, features, and images by listing ID. Enrich property records and analyze German rentals.",
+    "intro": "Look up an ImmobilienScout24 listing by property ID. Review rent, rooms, address, features, energy class, and images in one structured record.",
     "useCases": [
-      "Property listing enrichment",
-      "Real estate research",
-      "Listing change monitoring"
+      "Rental analysts can enrich listings with rent, location, room, and energy details.",
+      "Property managers can compare features and availability across German listings.",
+      "Real-estate teams can review listing images and advertiser information."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add one numeric property ID to `property_ids` for each listing.",
+      "Set `maxResults` to cap property records saved.",
+      "Match each dataset item to your property using its ID."
+    ],
+    "faqs": [
       {
-        "name": "id",
-        "description": "Source property or product identifier."
-      },
-      {
-        "name": "title",
-        "description": "Result title or listing name."
-      },
-      {
-        "name": "price",
-        "description": "Listed product or property price."
-      },
-      {
-        "name": "details",
-        "description": "Property size, rooms, floor, and availability."
-      },
-      {
-        "name": "address",
-        "description": "Property address fields when supplied."
-      },
-      {
-        "name": "url",
-        "description": "Canonical result URL."
+        "question": "Which ID should I provide?",
+        "answer": "Use the numeric ImmobilienScout24 listing ID from the property URL or listing reference."
       }
     ],
     "relatedActors": [
       {
         "slug": "immobilienscout24-search-scraper",
-        "title": "Immobilienscout24 Search Scraper"
+        "title": "ImmobilienScout24 Search Scraper"
       },
       {
-        "slug": "redfin-property-details-scraper",
-        "title": "Redfin Property Details Scraper"
+        "slug": "immobilienscout24-price-insights-scraper",
+        "title": "ImmobilienScout24 Price Insights Scraper"
+      },
+      {
+        "slug": "immowelt-property-search-scraper",
+        "title": "Immowelt Property Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "Indicates whether ImmobilienScout24 returned a property record."
+      },
+      {
+        "name": "id",
+        "type": "String",
+        "description": "ImmobilienScout24 property ID used for this details lookup."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Listing headline for the German apartment or property."
+      },
+      {
+        "name": "description",
+        "type": "String",
+        "description": "Advertiser text describing the German property."
+      },
+      {
+        "name": "type",
+        "type": "String",
+        "description": "ImmobilienScout24 listing category for the property."
+      },
+      {
+        "name": "is_tenant_network",
+        "type": "Boolean",
+        "description": "True when the listing is marked as part of a tenant network."
+      },
+      {
+        "name": "price",
+        "type": "Object",
+        "description": "Advertised rent or sale amount and billing period when provided."
+      },
+      {
+        "name": "details",
+        "type": "Object",
+        "description": "Property attributes such as rooms, area, floor, and availability."
+      },
+      {
+        "name": "address",
+        "type": "Object",
+        "description": "Property address and district details, with coordinates when available."
+      },
+      {
+        "name": "features",
+        "type": "Array<string>",
+        "description": "Amenities and property features included in the listing."
+      },
+      {
+        "name": "energy_class",
+        "type": "String",
+        "description": "Energy-efficiency class shown for the property."
+      },
+      {
+        "name": "images",
+        "type": "Array<object>",
+        "description": "Property image URLs and captions attached to the listing."
+      },
+      {
+        "name": "agent",
+        "type": "Object",
+        "description": "Advertiser or real-estate agent details shown on the listing."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public ImmobilienScout24 page URL for this property."
+      },
+      {
+        "name": "input_id",
+        "type": "String",
+        "description": "Property ID submitted for this details lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this property record was collected."
       }
     ]
   }

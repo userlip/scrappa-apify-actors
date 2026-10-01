@@ -6,11 +6,11 @@
   "trending_searches": [
     {
       "position": 1,
-      "query": "synthetic search trend",
-      "title": "Synthetic search trend",
-      "link": "https://example.com/trend",
-      "description": null,
-      "is_top": false
+      "query": "portable air conditioner",
+      "title": "Portable air conditioners",
+      "link": "https://www.baidu.com/s?wd=%E4%BE%BF%E6%90%BA%E5%BC%8F%E7%A9%BA%E8%B0%83",
+      "description": "Search interest is rising for compact cooling options for apartments and home offices.",
+      "is_top": true
     }
   ],
   "available_tabs": [],

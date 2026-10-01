@@ -1,6 +1,6 @@
 {
   "title": "Apple App Store Search Scraper",
-  "description": "Apple App Store Search Scraper collects structured data from Scrappa's /apple/app-store/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Search the Apple App Store for app names, publishers, prices, ratings, categories, and links. Submit several search phrases in one run to build catalogs or compare storefront listings.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -8,9 +8,9 @@
   ],
   "properties": {
     "queries": {
-      "title": "Queries",
+      "title": "Search queries",
       "type": "array",
-      "description": "Batch input entries. Each query is sent as the query value.",
+      "description": "App Store search phrases. Add one object per phrase.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
@@ -26,7 +26,7 @@
         ],
         "properties": {
           "query": {
-            "title": "Query",
+            "title": "Search query",
             "type": "string",
             "description": "Search term (q is accepted as an alias)",
             "maxLength": 500,

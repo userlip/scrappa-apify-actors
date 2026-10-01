@@ -7,18 +7,23 @@
     "text_blocks": [
       {
         "type": "paragraph",
-        "snippet": "A synthetic explanation of heat pumps.",
-        "snippet_markdown": "A synthetic explanation of heat pumps."
+        "snippet": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling.",
+        "snippet_markdown": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling."
       }
     ],
     "sections": [
       {
         "title": "Basic operation",
-        "places": []
+        "places": [
+          {
+            "name": "U.S. Department of Energy",
+            "address": "1000 Independence Avenue SW, Washington, DC"
+          }
+        ]
       }
     ]
   },
-  "text": "A synthetic explanation of heat pumps.",
-  "markdown": "A synthetic explanation of heat pumps.",
+  "text": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling.",
+  "markdown": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling.",
   "service_used": "google"
 }

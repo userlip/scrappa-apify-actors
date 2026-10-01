@@ -9,6 +9,7 @@ on:
       - 'specs/**'
       - 'templates/**'
       - 'scripts/generate-actors.mjs'
+      - 'scripts/validate-store-copy.mjs'
       - 'docs/generated-actors.md'
       - 'README.md'
       - '.github/workflows/actor-tests.yml'
@@ -19,6 +20,7 @@ on:
       - 'specs/**'
       - 'templates/**'
       - 'scripts/generate-actors.mjs'
+      - 'scripts/validate-store-copy.mjs'
       - 'docs/generated-actors.md'
       - 'README.md'
       - '.github/workflows/actor-tests.yml'
@@ -68,7 +70,6 @@ jobs:
           - actors/google-news-scraper
           - actors/google-patents-details-scraper
           - actors/google-patents-search-scraper
-          - actors/google-play-reviews-scraper
           - actors/google-scholar-scraper
           - actors/google-search
           - actors/google-shopping-scraper
@@ -177,3 +178,6 @@ jobs:
 
       - name: Check generated Actor files
         run: node scripts/generate-actors.mjs --check
+
+      - name: Validate generated Store copy
+        run: node scripts/validate-store-copy.mjs

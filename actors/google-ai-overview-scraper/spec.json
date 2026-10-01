@@ -1,7 +1,7 @@
 {
   "slug": "google-ai-overview-scraper",
   "title": "Google AI Overview Scraper",
-  "description": "Google AI Overview Scraper collects structured data from Scrappa's /search-ai-overview endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Capture Google AI Overview answers, answer sections, and query context when available. Batch queries to compare answer coverage and organize observations about AI search results.",
   "endpoint": "/search-ai-overview",
   "openapiPath": "/search-ai-overview",
   "mode": "single",
@@ -10,8 +10,9 @@
     "valueField": "query",
     "apiParam": "query",
     "pathParam": null,
-    "title": "Queries",
-    "description": "Batch input entries. Each query is sent as the query value."
+    "title": "Search queries",
+    "description": "Questions or phrases to check for Google AI Overview content.",
+    "valueDescription": "query used to run this search."
   },
   "parameters": [
     {
@@ -19,7 +20,7 @@
       "apiParam": "query",
       "location": "query",
       "required": true,
-      "title": "Query",
+      "title": "Search query",
       "schema": {
         "type": "string",
         "description": "Search query sent to Google AI Mode.",
@@ -32,7 +33,7 @@
       "apiParam": "hl",
       "location": "query",
       "required": false,
-      "title": "HL",
+      "title": "Language",
       "schema": {
         "type": "string",
         "description": "Interface language code (2 letters, e.g. en, de).",
@@ -45,7 +46,7 @@
       "apiParam": "gl",
       "location": "query",
       "required": false,
-      "title": "GL",
+      "title": "Country",
       "schema": {
         "type": "string",
         "description": "Country code (2 letters, e.g. us, de).",
@@ -112,19 +113,24 @@
       "text_blocks": [
         {
           "type": "paragraph",
-          "snippet": "A synthetic explanation of heat pumps.",
-          "snippet_markdown": "A synthetic explanation of heat pumps."
+          "snippet": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling.",
+          "snippet_markdown": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling."
         }
       ],
       "sections": [
         {
           "title": "Basic operation",
-          "places": []
+          "places": [
+            {
+              "name": "U.S. Department of Energy",
+              "address": "1000 Independence Avenue SW, Washington, DC"
+            }
+          ]
         }
       ]
     },
-    "text": "A synthetic explanation of heat pumps.",
-    "markdown": "A synthetic explanation of heat pumps.",
+    "text": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling.",
+    "markdown": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling.",
     "service_used": "google"
   },
   "tableFields": [
@@ -154,41 +160,31 @@
       "format": "text"
     }
   ],
-  "seo": {
-    "h1": "Google AI Overview Scraper",
-    "intro": "Fetch the Google AI Overview and answer text for a search query.",
-    "keywords": [
-      "Google AI Overview Scraper",
-      "query_displayed",
-      "text",
-      "markdown",
-      "/search-ai-overview API"
-    ],
+  "flattenPointers": {
+    "query_displayed": "/search_information/query_displayed"
+  },
+  "categories": [
+    "AI",
+    "SEO_TOOLS"
+  ],
+  "storeCopy": {
+    "seoTitle": "Google AI Overview Scraper | AI Answers",
+    "seoDescription": "Capture Google AI Overview text and sections for a search query. Study answer coverage, compare wording, and organize research in structured datasets.",
+    "intro": "Submit search questions and receive available AI Overview content, text blocks, sections, displayed query, and formatted answer text. Coverage depends on query and location.",
     "useCases": [
-      "Search answer monitoring",
-      "Research summaries",
-      "SEO and answer-engine analysis"
+      "AI search teams can compare answer coverage across a query set.",
+      "Content strategists can inspect how Google sections and phrases generated answers.",
+      "Product researchers can track where Google AI Overviews appear in search."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add one question to `queries` for each overview to capture.",
+      "Set language and country for localized search context.",
+      "Read one structured response item per query."
+    ],
+    "faqs": [
       {
-        "name": "query_displayed",
-        "description": "Search phrase displayed by Google."
-      },
-      {
-        "name": "text",
-        "description": "Review or result text."
-      },
-      {
-        "name": "markdown",
-        "description": "Formatted AI Overview answer text."
-      },
-      {
-        "name": "ai_overview",
-        "description": "Ai overview returned for this Google AI Overview Scraper result."
-      },
-      {
-        "name": "service_used",
-        "description": "Scrappa service used for the response."
+        "question": "Will every query return an AI Overview?",
+        "answer": "No. Google may omit an overview for some searches. A successful response can contain no overview text."
       }
     ],
     "relatedActors": [
@@ -197,8 +193,54 @@
         "title": "Google Scholar Scraper"
       },
       {
-        "slug": "google-search-scraper",
-        "title": "Google Search Scraper"
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      },
+      {
+        "slug": "google-shopping-scraper",
+        "title": "Google Shopping Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "search_information",
+        "type": "Object",
+        "description": "Search context, including the query Google displays with the response."
+      },
+      {
+        "name": "ai_overview",
+        "type": "Object",
+        "description": "Structured Google AI Overview answer blocks and referenced sources when available."
+      },
+      {
+        "name": "text",
+        "type": "String",
+        "description": "Plain-text version of the Google AI Overview answer."
+      },
+      {
+        "name": "markdown",
+        "type": "String",
+        "description": "Markdown version of the answer and its section structure."
+      },
+      {
+        "name": "service_used",
+        "type": "String",
+        "description": "Search service label returned with the AI Overview response."
+      },
+      {
+        "name": "query_displayed",
+        "type": "String",
+        "description": "Search phrase Google shows for this AI Overview response."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Search phrase submitted to Google for this answer lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this Google AI Overview was collected."
       }
     ]
   }

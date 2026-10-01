@@ -1,7 +1,7 @@
 {
   "slug": "idealista-search-scraper",
   "title": "Idealista Property Search Scraper",
-  "description": "Idealista Property Search Scraper collects structured data from Scrappa's /idealista/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Search Idealista listings with prices, size, rooms, photos, location, and links. Batch location searches and page through property results across supported European markets.",
   "endpoint": "/idealista/search",
   "openapiPath": "/idealista/search",
   "mode": "list",
@@ -10,8 +10,9 @@
     "valueField": "location_id",
     "apiParam": "location_id",
     "pathParam": null,
-    "title": "Location Ids",
-    "description": "Batch input entries. Each location_id is sent as the location_id value."
+    "title": "Locations",
+    "description": "Idealista location IDs to search.",
+    "valueDescription": "location_id used to run this search."
   },
   "parameters": [
     {
@@ -148,7 +149,7 @@
       "title": "Order",
       "schema": {
         "type": "string",
-        "description": "Scrappa order parameter.",
+        "description": "Sort direction or ordering mode for property results.",
         "maxLength": 40
       }
     },
@@ -160,7 +161,7 @@
       "title": "Sort",
       "schema": {
         "type": "string",
-        "description": "Scrappa sort parameter.",
+        "description": "Listing sort mode, such as price or publication date.",
         "enum": [
           "asc",
           "desc"
@@ -177,7 +178,7 @@
       "title": "Quality",
       "schema": {
         "type": "string",
-        "description": "Scrappa quality parameter.",
+        "description": "Filter results by listing quality when supported.",
         "enum": [
           "high",
           "low"
@@ -193,7 +194,7 @@
       "title": "Gallery",
       "schema": {
         "type": "boolean",
-        "description": "Scrappa gallery parameter.",
+        "description": "Filter for listings that include gallery photos.",
         "default": false
       }
     },
@@ -205,7 +206,7 @@
       "title": "Locale",
       "schema": {
         "type": "string",
-        "description": "Scrappa locale parameter.",
+        "description": "Language and regional formatting for the listing search.",
         "maxLength": 8
       }
     },
@@ -276,7 +277,7 @@
       "title": "Home Type",
       "schema": {
         "type": "string",
-        "description": "Scrappa home_type parameter.",
+        "description": "Idealista home subtype, such as an apartment or house.",
         "maxLength": 40
       }
     },
@@ -288,7 +289,7 @@
       "title": "Bank Offer",
       "schema": {
         "type": "string",
-        "description": "Scrappa bank_offer parameter.",
+        "description": "Filter listings associated with a bank offer.",
         "maxLength": 40
       }
     },
@@ -300,7 +301,7 @@
       "title": "Advertiser Type",
       "schema": {
         "type": "string",
-        "description": "Scrappa advertiser_type parameter.",
+        "description": "Filter results by advertiser category.",
         "maxLength": 40
       }
     },
@@ -312,7 +313,7 @@
       "title": "Min Price",
       "schema": {
         "type": "integer",
-        "description": "Scrappa min_price parameter.",
+        "description": "Minimum asking price for a property listing.",
         "minimum": 0
       }
     },
@@ -324,7 +325,7 @@
       "title": "Max Price",
       "schema": {
         "type": "integer",
-        "description": "Scrappa max_price parameter.",
+        "description": "Maximum asking price for a property listing.",
         "minimum": 0
       }
     },
@@ -336,7 +337,7 @@
       "title": "Min Size",
       "schema": {
         "type": "integer",
-        "description": "Scrappa min_size parameter.",
+        "description": "Minimum property area in square metres.",
         "minimum": 0
       }
     },
@@ -348,7 +349,7 @@
       "title": "Max Size",
       "schema": {
         "type": "integer",
-        "description": "Scrappa max_size parameter.",
+        "description": "Maximum property area in square metres.",
         "minimum": 0
       }
     },
@@ -360,7 +361,7 @@
       "title": "Min Rooms",
       "schema": {
         "type": "integer",
-        "description": "Scrappa min_rooms parameter.",
+        "description": "Minimum room count for a property listing.",
         "minimum": 0
       }
     },
@@ -372,7 +373,7 @@
       "title": "Max Rooms",
       "schema": {
         "type": "integer",
-        "description": "Scrappa max_rooms parameter.",
+        "description": "Maximum room count for a property listing.",
         "minimum": 0
       }
     },
@@ -384,7 +385,7 @@
       "title": "Shape",
       "schema": {
         "type": "string",
-        "description": "Scrappa shape parameter."
+        "description": "Geographic search shape used to restrict Idealista results."
       }
     }
   ],
@@ -434,7 +435,7 @@
       "elementList": [
         {
           "propertyCode": "10000001",
-          "thumbnail": "https://example.com/property.jpg",
+          "thumbnail": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c",
           "numPhotos": 8,
           "price": 250000,
           "propertyType": "flat",
@@ -442,14 +443,14 @@
           "size": 75,
           "rooms": 3,
           "bathrooms": 1,
-          "municipality": "Example City",
-          "province": "Example Province",
+          "municipality": "Madrid",
+          "province": "Madrid",
           "country": "Spain",
-          "locationId": "example-location",
+          "locationId": "0-EU-ES-28",
           "latitude": 40.4,
           "longitude": -3.7,
           "url": "https://www.idealista.com/en/inmueble/10000001/",
-          "description": "Synthetic property description."
+          "description": "Bright three-room apartment with a balcony near public transport."
         }
       ],
       "total": 1,
@@ -462,7 +463,7 @@
   "tableFields": [
     {
       "name": "propertyCode",
-      "label": "Propertycode",
+      "label": "Property Code",
       "format": "text"
     },
     {
@@ -487,59 +488,143 @@
     },
     {
       "name": "url",
-      "label": "Url",
+      "label": "URL",
       "format": "link"
     }
   ],
-  "seo": {
-    "h1": "Idealista Property Search Scraper",
-    "intro": "Search Idealista properties for sale or rent across Spain, Italy, Portugal, and France.",
-    "keywords": [
-      "Idealista Property Search Scraper",
-      "propertyCode",
-      "price",
-      "size",
-      "/idealista/search API"
-    ],
+  "dedupePointer": "/propertyCode",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "storeCopy": {
+    "seoTitle": "Idealista Scraper | Property Listings",
+    "seoDescription": "Search Idealista property listings by location and collect prices, size, rooms, photos, and links. Track housing supply and compare inventory by area.",
+    "intro": "Search Idealista by location, operation, and property type. Collect listing IDs, prices, sizes, rooms, locations, coordinates, photo totals, and links across pages.",
     "useCases": [
-      "Property market research",
-      "Rental and sale listing monitoring",
-      "Real estate lead discovery"
+      "Property investors can compare listing prices, areas, and room counts by location.",
+      "Housing analysts can track supply across Idealista markets.",
+      "Real-estate teams can collect listing links and photos for property shortlists."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add a location ID to `location_ids` for each area.",
+      "Choose country, operation, and property type, then add filters.",
+      "Set `maxPages` and `maxResults`, then export listing rows."
+    ],
+    "faqs": [
       {
-        "name": "propertyCode",
-        "description": "Idealista listing code."
-      },
-      {
-        "name": "price",
-        "description": "Listed product or property price."
-      },
-      {
-        "name": "size",
-        "description": "Property area in square meters."
-      },
-      {
-        "name": "rooms",
-        "description": "Number of rooms."
-      },
-      {
-        "name": "municipality",
-        "description": "Municipality containing the property."
-      },
-      {
-        "name": "url",
-        "description": "Canonical result URL."
+        "question": "How does pagination stop?",
+        "answer": "Collection stops when the source reports no next page, the reported page does not advance, or your configured limits are reached."
       }
     ],
     "relatedActors": [
       {
         "slug": "immobilienscout24-search-scraper",
-        "title": "Immobilienscout24 Search Scraper"
+        "title": "ImmobilienScout24 Search Scraper"
       },
       {
         "slug": "immowelt-property-search-scraper",
         "title": "Immowelt Property Search Scraper"
+      },
+      {
+        "slug": "redfin-property-search-scraper",
+        "title": "Redfin Property Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "propertyCode",
+        "type": "String",
+        "description": "Unique Idealista code identifying this property listing."
+      },
+      {
+        "name": "thumbnail",
+        "type": "String",
+        "description": "Preview image URL for the Idealista property."
+      },
+      {
+        "name": "numPhotos",
+        "type": "Integer",
+        "description": "Number of property photos attached to the listing."
+      },
+      {
+        "name": "price",
+        "type": "Integer",
+        "description": "Advertised sale or rent price in the listing currency."
+      },
+      {
+        "name": "propertyType",
+        "type": "String",
+        "description": "Idealista property category, such as a home, room, or office."
+      },
+      {
+        "name": "operation",
+        "type": "String",
+        "description": "Whether the listing advertises a sale or rental."
+      },
+      {
+        "name": "size",
+        "type": "Integer",
+        "description": "Advertised property area in square metres when reported."
+      },
+      {
+        "name": "rooms",
+        "type": "Integer",
+        "description": "Number of rooms reported in the property listing."
+      },
+      {
+        "name": "bathrooms",
+        "type": "Integer",
+        "description": "Number of bathrooms reported in the property listing."
+      },
+      {
+        "name": "municipality",
+        "type": "String",
+        "description": "Municipality where Idealista places the property."
+      },
+      {
+        "name": "province",
+        "type": "String",
+        "description": "Province containing the property listing."
+      },
+      {
+        "name": "country",
+        "type": "String",
+        "description": "Country associated with this Idealista result."
+      },
+      {
+        "name": "locationId",
+        "type": "String",
+        "description": "Idealista location code for the listing area."
+      },
+      {
+        "name": "latitude",
+        "type": "Number",
+        "description": "Latitude of the property location in decimal degrees."
+      },
+      {
+        "name": "longitude",
+        "type": "Number",
+        "description": "Longitude of the property location in decimal degrees."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public Idealista page URL for this property."
+      },
+      {
+        "name": "description",
+        "type": "String",
+        "description": "Listing summary describing the property and its features."
+      },
+      {
+        "name": "input_location_id",
+        "type": "String",
+        "description": "Idealista location code searched for this result set."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this property listing was collected."
       }
     ]
   }

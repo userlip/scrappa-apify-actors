@@ -1,7 +1,7 @@
 {
   "slug": "google-scholar-scraper",
   "title": "Google Scholar Scraper",
-  "description": "Google Scholar Scraper collects structured data from Scrappa's /google/scholar endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Search Google Scholar for paper titles, authors, publication details, citations, and available resources. Batch research queries to build literature lists or monitor academic topics.",
   "endpoint": "/google/scholar",
   "openapiPath": "/google/scholar",
   "mode": "list",
@@ -10,8 +10,9 @@
     "valueField": "q",
     "apiParam": "q",
     "pathParam": null,
-    "title": "Queries",
-    "description": "Batch input entries. Each q is sent as the q value."
+    "title": "Research queries",
+    "description": "Academic search phrases. Add one object per phrase.",
+    "valueDescription": "q used to run this search."
   },
   "parameters": [
     {
@@ -19,7 +20,7 @@
       "apiParam": "q",
       "location": "query",
       "required": true,
-      "title": "Q",
+      "title": "Search query",
       "schema": {
         "type": "string",
         "description": "Scholar search query. Optional when cites or cluster is supplied.",
@@ -32,7 +33,7 @@
       "apiParam": "hl",
       "location": "query",
       "required": false,
-      "title": "HL",
+      "title": "Language",
       "schema": {
         "type": "string",
         "description": "Two-letter interface language, optionally with a region. Defaults to en.",
@@ -59,7 +60,7 @@
       "apiParam": "num",
       "location": "query",
       "required": false,
-      "title": "NUM",
+      "title": "Results per page",
       "schema": {
         "type": "integer",
         "description": "Results per request from 1 to 20. Defaults to 10.",
@@ -189,17 +190,24 @@
       "organic_results": [
         {
           "position": 1,
-          "title": "An Example Study of Attention Models",
-          "result_id": "example-paper-1",
-          "link": "https://example.com/paper",
-          "snippet": "A synthetic paper abstract for the fixture.",
+          "title": "How Search Interfaces Shape Literature Reviews",
+          "result_id": "GS-2025-01842",
+          "link": "https://scholar.google.com/scholar?cluster=1748293102842",
+          "snippet": "This study compares citation discovery and screening workflows across digital research libraries.",
           "publication_info": {
-            "summary": "Example Journal, 2025",
+            "summary": "Journal of Digital Scholarship, 2025",
             "authors": [
-              "Sample Author"
+              "Priya Menon",
+              "Rafael Costa"
             ]
           },
-          "resources": []
+          "resources": [
+            {
+              "title": "Open access article",
+              "file_format": "PDF",
+              "link": "https://repository.uni-muenster.de/document/1842"
+            }
+          ]
         }
       ],
       "pagination": {
@@ -208,7 +216,10 @@
         "num": 10,
         "next_start": 10,
         "has_next": false,
-        "pages": []
+        "pages": [
+          1,
+          2
+        ]
       }
     },
     "meta": {
@@ -238,55 +249,94 @@
     },
     {
       "name": "result_id",
-      "label": "Result Id",
+      "label": "Result ID",
       "format": "text"
     }
   ],
-  "seo": {
-    "h1": "Google Scholar Scraper",
-    "intro": "Search Google Scholar for academic papers, citations, author details, and publication links.",
-    "keywords": [
-      "Google Scholar Scraper",
-      "title",
-      "link",
-      "snippet",
-      "/google/scholar API"
-    ],
+  "dedupePointer": "/result_id",
+  "categories": [
+    "EDUCATION",
+    "SEO_TOOLS"
+  ],
+  "storeCopy": {
+    "seoTitle": "Google Scholar Scraper | Paper Results",
+    "seoDescription": "Search Google Scholar for papers, publication details, result links, and resources. Build literature review datasets and track academic research by topic.",
+    "intro": "Collect ranked Scholar results for research topics. Rows include paper titles, result IDs, publication summaries, snippets, links, and available resources.",
     "useCases": [
-      "Literature discovery",
-      "Citation research",
-      "Academic landscape analysis"
+      "Researchers can collect paper details and publisher links by topic.",
+      "Librarians can build reading lists from ranked Google Scholar results.",
+      "Research teams can monitor publication coverage for recurring queries."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add one research phrase per item in `queries`.",
+      "Set `maxPages` to bound collection and `maxResults` to cap saved papers.",
+      "Review paper titles, publication details, links, and resources."
+    ],
+    "faqs": [
       {
-        "name": "title",
-        "description": "Result title or listing name."
-      },
-      {
-        "name": "link",
-        "description": "Result destination URL."
-      },
-      {
-        "name": "snippet",
-        "description": "Text excerpt shown with the result."
-      },
-      {
-        "name": "publication_info",
-        "description": "Publication, authors, and citation context."
-      },
-      {
-        "name": "result_id",
-        "description": "Stable result identifier when provided."
+        "question": "Does the Actor download full papers?",
+        "answer": "No. It returns result metadata and resource links exposed in search results; publisher access rules still apply."
       }
     ],
     "relatedActors": [
       {
-        "slug": "google-search-scraper",
-        "title": "Google Search Scraper"
+        "slug": "google-ai-overview-scraper",
+        "title": "Google AI Overview Scraper"
       },
       {
-        "slug": "google-patents-search-scraper",
-        "title": "Google Patents Search Scraper"
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      },
+      {
+        "slug": "google-shopping-scraper",
+        "title": "Google Shopping Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Position of the paper in Google Scholar results, starting at 1."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Paper title displayed by Google Scholar."
+      },
+      {
+        "name": "result_id",
+        "type": "String",
+        "description": "Google Scholar identifier associated with the paper record."
+      },
+      {
+        "name": "link",
+        "type": "String",
+        "description": "Google Scholar or publisher URL for the paper."
+      },
+      {
+        "name": "snippet",
+        "type": "String",
+        "description": "Short paper excerpt or matching text shown in Scholar results."
+      },
+      {
+        "name": "publication_info",
+        "type": "Object",
+        "description": "Publication venue, authors, and year displayed with the paper."
+      },
+      {
+        "name": "resources",
+        "type": "Array<object>",
+        "description": "Publisher and document links associated with the paper."
+      },
+      {
+        "name": "input_q",
+        "type": "String",
+        "description": "Research phrase submitted to Google Scholar for this result set."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this paper record was collected."
       }
     ]
   }

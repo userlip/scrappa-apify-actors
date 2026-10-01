@@ -5,12 +5,12 @@
   "organic_results": [
     {
       "position": 1,
-      "title": "Example climate research",
-      "link": "https://example.com/research",
-      "redirect_link": "https://example.com/research",
-      "displayed_link": "example.com/research",
-      "snippet": "Synthetic research summary for fixture tests.",
-      "source": "example.com"
+      "title": "Heat Island Cooling Strategies",
+      "link": "https://www.epa.gov/heatislands/heat-island-cooling-strategies",
+      "redirect_link": "https://www.epa.gov/heatislands/heat-island-cooling-strategies",
+      "displayed_link": "epa.gov/heatislands",
+      "snippet": "Trees, reflective surfaces, and green roofs can help lower urban temperatures.",
+      "source": "U.S. Environmental Protection Agency"
     }
   ],
   "related_searches": [],

@@ -1,6 +1,6 @@
 {
   "title": "Google Shopping Scraper",
-  "description": "Google Shopping Scraper collects structured data from Scrappa's /google/shopping endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Search Google Shopping for product offers, merchants, prices, ratings, and review counts. Batch product phrases in one run to compare retail listings or monitor prices.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -8,9 +8,9 @@
   ],
   "properties": {
     "queries": {
-      "title": "Queries",
+      "title": "Product queries",
       "type": "array",
-      "description": "Batch input entries. Each q is sent as the q value.",
+      "description": "Product phrases to search in Google Shopping.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
@@ -26,14 +26,14 @@
         ],
         "properties": {
           "q": {
-            "title": "Q",
+            "title": "Search query",
             "type": "string",
             "description": "Product search query.",
             "maxLength": 500,
             "editor": "textfield"
           },
           "gl": {
-            "title": "GL",
+            "title": "Country",
             "type": "string",
             "description": "Two-letter country code. Default: us.",
             "minLength": 2,
@@ -42,7 +42,7 @@
             "editor": "textfield"
           },
           "hl": {
-            "title": "HL",
+            "title": "Language",
             "type": "string",
             "description": "Two-letter interface language. Default: en.",
             "minLength": 2,
@@ -102,7 +102,7 @@
       }
     },
     "gl": {
-      "title": "GL",
+      "title": "Country",
       "type": "string",
       "description": "Two-letter country code. Default: us.",
       "minLength": 2,
@@ -111,7 +111,7 @@
       "editor": "textfield"
     },
     "hl": {
-      "title": "HL",
+      "title": "Language",
       "type": "string",
       "description": "Two-letter interface language. Default: en.",
       "minLength": 2,

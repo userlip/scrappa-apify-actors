@@ -1,7 +1,7 @@
 {
   "slug": "kayak-flights-scraper",
   "title": "Kayak Flights Scraper",
-  "description": "Kayak Flights Scraper collects structured data from Scrappa's /kayak/flights/one-way endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Get Kayak one-way or round-trip itineraries with flight legs, travel times, provider counts, and shareable links. Add several origin-destination routes in one run to compare fares or plan trips.",
   "endpoint": "/kayak/flights/one-way",
   "openapiPath": "/kayak/flights/one-way",
   "mode": "list",
@@ -10,8 +10,14 @@
     "valueField": "origin",
     "apiParam": "origin",
     "pathParam": null,
-    "title": "Flights",
-    "description": "Batch input entries. Each origin is sent as the origin value."
+    "title": "Flight routes",
+    "description": "Flight routes with an origin and destination for each search.",
+    "itemRequired": [
+      "origin",
+      "destination"
+    ],
+    "enrichBatchItem": true,
+    "valueDescription": "origin used to run this search."
   },
   "parameters": [
     {
@@ -42,8 +48,8 @@
       "input": "departure_date",
       "apiParam": "departure_date",
       "location": "query",
-      "required": true,
-      "title": "Departure Date",
+      "required": false,
+      "title": "Departure date",
       "schema": {
         "type": "string",
         "description": "Departure date in YYYY-MM-DD format."
@@ -210,16 +216,19 @@
       "input": "return_date",
       "apiParam": "return_date",
       "location": "query",
-      "required": false,
+      "required": true,
       "requiredForEndpoints": [
-        "round-trip"
+        "/round-trip"
       ],
-      "title": "Return Date",
+      "title": "Return date",
       "schema": {
         "type": "string",
         "description": "Return date in YYYY-MM-DD format. Required when tripType is round-trip."
       },
-      "editor": "textfield"
+      "editor": "textfield",
+      "availableForEndpoints": [
+        "/round-trip"
+      ]
     }
   ],
   "resultPointer": "/flights",
@@ -232,15 +241,8 @@
     "hasMorePointer": "/search_metadata/has_more",
     "maxPages": 5
   },
-  "endpointByInput": {
-    "tripType": {
-      "one-way": "/kayak/flights/one-way",
-      "round-trip": "/kayak/flights/round-trip"
-    }
-  },
-  "endpointByInputDefault": "one-way",
   "enrichment": {
-    "field": "input_origin"
+    "field": "input_route"
   },
   "maxResults": {
     "input": "maxResults",
@@ -253,27 +255,25 @@
   "prefill": {
     "flights": [
       {
-        "origin": "JFK"
+        "origin": "JFK",
+        "destination": "LAX"
       }
     ],
-    "destination": "LAX",
-    "departure_date": "2026-11-14",
     "tripType": "one-way",
     "maxResults": 20,
     "maxPages": 2
   },
   "testParams": {
     "origin": "JFK",
-    "destination": "LAX",
-    "departure_date": "2026-11-14"
+    "destination": "LAX"
   },
   "fixture": {
     "success": true,
     "flights": [
       {
-        "resultId": "synthetic-flight-1",
+        "resultId": "FL-JFK-LAX-20261114-01",
         "type": "ONE_WAY",
-        "shareableId": "example-route",
+        "shareableId": "8f31b7",
         "shareableUrl": "https://www.kayak.com/flights/JFK-LAX/2026-11-14",
         "legs": [
           {
@@ -300,7 +300,7 @@
   "tableFields": [
     {
       "name": "resultId",
-      "label": "Result Id",
+      "label": "Result ID",
       "format": "text"
     },
     {
@@ -310,7 +310,7 @@
     },
     {
       "name": "shareableUrl",
-      "label": "Shareable Url",
+      "label": "Shareable URL",
       "format": "link"
     },
     {
@@ -320,45 +320,49 @@
     },
     {
       "name": "totalProviders",
-      "label": "Totalproviders",
+      "label": "Total Providers",
       "format": "number"
     }
   ],
-  "seo": {
-    "h1": "Kayak Flights Scraper",
-    "intro": "Search Kayak one-way or round-trip flights and collect flight options, airlines, providers, and routes.",
-    "keywords": [
-      "Kayak Flights Scraper",
-      "resultId",
-      "type",
-      "shareableUrl",
-      "/kayak/flights/one-way API"
-    ],
+  "relativeDateDefaults": [
+    {
+      "input": "departure_date",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, departure is set to 30 days from today."
+    },
+    {
+      "input": "return_date",
+      "base": "departure_date",
+      "offsetDays": 4,
+      "description": "When omitted for a round trip, return is set to 4 days after departure.",
+      "endpoints": [
+        "/round-trip"
+      ]
+    }
+  ],
+  "dedupePointer": "/resultId",
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Flights Scraper | Fare Search",
+    "seoDescription": "Compare Kayak flight itineraries by route and travel dates, including legs, providers, and booking links. Build datasets for planning and airfare research.",
+    "intro": "Search Kayak for airport routes and collect itinerary IDs, flight legs, timing, provider counts, and shareable result links. Choose one-way or round-trip searches.",
     "useCases": [
-      "Flight price monitoring",
-      "Route comparison",
-      "Travel planning research"
+      "Travel planners can compare itineraries across multiple airport routes.",
+      "Travel agencies can check providers, flight times, and booking choices.",
+      "Fare analysts can track options for one-way and round-trip searches."
     ],
-    "fieldDescriptions": [
+    "howToUse": [
+      "Add one route object with origin and destination to `flights` per search.",
+      "Choose one-way or round-trip; omitted dates are set relative to today.",
+      "Set passenger and cabin options, then cap pages and results."
+    ],
+    "faqs": [
       {
-        "name": "resultId",
-        "description": "Kayak flight result identifier."
-      },
-      {
-        "name": "type",
-        "description": "Flight itinerary type."
-      },
-      {
-        "name": "shareableUrl",
-        "description": "Link to the flight search result."
-      },
-      {
-        "name": "legs",
-        "description": "Flight legs, including route and timing."
-      },
-      {
-        "name": "totalProviders",
-        "description": "Number of providers offering the itinerary."
+        "question": "How are travel dates chosen when omitted?",
+        "answer": "Departure defaults to 30 days from the run date. A round-trip return defaults to four days later; dates can be overridden per route or at the top level."
       }
     ],
     "relatedActors": [
@@ -368,8 +372,79 @@
       },
       {
         "slug": "booking-search-scraper",
-        "title": "Booking Search Scraper"
+        "title": "Booking.com Search Scraper"
+      },
+      {
+        "slug": "booking-hotel-details-scraper",
+        "title": "Booking.com Hotel Details Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "resultId",
+        "type": "String",
+        "description": "Identifier for the flight itinerary in this Kayak result set."
+      },
+      {
+        "name": "type",
+        "type": "String",
+        "description": "Kayak trip type for the itinerary, such as one-way or round trip."
+      },
+      {
+        "name": "shareableId",
+        "type": "String",
+        "description": "Kayak identifier used to reopen the saved itinerary search."
+      },
+      {
+        "name": "shareableUrl",
+        "type": "String",
+        "description": "URL that opens this itinerary or its search results on Kayak."
+      },
+      {
+        "name": "legs",
+        "type": "Array<object>",
+        "description": "Flight segments with airports, departure and arrival times, and duration."
+      },
+      {
+        "name": "totalProviders",
+        "type": "Integer",
+        "description": "Number of booking providers offering this itinerary."
+      },
+      {
+        "name": "totalBookingOptions",
+        "type": "Integer",
+        "description": "Number of distinct booking choices reported for the itinerary."
+      },
+      {
+        "name": "input_route",
+        "type": "Object",
+        "description": "Origin, destination, and any dates submitted for this route search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this itinerary was collected."
       }
     ]
-  }
+  },
+  "endpointSelectors": [
+    {
+      "input": "tripType",
+      "title": "Trip type",
+      "description": "Choose a one-way or round-trip search. Round-trip routes use a return date.",
+      "default": "one-way",
+      "choices": [
+        {
+          "value": "one-way",
+          "label": "One way",
+          "endpoint": "/kayak/flights/one-way"
+        },
+        {
+          "value": "round-trip",
+          "label": "Round trip",
+          "endpoint": "/kayak/flights/round-trip"
+        }
+      ]
+    }
+  ]
 }

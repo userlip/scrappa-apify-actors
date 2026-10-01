@@ -1,6 +1,6 @@
 {
   "title": "Google Lens Visual Search Scraper",
-  "description": "Google Lens Visual Search Scraper collects structured data from Scrappa's /google/lens endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result. Submit multiple batch entries in one run.",
+  "description": "Find Google Lens matches from public image URLs, including titles, sources, thumbnails, links, and prices. Submit several images per run to discover visually similar products or pages.",
   "type": "object",
   "schemaVersion": 1,
   "required": [
@@ -8,9 +8,9 @@
   ],
   "properties": {
     "image_urls": {
-      "title": "Image Urls",
+      "title": "Image URLs",
       "type": "array",
-      "description": "Batch input entries. Each url is sent as the url value.",
+      "description": "Public image URLs to use for visual search.",
       "editor": "json",
       "minItems": 1,
       "maxItems": 100,
@@ -26,14 +26,14 @@
         ],
         "properties": {
           "url": {
-            "title": "URL",
+            "title": "Image URL",
             "type": "string",
             "description": "Public HTTPS URL for the image to search.",
             "maxLength": 2048,
             "editor": "textfield"
           },
           "q": {
-            "title": "Q",
+            "title": "Search query",
             "type": "string",
             "description": "Optional text used to refine visual or product matches.",
             "maxLength": 500,
@@ -56,7 +56,7 @@
       }
     },
     "q": {
-      "title": "Q",
+      "title": "Search query",
       "type": "string",
       "description": "Optional text used to refine visual or product matches.",
       "maxLength": 500,

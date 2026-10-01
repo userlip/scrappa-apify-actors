@@ -2,7 +2,10 @@
   "actorSpecification": 1,
   "name": "bing-search-scraper",
   "title": "Bing Search Scraper",
-  "description": "Bing Search Scraper collects structured data from Scrappa's /bing/search endpoint. Submit multiple inputs in one Actor run and receive one dataset item per result.",
+  "description": "Search Bing for ranked titles, page snippets, domains, and links. Batch multiple keywords in one run to monitor rankings, compare competitors, or gather source pages.",
+  "categories": [
+    "SEO_TOOLS"
+  ],
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",
@@ -41,7 +44,7 @@
                 "format": "text"
               },
               "url": {
-                "label": "Url",
+                "label": "URL",
                 "format": "link"
               },
               "domain": {

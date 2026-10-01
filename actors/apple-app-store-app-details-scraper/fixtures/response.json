@@ -8,9 +8,9 @@
   "product": {
     "id": "1234567890",
     "store": "apps",
-    "title": "Example Notes",
-    "artist": "Example Studio",
-    "url": "https://apps.apple.com/app/example-notes/id1234567890",
+    "title": "Pocket Notes: Daily Planner",
+    "artist": "Northstar Mobile Studio",
+    "url": "https://apps.apple.com/us/app/pocket-notes-daily-planner/id1234567890",
     "rating": 4.8,
     "rating_count": 250,
     "privacy": {
@@ -19,8 +19,8 @@
           "dataCategories": [
             "Contact Info"
           ],
-          "description": "Synthetic privacy label.",
-          "identifier": "example",
+          "description": "Product usage data is linked to the account for analytics.",
+          "identifier": "product_usage",
           "privacyType": "data_used_to_track_you",
           "purposes": [
             "Analytics"
@@ -41,9 +41,34 @@
     ],
     "total_reviews": 120
   },
-  "similar": [],
-  "more_by_developer": [],
-  "reviews": [],
+  "similar": [
+    {
+      "id": "1562071743",
+      "title": "Fieldnote: Simple Journal",
+      "artist": "Fieldnote Apps",
+      "rating": 4.7,
+      "url": "https://apps.apple.com/us/app/fieldnote-simple-journal/id1000000001"
+    }
+  ],
+  "more_by_developer": [
+    {
+      "id": "1494974266",
+      "title": "Northstar Habit Tracker",
+      "artist": "Northstar Mobile Studio",
+      "url": "https://apps.apple.com/us/app/northstar-habit-tracker/id1000000002"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-2026-0814-01",
+      "author": "Jordan Lee",
+      "rating": 5,
+      "title": "Clear and useful",
+      "text": "The reminders are useful and the weekly view is easy to scan.",
+      "date": "2026-08-14",
+      "review": "A clear, lightweight way to organize daily plans."
+    }
+  ],
   "reviews_pagination": {
     "offset": 0,
     "limit": 20,
