@@ -63,7 +63,7 @@ The record below is synthetic. Names and links are examples, and private contact
 {
   "value": "Juniper House Hotel, Portland",
   "autocomplete_suggestion": "Juniper House Hotel, Portland",
-  "type": "hotel",
+  "type": "accommodation",
   "property_token": "Cg9qLW1vY2stcHJvcGVydHk",
   "thumbnail": "https://images.example.com/hotels/juniper-house.jpg",
   "scrappa_google_hotels_link": "https://hotels.example.com/search?property=juniper-house",

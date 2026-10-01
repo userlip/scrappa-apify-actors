@@ -11,7 +11,7 @@ YouTube channel metadata is grouped under `stats` and `details`. Missing source 
 | `channelId` | string | YouTube channel ID from the About response; null only when the response has neither `channelId` nor `id`. |
 | `stats` | object | Channel statistics: `joinDate` is the displayed join date, `viewCount` is the lifetime view total, and `country` is the country YouTube reports. Individual values can be null. |
 | `links` | array of object | Public links from the channel About page, preserved as source objects with fields such as `title` and `url`; empty when no links are listed. |
-| `details` | object | About details: `description`, `email`, `name`, `subscriberCount`, `videoCount` and `channelUrl`. Unavailable values are null; counts retain YouTube’s display format when provided. |
+| `details` | object | About details: `description`, `email`, `name`, `subscriberCount`, `videoCount` and `channelUrl`. Missing description, email, name or counts can be null; if YouTube omits `channelUrl`, the Actor builds it from the channel ID. Counts retain YouTube’s display format when provided. |
 
 ## Use cases
 

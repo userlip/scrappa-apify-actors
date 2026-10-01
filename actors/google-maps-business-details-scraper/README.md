@@ -67,7 +67,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** $0.00005 per Actor Start event; plus $0.30 per 1,000 results.
 
-Apify charges the $0.00005 Actor Start fee once per run. The $0.30 per 1,000 result rate applies to each saved business row.
+Apify charges the $0.00005 Actor Start fee once per run. The $0.30 per 1,000 result rate applies to each saved dataset row, including not-found or no-details rows.
 
 ## FAQ
 

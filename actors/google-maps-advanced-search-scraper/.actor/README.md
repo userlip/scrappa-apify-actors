@@ -4,7 +4,7 @@ Find local businesses on Google Maps with names, categories, star ratings and ad
 
 ## What data can you extract?
 
-Business search results reflect the public Google Maps listings returned for the query. Ratings, links and photos appear when Google provides them.
+Business search results reflect the public Google Maps listings returned for the query. Ratings and links appear when Google provides them.
 
 | Field | Type | Description |
 | --- | --- | --- |

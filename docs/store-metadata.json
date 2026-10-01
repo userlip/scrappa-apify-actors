@@ -318,7 +318,7 @@
     "id": "Ngzco8X5Z5Qz49zvH",
     "name": "google-translate-scraper",
     "title": "Google Translate Scraper",
-    "description": "Translate short text with Google Translate and keep the source phrase and its language pair. Provide source text, the required source language and the target language; batch multiple phrases in one run.",
+    "description": "Translate short text with Google Translate and keep the source phrase and its language pair. Provide source text and target language; Google can detect the source language, and batch input supports multiple phrases.",
     "seoTitle": "Google Translate Scraper | Text Translation",
     "seoDescription": "Google Translate Scraper: Get source text, translated text, source language, target language. Connect Google Translate results to Make, Zapier or n8n.",
     "categories": [
@@ -726,7 +726,7 @@
     "id": "c1Lt3EdNOuoen5In7",
     "name": "tiktok-ads-scraper",
     "title": "TikTok Ads Scraper",
-    "description": "Review public TikTok ad creatives from TikTok Creative Center Top Ads pages, including advertiser names, copy, calls to action and landing pages. Submit one or more supported Top Ads URLs to compare campaigns.",
+    "description": "Review public TikTok ads from Creative Center Top Ads pages, including advertiser names, copy, calls to action and landing pages. Submit one or more supported URLs to compare ad creatives.",
     "seoTitle": "TikTok Ads Scraper | Ad Creative Data",
     "seoDescription": "TikTok Ads Scraper: Get advertiser names, ad copy, calls to action. Paste one or more public ad URLs. Download TikTok Ads records as CSV for analysis.",
     "categories": [

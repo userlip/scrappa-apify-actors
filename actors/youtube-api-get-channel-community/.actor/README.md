@@ -19,7 +19,7 @@ Titles, publication details and engagement counts reflect public YouTube pages; 
 
 - Channel teams can review public post text and displayed publication ages while monitoring community activity.
 - Researchers can compare likes and comment counts across a channel’s public community posts.
-- Agencies can track new community posts from a list of YouTube channels.
+- Brand managers can track new community posts from one YouTube channel over time.
 
 ## How to use
 

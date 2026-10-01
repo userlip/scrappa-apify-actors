@@ -77,7 +77,7 @@ This Actor is for information visible on the public source pages it reads. You a
 
 ### How many records will a run return?
 
-The Actor can save one company profile row for each submitted URL it resolves. Submit a URL or a batch of URLs; the Actor does not search or paginate through results.
+The Actor processes submitted URLs in order and can save one profile row per company. The run's remaining charge budget can limit saved rows; after it is exhausted, later URLs may still be processed without adding rows to the dataset.
 
 ### Can I call it through the API or connect it to other tools?
 

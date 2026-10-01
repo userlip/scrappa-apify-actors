@@ -4,7 +4,7 @@ Review a Booking.com hotel page with its property name, address, guest rating an
 
 ## What data can you extract?
 
-The Actor returns property details visible on the Booking.com page, including the property name, address, guest rating and check-in details.
+Each saved row represents one hotel lookup. Structured objects such as `hotel_schema`, `aggregate_rating` and `json_ld` appear when Booking.com exposes them.
 
 | Field | Type | Description |
 | --- | --- | --- |

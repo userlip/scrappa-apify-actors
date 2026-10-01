@@ -4,7 +4,7 @@ List podcast videos published by a YouTube channel with titles, links, durations
 
 ## What data can you extract?
 
-Rows are video records returned for the channel; the Actor keeps only videos identified by YouTube as podcasts. Source details such as view and publication counts may be absent.
+Rows are video records returned for the channel; the Actor keeps only videos identified by YouTube as podcasts. View counts and publication dates may be absent.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -89,9 +89,9 @@ Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~
 
 Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
 
-### How do I list podcast playlists for a YouTube channel?
+### How do I choose which podcast videos are returned?
 
-Provide a channel ID in `id` or a comma-separated list in `ids`. Use `sort` to select a supported order for the playlists returned by that channel.
+Provide a channel ID in `id` or a comma-separated list in `ids`. Set `sort` to `newest`, `popular` or `oldest`, and use `continuation` when requesting a later page.
 
 ## Related Scrappa Actors
 

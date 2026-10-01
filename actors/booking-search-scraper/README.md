@@ -41,7 +41,6 @@ Property details and nightly rates reflect the selected stay and the details Boo
 
 ```json
 {
-  "ss": "Paris",
   "searches": [
     {
       "ss": "Paris",
