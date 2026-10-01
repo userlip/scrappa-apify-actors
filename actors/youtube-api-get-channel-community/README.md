@@ -17,14 +17,14 @@ Titles, publication details and engagement counts reflect public YouTube pages; 
 
 ## Use cases
 
-- Creator teams can review a channel profile or catalog before a partnership discussion.
-- Researchers can compare channel descriptions, subscriber counts and published videos.
-- Analysts can maintain a directory of public YouTube channels.
+- Channel teams can review public post text and displayed publication ages while monitoring community activity.
+- Researchers can compare likes and comment counts across a channel’s public community posts.
+- Agencies can track new community posts from a list of YouTube channels.
 
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Set `id` to the search term or source identifier you want to look up, then use the optional filters listed below.
+2. Enter a YouTube channel ID in `id`. Supply a `continuation` token when you want to request a later page.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -68,7 +68,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-Each saved video, post or comment record counts as one result.
+Each saved community post row counts as one result.
 
 ## FAQ
 
@@ -78,7 +78,7 @@ This Actor is for information visible on the public source pages it reads. You a
 
 ### How many records will a run return?
 
-The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+Each request returns the community posts available for the supplied channel ID and continuation value. The number of rows varies with channel activity and the source response.
 
 ### Can I call it through the API or connect it to other tools?
 

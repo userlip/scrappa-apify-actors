@@ -67,9 +67,9 @@ The record below is synthetic. Names and links are examples, and private contact
 
 ## Pricing
 
-**Current live price:** $0.30 per 1,000 searches.
+**Current live price:** $0.30 per 1,000 results.
 
-Each processed search or query is counted according to the rate shown above.
+Each saved LinkedIn organic search-result row counts as one result.
 
 ## FAQ
 

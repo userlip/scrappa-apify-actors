@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "booking-hotel-details-scraper",
   "title": "Booking.com Hotel Details Scraper",
-  "description": "Review a Booking.com hotel page with its property name, address, guest rating and check-in details. Submit a hotel URL or country and slug, with batch input for multiple properties.",
+  "description": "Review Booking.com hotel pages for the property name, address, guest rating, check-in times and structured hotel details. Submit a hotel URL or a country and hotel slug, with batch input for multiple properties.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

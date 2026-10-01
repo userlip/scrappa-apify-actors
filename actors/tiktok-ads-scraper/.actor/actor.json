@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-ads-scraper",
   "title": "TikTok Ads Scraper",
-  "description": "Review public TikTok ad creatives with advertiser names, copy, calls to action and landing pages. Provide a public ad page URL or a list of ad URLs to compare creatives and landing pages.",
+  "description": "Review public TikTok ad creatives from TikTok Creative Center Top Ads pages, including advertiser names, copy, calls to action and landing pages. Submit one or more supported Top Ads URLs to compare campaigns.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

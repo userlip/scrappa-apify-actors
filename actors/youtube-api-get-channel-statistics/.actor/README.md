@@ -4,25 +4,25 @@ Review public YouTube channel totals for views, subscribers and published videos
 
 ## What data can you extract?
 
-Titles, publication details and engagement counts reflect public YouTube pages; some fields are hidden or unavailable for a video.
+The dataset contains channel-level totals for views, subscribers and videos rather than individual video records. YouTube may omit subscriber totals or return abbreviated public counts.
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `channelId` | string | YouTube channel ID for the YouTube channel record, assigned by YouTube; null when the source does not expose it. |
-| `viewCount` | number | Number of video views shown by YouTube, as a whole number; zero is possible, and null means no count was reported. |
-| `subscriberCount` | number | Number of subscribers shown by YouTube, as a whole number; zero is possible, and null means no count was reported. |
-| `videoCount` | number | Number of videos shown by YouTube, as a whole number; zero is possible, and null means no count was reported. |
+| `viewCount` | number | Total views across the channel as a whole number when YouTube makes the count public; null when the count is omitted. |
+| `subscriberCount` | number | Public channel subscriber total when YouTube exposes it; this value may be rounded or null when the count is hidden. |
+| `videoCount` | number | Total videos on the channel as a whole number when YouTube provides the count; null when omitted. |
 
 ## Use cases
 
-- Creator teams can review a channel profile or catalog before a partnership discussion.
-- Researchers can compare channel descriptions, subscriber counts and published videos.
-- Analysts can maintain a directory of public YouTube channels.
+- Creator teams can compare channel-level view and subscriber totals before a partnership discussion.
+- Researchers can compare public view and video totals across channels.
+- Analysts can refresh a spreadsheet of public YouTube channel statistics.
 
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Set `ids` to the search term or source identifier you want to look up, then use the optional filters listed below.
+2. Enter one or more YouTube channel IDs in `ids`, or a single channel ID in `id`. The Actor returns the public totals available for each channel.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -57,7 +57,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-Each saved video, post or comment record counts as one result.
+Each saved channel statistics row counts as one result.
 
 ## FAQ
 

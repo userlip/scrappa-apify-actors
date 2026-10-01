@@ -100,7 +100,7 @@ This Actor is for information visible on the public source pages it reads. You a
 
 ### How many records will a run return?
 
-The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+Enter one ticker. A successful lookup returns zero or one quote record, and the Actor does not expose pagination or result-limit settings.
 
 ### Can I call it through the API or connect it to other tools?
 

@@ -1,30 +1,28 @@
 # YouTube Channel About Details Scraper
 
-Review a YouTube channel’s About details, including name, description, custom URL and country. Submit a YouTube channel ID to retrieve the public details shown on its About page.
+Collect a YouTube channel’s public About information, including its name, description, links and audience totals. Submit a channel ID to retrieve the channel details YouTube makes available.
 
 ## What data can you extract?
 
-Titles, publication details and engagement counts reflect public YouTube pages; some fields are hidden or unavailable for a video.
+YouTube channel metadata is grouped under `stats` and `details`. Missing source values appear as null, and `links` is an empty array when the channel has no public links.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `channelId` | string | YouTube channel ID for the YouTube channel record, assigned by YouTube; null when the source does not expose it. |
-| `title` | string | Title of the YouTube channel record, as shown by YouTube; null when no title is published. |
-| `description` | string | Description text from YouTube for this YouTube channel record; null when the source has no text to show. |
-| `customUrl` | string | Custom url shown for the YouTube channel record by YouTube, in the format used by the source; null when it is omitted. |
-| `country` | string | Country shown for the YouTube channel record by YouTube; null when YouTube does not provide the value. |
-| `joinedDate` | string | Date the channel joined youtube shown by YouTube, in the format displayed by the source; null if the source omits the date. |
+| `channelId` | string | YouTube channel ID from the About response; null only when the response has neither `channelId` nor `id`. |
+| `stats` | object | Channel statistics: `joinDate` is the displayed join date, `viewCount` is the lifetime view total, and `country` is the country YouTube reports. Individual values can be null. |
+| `links` | array of object | Public links from the channel About page, preserved as source objects with fields such as `title` and `url`; empty when no links are listed. |
+| `details` | object | About details: `description`, `email`, `name`, `subscriberCount`, `videoCount` and `channelUrl`. Unavailable values are null; counts retain YouTube’s display format when provided. |
 
 ## Use cases
 
 - Creator teams can review a channel profile or catalog before a partnership discussion.
-- Researchers can compare channel descriptions, subscriber counts and published videos.
-- Analysts can maintain a directory of public YouTube channels.
+- Researchers can compare public join dates and channel totals across creators.
+- Agencies can verify channel names, descriptions and public links before adding a creator to a shortlist.
 
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Set `ids` to the search term or source identifier you want to look up, then use the optional filters listed below.
+2. Enter one or more YouTube channel IDs in `ids`, or one channel ID in `id`. The Actor retrieves the public About details for each channel.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -48,12 +46,26 @@ The record below is synthetic. Names and links are examples, and private contact
 
 ```json
 {
-  "title": "Harborlight Studio",
-  "description": "Harborlight Studio shares practical gardening lessons for apartments and small homes.",
   "channelId": "UCaBcdEFghIJKlMNopQRSTuv",
-  "customUrl": "@HarborlightStudio",
-  "country": "United States",
-  "joinedDate": "June 18, 2018"
+  "stats": {
+    "joinDate": "Joined June 18, 2018",
+    "viewCount": "1845000",
+    "country": "United States"
+  },
+  "links": [
+    {
+      "title": "Website",
+      "url": "https://harborlight.example/"
+    }
+  ],
+  "details": {
+    "description": "Harborlight Studio shares practical gardening lessons for apartments and small homes.",
+    "email": null,
+    "name": "Harborlight Studio",
+    "subscriberCount": "12.4K subscribers",
+    "videoCount": "148 videos",
+    "channelUrl": "https://www.youtube.com/channel/UCaBcdEFghIJKlMNopQRSTuv"
+  }
 }
 ```
 
@@ -61,7 +73,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-Each saved video, post or comment record counts as one result.
+Each saved channel About record counts as one result.
 
 ## FAQ
 

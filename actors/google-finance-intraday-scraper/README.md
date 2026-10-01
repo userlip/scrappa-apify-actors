@@ -10,7 +10,7 @@ Prices and percentage changes follow the currency and units Google Finance displ
 | --- | --- | --- |
 | `position` | number | Result position in the Google Finance intraday market-price point list, as a whole number; null when the source does not supply one. |
 | `date` | text | Date for this Google Finance intraday quote, in the source date format; null when no date is returned. |
-| `date_iso` | text | Calendar date for this intraday market-price point shown by Google Finance, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `date_iso` | text | Parsed UTC timestamp for the point, formatted as ISO 8601 with milliseconds, for example `2025-06-16T13:30:00.000Z`; null when the source date cannot be parsed. |
 | `price` | number | Listed price for this intraday market-price point, as a numeric amount in the listing currency; null when Google Finance provides no price. |
 | `change` | number | Price change for this intraday market-price point, as a numeric change in the record currency; null when Google Finance provides no price. |
 | `percent_change` | number | Percentage price change reported by Google Finance, as a percentage or share in the source format; null when no estimate is available. |
@@ -63,8 +63,8 @@ The record below is synthetic. Names and links are examples, and private contact
 ```json
 {
   "price": 198.53,
-  "date": "1790294400000",
-  "date_iso": "2026-09-25",
+  "date": "Jun 16 2025, 09:30 AM UTC-04:00",
+  "date_iso": "2025-06-16T13:30:00.000Z",
   "change": 1.74,
   "percent_change": 1.49,
   "volume": 184500,

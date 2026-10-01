@@ -4,7 +4,7 @@ Look up a LinkedIn company profile with industry, employee size, website and fol
 
 ## What data can you extract?
 
-Profile, company and post details reflect public LinkedIn pages; the source may omit optional fields.
+Company profile details reflect the public LinkedIn company page; some optional fields may be absent.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -42,8 +42,8 @@ The run dataset can be downloaded as JSON, CSV, Excel or another format offered 
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `urls` | array of string | No | Recommended. Process many LinkedIn company URLs in one Apify run so run startup and storage overhead are shared across results. Constraints: minimum 1 items. |
-| `url` | string | No | Backward-compatible single company URL. Prefer URLs for normal usage, especially when processing more than one company. |
+| `urls` | array of string | Conditional | Required unless `url` is supplied. Process multiple LinkedIn company page URLs in one run. Constraints: minimum 1 items. |
+| `url` | string | Conditional | Required unless `urls` is supplied. Accepts one LinkedIn company page URL. |
 | `use_cache` | boolean | No | Whether to use cached results if available |
 | `maximum_cache_age` | integer | No | Maximum age of cached results in seconds. Only used when 'Use Cache' is enabled. Constraints: minimum 1. |
 
@@ -77,7 +77,7 @@ This Actor is for information visible on the public source pages it reads. You a
 
 ### How many records will a run return?
 
-The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+The Actor can save one company profile row for each submitted URL it resolves. Submit a URL or a batch of URLs; the Actor does not search or paginate through results.
 
 ### Can I call it through the API or connect it to other tools?
 

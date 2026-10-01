@@ -16,14 +16,14 @@ Suggestions reflect matching public place names and categories; address details 
 
 ## Use cases
 
-- Local sales teams can build prospect lists from businesses in a chosen area.
-- Directory operators can compare addresses, ratings and websites while checking listings.
-- Researchers can map business types across nearby neighborhoods.
+- Local teams can discover place names and addresses suggested for a neighborhood or service area.
+- Directory operators can find the wording Google Maps recognizes for a place before opening its business profile.
+- Researchers can explore suggested place names for a city or region.
 
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Set `query` to the search term or source identifier you want to look up, then use the optional filters listed below.
+2. Enter the place or business phrase in `query`. This is the Actor’s only input.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -68,7 +68,7 @@ This Actor is for information visible on the public source pages it reads. You a
 
 ### How many records will a run return?
 
-The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+One autocomplete request returns the suggestions Google Maps provides for `query`. The number of saved rows varies with the query and source response; there are no pagination or result-limit settings.
 
 ### Can I call it through the API or connect it to other tools?
 

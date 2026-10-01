@@ -1,6 +1,6 @@
 # Google News Scraper
 
-Find Google News articles with headlines, publishers, publication dates and result links. Set a locale and supported time filter to focus the article list on a market or period.
+Find Google News articles with headlines, publishers, publication dates and result links. Set a locale to focus the article list on a market.
 
 ## What data can you extract?
 
@@ -30,7 +30,7 @@ Headlines, publishers and dates follow the article cards Google News shows for t
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Enter a topic or search phrase, then adjust the locale, page or time range fields that this Actor supports.
+2. Enter a topic or search phrase, then set the locale, page or result offset and sort order.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -105,7 +105,7 @@ Check the run log for the source or input error, correct the input and retry aft
 
 ### Can Google News search recent coverage of a topic?
 
-Enter a topic in the query field and use the supported time or locale filters from Input. Publication dates and available articles vary by search.
+Search a topic and set the locale or sort order to focus the article list. Publication dates and available articles vary by search.
 
 ## Related Scrappa Actors
 

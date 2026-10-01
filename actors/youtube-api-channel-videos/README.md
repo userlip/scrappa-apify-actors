@@ -27,7 +27,7 @@ Titles, publication details and engagement counts reflect public YouTube pages; 
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Set `id` to the search term or source identifier you want to look up, then use the optional filters listed below.
+2. Enter a YouTube channel ID in `id`, then choose a supported sort order. For another page, pass a continuation token and read the next token from the run log.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -68,7 +68,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-Each saved video, post or comment record counts as one result.
+Each saved channel video row counts as one result.
 
 ## FAQ
 

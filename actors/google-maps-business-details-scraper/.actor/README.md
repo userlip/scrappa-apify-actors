@@ -42,8 +42,8 @@ The run dataset can be downloaded as JSON, CSV, Excel or another format offered 
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `business_ids` | array of string | No | Recommended. Process many Google Maps business IDs in one Apify run so run startup and storage overhead are shared across results. Constraints: minimum 1 items; maximum 10 items. |
-| `business_id` | string | No | Backward-compatible single Google Maps business ID in format: 0x[hex]:0x[hex]. Prefer business_ids for normal usage, especially when processing more than one business. |
+| `business_ids` | array of string | Conditional | Required unless `business_id` is supplied. Process up to 10 Google Maps business IDs in one run. Constraints: minimum 1 items; maximum 10 items. |
+| `business_id` | string | Conditional | Required unless `business_ids` is supplied. Accepts one Google Maps business ID in the format `0x[hex]:0x[hex]`. |
 | `use_cache` | boolean | No | Use cached results if available to reduce costs and speed up results |
 | `maximum_cache_age` | integer | No | Maximum age of cached results in seconds. Set to 0 to always fetch fresh data. Constraints: minimum 0. |
 
@@ -67,7 +67,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** $0.00005 per Actor Start event; plus $0.30 per 1,000 results.
 
-The listed amount is charged once when a run starts.
+Apify charges the $0.00005 Actor Start fee once per run. The $0.30 per 1,000 result rate applies to each saved business row.
 
 ## FAQ
 

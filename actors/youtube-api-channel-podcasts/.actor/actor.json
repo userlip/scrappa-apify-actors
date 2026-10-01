@@ -2,7 +2,7 @@
     "actorSpecification": 1,
     "name": "youtube-api-channel-podcasts",
     "title": "YouTube Channel Podcasts Scraper",
-    "description": "Browse podcast playlists published by a YouTube channel, with titles, links and video counts. Provide one or more YouTube channel IDs to list their podcast playlists.",
+    "description": "List podcast videos published by a YouTube channel with titles, links, durations and engagement data. Submit a channel ID and choose a sort order to collect videos marked as podcasts.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "linkedin-jobs-search-scraper",
   "title": "LinkedIn Jobs Search Scraper",
-  "description": "Find LinkedIn job listings by title and location, with employer names and result links. Describe the role, seniority or location in the query and page through the supported Google results.",
+  "description": "Find LinkedIn job search results by role or location. Get each result title, link and snippet from Google Search, then use the supported query and pagination inputs to collect more results.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

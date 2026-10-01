@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "youtube-api-trending-videos",
   "title": "YouTube Trending Videos Scraper",
-  "description": "Browse YouTube’s default trending feed with video titles, channel names and view counts. Start with the default trending feed, then choose a supported time range if needed.",
+  "description": "Browse the current YouTube trending feed with video titles, channel names and view counts. Use the ready-to-run default input to collect the videos currently trending.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

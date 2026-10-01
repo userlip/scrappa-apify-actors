@@ -22,7 +22,7 @@ Titles, publication details and engagement counts reflect public YouTube pages; 
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Set `ids` to the search term or source identifier you want to look up, then use the optional filters listed below.
+2. Provide one or more YouTube channel IDs in `ids`, or one channel ID in `id`. The Actor lists playlists associated with those channels.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -57,7 +57,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-Each saved video, post or comment record counts as one result.
+Each saved playlist row counts as one result.
 
 ## FAQ
 
@@ -67,7 +67,7 @@ This Actor is for information visible on the public source pages it reads. You a
 
 ### How many records will a run return?
 
-The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+The number of playlist rows depends on the playlists returned for each submitted channel ID. The input does not include a pagination field.
 
 ### Can I call it through the API or connect it to other tools?
 

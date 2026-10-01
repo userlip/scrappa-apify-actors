@@ -4,7 +4,7 @@ Review a Booking.com hotel page with its property name, address, guest rating an
 
 ## What data can you extract?
 
-Property details and nightly rates reflect the selected stay and the details Booking.com displays.
+The Actor returns property details visible on the Booking.com page, including the property name, address, guest rating and check-in details.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -24,9 +24,9 @@ Property details and nightly rates reflect the selected stay and the details Boo
 
 ## Use cases
 
-- Travelers can compare fares or nightly rates before choosing a trip.
-- Travel teams can check public options across routes, destinations and dates.
-- Researchers can track prices and ratings in a travel market.
+- Travelers can review a property’s published address and check-in details before planning a stay.
+- Hospitality teams can organize public property details from a list of Booking.com pages.
+- Researchers can compare the rating and structured details Booking.com publishes for hotels.
 
 ## How to use
 

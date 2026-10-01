@@ -44,7 +44,7 @@ Prices and percentage changes follow the currency and units Google Finance displ
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Set `trend` to the search term or source identifier you want to look up, then use the optional filters listed below.
+2. Choose a supported `trend` view, such as `gainers` or `losers`, or leave it blank for the market overview. Set `index_market` when you select the indexes view.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -95,7 +95,7 @@ This Actor is for information visible on the public source pages it reads. You a
 
 ### How many records will a run return?
 
-The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+The Actor makes one request for the selected market view and saves the items returned by Google Finance. The number of records depends on that view and the source response; there are no page or result-limit settings.
 
 ### Can I call it through the API or connect it to other tools?
 

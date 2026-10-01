@@ -4,7 +4,7 @@ Get YouTube video chapter titles and their start times in seconds. Enter one or 
 
 ## What data can you extract?
 
-Titles, publication details and engagement counts reflect public YouTube pages; some fields are hidden or unavailable for a video.
+Chapter titles and start or end times come from the chapter markers YouTube provides. A video without chapter markers can still have a dataset row with an empty `chapters` array.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -23,7 +23,7 @@ Titles, publication details and engagement counts reflect public YouTube pages; 
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Set `ids` to the search term or source identifier you want to look up, then use the optional filters listed below.
+2. Enter one or more comma-separated YouTube video IDs in `ids`, or use `id` for a single video. The Actor reads chapter data for those IDs.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -68,7 +68,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-Each saved video, post or comment record counts as one result.
+Each saved video chapter record counts as one result, including a video row whose `chapters` array is empty.
 
 ## FAQ
 
@@ -90,7 +90,7 @@ Check the run log for the source or input error, correct the input and retry aft
 
 ### What if a YouTube video has no chapters?
 
-Submit a video ID through `id` or `ids`. Videos without chapter markers may return no chapter records because chapters are taken from the public video data.
+Submit a video ID through `id` or `ids`. If the video has no chapter markers, the dataset can still include its video record with an empty `chapters` array.
 
 ## Related Scrappa Actors
 

@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-profile-scraper",
   "title": "TikTok Profile Scraper",
-  "description": "Look up a public TikTok profile with display name, username and follower counts. Enter a public TikTok username to retrieve profile details without searching for posts.",
+  "description": "Look up a public TikTok profile by username, profile URL or numeric user ID. Retrieve its display name, username and available follower counts without searching for posts.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

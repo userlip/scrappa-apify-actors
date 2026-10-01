@@ -36,7 +36,7 @@ Property details and nightly rates reflect the selected stay and the details Boo
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Put the supported targets in `searches` and use the identifier or URL format required by Booking.com.
+2. Enter destination names such as Paris or Berlin in `ss`, or in each object in `searches`. Add paired check-in and check-out dates when you want property cards for a stay.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
@@ -44,7 +44,9 @@ Property details and nightly rates reflect the selected stay and the details Boo
   "ss": "Paris",
   "searches": [
     {
-      "ss": "Paris"
+      "ss": "Paris",
+      "checkin": "2027-01-15",
+      "checkout": "2027-01-18"
     }
   ]
 }

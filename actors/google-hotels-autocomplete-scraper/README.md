@@ -24,9 +24,9 @@ Suggestions and destination tokens follow the hotel or place name entered; not e
 
 ## Use cases
 
-- Travelers can compare fares or nightly rates before choosing a trip.
-- Travel teams can check public options across routes, destinations and dates.
-- Researchers can track prices and ratings in a travel market.
+- Travelers can find recognized destination or hotel names before starting a stay search.
+- Travel teams can help users match a typed city or property name to Google Hotels suggestions.
+- Researchers can compare destination and property suggestions across markets.
 
 ## How to use
 
@@ -63,11 +63,11 @@ The record below is synthetic. Names and links are examples, and private contact
 {
   "value": "Juniper House Hotel, Portland",
   "autocomplete_suggestion": "Juniper House Hotel, Portland",
-  "type": "Video",
+  "type": "hotel",
   "property_token": "Cg9qLW1vY2stcHJvcGVydHk",
-  "thumbnail": "https://images.example.com/video/market-morning-thumb.jpg",
-  "scrappa_google_hotels_link": "https://source.example.com/record/market-guide",
-  "source_query": "Seattle, WA",
+  "thumbnail": "https://images.example.com/hotels/juniper-house.jpg",
+  "scrappa_google_hotels_link": "https://hotels.example.com/search?property=juniper-house",
+  "source_query": "Portland, OR",
   "response_time_ms": 348
 }
 ```
@@ -76,7 +76,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** $0.25 per 1,000 results.
 
-Each saved hotel record counts as one result.
+Each saved autocomplete suggestion row counts as one result.
 
 ## FAQ
 
@@ -86,7 +86,7 @@ This Actor is for information visible on the public source pages it reads. You a
 
 ### How many records will a run return?
 
-The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+The number of rows depends on the suggestions Google Hotels returns for each query. The Actor does not expose pagination controls.
 
 ### Can I call it through the API or connect it to other tools?
 

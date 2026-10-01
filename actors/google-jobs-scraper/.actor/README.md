@@ -40,7 +40,7 @@ The run dataset can be downloaded as JSON, CSV, Excel or another format offered 
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `q` | string | No | Job search query. Leave empty only when using a next page token. Empty or placeholder input defaults to a narrow US example query. |
+| `q` | string | No | Job search query. Leave empty only when using a next page token. A missing or blank `q` uses the Actor’s default US job query when no `next_page_token` is supplied. |
 | `next_page_token` | string | No | Pagination token returned by a previous Google Jobs response. When provided, the query can be omitted. |
 | `gl` | string | No | Two-letter country code for search results (e.g., 'us', 'uk', 'de', 'fr') |
 | `hl` | string | No | Two-letter language code for the interface (e.g., 'en', 'de', 'es', 'fr') |

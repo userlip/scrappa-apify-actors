@@ -15,7 +15,7 @@
     "id": "8ZePaJAlap4mdN78V",
     "name": "booking-hotel-details-scraper",
     "title": "Booking.com Hotel Details Scraper",
-    "description": "Review a Booking.com hotel page with its property name, address, guest rating and check-in details. Submit a hotel URL or country and slug, with batch input for multiple properties.",
+    "description": "Review Booking.com hotel pages for the property name, address, guest rating, check-in times and structured hotel details. Submit a hotel URL or a country and hotel slug, with batch input for multiple properties.",
     "seoTitle": "Booking.com Hotel Details Scraper | Hotel Profile Data",
     "seoDescription": "Booking.com Hotel Details Scraper: Compare property names, addresses, guest ratings. Connect Booking.com Hotel Details results to Make, Zapier or n8n.",
     "categories": [
@@ -268,7 +268,7 @@
     "id": "HYG9AqNEDSHMHgH4O",
     "name": "google-news-scraper",
     "title": "Google News Scraper",
-    "description": "Find Google News articles with headlines, publishers, publication dates and result links. Set a locale and supported time filter to focus the article list on a market or period.",
+    "description": "Find Google News articles with headlines, publishers, publication dates and result links. Set a locale to focus the article list on a market.",
     "seoTitle": "Google News Scraper | News Articles",
     "seoDescription": "Google News Scraper: Get article headlines, publishers, publication dates, search snippets. Add Google News results to a scheduled spreadsheet report.",
     "categories": [
@@ -318,7 +318,7 @@
     "id": "Ngzco8X5Z5Qz49zvH",
     "name": "google-translate-scraper",
     "title": "Google Translate Scraper",
-    "description": "Translate short text with Google Translate and keep the source phrase with its language pair. Send the source text and target language, with batch input for multiple phrases.",
+    "description": "Translate short text with Google Translate and keep the source phrase and its language pair. Provide source text, the required source language and the target language; batch multiple phrases in one run.",
     "seoTitle": "Google Translate Scraper | Text Translation",
     "seoDescription": "Google Translate Scraper: Get source text, translated text, source language, target language. Connect Google Translate results to Make, Zapier or n8n.",
     "categories": [
@@ -402,7 +402,7 @@
     "id": "601ilBYtO52NNsMrT",
     "name": "immobilienscout24-search-scraper",
     "title": "ImmobilienScout24 Search Scraper",
-    "description": "Search ImmobilienScout24 property listings by location, property type, price, rooms and floor area. Use an ImmobilienScout24 location code, then set property type and price or room filters.",
+    "description": "Search ImmobilienScout24 property listings by city, district or postal code, with filters for property type, price, rooms and floor area.",
     "seoTitle": "ImmobilienScout24 Search Scraper | Property Listings",
     "seoDescription": "ImmobilienScout24 Search Scraper: Compare listing titles, asking prices, room counts. Connect ImmobilienScout24 Search results to Make, Zapier or n8n.",
     "categories": [
@@ -582,7 +582,7 @@
     "id": "GAAKVpkPvj3lMbO6G",
     "name": "linkedin-jobs-search-scraper",
     "title": "LinkedIn Jobs Search Scraper",
-    "description": "Find LinkedIn job listings by title and location, with employer names and result links. Describe the role, seniority or location in the query and page through the supported Google results.",
+    "description": "Find LinkedIn job search results by role or location. Get each result title, link and snippet from Google Search, then use the supported query and pagination inputs to collect more results.",
     "seoTitle": "LinkedIn Jobs Search Scraper | Job Listings",
     "seoDescription": "LinkedIn Jobs Search Scraper: Find job titles, employers, locations, search snippets. Use the Apify API to schedule repeat LinkedIn Jobs Search runs.",
     "categories": [
@@ -642,7 +642,7 @@
     "id": "9DsqUcpBF5b66AFOY",
     "name": "redfin-property-details-scraper",
     "title": "Redfin Property Details Scraper",
-    "description": "Review Redfin home details with address, estimated value, bedrooms and bathrooms. Look up one property by ID or URL, or submit a batch to review several homes together.",
+    "description": "Review Redfin home details with address, listed price, bedrooms and bathrooms. Look up one property by ID or URL, or submit a batch to review several homes together.",
     "seoTitle": "Redfin Property Details Scraper | Property Details",
     "seoDescription": "Redfin Property Details Scraper: Compare property addresses, estimated values, bedrooms. Download Redfin Property Details records as CSV for analysis.",
     "categories": [
@@ -726,7 +726,7 @@
     "id": "c1Lt3EdNOuoen5In7",
     "name": "tiktok-ads-scraper",
     "title": "TikTok Ads Scraper",
-    "description": "Review public TikTok ad creatives with advertiser names, copy, calls to action and landing pages. Provide a public ad page URL or a list of ad URLs to compare creatives and landing pages.",
+    "description": "Review public TikTok ad creatives from TikTok Creative Center Top Ads pages, including advertiser names, copy, calls to action and landing pages. Submit one or more supported Top Ads URLs to compare campaigns.",
     "seoTitle": "TikTok Ads Scraper | Ad Creative Data",
     "seoDescription": "TikTok Ads Scraper: Get advertiser names, ad copy, calls to action. Paste one or more public ad URLs. Download TikTok Ads records as CSV for analysis.",
     "categories": [
@@ -834,7 +834,7 @@
     "id": "ElkkSkWZ7xAaOqsr4",
     "name": "tiktok-profile-scraper",
     "title": "TikTok Profile Scraper",
-    "description": "Look up a public TikTok profile with display name, username and follower counts. Enter a public TikTok username to retrieve profile details without searching for posts.",
+    "description": "Look up a public TikTok profile by username, profile URL or numeric user ID. Retrieve its display name, username and available follower counts without searching for posts.",
     "seoTitle": "TikTok Profile Scraper | Profile Data",
     "seoDescription": "TikTok Profile Scraper: Get username, display name, follower count, following count. Export TikTok Profile results as CSV for a spreadsheet review.",
     "categories": [
@@ -966,7 +966,7 @@
     "id": "u8F5YhfXkQIrgLe73",
     "name": "vinted-search-scraper",
     "title": "Vinted Search Scraper",
-    "description": "Find secondhand fashion listings on Vinted with title, brand, condition and price. Search a clothing phrase and narrow listings with the available brand, size, color and price filters.",
+    "description": "Find secondhand fashion listings on Vinted with title, brand, condition and price. Search a clothing phrase and narrow inventory with country, brand, size and price filters.",
     "seoTitle": "Vinted Search Scraper | Secondhand Listings",
     "seoDescription": "Vinted Search Scraper: Compare listing titles, brands. Search by item phrase and choose filters. Connect Vinted Search results to Make, Zapier or n8n.",
     "categories": [
@@ -1026,7 +1026,7 @@
     "id": "Y3mKYlGNhsrBE7aZO",
     "name": "youtube-api-channel-podcasts",
     "title": "YouTube Channel Podcasts Scraper",
-    "description": "Browse podcast playlists published by a YouTube channel, with titles, links and video counts. Provide one or more YouTube channel IDs to list their podcast playlists.",
+    "description": "List podcast videos published by a YouTube channel with titles, links, durations and engagement data. Submit a channel ID and choose a sort order to collect videos marked as podcasts.",
     "seoTitle": "YouTube Channel Podcasts Scraper | Podcast Playlists",
     "seoDescription": "YouTube Channel Podcasts Scraper: Get podcast titles, channel names, playlist links. Connect YouTube Channel Podcasts results to Make, Zapier or n8n.",
     "categories": [
@@ -1038,7 +1038,7 @@
     "id": "w464EbPGGZqcmrC8j",
     "name": "youtube-api-channel-videos",
     "title": "YouTube Channel Videos Scraper",
-    "description": "List videos published by a YouTube channel, with titles, publication dates, links and views. Pass the channel ID and use the returned continuation value when you need another page of videos.",
+    "description": "List videos published by a YouTube channel with titles, publication dates, links and views. Enter a channel ID and sort order; the next-page continuation token appears in the run log.",
     "seoTitle": "YouTube Channel Videos Scraper | Channel Videos",
     "seoDescription": "YouTube Channel Videos Scraper: Get video titles, publication dates, video links, view counts. Download YouTube Channel Videos records as CSV for analysis.",
     "categories": [
@@ -1062,7 +1062,7 @@
     "id": "S9Gf6PSqzz6hxvMNA",
     "name": "youtube-api-get-channel-community",
     "title": "YouTube Channel Community Posts Scraper",
-    "description": "Read public YouTube community posts with text, publication time, likes and comments. Start with a channel ID, then reuse a returned continuation value to request another community-post page.",
+    "description": "Read public YouTube community posts with text, displayed publication age, likes and comments. Start with a channel ID, then pass a continuation token to request another community-post page.",
     "seoTitle": "YouTube Channel Community Posts Scraper | Community Posts",
     "seoDescription": "YouTube Channel Community Posts Scraper: Get post text, publication times, likes. Download YouTube Channel Community Posts records as CSV for analysis.",
     "categories": [
@@ -1230,7 +1230,7 @@
     "id": "T7ddx0tgVCwMHi9ET",
     "name": "youtube-api-trending-videos",
     "title": "YouTube Trending Videos Scraper",
-    "description": "Browse YouTube’s default trending feed with video titles, channel names and view counts. Start with the default trending feed, then choose a supported time range if needed.",
+    "description": "Browse the current YouTube trending feed with video titles, channel names and view counts. Use the ready-to-run default input to collect the videos currently trending.",
     "seoTitle": "YouTube Trending Videos Scraper | Trending Videos",
     "seoDescription": "YouTube Trending Videos Scraper: Get video titles, descriptions, channel names, view counts. Download YouTube Trending Videos records as CSV for analysis.",
     "categories": [

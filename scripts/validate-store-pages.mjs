@@ -63,13 +63,15 @@ function livePriceLine(actor) {
             continue;
         }
 
-        const unit = lowerTitle.includes('search')
-            ? 'searches'
-            : lowerTitle.includes('quer')
-                ? 'queries'
-                : lowerTitle.includes('point')
-                    ? 'price points'
-                    : 'results';
+        const unit = lowerTitle.includes('result')
+            ? 'results'
+            : lowerTitle.includes('search')
+                ? 'searches'
+                : lowerTitle.includes('quer')
+                    ? 'queries'
+                    : lowerTitle.includes('point')
+                        ? 'price points'
+                        : 'results';
         const tiers = event.eventTieredPricingUsd ?? {};
         if (Object.keys(tiers).length > 0) {
             const grouped = new Map();

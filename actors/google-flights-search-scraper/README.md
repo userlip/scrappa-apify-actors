@@ -26,8 +26,8 @@ Itineraries and fares reflect the selected route and dates; availability can cha
 | `return_legs` | array of objects | Return flight segments with airports, airline, flight number and departure and arrival times from Google Flights; an empty list when no entries are available. |
 | `request_origin` | text | Route origin passed to Google Flights. This input value is copied into the output row; null when it was not supplied. |
 | `request_destination` | text | Route destination passed to Google Flights. This input value is copied into the output row; null when it was not supplied. |
-| `request_departure_date` | date | Departure date passed to Google Flights; Use YYYY-MM-DD or a supported relative date. This input value is copied into the output row; null when it was not supplied. |
-| `request_return_date` | date | Return date passed to Google Flights; Use YYYY-MM-DD or a supported relative date. This input value is copied into the output row; null when it was not supplied. |
+| `request_departure_date` | date | Departure date resolved from the submitted date or relative value, formatted as `YYYY-MM-DD`. |
+| `request_return_date` | date | Resolved return date, formatted as `YYYY-MM-DD`; null for one-way trips. |
 | `request_cabin_class` | text | Flight cabin class passed to Google Flights. This input value is copied into the output row; null when it was not supplied. |
 | `request_max_stops` | text | Maximum flight stop count passed to Google Flights; A whole-number stop count. This input value is copied into the output row; null when it was not supplied. |
 | `request_sort_by` | text | Result sort order passed to Google Flights. This input value is copied into the output row; null when it was not supplied. |

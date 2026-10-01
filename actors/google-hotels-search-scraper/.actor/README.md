@@ -18,7 +18,7 @@ Hotel rates reflect the searched stay and displayed currency; availability and o
 | `total_rate_lowest` | text | Lowest stay total formatted as Google Hotels displays it, including currency; null when no total is listed. |
 | `total_rate_extracted_lowest` | number | Lowest stay total parsed as a number in the searched currency; null when no total is listed. |
 | `booking_link` | link | Booking link for this hotel listing on Google Hotels; null when the source does not provide a URL. |
-| `property_token` | text | Property token shown for the hotel listing by Google Hotels, in the format used by the source; null when it is omitted. |
+| `property_token` | text | Google Hotels identifier for the property; when Google omits a token, this field falls back to the result’s `entity_id`. |
 | `entity_id` | text | Google Hotels property ID for the hotel listing, assigned by Google Hotels; null when the source does not expose it. |
 | `place_id` | text | Google Maps place ID for the hotel listing, assigned by Google Hotels; null when the source does not expose it. |
 | `latitude` | number | Latitude for this hotel listing on Google Hotels, in decimal degrees; null when the source provides no coordinates. |
@@ -27,8 +27,8 @@ Hotel rates reflect the searched stay and displayed currency; availability and o
 | `price_sources_count` | number | Number of available price-sources shown by Google Hotels, as a whole number; zero is possible, and null means no count was reported. |
 | `amenities_count` | number | Number of amenities shown by Google Hotels, as a whole number; zero is possible, and null means no count was reported. |
 | `request_q` | text | Search phrase passed to Google Hotels. This input value is copied into the output row; null when it was not supplied. |
-| `request_check_in_date` | date | Check-in date passed to Google Hotels; Use YYYY-MM-DD or a supported relative date. This input value is copied into the output row; null when it was not supplied. |
-| `request_check_out_date` | date | Check-out date passed to Google Hotels; Use YYYY-MM-DD or a supported relative date. This input value is copied into the output row; null when it was not supplied. |
+| `request_check_in_date` | date | Resolved check-in date sent to Google Hotels, formatted as `YYYY-MM-DD`; present on successful result rows. |
+| `request_check_out_date` | date | Resolved check-out date sent to Google Hotels, formatted as `YYYY-MM-DD`; present on successful result rows. |
 | `request_adults` | number | Adults passed to Google Hotels. This input value is copied into the output row; null when it was not supplied. |
 | `request_children` | number | Children passed to Google Hotels. This input value is copied into the output row; null when it was not supplied. |
 | `request_currency` | text | Three-letter currency code passed to Google Hotels; Use a three-letter code such as USD or EUR. This input value is copied into the output row; null when it was not supplied. |
@@ -44,7 +44,7 @@ Hotel rates reflect the searched stay and displayed currency; availability and o
 ## How to use
 
 1. Open the Actor’s **Input** tab and start with the JSON below.
-2. Set `q` to the search term or source identifier you want to look up, then use the optional filters listed below.
+2. Enter a hotel name, neighborhood or destination in `q`, then provide check-in and check-out dates for the stay.
 3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json

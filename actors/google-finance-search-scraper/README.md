@@ -13,7 +13,7 @@ Company names and tickers reflect matching financial instruments listed by Googl
 | `name` | text | Name of the matching financial instrument, as shown by Google Finance; null when no name is published. |
 | `symbol` | text | Ticker symbol shown for the matching financial instrument by Google Finance, in the format used by the source; null when it is omitted. |
 | `exchange` | text | Exchange code shown for the matching financial instrument by Google Finance; null when Google Finance does not provide the value. |
-| `stock` | text | Ticker symbol shown for the matching financial instrument by Google Finance, in the format used by the source; null when it is omitted. |
+| `stock` | text | Stock identifier returned by Google Finance for the matching instrument; it may include an exchange, such as `AAPL:NASDAQ`, and is null when the source omits it. |
 | `type` | text | Category assigned to the matching financial instrument by Google Finance; null when Google Finance does not provide the value. |
 | `currency` | text | Currency code for this matching financial instrument, formatted as Google Finance displays it, including the currency when shown; null when unavailable. |
 | `price` | number | Listed price for this matching financial instrument, as a numeric amount in the listing currency; null when Google Finance provides no price. |
@@ -53,8 +53,8 @@ The run dataset can be downloaded as JSON, CSV, Excel or another format offered 
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `q` | string | No | Single ticker, company, ETF, index, fund, or finance instrument search query. Ignored when queries is provided. |
-| `queries` | array of string | No | Batch of up to 25 Google Finance search queries processed in one Actor run. One dataset item is written per matched result. Constraints: maximum 25 items. |
+| `q` | string | Conditional | Single ticker, company, ETF, index, fund, or finance instrument query. Required when `queries` is omitted; ignored when `queries` is provided. |
+| `queries` | array of string | Conditional | Batch of up to 25 Google Finance search queries processed in one Actor run. Required unless `q` is supplied. One dataset item is written per matched result. Constraints: maximum 25 items. |
 | `hl` | string | No | Google Finance language code, such as en, de, es, or zh-cn. |
 | `gl` | string | No | Country code, such as us, gb, de, or ca. |
 
@@ -82,9 +82,9 @@ The record below is synthetic. Names and links are examples, and private contact
 
 ## Pricing
 
-**Current live price:** $0.20 per 1,000 searches.
+**Current live price:** $0.20 per 1,000 results.
 
-Each processed search or query is counted according to the rate shown above.
+Each saved search-result row counts as one result. A search that saves no rows has no result charge.
 
 ## FAQ
 

@@ -9,7 +9,7 @@ Registration status and dates reflect the registry data returned through RDAP.
 | Field | Type | Description |
 | --- | --- | --- |
 | `success` | boolean | Whether the lookup completed successfully; false is a reported value, while null means RDAP provided no flag. |
-| `domain` | text | Domain shown for the domain lookup by RDAP, in the format used by the source; null when it is omitted. |
+| `domain` | text | Normalized domain queried through RDAP; if RDAP omits its domain field, the Actor uses the requested normalized domain. Null when the input cannot be normalized. |
 | `available` | boolean | True when RDAP indicates the domain can be registered; false when it has an active registration, null if status is unavailable. |
 | `registered` | boolean | Whether the domain has a registry record; false is a reported value, while null means RDAP provided no flag. |
 | `status` | text | Status reported for the domain lookup by RDAP; null when RDAP does not provide the value. |
@@ -21,8 +21,8 @@ Registration status and dates reflect the registry data returned through RDAP.
 | `nameservers` | array | DNS nameserver hostnames listed in the RDAP record; an empty list when no entries are available. |
 | `message` | text | Diagnostic text for the RDAP lookup; null when the request completes without an error. |
 | `error` | text | Diagnostic text for the RDAP lookup; null when the request completes without an error. |
-| `status_code` | number | Http status code shown for the domain lookup by RDAP, in the format used by the source; null when it is omitted. |
-| `input_domain` | text | Domain name passed to RDAP. This input value is copied into the output row; null when it was not supplied. |
+| `status_code` | number | HTTP status code from the Scrappa API when the lookup request fails; the RDAP response status is reported separately in `rdap_status_code`. |
+| `input_domain` | text | Trimmed original input supplied for the lookup; a URL remains intact here even though RDAP is queried with its normalized host. |
 
 ## Use cases
 

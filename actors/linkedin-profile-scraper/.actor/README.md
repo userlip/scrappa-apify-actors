@@ -12,7 +12,7 @@ Profile, company and post details reflect public LinkedIn pages; the source may 
 | `location` | text | Location shown for the professional profile by LinkedIn, in the format used by the source; null when it is omitted. |
 | `followers` | number | Number of followers shown by LinkedIn, as a whole number; zero is possible, and null means no count was reported. |
 | `connections` | number | Number of connections shown by LinkedIn, as a whole number; zero is possible, and null means no count was reported. |
-| `about` | text | Company statistics with market capitalization, average volume, exchange and related financial labels from LinkedIn; null when the source provides no details. |
+| `about` | text | Text from the LinkedIn profile’s About section; null when the profile has no About text. |
 
 ## Use cases
 

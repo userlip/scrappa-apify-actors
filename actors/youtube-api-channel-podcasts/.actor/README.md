@@ -1,22 +1,22 @@
 # YouTube Channel Podcasts Scraper
 
-Browse podcast playlists published by a YouTube channel, with titles, links and video counts. Provide one or more YouTube channel IDs to list their podcast playlists.
+List podcast videos published by a YouTube channel with titles, links, durations and engagement data. Submit a channel ID and choose a sort order to collect videos marked as podcasts.
 
 ## What data can you extract?
 
-Titles, publication details and engagement counts reflect public YouTube pages; some fields are hidden or unavailable for a video.
+Rows are video records returned for the channel; the Actor keeps only videos identified by YouTube as podcasts. Source details such as view and publication counts may be absent.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | string | source ID for the YouTube channel record, assigned by YouTube; null when the source does not expose it. |
-| `videoId` | string | video ID for the YouTube channel record, assigned by YouTube; null when the source does not expose it. |
-| `title` | string | Title of the YouTube channel record, as shown by YouTube; null when no title is published. |
-| `url` | string | URL for this YouTube channel record on YouTube; null when the source does not provide a link. |
-| `thumbnail` | string | Thumbnail url shown for the YouTube channel record by YouTube, in the format used by the source; null when it is omitted. |
-| `duration` | string/number | Duration of this YouTube channel record, in the duration format shown by the source; null when YouTube provides no timing information. |
-| `viewCount` | integer/number/string | Number of video views shown by YouTube, as a number or digit string; zero is possible, and null means no count was reported. |
+| `id` | string | Video identifier returned for the podcast video; null when the source omits it. |
+| `videoId` | string | YouTube video ID for the podcast video; null when the source omits it. |
+| `title` | string | Podcast video title shown by YouTube; null when no title is published. |
+| `url` | string | Link to the podcast video on YouTube; null when the source does not provide a link. |
+| `thumbnail` | string | Thumbnail image URL for the podcast video; null when the source omits it. |
+| `duration` | string/number | Podcast video length in the duration format returned by YouTube; null when the source omits it. |
+| `viewCount` | integer/number/string | Number of views for the podcast video, returned as a number or digit string; null when YouTube omits it. |
 | `publishedTimeText` | string | Publication age displayed by YouTube, such as “2 days ago”; null when YouTube does not show it. |
-| `publishDate` | string | Date the video was published shown by YouTube, in the format displayed by the source; null if the source omits the date. |
+| `publishDate` | string | Video publication date as returned by YouTube; null when the source omits it. |
 
 ## Use cases
 

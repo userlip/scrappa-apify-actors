@@ -86,7 +86,7 @@ The record below is synthetic. Names and links are examples, and private contact
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results; plus $0.00005 per Actor Start event.
 
-The listed amount is charged once when a run starts.
+Apify charges the Actor Start amount once per run. The listed result rate applies to each saved image row, so result charges scale with the number of rows returned.
 
 ## FAQ
 

@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "immobilienscout24-search-scraper",
   "title": "ImmobilienScout24 Search Scraper",
-  "description": "Search ImmobilienScout24 property listings by location, property type, price, rooms and floor area. Use an ImmobilienScout24 location code, then set property type and price or room filters.",
+  "description": "Search ImmobilienScout24 property listings by city, district or postal code, with filters for property type, price, rooms and floor area.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {
