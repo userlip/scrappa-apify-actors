@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "semrush-sensor-movers-scraper",
+  "title": "Semrush Sensor Winners & Losers Scraper",
+  "description": "Track Semrush Sensor domains with ranking changes, keyword counts, and new or lost terms. Batch categories and choose a database for daily monitoring.",
+  "categories": [
+    "SEO_TOOLS"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "domain",
+              "diff",
+              "keywords",
+              "new_keywords",
+              "lost_keywords"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "domain": {
+                "label": "Domain",
+                "format": "text"
+              },
+              "diff": {
+                "label": "Position Change",
+                "format": "number"
+              },
+              "keywords": {
+                "label": "Keywords",
+                "format": "number"
+              },
+              "new_keywords": {
+                "label": "New Keywords",
+                "format": "number"
+              },
+              "lost_keywords": {
+                "label": "Lost Keywords",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

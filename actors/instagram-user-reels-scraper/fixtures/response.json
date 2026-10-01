@@ -1,0 +1,73 @@
+{
+  "success": true,
+  "found": true,
+  "user_id": "584700123456789",
+  "username": "harbor.bakes",
+  "reels": [
+    {
+      "id": 3391234567890123300,
+      "shortcode": "CSTbakeReel91",
+      "media_type": "Video",
+      "caption": "A slow morning and a fresh loaf from the oven.",
+      "hashtags": [
+        "sourdough",
+        "homebaking"
+      ],
+      "taken_at": "2025-09-18T14:32:11Z",
+      "taken_at_timestamp": 1758205931,
+      "like_count": 2580,
+      "comment_count": 86,
+      "play_count": 38200,
+      "view_count": 37400,
+      "media": [
+        {
+          "type": "video",
+          "images": [
+            {
+              "url": "https://cdn.instagram.com/media/loaf-cover.jpg",
+              "width": 720,
+              "height": 1280
+            }
+          ],
+          "thumbnail_url": "https://cdn.instagram.com/media/loaf-thumb.jpg",
+          "video_url": "https://cdn.instagram.com/media/loaf-reel.mp4",
+          "video_versions": [
+            {
+              "url": "https://cdn.instagram.com/media/loaf-reel.mp4",
+              "width": 720,
+              "height": 1280,
+              "type": 101
+            }
+          ],
+          "video_duration": 17.4
+        }
+      ],
+      "location": null,
+      "author": {
+        "id": 584700123456789,
+        "username": "harbor.bakes",
+        "full_name": "Harbor Bakehouse",
+        "profile_pic_url": "https://cdn.instagram.com/profiles/harbor-bakes.jpg",
+        "is_verified": false
+      },
+      "collaborators": [
+        {
+          "id": "584700123456790",
+          "username": "breadclub"
+        }
+      ],
+      "tagged_users": [
+        {
+          "id": "584700123456791",
+          "username": "coffeeandcrumbs"
+        }
+      ],
+      "is_paid_partnership": false,
+      "product_type": "clips",
+      "permalink": "https://www.instagram.com/reel/CSTbakeReel91/"
+    }
+  ],
+  "reels_count": 24,
+  "more_available": true,
+  "next_max_id": "QVFCcWl0Z1E9"
+}

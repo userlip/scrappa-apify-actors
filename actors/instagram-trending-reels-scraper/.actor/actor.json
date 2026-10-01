@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "instagram-trending-reels-scraper",
+  "title": "Instagram Trending Reels Scraper",
+  "description": "Capture trending public Instagram Reels with captions, likes, comments, author handles, and video links. Each run saves a snapshot of the global feed.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "shortcode",
+              "author_username",
+              "caption",
+              "like_count",
+              "comment_count"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "shortcode": {
+                "label": "Shortcode",
+                "format": "text"
+              },
+              "author_username": {
+                "label": "Author Username",
+                "format": "text"
+              },
+              "caption": {
+                "label": "Caption",
+                "format": "text"
+              },
+              "like_count": {
+                "label": "Like Count",
+                "format": "number"
+              },
+              "comment_count": {
+                "label": "Comment Count",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

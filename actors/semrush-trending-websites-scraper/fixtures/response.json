@@ -1,0 +1,44 @@
+{
+  "search_parameters": {
+    "engine": "semrush",
+    "country": "us",
+    "category": "all"
+  },
+  "date": "2025-09-01",
+  "country": "us",
+  "category": "all",
+  "domains": [
+    {
+      "domain": "canvas.com",
+      "total_traffic": 28500000,
+      "desktop_percent": 61.5,
+      "desktop_traffic": 17527500,
+      "mobile_percent": 38.5,
+      "mobile_traffic": 10972500,
+      "mom": 8.4,
+      "yoy": 24.7,
+      "top_source": "direct"
+    }
+  ],
+  "traffic_series": [
+    {
+      "date": "2025-07-01",
+      "traffic": 26000000
+    },
+    {
+      "date": "2025-08-01",
+      "traffic": 27100000
+    }
+  ],
+  "total_traffic": 28500000,
+  "total_traffic_change": 8.4,
+  "countries": [
+    "us",
+    "gb",
+    "ca"
+  ],
+  "categories": [
+    "all",
+    "computer-software-and-development"
+  ]
+}

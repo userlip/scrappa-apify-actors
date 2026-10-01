@@ -1,0 +1,210 @@
+{
+  "slug": "tiktok-music-details-scraper",
+  "title": "TikTok Music Details Scraper",
+  "description": "Look up TikTok sound titles, authors, durations, covers, and linked video counts. Batch music URLs to build audio research datasets.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "endpoint": "/tiktok/music/details",
+  "openapiPath": "/tiktok/music/details",
+  "mode": "single",
+  "batch": {
+    "field": "urls",
+    "valueField": "url",
+    "apiParam": "url",
+    "pathParam": null,
+    "title": "TikTok sound URLs",
+    "description": "Public TikTok music URLs to look up.",
+    "valueDescription": "TikTok music URL used to request sound details."
+  },
+  "parameters": [
+    {
+      "input": "url",
+      "apiParam": "url",
+      "location": "query",
+      "required": true,
+      "title": "TikTok Music URL",
+      "schema": {
+        "type": "string",
+        "maxLength": 500,
+        "description": "TikTok Music URL sent to the source search."
+      }
+    }
+  ],
+  "flattenPointers": {
+    "music_id": "/data/id",
+    "music_title": "/data/title",
+    "music_play": "/data/play",
+    "music_cover": "/data/cover",
+    "music_author": "/data/author",
+    "music_duration": "/data/duration",
+    "music_album": "/data/album",
+    "video_count": "/data/video_count"
+  },
+  "enrichment": {
+    "field": "input_url"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "urls": [
+      {
+        "url": "https://www.tiktok.com/music/original-sound-6689804660171082501"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "url": "https://www.tiktok.com/music/original-sound-6689804660171082501"
+  },
+  "fixture": {
+    "code": 0,
+    "msg": "success",
+    "processed_time": 0.5,
+    "data": {
+      "id": "6689804660171082501",
+      "title": "Morning Table",
+      "play": "https://www.tiktok.com/music/morning-table-6689804660171082501",
+      "cover": "https://p16-sign.tiktokcdn.com/music/morning-table.jpeg",
+      "author": "Harbor Sound",
+      "original": true,
+      "duration": 31,
+      "album": "Morning Light",
+      "video_count": 245
+    }
+  },
+  "tableFields": [
+    {
+      "name": "music_title",
+      "label": "Sound Title",
+      "format": "text"
+    },
+    {
+      "name": "music_author",
+      "label": "Sound Author",
+      "format": "text"
+    },
+    {
+      "name": "music_duration",
+      "label": "Sound Duration",
+      "format": "number"
+    },
+    {
+      "name": "video_count",
+      "label": "Video Count",
+      "format": "number"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "TikTok Music Details Scraper | Sound Data",
+    "seoDescription": "Look up TikTok sounds by music URL for titles, authors, durations, covers, and linked video counts. Batch sound links to build audio research datasets.",
+    "intro": "Look up public TikTok music pages and save the sound title, author, duration, cover, album, and linked video count. Submit multiple sound URLs in one run.",
+    "useCases": [
+      "Music teams can check details and linked video counts for TikTok sounds.",
+      "Social analysts can connect popular audio to its public TikTok music page.",
+      "Content researchers can organize sound metadata from a list of URLs."
+    ],
+    "howToUse": [
+      "Add each public TikTok music URL to `urls`.",
+      "Set `maxResults` to cap one record per submitted sound.",
+      "Read the nested `data` object or use the flattened sound columns."
+    ],
+    "faqs": [
+      {
+        "question": "Can I pass a video URL instead of a music URL?",
+        "answer": "Use the public TikTok music page URL for this Actor. Video URLs belong in a video details workflow."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "tiktok-music-posts-scraper",
+        "title": "TikTok Music Posts Scraper"
+      },
+      {
+        "slug": "tiktok-video-scraper",
+        "title": "TikTok Video Details Scraper"
+      },
+      {
+        "slug": "tiktok-user-posts-scraper",
+        "title": "TikTok User Posts Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "code",
+        "type": "Integer",
+        "description": "TikTok response status code; zero indicates a successful lookup."
+      },
+      {
+        "name": "msg",
+        "type": "String",
+        "description": "Status message returned with the music detail record."
+      },
+      {
+        "name": "processed_time",
+        "type": "Number",
+        "description": "Source processing time in seconds."
+      },
+      {
+        "name": "data",
+        "type": "Object",
+        "description": "Sound identifier, title, author, duration, cover, and associated video count."
+      },
+      {
+        "name": "music_id",
+        "type": "String",
+        "description": "TikTok music identifier returned for the sound."
+      },
+      {
+        "name": "music_title",
+        "type": "String",
+        "description": "Title displayed for the TikTok sound."
+      },
+      {
+        "name": "music_play",
+        "type": "String",
+        "description": "Public TikTok URL for the sound page."
+      },
+      {
+        "name": "music_cover",
+        "type": "String",
+        "description": "Cover image URL associated with the sound."
+      },
+      {
+        "name": "music_author",
+        "type": "String",
+        "description": "Sound author or creator name returned by TikTok."
+      },
+      {
+        "name": "music_duration",
+        "type": "String",
+        "description": "Sound duration in seconds."
+      },
+      {
+        "name": "music_album",
+        "type": "String",
+        "description": "Album name when TikTok reports one."
+      },
+      {
+        "name": "video_count",
+        "type": "String",
+        "description": "Number of videos associated with the sound."
+      },
+      {
+        "name": "input_url",
+        "type": "String",
+        "description": "TikTok sound URL submitted to retrieve music details."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

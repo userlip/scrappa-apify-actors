@@ -1,0 +1,166 @@
+{
+  "slug": "instagram-hashtag-search-scraper",
+  "title": "Instagram Hashtag Search Scraper",
+  "description": "Search Instagram hashtags for names, post counts, and display labels. Batch topic phrases to compare hashtag coverage across subjects.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "endpoint": "/instagram/hashtags/search",
+  "openapiPath": "/instagram/hashtags/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "q",
+    "apiParam": "q",
+    "pathParam": null,
+    "title": "Hashtag searches",
+    "description": "Hashtag names or phrases to search on Instagram.",
+    "valueDescription": "Hashtag search phrase submitted to Instagram."
+  },
+  "parameters": [
+    {
+      "input": "q",
+      "apiParam": "q",
+      "location": "query",
+      "required": true,
+      "title": "Search Query",
+      "schema": {
+        "type": "string",
+        "pattern": "\\S",
+        "minLength": 1,
+        "maxLength": 100,
+        "description": "Search Query sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/hashtags",
+  "enrichment": {
+    "field": "input_q"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "q": "coffee"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "q": "coffee"
+  },
+  "fixture": {
+    "success": true,
+    "query": "coffee",
+    "hashtags": [
+      {
+        "id": "17843785412019201",
+        "name": "coffeeart",
+        "media_count": 278000,
+        "formatted_media_count": "278K posts",
+        "search_result_subtitle": "278K posts"
+      }
+    ],
+    "hashtags_count": 55
+  },
+  "tableFields": [
+    {
+      "name": "name",
+      "label": "Hashtag",
+      "format": "text"
+    },
+    {
+      "name": "media_count",
+      "label": "Media Count",
+      "format": "number"
+    },
+    {
+      "name": "formatted_media_count",
+      "label": "Formatted Media Count",
+      "format": "text"
+    },
+    {
+      "name": "search_result_subtitle",
+      "label": "Search Subtitle",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Instagram Hashtag Search | Post Counts",
+    "seoDescription": "Search Instagram hashtags for names, post counts, and display labels. Batch phrases to compare hashtag coverage across topics and plan public content.",
+    "intro": "Search Instagram for matching hashtags and collect names, public post counts, and display labels. Batch several phrases to compare how topics are represented.",
+    "useCases": [
+      "Social planners can compare hashtag reach before scheduling public posts.",
+      "Researchers can map related Instagram topics from seed phrases.",
+      "Brand teams can check public post counts for campaign terms."
+    ],
+    "howToUse": [
+      "Add each hashtag or phrase to `queries` without the leading number sign.",
+      "Set `maxResults` to cap the number of hashtag rows saved.",
+      "Compare names and post counts across seed searches."
+    ],
+    "faqs": [
+      {
+        "question": "Should I include the # character?",
+        "answer": "Enter the hashtag word or phrase. The source search handles matching without requiring a leading number sign."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "instagram-user-posts-cheapest-0-20-1000-results",
+        "title": "Instagram User Posts Scraper"
+      },
+      {
+        "slug": "instagram-user-info-cheapest-0-20-1000-results",
+        "title": "Instagram User Info | Cheapest $0.20/1k results"
+      },
+      {
+        "slug": "tiktok-hashtag-posts-scraper",
+        "title": "TikTok Hashtag Posts Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Instagram identifier for the hashtag result."
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "description": "Hashtag name without the leading number sign."
+      },
+      {
+        "name": "media_count",
+        "type": "Integer",
+        "description": "Number of public media posts Instagram associates with this hashtag."
+      },
+      {
+        "name": "formatted_media_count",
+        "type": "String",
+        "description": "Human-readable post count label returned by Instagram."
+      },
+      {
+        "name": "search_result_subtitle",
+        "type": "String",
+        "description": "Subtitle shown with the hashtag search result."
+      },
+      {
+        "name": "input_q",
+        "type": "String",
+        "description": "Hashtag or keyword submitted to find matching Instagram tags."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

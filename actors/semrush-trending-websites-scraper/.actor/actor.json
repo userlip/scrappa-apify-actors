@@ -1,0 +1,65 @@
+{
+  "actorSpecification": 1,
+  "name": "semrush-trending-websites-scraper",
+  "title": "Semrush Trending Websites Scraper",
+  "description": "Find trending websites with estimated visits, device shares, and growth rates. Batch country markets to compare domains gaining traffic.",
+  "categories": [
+    "SEO_TOOLS",
+    "MARKETING"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "domain",
+              "total_traffic",
+              "desktop_percent",
+              "mobile_percent",
+              "mom"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "domain": {
+                "label": "Domain",
+                "format": "text"
+              },
+              "total_traffic": {
+                "label": "Total Traffic",
+                "format": "number"
+              },
+              "desktop_percent": {
+                "label": "Desktop Share",
+                "format": "number"
+              },
+              "mobile_percent": {
+                "label": "Mobile Share",
+                "format": "number"
+              },
+              "mom": {
+                "label": "Month Over Month",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

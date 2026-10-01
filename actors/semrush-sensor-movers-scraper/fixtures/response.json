@@ -1,0 +1,42 @@
+{
+  "search_parameters": {
+    "engine": "semrush",
+    "db": "US",
+    "category": 1,
+    "date": "2025-09-01"
+  },
+  "date": "2025-09-01",
+  "db": "US",
+  "category": "1",
+  "domains": [
+    {
+      "domain": "papertrail.io",
+      "diff": 37,
+      "keywords": 18420,
+      "new_keywords": 146,
+      "lost_keywords": 109,
+      "date": "2025-09-01",
+      "category": 1,
+      "diffs": [
+        {
+          "date": 1756684800,
+          "diff": 12
+        },
+        {
+          "date": 1756771200,
+          "diff": 18
+        },
+        {
+          "date": 1756857600,
+          "diff": 24
+        }
+      ]
+    }
+  ],
+  "categories": {
+    "1": {
+      "avg_drop": -2.4,
+      "avg_raise": 3.2
+    }
+  }
+}

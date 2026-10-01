@@ -1,0 +1,68 @@
+{
+  "search_parameters": {
+    "engine": "baidu",
+    "query": "panda",
+    "page": 1,
+    "limit": 10
+  },
+  "images_results": [
+    {
+      "position": 1,
+      "title": "Red panda resting in a bamboo grove",
+      "title_highlighted_words": [
+        "panda"
+      ],
+      "link": "https://wildlifejournal.org/red-panda",
+      "original": "https://images.wildlife-journal.org/red-panda-full.jpg",
+      "thumbnail": "https://images.wildlife-journal.org/red-panda-small.jpg",
+      "thumbnail_middle": "https://images.wildlife-journal.org/red-panda-medium.jpg",
+      "source": "Wildlife Journal",
+      "source_domain": "wildlifejournal.org",
+      "original_width": 2400,
+      "original_height": 1600,
+      "file_type": "jpg",
+      "date": "2025-04-16",
+      "is_gif": false
+    }
+  ],
+  "search_information": {
+    "query_displayed": "panda",
+    "total_results": 125000,
+    "formatted_total_results": "125,000",
+    "results_on_page": 10,
+    "page": 1,
+    "limit": 10
+  },
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "results_on_page": 10,
+    "total_results": 125000,
+    "has_more": true,
+    "next_page": 2
+  },
+  "images": [
+    {
+      "position": 1,
+      "title": "Red panda resting in a bamboo grove",
+      "title_highlighted_words": [
+        "panda"
+      ],
+      "link": "https://wildlifejournal.org/red-panda",
+      "original": "https://images.wildlife-journal.org/red-panda-full.jpg",
+      "thumbnail": "https://images.wildlife-journal.org/red-panda-small.jpg",
+      "thumbnail_middle": "https://images.wildlife-journal.org/red-panda-medium.jpg",
+      "source": "Wildlife Journal",
+      "source_domain": "wildlifejournal.org",
+      "original_width": 2400,
+      "original_height": 1600,
+      "file_type": "jpg",
+      "date": "2025-04-16",
+      "is_gif": false
+    }
+  ],
+  "provider_response": {
+    "data": []
+  },
+  "response_time_ms": 438
+}

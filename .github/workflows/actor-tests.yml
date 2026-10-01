@@ -40,6 +40,8 @@ jobs:
           - actors/apple-app-store-app-details-scraper
           - actors/apple-app-store-search-scraper
           - actors/arbeitsagentur-jobs-scraper
+          - actors/baidu-autocomplete-scraper
+          - actors/baidu-images-scraper
           - actors/baidu-search-scraper
           - actors/baidu-trending-scraper
           - actors/bing-search-scraper
@@ -47,6 +49,7 @@ jobs:
           - actors/booking-search-scraper
           - actors/brave-search-scraper
           - actors/domain-availability-checker
+          - actors/google-autocomplete-scraper
           - actors/google-finance-historical-prices-scraper
           - actors/google-finance-indices-scraper
           - actors/google-finance-intraday-scraper
@@ -85,9 +88,14 @@ jobs:
           - actors/immobilienscout24-search-scraper
           - actors/immowelt-property-search-scraper
           - actors/indeed-jobs-scraper
+          - actors/instagram-hashtag-search-scraper
+          - actors/instagram-post-comments-scraper
           - actors/instagram-post-info-cheapest-0-20-1000-results
+          - actors/instagram-tagged-posts-scraper
+          - actors/instagram-trending-reels-scraper
           - actors/instagram-user-info-cheapest-0-20-1000-results
           - actors/instagram-user-posts-cheapest-0-20-1000-results
+          - actors/instagram-user-reels-scraper
           - actors/jameda-doctor-details-scraper
           - actors/jameda-reviews-scraper
           - actors/jameda-search-scraper
@@ -109,6 +117,10 @@ jobs:
           - actors/scrappa-google-search
           - actors/semrush-competitors-scraper
           - actors/semrush-domain-overview-scraper
+          - actors/semrush-keyword-suggestions-scraper
+          - actors/semrush-sensor-movers-scraper
+          - actors/semrush-trending-websites-scraper
+          - actors/semrush-website-traffic-scraper
           - actors/similarweb-traffic-analytics-scraper
           - actors/startpage-search-scraper
           - actors/stepstone-jobs-scraper
@@ -116,13 +128,17 @@ jobs:
           - actors/tiktok-challenge-details-scraper
           - actors/tiktok-challenge-posts-scraper
           - actors/tiktok-challenge-search-scraper
+          - actors/tiktok-collection-posts-scraper
           - actors/tiktok-comments-scraper
           - actors/tiktok-followers-scraper
           - actors/tiktok-following-scraper
           - actors/tiktok-hashtag-posts-scraper
+          - actors/tiktok-music-details-scraper
           - actors/tiktok-music-posts-scraper
+          - actors/tiktok-playlist-posts-scraper
           - actors/tiktok-profile-scraper
           - actors/tiktok-search-scraper
+          - actors/tiktok-trending-feed-scraper
           - actors/tiktok-user-posts-scraper
           - actors/tiktok-user-search-scraper
           - actors/tiktok-video-scraper

@@ -1,0 +1,130 @@
+{
+  "slug": "semrush-keyword-suggestions-scraper",
+  "title": "Semrush Keyword Suggestions Scraper",
+  "description": "Expand seed keywords into Semrush suggestion phrases. Batch multiple queries to build topic lists for SEO briefs and content research.",
+  "categories": [
+    "SEO_TOOLS"
+  ],
+  "endpoint": "/semrush/suggest",
+  "openapiPath": "/semrush/suggest",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "q",
+    "apiParam": "q",
+    "pathParam": null,
+    "title": "Seed keywords",
+    "description": "Keywords to expand with Semrush suggestions.",
+    "valueDescription": "Seed phrase used to request keyword ideas."
+  },
+  "parameters": [
+    {
+      "input": "q",
+      "apiParam": "q",
+      "location": "query",
+      "required": true,
+      "title": "Search Query",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "Search Query sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/suggestions",
+  "enrichment": {
+    "field": "input_q"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "q": "notion"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "q": "notion"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "semrush",
+      "q": "notion"
+    },
+    "suggestions": [
+      "notion pricing",
+      "notion templates",
+      "notion alternative",
+      "notion ai",
+      "notion login",
+      "notion app"
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "value",
+      "label": "Suggested Keyword",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Semrush Keyword Suggestions | Keyword Ideas",
+    "seoDescription": "Get Semrush keyword suggestions for seed phrases. Batch queries to find related terms and export ideas for SEO briefs and content research plans.",
+    "intro": "Expand Semrush seed phrases into related keyword ideas. Each suggestion is saved as a row with the original query so you can compare topics and export a search plan.",
+    "useCases": [
+      "SEO writers can expand target terms into related phrases for briefs.",
+      "Search marketers can compare keyword ideas across product categories.",
+      "Content strategists can build topic lists from a set of seed queries."
+    ],
+    "howToUse": [
+      "Add each seed phrase to `queries`.",
+      "Set `maxResults` to limit the total suggestions saved for the run.",
+      "Group exported suggestions by `input_q` to retain their source phrase."
+    ],
+    "faqs": [
+      {
+        "question": "Does the Actor include search volume?",
+        "answer": "No. This endpoint returns suggestion phrases; it does not provide keyword volume metrics."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-trends-autocomplete-scraper",
+        "title": "Google Trends Autocomplete Scraper"
+      },
+      {
+        "slug": "semrush-domain-overview-scraper",
+        "title": "Semrush Domain Overview Scraper"
+      },
+      {
+        "slug": "baidu-autocomplete-scraper",
+        "title": "Baidu Autocomplete Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "value",
+        "type": "String",
+        "description": "Related keyword phrase returned for the submitted Semrush seed."
+      },
+      {
+        "name": "input_q",
+        "type": "String",
+        "description": "Seed keyword submitted to Semrush to retrieve related suggestions."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

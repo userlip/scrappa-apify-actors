@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "instagram-tagged-posts-scraper",
+  "title": "Instagram Tagged Posts Scraper",
+  "description": "Find public Instagram posts that tag an account, with captions, engagement, author profiles, and links. Batch usernames and page through available posts.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "shortcode",
+              "author_username",
+              "caption",
+              "like_count",
+              "permalink"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "shortcode": {
+                "label": "Shortcode",
+                "format": "text"
+              },
+              "author_username": {
+                "label": "Author Username",
+                "format": "text"
+              },
+              "caption": {
+                "label": "Caption",
+                "format": "text"
+              },
+              "like_count": {
+                "label": "Like Count",
+                "format": "number"
+              },
+              "permalink": {
+                "label": "Post URL",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
