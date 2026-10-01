@@ -1,4 +1,4 @@
-# TrustedShops Reviews Scraper
+# Trusted Shops Reviews Scraper
 
 Read Trusted Shops reviews with shop names, ratings, written feedback and posting dates. Use a Trusted Shops shop ID or URL and page through the reviews available for that profile.
 
@@ -118,4 +118,4 @@ Yes. Submit a supported shop URL in `url` or `urls`, or use its Trusted Shops ID
 - [Jameda Reviews Scraper](https://apify.com/thescrappa/jameda-reviews-scraper)
 - [Kununu Reviews Scraper](https://apify.com/thescrappa/kununu-reviews-scraper)
 - [Trusted Shops Search Scraper](https://apify.com/thescrappa/trustedshops-search-scraper)
-- [TrustedShops Shop Profile Scraper](https://apify.com/thescrappa/trustedshops-shop-profile-scraper)
+- [Trusted Shops Shop Profile Scraper](https://apify.com/thescrappa/trustedshops-shop-profile-scraper)

@@ -4,8 +4,8 @@
     "name": "arbeitsagentur-jobs-scraper",
     "title": "Arbeitsagentur Jobs Scraper",
     "description": "Find German job listings from the Federal Employment Agency with titles, employers, locations and work details. Set a job title or occupation and a location, then narrow listings by work type or posting date.",
-    "seoTitle": "Arbeitsagentur Jobs Scraper | German Job Listings",
-    "seoDescription": "Arbeitsagentur Jobs Scraper: Get job titles, employers, locations, work arrangements. Use Arbeitsagentur Jobs output in a recurring Apify API workflow.",
+    "seoTitle": "Arbeitsagentur Jobs Scraper | Export Jobs to CSV",
+    "seoDescription": "Scrape German job listings from the Arbeitsagentur job board. Get titles, employers, locations and work details by role and city. Export to CSV or JSON.",
     "categories": [
       "JOBS",
       "BUSINESS"
@@ -16,8 +16,8 @@
     "name": "booking-hotel-details-scraper",
     "title": "Booking.com Hotel Details Scraper",
     "description": "Review Booking.com hotel pages for the property name, address, guest rating, check-in times and structured hotel details. Submit a hotel URL or a country and hotel slug, with batch input for multiple properties.",
-    "seoTitle": "Booking.com Hotel Details Scraper | Hotel Profile Data",
-    "seoDescription": "Booking.com Hotel Details Scraper: Compare property names, addresses, guest ratings. Connect Booking.com Hotel Details results to Make, Zapier or n8n.",
+    "seoTitle": "Booking.com Hotel Details Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Booking.com hotel pages for name, address, guest rating, check-in times and amenities. Batch many hotel URLs in one run and export to CSV or JSON.",
     "categories": [
       "TRAVEL",
       "BUSINESS"
@@ -28,8 +28,8 @@
     "name": "booking-search-scraper",
     "title": "Booking.com Search Scraper",
     "description": "Compare Booking.com stays by property name, guest score, nightly price and review count. Choose destination, dates and guest counts to compare the stays returned for each search.",
-    "seoTitle": "Booking.com Search Scraper | Hotel Prices",
-    "seoDescription": "Booking.com Search Scraper: Compare hotel names, guest scores, nightly prices, review counts. Download Booking.com Search records as CSV for analysis.",
+    "seoTitle": "Booking.com Search Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Booking.com search results for any destination and dates. Compare hotel names, guest scores, nightly prices and review counts. Export or use API.",
     "categories": [
       "TRAVEL",
       "BUSINESS"
@@ -40,8 +40,8 @@
     "name": "domain-availability-checker",
     "title": "Domain Availability Checker",
     "description": "Check domain registration status and registry events using public RDAP records. Submit one domain or a batch of names to check their current RDAP registration status.",
-    "seoTitle": "Domain Availability Checker | RDAP Status",
-    "seoDescription": "Domain Availability Checker: Get registration status, RDAP events, nameservers. Use the Apify API to schedule repeat Domain Availability Checker runs.",
+    "seoTitle": "Domain Availability Checker | Export to CSV or API",
+    "seoDescription": "Check domain availability in bulk with public RDAP data. Get registration status, registry events and nameservers for many domains. Export to CSV.",
     "categories": [
       "SEO_TOOLS",
       "BUSINESS",
@@ -53,8 +53,8 @@
     "name": "google-finance-historical-prices-scraper",
     "title": "Google Finance Historical Prices Scraper",
     "description": "Track historical Google Finance prices with dates, closing values and daily changes. Choose a ticker, exchange and supported date range to review past daily or interval prices.",
-    "seoTitle": "Google Finance Historical Prices Scraper | Price History",
-    "seoDescription": "Google Finance Historical Prices Scraper: Compare trading dates, closing prices. Download Google Finance Historical Prices records as CSV for analysis.",
+    "seoTitle": "Google Finance Historical Prices Scraper | Stock Data to CSV",
+    "seoDescription": "Download historical stock prices from Google Finance. Get dates, closing prices and daily changes for any ticker and exchange. Export to CSV or the API.",
     "categories": [
       "BUSINESS",
       "NEWS"
@@ -65,8 +65,8 @@
     "name": "google-finance-indices-scraper",
     "title": "Google Finance Indices Scraper",
     "description": "Compare Google Finance index quotes with tickers, index levels and daily changes. Supply supported index codes to compare their current levels and daily movement.",
-    "seoTitle": "Google Finance Indices Scraper | Index Quotes",
-    "seoDescription": "Google Finance Indices Scraper: Compare index names, ticker symbols, current levels. Use the Apify API to schedule repeat Google Finance Indices runs.",
+    "seoTitle": "Google Finance Indices Scraper | Stock Data to CSV",
+    "seoDescription": "Get live market index quotes from Google Finance with index names, tickers, current levels and daily change. Track global indices. Export to CSV or JSON.",
     "categories": [
       "BUSINESS",
       "NEWS"
@@ -77,8 +77,8 @@
     "name": "google-finance-intraday-scraper",
     "title": "Google Finance Intraday Scraper",
     "description": "Check Google Finance intraday prices with timestamps, price changes and market volume. Submit one or more tickers to inspect intraday price points available from Google Finance.",
-    "seoTitle": "Google Finance Intraday Scraper | Intraday Quotes",
-    "seoDescription": "Google Finance Intraday Scraper: Compare price timestamps, intraday prices, price changes. Download Google Finance Intraday records as CSV for analysis.",
+    "seoTitle": "Google Finance Intraday Scraper | Stock Data to CSV",
+    "seoDescription": "Scrape intraday stock prices from Google Finance with timestamps, price moves and volume. Track several tickers in one run and export to CSV or the API.",
     "categories": [
       "BUSINESS",
       "NEWS"
@@ -89,8 +89,8 @@
     "name": "google-finance-markets-scraper",
     "title": "Google Finance Markets Scraper",
     "description": "Review Google Finance market movers by section, trend and price movement. Choose the market trend and index view that match the movers you want to review.",
-    "seoTitle": "Google Finance Markets Scraper | Market Movers",
-    "seoDescription": "Google Finance Markets Scraper: Compare market sections, tickers, price trends, daily moves. Download Google Finance Markets records as CSV for analysis.",
+    "seoTitle": "Google Finance Markets Scraper | Stock Data to CSV",
+    "seoDescription": "Scrape Google Finance market movers: top gainers, losers and most active stocks with price moves by market section. Export to CSV or JSON or use the API.",
     "categories": [
       "BUSINESS",
       "NEWS"
@@ -101,8 +101,8 @@
     "name": "google-finance-quote-scraper",
     "title": "Google Finance Quote Scraper",
     "description": "Look up Google Finance share prices with ticker, exchange and percentage change. Enter the ticker and exchange, then request period statistics only when they are useful for your quote.",
-    "seoTitle": "Google Finance Quote Scraper | Stock Quotes",
-    "seoDescription": "Google Finance Quote Scraper: Compare ticker symbols, current share prices, daily changes. Connect Google Finance Quote results to Make, Zapier or n8n.",
+    "seoTitle": "Google Finance Quote Scraper | Stock Data to CSV",
+    "seoDescription": "Get real-time stock quotes from Google Finance: price, change, exchange and key statistics for any ticker. Batch tickers and export to CSV or JSON.",
     "categories": [
       "BUSINESS",
       "NEWS"
@@ -113,8 +113,8 @@
     "name": "google-finance-search-scraper",
     "title": "Google Finance Search Scraper",
     "description": "Find matching financial instruments on Google Finance by company name or ticker. Look up companies by name or ticker and provide several queries when building a watchlist.",
-    "seoTitle": "Google Finance Search Scraper | Ticker Lookup",
-    "seoDescription": "Google Finance Search Scraper: Compare company names, ticker symbols, exchanges. Export Google Finance Search results as CSV for a spreadsheet review.",
+    "seoTitle": "Google Finance Search Scraper | Stock Data to CSV",
+    "seoDescription": "Search Google Finance for stocks, ETFs, indices and currencies by company name or ticker. Build watchlists from many queries in one run. Export to CSV.",
     "categories": [
       "BUSINESS",
       "NEWS"
@@ -125,8 +125,8 @@
     "name": "google-flights-search-scraper",
     "title": "Google Flights Scraper",
     "description": "Compare Google Flights itineraries by fare, airlines, stops and total travel time. Compare routes using a future date and the one-way or round-trip option.",
-    "seoTitle": "Google Flights Scraper | Flight Prices",
-    "seoDescription": "Google Flights Scraper: Compare flight prices, airlines, stops, total travel time. Export Google Flights results as CSV for a spreadsheet review.",
+    "seoTitle": "Google Flights Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Google Flights prices for one-way and round trips. Get fares, airlines, stops and travel times for any route and date. Export to CSV or use the API.",
     "categories": [
       "TRAVEL",
       "BUSINESS"
@@ -137,8 +137,8 @@
     "name": "google-hotels-autocomplete-scraper",
     "title": "Google Hotels Autocomplete Scraper",
     "description": "Find hotel and destination suggestions on Google Hotels before searching for a stay. Use a city, district or hotel name to get a property suggestion that can refine a later stay search.",
-    "seoTitle": "Google Hotels Autocomplete Scraper | Hotel Suggestions",
-    "seoDescription": "Google Hotels Autocomplete Scraper: Compare hotel and destination suggestions. Use Google Hotels Autocomplete output in a recurring Apify API workflow.",
+    "seoTitle": "Google Hotels Autocomplete Scraper | Export to CSV or API",
+    "seoDescription": "Get Google Hotels autocomplete suggestions for cities, districts and hotel names. Resolve destinations before a hotel search. Fast, cheap, batch input.",
     "categories": [
       "TRAVEL",
       "BUSINESS"
@@ -149,8 +149,8 @@
     "name": "google-hotels-search-scraper",
     "title": "Google Hotels Search Scraper",
     "description": "Compare Google Hotels stays by property, guest rating, nightly rate and review count. Set future stay dates and guest counts to compare rates for the destination you choose.",
-    "seoTitle": "Google Hotels Search Scraper | Hotel Prices",
-    "seoDescription": "Google Hotels Search Scraper: Compare hotel names, guest ratings, nightly rates, review counts. Download Google Hotels Search records as CSV for analysis.",
+    "seoTitle": "Google Hotels Search Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Google Hotels prices for any destination and dates. Compare hotels by nightly rate, guest rating and review count. Export to CSV or use the API.",
     "categories": [
       "TRAVEL",
       "BUSINESS"
@@ -161,11 +161,11 @@
     "name": "google-images-scraper",
     "title": "Google Images Scraper",
     "description": "Find Google Images results with image links, titles, publishers and dimensions. Choose a region and optional image filters to make a visual search more specific.",
-    "seoTitle": "Google Images Scraper | Image Results",
-    "seoDescription": "Google Images Scraper: Get image titles, image links, publishers, image dimensions. Export Google Images results as CSV for a spreadsheet review.",
+    "seoTitle": "Google Images Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Google Images results with image URLs, titles, source pages and dimensions. Filter by size, type and region. Export image data to CSV or JSON.",
     "categories": [
       "SEO_TOOLS",
-      "VIDEOS"
+      "MARKETING"
     ]
   },
   {
@@ -173,8 +173,8 @@
     "name": "google-jobs-scraper",
     "title": "Google Jobs Scraper",
     "description": "Find Google Jobs postings with job titles, employers, locations and available salary details. Use a role or employer phrase and the supported market settings to find matching openings.",
-    "seoTitle": "Google Jobs Scraper | Job Listings",
-    "seoDescription": "Google Jobs Scraper: Get job titles, employers, locations. Use supported employment or date filters. Download Google Jobs records as CSV for analysis.",
+    "seoTitle": "Google Jobs Scraper | Export Jobs to CSV",
+    "seoDescription": "Scrape Google Jobs listings with job titles, employers, locations and salary details when shown. Search any role or company. Export to CSV or use the API.",
     "categories": [
       "JOBS",
       "BUSINESS"
@@ -185,8 +185,8 @@
     "name": "google-maps-advanced-search-scraper",
     "title": "Google Maps Advanced Search Scraper",
     "description": "Find local businesses on Google Maps with names, categories, star ratings and addresses. Set the map center and a business category to find places in a chosen local area.",
-    "seoTitle": "Google Maps Advanced Search Scraper | Local Results",
-    "seoDescription": "Google Maps Advanced Search Scraper: Find business names, categories, star ratings. Connect Google Maps Advanced Search results to Make, Zapier or n8n.",
+    "seoTitle": "Google Maps Advanced Search Scraper | Export to CSV and API",
+    "seoDescription": "Scrape Google Maps businesses by category and map area. Get names, categories, ratings, addresses and contact details for lead generation. Export to CSV.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -197,10 +197,10 @@
     "name": "google-maps-autocomplete-scraper",
     "title": "Google Maps Autocomplete Scraper",
     "description": "Find place and business suggestions from Google Maps for a city, address or venue name. Enter the start of an address, business or place name to see matching suggestions.",
-    "seoTitle": "Google Maps Autocomplete Scraper | Place Suggestions",
-    "seoDescription": "Google Maps Autocomplete Scraper: Find place suggestions, place categories, addresses. Connect Google Maps Autocomplete results to Make, Zapier or n8n.",
+    "seoTitle": "Google Maps Autocomplete Scraper | Export to CSV and API",
+    "seoDescription": "Get Google Maps autocomplete suggestions for addresses, businesses and places. Resolve partial names into place suggestions in bulk. Export or use the API.",
     "categories": [
-      "TRAVEL",
+      "LEAD_GENERATION",
       "BUSINESS"
     ]
   },
@@ -209,8 +209,8 @@
     "name": "google-maps-business-details-scraper",
     "title": "Google Maps Business Details Scraper",
     "description": "Look up a Google Maps business profile with its address, rating, hours and website. Pass one or more place IDs to look up the matching Google Maps business profiles.",
-    "seoTitle": "Google Maps Business Details Scraper | Business Profiles",
-    "seoDescription": "Google Maps Business Details Scraper: Get business names, addresses, star ratings. Connect Google Maps Business Details results to Make, Zapier or n8n.",
+    "seoTitle": "Google Maps Business Details Scraper | Export to CSV and API",
+    "seoDescription": "Get Google Maps business details by place ID: address, phone number, website, rating, review count and type. Batch many places in one run. Export to CSV.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -221,8 +221,8 @@
     "name": "google-maps-directions-scraper",
     "title": "Google Maps Directions Scraper",
     "description": "Compare Google Maps routes by distance, estimated travel time, travel mode and route steps. Enter origin and destination locations, then compare supported travel modes and route alternatives.",
-    "seoTitle": "Google Maps Directions Scraper | Route Planning",
-    "seoDescription": "Google Maps Directions Scraper: Get route distances, estimated travel times, travel modes. Download Google Maps Directions records as CSV for analysis.",
+    "seoTitle": "Google Maps Directions Scraper | Export to CSV and API",
+    "seoDescription": "Scrape Google Maps directions between two places. Get distance, travel time, route steps and alternatives for driving, transit, walking or cycling.",
     "categories": [
       "TRAVEL",
       "BUSINESS"
@@ -233,8 +233,8 @@
     "name": "google-maps-photos-scraper",
     "title": "Google Maps Photos Scraper",
     "description": "Browse photos shared on Google Maps place pages, with image links and contributor details. Submit place IDs for one or more locations whose public photos you want to catalog.",
-    "seoTitle": "Google Maps Photos Scraper | Place Photos",
-    "seoDescription": "Google Maps Photos Scraper: Get photo links, contributor names, image dimensions, posting dates. Download Google Maps Photos records as CSV for analysis.",
+    "seoTitle": "Google Maps Photos Scraper | Export to CSV and API",
+    "seoDescription": "Download Google Maps place photos with image URLs and contributor details. Collect public photos for many places in one run. Export links to CSV or JSON.",
     "categories": [
       "BUSINESS",
       "MARKETING"
@@ -245,8 +245,8 @@
     "name": "google-maps-reviews-scraper",
     "title": "Google Maps Reviews Scraper",
     "description": "Read Google Maps reviews with star ratings, written feedback, posting dates and owner replies. Start with a place ID and choose a review order or text filter for the public feedback.",
-    "seoTitle": "Google Maps Reviews Scraper | Customer Reviews",
-    "seoDescription": "Google Maps Reviews Scraper: Read star ratings, review text, posting dates, owner replies. Connect Google Maps Reviews results to Make, Zapier or n8n.",
+    "seoTitle": "Google Maps Reviews Scraper | Export Reviews to CSV",
+    "seoDescription": "Scrape Google Maps reviews with star rating, review text, date and owner reply. Sort by newest or most relevant and export all reviews to CSV or JSON.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -257,8 +257,8 @@
     "name": "google-maps-search-scraper",
     "title": "Google Maps Search Scraper",
     "description": "Search Google Maps for local places with names, categories, star ratings and addresses. Enter a business or place query and set the region when you need locally focused results.",
-    "seoTitle": "Google Maps Search Scraper | Local Results",
-    "seoDescription": "Google Maps Search Scraper: Find place names, categories, star ratings, addresses. Export Google Maps Search results as CSV for a spreadsheet review.",
+    "seoTitle": "Google Maps Search Scraper | Export to CSV and API",
+    "seoDescription": "Scrape Google Maps search results for any query and region. Get business names, categories, ratings and addresses for lead lists. Export to CSV or JSON.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -269,8 +269,8 @@
     "name": "google-news-scraper",
     "title": "Google News Scraper",
     "description": "Find Google News articles with headlines, publishers, publication dates and result links. Set a locale to focus the article list on a market.",
-    "seoTitle": "Google News Scraper | News Articles",
-    "seoDescription": "Google News Scraper: Get article headlines, publishers, publication dates, search snippets. Add Google News results to a scheduled spreadsheet report.",
+    "seoTitle": "Google News Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Google News articles with headlines, publishers, dates and links for any topic and country. Monitor news and brand mentions. Export or use the API.",
     "categories": [
       "NEWS",
       "MARKETING"
@@ -281,8 +281,8 @@
     "name": "google-patents-details-scraper",
     "title": "Google Patents Details Scraper",
     "description": "Review Google Patents records with titles, abstracts, inventors and assignees. Submit publication numbers or supported Google Patents URLs to retrieve several records together.",
-    "seoTitle": "Google Patents Details Scraper | Patent Records",
-    "seoDescription": "Google Patents Details Scraper: Get patent titles, abstracts, inventors, assignees. Use the Apify API to schedule repeat Google Patents Details runs.",
+    "seoTitle": "Google Patents Details Scraper | Export to CSV or API",
+    "seoDescription": "Get Google Patents records by publication number: title, abstract, inventors, assignees and dates. Batch many patents in one run. Export to CSV or JSON.",
     "categories": [
       "BUSINESS",
       "MARKETING",
@@ -294,8 +294,8 @@
     "name": "google-patents-search-scraper",
     "title": "Google Patents Search Scraper",
     "description": "Search Google Patents by invention topic, inventor, assignee, date and publication status. Search by invention topic and add supported inventor, assignee or date filters.",
-    "seoTitle": "Google Patents Search Scraper | Patent Search",
-    "seoDescription": "Google Patents Search Scraper: Find patent titles, publication numbers, inventors, assignees. Download Google Patents Search records as CSV for analysis.",
+    "seoTitle": "Google Patents Search Scraper | Export to CSV or API",
+    "seoDescription": "Search Google Patents by keyword, inventor, assignee and date. Get patent numbers, titles, owners and status for prior art and IP research. Export to CSV.",
     "categories": [
       "BUSINESS",
       "MARKETING",
@@ -307,8 +307,8 @@
     "name": "google-search-scraper",
     "title": "Google Search Scraper",
     "description": "Find Google Search results with page titles, displayed domains, snippets and links. Use the phrase, location and locale options to shape a Google results page for your query.",
-    "seoTitle": "Google Search Scraper | Web Search Results",
-    "seoDescription": "Google Search Scraper: Find page titles, displayed domains, search snippets, result links. Use Google Search output in a recurring Apify API workflow.",
+    "seoTitle": "Google Search Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Google search results with titles, links, snippets and positions for any keyword, country and language. SERP data for SEO. Export to CSV or JSON.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -319,8 +319,8 @@
     "name": "google-translate-scraper",
     "title": "Google Translate Scraper",
     "description": "Translate short text with Google Translate and keep the source phrase and its language pair. Provide source text and target language; Google can detect the source language, and batch input supports multiple phrases.",
-    "seoTitle": "Google Translate Scraper | Text Translation",
-    "seoDescription": "Google Translate Scraper: Get source text, translated text, source language, target language. Connect Google Translate results to Make, Zapier or n8n.",
+    "seoTitle": "Google Translate Scraper | Export to CSV or API",
+    "seoDescription": "Translate text with Google Translate in bulk. Auto-detect the source language and translate many phrases into any target language. Export or use the API.",
     "categories": [
       "AUTOMATION",
       "OTHER"
@@ -331,8 +331,8 @@
     "name": "google-trends-autocomplete-scraper",
     "title": "Google Trends Autocomplete Scraper",
     "description": "Find topic and query suggestions from Google Trends before building a search list. Enter a topic or phrase and choose a region and language to guide related suggestions.",
-    "seoTitle": "Google Trends Autocomplete Scraper | Topic Suggestions",
-    "seoDescription": "Google Trends Autocomplete Scraper: Find topic suggestions, related phrases, result types. Download Google Trends Autocomplete records as CSV for analysis.",
+    "seoTitle": "Google Trends Autocomplete Scraper | Export to CSV or API",
+    "seoDescription": "Get Google Trends topic and keyword suggestions for any phrase, region and language. Find the right topics before trend analysis. Export to CSV or JSON.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -343,8 +343,8 @@
     "name": "google-trends-interest-scraper",
     "title": "Google Trends Interest Scraper",
     "description": "Track relative Google Trends interest over time with dates and a score from 0 to 100. Choose a region, time range and search type to compare interest for one topic over time.",
-    "seoTitle": "Google Trends Interest Scraper | Search Interest",
-    "seoDescription": "Google Trends Interest Scraper: Track search-interest scores, dates, time buckets. Use Google Trends Interest output in a recurring Apify API workflow.",
+    "seoTitle": "Google Trends Interest Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Google Trends interest over time with dates and 0 to 100 scores for any keyword, region and time range. Export trend data to CSV or use the API.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -355,8 +355,8 @@
     "name": "google-trends-related-queries-scraper",
     "title": "Google Trends Related Queries Scraper",
     "description": "Explore related Google Trends queries and topics with their relative interest scores. Choose a region and time range to see which searches are associated with the selected topic.",
-    "seoTitle": "Google Trends Related Queries Scraper | Related Queries",
-    "seoDescription": "Google Trends Related Queries Scraper: Get related queries, related topics. Use Google Trends Related Queries output in a recurring Apify API workflow.",
+    "seoTitle": "Google Trends Related Queries Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Google Trends related queries and topics with interest scores for any keyword. Find rising searches for SEO and content ideas. Export to CSV.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -367,8 +367,8 @@
     "name": "google-videos-scraper",
     "title": "Google Videos Scraper",
     "description": "Find Google Videos results with titles, video links, publishers and thumbnails. Set the locale and page options to browse more videos relevant to your phrase.",
-    "seoTitle": "Google Videos Scraper | Video Results",
-    "seoDescription": "Google Videos Scraper: Get video titles, video links. Set a region or language when available. Use the Apify API to schedule repeat Google Videos runs.",
+    "seoTitle": "Google Videos Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Google Videos search results with titles, video links, publishers, durations and thumbnails for any keyword and country. Export to CSV or JSON.",
     "categories": [
       "SEO_TOOLS",
       "VIDEOS"
@@ -379,8 +379,8 @@
     "name": "immobilienscout24-locations-scraper",
     "title": "ImmobilienScout24 Locations Scraper",
     "description": "Find ImmobilienScout24 city and district suggestions with the location codes used in property searches. Enter a city or district to get matching ImmobilienScout24 location suggestions.",
-    "seoTitle": "ImmobilienScout24 Locations Scraper | Location Codes",
-    "seoDescription": "ImmobilienScout24 Locations Scraper: Compare location suggestions, location codes. Connect ImmobilienScout24 Locations results to Make, Zapier or n8n.",
+    "seoTitle": "ImmobilienScout24 Locations Scraper | Real Estate Data API",
+    "seoDescription": "Look up ImmobilienScout24 location IDs for German cities and districts. Get the location codes you need for property searches. Fast, cheap, batch input.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -391,8 +391,8 @@
     "name": "immobilienscout24-price-insights-scraper",
     "title": "ImmobilienScout24 Price Insights Scraper",
     "description": "Compare ImmobilienScout24 rent and sale price estimates per square meter for apartments and houses. Enter one or more city or district names to compare rent and sale estimates.",
-    "seoTitle": "ImmobilienScout24 Price Insights Scraper | Local Price",
-    "seoDescription": "ImmobilienScout24 Price Insights Scraper: Compare apartment rent per square meter. Download ImmobilienScout24 Price Insights records as CSV for analysis.",
+    "seoTitle": "ImmobilienScout24 Price Insights Scraper | Export to CSV",
+    "seoDescription": "Get ImmobilienScout24 rent and sale prices per square meter for German cities and districts. Compare apartments and houses. Export to CSV or the API.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -403,8 +403,8 @@
     "name": "immobilienscout24-search-scraper",
     "title": "ImmobilienScout24 Search Scraper",
     "description": "Search ImmobilienScout24 property listings by city, district or postal code, with filters for property type, price, rooms and floor area.",
-    "seoTitle": "ImmobilienScout24 Search Scraper | Property Listings",
-    "seoDescription": "ImmobilienScout24 Search Scraper: Compare listing titles, asking prices, room counts. Connect ImmobilienScout24 Search results to Make, Zapier or n8n.",
+    "seoTitle": "ImmobilienScout24 Search Scraper | Real Estate Data API",
+    "seoDescription": "Scrape ImmobilienScout24 listings in Germany by city or postal code. Get prices, rooms, size and address with type and price filters. Export to CSV.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -415,8 +415,8 @@
     "name": "immowelt-property-search-scraper",
     "title": "Immowelt Property Search Scraper",
     "description": "Search Immowelt listings by location and property type, then compare prices, rooms and floor area. Enter a city or area and choose the property type and page options you need.",
-    "seoTitle": "Immowelt Property Search Scraper | Property Listings",
-    "seoDescription": "Immowelt Property Search Scraper: Compare listing titles, asking prices, room counts. Connect Immowelt Property Search results to Make, Zapier or n8n.",
+    "seoTitle": "Immowelt Property Search Scraper | Real Estate Data API",
+    "seoDescription": "Scrape Immowelt property listings in Germany for rent or sale. Get prices, rooms, floor area and location for any city. Export listings to CSV or JSON.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -427,8 +427,8 @@
     "name": "indeed-jobs-scraper",
     "title": "Indeed Jobs Scraper",
     "description": "Search Indeed job listings with titles, employers, locations and salary ranges when provided. Enter the role and location you want to hire for, then review salary details when Indeed publishes them.",
-    "seoTitle": "Indeed Jobs Scraper | Job Listings",
-    "seoDescription": "Indeed Jobs Scraper: Get job titles, employers, locations. Use supported employment or date filters. Download Indeed Jobs records as CSV for analysis.",
+    "seoTitle": "Indeed Jobs Scraper | Export Jobs to CSV",
+    "seoDescription": "Scrape Indeed job listings with titles, companies, locations and salary ranges when published. Search any role and city. Export jobs to CSV or use the API.",
     "categories": [
       "JOBS",
       "BUSINESS"
@@ -440,7 +440,7 @@
     "title": "Instagram Post Info | Cheapest $0.20/1k results",
     "description": "Look up a public Instagram post to see its caption, media type and engagement counts. Paste a public post URL or its shortcode to retrieve the details for that post.",
     "seoTitle": "Instagram Post Info | Cheapest $0.20/1k results",
-    "seoDescription": "Instagram Post Info | Cheapest $0.20/1k results: Get post captions, media type, likes. Use the Apify API to schedule repeat Instagram Post Info runs.",
+    "seoDescription": "Get Instagram post data by URL or shortcode: caption, media type, likes, comments and timestamps. Cheap at $0.20 per 1,000 results. No login needed.",
     "categories": [
       "SOCIAL_MEDIA",
       "MARKETING"
@@ -452,7 +452,7 @@
     "title": "Instagram User Info | Cheapest $0.20/1k results",
     "description": "Review a public Instagram profile with its biography, follower count and account details. Submit one public username or several usernames to retrieve the profiles available to Instagram.",
     "seoTitle": "Instagram User Info | Cheapest $0.20/1k results",
-    "seoDescription": "Instagram User Info | Cheapest $0.20/1k results: Get usernames, profile biographies. Use Instagram User Info output in a recurring Apify API workflow.",
+    "seoDescription": "Scrape Instagram profiles by username: bio, followers, following, post count and account details. Cheap at $0.20 per 1,000 results. No login needed.",
     "categories": [
       "SOCIAL_MEDIA",
       "MARKETING"
@@ -463,8 +463,8 @@
     "name": "instagram-user-posts-cheapest-0-20-1000-results",
     "title": "Instagram User Posts Scraper",
     "description": "List recent public Instagram posts with captions, media types and publication times. Choose a public username and use the returned pagination cursor to continue through available posts.",
-    "seoTitle": "Instagram User Posts Scraper | Recent Posts",
-    "seoDescription": "Instagram User Posts Scraper: Get post shortcodes, captions, media types, publication times. Download Instagram User Posts records as CSV for analysis.",
+    "seoTitle": "Instagram User Posts Scraper | Export to CSV or API",
+    "seoDescription": "Scrape recent posts from any public Instagram profile with captions, media URLs, likes and dates. Page through the feed. No Instagram login needed.",
     "categories": [
       "SOCIAL_MEDIA",
       "MARKETING"
@@ -475,8 +475,8 @@
     "name": "jameda-doctor-details-scraper",
     "title": "Jameda Doctor Details Scraper",
     "description": "Review a Jameda doctor profile with name, specialty, ratings and practice details. Submit one or more public doctor profile URLs to collect specialty and practice information together.",
-    "seoTitle": "Jameda Doctor Details Scraper | Doctor Profiles",
-    "seoDescription": "Jameda Doctor Details Scraper: Get doctor names, medical specialties, ratings. Export Jameda Doctor Details results as CSV for a spreadsheet review.",
+    "seoTitle": "Jameda Doctor Details Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Jameda doctor profiles: name, specialty, rating, practice address and contact details. Batch many profile URLs. Export German doctor data to CSV.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -487,8 +487,8 @@
     "name": "jameda-reviews-scraper",
     "title": "Jameda Reviews Scraper",
     "description": "Read Jameda patient reviews with ratings, written feedback, posting dates and review titles. Use a doctor profile URL and choose the supported review sort and rating filters.",
-    "seoTitle": "Jameda Reviews Scraper | Patient Reviews",
-    "seoDescription": "Jameda Reviews Scraper: Read star ratings, review text, posting dates, review titles. Export Jameda Reviews results as CSV for a spreadsheet review.",
+    "seoTitle": "Jameda Reviews Scraper | Export Reviews to CSV",
+    "seoDescription": "Scrape Jameda patient reviews with ratings, review text, titles and dates for any doctor. Sort and filter by rating. Export reviews to CSV or JSON.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -499,8 +499,8 @@
     "name": "jameda-search-scraper",
     "title": "Jameda Search Scraper",
     "description": "Find Jameda doctors by specialty and location, with names, ratings and practice links. Search by medical specialty and city to find public doctor profiles for a local shortlist.",
-    "seoTitle": "Jameda Search Scraper | Doctor Search",
-    "seoDescription": "Jameda Search Scraper: Find doctor names, medical specialties, ratings, practice locations. Use Jameda Search output in a recurring Apify API workflow.",
+    "seoTitle": "Jameda Search Scraper | Export to CSV or API",
+    "seoDescription": "Find doctors on Jameda by specialty and city. Get names, ratings, specialties and profile links for German practices. Export lead lists to CSV or JSON.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -511,8 +511,8 @@
     "name": "kleinanzeigen-listing-details-scraper",
     "title": "Kleinanzeigen Listing Details Scraper",
     "description": "Look up a Kleinanzeigen listing for its description, price, photos and seller details. Paste a Kleinanzeigen ad ID for details, or use the supported query input to search by phrase.",
-    "seoTitle": "Kleinanzeigen Listing Details Scraper | Listing Details",
-    "seoDescription": "Kleinanzeigen Listing Details Scraper: Get listing titles, descriptions, asking prices. Download Kleinanzeigen Listing Details records as CSV for analysis.",
+    "seoTitle": "Kleinanzeigen Listing Details Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Kleinanzeigen ad details: title, description, price, photos, location and seller info. Batch many ad IDs in one run. Export to CSV or JSON.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -523,8 +523,8 @@
     "name": "kleinanzeigen-search-scraper",
     "title": "Kleinanzeigen Search Scraper",
     "description": "Search Kleinanzeigen listings by phrase, location, category and price range. Enter an item phrase and use the location, category and price range fields to narrow local listings.",
-    "seoTitle": "Kleinanzeigen Search Scraper | Classified Listings",
-    "seoDescription": "Kleinanzeigen Search Scraper: Find listing titles, asking prices, item condition, locations. Download Kleinanzeigen Search records as CSV for analysis.",
+    "seoTitle": "Kleinanzeigen Search Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Kleinanzeigen listings by keyword, location, category and price range. Get titles, prices and links for German classifieds. Export to CSV or JSON.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -535,8 +535,8 @@
     "name": "kununu-jobs-scraper",
     "title": "Kununu Jobs Scraper",
     "description": "Find jobs listed on kununu with titles, employers, company ratings and work arrangements. Search the role or company you have in mind and review work arrangement and employer ratings when shown.",
-    "seoTitle": "Kununu Jobs Scraper | Company Jobs",
-    "seoDescription": "Kununu Jobs Scraper: Get job titles, employers, employer ratings. Search job titles and locations. Connect Kununu Jobs results to Make, Zapier or n8n.",
+    "seoTitle": "Kununu Jobs Scraper | Export Jobs to CSV",
+    "seoDescription": "Scrape kununu job listings with titles, employers, company ratings and remote options. Search jobs in Germany, Austria and Switzerland. Export to CSV.",
     "categories": [
       "JOBS",
       "BUSINESS"
@@ -547,8 +547,8 @@
     "name": "kununu-reviews-scraper",
     "title": "Kununu Reviews Scraper",
     "description": "Review kununu employer feedback with company ratings, review text and recommendation scores. Submit multiple company slugs in one run to retrieve records for each target.",
-    "seoTitle": "Kununu Reviews Scraper | Employer Reviews",
-    "seoDescription": "Kununu Reviews Scraper: Read employer names, employee ratings, review text, recommendation scores. Download Kununu Reviews records as CSV for analysis.",
+    "seoTitle": "Kununu Reviews Scraper | Export Reviews to CSV",
+    "seoDescription": "Scrape kununu employer reviews with ratings, review text and recommendation scores. Analyze employer branding for many companies in one run. Export to CSV.",
     "categories": [
       "JOBS",
       "BUSINESS"
@@ -559,8 +559,8 @@
     "name": "linkedin-company-scraper",
     "title": "LinkedIn Company Scraper",
     "description": "Look up a LinkedIn company profile with industry, employee size, website and follower count. Use public company profile URLs, individually or as a batch, to compare company details.",
-    "seoTitle": "LinkedIn Company Scraper | Company Profiles",
-    "seoDescription": "LinkedIn Company Scraper: Get company names, industries, employee counts, follower counts. Use the Apify API to schedule repeat LinkedIn Company runs.",
+    "seoTitle": "LinkedIn Company Scraper | No Login Needed",
+    "seoDescription": "Scrape LinkedIn company pages without login: industry, company size, employee count, website and followers. Batch many company URLs. Export to CSV or JSON.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -571,8 +571,8 @@
     "name": "linkedin-job-details-scraper",
     "title": "LinkedIn Job Details Scraper",
     "description": "Review a LinkedIn job post with title, employer, location and employment details. Pass a public LinkedIn job URL or a list of URLs to inspect several vacancies in one run.",
-    "seoTitle": "LinkedIn Job Details Scraper | Job Details",
-    "seoDescription": "LinkedIn Job Details Scraper: Get job titles, employers, locations, employment types. Use the Apify API to schedule repeat LinkedIn Job Details runs.",
+    "seoTitle": "LinkedIn Job Details Scraper | Export Jobs to CSV",
+    "seoDescription": "Scrape LinkedIn job posts by URL: title, company, location, seniority, employment type and full description. Batch many jobs. No LinkedIn login needed.",
     "categories": [
       "JOBS",
       "BUSINESS"
@@ -583,8 +583,8 @@
     "name": "linkedin-jobs-search-scraper",
     "title": "LinkedIn Jobs Search Scraper",
     "description": "Find LinkedIn job search results by role or location. Get each result title, link and snippet from Google Search, then use the supported query and pagination inputs to collect more results.",
-    "seoTitle": "LinkedIn Jobs Search Scraper | Job Listings",
-    "seoDescription": "LinkedIn Jobs Search Scraper: Find job titles, employers, locations, search snippets. Use the Apify API to schedule repeat LinkedIn Jobs Search runs.",
+    "seoTitle": "LinkedIn Jobs Search Scraper | Export Jobs to CSV",
+    "seoDescription": "Find LinkedIn job postings by role and location. Get titles, links and snippets from search results and page through more results. Export to CSV or JSON.",
     "categories": [
       "JOBS",
       "BUSINESS"
@@ -595,8 +595,8 @@
     "name": "linkedin-post-scraper",
     "title": "LinkedIn Post Scraper",
     "description": "Read a public LinkedIn post with its text, author, publication date and reaction count. Paste a public LinkedIn post URL to retrieve its text and engagement details.",
-    "seoTitle": "LinkedIn Post Scraper | Public Post Data",
-    "seoDescription": "LinkedIn Post Scraper: Get post text, author names. Use a post URL to retrieve its details. Use LinkedIn Post output in a recurring Apify API workflow.",
+    "seoTitle": "LinkedIn Post Scraper | No Login Needed",
+    "seoDescription": "Scrape public LinkedIn posts by URL: post text, author, publish date and reaction count. No LinkedIn login needed. Export posts to CSV or use the API.",
     "categories": [
       "SOCIAL_MEDIA",
       "MARKETING"
@@ -607,8 +607,8 @@
     "name": "linkedin-profile-scraper",
     "title": "LinkedIn Profile Scraper",
     "description": "Review a public LinkedIn profile with name, headline, location and follower count. Submit one or more public LinkedIn profile URLs to build a consistent profile dataset.",
-    "seoTitle": "LinkedIn Profile Scraper | Profile Data",
-    "seoDescription": "LinkedIn Profile Scraper: Get member names, headlines, locations, follower counts. Export LinkedIn Profile results as CSV for a spreadsheet review.",
+    "seoTitle": "LinkedIn Profile Scraper | No Login Needed",
+    "seoDescription": "Scrape public LinkedIn profiles without login: name, location, about section, followers and connections. Batch many profile URLs in one run. Export to CSV.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -619,8 +619,8 @@
     "name": "linkedin-search-scraper",
     "title": "LinkedIn Search Scraper",
     "description": "Find LinkedIn pages through search, with titles, displayed links and result snippets. Add a LinkedIn page type such as profile, company, post or job to the search query.",
-    "seoTitle": "LinkedIn Search Scraper | LinkedIn Search Results",
-    "seoDescription": "LinkedIn Search Scraper: Find page titles, displayed domains, search snippets, result links. Use the Apify API to schedule repeat LinkedIn Search runs.",
+    "seoTitle": "LinkedIn Search Scraper | No Login Needed",
+    "seoDescription": "Find LinkedIn profiles, companies, posts and jobs by keyword via search. Get titles, links and snippets for prospecting lists. Export to CSV or the API.",
     "categories": [
       "LEAD_GENERATION",
       "SOCIAL_MEDIA"
@@ -631,8 +631,8 @@
     "name": "pinterest-search-scraper",
     "title": "Pinterest Search Scraper",
     "description": "Find Pinterest pins with titles, descriptions, image links and source pages. Search a subject or style phrase to find public pins and follow their image links back to the source pages.",
-    "seoTitle": "Pinterest Search Scraper | Pin Results",
-    "seoDescription": "Pinterest Search Scraper: Find pin titles, descriptions, image links, source pages. Export Pinterest Search results as CSV for a spreadsheet review.",
+    "seoTitle": "Pinterest Search Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Pinterest search results for any keyword. Get pin titles, descriptions, image URLs and source links for trend and content research. Export to CSV.",
     "categories": [
       "SOCIAL_MEDIA",
       "MARKETING"
@@ -643,8 +643,8 @@
     "name": "redfin-property-details-scraper",
     "title": "Redfin Property Details Scraper",
     "description": "Review Redfin home details with address, listed price, bedrooms and bathrooms. Look up one property by ID or URL, or submit a batch to review several homes together.",
-    "seoTitle": "Redfin Property Details Scraper | Property Details",
-    "seoDescription": "Redfin Property Details Scraper: Compare property addresses, estimated values, bedrooms. Download Redfin Property Details records as CSV for analysis.",
+    "seoTitle": "Redfin Property Details Scraper | Real Estate Data API",
+    "seoDescription": "Scrape Redfin property details: address, list price, beds, baths, square feet and status. Look up one home or batch many by ID or URL. Export to CSV.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -655,8 +655,8 @@
     "name": "redfin-property-search-scraper",
     "title": "Redfin Property Search Scraper",
     "description": "Search Redfin homes by market and filters, then compare addresses, prices and room counts. Set a Redfin market or region, then narrow the search by price, rooms or property status.",
-    "seoTitle": "Redfin Property Search Scraper | Home Listings",
-    "seoDescription": "Redfin Property Search Scraper: Compare property addresses, asking prices, bedrooms. Use the Apify API to schedule repeat Redfin Property Search runs.",
+    "seoTitle": "Redfin Property Search Scraper | Real Estate Data API",
+    "seoDescription": "Scrape Redfin home listings by city or region with price, beds, baths and status filters. Get addresses, prices and links. Export real estate data to CSV.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -667,8 +667,8 @@
     "name": "redfin-valuation-scraper",
     "title": "Redfin Valuation Scraper",
     "description": "Check Redfin’s estimated home value and range alongside comparable property details. Provide a property ID or URL to get Redfin’s estimate and comparables when the home has coverage.",
-    "seoTitle": "Redfin Valuation Scraper | Home Value Estimates",
-    "seoDescription": "Redfin Valuation Scraper: Compare estimated home value, low and high estimates, comparable homes. Download Redfin Valuation records as CSV for analysis.",
+    "seoTitle": "Redfin Valuation Scraper | Real Estate Data API",
+    "seoDescription": "Get Redfin home value estimates with value range and comparable sales for any property ID or URL. Use it for valuation and investment research at scale.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -679,8 +679,8 @@
     "name": "scrappa-google-search",
     "title": "Google Search Results Scraper",
     "description": "Find Google Search results with page titles, displayed domains, snippets and links. Set the search phrase and regional options to retrieve Google results for a focused market.",
-    "seoTitle": "Google Search Results Scraper | Google Search Results",
-    "seoDescription": "Google Search Results Scraper: Find page titles, displayed domains, search snippets. Use the Apify API to schedule repeat Google Search Results runs.",
+    "seoTitle": "Google Search Results Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Google search results by keyword and country. Get titles, links, displayed domains and snippets for rank tracking and SEO. Export to CSV or JSON.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -691,8 +691,8 @@
     "name": "similarweb-traffic-analytics-scraper",
     "title": "Similarweb Traffic Analytics Scraper",
     "description": "Review Similarweb traffic estimates, visit trends, referral shares and country breakdowns. Add several domains to compare estimated visits, traffic sources and audience locations together.",
-    "seoTitle": "Similarweb Traffic Analytics Scraper | Website Traffic Data",
-    "seoDescription": "Similarweb Traffic Analytics Scraper: Get estimated monthly visits, traffic sources. Download Similarweb Traffic Analytics records as CSV for analysis.",
+    "seoTitle": "Similarweb Traffic Analytics Scraper | Export to CSV or API",
+    "seoDescription": "Get Similarweb traffic data for any website: monthly visits, trends, traffic sources and top countries. Compare up to 1,000 domains per run. Export to CSV.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -703,8 +703,8 @@
     "name": "startpage-search-scraper",
     "title": "Startpage Search Scraper",
     "description": "Find Startpage results with page titles, descriptions, domains and source links. Submit several phrases in one run and use only the locale and filters listed in the input.",
-    "seoTitle": "Startpage Search Scraper | Search Results",
-    "seoDescription": "Startpage Search Scraper: Find page titles, displayed domains, search snippets, result links. Connect Startpage Search results to Make, Zapier or n8n.",
+    "seoTitle": "Startpage Search Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Startpage search results with titles, descriptions, domains and links. Private Google-quality results for many keywords in one run. Export to CSV.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -715,8 +715,8 @@
     "name": "stepstone-jobs-scraper",
     "title": "Stepstone Jobs Scraper",
     "description": "Find Stepstone job listings with titles, employers, locations and salary details when available. Set a job title and location to compare current vacancies, with pay details where Stepstone provides them.",
-    "seoTitle": "Stepstone Jobs Scraper | Job Listings",
-    "seoDescription": "Stepstone Jobs Scraper: Get job titles, employers, locations. Search job titles and locations. Connect Stepstone Jobs results to Make, Zapier or n8n.",
+    "seoTitle": "Stepstone Jobs Scraper | Export Jobs to CSV",
+    "seoDescription": "Scrape StepStone job listings with titles, employers, locations and salary details when available. Search jobs in Germany by role and city. Export to CSV.",
     "categories": [
       "JOBS",
       "BUSINESS"
@@ -727,8 +727,8 @@
     "name": "tiktok-ads-scraper",
     "title": "TikTok Ads Scraper",
     "description": "Review public TikTok ads from Creative Center Top Ads pages, including advertiser names, copy, calls to action and landing pages. Submit one or more supported URLs to compare ad creatives.",
-    "seoTitle": "TikTok Ads Scraper | Ad Creative Data",
-    "seoDescription": "TikTok Ads Scraper: Get advertiser names, ad copy, calls to action. Paste one or more public ad URLs. Download TikTok Ads records as CSV for analysis.",
+    "seoTitle": "TikTok Ads Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape TikTok Creative Center top ads: advertiser, ad copy, call to action, landing page and media. Research winning ad creatives. Export to CSV or JSON.",
     "categories": [
       "SOCIAL_MEDIA",
       "VIDEOS"
@@ -739,8 +739,8 @@
     "name": "tiktok-challenge-details-scraper",
     "title": "TikTok Hashtag Details Scraper",
     "description": "Look up TikTok hashtag challenges with names, descriptions and participant counts. Submit multiple challenge names in one run to retrieve records for each target.",
-    "seoTitle": "TikTok Hashtag Details Scraper | Challenge Details",
-    "seoDescription": "TikTok Hashtag Details Scraper: Get challenge names, descriptions, participant counts. Connect TikTok Hashtag Details results to Make, Zapier or n8n.",
+    "seoTitle": "TikTok Hashtag Details Scraper | No Login, Export to CSV",
+    "seoDescription": "Get TikTok hashtag challenge details: name, description, video count and views. Look up many hashtags in one run for trend research. Export to CSV.",
     "categories": [
       "SOCIAL_MEDIA",
       "VIDEOS"
@@ -751,8 +751,8 @@
     "name": "tiktok-challenge-posts-scraper",
     "title": "TikTok Hashtag Videos Scraper",
     "description": "Collect public TikTok videos linked to a challenge, with captions, creators and engagement counts. Pass one or more challenge IDs; use TikTok Challenge Search or Challenge Details to find an ID first.",
-    "seoTitle": "TikTok Hashtag Videos Scraper | Challenge Videos",
-    "seoDescription": "TikTok Hashtag Videos Scraper: Get video captions, creator details, play counts, likes. Connect TikTok Hashtag Videos results to Make, Zapier or n8n.",
+    "seoTitle": "TikTok Hashtag Videos Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape TikTok hashtag videos by challenge ID with captions, creators, plays, likes and shares. Track hashtag campaigns at scale. Export to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -763,8 +763,8 @@
     "name": "tiktok-challenge-search-scraper",
     "title": "TikTok Challenge Search Scraper",
     "description": "Find TikTok challenges by keyword and review their names, IDs and video counts. Enter a challenge keyword to find matching challenge names and IDs for a follow-up lookup.",
-    "seoTitle": "TikTok Challenge Search Scraper | Challenge Search",
-    "seoDescription": "TikTok Challenge Search Scraper: Find challenge names, challenge IDs, descriptions. Use the Apify API to schedule repeat TikTok Challenge Search runs.",
+    "seoTitle": "TikTok Challenge Search Scraper | No Login, Export to CSV",
+    "seoDescription": "Search TikTok hashtags and challenges by keyword. Get challenge names, IDs and video counts to find trending tags. Export results to CSV or use the API.",
     "categories": [
       "SOCIAL_MEDIA",
       "VIDEOS"
@@ -775,8 +775,8 @@
     "name": "tiktok-comments-scraper",
     "title": "TikTok Comments Scraper",
     "description": "Read public TikTok video comments with text, commenter details, likes and replies. Paste a public video URL and choose whether to include replies when the source provides them.",
-    "seoTitle": "TikTok Comments Scraper | Video Comments",
-    "seoDescription": "TikTok Comments Scraper: Read comment text, commenter details. Paste a public TikTok video URL. Connect TikTok Comments results to Make, Zapier or n8n.",
+    "seoTitle": "TikTok Comments Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape TikTok comments from any public video: text, commenter, likes, dates and replies. Analyze audience sentiment. Export comments to CSV or JSON.",
     "categories": [
       "SOCIAL_MEDIA",
       "VIDEOS"
@@ -787,8 +787,8 @@
     "name": "tiktok-followers-scraper",
     "title": "TikTok Followers Scraper",
     "description": "Review public profiles following a TikTok account, with usernames and follower counts. Enter a public TikTok username and set the requested count to inspect that account’s followers.",
-    "seoTitle": "TikTok Followers Scraper | Follower Profiles",
-    "seoDescription": "TikTok Followers Scraper: Get usernames, display names, profile photos, follower counts. Use TikTok Followers output in a recurring Apify API workflow.",
+    "seoTitle": "TikTok Followers Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape the followers of any public TikTok account with usernames, nicknames and follower counts. Page through large lists. Export followers to CSV.",
     "categories": [
       "SOCIAL_MEDIA",
       "VIDEOS"
@@ -799,8 +799,8 @@
     "name": "tiktok-following-scraper",
     "title": "TikTok Following Scraper",
     "description": "Review public profiles followed by a TikTok account, with usernames and profile details. Choose a public TikTok profile and requested count to list accounts it follows.",
-    "seoTitle": "TikTok Following Scraper | Following Profiles",
-    "seoDescription": "TikTok Following Scraper: Get usernames, display names, profile photos, follower counts. Use TikTok Following output in a recurring Apify API workflow.",
+    "seoTitle": "TikTok Following Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape the accounts any public TikTok user follows, with usernames and profile details. Map creator networks and audiences. Export to CSV or JSON.",
     "categories": [
       "SOCIAL_MEDIA",
       "VIDEOS"
@@ -811,8 +811,8 @@
     "name": "tiktok-hashtag-posts-scraper",
     "title": "TikTok Hashtag Posts Scraper",
     "description": "Find public TikTok videos using a hashtag, with captions, creators and engagement counts. Enter a hashtag and optionally choose a region or result count.",
-    "seoTitle": "TikTok Hashtag Posts Scraper | Hashtag Videos",
-    "seoDescription": "TikTok Hashtag Posts Scraper: Get video captions, creator details, play counts, likes. Use the Apify API to schedule repeat TikTok Hashtag Posts runs.",
+    "seoTitle": "TikTok Hashtag Posts Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape TikTok videos for any hashtag with captions, creators, plays, likes and comments. Filter by region and count. Export hashtag videos to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -823,8 +823,8 @@
     "name": "tiktok-music-posts-scraper",
     "title": "TikTok Music Posts Scraper",
     "description": "Find TikTok videos using a sound and compare captions, creators and engagement. Submit multiple sound IDs in one run to retrieve records for each target.",
-    "seoTitle": "TikTok Music Posts Scraper | Sound Videos",
-    "seoDescription": "TikTok Music Posts Scraper: Get video captions, creator details, play counts, likes. Add TikTok Music Posts results to a scheduled spreadsheet report.",
+    "seoTitle": "TikTok Music Posts Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape TikTok videos that use a specific sound or song. Get captions, creators and engagement for many sounds in one run. Export to CSV, JSON or Excel.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -835,8 +835,8 @@
     "name": "tiktok-profile-scraper",
     "title": "TikTok Profile Scraper",
     "description": "Look up a public TikTok profile by username, profile URL or numeric user ID. Retrieve its display name, username and available follower counts without searching for posts.",
-    "seoTitle": "TikTok Profile Scraper | Profile Data",
-    "seoDescription": "TikTok Profile Scraper: Get username, display name, follower count, following count. Export TikTok Profile results as CSV for a spreadsheet review.",
+    "seoTitle": "TikTok Profile Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape TikTok profiles by username, URL or user ID: nickname, followers, following, likes, video count and verified status. No login. Export to CSV.",
     "categories": [
       "SOCIAL_MEDIA",
       "VIDEOS"
@@ -847,8 +847,8 @@
     "name": "tiktok-search-scraper",
     "title": "TikTok Search Scraper",
     "description": "Search TikTok videos by phrase and collect captions, creator details and play counts. Search video captions or topics, then refine by region, publication time or sort order.",
-    "seoTitle": "TikTok Search Scraper | Video Search Results",
-    "seoDescription": "TikTok Search Scraper: Find video captions, creator details. Choose a region or sort option. Use the Apify API to schedule repeat TikTok Search runs.",
+    "seoTitle": "TikTok Search Scraper | No Login, Export to CSV",
+    "seoDescription": "Search TikTok videos by keyword. Get captions, creators, play counts and links, filtered by region, date and sort order. Export video data to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -859,8 +859,8 @@
     "name": "tiktok-user-posts-scraper",
     "title": "TikTok User Posts Scraper",
     "description": "List public videos from a TikTok profile with captions and engagement counts. Set a public TikTok username and continue with the cursor when another page is available.",
-    "seoTitle": "TikTok User Posts Scraper | Profile Videos",
-    "seoDescription": "TikTok User Posts Scraper: Get video captions, creator details, play counts, likes. Export TikTok User Posts results as CSV for a spreadsheet review.",
+    "seoTitle": "TikTok User Posts Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape all public videos from a TikTok profile with captions, plays, likes, comments and dates. Page through the full feed. Export to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -871,8 +871,8 @@
     "name": "tiktok-video-scraper",
     "title": "TikTok Video Details Scraper",
     "description": "Look up a public TikTok video with its caption, creator and engagement metrics. Paste a public video URL or submit several URLs, then enable the optional HD setting when required.",
-    "seoTitle": "TikTok Video Details Scraper | Video Details",
-    "seoDescription": "TikTok Video Details Scraper: Get video caption, creator details, play count, likes. Use TikTok Video Details output in a recurring Apify API workflow.",
+    "seoTitle": "TikTok Video Details Scraper | No Login, Export to CSV",
+    "seoDescription": "Scrape TikTok video data by URL: caption, creator, plays, likes, comments and shares, with optional HD links. Batch many videos in one run. Export to CSV.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -881,10 +881,10 @@
   {
     "id": "L5tTNPlxeCTlFUUjl",
     "name": "trustedshops-reviews-scraper",
-    "title": "TrustedShops Reviews Scraper",
+    "title": "Trusted Shops Reviews Scraper",
     "description": "Read Trusted Shops reviews with shop names, ratings, written feedback and posting dates. Use a Trusted Shops shop ID or URL and page through the reviews available for that profile.",
-    "seoTitle": "TrustedShops Reviews Scraper | Shop Reviews",
-    "seoDescription": "TrustedShops Reviews Scraper: Read shop names, star ratings, review text, posting dates. Connect TrustedShops Reviews results to Make, Zapier or n8n.",
+    "seoTitle": "Trusted Shops Reviews Scraper | Export Reviews to CSV",
+    "seoDescription": "Scrape Trusted Shops reviews with ratings, review text and dates for any shop ID or URL. Page through all reviews and export them to CSV or JSON.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -895,8 +895,8 @@
     "name": "trustedshops-search-scraper",
     "title": "Trusted Shops Search Scraper",
     "description": "Find Trusted Shops profiles by name and compare shop ratings, review counts and links. Enter a shop name to find its public Trusted Shops profile and review summary.",
-    "seoTitle": "Trusted Shops Search Scraper | Shop Search",
-    "seoDescription": "Trusted Shops Search Scraper: Find shop names, average ratings, review counts, profile links. Download Trusted Shops Search records as CSV for analysis.",
+    "seoTitle": "Trusted Shops Search Scraper | Export to CSV or API",
+    "seoDescription": "Search Trusted Shops for online shops by name. Get shop ratings, review counts and profile links for e-commerce research. Export to CSV or use the API.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -905,10 +905,10 @@
   {
     "id": "hhSb9mCZkXYTQc3Lo",
     "name": "trustedshops-shop-profile-scraper",
-    "title": "TrustedShops Shop Profile Scraper",
+    "title": "Trusted Shops Shop Profile Scraper",
     "description": "Look up a Trusted Shops profile with shop details, rating and certification status. Submit a shop ID or profile URL, with batch input available for multiple shops.",
-    "seoTitle": "TrustedShops Shop Profile Scraper | Shop Profiles",
-    "seoDescription": "TrustedShops Shop Profile Scraper: Get shop names, ratings, certification status. Use the Apify API to schedule repeat TrustedShops Shop Profile runs.",
+    "seoTitle": "Trusted Shops Shop Profile Scraper | Export to CSV or API",
+    "seoDescription": "Get Trusted Shops shop profiles: rating, review count, certificate status and shop details. Batch many shop IDs or URLs in one run. Export to CSV or JSON.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -919,8 +919,8 @@
     "name": "trustpilot-business-search-scraper",
     "title": "Trustpilot Business Search Scraper",
     "description": "Find Trustpilot businesses by name and compare star ratings, TrustScores and review counts. Search a company name and apply supported market, rating or review-count filters to the business results.",
-    "seoTitle": "Trustpilot Business Search Scraper | Business Reviews",
-    "seoDescription": "Trustpilot Business Search Scraper: Find business names, Trustpilot scores, star ratings. Download Trustpilot Business Search records as CSV for analysis.",
+    "seoTitle": "Trustpilot Business Search Scraper | Export to CSV or API",
+    "seoDescription": "Find businesses on Trustpilot by name or category. Compare TrustScores, star ratings and review counts with market filters. Export to CSV or JSON.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -931,8 +931,8 @@
     "name": "trustpilot-company-details-scraper",
     "title": "Trustpilot Company Details Scraper",
     "description": "Review a Trustpilot company profile with domain, TrustScore, star rating and review count. Submit multiple company domains in one run to retrieve records for each target.",
-    "seoTitle": "Trustpilot Company Details Scraper | Company Profiles",
-    "seoDescription": "Trustpilot Company Details Scraper: Get business names, Trustpilot scores, star ratings. Download Trustpilot Company Details records as CSV for analysis.",
+    "seoTitle": "Trustpilot Company Details Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Trustpilot company profiles by domain: TrustScore, star rating, review count and contact details. Batch many domains. Export to CSV or JSON.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -943,8 +943,8 @@
     "name": "trustpilot-company-reviews-scraper",
     "title": "Trustpilot Company Reviews Scraper",
     "description": "Read public Trustpilot reviews with reviewer name, rating, title and written feedback. Choose a company domain and apply supported rating, date or reply filters to its public reviews.",
-    "seoTitle": "Trustpilot Company Reviews Scraper | Customer Reviews",
-    "seoDescription": "Trustpilot Company Reviews Scraper: Read reviewer names, star ratings, review titles. Download Trustpilot Company Reviews records as CSV for analysis.",
+    "seoTitle": "Trustpilot Company Reviews Scraper | Export Reviews to CSV",
+    "seoDescription": "Scrape Trustpilot reviews for any company: rating, title, review text, date and replies. Filter by stars and date. Export reviews to CSV or JSON.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -955,8 +955,8 @@
     "name": "vinted-item-details-scraper",
     "title": "Vinted Item Details Scraper",
     "description": "Review a Vinted item with its title, description, price, size and condition. Submit multiple listing IDs in one run to retrieve records for each target.",
-    "seoTitle": "Vinted Item Details Scraper | Item Details",
-    "seoDescription": "Vinted Item Details Scraper: Compare listing titles, item descriptions, prices, item condition. Download Vinted Item Details records as CSV for analysis.",
+    "seoTitle": "Vinted Item Details Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Vinted item details by listing ID: title, description, price, size, brand and condition. Batch many items in one run. Export to CSV or JSON.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -967,8 +967,8 @@
     "name": "vinted-search-scraper",
     "title": "Vinted Search Scraper",
     "description": "Find secondhand fashion listings on Vinted with title, brand, condition and price. Search a clothing phrase and narrow inventory with country, brand, size and price filters.",
-    "seoTitle": "Vinted Search Scraper | Secondhand Listings",
-    "seoDescription": "Vinted Search Scraper: Compare listing titles, brands. Search by item phrase and choose filters. Connect Vinted Search results to Make, Zapier or n8n.",
+    "seoTitle": "Vinted Search Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Vinted listings by keyword with brand, size, condition and price filters across countries. Track secondhand prices and resale deals. Export to CSV.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -979,8 +979,8 @@
     "name": "vinted-user-items-scraper",
     "title": "Vinted User Items Scraper",
     "description": "Browse a Vinted seller’s items with listing titles, brands, condition and prices. Submit multiple user IDs in one run to retrieve records for each target.",
-    "seoTitle": "Vinted User Items Scraper | Seller Listings",
-    "seoDescription": "Vinted User Items Scraper: Compare listing titles, brands, item condition, prices. Export Vinted User Items results as CSV for a spreadsheet review.",
+    "seoTitle": "Vinted User Items Scraper | Export to CSV or API",
+    "seoDescription": "Scrape all items from a Vinted seller's wardrobe with titles, brands, condition and prices. Batch many sellers in one run. Export to CSV or JSON.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -991,8 +991,8 @@
     "name": "vinted-user-profile-scraper",
     "title": "Vinted User Profile Scraper",
     "description": "Look up a Vinted seller profile with username, location, feedback and active item count. Paste the seller or user ID shown in the Input section to retrieve its public record.",
-    "seoTitle": "Vinted User Profile Scraper | Seller Profiles",
-    "seoDescription": "Vinted User Profile Scraper: Compare seller usernames, locations, feedback scores. Export Vinted User Profile results as CSV for a spreadsheet review.",
+    "seoTitle": "Vinted User Profile Scraper | Export to CSV or API",
+    "seoDescription": "Scrape Vinted seller profiles: username, city, feedback score, ratings breakdown, followers and item count. Research resellers. Export to CSV or JSON.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -1003,8 +1003,8 @@
     "name": "website-content-extractor-scraper",
     "title": "Website Content Extractor",
     "description": "Extract page titles, descriptions, readable text and links from public web pages. Add one or more public page URLs and choose whether to include HTML in the extracted content.",
-    "seoTitle": "Website Content Extractor | Page Text and Links",
-    "seoDescription": "Website Content Extractor: Get page titles, descriptions, readable text, outgoing links. Download Website Content Extractor records as CSV for analysis.",
+    "seoTitle": "Website Content Extractor | Export to CSV or API",
+    "seoDescription": "Extract clean text, titles, meta descriptions and links from any web page. Batch many URLs and optionally include raw HTML. Great for AI and RAG pipelines.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -1015,8 +1015,8 @@
     "name": "youtube-api-batch-videos",
     "title": "YouTube Batch Video Scraper",
     "description": "Look up YouTube videos by ID to get titles, descriptions, channel names and view counts. Provide one or more comma-separated YouTube video IDs in the IDs input.",
-    "seoTitle": "YouTube Batch Video Scraper | Video Details",
-    "seoDescription": "YouTube Batch Video Scraper: Get video titles, descriptions, channel names, view counts. Use the Apify API to schedule repeat YouTube Batch Video runs.",
+    "seoTitle": "YouTube Batch Video Scraper | No API Key Needed",
+    "seoDescription": "Get YouTube video data in bulk by ID: title, description, channel, views, likes and publish date. Look up many videos in one run. No YouTube API key.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1027,8 +1027,8 @@
     "name": "youtube-api-channel-podcasts",
     "title": "YouTube Channel Podcasts Scraper",
     "description": "List podcast videos published by a YouTube channel with titles, links, durations and engagement data. Submit a channel ID and choose a sort order to collect videos marked as podcasts.",
-    "seoTitle": "YouTube Channel Podcasts Scraper | Podcast Playlists",
-    "seoDescription": "YouTube Channel Podcasts Scraper: Get podcast titles, channel names, playlist links. Connect YouTube Channel Podcasts results to Make, Zapier or n8n.",
+    "seoTitle": "YouTube Channel Podcasts Scraper | No API Key Needed",
+    "seoDescription": "Scrape podcast episodes from any YouTube channel with titles, links, durations and views. Sort by newest or most popular. Export to CSV, JSON or Excel.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1039,8 +1039,8 @@
     "name": "youtube-api-channel-videos",
     "title": "YouTube Channel Videos Scraper",
     "description": "List videos published by a YouTube channel with titles, publication dates, links and views. Enter a channel ID and sort order; the next-page continuation token appears in the run log.",
-    "seoTitle": "YouTube Channel Videos Scraper | Channel Videos",
-    "seoDescription": "YouTube Channel Videos Scraper: Get video titles, publication dates, video links, view counts. Download YouTube Channel Videos records as CSV for analysis.",
+    "seoTitle": "YouTube Channel Videos Scraper | No API Key Needed",
+    "seoDescription": "Scrape all videos from a YouTube channel with titles, publish dates, links and view counts. Sort by newest or popular. No YouTube API key needed.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1051,8 +1051,8 @@
     "name": "youtube-api-get-channel-about-details",
     "title": "YouTube Channel About Details Scraper",
     "description": "Review a YouTube channel’s About details, including name, description, custom URL and country. Submit a YouTube channel ID to retrieve the public details shown on its About page.",
-    "seoTitle": "YouTube Channel About Details Scraper | Channel About Data",
-    "seoDescription": "YouTube Channel About Details Scraper: Get channel names, descriptions, custom URLs. Download YouTube Channel About Details records as CSV for analysis.",
+    "seoTitle": "YouTube Channel About Details Scraper | No API Key Needed",
+    "seoDescription": "Scrape the About page of any YouTube channel: name, description, custom URL, country, links and join date. Batch channels. No YouTube API key needed.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1063,8 +1063,8 @@
     "name": "youtube-api-get-channel-community",
     "title": "YouTube Channel Community Posts Scraper",
     "description": "Read public YouTube community posts with text, displayed publication age, likes and comments. Start with a channel ID, then pass a continuation token to request another community-post page.",
-    "seoTitle": "YouTube Channel Community Posts Scraper | Community Posts",
-    "seoDescription": "YouTube Channel Community Posts Scraper: Get post text, publication times, likes. Download YouTube Channel Community Posts records as CSV for analysis.",
+    "seoTitle": "YouTube Channel Community Posts Scraper | No API Key Needed",
+    "seoDescription": "Scrape YouTube community posts from any channel: post text, images, likes, comments and post age. Page through older posts. Export to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1075,8 +1075,8 @@
     "name": "youtube-api-get-channel-details",
     "title": "YouTube Channel Details Scraper",
     "description": "Look up a YouTube channel profile with name, description, custom URL and subscriber count. Provide a channel ID for its public profile; a channel handle or display name is not a substitute.",
-    "seoTitle": "YouTube Channel Details Scraper | Channel Profile Data",
-    "seoDescription": "YouTube Channel Details Scraper: Get channel names, descriptions, custom URLs. Export YouTube Channel Details results as CSV for a spreadsheet review.",
+    "seoTitle": "YouTube Channel Details Scraper | No API Key Needed",
+    "seoDescription": "Get YouTube channel details by channel ID: name, description, custom URL and subscriber count. No YouTube API key or quota limits. Export to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1087,8 +1087,8 @@
     "name": "youtube-api-get-channel-livestreams",
     "title": "YouTube Channel Livestreams Scraper",
     "description": "Find public YouTube livestreams from a channel, with titles, watch links and thumbnails. Choose a supported sort order and continuation value when you need to page through the channel’s streams.",
-    "seoTitle": "YouTube Channel Livestreams Scraper | Channel Livestreams",
-    "seoDescription": "YouTube Channel Livestreams Scraper: Get livestream titles, watch links, thumbnails. Download YouTube Channel Livestreams records as CSV for analysis.",
+    "seoTitle": "YouTube Channel Livestreams Scraper | No API Key Needed",
+    "seoDescription": "Scrape live streams and past broadcasts from any YouTube channel with titles, links and thumbnails. Page through all streams. Export to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1099,8 +1099,8 @@
     "name": "youtube-api-get-channel-playlists",
     "title": "YouTube Channel Playlists Scraper",
     "description": "List playlists from a YouTube channel with titles, thumbnails and video counts. Submit a channel ID or a list of IDs to collect the public playlists published by each channel.",
-    "seoTitle": "YouTube Channel Playlists Scraper | Channel Playlists",
-    "seoDescription": "YouTube Channel Playlists Scraper: Get playlist titles, thumbnails, video counts. Use the Apify API to schedule repeat YouTube Channel Playlists runs.",
+    "seoTitle": "YouTube Channel Playlists Scraper | No API Key Needed",
+    "seoDescription": "Scrape all playlists from a YouTube channel with titles, thumbnails and video counts. Batch many channels in one run. No YouTube API key or quota needed.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1111,8 +1111,8 @@
     "name": "youtube-api-get-channel-shorts",
     "title": "YouTube Channel Shorts Scraper",
     "description": "Browse Shorts from a YouTube channel with titles, links and view counts. Use a channel ID and continue with the next-page token when YouTube supplies one.",
-    "seoTitle": "YouTube Channel Shorts Scraper | Channel Shorts",
-    "seoDescription": "YouTube Channel Shorts Scraper: Get Shorts titles, channel names, view counts, video links. Download YouTube Channel Shorts records as CSV for analysis.",
+    "seoTitle": "YouTube Channel Shorts Scraper | No API Key Needed",
+    "seoDescription": "Scrape YouTube Shorts from any channel with titles, links and view counts. Page through all Shorts and export them to CSV or JSON. No API key needed.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1123,8 +1123,8 @@
     "name": "youtube-api-get-channel-statistics",
     "title": "YouTube Channel Statistics Scraper",
     "description": "Review public YouTube channel totals for views, subscribers and published videos. Provide a channel ID to retrieve the public subscriber, view and video totals currently available.",
-    "seoTitle": "YouTube Channel Statistics Scraper | Channel Statistics",
-    "seoDescription": "YouTube Channel Statistics Scraper: Get channel views, subscriber counts, video counts. Download YouTube Channel Statistics records as CSV for analysis.",
+    "seoTitle": "YouTube Channel Statistics Scraper | No API Key Needed",
+    "seoDescription": "Get YouTube channel statistics: subscriber count, total views and video count for any channel ID. Track channel growth over time. Export to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1135,8 +1135,8 @@
     "name": "youtube-api-get-playlists-details",
     "title": "YouTube Playlist Details Scraper",
     "description": "Look up a YouTube playlist with its title, description, channel and video count. Paste a YouTube playlist ID to retrieve its details.",
-    "seoTitle": "YouTube Playlist Details Scraper | Playlist Details",
-    "seoDescription": "YouTube Playlist Details Scraper: Get playlist titles, descriptions, channel names. Use the Apify API to schedule repeat YouTube Playlist Details runs.",
+    "seoTitle": "YouTube Playlist Details Scraper | No API Key Needed",
+    "seoDescription": "Get YouTube playlist details by playlist ID: title, description, channel and video count. No YouTube API key or quota needed. Export to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1147,8 +1147,8 @@
     "name": "youtube-api-get-video-details",
     "title": "YouTube Video Details Scraper",
     "description": "Look up a YouTube video with title, description, channel and view count. Paste a YouTube video ID to retrieve its public details.",
-    "seoTitle": "YouTube Video Details Scraper | Video Details",
-    "seoDescription": "YouTube Video Details Scraper: Get video titles, descriptions, channel names, view counts. Download YouTube Video Details records as CSV for analysis.",
+    "seoTitle": "YouTube Video Details Scraper | No API Key Needed",
+    "seoDescription": "Get YouTube video details by video ID: title, description, channel, views, likes and publish date. No YouTube API key or quota. Export to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1159,8 +1159,8 @@
     "name": "youtube-api-hashtags",
     "title": "YouTube Hashtag Videos Scraper",
     "description": "Find public YouTube videos for a hashtag, with titles, channels and view counts. Enter a hashtag and optionally set video length, upload time or sort order.",
-    "seoTitle": "YouTube Hashtag Videos Scraper | Hashtag Videos",
-    "seoDescription": "YouTube Hashtag Videos Scraper: Get video titles, descriptions, channel names, view counts. Download YouTube Hashtag Videos records as CSV for analysis.",
+    "seoTitle": "YouTube Hashtag Videos Scraper | No API Key Needed",
+    "seoDescription": "Scrape YouTube videos for any hashtag with titles, channels and view counts. Filter by length, upload date and sort order. Export to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1171,8 +1171,8 @@
     "name": "youtube-api-playlists",
     "title": "YouTube Playlist Search Scraper",
     "description": "Find YouTube playlists by phrase, with titles, channel names and playlist links. Enter a playlist search phrase and choose a supported sort order.",
-    "seoTitle": "YouTube Playlist Search Scraper | Playlist Search",
-    "seoDescription": "YouTube Playlist Search Scraper: Get playlist titles, descriptions, channel names. Use the Apify API to schedule repeat YouTube Playlist Search runs.",
+    "seoTitle": "YouTube Playlist Search Scraper | No API Key Needed",
+    "seoDescription": "Search YouTube playlists by keyword. Get playlist titles, channel names, video counts and links, sorted your way. No YouTube API key or quota limits.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1183,8 +1183,8 @@
     "name": "youtube-api-related-videos",
     "title": "YouTube Related Videos Scraper",
     "description": "Find YouTube videos related to a video ID, with titles, channels and view counts. Enter a YouTube video ID and pass a continuation value to request another page.",
-    "seoTitle": "YouTube Related Videos Scraper | Related Videos",
-    "seoDescription": "YouTube Related Videos Scraper: Get video titles, descriptions, channel names, view counts. Download YouTube Related Videos records as CSV for analysis.",
+    "seoTitle": "YouTube Related Videos Scraper | No API Key Needed",
+    "seoDescription": "Scrape related videos for any YouTube video ID with titles, channels and view counts. Page through more suggestions. No YouTube API key or quota needed.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1195,8 +1195,8 @@
     "name": "youtube-api-search-by-category",
     "title": "YouTube Category Search Scraper",
     "description": "Find YouTube videos in selected categories with titles, descriptions and channel details. Choose one or more video categories and supported sort, length or upload-time filters.",
-    "seoTitle": "YouTube Category Search Scraper | Category Search",
-    "seoDescription": "YouTube Category Search Scraper: Find video titles, descriptions, channel names, view counts. Download YouTube Category Search records as CSV for analysis.",
+    "seoTitle": "YouTube Category Search Scraper | No API Key Needed",
+    "seoDescription": "Find YouTube videos by category such as music, gaming or news, with titles, descriptions and channels. Filter by length and upload date. Export to CSV.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1207,8 +1207,8 @@
     "name": "youtube-api-search-data",
     "title": "YouTube Search Scraper",
     "description": "Search YouTube videos by phrase with titles, descriptions and channel details. Search a video topic and use the listed duration, type, upload-date and sort filters.",
-    "seoTitle": "YouTube Search Scraper | Video Search Results",
-    "seoDescription": "YouTube Search Scraper: Find video titles, descriptions, channel names, view counts. Export YouTube Search results as CSV for a spreadsheet review.",
+    "seoTitle": "YouTube Search Scraper | No API Key Needed",
+    "seoDescription": "Scrape YouTube search results by keyword with titles, descriptions, channels and views. Filter by duration, type, upload date and sort. No API key needed.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1219,8 +1219,8 @@
     "name": "youtube-api-search-suggestions",
     "title": "YouTube Search Suggestions Scraper",
     "description": "Find YouTube search suggestions for a phrase and locale. Enter a phrase and select a language or country to request localized YouTube suggestions.",
-    "seoTitle": "YouTube Search Suggestions Scraper | Search Suggestions",
-    "seoDescription": "YouTube Search Suggestions Scraper: Find search suggestions, language, country or region. Download YouTube Search Suggestions records as CSV for analysis.",
+    "seoTitle": "YouTube Search Suggestions Scraper | No API Key Needed",
+    "seoDescription": "Get YouTube autocomplete keyword suggestions for any phrase, language and country. Find what people search on YouTube for video SEO. Export to CSV.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1231,8 +1231,8 @@
     "name": "youtube-api-trending-videos",
     "title": "YouTube Trending Videos Scraper",
     "description": "Browse the current YouTube trending feed with video titles, channel names and view counts. Use the ready-to-run default input to collect the videos currently trending.",
-    "seoTitle": "YouTube Trending Videos Scraper | Trending Videos",
-    "seoDescription": "YouTube Trending Videos Scraper: Get video titles, descriptions, channel names, view counts. Download YouTube Trending Videos records as CSV for analysis.",
+    "seoTitle": "YouTube Trending Videos Scraper | No API Key Needed",
+    "seoDescription": "Scrape the YouTube trending feed with video titles, channels, view counts and links. Track what is trending today. No YouTube API key or quota needed.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1243,8 +1243,8 @@
     "name": "youtube-api-video-chapters",
     "title": "YouTube Video Chapters Scraper",
     "description": "Get YouTube video chapter titles and their start times in seconds. Enter one or more YouTube video IDs to retrieve their chapter lists.",
-    "seoTitle": "YouTube Video Chapters Scraper | Video Chapters",
-    "seoDescription": "YouTube Video Chapters Scraper: Get chapter titles, start times, end times, video title. Connect YouTube Video Chapters results to Make, Zapier or n8n.",
+    "seoTitle": "YouTube Video Chapters Scraper | No API Key Needed",
+    "seoDescription": "Get YouTube video chapters with titles and start times in seconds for any video ID. Batch many videos in one run. Export chapter lists to CSV or JSON.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1255,8 +1255,8 @@
     "name": "youtube-api-video-comments",
     "title": "YouTube Video Comments Scraper",
     "description": "Read public YouTube video comments with text, publication time, likes and replies. Enter a YouTube video ID and pass the continuation value to request another page.",
-    "seoTitle": "YouTube Video Comments Scraper | Video Comments",
-    "seoDescription": "YouTube Video Comments Scraper: Read comment text, publication times, likes, reply counts. Download YouTube Video Comments records as CSV for analysis.",
+    "seoTitle": "YouTube Video Comments Scraper | No API Key Needed",
+    "seoDescription": "Scrape YouTube comments from any video: comment text, author, likes, date and replies. Page through all comments. No YouTube API key or quota needed.",
     "categories": [
       "SOCIAL_MEDIA",
       "VIDEOS"
@@ -1267,8 +1267,8 @@
     "name": "youtube-transcript-scraper",
     "title": "YouTube Transcript Scraper",
     "description": "Retrieve YouTube caption segments with text, language and timing information. Enter a YouTube video ID and choose a transcript language when needed.",
-    "seoTitle": "YouTube Transcript Scraper | Caption Segments",
-    "seoDescription": "YouTube Transcript Scraper: Read caption text, language, start times, segment duration. Use the Apify API to schedule repeat YouTube Transcript runs.",
+    "seoTitle": "YouTube Transcript Scraper | No API Key Needed",
+    "seoDescription": "Get YouTube transcripts and captions with text, timestamps and language for any video ID. Pick the subtitle language. Great for AI, SEO and research.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"

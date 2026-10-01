@@ -116,5 +116,5 @@ Set `company_domain`, then use `rating`, `verified`, `with_replies`, `date_poste
 - [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)
 - [Jameda Reviews Scraper](https://apify.com/thescrappa/jameda-reviews-scraper)
 - [Kununu Reviews Scraper](https://apify.com/thescrappa/kununu-reviews-scraper)
-- [TrustedShops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
+- [Trusted Shops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
 - [Trusted Shops Search Scraper](https://apify.com/thescrappa/trustedshops-search-scraper)

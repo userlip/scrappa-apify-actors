@@ -110,5 +110,5 @@ Submit a company domain, such as the domain used for its Trustpilot business pro
 - [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)
 - [Jameda Reviews Scraper](https://apify.com/thescrappa/jameda-reviews-scraper)
 - [Kununu Reviews Scraper](https://apify.com/thescrappa/kununu-reviews-scraper)
-- [TrustedShops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
+- [Trusted Shops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
 - [Trusted Shops Search Scraper](https://apify.com/thescrappa/trustedshops-search-scraper)

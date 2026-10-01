@@ -114,6 +114,6 @@ Provide a doctor URL through `doctor_url` or `doctor_urls`, then select the supp
 
 - [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)
 - [Kununu Reviews Scraper](https://apify.com/thescrappa/kununu-reviews-scraper)
-- [TrustedShops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
+- [Trusted Shops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
 - [Trusted Shops Search Scraper](https://apify.com/thescrappa/trustedshops-search-scraper)
-- [TrustedShops Shop Profile Scraper](https://apify.com/thescrappa/trustedshops-shop-profile-scraper)
+- [Trusted Shops Shop Profile Scraper](https://apify.com/thescrappa/trustedshops-shop-profile-scraper)

@@ -107,5 +107,5 @@ Enter a shop or company phrase in the search query. A matching record may contai
 - [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)
 - [Jameda Reviews Scraper](https://apify.com/thescrappa/jameda-reviews-scraper)
 - [Kununu Reviews Scraper](https://apify.com/thescrappa/kununu-reviews-scraper)
-- [TrustedShops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
-- [TrustedShops Shop Profile Scraper](https://apify.com/thescrappa/trustedshops-shop-profile-scraper)
+- [Trusted Shops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
+- [Trusted Shops Shop Profile Scraper](https://apify.com/thescrappa/trustedshops-shop-profile-scraper)

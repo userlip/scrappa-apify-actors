@@ -1,4 +1,4 @@
-# TrustedShops Shop Profile Scraper
+# Trusted Shops Shop Profile Scraper
 
 Look up a Trusted Shops profile with shop details, rating and certification status. Submit a shop ID or profile URL, with batch input available for multiple shops.
 
@@ -111,5 +111,5 @@ Use `tsids` or `urls` for a batch, or `tsid` or `url` for one shop. The profile 
 - [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)
 - [Jameda Reviews Scraper](https://apify.com/thescrappa/jameda-reviews-scraper)
 - [Kununu Reviews Scraper](https://apify.com/thescrappa/kununu-reviews-scraper)
-- [TrustedShops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
+- [Trusted Shops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
 - [Trusted Shops Search Scraper](https://apify.com/thescrappa/trustedshops-search-scraper)
