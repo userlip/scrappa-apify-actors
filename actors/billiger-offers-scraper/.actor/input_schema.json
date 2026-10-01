@@ -1,0 +1,175 @@
+{
+  "title": "Billiger.de Product Offers Scraper",
+  "description": "Compare Billiger.de product offers by shop, price, shipping cost, availability, seller rating, and offer link. Batch product IDs to review merchants in one run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "product_ids"
+  ],
+  "properties": {
+    "product_ids": {
+      "title": "Product IDs",
+      "type": "array",
+      "description": "Billiger.de product IDs whose shop offers you want to compare.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "product_id": "4612031183"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "properties": {
+          "product_id": {
+            "title": "Product ID",
+            "type": "integer",
+            "minimum": 1,
+            "description": "Canonical Billiger product identifier.",
+            "editor": "number"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "1-based page number. Defaults to 1.",
+            "editor": "number"
+          },
+          "page_size": {
+            "title": "Page size",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Offers per page. Defaults to 20, maximum 50.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort order",
+            "type": "string",
+            "enum": [
+              "relevance",
+              "price",
+              "total_price",
+              "shop_userreview_rating",
+              "shop_userreview_count",
+              "shop_rating"
+            ],
+            "description": "relevance, price, total_price, shop_userreview_rating, shop_userreview_count, or shop_rating alias.",
+            "editor": "select"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Sort direction: asc or desc.",
+            "editor": "select"
+          },
+          "group_by_shop": {
+            "title": "Group By Shop",
+            "type": "boolean",
+            "description": "Must remain false so offer pagination stays item-level and exhaustive.",
+            "editor": "checkbox"
+          },
+          "all": {
+            "title": "All pages",
+            "type": "boolean",
+            "description": "Set true to exhaust every expected offer page.",
+            "editor": "checkbox"
+          },
+          "offer_conditions": {
+            "title": "Offer Conditions",
+            "type": "string",
+            "pattern": "^\\d+(,\\d+)*$",
+            "description": "Numeric condition IDs such as 1 or 1,2,3.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "1-based page number. Defaults to 1.",
+      "editor": "number"
+    },
+    "page_size": {
+      "title": "Page size",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Offers per page. Defaults to 20, maximum 50.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort order",
+      "type": "string",
+      "enum": [
+        "relevance",
+        "price",
+        "total_price",
+        "shop_userreview_rating",
+        "shop_userreview_count",
+        "shop_rating"
+      ],
+      "description": "relevance, price, total_price, shop_userreview_rating, shop_userreview_count, or shop_rating alias.",
+      "editor": "select"
+    },
+    "direction": {
+      "title": "Direction",
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "description": "Sort direction: asc or desc.",
+      "editor": "select"
+    },
+    "group_by_shop": {
+      "title": "Group By Shop",
+      "type": "boolean",
+      "description": "Must remain false so offer pagination stays item-level and exhaustive.",
+      "editor": "checkbox"
+    },
+    "all": {
+      "title": "All pages",
+      "type": "boolean",
+      "description": "Set true to exhaust every expected offer page.",
+      "editor": "checkbox"
+    },
+    "offer_conditions": {
+      "title": "Offer Conditions",
+      "type": "string",
+      "pattern": "^\\d+(,\\d+)*$",
+      "description": "Numeric condition IDs such as 1 or 1,2,3.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    }
+  }
+}

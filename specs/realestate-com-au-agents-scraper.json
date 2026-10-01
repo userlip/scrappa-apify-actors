@@ -1,0 +1,414 @@
+{
+  "slug": "realestate-com-au-agents-scraper",
+  "title": "Realestate.com.au Agents Scraper",
+  "description": "Find realestate.com.au agents by location with names, agencies, ratings, reviews, recent sales, and profile details. Batch Australian suburbs and page through results.",
+  "categories": [
+    "REAL_ESTATE",
+    "LEAD_GENERATION"
+  ],
+  "endpoint": "/realestate-com-au/agents",
+  "openapiPath": "/realestate-com-au/agents",
+  "mode": "list",
+  "batch": {
+    "field": "locations",
+    "valueField": "location",
+    "apiParam": "location",
+    "pathParam": null,
+    "title": "Agent search locations",
+    "description": "Australian suburbs or localities to search for realestate.com.au agents.",
+    "valueDescription": "location used to find realestate.com.au agents."
+  },
+  "parameters": [
+    {
+      "input": "url",
+      "apiParam": "url",
+      "location": "query",
+      "required": false,
+      "title": "URL",
+      "schema": {
+        "type": "string",
+        "pattern": "^https:\\/\\/www\\.realestate\\.com\\.au\\/find-agent",
+        "format": "uri",
+        "description": "Full realestate.com.au find-agent URL."
+      }
+    },
+    {
+      "input": "location",
+      "apiParam": "location",
+      "location": "query",
+      "required": true,
+      "title": "Location",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120,
+        "pattern": "^[a-z0-9,+ -]+$",
+        "description": "Location slug or text such as sydney-nsw-2000. Required unless url is supplied."
+      }
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 200,
+        "description": "Page number for find-agent pagination."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "locations": [
+      {
+        "location": "Richmond, VIC 3121"
+      }
+    ],
+    "page": 1,
+    "maxResults": 5,
+    "maxPages": 1
+  },
+  "testParams": {
+    "location": "Richmond, VIC 3121"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "agents": [
+        {
+          "id": null,
+          "name": "Jordan Ellis",
+          "agency": {
+            "name": "Jordan Ellis",
+            "agencyId": "AG-48317",
+            "branding": {
+              "textColor": "Harbourline Property Group",
+              "primaryColor": "Harbourline Property Group"
+            },
+            "logo": {
+              "uri": "https://cdn.northstar.invalid/images/aurora-front.webp",
+              "templatedUrl": "https://www.realestate.com.au/agency/harbourline-property-group"
+            },
+            "agencyProfileUrl": "https://www.realestate.com.au/agent/jordan-ellis"
+          },
+          "rating": null,
+          "reviews": {
+            "stats": {
+              "avgRating": 94,
+              "totalReviews": 28,
+              "reviewCountInTimeRange": 347,
+              "compliments": [
+                {
+                  "count": 28,
+                  "tag": "Verified source detail"
+                }
+              ]
+            },
+            "bestAndLatestReview": {
+              "role": "Senior property advisor",
+              "rating": 94,
+              "content": "Customers praise the clear product details and responsive service."
+            }
+          },
+          "recent_sales": null,
+          "raw": {
+            "_links": {
+              "profile": {
+                "href": "https://www.realestate.com.au/agent/jordan-ellis"
+              }
+            },
+            "agency": {
+              "name": "Jordan Ellis",
+              "agencyId": "AG-48317",
+              "branding": {
+                "textColor": "Harbourline Property Group",
+                "primaryColor": "Harbourline Property Group"
+              },
+              "logo": {
+                "uri": "https://cdn.northstar.invalid/images/aurora-front.webp",
+                "templatedUrl": "https://www.realestate.com.au/agency/harbourline-property-group"
+              },
+              "agencyProfileUrl": "https://www.realestate.com.au/agent/jordan-ellis"
+            },
+            "agentReelVideo": null,
+            "awards": "Verified source detail",
+            "topAgentSuburbAward": null,
+            "communityInvolvement": "Verified source detail",
+            "coverPhoto": {
+              "uri": "https://cdn.northstar.invalid/images/aurora-front.webp",
+              "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001"
+            },
+            "description": "Bright two-bedroom home with a balcony near local transport.",
+            "friendlyName": "Jordan Ellis",
+            "inclusions": [
+              "Verified source detail"
+            ],
+            "jobTitle": "Senior property advisor",
+            "listings": {
+              "salesBreakdown": {
+                "apartment": {
+                  "count": 28,
+                  "medianDaysOnSite": 8,
+                  "medianSoldPrice": 629
+                },
+                "house": {
+                  "count": 28,
+                  "medianDaysOnSite": 8,
+                  "medianSoldPrice": 629
+                },
+                "townhouse": {
+                  "count": 28,
+                  "medianDaysOnSite": 12.8,
+                  "medianSoldPrice": 629
+                }
+              },
+              "stats": {
+                "medianLeasedPrice": null,
+                "medianSoldDaysOnSite": 8,
+                "medianSoldPrice": 629,
+                "sumLeasedProperties": 8,
+                "sumSoldProperties": 8,
+                "sumSoldPropertiesPrimaryLister": 8,
+                "sumSoldPropertiesSecondaryLister": 8
+              },
+              "statsBySearchFilters": {
+                "medianLeasedPrice": null,
+                "medianSoldDaysOnSite": 8,
+                "medianSoldPrice": 629,
+                "sumLeasedProperties": 8,
+                "sumSoldProperties": 8,
+                "sumSoldPropertiesPrimaryLister": 8,
+                "sumSoldPropertiesSecondaryLister": 8
+              },
+              "salesBreakdownBySearchFilters": {
+                "other": {
+                  "count": 28,
+                  "medianDaysOnSite": null,
+                  "medianSoldPrice": null
+                }
+              }
+            },
+            "recentListings": [
+              {
+                "id": "REA-84271",
+                "address": {
+                  "suburb": "Richmond",
+                  "shortAddress": "24 Bridge Road, Richmond VIC 3121",
+                  "state": "VIC",
+                  "postcode": "3121"
+                },
+                "badge": {
+                  "label": "Verified source detail",
+                  "colour": "navy"
+                },
+                "listers": [
+                  {
+                    "id": "REA-84271",
+                    "name": "Jordan Ellis",
+                    "photo": {
+                      "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001"
+                    }
+                  }
+                ],
+                "generalFeatures": {
+                  "bathrooms": 2,
+                  "bedrooms": 2,
+                  "parkingSpaces": 8
+                },
+                "price": "A$720,000",
+                "media": {
+                  "mainImage": "https://cdn.northstar.invalid/images/aurora-front.webp",
+                  "images": [
+                    "https://cdn.northstar.invalid/images/aurora-front.webp"
+                  ]
+                }
+              }
+            ],
+            "mostActiveAtlasId": "REA-84271",
+            "name": "Jordan Ellis",
+            "profileImage": {
+              "uri": "https://cdn.northstar.invalid/images/aurora-front.webp",
+              "templatedUrl": "https://www.realestate.com.au/agent/jordan-ellis"
+            },
+            "reviews": {
+              "stats": {
+                "avgRating": 94,
+                "totalReviews": 28,
+                "reviewCountInTimeRange": 347,
+                "compliments": [
+                  {
+                    "count": 28,
+                    "tag": "Verified source detail"
+                  }
+                ]
+              },
+              "bestAndLatestReview": {
+                "role": "Senior property advisor",
+                "rating": 94,
+                "content": "Customers praise the clear product details and responsive service."
+              }
+            },
+            "reviewSummary": "Verified source detail",
+            "salespersonId": "AG-48317",
+            "social": {
+              "facebook": "Verified source detail",
+              "instagram": "Home and garden",
+              "twitter": "Verified source detail",
+              "linkedin": "Verified source detail"
+            },
+            "specialities": "Verified source detail",
+            "video": {
+              "id": "REA-84271",
+              "provider": "Verified source detail",
+              "title": "Bright two-bedroom home in Richmond"
+            },
+            "yearsExperience": 2023
+          }
+        }
+      ],
+      "raw": {
+        "resi-agent_customer-search-mfe": {
+          "AGENT_SEARCH": {
+            "pageNumber": 1,
+            "pageSize": 24,
+            "pageCount": 5,
+            "totalCount": 120
+          }
+        }
+      }
+    }
+  },
+  "tableFields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "format": "text"
+    },
+    {
+      "name": "agency",
+      "label": "Agency",
+      "format": "text"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "number"
+    },
+    {
+      "name": "reviews",
+      "label": "Reviews",
+      "format": "text"
+    },
+    {
+      "name": "raw",
+      "label": "Raw",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Realestate.com.au Agents | Agent Profiles",
+    "seoDescription": "Find realestate.com.au agents by suburb and collect agency, rating, reviews, recent sales, and profile data. Batch locations and page through results.",
+    "intro": "Search realestate.com.au agents by suburb or locality. Collect agent and agency names, review information, recent sales, and the source profile details across result pages.",
+    "useCases": [
+      "Buyers can identify local agents and compare public profile information.",
+      "Real estate agencies can review market presence and recent sales in target suburbs.",
+      "Property analysts can map agent coverage by Australian location."
+    ],
+    "howToUse": [
+      "Add one suburb or locality to `locations` for each search.",
+      "Optionally provide a find-agent URL or choose a page number for the source results.",
+      "Set `maxPages` and `maxResults`, then export agent records."
+    ],
+    "faqs": [
+      {
+        "question": "Do I need a find-agent URL?",
+        "answer": "No. A location such as a suburb and state is enough for a search. The URL input is available when you want to target a specific find-agent page."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "realestate-com-au-search-scraper",
+        "title": "Realestate.com.au Property Search Scraper"
+      },
+      {
+        "slug": "realestate-com-au-property-scraper",
+        "title": "Realestate.com.au Property Details Scraper"
+      },
+      {
+        "slug": "linkedin-company-scraper",
+        "title": "LinkedIn Company Scraper - $0.30/1k results"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String or null",
+        "description": "realestate.com.au agent identifier, when supplied."
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "description": "Public name of the real estate agent."
+      },
+      {
+        "name": "agency",
+        "type": "Object",
+        "description": "Agency identity, profile, and branding details associated with the agent."
+      },
+      {
+        "name": "rating",
+        "type": "String or null",
+        "description": "Agent rating value; scale follows the source when available."
+      },
+      {
+        "name": "reviews",
+        "type": "Object",
+        "description": "Agent review totals and review excerpts, when available."
+      },
+      {
+        "name": "recent_sales",
+        "type": "String or null",
+        "description": "Recent sale records for the agent, when supplied."
+      },
+      {
+        "name": "raw",
+        "type": "Object",
+        "description": "Raw agent profile payload from realestate.com.au, with recent listings, experience, and profile details."
+      },
+      {
+        "name": "input_location",
+        "type": "String",
+        "description": "Location submitted to retrieve this agent profile."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_location"
+  },
+  "resultPointer": "/data/agents",
+  "fallbackResultPointers": [],
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "currentPagePointer": "/data/raw/resi-agent_customer-search-mfe/AGENT_SEARCH/pageNumber",
+    "totalPagesPointer": "/data/raw/resi-agent_customer-search-mfe/AGENT_SEARCH/pageCount",
+    "maxPages": 10
+  },
+  "defaultMaxPages": 2
+}

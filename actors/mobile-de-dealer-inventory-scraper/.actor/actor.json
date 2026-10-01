@@ -1,0 +1,70 @@
+{
+  "actorSpecification": 1,
+  "name": "mobile-de-dealer-inventory-scraper",
+  "title": "mobile.de Dealer Inventory Scraper",
+  "description": "Browse mobile.de dealer inventory with vehicle titles, prices, mileage, registration, images, and listing IDs. Batch dealer IDs to compare used car stock across sellers.",
+  "categories": [
+    "ECOMMERCE",
+    "LEAD_GENERATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "listing_id",
+              "shortTitle",
+              "make",
+              "model",
+              "price",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "listing_id": {
+                "label": "Listing Id",
+                "format": "text"
+              },
+              "shortTitle": {
+                "label": "Short Title",
+                "format": "text"
+              },
+              "make": {
+                "label": "Make",
+                "format": "text"
+              },
+              "model": {
+                "label": "Model",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "url": {
+                "label": "Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

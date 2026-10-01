@@ -1,0 +1,70 @@
+{
+  "actorSpecification": 1,
+  "name": "wlw-supplier-search-scraper",
+  "title": "WLW Supplier Search Scraper",
+  "description": "Search WLW for suppliers with company profiles, product descriptions, categories, selling points, and order details. Batch queries and filter by country or supplier attributes.",
+  "categories": [
+    "LEAD_GENERATION",
+    "ECOMMERCE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "name",
+              "category",
+              "company",
+              "description",
+              "price",
+              "minimum_order_quantity"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": {
+                "label": "Name",
+                "format": "text"
+              },
+              "category": {
+                "label": "Category",
+                "format": "text"
+              },
+              "company": {
+                "label": "Company",
+                "format": "text"
+              },
+              "description": {
+                "label": "Description",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "minimum_order_quantity": {
+                "label": "Minimum Order Quantity",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

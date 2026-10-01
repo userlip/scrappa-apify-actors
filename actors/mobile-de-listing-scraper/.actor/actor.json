@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "mobile-de-listing-scraper",
+  "title": "mobile.de Listing Details Scraper",
+  "description": "Retrieve a mobile.de listing with vehicle attributes, images, seller information, financing options, and links. Batch listing IDs to compare advertised cars in one run.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "listing_title",
+              "make",
+              "model",
+              "data"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "listing_title": {
+                "label": "Listing Title",
+                "format": "text"
+              },
+              "make": {
+                "label": "Make",
+                "format": "text"
+              },
+              "model": {
+                "label": "Model",
+                "format": "text"
+              },
+              "data": {
+                "label": "Data",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

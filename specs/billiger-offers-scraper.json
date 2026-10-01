@@ -1,0 +1,553 @@
+{
+  "slug": "billiger-offers-scraper",
+  "title": "Billiger.de Product Offers Scraper",
+  "description": "Compare Billiger.de product offers by shop, price, shipping cost, availability, seller rating, and offer link. Batch product IDs to review merchants in one run.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "endpoint": "/billiger/offers",
+  "openapiPath": "/billiger/offers",
+  "mode": "list",
+  "batch": {
+    "field": "product_ids",
+    "valueField": "product_id",
+    "apiParam": "product_id",
+    "pathParam": null,
+    "title": "Product IDs",
+    "description": "Billiger.de product IDs whose shop offers you want to compare.",
+    "valueDescription": "Billiger.de product ID used for this offer lookup."
+  },
+  "parameters": [
+    {
+      "input": "product_id",
+      "apiParam": "product_id",
+      "location": "query",
+      "required": true,
+      "title": "Product ID",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Canonical Billiger product identifier."
+      }
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "description": "1-based page number. Defaults to 1."
+      }
+    },
+    {
+      "input": "page_size",
+      "apiParam": "page_size",
+      "location": "query",
+      "required": false,
+      "title": "Page size",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50,
+        "description": "Offers per page. Defaults to 20, maximum 50."
+      }
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort order",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "relevance",
+          "price",
+          "total_price",
+          "shop_userreview_rating",
+          "shop_userreview_count",
+          "shop_rating"
+        ],
+        "description": "relevance, price, total_price, shop_userreview_rating, shop_userreview_count, or shop_rating alias."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "direction",
+      "apiParam": "direction",
+      "location": "query",
+      "required": false,
+      "title": "Direction",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "description": "Sort direction: asc or desc."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "group_by_shop",
+      "apiParam": "group_by_shop",
+      "location": "query",
+      "required": false,
+      "title": "Group By Shop",
+      "schema": {
+        "type": "boolean",
+        "description": "Must remain false so offer pagination stays item-level and exhaustive."
+      }
+    },
+    {
+      "input": "all",
+      "apiParam": "all",
+      "location": "query",
+      "required": false,
+      "title": "All pages",
+      "schema": {
+        "type": "boolean",
+        "description": "Set true to exhaust every expected offer page."
+      }
+    },
+    {
+      "input": "offer_conditions",
+      "apiParam": "offer_conditions",
+      "location": "query",
+      "required": false,
+      "title": "Offer Conditions",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\d+(,\\d+)*$",
+        "description": "Numeric condition IDs such as 1 or 1,2,3."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "product_ids": [
+      {
+        "product_id": "4612031183"
+      }
+    ],
+    "page": 1,
+    "page_size": 5,
+    "all": false,
+    "maxResults": 5,
+    "maxPages": 1
+  },
+  "testParams": {
+    "product_id": "4612031183"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "hits": [
+        {
+          "shop": "Northstar Outdoor Supply",
+          "shop_tags": [
+            "outdoor specialist"
+          ],
+          "mp_seller_name": "Morgenrot Handelskontor",
+          "shop_group_size": null,
+          "price_per_unit": "€549.90",
+          "availability_code": "AVAILABLE",
+          "brand_id": 8000825,
+          "brand": "Northstar",
+          "condition": "New",
+          "shop_id": 8000751,
+          "category_id": 8000272,
+          "category": "Consumer electronics",
+          "category_tags": [
+            "Consumer electronics"
+          ],
+          "energy_tyre_labels": [
+            {
+              "icon": "primary-image",
+              "desc": "Main listing image and product details."
+            }
+          ],
+          "starting_prizes": true,
+          "shop_logo_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "shipping_costs": 4,
+          "shop_threshold_free_shipping": 4,
+          "type": "Product",
+          "price": 549,
+          "promo_text": "High quality and prompt delivery.",
+          "description": "Compact design with dependable performance and a two-year warranty.",
+          "old_price": 629,
+          "availability_text": "In stock",
+          "mp_feedback_url": "https://www.billiger.de/products/northstar-aurora-1-tb",
+          "mp_seller_userreview_count": null,
+          "shop_userreview_count": 347,
+          "offer_id": 8000857,
+          "voucher_text": "High quality and prompt delivery.",
+          "listed_price": 629,
+          "total_price": 584,
+          "mobile_optimized": true,
+          "name": "Northstar Aurora 1 TB Smartphone",
+          "mp_seller_userreview_rating": 4.7,
+          "shop_userreview_rating": 4.7,
+          "shop_userreview_rating_combined": 4.7,
+          "shop_userreview_count_combined": 347,
+          "payment_methods": [
+            {
+              "id": 8000242,
+              "sort_key": 8,
+              "description": "Compact design with dependable performance and a two-year warranty."
+            }
+          ],
+          "shipping_methods": [
+            {
+              "id": 8000243,
+              "sort_key": 8,
+              "description": "Compact design with dependable performance and a two-year warranty."
+            }
+          ],
+          "image_url_large": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "product_id": 8000209,
+          "image_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "has_image": true,
+          "shop_data": null
+        }
+      ],
+      "total_hits": 25
+    },
+    "meta": {
+      "pagination": {
+        "page": 1,
+        "page_size": 5,
+        "total": 25,
+        "total_pages": 5,
+        "has_more": true,
+        "exhausted": false
+      }
+    }
+  },
+  "tableFields": [
+    {
+      "name": "shop",
+      "label": "Shop",
+      "format": "text"
+    },
+    {
+      "name": "name",
+      "label": "Name",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "shipping_costs",
+      "label": "Shipping Costs",
+      "format": "text"
+    },
+    {
+      "name": "availability_text",
+      "label": "Availability Text",
+      "format": "text"
+    },
+    {
+      "name": "offer_id",
+      "label": "Offer Id",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Billiger.de Offers Scraper | Shop Prices",
+    "seoDescription": "Scrape Billiger.de offers by product ID, including shop, price, shipping, and availability. Compare merchants in one run and export current offers to CSV.",
+    "intro": "Collect merchant offers for a Billiger.de product, including shop names, prices, shipping costs, stock text, and seller ratings. Batch product IDs to compare several listings together.",
+    "useCases": [
+      "Pricing teams can compare current merchant prices and shipping costs.",
+      "Online retailers can track seller availability and ratings for competing products.",
+      "Shoppers can export offer links and sort merchants before making a purchase."
+    ],
+    "howToUse": [
+      "Add a Billiger.de product ID to `product_ids` for each lookup.",
+      "Choose a sort order and optional offer conditions.",
+      "Set page and result limits, then export one row per shop offer."
+    ],
+    "faqs": [
+      {
+        "question": "What does one result represent?",
+        "answer": "Each dataset row is one shop offer returned for a product. A product with several merchants can produce several rows."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "billiger-search-scraper",
+        "title": "Billiger.de Price Comparison Search Scraper"
+      },
+      {
+        "slug": "geizhals-product-scraper",
+        "title": "Geizhals Product & Offers Scraper"
+      },
+      {
+        "slug": "trustedshops-shop-profile-scraper",
+        "title": "Trusted Shops Shop Profile Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "shop",
+        "type": "String",
+        "description": "Merchant name selling the product."
+      },
+      {
+        "name": "shop_tags",
+        "type": "Array<String>",
+        "description": "Labels describing the merchant or its offer."
+      },
+      {
+        "name": "mp_seller_name",
+        "type": "String or null",
+        "description": "Marketplace seller name when the offer comes from a third-party seller."
+      },
+      {
+        "name": "shop_group_size",
+        "type": "String or null",
+        "description": "Number of offers grouped for this shop, when reported."
+      },
+      {
+        "name": "price_per_unit",
+        "type": "String",
+        "description": "Offer price per unit in the source currency and format."
+      },
+      {
+        "name": "availability_code",
+        "type": "String",
+        "description": "Billiger.de availability code for this offer."
+      },
+      {
+        "name": "brand_id",
+        "type": "Integer",
+        "description": "Billiger.de identifier for the product brand."
+      },
+      {
+        "name": "brand",
+        "type": "String",
+        "description": "Brand name of the product in this offer."
+      },
+      {
+        "name": "condition",
+        "type": "String",
+        "description": "Condition of the offered item, such as new or refurbished."
+      },
+      {
+        "name": "shop_id",
+        "type": "Integer",
+        "description": "Billiger.de identifier for the merchant."
+      },
+      {
+        "name": "category_id",
+        "type": "Integer",
+        "description": "Billiger.de category identifier for the offered product."
+      },
+      {
+        "name": "category",
+        "type": "String",
+        "description": "Product category assigned by Billiger.de."
+      },
+      {
+        "name": "category_tags",
+        "type": "Array<String>",
+        "description": "Category labels associated with the offer."
+      },
+      {
+        "name": "energy_tyre_labels",
+        "type": "Array<Object>",
+        "description": "Tyre efficiency label records attached to the product."
+      },
+      {
+        "name": "starting_prizes",
+        "type": "Boolean",
+        "description": "True when the offer includes a starting or promotional price."
+      },
+      {
+        "name": "shop_logo_url",
+        "type": "String",
+        "description": "Merchant logo image URL."
+      },
+      {
+        "name": "shipping_costs",
+        "type": "Integer",
+        "description": "Delivery cost for this merchant offer, in the source currency."
+      },
+      {
+        "name": "shop_threshold_free_shipping",
+        "type": "Integer or null",
+        "description": "Minimum order amount for free shipping, when reported."
+      },
+      {
+        "name": "type",
+        "type": "String",
+        "description": "Billiger.de result type for this offer."
+      },
+      {
+        "name": "price",
+        "type": "Integer",
+        "description": "Advertised merchant offer price, in the source currency."
+      },
+      {
+        "name": "promo_text",
+        "type": "String or null",
+        "description": "Promotion text attached to the offer, when available."
+      },
+      {
+        "name": "description",
+        "type": "String",
+        "description": "Offer or product description shown by the merchant."
+      },
+      {
+        "name": "old_price",
+        "type": "Integer or null",
+        "description": "Previous offer price before a discount, in the source currency."
+      },
+      {
+        "name": "availability_text",
+        "type": "String",
+        "description": "Stock or delivery availability displayed for the offer."
+      },
+      {
+        "name": "mp_feedback_url",
+        "type": "String or null",
+        "description": "Marketplace seller feedback page URL, when available."
+      },
+      {
+        "name": "mp_seller_userreview_count",
+        "type": "String or null",
+        "description": "Number of marketplace seller reviews, when reported."
+      },
+      {
+        "name": "shop_userreview_count",
+        "type": "Integer",
+        "description": "Number of customer reviews for the shop."
+      },
+      {
+        "name": "offer_id",
+        "type": "Integer",
+        "description": "Billiger.de identifier for this merchant offer."
+      },
+      {
+        "name": "voucher_text",
+        "type": "String or null",
+        "description": "Voucher or coupon information attached to the offer."
+      },
+      {
+        "name": "listed_price",
+        "type": "Integer",
+        "description": "List price displayed before discount, in the source currency."
+      },
+      {
+        "name": "total_price",
+        "type": "Integer",
+        "description": "Offer price including delivery, in the source currency."
+      },
+      {
+        "name": "mobile_optimized",
+        "type": "Boolean",
+        "description": "True when the merchant offer page is marked as mobile optimized."
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "description": "Product name associated with the merchant offer."
+      },
+      {
+        "name": "mp_seller_userreview_rating",
+        "type": "Number or null",
+        "description": "Marketplace seller rating; scale follows the source."
+      },
+      {
+        "name": "shop_userreview_rating",
+        "type": "Number",
+        "description": "Average customer rating for the shop; scale follows the source."
+      },
+      {
+        "name": "shop_userreview_rating_combined",
+        "type": "Number",
+        "description": "Combined shop rating across available review sources."
+      },
+      {
+        "name": "shop_userreview_count_combined",
+        "type": "Integer",
+        "description": "Combined number of shop reviews across available sources."
+      },
+      {
+        "name": "payment_methods",
+        "type": "Array<Object>",
+        "description": "Payment methods accepted for this offer."
+      },
+      {
+        "name": "shipping_methods",
+        "type": "Array<Object>",
+        "description": "Shipping options available for this offer."
+      },
+      {
+        "name": "image_url_large",
+        "type": "String",
+        "description": "Large product image URL associated with the offer."
+      },
+      {
+        "name": "product_id",
+        "type": "Integer",
+        "description": "Billiger.de product identifier for the item being offered."
+      },
+      {
+        "name": "image_url",
+        "type": "String",
+        "description": "Product image URL associated with the offer."
+      },
+      {
+        "name": "has_image",
+        "type": "Boolean",
+        "description": "True when an image is available for this offer."
+      },
+      {
+        "name": "shop_data",
+        "type": "String or null",
+        "description": "Additional merchant details supplied by Billiger.de."
+      },
+      {
+        "name": "input_product_id",
+        "type": "String",
+        "description": "Product id submitted to retrieve this shop offer."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_product_id"
+  },
+  "resultPointer": "/data/hits",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/offer_id",
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "currentPagePointer": "/meta/pagination/page",
+    "totalPagesPointer": "/meta/pagination/total_pages",
+    "hasMorePointer": "/meta/pagination/has_more",
+    "maxPages": 10
+  },
+  "defaultMaxPages": 2
+}

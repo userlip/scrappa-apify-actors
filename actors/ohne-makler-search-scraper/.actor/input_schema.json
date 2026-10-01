@@ -1,0 +1,273 @@
+{
+  "title": "Ohne-Makler Property Search Scraper",
+  "description": "Find German property listings on Ohne-Makler with prices, rooms, area, location, coordinates, and listing links. Batch city searches and page through local results.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "locations"
+  ],
+  "properties": {
+    "locations": {
+      "title": "German locations",
+      "type": "array",
+      "description": "City, postal code, county, or state names to resolve on Ohne-Makler.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "q": "berlin"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "q"
+        ],
+        "properties": {
+          "q": {
+            "title": "Search text",
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free-text location: postal code (80331), city (München), Kreis, or Bundesland. Results are limited to the resolved place (returned as location). State/city segments are not accepted alongside q.",
+            "editor": "textfield"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string",
+            "enum": [
+              "wohnung",
+              "haus",
+              "grundstueck",
+              "zimmer",
+              "buero",
+              "einzelhandel",
+              "gastronomie",
+              "lagerhalle",
+              "landwirtschaftliches-objekt",
+              "wohnen-auf-zeit",
+              "gewerbliche-freizeitimmobilie",
+              "zinshaus-rendite",
+              "sonstiges",
+              "immobilie"
+            ],
+            "description": "Property type slug: wohnung, haus, grundstueck, zimmer, buero, einzelhandel, gastronomie, lagerhalle, landwirtschaftliches-objekt, wohnen-auf-zeit, gewerbliche-freizeitimmobilie, zinshaus-rendite, sonstiges, immobilie. Required unless q is used.",
+            "editor": "select"
+          },
+          "transaction": {
+            "title": "Transaction",
+            "type": "string",
+            "enum": [
+              "kaufen",
+              "mieten"
+            ],
+            "description": "kaufen (buy) or mieten (rent). Required unless q is used.",
+            "editor": "select"
+          },
+          "state": {
+            "title": "State",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "Bundesland URL slug (transliterated umlauts, e.g. baden-wurttemberg). Omit for a Germany-wide class.",
+            "editor": "textfield"
+          },
+          "city": {
+            "title": "City",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "City or Kreis URL slug; requires state.",
+            "editor": "textfield"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based result page. Beyond the last page returns a non-billable 404.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort order",
+            "type": "string",
+            "enum": [
+              "price_asc",
+              "price_desc",
+              "date_asc",
+              "date_desc"
+            ],
+            "description": "price_asc, price_desc, date_asc, or date_desc.",
+            "editor": "select"
+          },
+          "price_min": {
+            "title": "Price Min",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Minimum price in EUR.",
+            "editor": "number"
+          },
+          "price_max": {
+            "title": "Price Max",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Maximum price in EUR.",
+            "editor": "number"
+          },
+          "area_min": {
+            "title": "Area Min",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Minimum living area in m².",
+            "editor": "number"
+          },
+          "area_max": {
+            "title": "Area Max",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Maximum living area in m².",
+            "editor": "number"
+          },
+          "radius": {
+            "title": "Radius",
+            "type": "integer",
+            "enum": [
+              "0",
+              "10",
+              "25",
+              "50",
+              "100"
+            ],
+            "description": "Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis (non-billable 422 radius_requires_city).",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "type": {
+      "title": "Type",
+      "type": "string",
+      "enum": [
+        "wohnung",
+        "haus",
+        "grundstueck",
+        "zimmer",
+        "buero",
+        "einzelhandel",
+        "gastronomie",
+        "lagerhalle",
+        "landwirtschaftliches-objekt",
+        "wohnen-auf-zeit",
+        "gewerbliche-freizeitimmobilie",
+        "zinshaus-rendite",
+        "sonstiges",
+        "immobilie"
+      ],
+      "description": "Property type slug: wohnung, haus, grundstueck, zimmer, buero, einzelhandel, gastronomie, lagerhalle, landwirtschaftliches-objekt, wohnen-auf-zeit, gewerbliche-freizeitimmobilie, zinshaus-rendite, sonstiges, immobilie. Required unless q is used.",
+      "editor": "select"
+    },
+    "transaction": {
+      "title": "Transaction",
+      "type": "string",
+      "enum": [
+        "kaufen",
+        "mieten"
+      ],
+      "description": "kaufen (buy) or mieten (rent). Required unless q is used.",
+      "editor": "select"
+    },
+    "state": {
+      "title": "State",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Bundesland URL slug (transliterated umlauts, e.g. baden-wurttemberg). Omit for a Germany-wide class.",
+      "editor": "textfield"
+    },
+    "city": {
+      "title": "City",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "City or Kreis URL slug; requires state.",
+      "editor": "textfield"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 1,
+      "description": "1-based result page. Beyond the last page returns a non-billable 404.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort order",
+      "type": "string",
+      "enum": [
+        "price_asc",
+        "price_desc",
+        "date_asc",
+        "date_desc"
+      ],
+      "description": "price_asc, price_desc, date_asc, or date_desc.",
+      "editor": "select"
+    },
+    "price_min": {
+      "title": "Price Min",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Minimum price in EUR.",
+      "editor": "number"
+    },
+    "price_max": {
+      "title": "Price Max",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum price in EUR.",
+      "editor": "number"
+    },
+    "area_min": {
+      "title": "Area Min",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Minimum living area in m².",
+      "editor": "number"
+    },
+    "area_max": {
+      "title": "Area Max",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum living area in m².",
+      "editor": "number"
+    },
+    "radius": {
+      "title": "Radius",
+      "type": "integer",
+      "enum": [
+        "0",
+        "10",
+        "25",
+        "50",
+        "100"
+      ],
+      "description": "Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis (non-billable 422 radius_requires_city).",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    }
+  }
+}

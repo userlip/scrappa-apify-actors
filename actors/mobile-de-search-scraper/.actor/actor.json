@@ -1,0 +1,70 @@
+{
+  "actorSpecification": 1,
+  "name": "mobile-de-search-scraper",
+  "title": "mobile.de Car Search Scraper",
+  "description": "Search mobile.de car listings with vehicle titles, makes, models, prices, mileage, registration, images, and listing links. Batch searches and filter stock by price, age, or mileage.",
+  "categories": [
+    "ECOMMERCE",
+    "AUTOMATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "listing_id",
+              "shortTitle",
+              "make",
+              "model",
+              "price",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "listing_id": {
+                "label": "Listing Id",
+                "format": "text"
+              },
+              "shortTitle": {
+                "label": "Short Title",
+                "format": "text"
+              },
+              "make": {
+                "label": "Make",
+                "format": "text"
+              },
+              "model": {
+                "label": "Model",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "url": {
+                "label": "Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

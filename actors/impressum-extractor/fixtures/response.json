@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "data": {
+    "company_name": "Morgenrot Handel GmbH",
+    "address": "Hafenallee 17, 10115 Berlin",
+    "email": "kontakt@morgenrot.invalid",
+    "phone": "+49 30 555 0184"
+  },
+  "error": null,
+  "error_code": null,
+  "impressum_url": "https://morgenrot.invalid/impressum"
+}

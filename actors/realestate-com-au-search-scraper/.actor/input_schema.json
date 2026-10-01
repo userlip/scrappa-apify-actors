@@ -1,0 +1,228 @@
+{
+  "title": "Realestate.com.au Property Search Scraper",
+  "description": "Search realestate.com.au by suburb for buy, rent, or sold listings with prices, addresses, property features, agencies, inspections, and links. Batch locations to compare Australian markets.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "locations"
+  ],
+  "properties": {
+    "locations": {
+      "title": "Australian locations",
+      "type": "array",
+      "description": "Suburbs or locality text to search on realestate.com.au.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "location": "Richmond, VIC 3121"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "location"
+        ],
+        "properties": {
+          "location": {
+            "title": "Location",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "description": "Location search text such as Sydney, NSW.",
+            "editor": "textfield"
+          },
+          "channel": {
+            "title": "Channel",
+            "type": "string",
+            "enum": [
+              "buy",
+              "rent",
+              "sold"
+            ],
+            "description": "Listing channel: buy, rent, or sold.",
+            "editor": "select"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 1,
+            "description": "Page number.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort order",
+            "type": "string",
+            "maxLength": 40,
+            "description": "realestate.com.au sort type, such as new-desc or sold-date-desc.",
+            "editor": "textfield"
+          },
+          "min_price": {
+            "title": "Min Price",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Minimum price filter.",
+            "editor": "number"
+          },
+          "max_price": {
+            "title": "Max Price",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Maximum price filter.",
+            "editor": "number"
+          },
+          "min_bedrooms": {
+            "title": "Min Bedrooms",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20,
+            "description": "Minimum bedroom count.",
+            "editor": "number"
+          },
+          "max_bedrooms": {
+            "title": "Max Bedrooms",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20,
+            "description": "Maximum bedroom count.",
+            "editor": "number"
+          },
+          "min_bathrooms": {
+            "title": "Min Bathrooms",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20,
+            "description": "Minimum bathroom count.",
+            "editor": "number"
+          },
+          "min_carspaces": {
+            "title": "Min Carspaces",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20,
+            "description": "Minimum parking spaces.",
+            "editor": "number"
+          },
+          "property_types": {
+            "title": "Property Types",
+            "type": "string",
+            "maxLength": 200,
+            "description": "Comma-separated realestate.com.au property type filters.",
+            "editor": "textfield"
+          },
+          "keywords": {
+            "title": "Keywords",
+            "type": "string",
+            "maxLength": 200,
+            "description": "Comma-separated keyword filters.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "channel": {
+      "title": "Channel",
+      "type": "string",
+      "enum": [
+        "buy",
+        "rent",
+        "sold"
+      ],
+      "description": "Listing channel: buy, rent, or sold.",
+      "editor": "select"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 1,
+      "description": "Page number.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort order",
+      "type": "string",
+      "maxLength": 40,
+      "description": "realestate.com.au sort type, such as new-desc or sold-date-desc.",
+      "editor": "textfield"
+    },
+    "min_price": {
+      "title": "Min Price",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Minimum price filter.",
+      "editor": "number"
+    },
+    "max_price": {
+      "title": "Max Price",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum price filter.",
+      "editor": "number"
+    },
+    "min_bedrooms": {
+      "title": "Min Bedrooms",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20,
+      "description": "Minimum bedroom count.",
+      "editor": "number"
+    },
+    "max_bedrooms": {
+      "title": "Max Bedrooms",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20,
+      "description": "Maximum bedroom count.",
+      "editor": "number"
+    },
+    "min_bathrooms": {
+      "title": "Min Bathrooms",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20,
+      "description": "Minimum bathroom count.",
+      "editor": "number"
+    },
+    "min_carspaces": {
+      "title": "Min Carspaces",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20,
+      "description": "Minimum parking spaces.",
+      "editor": "number"
+    },
+    "property_types": {
+      "title": "Property Types",
+      "type": "string",
+      "maxLength": 200,
+      "description": "Comma-separated realestate.com.au property type filters.",
+      "editor": "textfield"
+    },
+    "keywords": {
+      "title": "Keywords",
+      "type": "string",
+      "maxLength": 200,
+      "description": "Comma-separated keyword filters.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    }
+  }
+}

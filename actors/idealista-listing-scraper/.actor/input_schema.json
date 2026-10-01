@@ -1,0 +1,199 @@
+{
+  "title": "Idealista Listing Details Scraper",
+  "description": "Get Idealista listing details with price, operation, property type, rooms, location, media, agency information, and links. Batch listing IDs across supported European markets.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "listing_ids",
+    "country"
+  ],
+  "properties": {
+    "listing_ids": {
+      "title": "Listing IDs",
+      "type": "array",
+      "description": "Idealista listing IDs to retrieve across supported markets.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "ad_id": "104570830"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "ad_id"
+        ],
+        "properties": {
+          "ad_id": {
+            "title": "Listing ID",
+            "type": "string",
+            "pattern": "^\\d{1,20}$",
+            "description": "Listing identifier from search.",
+            "editor": "textfield"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "enum": [
+              "es",
+              "it",
+              "pt",
+              "fr"
+            ],
+            "description": "es, it, pt, or fr.",
+            "editor": "select"
+          },
+          "typology": {
+            "title": "Typology",
+            "type": "string",
+            "enum": [
+              "vacationRentals"
+            ],
+            "description": "",
+            "editor": "select"
+          },
+          "from_date": {
+            "title": "From date",
+            "type": "string",
+            "format": "date",
+            "description": "",
+            "editor": "textfield"
+          },
+          "to_date": {
+            "title": "To date",
+            "type": "string",
+            "format": "date",
+            "description": "",
+            "editor": "textfield"
+          },
+          "guests": {
+            "title": "Guests",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "description": "",
+            "editor": "number"
+          },
+          "quality": {
+            "title": "Quality",
+            "type": "string",
+            "enum": [
+              "high",
+              "low"
+            ],
+            "description": "",
+            "editor": "select"
+          },
+          "locale": {
+            "title": "Locale",
+            "type": "string",
+            "maxLength": 8,
+            "description": "",
+            "editor": "textfield"
+          },
+          "language": {
+            "title": "Language",
+            "type": "string",
+            "maxLength": 8,
+            "description": "",
+            "editor": "textfield"
+          },
+          "max_items": {
+            "title": "Max Items",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "",
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "enum": [
+        "es",
+        "it",
+        "pt",
+        "fr"
+      ],
+      "description": "es, it, pt, or fr.",
+      "editor": "select"
+    },
+    "typology": {
+      "title": "Typology",
+      "type": "string",
+      "enum": [
+        "vacationRentals"
+      ],
+      "description": "",
+      "editor": "select"
+    },
+    "from_date": {
+      "title": "From date",
+      "type": "string",
+      "format": "date",
+      "description": "",
+      "editor": "textfield"
+    },
+    "to_date": {
+      "title": "To date",
+      "type": "string",
+      "format": "date",
+      "description": "",
+      "editor": "textfield"
+    },
+    "guests": {
+      "title": "Guests",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "description": "",
+      "editor": "number"
+    },
+    "quality": {
+      "title": "Quality",
+      "type": "string",
+      "enum": [
+        "high",
+        "low"
+      ],
+      "description": "",
+      "editor": "select"
+    },
+    "locale": {
+      "title": "Locale",
+      "type": "string",
+      "maxLength": 8,
+      "description": "",
+      "editor": "textfield"
+    },
+    "language": {
+      "title": "Language",
+      "type": "string",
+      "maxLength": 8,
+      "description": "",
+      "editor": "textfield"
+    },
+    "max_items": {
+      "title": "Max Items",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "",
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

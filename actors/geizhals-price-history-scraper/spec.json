@@ -1,0 +1,192 @@
+{
+  "slug": "geizhals-price-history-scraper",
+  "title": "Geizhals Price History Scraper",
+  "description": "Track Geizhals prices by product and market with history timestamps, observed prices, and current range values. Batch product IDs and choose a lookback window.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "endpoint": "/geizhals/price-history",
+  "openapiPath": "/geizhals/price-history",
+  "mode": "list",
+  "batch": {
+    "field": "product_ids",
+    "valueField": "product_id",
+    "apiParam": "product_id",
+    "pathParam": null,
+    "title": "Product IDs",
+    "description": "Geizhals product IDs whose price history you want to review.",
+    "valueDescription": "Geizhals product identifier used for this price history."
+  },
+  "parameters": [
+    {
+      "input": "product_id",
+      "apiParam": "product_id",
+      "location": "query",
+      "required": true,
+      "title": "Product ID",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Known Geizhals product id from product URLs such as ...-a2194110.html."
+      }
+    },
+    {
+      "input": "days",
+      "apiParam": "days",
+      "location": "query",
+      "required": false,
+      "title": "Days",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 3650,
+        "description": "History window in days. Defaults to 31. Maximum 3650."
+      }
+    },
+    {
+      "input": "loc",
+      "apiParam": "loc",
+      "location": "query",
+      "required": false,
+      "title": "Market",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "at",
+          "eu",
+          "pl",
+          "uk"
+        ],
+        "description": "Market code: de, at, eu, pl, or uk. Defaults to de."
+      },
+      "editor": "select"
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "product_ids": [
+      {
+        "product_id": "3103639"
+      }
+    ],
+    "loc": "de",
+    "days": 7,
+    "maxResults": 10
+  },
+  "testParams": {
+    "product_id": "3103639"
+  },
+  "fixture": {
+    "success": true,
+    "history": [
+      {
+        "timestamp_ms": 1790000000000,
+        "timestamp": 1790086400,
+        "price": 549,
+        "marker": 8
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "timestamp",
+      "label": "Timestamp",
+      "format": "number"
+    },
+    {
+      "name": "timestamp_ms",
+      "label": "Timestamp Ms",
+      "format": "number"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "marker",
+      "label": "Marker",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Geizhals Price History | Track Price Changes",
+    "seoDescription": "Track Geizhals price history by product ID with timestamps, observed prices, and current range values. Choose a history window and export market trends.",
+    "intro": "Retrieve Geizhals price-history points for a product ID, including timestamps and recorded prices. Choose a lookback window and market to compare changes over time.",
+    "useCases": [
+      "Price analysts can chart historical changes for a product catalog.",
+      "Retail teams can review low and high points before updating price rules.",
+      "Shoppers can compare recent price movement across multiple product IDs."
+    ],
+    "howToUse": [
+      "Add one Geizhals product ID to `product_ids` for each history lookup.",
+      "Choose the market and number of days to include.",
+      "Set `maxResults` to cap the saved history points, then export the rows."
+    ],
+    "faqs": [
+      {
+        "question": "What does one result represent?",
+        "answer": "Each row is one recorded price point with its source timestamp and price value."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "geizhals-product-scraper",
+        "title": "Geizhals Product & Offers Scraper"
+      },
+      {
+        "slug": "geizhals-search-scraper",
+        "title": "Geizhals Price Comparison Search Scraper"
+      },
+      {
+        "slug": "billiger-offers-scraper",
+        "title": "Billiger.de Product Offers Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "timestamp_ms",
+        "type": "Integer",
+        "description": "Unix timestamp in milliseconds for this price observation."
+      },
+      {
+        "name": "timestamp",
+        "type": "Integer",
+        "description": "Unix timestamp in seconds for this price observation."
+      },
+      {
+        "name": "price",
+        "type": "Number",
+        "description": "Product price recorded at this timestamp, in the selected Geizhals market currency."
+      },
+      {
+        "name": "marker",
+        "type": "Integer",
+        "description": "Geizhals chart marker describing the type of price-history point."
+      },
+      {
+        "name": "input_product_id",
+        "type": "String",
+        "description": "Product id submitted to retrieve this price point."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_product_id"
+  },
+  "resultPointer": "/history",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/timestamp_ms"
+}

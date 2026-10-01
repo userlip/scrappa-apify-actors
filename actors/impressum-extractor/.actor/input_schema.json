@@ -1,0 +1,87 @@
+{
+  "title": "Impressum Contact Data Extractor",
+  "description": "Extract requested company details such as name, address, email, and phone from website legal notices when available. Batch domains and choose fields and language for each lookup.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "domains",
+    "fields"
+  ],
+  "properties": {
+    "domains": {
+      "title": "Domains",
+      "type": "array",
+      "description": "Company website domains whose legal notice you want to inspect.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "domain": "scrappa.co"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "domain"
+        ],
+        "properties": {
+          "domain": {
+            "title": "Domain",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 253,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*$",
+            "description": "The domain to search for impressum (e.g., example.com)",
+            "editor": "textfield"
+          },
+          "fields": {
+            "title": "Fields",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "^[a-zA-Z0-9_]+(,[a-zA-Z0-9_]+)*$",
+            "description": "Comma-separated list of field names to extract (e.g., company_name,address,email,vat_id)",
+            "editor": "textfield"
+          },
+          "language": {
+            "title": "Language",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 5,
+            "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+            "description": "Language code for extracted values (e.g., de, en, fr). Country names and other localizable values will be returned in this language.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "fields": {
+      "title": "Fields",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "pattern": "^[a-zA-Z0-9_]+(,[a-zA-Z0-9_]+)*$",
+      "description": "Comma-separated list of field names to extract (e.g., company_name,address,email,vat_id)",
+      "editor": "textfield"
+    },
+    "language": {
+      "title": "Language",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 5,
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "description": "Language code for extracted values (e.g., de, en, fr). Country names and other localizable values will be returned in this language.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

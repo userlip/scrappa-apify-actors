@@ -1,0 +1,178 @@
+{
+  "title": "Geizhals Price Comparison Search Scraper",
+  "description": "Search Geizhals for products with manufacturer, GTIN, rating summaries, best-price ranges, and product links. Batch keywords across German and European markets.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Product searches",
+      "type": "array",
+      "description": "Product keywords to search across Geizhals markets.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "query": "rtx 4070"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "title": "Keyword",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Search keyword, e.g. thinkpad.",
+            "editor": "textfield"
+          },
+          "loc": {
+            "title": "Market",
+            "type": "string",
+            "enum": [
+              "de",
+              "at",
+              "eu",
+              "pl",
+              "uk"
+            ],
+            "description": "Market code: de, at, eu, pl, or uk. Defaults to de.",
+            "editor": "select"
+          },
+          "lang": {
+            "title": "Language",
+            "type": "string",
+            "enum": [
+              "de",
+              "en"
+            ],
+            "description": "Response language: de or en. Defaults to de.",
+            "editor": "select"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "1-based page number. Defaults to 1.",
+            "editor": "number"
+          },
+          "pagesize": {
+            "title": "Pagesize",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "Results per page, between 1 and 1000. Defaults to 10.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort order",
+            "type": "string",
+            "maxLength": 20,
+            "description": "Optional sort key as used by Geizhals (e.g. price). Defaults to relevance.",
+            "editor": "textfield"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string",
+            "maxLength": 100,
+            "description": "Optional Geizhals category id to constrain results.",
+            "editor": "textfield"
+          },
+          "manufacturer": {
+            "title": "Manufacturer",
+            "type": "string",
+            "maxLength": 100,
+            "description": "Optional manufacturer id to constrain results.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "loc": {
+      "title": "Market",
+      "type": "string",
+      "enum": [
+        "de",
+        "at",
+        "eu",
+        "pl",
+        "uk"
+      ],
+      "description": "Market code: de, at, eu, pl, or uk. Defaults to de.",
+      "editor": "select"
+    },
+    "lang": {
+      "title": "Language",
+      "type": "string",
+      "enum": [
+        "de",
+        "en"
+      ],
+      "description": "Response language: de or en. Defaults to de.",
+      "editor": "select"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "1-based page number. Defaults to 1.",
+      "editor": "number"
+    },
+    "pagesize": {
+      "title": "Pagesize",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Results per page, between 1 and 1000. Defaults to 10.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort order",
+      "type": "string",
+      "maxLength": 20,
+      "description": "Optional sort key as used by Geizhals (e.g. price). Defaults to relevance.",
+      "editor": "textfield"
+    },
+    "category": {
+      "title": "Category",
+      "type": "string",
+      "maxLength": 100,
+      "description": "Optional Geizhals category id to constrain results.",
+      "editor": "textfield"
+    },
+    "manufacturer": {
+      "title": "Manufacturer",
+      "type": "string",
+      "maxLength": 100,
+      "description": "Optional manufacturer id to constrain results.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "actorSpecification": 1,
+  "name": "ohne-makler-search-scraper",
+  "title": "Ohne-Makler Property Search Scraper",
+  "description": "Find German property listings on Ohne-Makler with prices, rooms, area, location, coordinates, and listing links. Batch city searches and page through local results.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "id",
+              "title",
+              "price",
+              "rooms",
+              "living_area_m2",
+              "city",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": {
+                "label": "Id",
+                "format": "text"
+              },
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "rooms": {
+                "label": "Rooms",
+                "format": "number"
+              },
+              "living_area_m2": {
+                "label": "Living Area M2",
+                "format": "number"
+              },
+              "city": {
+                "label": "City",
+                "format": "text"
+              },
+              "url": {
+                "label": "Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,402 @@
+{
+  "slug": "geizhals-product-scraper",
+  "title": "Geizhals Product & Offers Scraper",
+  "description": "Get a Geizhals product record with manufacturer, current merchant offers, price summaries, categories, ratings, and review links. Batch product IDs to compare catalog entries.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "endpoint": "/geizhals/product",
+  "openapiPath": "/geizhals/product",
+  "mode": "single",
+  "batch": {
+    "field": "product_ids",
+    "valueField": "product_id",
+    "apiParam": "product_id",
+    "pathParam": null,
+    "title": "Product IDs",
+    "description": "Geizhals product IDs from product links or search results.",
+    "valueDescription": "Geizhals product identifier used for this lookup."
+  },
+  "parameters": [
+    {
+      "input": "product_id",
+      "apiParam": "product_id",
+      "location": "query",
+      "required": true,
+      "title": "Product ID",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Known Geizhals product id from product URLs such as ...-a2194110.html or a search gzhid."
+      }
+    },
+    {
+      "input": "loc",
+      "apiParam": "loc",
+      "location": "query",
+      "required": false,
+      "title": "Market",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "at",
+          "eu",
+          "pl",
+          "uk"
+        ],
+        "description": "Market code: de, at, eu, pl, or uk. Defaults to de."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "lang",
+      "apiParam": "lang",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "en"
+        ],
+        "description": "Response language: de or en. Defaults to de."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "offers",
+      "apiParam": "offers",
+      "location": "query",
+      "required": false,
+      "title": "Offers",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "description": "Maximum number of merchant offers to include (1-100). Defaults to 20."
+      }
+    },
+    {
+      "input": "merchant_details",
+      "apiParam": "merchant_details",
+      "location": "query",
+      "required": false,
+      "title": "Merchant Details",
+      "schema": {
+        "type": "boolean",
+        "description": "Include merchant/shop details on offers. Defaults to true."
+      }
+    },
+    {
+      "input": "reviews",
+      "apiParam": "reviews",
+      "location": "query",
+      "required": false,
+      "title": "Reviews",
+      "schema": {
+        "type": "boolean",
+        "description": "Include test reviews and review details. Defaults to true."
+      }
+    },
+    {
+      "input": "videos",
+      "apiParam": "videos",
+      "location": "query",
+      "required": false,
+      "title": "Videos",
+      "schema": {
+        "type": "boolean",
+        "description": "Include product videos. Defaults to true."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "product_ids": [
+      {
+        "product_id": "3103639"
+      }
+    ],
+    "loc": "de",
+    "lang": "de",
+    "offers": 2,
+    "merchant_details": false,
+    "reviews": false,
+    "videos": false,
+    "maxResults": 1
+  },
+  "testParams": {
+    "product_id": "3103639"
+  },
+  "fixture": {
+    "success": true,
+    "product_id": 8000170,
+    "loc": "Berlin",
+    "lang": "de",
+    "product": {
+      "images": [
+        "https://cdn.northstar.invalid/images/aurora-front.webp"
+      ],
+      "productvideo": [
+        "Verified marketplace detail"
+      ],
+      "bpoffer_link": "Verified source detail",
+      "category": [
+        {
+          "id": {
+            "m": 8
+          },
+          "label": "Verified source detail"
+        }
+      ],
+      "test_reviews": [
+        {
+          "ctime": 8,
+          "status": "Published",
+          "title": "Northstar Aurora 1 TB Smartphone",
+          "logo_url": {
+            "w": 8,
+            "u": "Current listing detail",
+            "h": 8
+          },
+          "flag": "verified",
+          "position": 8,
+          "abstract_status": "Published"
+        }
+      ],
+      "average_test_reviews_metascore": 94,
+      "manufacturer_name": "Northstar",
+      "variant_id": 8000168,
+      "product": "Northstar Aurora 1 TB Smartphone",
+      "prices": {
+        "best": 549,
+        "avg": 12.8
+      },
+      "gtin": [
+        "9345678901234"
+      ],
+      "urls": {
+        "manufacturer": "Verified source detail",
+        "rate": "Verified source detail",
+        "pricehist": "€549.90",
+        "reviews": "Verified source detail",
+        "overview": "Verified source detail",
+        "offers": "Verified source detail"
+      },
+      "deals": {
+        "alltime": null,
+        "change": null,
+        "oldprice": null,
+        "top_deal": null
+      },
+      "offer_count": 12,
+      "description": [
+        {
+          "value": "USB-C interface",
+          "prop": "USB-C interface"
+        }
+      ],
+      "offers": [
+        {
+          "price": {
+            "currency": "EUR",
+            "ppu": null,
+            "value": 12.8,
+            "url": "https://geizhals.de/northstar-aurora-1-tb-a4450000.html",
+            "legal": null,
+            "date": "2026-09-18"
+          },
+          "pricing": {
+            "loc_currency": "EUR",
+            "loc_value": 12.8,
+            "eur_value": 12.8,
+            "orig_value": 12.8,
+            "loc": "Berlin",
+            "orig_currency": "EUR",
+            "orig_loc": "Berlin"
+          },
+          "avl": {
+            "best_code": 8,
+            "descr": [
+              {
+                "text": "High quality and prompt delivery.",
+                "branch": "Verified source detail"
+              }
+            ],
+            "time": null
+          },
+          "shop": {
+            "opening_hours": null,
+            "url": "https://geizhals.de/northstar-aurora-1-tb-a4450000.html",
+            "agb_link": "Verified source detail",
+            "latitude": null,
+            "multimerchant_id": 8000831,
+            "id": 8000232,
+            "longitude": null
+          }
+        }
+      ],
+      "gzhid": 8000554,
+      "manufacturer_id": 8000714,
+      "listed_since": "2026-09-18",
+      "product_for_sort": "relevance",
+      "variant_count": 28
+    },
+    "meta": {
+      "duration_ms": 8,
+      "attempts": 8
+    }
+  },
+  "tableFields": [
+    {
+      "name": "product_id",
+      "label": "Product Id",
+      "format": "text"
+    },
+    {
+      "name": "product_name",
+      "label": "Product Name",
+      "format": "text"
+    },
+    {
+      "name": "manufacturer",
+      "label": "Manufacturer",
+      "format": "text"
+    },
+    {
+      "name": "best_price",
+      "label": "Best Price",
+      "format": "number"
+    },
+    {
+      "name": "offer_count",
+      "label": "Offer Count",
+      "format": "number"
+    },
+    {
+      "name": "product_url",
+      "label": "Product Url",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Geizhals Product Scraper | Offers and Reviews",
+    "seoDescription": "Scrape Geizhals product details by ID, including manufacturer, current offers, price summaries, ratings, and review links. Batch products for comparison.",
+    "intro": "Look up Geizhals products by ID and retrieve the product record, merchant offers, category, price summary, and rating details. Add several IDs to inspect catalog items together.",
+    "useCases": [
+      "Catalog managers can check manufacturer details and available merchant offers.",
+      "Pricing analysts can compare current best prices with product rating summaries.",
+      "Shopping teams can enrich product lists with Geizhals links and identifiers."
+    ],
+    "howToUse": [
+      "Add one Geizhals product ID to `product_ids` per lookup.",
+      "Choose the market and language, then set how many offers and details to include.",
+      "Set `maxResults` and export one full product record per ID."
+    ],
+    "faqs": [
+      {
+        "question": "Does each row contain merchant offers?",
+        "answer": "Yes. The product object includes the source offer list when offers are available; set the offer limit to control how many are requested."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "geizhals-search-scraper",
+        "title": "Geizhals Price Comparison Search Scraper"
+      },
+      {
+        "slug": "geizhals-price-history-scraper",
+        "title": "Geizhals Price History Scraper"
+      },
+      {
+        "slug": "billiger-offers-scraper",
+        "title": "Billiger.de Product Offers Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when the Geizhals request returned a successful response."
+      },
+      {
+        "name": "product_id",
+        "type": "Integer",
+        "description": "Numeric identifier for this Geizhals product record."
+      },
+      {
+        "name": "loc",
+        "type": "String",
+        "description": "Geizhals locale code used to select the product page language and market."
+      },
+      {
+        "name": "lang",
+        "type": "String",
+        "description": "Language code of the returned Geizhals product record."
+      },
+      {
+        "name": "product",
+        "type": "Object",
+        "description": "Geizhals product details, including manufacturer, categories, price summary, offers, and product links."
+      },
+      {
+        "name": "meta",
+        "type": "Object",
+        "description": "Response metadata from Geizhals, such as request duration and endpoint family."
+      },
+      {
+        "name": "product_name",
+        "type": "String",
+        "description": "Full Geizhals product name, including model and capacity."
+      },
+      {
+        "name": "manufacturer",
+        "type": "String",
+        "description": "Manufacturer name associated with this Geizhals product."
+      },
+      {
+        "name": "best_price",
+        "type": "Integer",
+        "description": "Best price amount for this product record; currency follows the selected source market."
+      },
+      {
+        "name": "offer_count",
+        "type": "Integer",
+        "description": "Number of offer records reported for this product record."
+      },
+      {
+        "name": "product_url",
+        "type": "String",
+        "description": "Public Geizhals URL for the product record or linked resource."
+      },
+      {
+        "name": "input_product_id",
+        "type": "String",
+        "description": "Product id submitted to retrieve this product record."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_product_id"
+  },
+  "flattenPointers": {
+    "product_name": "/product/product",
+    "manufacturer": "/product/manufacturer_name",
+    "best_price": "/product/prices/best",
+    "offer_count": "/product/offer_count",
+    "product_url": "/product/urls/overview"
+  }
+}

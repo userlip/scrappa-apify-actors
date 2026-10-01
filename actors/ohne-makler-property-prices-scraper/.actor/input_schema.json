@@ -1,0 +1,65 @@
+{
+  "title": "Ohne-Makler Property Prices Scraper",
+  "description": "Review Ohne-Makler residential price reports by German state, including market tables, charts, and local regions. Batch state slugs to compare property indicators.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "states"
+  ],
+  "properties": {
+    "states": {
+      "title": "German states",
+      "type": "array",
+      "description": "German state URL slugs for Ohne-Makler residential price reports.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "state": "berlin"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "properties": {
+          "state": {
+            "title": "State",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "Bundesland slug (e.g. baden-wurttemberg).",
+            "editor": "textfield"
+          },
+          "city": {
+            "title": "City",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "Optional city slug for locality price tables and charts.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "city": {
+      "title": "City",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Optional city slug for locality price tables and charts.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

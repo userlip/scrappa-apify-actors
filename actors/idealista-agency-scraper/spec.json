@@ -1,0 +1,254 @@
+{
+  "slug": "idealista-agency-scraper",
+  "title": "Idealista Agency Scraper",
+  "description": "Collect Idealista agency profiles with commercial names, website, contact details, listing totals, languages, and media. Batch agency short names and choose a supported market.",
+  "categories": [
+    "REAL_ESTATE",
+    "LEAD_GENERATION"
+  ],
+  "endpoint": "/idealista/agency",
+  "openapiPath": "/idealista/agency",
+  "mode": "single",
+  "batch": {
+    "field": "agencies",
+    "valueField": "microsite_short_name",
+    "apiParam": "microsite_short_name",
+    "pathParam": null,
+    "title": "Agency short names",
+    "description": "Idealista agency short names from agency microsite URLs.",
+    "valueDescription": "Idealista microsite short name used for this agency lookup."
+  },
+  "parameters": [
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": true,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "es",
+          "it",
+          "pt",
+          "fr"
+        ],
+        "description": "es, it, pt, or fr."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "microsite_short_name",
+      "apiParam": "microsite_short_name",
+      "location": "query",
+      "required": true,
+      "title": "Agency short name",
+      "schema": {
+        "type": "string",
+        "maxLength": 80,
+        "pattern": "^[A-Za-z0-9._-]+$",
+        "description": "Agency short name, for example clikalia."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "agencies": [
+      {
+        "microsite_short_name": "aproperties-mad"
+      }
+    ],
+    "country": "es",
+    "maxResults": 1
+  },
+  "testParams": {
+    "country": "es",
+    "microsite_short_name": "aproperties-mad"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "shortName": "Northstar Outdoor Supply",
+      "activeSinceYear": "Verified source detail",
+      "commercialName": "Morgenrot Immobilien GmbH",
+      "agencyWebUrl": "https://www.idealista.com/en/inmueble/99999117/",
+      "slogan": "Clear advice for every move.",
+      "defaultTypology": "Verified source detail",
+      "defaultOperation": "sale",
+      "contactInfo": {
+        "phone": "+49 30 555 0184",
+        "contactPhone": {
+          "phoneNumber": "+49 30 555 0184",
+          "formattedPhone": "+49 30 555 0184",
+          "prefix": "Verified source detail",
+          "phoneNumberForMobileDialing": "+49 30 555 0184",
+          "nationalNumber": true,
+          "formattedPhoneWithPrefix": "+49 30 555 0184"
+        },
+        "showContactButton": true,
+        "address": {
+          "streetName": "Northstar Outdoor Supply",
+          "streetNumber": 8,
+          "locationName": "Madrid",
+          "postalCode": "Verified source detail",
+          "latitude": 40.4168,
+          "longitude": -3.7038
+        },
+        "proAgent": true
+      },
+      "multimedias": {
+        "mainImage": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "brandingLogo": "https://cdn.northstar.invalid/images/aurora-front.webp"
+      },
+      "total": 28,
+      "languages": [
+        "de"
+      ],
+      "commercialDataId": 8000779,
+      "hasChatEnabled": true,
+      "micrositeLeadAllowed": true,
+      "corporateVideo": {
+        "url": "https://www.idealista.com/en/inmueble/99999117/",
+        "thumbnail": "https://cdn.northstar.invalid/images/aurora-front.webp"
+      },
+      "corporatePhrase": {
+        "text": "High quality and prompt delivery.",
+        "autoTranslated": true
+      }
+    },
+    "meta": {
+      "duration_ms": 8,
+      "endpoint_family": "Verified source detail"
+    }
+  },
+  "tableFields": [
+    {
+      "name": "agency_name",
+      "label": "Agency Name",
+      "format": "text"
+    },
+    {
+      "name": "agency_short_name",
+      "label": "Agency Short Name",
+      "format": "text"
+    },
+    {
+      "name": "agency_website",
+      "label": "Agency Website",
+      "format": "text"
+    },
+    {
+      "name": "active_since_year",
+      "label": "Active Since Year",
+      "format": "text"
+    },
+    {
+      "name": "listing_count",
+      "label": "Listing Count",
+      "format": "number"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Idealista Agency Scraper | Company Profiles",
+    "seoDescription": "Find Idealista agency profiles with contacts, listing totals, services, languages, and media. Batch agency names to compare companies by market.",
+    "intro": "Look up Idealista agencies by microsite short name and collect company details, contact information, service defaults, listing totals, languages, and media. Choose the market for each profile.",
+    "useCases": [
+      "Real estate teams can compare agency coverage, listing totals, and service focus.",
+      "Market researchers can map agency profiles and languages across supported countries.",
+      "Property investors can identify agencies linked to saved listing records."
+    ],
+    "howToUse": [
+      "Add an Idealista microsite short name to `agencies` for each lookup.",
+      "Choose Spain, Italy, Portugal, or France as the market.",
+      "Set `maxResults` and export one agency profile per short name."
+    ],
+    "faqs": [
+      {
+        "question": "What is an agency short name?",
+        "answer": "It is the microsite identifier used in an Idealista agency profile URL. Use the short name, not the full URL."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "idealista-listing-scraper",
+        "title": "Idealista Listing Details Scraper"
+      },
+      {
+        "slug": "idealista-search-scraper",
+        "title": "Idealista Property Search Scraper"
+      },
+      {
+        "slug": "linkedin-company-scraper",
+        "title": "LinkedIn Company Scraper - $0.30/1k results"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when the Idealista request returned a successful response."
+      },
+      {
+        "name": "data",
+        "type": "Object",
+        "description": "Idealista response payload for this agency profile, including `shortName`, `activeSinceYear`, `commercialName`, `agencyWebUrl` and related source fields."
+      },
+      {
+        "name": "meta",
+        "type": "Object",
+        "description": "Response metadata from Idealista, such as request duration and endpoint family."
+      },
+      {
+        "name": "agency_name",
+        "type": "String",
+        "description": "Public name of the Idealista real estate agency."
+      },
+      {
+        "name": "agency_website",
+        "type": "String",
+        "description": "Agency website URL listed in the Idealista profile."
+      },
+      {
+        "name": "active_since_year",
+        "type": "String",
+        "description": "Year the agency began operating on Idealista."
+      },
+      {
+        "name": "listing_count",
+        "type": "Integer",
+        "description": "Number of listing records reported for this agency profile."
+      },
+      {
+        "name": "agency_short_name",
+        "type": "String",
+        "description": "Short agency identifier used in the Idealista profile URL."
+      },
+      {
+        "name": "input_microsite_short_name",
+        "type": "String",
+        "description": "Microsite short name submitted to retrieve this agency profile."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_microsite_short_name"
+  },
+  "flattenPointers": {
+    "agency_name": "/data/commercialName",
+    "agency_website": "/data/agencyWebUrl",
+    "active_since_year": "/data/activeSinceYear",
+    "listing_count": "/data/total",
+    "agency_short_name": "/data/shortName"
+  }
+}

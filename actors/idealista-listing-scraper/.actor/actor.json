@@ -1,0 +1,74 @@
+{
+  "actorSpecification": 1,
+  "name": "idealista-listing-scraper",
+  "title": "Idealista Listing Details Scraper",
+  "description": "Get Idealista listing details with price, operation, property type, rooms, location, media, agency information, and links. Batch listing IDs across supported European markets.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "listing_id",
+              "price",
+              "operation",
+              "property_type",
+              "rooms",
+              "location_name",
+              "listing_url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "listing_id": {
+                "label": "Listing Id",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "operation": {
+                "label": "Operation",
+                "format": "text"
+              },
+              "property_type": {
+                "label": "Property Type",
+                "format": "text"
+              },
+              "rooms": {
+                "label": "Rooms",
+                "format": "number"
+              },
+              "location_name": {
+                "label": "Location Name",
+                "format": "text"
+              },
+              "listing_url": {
+                "label": "Listing Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

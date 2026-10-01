@@ -1,0 +1,264 @@
+{
+  "title": "mobile.de Dealer Inventory Scraper",
+  "description": "Browse mobile.de dealer inventory with vehicle titles, prices, mileage, registration, images, and listing IDs. Batch dealer IDs to compare used car stock across sellers.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "dealer_ids"
+  ],
+  "properties": {
+    "dealer_ids": {
+      "title": "Dealer IDs",
+      "type": "array",
+      "description": "mobile.de dealer identifiers whose car stock you want to browse.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "dealer_id": "47546627"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "dealer_id"
+        ],
+        "properties": {
+          "dealer_id": {
+            "title": "Dealer ID",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "description": "Dealer identifier returned by a listing.",
+            "editor": "textfield"
+          },
+          "vehicle_type": {
+            "title": "Vehicle type",
+            "type": "string",
+            "enum": [
+              "car"
+            ],
+            "description": "Vehicle type. v1 supports car.",
+            "editor": "select"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Zero-based result offset.",
+            "editor": "number"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "description": "Listings to return, from 1 to 20.",
+            "editor": "number"
+          },
+          "query": {
+            "title": "Keyword",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Optional free-text vehicle search.",
+            "editor": "textfield"
+          },
+          "price_min": {
+            "title": "Price Min",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Optional non-negative minimum price.",
+            "editor": "number"
+          },
+          "price_max": {
+            "title": "Price Max",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Optional non-negative maximum price.",
+            "editor": "number"
+          },
+          "registration_year_min": {
+            "title": "Registration Year Min",
+            "type": "integer",
+            "minimum": 1886,
+            "maximum": 2100,
+            "description": "Optional minimum first-registration year.",
+            "editor": "number"
+          },
+          "registration_year_max": {
+            "title": "Registration Year Max",
+            "type": "integer",
+            "minimum": 1886,
+            "maximum": 2100,
+            "description": "Optional maximum first-registration year.",
+            "editor": "number"
+          },
+          "mileage_min": {
+            "title": "Mileage Min",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Optional non-negative minimum mileage.",
+            "editor": "number"
+          },
+          "mileage_max": {
+            "title": "Mileage Max",
+            "type": "integer",
+            "minimum": 0,
+            "description": "Optional non-negative maximum mileage.",
+            "editor": "number"
+          },
+          "make_id": {
+            "title": "Make Id",
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "description": "Validated marketplace make identifier.",
+            "editor": "textfield"
+          },
+          "model_id": {
+            "title": "Model Id",
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "description": "Validated marketplace model identifier. Requires make_id.",
+            "editor": "textfield"
+          },
+          "sort": {
+            "title": "Sort order",
+            "type": "string",
+            "enum": [
+              "relevance",
+              "price_asc",
+              "price_desc"
+            ],
+            "description": "relevance, price_asc, or price_desc.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "vehicle_type": {
+      "title": "Vehicle type",
+      "type": "string",
+      "enum": [
+        "car"
+      ],
+      "description": "Vehicle type. v1 supports car.",
+      "editor": "select"
+    },
+    "offset": {
+      "title": "Offset",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Zero-based result offset.",
+      "editor": "number"
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "description": "Listings to return, from 1 to 20.",
+      "editor": "number"
+    },
+    "query": {
+      "title": "Keyword",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Optional free-text vehicle search.",
+      "editor": "textfield"
+    },
+    "price_min": {
+      "title": "Price Min",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional non-negative minimum price.",
+      "editor": "number"
+    },
+    "price_max": {
+      "title": "Price Max",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional non-negative maximum price.",
+      "editor": "number"
+    },
+    "registration_year_min": {
+      "title": "Registration Year Min",
+      "type": "integer",
+      "minimum": 1886,
+      "maximum": 2100,
+      "description": "Optional minimum first-registration year.",
+      "editor": "number"
+    },
+    "registration_year_max": {
+      "title": "Registration Year Max",
+      "type": "integer",
+      "minimum": 1886,
+      "maximum": 2100,
+      "description": "Optional maximum first-registration year.",
+      "editor": "number"
+    },
+    "mileage_min": {
+      "title": "Mileage Min",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional non-negative minimum mileage.",
+      "editor": "number"
+    },
+    "mileage_max": {
+      "title": "Mileage Max",
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional non-negative maximum mileage.",
+      "editor": "number"
+    },
+    "make_id": {
+      "title": "Make Id",
+      "type": "string",
+      "maxLength": 50,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Validated marketplace make identifier.",
+      "editor": "textfield"
+    },
+    "model_id": {
+      "title": "Model Id",
+      "type": "string",
+      "maxLength": 50,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Validated marketplace model identifier. Requires make_id.",
+      "editor": "textfield"
+    },
+    "sort": {
+      "title": "Sort order",
+      "type": "string",
+      "enum": [
+        "relevance",
+        "price_asc",
+        "price_desc"
+      ],
+      "description": "relevance, price_asc, or price_desc.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    }
+  }
+}

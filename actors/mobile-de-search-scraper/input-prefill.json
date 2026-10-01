@@ -1,0 +1,13 @@
+{
+  "searches": [
+    {
+      "query": "golf"
+    }
+  ],
+  "vehicle_type": "car",
+  "offset": 0,
+  "limit": 5,
+  "sort": "relevance",
+  "maxResults": 5,
+  "maxPages": 1
+}

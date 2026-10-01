@@ -1,0 +1,64 @@
+{
+  "success": true,
+  "listing": {
+    "id": 8000206,
+    "object_number": "OM-583214",
+    "title": "Bright two-bedroom flat in Berlin",
+    "url": "https://www.ohne-makler.net/immobilie/offer/583214/",
+    "available": true,
+    "price": 549,
+    "price_label": "€ 32,900",
+    "price_on_request": true,
+    "price_breakdown": [
+      {
+        "label": "Verified source detail",
+        "value": "Balcony"
+      }
+    ],
+    "rooms": 2,
+    "living_area_m2": 78,
+    "plot_area_m2": null,
+    "condition": "New",
+    "construction_year": 2023,
+    "object_art": "Verified source detail",
+    "object_type": "Residential property",
+    "energy": null,
+    "summary": [
+      {
+        "label": "Verified source detail",
+        "value": "Balcony"
+      }
+    ],
+    "seller_type": "Morgenrot Handelskontor",
+    "latitude": 52.52,
+    "longitude": 13.405,
+    "gallery": [
+      "Verified source detail"
+    ],
+    "attachments_available": true,
+    "description": "Bright two-bedroom home with a balcony near local transport.",
+    "location_text": "Hafenallee 17, 10115 Berlin",
+    "sections": [
+      {
+        "heading": "Verified source detail",
+        "tables": [
+          {
+            "headers": [
+              "Verified marketplace detail"
+            ],
+            "rows": [
+              [
+                "Verified source detail"
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "aggregate_rating": {
+      "rating_value": "Verified source detail",
+      "best_rating": "Verified source detail",
+      "rating_count": "Verified source detail"
+    }
+  }
+}

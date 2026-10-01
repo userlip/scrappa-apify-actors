@@ -1,0 +1,78 @@
+{
+  "success": true,
+  "products": [
+    {
+      "description": [
+        {
+          "prop": "USB-C interface",
+          "value": "USB-C interface"
+        }
+      ],
+      "manufacturer_id": 8000694,
+      "variant_count": 28,
+      "rating_percent": 94,
+      "category": [
+        {
+          "label": "Verified source detail",
+          "id": {
+            "m": 8
+          }
+        }
+      ],
+      "bpoffer_link": "Verified source detail",
+      "rating_stars": 94,
+      "rating_comments": 94,
+      "gtin": [
+        "9345678901234"
+      ],
+      "urls": {
+        "overview": "Verified source detail",
+        "reviews": "Verified source detail",
+        "pricehist": "€549.90",
+        "rate": "Verified source detail",
+        "manufacturer": "Verified source detail",
+        "offers": "Verified source detail"
+      },
+      "gzhid": 8000544,
+      "listed_since": "2026-09-18",
+      "product_for_sort": "relevance",
+      "bestprices": {
+        "first": 8,
+        "min": 549,
+        "last": 8,
+        "max": 549
+      },
+      "images": [
+        "https://cdn.northstar.invalid/images/aurora-front.webp"
+      ],
+      "asins": [
+        "B0N0RTHSTAR"
+      ],
+      "test_reviews": [
+        {
+          "ctime": 8,
+          "title": "Northstar Aurora 1 TB Smartphone",
+          "status": "Published",
+          "position": 8,
+          "flag": "verified",
+          "logo_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "url": "https://geizhals.de/northstar-aurora-1-tb-a4450000.html",
+          "abstract_status": "Published",
+          "abstract": "Customers praise the clear product details and responsive service."
+        }
+      ],
+      "rating_count": 94,
+      "average_test_reviews_metascore": 94,
+      "product": "Northstar Aurora 1 TB Smartphone",
+      "variant_id": 8000177,
+      "manufacturer_name": "Northstar"
+    }
+  ],
+  "page": 1,
+  "pager": {
+    "first_page": 1,
+    "next_page": 2,
+    "last_page": 5
+  },
+  "total": 50
+}

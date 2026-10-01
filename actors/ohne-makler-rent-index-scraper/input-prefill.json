@@ -1,0 +1,9 @@
+{
+  "cities": [
+    {
+      "city": "berlin",
+      "state": "berlin"
+    }
+  ],
+  "maxResults": 1
+}

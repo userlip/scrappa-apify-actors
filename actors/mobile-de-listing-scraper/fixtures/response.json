@@ -1,0 +1,176 @@
+{
+  "success": true,
+  "data": {
+    "listing": {
+      "attributes": [
+        {
+          "label": "Verified source detail",
+          "tag": "Verified source detail",
+          "value": "Balcony"
+        }
+      ],
+      "adMobPlacements": {
+        "contentUrl": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+        "slots": {
+          "lightboxtextlink": {
+            "adId": "457981580",
+            "adSizes": [
+              "Verified source detail"
+            ]
+          },
+          "textlink": {
+            "adId": "457981580",
+            "adSizes": [
+              "Verified source detail"
+            ]
+          },
+          "vip_1": {
+            "adId": "457981580",
+            "adSizes": [
+              "Verified source detail"
+            ]
+          },
+          "vip_2": {
+            "adId": "457981580",
+            "adSizes": [
+              "Verified source detail"
+            ]
+          },
+          "vip_3": {
+            "adId": "457981580",
+            "adSizes": [
+              "Verified source detail"
+            ]
+          },
+          "vip_gal": {
+            "adId": "457981580",
+            "adSizes": [
+              "Verified source detail"
+            ]
+          },
+          "vip_gal2": {
+            "adId": "457981580",
+            "adSizes": [
+              "Verified source detail"
+            ]
+          }
+        }
+      },
+      "mediaGallery": {
+        "slideShow": true,
+        "additionalAds": true
+      },
+      "shortTitle": "2023 Volvo XC60 B4 AWD",
+      "subTitle": "Verified source detail",
+      "makeKey": "Verified source detail",
+      "modelKey": "Verified source detail",
+      "isNew": true,
+      "onCustomerBehalf": true,
+      "readyToDrive": true,
+      "isConditionNew": true,
+      "created": 1791036800,
+      "modified": 1791123200,
+      "renewed": 1791209600,
+      "version": 1,
+      "makeId": 8000635,
+      "modelId": 8000751,
+      "make": {
+        "id": "457981580",
+        "localized": "Volvo"
+      },
+      "model": {
+        "id": "457981580",
+        "localized": "Volvo"
+      },
+      "financePlans": [
+        {
+          "type": "Supplier",
+          "url": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+          "shortFlow": true,
+          "promotion": true,
+          "showInGallery": true,
+          "offer": {
+            "bankName": "Northstar Outdoor Supply",
+            "loanBroker": "Verified source detail",
+            "loanType": "Residential property",
+            "downPayment": 8,
+            "creditTerm": 8,
+            "yearlyMileage": 2023,
+            "creditAmount": 8
+          }
+        }
+      ],
+      "insurancePlans": [
+        {
+          "href": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+          "provider": "Verified source detail",
+          "title": "2023 Volvo XC60 B4 AWD",
+          "description": "Compact design with dependable performance and a two-year warranty.",
+          "icon": "primary-image",
+          "iconDark": "Verified source detail",
+          "insuranceOffers": [
+            {
+              "id": "457981580",
+              "name": "Northstar Outdoor Supply",
+              "startPrice": 629,
+              "href": "https://www.mobile.de/angebote/volvo-xc60-b4-awd"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "rel": "Current listing detail",
+          "href": "https://www.mobile.de/angebote/volvo-xc60-b4-awd"
+        }
+      ],
+      "images": [
+        {
+          "uri": "https://cdn.northstar.invalid/images/aurora-front.webp"
+        }
+      ],
+      "features": [
+        "Verified source detail"
+      ],
+      "sellerId": 8000877,
+      "priceRating": {
+        "rating": "Verified source detail",
+        "ratingLabel": "Verified source detail",
+        "thresholdLabels": [
+          "Verified source detail"
+        ],
+        "vehiclePriceOffset": 629
+      },
+      "segment": "SUV",
+      "title": "2023 Volvo XC60 B4 AWD",
+      "url": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+      "vc": "SUV",
+      "category": "Industrial supplies",
+      "id": 8000237,
+      "price": {
+        "grs": {
+          "amount": 549,
+          "currency": "EUR",
+          "localized": "Volvo"
+        },
+        "type": "Supplier"
+      },
+      "kba": {
+        "hsn": "Current listing detail",
+        "tsn": "Current listing detail"
+      },
+      "onLoadFlags": {
+        "welcomeMessage": true,
+        "dealershipDetails": true,
+        "map": true
+      },
+      "htmlDescription": "Verified source detail",
+      "carfaxEligible": true,
+      "listing_id": "457981580"
+    }
+  },
+  "meta": {
+    "duration_ms": 8,
+    "endpoint_family": "Verified source detail"
+  }
+}
