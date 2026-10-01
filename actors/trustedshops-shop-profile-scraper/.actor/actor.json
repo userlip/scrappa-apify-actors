@@ -29,7 +29,7 @@
       "actorSpecification": 1,
       "views": {
         "shop_profiles": {
-          "title": "TrustedShops Shop Profiles",
+          "title": "Trusted Shops Shop Profiles",
           "transformation": {
             "fields": ["tsid", "requested_tsid", "name", "url", "profile_url", "language", "target_market", "rating", "review_count", "certified", "category_names", "category_ids", "source_url", "profile_metadata"]
           },
@@ -40,7 +40,7 @@
               "requested_tsid": { "label": "Requested TSID", "format": "text" },
               "name": { "label": "Shop Name", "format": "text" },
               "url": { "label": "Merchant URL", "format": "link" },
-              "profile_url": { "label": "TrustedShops Profile", "format": "link" },
+              "profile_url": { "label": "Trusted Shops Profile", "format": "link" },
               "language": { "label": "Language", "format": "text" },
               "target_market": { "label": "Target Market", "format": "text" },
               "rating": { "label": "Rating", "format": "number" },

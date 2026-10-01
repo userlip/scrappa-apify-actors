@@ -224,7 +224,7 @@ Use [docs/monetization-activation-checklist.md](docs/monetization-activation-che
 | `actors/jameda-doctor-details-scraper` | `jameda-doctor-details-scraper` | `f3yuncFhgFusn3oRI` | Jameda Doctor Details Scraper | Rust source present | Verify live pricing before changing it |
 | `actors/kununu-jobs-scraper` | `kununu-jobs-scraper` | `WlWaDQRQn6Mv5jVdi` | Kununu Jobs Scraper | Rust source present | Verify live pricing before changing it |
 | `actors/linkedin-job-details-scraper` | `linkedin-job-details-scraper` | `nnhijBaERF1aPtw7J` | LinkedIn Job Details Scraper | Rust source present | Verify live pricing before changing it |
-| `actors/linkedin-search-scraper` | `linkedin-search-scraper` | `jGkqg68Hqx9nWDenM` | LinkedIn Search Scraper ($0.30/1k results) | Rust source present | Verify live pricing before changing it |
+| `actors/linkedin-search-scraper` | `linkedin-search-scraper` | `jGkqg68Hqx9nWDenM` | LinkedIn Search Scraper - $0.30/1k results | Rust source present | Verify live pricing before changing it |
 | `actors/startpage-search-scraper` | `startpage-search-scraper` | `YL4VFRD3clscCfOLc` | Startpage Search Scraper | Rust source present | Verify live pricing before changing it |
 | `actors/tiktok-challenge-details-scraper` | `tiktok-challenge-details-scraper` | `bEajaru9WVbLA0YBh` | TikTok Hashtag Details Scraper | Rust source present | Verify live pricing before changing it |
 | `actors/tiktok-challenge-posts-scraper` | `tiktok-challenge-posts-scraper` | `CVaJEgPjl3jWKbm71` | TikTok Hashtag Videos Scraper | Rust source present | Verify live pricing before changing it |

@@ -15,7 +15,8 @@ This guide is the quality bar for every Scrappa Actor listing: title, descriptio
 
 - Pattern: `<Platform> <What> Scraper` or a clear product name. Natural length, usually 20 to 45 characters. Do not pad to hit a length.
 - Use the words people type into Google and the Apify search: "Google Maps Reviews Scraper", "Kayak Flights Scraper", "Idealista Scraper".
-- Keep these existing titles unchanged (they rank and convert): Google Maps Advanced Search Scraper, LinkedIn Company Scraper, LinkedIn Profile Scraper, Google Search Scraper (`google-search-scraper`), Google Images Scraper, Instagram User Info | Cheapest $0.20/1k results, Instagram Post Info | Cheapest $0.20/1k results, Google Maps Photos Scraper, Vinted Search Scraper, Trustpilot Company Reviews Scraper.
+- Keep these existing base titles unchanged (they rank and convert): Google Maps Advanced Search Scraper, LinkedIn Company Scraper, LinkedIn Profile Scraper, Google Search Scraper (`google-search-scraper`), Google Images Scraper, Instagram User Info | Cheapest $0.20/1k results, Instagram Post Info | Cheapest $0.20/1k results, Google Maps Photos Scraper, Vinted Search Scraper, Trustpilot Company Reviews Scraper.
+- LinkedIn Company, LinkedIn Profile and LinkedIn Search Scraper may keep the live ` - $0.30/1k results` suffix only while each Actor's latest price remains $0.30 per 1,000 results. Use this dash format consistently.
 - Disambiguate siblings by what you get, not by audience: "TikTok Hashtag Videos Scraper" vs "TikTok Hashtag Details Scraper".
 
 ## Description (max 300 characters, shown on the Store card and page header)
