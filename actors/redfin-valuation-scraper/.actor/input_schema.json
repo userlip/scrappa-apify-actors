@@ -10,7 +10,8 @@
       "description": "Redfin property ID, usually the number after /home/ in a Redfin URL.",
       "editor": "number",
       "minimum": 1,
-      "default": 194191988
+      "default": 194191988,
+      "prefill": 194191988
     },
     "listing_id": {
       "title": "Listing ID",

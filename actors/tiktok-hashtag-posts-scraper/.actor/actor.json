@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-hashtag-posts-scraper",
   "title": "TikTok Hashtag Posts Scraper",
-  "description": "TikTok hashtag scraper for extracting public posts by hashtag, hashtag URL, or challenge ID. Get captions, engagement metrics, author metadata, timestamps, and pagination cursors through Scrappa.",
+  "description": "Find public TikTok videos using a hashtag, with captions, creators and engagement counts. Enter a hashtag and optionally choose a region or result count.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

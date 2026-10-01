@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "startpage-search-scraper",
   "title": "Startpage Search Scraper",
-  "description": "Search privacy-focused Startpage SERPs through Scrappa, with batch query input and one Apify dataset item per organic result.",
+  "description": "Find Startpage results with page titles, descriptions, domains and source links. Submit several phrases in one run and use only the locale and filters listed in the input.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

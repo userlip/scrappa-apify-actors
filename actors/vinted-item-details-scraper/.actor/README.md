@@ -1,73 +1,116 @@
 # Vinted Item Details Scraper
 
-Fetch full Vinted listing details for one item ID or a batch of item IDs through Scrappa. Use it after Vinted Search to enrich selected listings with descriptions, prices, photos, seller information, condition, availability, favorites, views, and request metadata.
+Review a Vinted item with its title, description, price, size and condition. Submit multiple listing IDs in one run to retrieve records for each target.
 
-This actor is intended for paid pay-per-result pricing with the `item-detail-result` event. Recommended launch pricing is **$0.25-$0.30 per 1,000 successful Vinted item detail results** so users pay for usable detail rows, not failed lookups or empty runs.
+## What data can you extract?
 
-## Features
+Prices and listing details follow the current Vinted page; availability can change when an item sells.
 
-- Fetch one Vinted item or batch up to 50 item IDs in one Apify run
-- Target 19 Vinted markets: France, Germany, Spain, Italy, Netherlands, Belgium, Austria, Poland, Czech Republic, Lithuania, Luxembourg, Slovakia, Hungary, Romania, Portugal, Sweden, Denmark, Finland, or United States
-- Push one dataset item per processed item ID
-- Charge only successful item detail results with the `item-detail-result` event
-- Return uncharged error rows for item-level failures such as expired or unavailable IDs
-- Keep scraping work on Scrappa infrastructure with a thin Apify wrapper
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | text | source ID for the marketplace listing, assigned by Vinted; null when the source does not expose it. |
+| `title` | text | Title of the marketplace listing, as shown by Vinted; null when no title is published. |
+| `description` | text | Description text from Vinted for this marketplace listing; null when the source has no text to show. |
+| `price_amount` | text | Listed price for this marketplace listing, as a numeric decimal amount in the listing currency; null when Vinted provides no price. |
+| `price_currency` | text | Price currency code for this marketplace listing, formatted as Vinted displays it, including the currency when shown; null when unavailable. |
+| `total_item_price` | text | Item total for this marketplace listing, formatted as Vinted displays it, including the currency when shown; null when unavailable. |
+| `shipping_price` | text | Shipping charge for this marketplace listing, formatted as Vinted displays it, including the currency when shown; null when unavailable. |
+| `brand_name` | text | Brand name shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `category_name` | text | Category name shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `size_name` | text | Size label shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `condition` | text | Item condition shown by Vinted, such as new or used; null when Vinted does not provide the value. |
+| `availability` | text | Status reported for the marketplace listing by Vinted; null when Vinted does not provide the value. |
+| `url` | link | Source page url for this marketplace listing on Vinted; null when the source does not provide a URL. |
+| `image_url` | image | Image url for this marketplace listing on Vinted; null when the source does not provide a URL. |
+| `seller_login` | text | Seller login shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `seller_feedback_reputation` | number | Seller feedback reputation shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `favourite_count` | number | Number of favorites shown by Vinted, as a whole number; zero is possible, and null means no count was reported. |
+| `view_count` | number | Number of video views shown by Vinted, as a whole number; zero is possible, and null means no count was reported. |
+| `request_item_id` | text | Marketplace item id passed to Vinted. This input value is copied into the output row; null when it was not supplied. |
+| `request_country` | text | Country code or country name passed to Vinted. This input value is copied into the output row; null when it was not supplied. |
+| `request_index` | number | Zero-based position of this request in the submitted Vinted input batch; null for a single-item lookup. |
+| `request_success` | boolean | Lookup success flag passed to Vinted. This input value is copied into the output row; null when it was not supplied. |
+| `error_message` | text | Diagnostic text for the Vinted lookup; null when the request completes without an error. |
+
+## Use cases
+
+- Resellers can compare listings by title, price, condition and location.
+- Marketplace teams can monitor inventory for a brand or category.
+- Catalog operators can collect source-linked records for product research.
+
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `item_ids` and use the identifier or URL format required by Vinted.
+3. Start the run and open its default dataset to inspect or download the rows.
+
+```json
+{
+  "item_ids": [
+    "10198495179"
+  ]
+}
+```
+
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
 ## Input
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `item_id` | string | No | Single Vinted item ID |
-| `item_ids` | array | No | Batch of Vinted item IDs. Maximum `50` IDs per run |
-| `country` | string | No | Vinted country code. Default `FR` |
+| --- | --- | --- | --- |
+| `item_id` | string | No | Single Vinted item ID. Use item_ids for batches discovered from Vinted Search. |
+| `item_ids` | array of string | No | Batch of Vinted item IDs. One dataset row is written per processed ID. Maximum 50 IDs per run. Constraints: maximum 50 items. |
+| `country` | string | No | Vinted country market. Constraints: allowed values: FR, DE, ES, IT, NL, BE, AT, PL, CZ, LT, LU, SK, HU, RO, PT, SE, DK, FI, US. |
 
-Provide at least one ID through `item_id` or `item_ids`. If both fields are provided, duplicate IDs are processed once.
+## Output example
 
-## Example Input
-
-```json
-{
-  "country": "DE",
-  "item_ids": ["1234567890", "1234567891", "1234567892"]
-}
-```
-
-## Output
-
-Each processed item ID is saved as one dataset item. Successful rows include normalized fields plus the original Scrappa detail payload:
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "id": "1234567890",
-  "title": "Nike Air Max 90",
-  "description": "Very good condition...",
-  "price_amount": "45.00",
+  "title": "Vintage wool coat in very good condition",
+  "description": "Classic gray wool coat in very good condition, with a lined interior and two front pockets.",
+  "price_amount": "68.00",
+  "view_count": 18400,
+  "url": "https://listings.example.com/record/731-alder-way",
+  "id": "3482719082",
   "price_currency": "EUR",
-  "brand_name": "Nike",
-  "category_name": "Shoes",
-  "size_name": "EU 42",
-  "condition": "Very good",
-  "availability": "available",
-  "url": "https://www.vinted.de/items/1234567890-nike-air-max-90",
-  "image_url": "https://images1.vinted.net/t/01_example/image.jpg",
-  "seller_login": "seller123",
-  "favourite_count": 15,
-  "view_count": 234,
-  "request_item_id": "1234567890",
-  "request_country": "DE",
-  "request_index": 0,
-  "request_success": true
+  "total_item_price": "68.00"
 }
 ```
 
-If a specific item ID fails while the Scrappa API and actor are healthy, the actor writes an uncharged row with `request_success: false` and `error_message` so batch outputs still line up with the requested IDs.
+## Pricing
 
-The `OUTPUT` key-value-store record contains only the run summary: requested count, successful result count, failed item count, and country. Dataset rows are the primary output channel.
+**Current live price:** $0.25 per 1,000 results.
 
-## Notes
+Each saved listing or profile record counts as one result.
 
-Vinted does not provide a public developer API. This actor returns public marketplace listing data through Scrappa's structured Vinted item details endpoint. For search, seller profiles, shipping data, similar items, higher-volume access, or direct API usage, use Scrappa at https://scrappa.co.
+## FAQ
 
-## Local development
+### Is it legal to collect public information?
 
-Run the focused Rust tests from this directory with `cargo test --locked`. Build the production image with `docker build -f .actor/Dockerfile .`. The runtime reads Apify's `APIFY_TOKEN`, `ACTOR_RUN_ID`, `ACTOR_DEFAULT_KEY_VALUE_STORE_ID`, and `ACTOR_DEFAULT_DATASET_ID` variables plus `SCRAPPA_API_KEY`.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
+
+### How many records will a run return?
+
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+
+### Can I call it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~vinted-item-details-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
+
+### What happens when a request fails?
+
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How do I find a Vinted item ID?
+
+Copy the listing ID from a public Vinted item URL or use Vinted Search to locate the listing. Submit one ID or a batch in `item_ids`.
+
+## Related Scrappa Actors
+
+- [Kleinanzeigen Listing Details Scraper](https://apify.com/thescrappa/kleinanzeigen-listing-details-scraper)
+- [Kleinanzeigen Search Scraper](https://apify.com/thescrappa/kleinanzeigen-search-scraper)
+- [Vinted Search Scraper](https://apify.com/thescrappa/vinted-search-scraper)
+- [Vinted User Items Scraper](https://apify.com/thescrappa/vinted-user-items-scraper)
+- [Vinted User Profile Scraper](https://apify.com/thescrappa/vinted-user-profile-scraper)

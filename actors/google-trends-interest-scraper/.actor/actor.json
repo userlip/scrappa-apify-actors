@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "google-trends-interest-scraper",
   "title": "Google Trends Interest Scraper",
-  "description": "Scrape Google Trends interest-over-time timelines for SEO, content, product, and market research. Extract dated 0-100 interest values, average, max, min, response metadata, and the full Scrappa response.",
+  "description": "Track relative Google Trends interest over time with dates and a score from 0 to 100. Choose a region, time range and search type to compare interest for one topic over time.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

@@ -16,7 +16,9 @@
       "type": "array",
       "description": "Batch of domains to analyze in one run. Each unique domain creates one dataset item.",
       "editor": "stringList",
-      "prefill": ["google.com", "github.com", "shopify.com"],
+      "prefill": [
+        "google.com"
+      ],
       "items": {
         "type": "string"
       }

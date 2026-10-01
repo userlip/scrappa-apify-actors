@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "redfin-property-search-scraper",
   "title": "Redfin Property Search Scraper",
-  "description": "Scrape Redfin property search listings with prices, beds, baths, square footage, addresses, coordinates, URLs, MLS numbers, and listing IDs.",
+  "description": "Search Redfin homes by market and filters, then compare addresses, prices and room counts. Set a Redfin market or region, then narrow the search by price, rooms or property status.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

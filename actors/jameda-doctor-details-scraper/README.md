@@ -1,76 +1,115 @@
 # Jameda Doctor Details Scraper
 
-Enrich Jameda doctor profile URLs with structured doctor details using Scrappa's live `jameda-doctor-details` endpoint. The actor is a thin Apify wrapper: Scrappa performs the scraping, while Apify handles input validation, batching, dataset output, and paid result events.
+Review a Jameda doctor profile with name, specialty, ratings and practice details. Submit one or more public doctor profile URLs to collect specialty and practice information together.
 
-## What You Get
+## What data can you extract?
 
-For each successful doctor URL, the actor saves one dataset item with the original Scrappa response plus convenient top-level fields:
+Doctor details and patient reviews follow public Jameda pages; profiles and reviews can omit optional details.
 
-- Doctor name, title, specialty, description, and profile URL
-- Rating and review count
-- Clinic, phone, website, address, city, postal code, and coordinates
-- Opening hours, services, accepted patients, focus areas, conditions, languages, and booking IDs
-- Request URL, response source, and scrape timestamp
+| Field | Type | Description |
+| --- | --- | --- |
+| `doctor_name` | text | Doctor name shown for the doctor profile by Jameda, in the format used by the source; null when it is omitted. |
+| `title` | text | Title of the doctor profile, as shown by Jameda; null when no title is published. |
+| `specialty` | text | Medical specialty shown for the doctor profile by Jameda; null when Jameda does not provide the value. |
+| `rating` | text | Rating for this doctor profile, on the rating scale shown by Jameda; null when no score is shown. |
+| `rating_number` | number | Rating number for this doctor profile, on the rating scale shown by Jameda; null when no score is shown. |
+| `review_count` | text | Number of reviews shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `review_count_number` | number | Number of reviews shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `clinic_name` | text | Clinic name shown for the doctor profile by Jameda, in the format used by the source; null when it is omitted. |
+| `phone` | text | Public phone shown by Jameda; null when the profile or listing does not publish contact details. |
+| `website_url` | link | Website url for this doctor profile on Jameda; null when the source does not provide a URL. |
+| `address` | text | Address shown for the doctor profile by Jameda, in the format used by the source; null when it is omitted. |
+| `city` | text | City shown for the doctor profile by Jameda; null when Jameda does not provide the value. |
+| `postal_code` | text | Postal code shown for the doctor profile by Jameda, in the format used by the source; null when it is omitted. |
+| `latitude` | number | Latitude for this doctor profile on Jameda, in decimal degrees; null when the source provides no coordinates. |
+| `longitude` | number | Longitude for this doctor profile on Jameda, in decimal degrees; null when the source provides no coordinates. |
+| `services_count` | number | Number of services shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `focus_areas_count` | number | Number of focus-areas shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `conditions_count` | number | Number of conditions shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `languages_count` | number | Number of languages shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `doctor_url` | link | Doctor url for this doctor profile on Jameda; null when the source does not provide a URL. |
+| `requested_doctor_url` | link | Requested doctor url for this doctor profile on Jameda; null when the source does not provide a URL. |
+| `response_source` | text | Source used for the response shown for the doctor profile by Jameda, in the format used by the source; null when it is omitted. |
+| `scraped_at` | date | Time the page was retrieved shown by Jameda, in ISO 8601 date and time; null if the source omits the date. |
 
-## Input
+## Use cases
 
-Use `doctorUrls` for batch runs. `doctorUrl` is supported for compatibility with single-profile workflows.
+- Practice managers can review public provider profiles and patient feedback.
+- Patients can compare doctor ratings and written feedback for a specialty.
+- Healthcare researchers can summarize public review themes across practices.
+
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `doctorUrls` and use the identifier or URL format required by Jameda.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
   "doctorUrls": [
-    "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
-    "/markus-lietzau-msc/zahnarzt/berlin"
-  ]
+    "https://www.jameda.de/taylor-morgan/zahnarzt/seattle"
+  ],
+  "doctorUrl": "https://www.jameda.de/taylor-morgan/zahnarzt/seattle"
 }
 ```
 
-Each URL can be a full `https://www.jameda.de/...` URL or a Jameda profile path. Duplicate URLs are processed once.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output Example
+## Input
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `doctorUrls` | array of string | No | Recommended. Process many Jameda doctor profile URLs in one Apify run. Each successful doctor URL produces one dataset item. Constraints: maximum 100 items. |
+| `doctorUrl` | string | No | Backward-compatible single Jameda doctor profile URL or path. Prefer Doctor URLs for normal usage, especially when enriching more than one profile. |
+
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "doctor_name": "Markus Lietzau M.Sc.",
-  "specialty": "Zahnarzt",
-  "rating": "1,0",
-  "rating_number": 1,
-  "review_count": "52",
-  "review_count_number": 52,
-  "clinic_name": "Praxis Markus Lietzau M.Sc. Zahnarzt",
-  "phone": "+49 ...",
-  "address": "Berlin",
-  "city": "Berlin",
-  "latitude": 52.5,
-  "longitude": 13.4,
-  "services": [],
-  "accepted_patients": [],
-  "focus_areas": [],
-  "conditions": [],
-  "languages": [],
-  "booking_ids": {},
-  "doctor_url": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
-  "requested_doctor_url": "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
-  "response_source": "scrappa",
-  "scraped_at": "2026-06-20T00:00:00Z"
+  "title": "A practical guide to independent neighborhood shops",
+  "rating": "4.7/5",
+  "review_count": "184",
+  "doctor_name": "Taylor Morgan",
+  "specialty": "Family medicine",
+  "rating_number": 4.7,
+  "review_count_number": 184,
+  "clinic_name": "Clinic name for the doctor profile on Jameda"
 }
 ```
 
-The exact fields depend on what is available on the live Jameda profile.
+## Pricing
 
-The actor calls Scrappa once per normalized doctor URL. The endpoint returns one profile per request and does not use a pagination cursor. On pay-per-event runs, the actor charges its `doctor-profile-result` event before publishing the profile row. Failed or uncertain dataset writes are reconciled with a read and are never replayed, preventing duplicate rows. A positive `maxTotalChargeUsd` caps the combined custom-event and default dataset-item charges. An absent, null, or zero limit is unbounded. A compact request and failure summary is saved to `OUTPUT`.
+**Current live price:** $0.30 per 1,000 results.
 
-## Local Development
+Each completed profile or detail lookup counts as one result.
 
-Run the Rust actor tests from this directory with `cargo test --locked`. Build the Apify image with `docker build -f .actor/Dockerfile -t jameda-doctor-details-scraper .`. Run `python3 test/local_image_smoke.py` to build and exercise the production image against local Apify and Scrappa mocks. The actor reads input from the default key-value store and writes dataset items plus the `OUTPUT` record through the Apify API.
+## FAQ
 
-## Direct API Upgrade
+### Is it legal to collect public information?
 
-Need higher throughput, lower latency, or direct backend integration? Use the same endpoint through Scrappa directly:
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-```bash
-curl "https://scrappa.co/api/jameda/doctor-details?doctor_url=https%3A%2F%2Fwww.jameda.de%2Fmarkus-lietzau-msc%2Fzahnarzt%2Fberlin" \
-  -H "X-API-Key: YOUR_SCRAPPA_API_KEY"
-```
+### How many records will a run return?
 
-Scrappa keeps the scraping workload on Scrappa infrastructure; this Apify actor is only a marketplace wrapper around the API.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+
+### Can I call it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~jameda-doctor-details-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
+
+### What happens when a request fails?
+
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Can Jameda Doctor Details process a list of doctor profiles?
+
+Yes. Submit doctor profile URLs in `doctorUrls` or use `doctorUrl` for a single profile. Details can be missing if a profile is no longer public.
+
+## Related Scrappa Actors
+
+- [Jameda Search Scraper](https://apify.com/thescrappa/jameda-search-scraper)
+- [Jameda Reviews Scraper](https://apify.com/thescrappa/jameda-reviews-scraper)
+- [Google Maps Search Scraper](https://apify.com/thescrappa/google-maps-search-scraper)
+- [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)

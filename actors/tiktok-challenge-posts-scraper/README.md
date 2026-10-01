@@ -1,36 +1,115 @@
 # TikTok Hashtag Videos Scraper
 
-Collect public TikTok videos for multiple numeric challenge IDs in one Apify run. The Actor is a lightweight wrapper around Scrappa's `tiktok-challenges-posts` API and returns one dataset item per unique video for campaign monitoring, hashtag research, creator discovery, and engagement analysis.
+Collect public TikTok videos linked to a challenge, with captions, creators and engagement counts. Pass one or more challenge IDs; use TikTok Challenge Search or Challenge Details to find an ID first.
 
-## TikTok challenge workflow
+## What data can you extract?
 
-1. **Search:** use the TikTok Challenge Search Actor to find hashtag challenge IDs.
-2. **Details:** use the TikTok Challenge Details Actor when you need challenge metadata.
-3. **Posts:** pass those IDs to this Actor to collect videos with captions, author details, covers, media URLs, music, duration, region, timestamps, and engagement counts.
+Captions, profile details and engagement counts reflect public TikTok pages; counts can be hidden or absent.
 
-For larger workloads, lower latency, or direct integration, use the [Scrappa API](https://scrappa.co) and call `tiktok-challenges-posts` directly.
+| Field | Type | Description |
+| --- | --- | --- |
+| `video_id` | text | video ID for the TikTok video, assigned by TikTok; null when the source does not expose it. |
+| `aweme_id` | text | TikTok video ID for the TikTok video, assigned by TikTok; null when the source does not expose it. |
+| `title` | text | Title of the TikTok video, as shown by TikTok; null when no title is published. |
+| `author` | object | Creator profile with ID, username, display name, avatar and follower count from TikTok; null when the source provides no details. |
+| `play_count` | number | Number of video plays shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `digg_count` | number | Number of likes shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `comment_count` | number | Number of comments shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `share_count` | number | Number of shares shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `duration` | number | Duration of this TikTok video, in seconds; null when TikTok provides no timing information. |
+| `region` | text | Region shown for the TikTok video by TikTok; null when TikTok does not provide the value. |
+| `create_time` | number | Creation timestamp for this TikTok video, as a Unix timestamp in seconds; null if TikTok does not supply it. |
+| `challenge_id` | text | Numeric ID of the TikTok challenge associated with this video; null if the video has no challenge ID. |
+| `scraped_at` | date | Time the page was retrieved shown by TikTok, in ISO 8601 date and time; null if the source omits the date. |
 
-## Input
+## Use cases
+
+- Campaign managers can monitor public videos using a TikTok challenge or hashtag.
+- Researchers can compare captions and engagement across posts under a tag.
+- Creators can review examples before planning a themed video.
+
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Add one or more challenge IDs; use TikTok Challenge Search to discover an ID from a challenge name.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
-  "challenge_ids": ["1622962893630470", "7559525500510173270"],
-  "region": "US",
-  "results_per_challenge": 100,
-  "page_size": 10
+  "challenge_ids": [
+    "1622962893630470"
+  ]
 }
 ```
 
-`challenge_id` remains available for single-ID compatibility. A run accepts at most 20 IDs, 500 results per challenge, and 2,000 requested results overall. Pagination is bounded by these limits and the Apify event-charge limit.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output and pricing
+## Input
 
-Every unique successful video is one dataset row and one `challenge-post-result` paid event at **$0.00025 per video** ($0.25 per 1,000 results). Failed challenge IDs are isolated so other IDs can still finish. Dataset rows include `challenge_id`, `requested_region`, and `scraped_at` provenance.
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `challenge_ids` | array of string | No | Up to 20 numeric TikTok challenge IDs. Use TikTok Challenge Search first to discover IDs. Constraints: minimum 1 items; maximum 20 items. |
+| `challenge_id` | string | No | Compatibility input used only when challenge_ids is empty. |
+| `region` | string | No | Optional two-letter region code, such as US. |
+| `cursor` | string | No | Optional cursor applied as the starting point for each challenge. |
+| `results_per_challenge` | integer | No | Maximum unique videos saved per challenge (1-500). Total requested results may not exceed 2,000. Constraints: minimum 1; maximum 500. |
+| `page_size` | integer | No | Upstream page size (1-50). It is automatically reduced to remaining result and charge capacity. Constraints: minimum 1; maximum 50. |
 
-TikTok cover, video, avatar, and music URLs may be signed and expire. Store media you are authorized to retain promptly. Stable `video_id`/`aweme_id` values are suitable for deduplication and monitoring.
+## Output example
 
-No per-video key-value-store records are written; the default dataset is the result channel.
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
-## Development
+```json
+{
+  "video_id": "aB3dE5fG7hJ",
+  "title": "A Saturday walk through the neighborhood market",
+  "author": {
+    "id": "7210458831",
+    "unique_id": "morgan.creates",
+    "nickname": "Morgan Creates",
+    "avatar": "https://images.example.com/creators/morgan-lee.jpg",
+    "follower_count": 18600
+  },
+  "play_count": 18400,
+  "digg_count": 864,
+  "comment_count": 27,
+  "aweme_id": "7348291056172489012",
+  "share_count": 38
+}
+```
 
-The Actor is implemented in Rust. Run its focused tests from this directory with `cargo test --locked`.
+## Pricing
+
+**Current live price:** $0.25 per 1,000 results.
+
+Each saved video, post or comment record counts as one result.
+
+## FAQ
+
+### Is it legal to collect public information?
+
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
+
+### How many records will a run return?
+
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+
+### Can I call it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~tiktok-challenge-posts-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
+
+### What happens when a request fails?
+
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How do I find a TikTok challenge ID?
+
+Use TikTok Challenge Search or TikTok Hashtag Details to find it, then pass its ID in challenge_ids.
+
+## Related Scrappa Actors
+
+- [TikTok Ads Scraper](https://apify.com/thescrappa/tiktok-ads-scraper)
+- [TikTok Hashtag Details Scraper](https://apify.com/thescrappa/tiktok-challenge-details-scraper)
+- [TikTok Challenge Search Scraper](https://apify.com/thescrappa/tiktok-challenge-search-scraper)
+- [TikTok Comments Scraper](https://apify.com/thescrappa/tiktok-comments-scraper)
+- [TikTok Followers Scraper](https://apify.com/thescrappa/tiktok-followers-scraper)

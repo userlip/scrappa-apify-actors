@@ -1,5 +1,5 @@
 {
-  "title": "TrustedShops Shop Profile Scraper",
+  "title": "Trusted Shops Shop Profile Scraper",
   "description": "Enrich one or more TrustedShops TSIDs or profile URLs with merchant-level shop profile data.",
   "type": "object",
   "schemaVersion": 1,

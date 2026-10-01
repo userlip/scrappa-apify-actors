@@ -1,30 +1,36 @@
 # Instagram User Posts Scraper
 
-Extract recent public Instagram posts and reels by username. This Actor is built for creator research, content analysis, competitor monitoring, brand tracking, and social media reporting workflows that need profile post collections rather than single post details.
+List recent public Instagram posts with captions, media types and publication times. Choose a public username and use the returned pagination cursor to continue through available posts.
 
-No Instagram login, cookies, proxy setup, or browser session is required. Provide a username and the Actor returns available public posts to an Apify dataset. The Actor uses a Scrappa API key configured as the `SCRAPPA_API_KEY` environment variable; set this secret if you fork or self-deploy the Actor.
+## What data can you extract?
 
-## What It Does
+Post and profile details reflect information visible on public Instagram pages; optional fields can be absent.
 
-- Fetches recent public posts and reels from an Instagram user profile.
-- Returns post fields such as shortcode, media type, caption, timestamp, likes, comments, plays, media URLs, location, author, and permalink when available.
-- Supports pagination with `max_id`, using the previous response's `next_max_id` value.
-- Saves the full upstream response as `OUTPUT` in the default key-value store for access to pagination metadata, including `more_available` and `next_max_id`, plus raw fields.
+| Field | Type | Description |
+| --- | --- | --- |
+| `request_username` | text | Public account username passed to Instagram. This input value is copied into the output row; null when it was not supplied. |
+| `id` | text | source ID for the Instagram post, assigned by Instagram; null when the source does not expose it. |
+| `username` | text | Username shown for the Instagram post by Instagram, in the format used by the source; null when it is omitted. |
+| `shortcode` | text | Instagram post shortcode for the Instagram post, assigned by Instagram; null when the source does not expose it. |
+| `media_type` | text | Content format, such as video, image or carousel; null when Instagram does not provide the value. |
+| `caption` | text | Post caption from Instagram for this Instagram post; null when the source has no text to show. |
+| `taken_at` | date | Time the photo was posted shown by Instagram, in ISO 8601 date and time; null if the source omits the date. |
+| `like_count` | number | Number of likes shown by Instagram, as a whole number; zero is possible, and null means no count was reported. |
+| `comment_count` | number | Number of comments shown by Instagram, as a whole number; zero is possible, and null means no count was reported. |
+| `play_count` | number | Number of video plays shown by Instagram, as a whole number; zero is possible, and null means no count was reported. |
+| `permalink` | link | Permalink for this Instagram post on Instagram; null when the source does not provide a URL. |
 
-Private accounts can still return public metadata that is visible without logging in, but this Actor does not bypass privacy restrictions or access private posts.
+## Use cases
 
-## Input
+- Social teams can review public post captions and engagement details.
+- Brand researchers can compare post data while monitoring a campaign.
+- Creators can archive source-linked posts for a recurring content review.
 
-Use one Instagram username per run.
+## How to use
 
-### Input Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `username` | String | Yes | Instagram username to fetch posts for. Use a handle such as `natgeo`; an optional leading `@` is normalized automatically. |
-| `max_id` | String | No | Pagination cursor from a previous response's `next_max_id` field. |
-
-## Example Input
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `username` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -32,94 +38,63 @@ Use one Instagram username per run.
 }
 ```
 
-Next page:
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
+
+## Input
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `username` | string | Yes | Instagram username without the @ symbol. |
+| `max_id` | string | No | Optional pagination cursor from a previous response's next_max_id field. |
+
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "username": "natgeo",
-  "max_id": "QVFDcF..."
-}
-```
-
-## Output
-
-Each run saves one dataset item per returned post. If Scrappa returns zero posts, the dataset remains empty and the full response is still available in the default key-value store as `OUTPUT`. The exact fields can vary depending on what Instagram returns, but common fields include:
-
-Dataset writes respect the run's `maxTotalChargeUsd` limit. If the remaining budget cannot cover every post, the Actor saves only the affordable items and keeps the full Scrappa response in `OUTPUT`.
-
-| Field | Description |
-| --- | --- |
-| `request_username` | Username requested in the Actor input. |
-| `id` | Instagram post ID. |
-| `shortcode` | Instagram shortcode. |
-| `media_type` | Post media type, such as image, video, carousel, or reel when returned. |
-| `caption` | Caption text. |
-| `taken_at` | Post timestamp. |
-| `like_count` | Number of likes. |
-| `comment_count` | Number of comments. |
-| `play_count` | Number of video plays, when available. |
-| `media` | Media objects such as thumbnails, images, or videos. |
-| `location` | Location metadata, when available. |
-| `author` | Author metadata. |
-| `permalink` | Instagram post permalink. |
-
-## Example Output
-
-```json
-{
-  "request_username": "natgeo",
-  "id": "3819535222330010870",
-  "shortcode": "DUBtwxGEqz2",
+  "play_count": 18400,
+  "id": "17984273651028457",
+  "username": "riley.hart.studio",
+  "shortcode": "C9aKpWmR4tQ",
   "media_type": "video",
-  "caption": "Post caption text...",
-  "taken_at": "2024-01-15T10:30:00+00:00",
-  "like_count": 125000,
-  "comment_count": 3500,
-  "play_count": 5000000,
-  "media": [
-    {
-      "type": "video",
-      "thumbnail_url": "https://...",
-      "video_url": "https://..."
-    }
-  ],
-  "author": {
-    "username": "natgeo"
-  },
-  "permalink": "https://www.instagram.com/natgeo/p/DUBtwxGEqz2/"
+  "caption": "Three ways to style a vintage wool coat for fall. Which look is your favorite?",
+  "taken_at": "2026-09-25T09:15:00Z",
+  "like_count": 864
 }
 ```
-
-## Exporting Results
-
-Results are stored in the Actor's default dataset. From Apify, you can export the dataset as JSON, CSV, Excel, XML, RSS, or HTML table. Use JSON for nested media fields, and CSV or Excel for spreadsheet-friendly post analysis.
-
-## Authentication
-
-This Actor does not require an Instagram account. It does not ask for Instagram credentials, session cookies, or two-factor authentication codes.
-
-## Common Use Cases
-
-- Collect recent posts from public creators, brands, publishers, or competitors.
-- Build influencer content and engagement reports.
-- Monitor reels and post performance over time.
-- Export post collections for BI, CRM, or spreadsheet workflows.
-- Feed downstream post-detail enrichment workflows with shortcodes or permalinks.
-
-## Recommended Workflow
-
-1. Run this Actor with a public Instagram username.
-2. Export the dataset for the returned page of posts.
-3. Open the `OUTPUT` key-value store record. If `more_available` is true, run again with `max_id` set to the returned `next_max_id`.
-4. Use the exported post URLs or shortcodes with the Instagram Post Info Actor when you need deeper single-post details.
 
 ## Pricing
 
-$0.20 per 1,000 results. No Instagram login required. Requires `SCRAPPA_API_KEY` in the Actor environment.
+**Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-## Notes And Limits
+Each saved dataset record counts as one result.
 
-- Run one username per Actor run.
-- Usernames are normalized before lookup, so a leading `@` is removed automatically.
-- Availability of fields depends on the public data returned by Instagram and Scrappa.
-- This Actor does not access private posts or bypass account privacy settings.
+## FAQ
+
+### Is it legal to collect public information?
+
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
+
+### How many records will a run return?
+
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
+
+### Can I call it through the API or connect it to other tools?
+
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~instagram-user-posts-cheapest-0-20-1000-results/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
+
+### What happens when a request fails?
+
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Can Instagram User Posts continue from an earlier page?
+
+Use the public `username` and pass `max_id` from a previous response when one is provided. The profile must have accessible public posts.
+
+## Related Scrappa Actors
+
+- [Instagram Post Info | Cheapest $0.20/1k results](https://apify.com/thescrappa/instagram-post-info-cheapest-0-20-1000-results)
+- [Instagram User Info | Cheapest $0.20/1k results](https://apify.com/thescrappa/instagram-user-info-cheapest-0-20-1000-results)
+- [Pinterest Search Scraper](https://apify.com/thescrappa/pinterest-search-scraper)
+- [TikTok Search Scraper](https://apify.com/thescrappa/tiktok-search-scraper)

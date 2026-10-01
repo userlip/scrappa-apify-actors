@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "jameda-reviews-scraper",
   "title": "Jameda Reviews Scraper",
-  "description": "Extract public Jameda doctor reviews for reputation monitoring, medical provider benchmarking, local SEO research, and patient sentiment workflows.",
+  "description": "Read Jameda patient reviews with ratings, written feedback, posting dates and review titles. Use a doctor profile URL and choose the supported review sort and rating filters.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

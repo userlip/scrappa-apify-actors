@@ -11,8 +11,7 @@
       "editor": "stringList",
       "maxItems": 100,
       "prefill": [
-        "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin",
-        "/markus-lietzau-msc/zahnarzt/berlin"
+        "https://www.jameda.de/markus-lietzau-msc/zahnarzt/berlin"
       ],
       "items": {
         "type": "string",

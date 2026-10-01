@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "linkedin-search-scraper",
   "title": "LinkedIn Search Scraper ($0.30/1k results)",
-  "description": "Search public LinkedIn pages through Scrappa. Extract LinkedIn profile, company, post, jobs, and hiring page result URLs with snippets, search metadata, and pagination.",
+  "description": "Find LinkedIn pages through search, with titles, displayed links and result snippets. Add a LinkedIn page type such as profile, company, post or job to the search query.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-music-posts-scraper",
   "title": "TikTok Music Posts Scraper",
-  "description": "TikTok music scraper for extracting public videos that use specific music tracks or sounds. Monitor TikTok sound videos, music track posts, creator adoption, captions, engagement metrics, timestamps, and pagination cursors through Scrappa.",
+  "description": "Find TikTok videos using a sound and compare captions, creators and engagement. Submit multiple sound IDs in one run to retrieve records for each target.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

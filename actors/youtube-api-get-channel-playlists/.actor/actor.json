@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-playlists",
-    "title": "YouTube API Channel Playlists",
-    "description": "Fetch playlists for a YouTube channel by channel ID through the Scrappa YouTube API.",
+    "title": "YouTube Channel Playlists Scraper",
+    "description": "List playlists from a YouTube channel with titles, thumbnails and video counts. Submit a channel ID or a list of IDs to collect the public playlists published by each channel.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

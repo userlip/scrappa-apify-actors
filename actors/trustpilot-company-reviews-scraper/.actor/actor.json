@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "trustpilot-company-reviews-scraper",
   "title": "Trustpilot Company Reviews Scraper",
-  "description": "Scrape Trustpilot company reviews by domain. Extract review text, ratings, reviewer names, dates, verification status, company replies, filters, and pagination metadata for reputation monitoring and competitor research.",
+  "description": "Read public Trustpilot reviews with reviewer name, rating, title and written feedback. Choose a company domain and apply supported rating, date or reply filters to its public reviews.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

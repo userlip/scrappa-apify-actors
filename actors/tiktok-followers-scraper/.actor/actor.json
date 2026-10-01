@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "tiktok-followers-scraper",
   "title": "TikTok Followers Scraper",
-  "description": "Extract public TikTok follower lists by username, profile URL, or user ID. Get follower IDs, usernames, nicknames, avatars, follower counts, verification status, and pagination tokens through Scrappa.",
+  "description": "Review public profiles following a TikTok account, with usernames and follower counts. Enter a public TikTok username and set the requested count to inspect that account’s followers.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

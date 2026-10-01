@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "stepstone-jobs-scraper",
-  "title": "Stepstone Jobs Scraper ($0.30/1k results)",
-  "description": "Search Stepstone job listings across Germany, Austria, Netherlands, and Belgium with Scrappa. Extract job titles, companies, locations, salaries, dates, descriptions, skills, labels, and pagination.",
+  "title": "Stepstone Jobs Scraper",
+  "description": "Find Stepstone job listings with titles, employers, locations and salary details when available. Set a job title and location to compare current vacancies, with pay details where Stepstone provides them.",
   "categories": [
     "LEAD_GENERATION",
     "MARKETING",

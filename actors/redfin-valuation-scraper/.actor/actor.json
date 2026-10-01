@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "redfin-valuation-scraper",
   "title": "Redfin Valuation Scraper",
-  "description": "Get Redfin home value estimates, value ranges, last sale context, property specs, and comparable sales by Redfin property ID.",
+  "description": "Check Redfin’s estimated home value and range alongside comparable property details. Provide a property ID or URL to get Redfin’s estimate and comparables when the home has coverage.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

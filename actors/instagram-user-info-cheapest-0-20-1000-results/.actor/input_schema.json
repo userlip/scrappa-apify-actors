@@ -12,7 +12,10 @@
       "minItems": 1,
       "maxItems": 100,
       "uniqueItems": true,
-      "prefill": ["natgeo", "instagram"],
+      "prefill": [
+        "natgeo",
+        "instagram"
+      ],
       "items": {
         "type": "string",
         "minLength": 1,

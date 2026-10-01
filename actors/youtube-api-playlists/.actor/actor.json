@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-playlists",
-    "title": "YouTube API Playlists",
-    "description": "Search YouTube playlists by query through the Scrappa YouTube API.",
+    "title": "YouTube Playlist Search Scraper",
+    "description": "Find YouTube playlists by phrase, with titles, channel names and playlist links. Enter a playlist search phrase and choose a supported sort order.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

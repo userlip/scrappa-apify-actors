@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "vinted-item-details-scraper",
   "title": "Vinted Item Details Scraper",
-  "description": "Enrich Vinted item IDs with full listing details including description, price, photos, seller, category, condition, favorites, views, and availability. Built as a thin Scrappa-powered companion to Vinted Search.",
+  "description": "Review a Vinted item with its title, description, price, size and condition. Submit multiple listing IDs in one run to retrieve records for each target.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

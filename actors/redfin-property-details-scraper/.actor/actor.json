@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "redfin-property-details-scraper",
   "title": "Redfin Property Details Scraper",
-  "description": "Scrape detailed Redfin property records by property ID or Redfin URL, including address, price, beds, baths, square footage, coordinates, photos, and description.",
+  "description": "Review Redfin home details with address, listed price, bedrooms and bathrooms. Look up one property by ID or URL, or submit a batch to review several homes together.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "immowelt-property-search-scraper",
   "title": "Immowelt Property Search Scraper",
-  "description": "Scrape Immowelt property search listings with prices, rooms, floor area, addresses, coordinates, images, expose URLs, and pagination.",
+  "description": "Search Immowelt listings by location and property type, then compare prices, rooms and floor area. Enter a city or area and choose the property type and page options you need.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

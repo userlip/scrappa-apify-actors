@@ -23,8 +23,18 @@
       "type": "string",
       "description": "Stepstone country market.",
       "editor": "select",
-      "enum": ["de", "at", "nl", "be"],
-      "enumTitles": ["Germany", "Austria", "Netherlands", "Belgium"],
+      "enum": [
+        "de",
+        "at",
+        "nl",
+        "be"
+      ],
+      "enumTitles": [
+        "Germany",
+        "Austria",
+        "Netherlands",
+        "Belgium"
+      ],
       "default": "de"
     },
     "radius": {
@@ -40,8 +50,14 @@
       "type": "string",
       "description": "Sort order for Stepstone results.",
       "editor": "select",
-      "enum": ["relevance", "date"],
-      "enumTitles": ["Relevance", "Date"],
+      "enum": [
+        "relevance",
+        "date"
+      ],
+      "enumTitles": [
+        "Relevance",
+        "Date"
+      ],
       "default": "relevance"
     },
     "job_type": {
@@ -49,8 +65,18 @@
       "type": "string",
       "description": "Filter by job type.",
       "editor": "select",
-      "enum": ["full_time", "part_time", "internship", "freelance"],
-      "enumTitles": ["Full-time", "Part-time", "Internship", "Freelance"]
+      "enum": [
+        "full_time",
+        "part_time",
+        "internship",
+        "freelance"
+      ],
+      "enumTitles": [
+        "Full-time",
+        "Part-time",
+        "Internship",
+        "Freelance"
+      ]
     },
     "work_from_home": {
       "title": "Work From Home",
@@ -82,7 +108,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 100,
-      "default": 25
+      "default": 25,
+      "prefill": 5
     }
   },
   "required": []

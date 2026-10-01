@@ -9,7 +9,10 @@
       "type": "array",
       "description": "Keyword, topic, niche, product, brand, or hashtag terms to search. Batch multiple keywords in one run to reduce Apify run overhead.",
       "editor": "stringList",
-      "prefill": ["cosplay", "fitness"],
+      "prefill": [
+        "cosplay",
+        "fitness"
+      ],
       "items": {
         "type": "string",
         "minLength": 1,

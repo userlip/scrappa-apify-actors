@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-challenge-details-scraper",
-  "title": "TikTok Hashtag & Challenge Details Scraper",
-  "description": "Resolve known TikTok hashtags and challenge IDs into authoritative metadata through Scrappa.",
+  "title": "TikTok Hashtag Details Scraper",
+  "description": "Look up TikTok hashtag challenges with names, descriptions and participant counts. Submit multiple challenge names in one run to retrieve records for each target.",
   "version": "1.0", "buildTag": "latest",
   "input": "./input_schema.json", "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },

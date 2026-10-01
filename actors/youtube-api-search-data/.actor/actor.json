@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "youtube-api-search-data",
-  "title": "YouTube Search Data Scraper",
-  "description": "Search YouTube by query and filter results by type, sort order, duration, upload date, content type, features, limit, and continuation token.",
+  "title": "YouTube Search Scraper",
+  "description": "Search YouTube videos by phrase with titles, descriptions and channel details. Search a video topic and use the listed duration, type, upload-date and sort filters.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

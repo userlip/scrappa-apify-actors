@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-video-chapters",
-    "title": "YouTube API Video Chapters",
-    "description": "Fetch chapter markers for a YouTube video by video ID through the Scrappa YouTube API.",
+    "title": "YouTube Video Chapters Scraper",
+    "description": "Get YouTube video chapter titles and their start times in seconds. Enter one or more YouTube video IDs to retrieve their chapter lists.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

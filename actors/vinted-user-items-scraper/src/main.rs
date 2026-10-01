@@ -90,7 +90,7 @@ mod tests {
     fn input_prefill_remains_available_to_apify_users() {
         let schema: Value =
             serde_json::from_str(include_str!("../.actor/input_schema.json")).unwrap();
-        assert_eq!(schema["properties"]["user_id"]["prefill"], "12345678");
+        assert_eq!(schema["properties"]["user_id"]["prefill"], "3132361368");
         assert_eq!(schema["properties"]["user_ids"]["maxItems"], 100);
     }
 

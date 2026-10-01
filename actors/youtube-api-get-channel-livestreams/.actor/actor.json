@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-livestreams",
-    "title": "YouTube API Channel Livestreams",
-    "description": "Fetch livestream videos for a YouTube channel by channel ID through the Scrappa YouTube API.",
+    "title": "YouTube Channel Livestreams Scraper",
+    "description": "Find public YouTube livestreams from a channel, with titles, watch links and thumbnails. Choose a supported sort order and continuation value when you need to page through the channel’s streams.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

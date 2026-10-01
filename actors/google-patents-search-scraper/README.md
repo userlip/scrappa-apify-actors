@@ -1,98 +1,120 @@
 # Google Patents Search Scraper
 
-Search Google Patents through Scrappa and export structured patent results to an Apify dataset. Use it for prior-art research, IP monitoring, patent landscaping, assignee tracking, inventor research, competitive intelligence, and date-filtered patent discovery.
+Search Google Patents by invention topic, inventor, assignee, date and publication status. Search by invention topic and add supported inventor, assignee or date filters.
 
-## Pricing
+## What data can you extract?
 
-This actor is intended for paid per-result monetization on Apify's default dataset-item event (`apify-default-dataset-item`). Recommended marketplace pricing is **$0.20 per 1,000 dataset items** so users pay for successful patent results, not empty runs.
+Publication numbers, legal dates and patent details follow the records indexed by Google Patents.
 
-## Input
+| Field | Type | Description |
+| --- | --- | --- |
+| `rank` | number | Result rank in the Google Patents patent search result list, as a whole number; null when the source does not supply one. |
+| `title` | text | Title of the patent search result, as shown by Google Patents; null when no title is published. |
+| `patent_id` | text | patent publication ID for the patent search result, assigned by Google Patents; null when the source does not expose it. |
+| `publication_number` | text | Publication number shown for the patent search result by Google Patents, in the format used by the source; null when it is omitted. |
+| `patent_page` | link | Google patents page url for this patent search result on Google Patents; null when the source does not provide a URL. |
+| `assignee` | text | Assignee shown for the patent search result by Google Patents, in the format used by the source; null when it is omitted. |
+| `inventor` | text | Inventor shown for the patent search result by Google Patents, in the format used by the source; null when it is omitted. |
+| `language` | text | Language code or language name used for this text; null when Google Patents does not provide the value. |
+| `priority_date` | date | Earliest priority date for the patent shown by Google Patents, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `filing_date` | date | Date the patent application was filed shown by Google Patents, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `grant_date` | date | Date the patent was granted shown by Google Patents, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `publication_date` | date | Publication date for this patent search result shown by Google Patents, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `pdf` | link | Pdf for this patent search result on Google Patents; null when the source does not provide a URL. |
+| `family_countries` | text | Family countries shown for the patent search result by Google Patents, in the format used by the source; null when it is omitted. |
+| `family_status_count` | number | Number of family-statuss shown by Google Patents, as a whole number; zero is possible, and null means no count was reported. |
+| `request_q` | text | Search phrase passed to Google Patents. This input value is copied into the output row; null when it was not supplied. |
+| `request_country` | text | Country code or country name passed to Google Patents. This input value is copied into the output row; null when it was not supplied. |
+| `request_status` | text | Status filter passed to Google Patents. This input value is copied into the output row; null when it was not supplied. |
+| `request_type` | text | Requested result type passed to Google Patents. This input value is copied into the output row; null when it was not supplied. |
+| `request_before` | text | Pagination continuation token passed to Google Patents. This input value is copied into the output row; null when it was not supplied. |
+| `request_after` | text | Pagination continuation token passed to Google Patents. This input value is copied into the output row; null when it was not supplied. |
+
+## Use cases
+
+- IP teams can review publication numbers, inventors and assignees while screening an invention.
+- Technology researchers can compare abstracts and citations across records.
+- Product teams can inspect prior-art terms before a deeper patent review.
+
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `q` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
   "q": "wireless charging vehicle battery",
-  "page": 1,
-  "num": 10,
-  "sort": "new",
-  "country": "US,EP",
-  "status": "GRANT",
-  "type": "PATENT",
-  "after": "filing:20200101",
-  "assignee": "Tesla,Toyota"
+  "page": 1
 }
 ```
 
-### Fields
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-- `q` - Required Google Patents query.
-- `page` - One-based result page, 1 to 100.
-- `num` - Results per page, 1 to 100.
-- `sort` - `new` or `old`; omit for relevance.
-- `country` - Comma-separated country codes such as `US,EP,WO`.
-- `language` - Google Patents language filter such as `ENGLISH`.
-- `status` - `GRANT` or `APPLICATION`.
-- `type` - `PATENT` or `DESIGN`.
-- `before` / `after` - Date filters in `filing:YYYYMMDD` or `publication:YYYYMMDD` format.
-- `inventor` - Comma-separated inventor names.
-- `assignee` - Comma-separated assignee or company names.
+## Input
 
-## Output
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `q` | string | Yes | Google Patents search query. Supports patent keywords and Boolean-style patent search text. |
+| `page` | integer | No | One-based Google Patents result page. Constraints: minimum 1; maximum 100. |
+| `num` | integer | No | Number of patent results to request on the page. Constraints: minimum 1; maximum 100. |
+| `sort` | string | No | Leave empty for relevance, or sort by newest or oldest results. Constraints: allowed values: new, old. |
+| `country` | string | No | Comma-separated patent country codes, such as US,EP,WO. |
+| `language` | string | No | Google Patents language filter, such as ENGLISH, GERMAN, or FRENCH. |
+| `status` | string | No | Filter by granted patents or applications. Constraints: allowed values: GRANT, APPLICATION. |
+| `type` | string | No | Filter by utility patents or design patents. Constraints: allowed values: PATENT, DESIGN. |
+| `before` | string | No | Filter patents before a filing or publication date. Format: filing:YYYYMMDD or publication:YYYYMMDD. |
+| `after` | string | No | Filter patents after a filing or publication date. Format: filing:YYYYMMDD or publication:YYYYMMDD. |
+| `inventor` | string | No | Comma-separated inventor names for people-focused patent searches. |
+| `assignee` | string | No | Comma-separated assignee or company names for IP monitoring and competitor patent tracking. |
 
-Each dataset item is one patent result with flattened fields for easier exports:
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
-  "rank": 1,
-  "title": "Wireless charging system",
-  "patent_id": "patent/US1234567B1/en",
-  "publication_number": "US1234567B1",
-  "patent_page": "https://patents.google.com/patent/US1234567B1",
-  "assignee": "Example Inc.",
-  "inventor": "Jane Doe",
-  "priority_date": "2020-01-01",
-  "filing_date": "2021-01-01",
-  "grant_date": "2024-01-01",
-  "publication_date": "2022-01-01",
-  "pdf": "https://patentimages.storage.googleapis.com/...",
-  "family_countries": "US,EP",
-  "family_status_count": 2,
-  "request_q": "wireless charging vehicle battery",
-  "request_country": "US,EP",
-  "request_status": "GRANT"
+  "title": "System for measuring renewable energy output",
+  "patent_id": "US2026012345A1",
+  "publication_number": "US2026012345A1",
+  "patent_page": "https://patents.google.com/patent/US2026012345A1/en",
+  "assignee": "Northstar Energy Systems",
+  "inventor": "Taylor Morgan",
+  "language": "en",
+  "priority_date": "2026-09-25"
 }
 ```
 
-The full Scrappa response is also stored in the key-value store as `OUTPUT`.
+## Pricing
 
-Before writing results, the actor reads the run's PPE prices, charged event counts, and `maxTotalChargeUsd`, then saves only the affordable prefix of result rows. Apify's default dataset item event charges each row written to the default dataset. If the budget is reached, `OUTPUT` contains only the saved patent prefix and the run receives a charge-limit status message. Scrappa requests have a 60-second deadline and retry up to three times for timeouts and transient HTTP statuses (`408`, `429`, `500`, `502`, `503`, `504`).
+**Current live price:** $0.20 per 1,000 results.
 
-## Development
+Each saved source match counts as one result.
 
-This actor uses Rust 1.90. Run its focused test suite from this directory:
+## FAQ
 
-```bash
-cargo test --locked
-```
+### Is it legal to collect public information?
 
-## Run locally
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-The actor reads `INPUT` from its default key-value store, calls Scrappa, and writes dataset items and `OUTPUT` through the Apify API:
+### How many records will a run return?
 
-```bash
-APIFY_TOKEN=... \
-ACTOR_RUN_ID=... \
-ACTOR_DEFAULT_KEY_VALUE_STORE_ID=... \
-ACTOR_DEFAULT_DATASET_ID=... \
-SCRAPPA_API_KEY=... \
-cargo run --locked
-```
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-For local mocks, `APIFY_API_PUBLIC_BASE_URL` and `SCRAPPA_API_BASE_URL` can override the production API bases.
+### Can I call it through the API or connect it to other tools?
 
-The actor preserves Scrappa's original patent result fields and adds the flattened aliases shown above, so new upstream fields may appear in exports without an actor code change.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~google-patents-search-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-## Notes
+### What happens when a request fails?
 
-- Google Patents filtering is exacting. If a run returns no results, loosen the assignee, inventor, country, or date filters first.
-- For recurring IP monitoring, schedule the actor with a stable query and sort by `new`.
-- For higher-volume direct API usage, use Scrappa's Google Patents API.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Can Google Patents Search filter by inventor or assignee?
+
+Use the listed inventor, assignee, date and country filters with an invention query. The output links to the matching patent records.
+
+## Related Scrappa Actors
+
+- [Google Patents Details Scraper](https://apify.com/thescrappa/google-patents-details-scraper)
+- [Google Search Scraper](https://apify.com/thescrappa/google-search-scraper)
+- [Google Trends Related Queries Scraper](https://apify.com/thescrappa/google-trends-related-queries-scraper)

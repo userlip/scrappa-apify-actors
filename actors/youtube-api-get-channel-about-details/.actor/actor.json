@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-about-details",
-    "title": "YouTube API Channel About Details",
-    "description": "Fetch YouTube channel about details by channel ID through the Scrappa YouTube API.",
+    "title": "YouTube Channel About Details Scraper",
+    "description": "Review a YouTube channel’s About details, including name, description, custom URL and country. Submit a YouTube channel ID to retrieve the public details shown on its About page.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

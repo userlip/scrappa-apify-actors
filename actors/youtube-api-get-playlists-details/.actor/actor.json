@@ -2,7 +2,7 @@
     "actorSpecification": 1,
     "name": "youtube-api-get-playlists-details",
     "title": "YouTube Playlist Details Scraper",
-    "description": "Fetch YouTube playlist details and videos by playlist ID.",
+    "description": "Look up a YouTube playlist with its title, description, channel and video count. Paste a YouTube playlist ID to retrieve its details.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

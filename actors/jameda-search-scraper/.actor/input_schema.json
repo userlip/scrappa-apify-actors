@@ -22,7 +22,9 @@
       ],
       "items": {
         "type": "object",
-        "required": ["q"],
+        "required": [
+          "q"
+        ],
         "properties": {
           "q": {
             "title": "Search Query",

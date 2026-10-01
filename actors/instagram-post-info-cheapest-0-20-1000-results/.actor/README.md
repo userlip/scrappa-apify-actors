@@ -1,189 +1,94 @@
-# Instagram Post Info Scraper
+# Instagram Post Info | Cheapest $0.20/1k results
 
-Extract public Instagram post details from a post URL or shortcode. This Actor is built for post research, creator and brand monitoring, engagement checks, campaign reporting, and lightweight enrichment workflows.
+Look up a public Instagram post to see its caption, media type and engagement counts. Paste a public post URL or its shortcode to retrieve the details for that post.
 
-No Instagram login, cookies, proxy setup, or browser session is required. Provide one public Instagram post and the Actor saves the available post metadata to an Apify dataset.
+## What data can you extract?
 
-## What You Can Scrape
+Post and profile details reflect information visible on public Instagram pages; optional fields can be absent.
 
-- Post identifiers such as Instagram media ID, shortcode, permalink, and product type.
-- Engagement metrics such as likes, comments, plays, and views when Instagram returns them.
-- Caption text, hashtags, posted time, and accessibility caption.
-- Media assets such as image variants, thumbnails, and video URLs.
-- Author, collaborators, tagged users, location, and paid partnership flag when available.
-- Raw response fields from the upstream post lookup, saved as one dataset item.
+| Field | Type | Description |
+| --- | --- | --- |
+| `success` | boolean | Whether the lookup completed successfully; false is a reported value, while null means Instagram provided no flag. |
+| `data` | object | Instagram post details with shortcode, caption, publication time, likes, comments and media type; null when the source provides no details. |
+| `error` | string | Diagnostic text for the Instagram lookup; null when the request completes without an error. |
 
-Private or removed posts may not return data. This Actor only reads public information available for the supplied post and does not bypass Instagram privacy restrictions.
+## Use cases
+
+- Social teams can review public post captions and engagement details.
+- Brand researchers can compare post data while monitoring a campaign.
+- Creators can archive source-linked posts for a recurring content review.
+
+## How to use
+
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `url` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
+
+```json
+{
+  "url": "https://www.instagram.com/instagram/p/DdUYPr8Piav/"
+}
+```
+
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
 ## Input
 
-Use one Instagram post per run. The recommended input is a full post URL:
-
-```json
-{
-  "url": "https://www.instagram.com/instagram/p/Dc30nJeRKKz/"
-}
-```
-
-You can also provide the shortcode directly:
-
-```json
-{
-  "shortcode": "Dc30nJeRKKz"
-}
-```
-
-The legacy `media_id` field is still accepted for compatibility and is treated as a shortcode.
-
-### Input Fields
-
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `url` | String | Yes, unless `shortcode` or `media_id` is provided | Full Instagram post URL. Recommended format: `https://www.instagram.com/username/p/SHORTCODE/`. |
-| `shortcode` | String | Yes, unless `url` or `media_id` is provided | Instagram post shortcode, such as `Dc30nJeRKKz`. |
-| `media_id` | String | No | Legacy input alias. Treated as the Instagram post shortcode for older integrations. |
+| `url` | string | No | Full Instagram post URL or shortcode. Include the username to enable an exact-match fallback through the account’s recent posts, for example https://www.instagram.com/instagram/p/DdUYPr8Piav/. |
+| `shortcode` | string | No | Instagram post shortcode. Use this when you do not have the full post URL. Example shortcode: DUBtwxGEqz2. |
+| `media_id` | string | No | Deprecated legacy input name. Use the URL or shortcode field above for new integrations. This actor treats media_id as the Instagram post shortcode. |
 
-## Tested Input
+## Output example
 
-This README is based on a successful Apify run tested with:
-
-```json
-{
-  "url": "https://www.instagram.com/instagram/p/Dc30nJeRKKz/"
-}
-```
-
-The run returned one dataset item for shortcode `Dc30nJeRKKz` with caption, media, author, permalink, and post metadata.
-
-## Output
-
-Each run saves one result object to the default Apify dataset. The top-level response contains `success` and `data`. Most post fields are inside `data`.
-
-Common output fields include:
-
-| Field | Description |
-| --- | --- |
-| `success` | Whether the Scrappa request completed successfully. |
-| `data.id` | Instagram media ID. |
-| `data.shortcode` | Instagram post shortcode. |
-| `data.media_type` | Media type, for example `image`, `video`, or carousel-related values. |
-| `data.caption` | Public post caption text. |
-| `data.hashtags` | Hashtags parsed from the caption when available. |
-| `data.taken_at` | Post timestamp in ISO-like format when returned. |
-| `data.taken_at_timestamp` | Post timestamp as a Unix timestamp when returned. |
-| `data.like_count` | Number of likes when available. |
-| `data.comment_count` | Number of comments when available. |
-| `data.play_count` | Number of plays for video or Reels-style posts when available. |
-| `data.view_count` | Number of views when available. |
-| `data.media` | Media objects with images, thumbnail URL, video URL, or related media fields. |
-| `data.author` | Post author metadata, commonly including `username`. |
-| `data.collaborators` | Collaborating accounts when Instagram returns them. |
-| `data.tagged_users` | Users tagged in the post when available. |
-| `data.location` | Location data when attached to the post. |
-| `data.is_paid_partnership` | Whether Instagram marks the post as a paid partnership. |
-| `data.product_type` | Instagram product type such as `clips`. |
-| `data.permalink` | Canonical Instagram post URL. |
-| `data.accessibility_caption` | Accessibility caption when available. |
-
-Example dataset item:
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
 
 ```json
 {
   "success": true,
   "data": {
-    "id": "3819535222330010870",
-    "shortcode": "DUBtwxGEqz2",
-    "media_type": "video",
-    "caption": "Turning daydreams into art...",
-    "hashtags": [],
-    "taken_at": null,
-    "taken_at_timestamp": null,
-    "like_count": null,
-    "comment_count": null,
-    "play_count": null,
-    "view_count": null,
-    "media": [
-      {
-        "type": "video",
-        "thumbnail_url": "https://...",
-        "width": 640,
-        "height": 1137
-      }
-    ],
-    "author": {
-      "id": 25025320,
-      "username": "instagram",
-      "profile_url": "https://www.instagram.com/instagram"
-    },
-    "collaborators": [],
-    "tagged_users": [],
-    "location": null,
-    "is_paid_partnership": false,
-    "product_type": "clips",
-    "permalink": "https://www.instagram.com/instagram/p/DUBtwxGEqz2/"
+    "shortcode": "DJx8sQmP4ab",
+    "caption": "Three easy ways to style a vintage wool coat for cooler days.",
+    "taken_at": "2026-09-25T09:15:00Z",
+    "like_count": 864,
+    "comment_count": 27,
+    "media_type": "video"
   }
 }
 ```
 
-The shortened `https://...` media values above stand in for real Instagram CDN URLs returned by the Actor. Exact fields can vary by post type and by what Instagram exposes publicly for that post.
+## Pricing
 
-## Exporting Results
+**Current live price:** $0.20 per 1,000 results.
 
-Results are stored in the Actor's default dataset. From Apify, you can export the dataset as:
+Each saved dataset record counts as one result.
 
-- JSON
-- CSV
-- Excel
-- XML
-- RSS
-- HTML table
+## FAQ
 
-Use JSON for full nested media fields. Use CSV or Excel when you want spreadsheet-friendly post metrics for reporting, monitoring, or lead research.
+### Is it legal to collect public information?
 
-## Pricing Position
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-This Actor is positioned for low-cost Instagram post enrichment at **$0.20 per 1,000 results**. It is a good fit when you want Apify-native runs, datasets, schedules, webhooks, and exports without building your own integration.
+### How many records will a run return?
 
-Because this Actor looks up one Instagram post per run, one result means one post dataset item.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-For high-volume workflows, direct backend enrichment, or custom commercial plans, Scrappa direct API access is usually the better upgrade path.
+### Can I call it through the API or connect it to other tools?
 
-## Upgrade to Scrappa Direct API
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~instagram-post-info-cheapest-0-20-1000-results/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-Need to look up many Instagram posts from your own app, data pipeline, CRM, or enrichment service? Use Scrappa directly instead of running one Apify task per lookup.
+### What happens when a request fails?
 
-Scrappa direct API gives you:
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
 
-- Direct HTTPS access to the same Instagram Post API used by this Actor.
-- Lower-friction integration for backend jobs, queues, and batch processing.
-- Centralized API-key based access for higher-volume Scrappa workflows.
-- A simpler path when you need custom limits, combined endpoints, or broader Scrappa data products.
+### Can I use an Instagram shortcode instead of a post URL?
 
-Start with this Actor when you want Apify storage, scheduling, and no-code exports. Move to Scrappa direct API when you need application-level integration or sustained volume.
+Yes. Submit the shortcode field or paste the public post URL in the url field.
 
-## Typical Use Cases
+## Related Scrappa Actors
 
-- Check engagement metrics for a public Instagram post.
-- Enrich campaign, creator, or influencer post URLs.
-- Monitor brand, competitor, or publisher post performance.
-- Export post captions, hashtags, media URLs, and tagged accounts.
-- Validate post URLs before running larger Instagram data workflows.
-- Feed public post metadata into BI, CRM, or reporting systems.
-
-## Notes and Limits
-
-- Run one Instagram post per Actor run.
-- Use a full post URL for the most reliable input.
-- The `shortcode` and legacy `media_id` fields are accepted for compatibility.
-- The hosted Scrappa Actor already has `SCRAPPA_API_KEY` configured. If you fork or self-deploy this Actor, add `SCRAPPA_API_KEY` as an Actor environment variable before running it.
-- Availability of likes, views, media URLs, collaborators, and tagged users depends on public data returned for the post.
-- This Actor does not require or accept Instagram credentials.
-- This Actor does not access private post content or bypass Instagram restrictions.
-
-## Availability and retries
-
-If the single-post lookup is temporarily unavailable, URLs containing the account username enable a fallback through Scrappa's recent user posts. Only a post with the exact requested shortcode is returned; unrelated posts and upstream errors are never published as results. Older posts outside the recent feed still depend on the single-post lookup. Available fields may differ between these upstream sources.
-
-Each attempt has a shared 60-second deadline across both endpoints. Two retries wait 5 and 15 seconds, for a maximum request-and-wait budget of 200 seconds. The default run uses 128 MB and a 300-second timeout.
-
-The input form and automated QA use the prefilled example URL. No URL default is injected into API inputs, so explicit `shortcode` and `media_id` requests keep their intended target. Refresh the prefill if the example leaves the account's recent feed while the single-post endpoint remains unavailable.
+- [Instagram User Info | Cheapest $0.20/1k results](https://apify.com/thescrappa/instagram-user-info-cheapest-0-20-1000-results)
+- [Instagram User Posts Scraper](https://apify.com/thescrappa/instagram-user-posts-cheapest-0-20-1000-results)
+- [Pinterest Search Scraper](https://apify.com/thescrappa/pinterest-search-scraper)
+- [TikTok Search Scraper](https://apify.com/thescrappa/tiktok-search-scraper)
