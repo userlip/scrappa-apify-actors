@@ -115,10 +115,15 @@ async function deploy(dir) {
 
   const run = await api('POST', `/acts/${actor.id}/runs?build=${encodeURIComponent(finishedBuild.buildNumber)}`, prefilledInput(schema));
   const finishedRun = await waitFor('actor-runs', run.id, 600);
-  await sleep(4000);
-  const dataset = await api('GET', `/datasets/${finishedRun.defaultDatasetId}`);
-  const ok = finishedRun.status === 'SUCCEEDED' && (dataset.itemCount > 0 || ALLOW_EMPTY);
-  console.log(`${name}: candidate build ${build.id} run ${run.id} ${finishedRun.status} items=${dataset.itemCount} ${finishedRun.statusMessage || ''}`.trim());
+  // Dataset item counts can lag behind the run; read actual items for up to 30 s.
+  let itemCount = 0;
+  for (let i = 0; i < 6 && itemCount === 0; i += 1) {
+    await sleep(5000);
+    const res = await fetch(`${API}/datasets/${finishedRun.defaultDatasetId}/items?limit=1&token=${TOKEN}`);
+    if (res.ok) itemCount = (await res.json()).length;
+  }
+  const ok = finishedRun.status === 'SUCCEEDED' && (itemCount > 0 || ALLOW_EMPTY);
+  console.log(`${name}: candidate build ${build.id} run ${run.id} ${finishedRun.status} hasItems=${itemCount > 0} ${finishedRun.statusMessage || ''}`.trim());
   if (!ok) return { name, status: 'not-promoted', build: build.id, run: run.id, previous: latest?.buildId };
   if (NO_PROMOTE) return { name, status: 'candidate-only', build: build.id, previous: latest?.buildId };
 
