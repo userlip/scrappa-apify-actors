@@ -1,0 +1,21 @@
+{
+  "search_parameters": {
+    "engine": "baidu_trending",
+    "tab": "realtime"
+  },
+  "trending_searches": [
+    {
+      "position": 1,
+      "query": "portable air conditioner",
+      "title": "Portable air conditioners",
+      "link": "https://www.baidu.com/s?wd=%E4%BE%BF%E6%90%BA%E5%BC%8F%E7%A9%BA%E8%B0%83",
+      "description": "Search interest is rising for compact cooling options for apartments and home offices.",
+      "is_top": true
+    }
+  ],
+  "available_tabs": [],
+  "search_information": {
+    "tab": "realtime",
+    "item_count": 1
+  }
+}

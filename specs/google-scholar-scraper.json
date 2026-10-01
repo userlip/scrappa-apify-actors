@@ -1,0 +1,343 @@
+{
+  "slug": "google-scholar-scraper",
+  "title": "Google Scholar Scraper",
+  "description": "Search Google Scholar for paper titles, authors, publication details, citations, and available resources. Batch research queries to build literature lists or monitor academic topics.",
+  "endpoint": "/google/scholar",
+  "openapiPath": "/google/scholar",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "q",
+    "apiParam": "q",
+    "pathParam": null,
+    "title": "Research queries",
+    "description": "Academic search phrases. Add one object per phrase.",
+    "valueDescription": "q used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "q",
+      "apiParam": "q",
+      "location": "query",
+      "required": true,
+      "title": "Search query",
+      "schema": {
+        "type": "string",
+        "description": "Scholar search query. Optional when cites or cluster is supplied.",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "hl",
+      "apiParam": "hl",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "description": "Two-letter interface language, optionally with a region. Defaults to en.",
+        "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+        "default": "en"
+      }
+    },
+    {
+      "input": "start",
+      "apiParam": "start",
+      "location": "query",
+      "required": false,
+      "title": "Start",
+      "schema": {
+        "type": "integer",
+        "description": "Zero-based result offset from 0 to 990. Defaults to 0.",
+        "minimum": 0,
+        "maximum": 990,
+        "default": 0
+      }
+    },
+    {
+      "input": "num",
+      "apiParam": "num",
+      "location": "query",
+      "required": false,
+      "title": "Results per page",
+      "schema": {
+        "type": "integer",
+        "description": "Results per request from 1 to 20. Defaults to 10.",
+        "minimum": 1,
+        "maximum": 20,
+        "default": 10
+      }
+    },
+    {
+      "input": "as_ylo",
+      "apiParam": "as_ylo",
+      "location": "query",
+      "required": false,
+      "title": "As Ylo",
+      "schema": {
+        "type": "integer",
+        "description": "Earliest publication year to include.",
+        "minimum": 1000,
+        "maximum": 2100
+      }
+    },
+    {
+      "input": "as_yhi",
+      "apiParam": "as_yhi",
+      "location": "query",
+      "required": false,
+      "title": "As Yhi",
+      "schema": {
+        "type": "integer",
+        "description": "Latest publication year to include.",
+        "minimum": 1000,
+        "maximum": 2100
+      }
+    },
+    {
+      "input": "scisbd",
+      "apiParam": "scisbd",
+      "location": "query",
+      "required": false,
+      "title": "Scisbd",
+      "schema": {
+        "type": "integer",
+        "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions.",
+        "enum": [
+          "0",
+          "1",
+          "2"
+        ],
+        "default": "0"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "cites",
+      "apiParam": "cites",
+      "location": "query",
+      "required": false,
+      "title": "Cites",
+      "schema": {
+        "type": "string",
+        "description": "Numeric publication ID for a cited-by search. May be combined with q.",
+        "pattern": "^\\d{1,30}$"
+      }
+    },
+    {
+      "input": "cluster",
+      "apiParam": "cluster",
+      "location": "query",
+      "required": false,
+      "title": "Cluster",
+      "schema": {
+        "type": "string",
+        "description": "Numeric publication ID for an all-versions search. Must be used alone.",
+        "pattern": "^\\d{1,30}$"
+      }
+    }
+  ],
+  "resultPointer": "/data/organic_results",
+  "fallbackResultPointers": [],
+  "pagination": {
+    "kind": "page",
+    "param": "start",
+    "start": 0,
+    "step": 10,
+    "nextPointer": "/data/pagination/next_start",
+    "hasMorePointer": "/data/pagination/has_next",
+    "maxPages": 10
+  },
+  "enrichment": {
+    "field": "input_q"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 2,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "q": "transformer attention"
+      }
+    ],
+    "maxResults": 20,
+    "maxPages": 2
+  },
+  "testParams": {
+    "q": "transformer attention"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "search_parameters": {
+        "engine": "google_scholar",
+        "q": "sample transformer paper",
+        "hl": "en",
+        "start": 0,
+        "num": 10,
+        "scisbd": 0
+      },
+      "search_information": {
+        "query_displayed": "sample transformer paper",
+        "total_results": 1
+      },
+      "organic_results": [
+        {
+          "position": 1,
+          "title": "How Search Interfaces Shape Literature Reviews",
+          "result_id": "GS-2025-01842",
+          "link": "https://scholar.google.com/scholar?cluster=1748293102842",
+          "snippet": "This study compares citation discovery and screening workflows across digital research libraries.",
+          "publication_info": {
+            "summary": "Journal of Digital Scholarship, 2025",
+            "authors": [
+              "Priya Menon",
+              "Rafael Costa"
+            ]
+          },
+          "resources": [
+            {
+              "title": "Open access article",
+              "file_format": "PDF",
+              "link": "https://repository.uni-muenster.de/document/1842"
+            }
+          ]
+        }
+      ],
+      "pagination": {
+        "current": 1,
+        "start": 0,
+        "num": 10,
+        "next_start": 10,
+        "has_next": false,
+        "pages": [
+          1,
+          2
+        ]
+      }
+    },
+    "meta": {
+      "duration_ms": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "link",
+      "label": "Link",
+      "format": "link"
+    },
+    {
+      "name": "snippet",
+      "label": "Snippet",
+      "format": "text"
+    },
+    {
+      "name": "publication_info",
+      "label": "Publication Info",
+      "format": "text"
+    },
+    {
+      "name": "result_id",
+      "label": "Result ID",
+      "format": "text"
+    }
+  ],
+  "dedupePointer": "/result_id",
+  "categories": [
+    "EDUCATION",
+    "SEO_TOOLS"
+  ],
+  "storeCopy": {
+    "seoTitle": "Google Scholar Scraper | Paper Results",
+    "seoDescription": "Search Google Scholar for papers, publication details, result links, and resources. Build literature review datasets and track academic research by topic.",
+    "intro": "Collect ranked Scholar results for research topics. Rows include paper titles, result IDs, publication summaries, snippets, links, and available resources.",
+    "useCases": [
+      "Researchers can collect paper details and publisher links by topic.",
+      "Librarians can build reading lists from ranked Google Scholar results.",
+      "Research teams can monitor publication coverage for recurring queries."
+    ],
+    "howToUse": [
+      "Add one research phrase per item in `queries`.",
+      "Set `maxPages` to bound collection and `maxResults` to cap saved papers.",
+      "Review paper titles, publication details, links, and resources."
+    ],
+    "faqs": [
+      {
+        "question": "Does the Actor download full papers?",
+        "answer": "No. It returns result metadata and resource links exposed in search results; publisher access rules still apply."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-ai-overview-scraper",
+        "title": "Google AI Overview Scraper"
+      },
+      {
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      },
+      {
+        "slug": "google-shopping-scraper",
+        "title": "Google Shopping Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Position of the paper in Google Scholar results, starting at 1."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Paper title displayed by Google Scholar."
+      },
+      {
+        "name": "result_id",
+        "type": "String",
+        "description": "Google Scholar identifier associated with the paper record."
+      },
+      {
+        "name": "link",
+        "type": "String",
+        "description": "Google Scholar or publisher URL for the paper."
+      },
+      {
+        "name": "snippet",
+        "type": "String",
+        "description": "Short paper excerpt or matching text shown in Scholar results."
+      },
+      {
+        "name": "publication_info",
+        "type": "Object",
+        "description": "Publication venue, authors, and year displayed with the paper."
+      },
+      {
+        "name": "resources",
+        "type": "Array<object>",
+        "description": "Publisher and document links associated with the paper."
+      },
+      {
+        "name": "input_q",
+        "type": "String",
+        "description": "Research phrase submitted to Google Scholar for this result set."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this paper record was collected."
+      }
+    ]
+  }
+}

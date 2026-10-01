@@ -6,11 +6,23 @@ on:
       - main
     paths:
       - 'actors/**'
+      - 'specs/**'
+      - 'templates/**'
+      - 'scripts/generate-actors.mjs'
+      - 'scripts/validate-store-copy.mjs'
+      - 'docs/generated-actors.md'
+      - 'README.md'
       - '.github/workflows/actor-tests.yml'
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
     paths:
       - 'actors/**'
+      - 'specs/**'
+      - 'templates/**'
+      - 'scripts/generate-actors.mjs'
+      - 'scripts/validate-store-copy.mjs'
+      - 'docs/generated-actors.md'
+      - 'README.md'
       - '.github/workflows/actor-tests.yml'
 
 concurrency:
@@ -25,9 +37,15 @@ jobs:
       fail-fast: false
       matrix:
         actor:
+          - actors/apple-app-store-app-details-scraper
+          - actors/apple-app-store-search-scraper
           - actors/arbeitsagentur-jobs-scraper
+          - actors/baidu-search-scraper
+          - actors/baidu-trending-scraper
+          - actors/bing-search-scraper
           - actors/booking-hotel-details-scraper
           - actors/booking-search-scraper
+          - actors/brave-search-scraper
           - actors/domain-availability-checker
           - actors/google-finance-historical-prices-scraper
           - actors/google-finance-indices-scraper
@@ -39,7 +57,9 @@ jobs:
           - actors/google-hotels-autocomplete-scraper
           - actors/google-hotels-search-scraper
           - actors/google-images-scraper
+          - actors/google-ai-overview-scraper
           - actors/google-jobs-scraper
+          - actors/google-lens-scraper
           - actors/google-maps-advanced-search-scraper
           - actors/google-maps-autocomplete-scraper
           - actors/google-maps-business-details-scraper
@@ -50,13 +70,17 @@ jobs:
           - actors/google-news-scraper
           - actors/google-patents-details-scraper
           - actors/google-patents-search-scraper
+          - actors/google-scholar-scraper
           - actors/google-search
+          - actors/google-shopping-scraper
           - actors/google-translate-scraper
           - actors/google-trends-autocomplete-scraper
           - actors/google-trends-interest-scraper
           - actors/google-trends-related-queries-scraper
           - actors/google-videos-scraper
+          - actors/idealista-search-scraper
           - actors/immobilienscout24-locations-scraper
+          - actors/immobilienscout24-property-details-scraper
           - actors/immobilienscout24-price-insights-scraper
           - actors/immobilienscout24-search-scraper
           - actors/immowelt-property-search-scraper
@@ -67,6 +91,7 @@ jobs:
           - actors/jameda-doctor-details-scraper
           - actors/jameda-reviews-scraper
           - actors/jameda-search-scraper
+          - actors/kayak-flights-scraper
           - actors/kleinanzeigen-listing-details-scraper
           - actors/kleinanzeigen-search-scraper
           - actors/kununu-jobs-scraper
@@ -82,6 +107,8 @@ jobs:
           - actors/redfin-property-search-scraper
           - actors/redfin-valuation-scraper
           - actors/scrappa-google-search
+          - actors/semrush-competitors-scraper
+          - actors/semrush-domain-overview-scraper
           - actors/similarweb-traffic-analytics-scraper
           - actors/startpage-search-scraper
           - actors/stepstone-jobs-scraper
@@ -97,6 +124,7 @@ jobs:
           - actors/tiktok-profile-scraper
           - actors/tiktok-search-scraper
           - actors/tiktok-user-posts-scraper
+          - actors/tiktok-user-search-scraper
           - actors/tiktok-video-scraper
           - actors/trustedshops-reviews-scraper
           - actors/trustedshops-search-scraper
@@ -141,3 +169,15 @@ jobs:
       - name: Run Rust actor tests
         working-directory: ${{ matrix.actor }}
         run: cargo test --locked
+
+  check-generated-actors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Check generated Actor files
+        run: node scripts/generate-actors.mjs --check
+
+      - name: Validate generated Store copy
+        run: node scripts/validate-store-copy.mjs

@@ -1,0 +1,11 @@
+{
+  "flights": [
+    {
+      "origin": "JFK",
+      "destination": "LAX"
+    }
+  ],
+  "tripType": "one-way",
+  "maxResults": 20,
+  "maxPages": 2
+}

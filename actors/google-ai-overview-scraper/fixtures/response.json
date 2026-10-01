@@ -1,0 +1,29 @@
+{
+  "search_information": {
+    "query_displayed": "how do heat pumps work",
+    "search_url": "https://www.google.com/search?q=how+do+heat+pumps+work"
+  },
+  "ai_overview": {
+    "text_blocks": [
+      {
+        "type": "paragraph",
+        "snippet": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling.",
+        "snippet_markdown": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling."
+      }
+    ],
+    "sections": [
+      {
+        "title": "Basic operation",
+        "places": [
+          {
+            "name": "U.S. Department of Energy",
+            "address": "1000 Independence Avenue SW, Washington, DC"
+          }
+        ]
+      }
+    ]
+  },
+  "text": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling.",
+  "markdown": "Heat pumps transfer heat between indoor and outdoor air, using electricity to provide efficient heating and cooling.",
+  "service_used": "google"
+}

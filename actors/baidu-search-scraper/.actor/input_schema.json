@@ -1,0 +1,93 @@
+{
+  "title": "Baidu Search Scraper",
+  "description": "Search Baidu for ranked pages, snippets, source domains, dates, and destination links. Batch Chinese-language queries to monitor visibility or compare search results by topic.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Search queries",
+      "type": "array",
+      "description": "Baidu search phrases. Add one object per phrase.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "query": "apple iphone"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "title": "Search query",
+            "type": "string",
+            "description": "Search query.",
+            "maxLength": 500,
+            "editor": "textfield"
+          },
+          "limit": {
+            "title": "Results Per Page",
+            "type": "integer",
+            "description": "Maximum Baidu results to request on each page.",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 10,
+            "editor": "number"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "description": "1-based Baidu result page.",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 1,
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "limit": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "description": "Maximum Baidu results to request on each page.",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10,
+      "editor": "number"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "1-based Baidu result page.",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1,
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 2
+    }
+  }
+}

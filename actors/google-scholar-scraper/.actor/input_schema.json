@@ -1,0 +1,194 @@
+{
+  "title": "Google Scholar Scraper",
+  "description": "Search Google Scholar for paper titles, authors, publication details, citations, and available resources. Batch research queries to build literature lists or monitor academic topics.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Research queries",
+      "type": "array",
+      "description": "Academic search phrases. Add one object per phrase.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "q": "transformer attention"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "q"
+        ],
+        "properties": {
+          "q": {
+            "title": "Search query",
+            "type": "string",
+            "description": "Scholar search query. Optional when cites or cluster is supplied.",
+            "minLength": 1,
+            "maxLength": 500,
+            "editor": "textfield"
+          },
+          "hl": {
+            "title": "Language",
+            "type": "string",
+            "description": "Two-letter interface language, optionally with a region. Defaults to en.",
+            "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+            "default": "en",
+            "editor": "textfield"
+          },
+          "start": {
+            "title": "Start",
+            "type": "integer",
+            "description": "Zero-based result offset from 0 to 990. Defaults to 0.",
+            "minimum": 0,
+            "maximum": 990,
+            "default": 0,
+            "editor": "number"
+          },
+          "num": {
+            "title": "Results per page",
+            "type": "integer",
+            "description": "Results per request from 1 to 20. Defaults to 10.",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 10,
+            "editor": "number"
+          },
+          "as_ylo": {
+            "title": "As Ylo",
+            "type": "integer",
+            "description": "Earliest publication year to include.",
+            "minimum": 1000,
+            "maximum": 2100,
+            "editor": "number"
+          },
+          "as_yhi": {
+            "title": "As Yhi",
+            "type": "integer",
+            "description": "Latest publication year to include.",
+            "minimum": 1000,
+            "maximum": 2100,
+            "editor": "number"
+          },
+          "scisbd": {
+            "title": "Scisbd",
+            "type": "integer",
+            "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions.",
+            "enum": [
+              "0",
+              "1",
+              "2"
+            ],
+            "default": "0",
+            "editor": "select"
+          },
+          "cites": {
+            "title": "Cites",
+            "type": "string",
+            "description": "Numeric publication ID for a cited-by search. May be combined with q.",
+            "pattern": "^\\d{1,30}$",
+            "editor": "textfield"
+          },
+          "cluster": {
+            "title": "Cluster",
+            "type": "string",
+            "description": "Numeric publication ID for an all-versions search. Must be used alone.",
+            "pattern": "^\\d{1,30}$",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter interface language, optionally with a region. Defaults to en.",
+      "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+      "default": "en",
+      "editor": "textfield"
+    },
+    "start": {
+      "title": "Start",
+      "type": "integer",
+      "description": "Zero-based result offset from 0 to 990. Defaults to 0.",
+      "minimum": 0,
+      "maximum": 990,
+      "default": 0,
+      "editor": "number"
+    },
+    "num": {
+      "title": "Results per page",
+      "type": "integer",
+      "description": "Results per request from 1 to 20. Defaults to 10.",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10,
+      "editor": "number"
+    },
+    "as_ylo": {
+      "title": "As Ylo",
+      "type": "integer",
+      "description": "Earliest publication year to include.",
+      "minimum": 1000,
+      "maximum": 2100,
+      "editor": "number"
+    },
+    "as_yhi": {
+      "title": "As Yhi",
+      "type": "integer",
+      "description": "Latest publication year to include.",
+      "minimum": 1000,
+      "maximum": 2100,
+      "editor": "number"
+    },
+    "scisbd": {
+      "title": "Scisbd",
+      "type": "integer",
+      "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions.",
+      "enum": [
+        "0",
+        "1",
+        "2"
+      ],
+      "default": "0",
+      "editor": "select"
+    },
+    "cites": {
+      "title": "Cites",
+      "type": "string",
+      "description": "Numeric publication ID for a cited-by search. May be combined with q.",
+      "pattern": "^\\d{1,30}$",
+      "editor": "textfield"
+    },
+    "cluster": {
+      "title": "Cluster",
+      "type": "string",
+      "description": "Numeric publication ID for an all-versions search. Must be used alone.",
+      "pattern": "^\\d{1,30}$",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    }
+  }
+}

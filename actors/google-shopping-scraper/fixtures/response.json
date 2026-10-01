@@ -1,0 +1,26 @@
+{
+  "search_parameters": {
+    "q": "example headphones",
+    "gl": "us",
+    "hl": "en",
+    "start": 0,
+    "device": "desktop"
+  },
+  "shopping_results": [
+    {
+      "position": 1,
+      "category": "Electronics",
+      "title": "Soundcore Space One Wireless Headphones",
+      "source": "Soundcore Store",
+      "thumbnail": "https://cdn.soundcore.com/products/space-one/black-front.jpg",
+      "price": "$99.99",
+      "rating": 4.6,
+      "reviews": 1842
+    }
+  ],
+  "pagination": {
+    "current_page": 1,
+    "start": 0,
+    "next_start": 50
+  }
+}

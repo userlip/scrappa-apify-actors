@@ -1,0 +1,177 @@
+{
+  "title": "Apple App Store App Details Scraper",
+  "description": "Get Apple App Store app details with publisher, price, rating, privacy labels, version, and related apps. Batch product IDs with a storefront country to enrich app catalogs or compare listings.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "product_ids"
+  ],
+  "properties": {
+    "product_ids": {
+      "title": "Product IDs",
+      "type": "array",
+      "description": "Apple product IDs to look up. Add one object per supported product.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "product_id": "1232780281"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "properties": {
+          "product_id": {
+            "title": "Product ID",
+            "type": "string",
+            "description": "Apple product id (numeric adam id; UMC ids also accepted for movies/TV)",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "editor": "textfield"
+          },
+          "id": {
+            "title": "ID",
+            "type": "string",
+            "description": "Legacy alias for the Apple product ID.",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "editor": "textfield"
+          },
+          "store": {
+            "title": "Store",
+            "type": "string",
+            "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts",
+            "enum": [
+              "apps",
+              "mac",
+              "books",
+              "audiobooks",
+              "movies",
+              "tv",
+              "music",
+              "podcasts"
+            ],
+            "default": "apps",
+            "editor": "select"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "description": "Two-letter Apple storefront country code (default: us)",
+            "minLength": 2,
+            "maxLength": 2,
+            "default": "us",
+            "editor": "textfield"
+          },
+          "season_id": {
+            "title": "Season ID",
+            "type": "string",
+            "description": "TV season id; returns the season product instead of the show",
+            "maxLength": 255,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "editor": "textfield"
+          },
+          "num": {
+            "title": "Results per page",
+            "type": "integer",
+            "description": "Requested review result count per page",
+            "minimum": 1,
+            "maximum": 50,
+            "editor": "number"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer",
+            "description": "Review result offset for the selected App Store item.",
+            "minimum": 0,
+            "editor": "number"
+          },
+          "next_page_token": {
+            "title": "Next Page Token",
+            "type": "string",
+            "description": "Review pagination token from a previous response",
+            "maxLength": 100,
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "id": {
+      "title": "ID",
+      "type": "string",
+      "description": "Legacy alias for the Apple product ID.",
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "editor": "textfield"
+    },
+    "store": {
+      "title": "Store",
+      "type": "string",
+      "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts",
+      "enum": [
+        "apps",
+        "mac",
+        "books",
+        "audiobooks",
+        "movies",
+        "tv",
+        "music",
+        "podcasts"
+      ],
+      "default": "apps",
+      "editor": "select"
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter Apple storefront country code (default: us)",
+      "minLength": 2,
+      "maxLength": 2,
+      "default": "us",
+      "editor": "textfield"
+    },
+    "season_id": {
+      "title": "Season ID",
+      "type": "string",
+      "description": "TV season id; returns the season product instead of the show",
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "editor": "textfield"
+    },
+    "num": {
+      "title": "Results per page",
+      "type": "integer",
+      "description": "Requested review result count per page",
+      "minimum": 1,
+      "maximum": 50,
+      "editor": "number"
+    },
+    "offset": {
+      "title": "Offset",
+      "type": "integer",
+      "description": "Review result offset for the selected App Store item.",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "next_page_token": {
+      "title": "Next Page Token",
+      "type": "string",
+      "description": "Review pagination token from a previous response",
+      "maxLength": 100,
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

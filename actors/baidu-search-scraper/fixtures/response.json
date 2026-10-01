@@ -1,0 +1,29 @@
+{
+  "search_parameters": {
+    "engine": "baidu_search",
+    "query": "sample topic",
+    "page": 1,
+    "limit": 10
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "result_type": "organic",
+      "title": "对象存储 OSS - 阿里云",
+      "link": "https://www.aliyun.com/product/oss",
+      "displayed_link": "aliyun.com/product/oss",
+      "snippet": "Store and retrieve files with scalable cloud object storage from Alibaba Cloud.",
+      "source": "Alibaba Cloud",
+      "category": "web",
+      "date": "2026-09-18"
+    }
+  ],
+  "special_results": [],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "results_on_page": 1,
+    "has_more": false,
+    "next_page": 2
+  }
+}

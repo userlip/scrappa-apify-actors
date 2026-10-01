@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "flights": [
+    {
+      "resultId": "FL-JFK-LAX-20261114-01",
+      "type": "ONE_WAY",
+      "shareableId": "8f31b7",
+      "shareableUrl": "https://www.kayak.com/flights/JFK-LAX/2026-11-14",
+      "legs": [
+        {
+          "id": "leg-1",
+          "departure": "2026-11-14T08:00:00Z",
+          "arrival": "2026-11-14T11:00:00Z",
+          "duration": 360
+        }
+      ],
+      "totalProviders": 2,
+      "totalBookingOptions": 3
+    }
+  ],
+  "providers": [],
+  "airlines": [],
+  "search_metadata": {
+    "origin": "JFK",
+    "destination": "LAX",
+    "departure_date": "2026-11-14",
+    "page": 1,
+    "has_more": false
+  }
+}

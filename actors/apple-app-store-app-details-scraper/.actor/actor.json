@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "apple-app-store-app-details-scraper",
+  "title": "Apple App Store App Details Scraper",
+  "description": "Get Apple App Store app details with publisher, price, rating, privacy labels, version, and related apps. Batch product IDs with a storefront country to enrich app catalogs or compare listings.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "title",
+              "artist",
+              "rating",
+              "rating_count",
+              "privacy"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "artist": {
+                "label": "Artist",
+                "format": "text"
+              },
+              "rating": {
+                "label": "Rating",
+                "format": "number"
+              },
+              "rating_count": {
+                "label": "Rating Count",
+                "format": "number"
+              },
+              "privacy": {
+                "label": "Privacy",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

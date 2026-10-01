@@ -1,0 +1,54 @@
+{
+  "success": true,
+  "data": {
+    "search_parameters": {
+      "engine": "google_scholar",
+      "q": "sample transformer paper",
+      "hl": "en",
+      "start": 0,
+      "num": 10,
+      "scisbd": 0
+    },
+    "search_information": {
+      "query_displayed": "sample transformer paper",
+      "total_results": 1
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "title": "How Search Interfaces Shape Literature Reviews",
+        "result_id": "GS-2025-01842",
+        "link": "https://scholar.google.com/scholar?cluster=1748293102842",
+        "snippet": "This study compares citation discovery and screening workflows across digital research libraries.",
+        "publication_info": {
+          "summary": "Journal of Digital Scholarship, 2025",
+          "authors": [
+            "Priya Menon",
+            "Rafael Costa"
+          ]
+        },
+        "resources": [
+          {
+            "title": "Open access article",
+            "file_format": "PDF",
+            "link": "https://repository.uni-muenster.de/document/1842"
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "current": 1,
+      "start": 0,
+      "num": 10,
+      "next_start": 10,
+      "has_next": false,
+      "pages": [
+        1,
+        2
+      ]
+    }
+  },
+  "meta": {
+    "duration_ms": 1
+  }
+}

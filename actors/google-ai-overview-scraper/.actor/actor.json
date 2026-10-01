@@ -1,0 +1,65 @@
+{
+  "actorSpecification": 1,
+  "name": "google-ai-overview-scraper",
+  "title": "Google AI Overview Scraper",
+  "description": "Capture Google AI Overview answers, answer sections, and query context when available. Batch queries to compare answer coverage and organize observations about AI search results.",
+  "categories": [
+    "AI",
+    "SEO_TOOLS"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "query_displayed",
+              "text",
+              "markdown",
+              "ai_overview",
+              "service_used"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "query_displayed": {
+                "label": "Query Displayed",
+                "format": "text"
+              },
+              "text": {
+                "label": "Text",
+                "format": "text"
+              },
+              "markdown": {
+                "label": "Markdown",
+                "format": "text"
+              },
+              "ai_overview": {
+                "label": "Ai Overview",
+                "format": "text"
+              },
+              "service_used": {
+                "label": "Service Used",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

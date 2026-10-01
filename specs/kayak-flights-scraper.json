@@ -1,0 +1,450 @@
+{
+  "slug": "kayak-flights-scraper",
+  "title": "Kayak Flights Scraper",
+  "description": "Get Kayak one-way or round-trip itineraries with flight legs, travel times, provider counts, and shareable links. Add several origin-destination routes in one run to compare fares or plan trips.",
+  "endpoint": "/kayak/flights/one-way",
+  "openapiPath": "/kayak/flights/one-way",
+  "mode": "list",
+  "batch": {
+    "field": "flights",
+    "valueField": "origin",
+    "apiParam": "origin",
+    "pathParam": null,
+    "title": "Flight routes",
+    "description": "Flight routes with an origin and destination for each search.",
+    "itemRequired": [
+      "origin",
+      "destination"
+    ],
+    "enrichBatchItem": true,
+    "valueDescription": "origin used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "origin",
+      "apiParam": "origin",
+      "location": "query",
+      "required": true,
+      "title": "Origin",
+      "schema": {
+        "type": "string",
+        "description": "3-letter IATA airport or metro code.",
+        "pattern": "^[A-Z]{3}$"
+      }
+    },
+    {
+      "input": "destination",
+      "apiParam": "destination",
+      "location": "query",
+      "required": true,
+      "title": "Destination",
+      "schema": {
+        "type": "string",
+        "description": "3-letter IATA airport or metro code.",
+        "pattern": "^[A-Z]{3}$"
+      }
+    },
+    {
+      "input": "departure_date",
+      "apiParam": "departure_date",
+      "location": "query",
+      "required": false,
+      "title": "Departure date",
+      "schema": {
+        "type": "string",
+        "description": "Departure date in YYYY-MM-DD format."
+      }
+    },
+    {
+      "input": "adults",
+      "apiParam": "adults",
+      "location": "query",
+      "required": false,
+      "title": "Adults",
+      "schema": {
+        "type": "integer",
+        "description": "Adult passengers, 1-9.",
+        "minimum": 1,
+        "maximum": 9,
+        "default": 1
+      }
+    },
+    {
+      "input": "children",
+      "apiParam": "children",
+      "location": "query",
+      "required": false,
+      "title": "Children",
+      "schema": {
+        "type": "integer",
+        "description": "Child passengers, 0-8.",
+        "minimum": 0,
+        "maximum": 8,
+        "default": 0
+      }
+    },
+    {
+      "input": "infants_in_seat",
+      "apiParam": "infants_in_seat",
+      "location": "query",
+      "required": false,
+      "title": "Infants In Seat",
+      "schema": {
+        "type": "integer",
+        "description": "Infants with a seat, 0-8.",
+        "minimum": 0,
+        "maximum": 8,
+        "default": 0
+      }
+    },
+    {
+      "input": "infants_on_lap",
+      "apiParam": "infants_on_lap",
+      "location": "query",
+      "required": false,
+      "title": "Infants On Lap",
+      "schema": {
+        "type": "integer",
+        "description": "Lap infants, 0-8.",
+        "minimum": 0,
+        "maximum": 8,
+        "default": 0
+      }
+    },
+    {
+      "input": "cabin",
+      "apiParam": "cabin",
+      "location": "query",
+      "required": false,
+      "title": "Cabin",
+      "schema": {
+        "type": "string",
+        "description": "economy, premium_economy, business, or first.",
+        "enum": [
+          "economy",
+          "premium_economy",
+          "business",
+          "first"
+        ],
+        "default": "economy"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort",
+      "schema": {
+        "type": "string",
+        "description": "best, price, or duration.",
+        "enum": [
+          "best",
+          "price",
+          "duration"
+        ],
+        "default": "best"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "description": "Results page, 1-20.",
+        "minimum": 1,
+        "maximum": 20,
+        "default": 1
+      }
+    },
+    {
+      "input": "currency",
+      "apiParam": "currency",
+      "location": "query",
+      "required": false,
+      "title": "Currency",
+      "schema": {
+        "type": "string",
+        "description": "3-letter ISO currency code.",
+        "minLength": 3,
+        "maxLength": 3,
+        "pattern": "^[A-Z]{3}$",
+        "default": "USD"
+      }
+    },
+    {
+      "input": "locale",
+      "apiParam": "locale",
+      "location": "query",
+      "required": false,
+      "title": "Locale",
+      "schema": {
+        "type": "string",
+        "description": "Language locale such as en-US.",
+        "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+        "default": "en-US"
+      }
+    },
+    {
+      "input": "include_price_prediction",
+      "apiParam": "include_price_prediction",
+      "location": "query",
+      "required": false,
+      "title": "Include Price Prediction",
+      "schema": {
+        "type": "boolean",
+        "description": "Include available price insight data."
+      }
+    },
+    {
+      "input": "include_display_metadata",
+      "apiParam": "include_display_metadata",
+      "location": "query",
+      "required": false,
+      "title": "Include Display Metadata",
+      "schema": {
+        "type": "boolean",
+        "description": "Include available display and offer metadata."
+      }
+    },
+    {
+      "input": "return_date",
+      "apiParam": "return_date",
+      "location": "query",
+      "required": true,
+      "requiredForEndpoints": [
+        "/round-trip"
+      ],
+      "title": "Return date",
+      "schema": {
+        "type": "string",
+        "description": "Return date in YYYY-MM-DD format. Required when tripType is round-trip."
+      },
+      "editor": "textfield",
+      "availableForEndpoints": [
+        "/round-trip"
+      ]
+    }
+  ],
+  "resultPointer": "/flights",
+  "fallbackResultPointers": [],
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "hasMorePointer": "/search_metadata/has_more",
+    "maxPages": 5
+  },
+  "enrichment": {
+    "field": "input_route"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 2,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "flights": [
+      {
+        "origin": "JFK",
+        "destination": "LAX"
+      }
+    ],
+    "tripType": "one-way",
+    "maxResults": 20,
+    "maxPages": 2
+  },
+  "testParams": {
+    "origin": "JFK",
+    "destination": "LAX"
+  },
+  "fixture": {
+    "success": true,
+    "flights": [
+      {
+        "resultId": "FL-JFK-LAX-20261114-01",
+        "type": "ONE_WAY",
+        "shareableId": "8f31b7",
+        "shareableUrl": "https://www.kayak.com/flights/JFK-LAX/2026-11-14",
+        "legs": [
+          {
+            "id": "leg-1",
+            "departure": "2026-11-14T08:00:00Z",
+            "arrival": "2026-11-14T11:00:00Z",
+            "duration": 360
+          }
+        ],
+        "totalProviders": 2,
+        "totalBookingOptions": 3
+      }
+    ],
+    "providers": [],
+    "airlines": [],
+    "search_metadata": {
+      "origin": "JFK",
+      "destination": "LAX",
+      "departure_date": "2026-11-14",
+      "page": 1,
+      "has_more": false
+    }
+  },
+  "tableFields": [
+    {
+      "name": "resultId",
+      "label": "Result ID",
+      "format": "text"
+    },
+    {
+      "name": "type",
+      "label": "Type",
+      "format": "text"
+    },
+    {
+      "name": "shareableUrl",
+      "label": "Shareable URL",
+      "format": "link"
+    },
+    {
+      "name": "legs",
+      "label": "Legs",
+      "format": "text"
+    },
+    {
+      "name": "totalProviders",
+      "label": "Total Providers",
+      "format": "number"
+    }
+  ],
+  "relativeDateDefaults": [
+    {
+      "input": "departure_date",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, departure is set to 30 days from today."
+    },
+    {
+      "input": "return_date",
+      "base": "departure_date",
+      "offsetDays": 4,
+      "description": "When omitted for a round trip, return is set to 4 days after departure.",
+      "endpoints": [
+        "/round-trip"
+      ]
+    }
+  ],
+  "dedupePointer": "/resultId",
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Flights Scraper | Fare Search",
+    "seoDescription": "Compare Kayak flight itineraries by route and travel dates, including legs, providers, and booking links. Build datasets for planning and airfare research.",
+    "intro": "Search Kayak for airport routes and collect itinerary IDs, flight legs, timing, provider counts, and shareable result links. Choose one-way or round-trip searches.",
+    "useCases": [
+      "Travel planners can compare itineraries across multiple airport routes.",
+      "Travel agencies can check providers, flight times, and booking choices.",
+      "Fare analysts can track options for one-way and round-trip searches."
+    ],
+    "howToUse": [
+      "Add one route object with origin and destination to `flights` per search.",
+      "Choose one-way or round-trip; omitted dates are set relative to today.",
+      "Set passenger and cabin options, then cap pages and results."
+    ],
+    "faqs": [
+      {
+        "question": "How are travel dates chosen when omitted?",
+        "answer": "Departure defaults to 30 days from the run date. A round-trip return defaults to four days later; dates can be overridden per route or at the top level."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-flights-search-scraper",
+        "title": "Google Flights Scraper"
+      },
+      {
+        "slug": "booking-search-scraper",
+        "title": "Booking.com Search Scraper"
+      },
+      {
+        "slug": "booking-hotel-details-scraper",
+        "title": "Booking.com Hotel Details Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "resultId",
+        "type": "String",
+        "description": "Identifier for the flight itinerary in this Kayak result set."
+      },
+      {
+        "name": "type",
+        "type": "String",
+        "description": "Kayak trip type for the itinerary, such as one-way or round trip."
+      },
+      {
+        "name": "shareableId",
+        "type": "String",
+        "description": "Kayak identifier used to reopen the saved itinerary search."
+      },
+      {
+        "name": "shareableUrl",
+        "type": "String",
+        "description": "URL that opens this itinerary or its search results on Kayak."
+      },
+      {
+        "name": "legs",
+        "type": "Array<object>",
+        "description": "Flight segments with airports, departure and arrival times, and duration."
+      },
+      {
+        "name": "totalProviders",
+        "type": "Integer",
+        "description": "Number of booking providers offering this itinerary."
+      },
+      {
+        "name": "totalBookingOptions",
+        "type": "Integer",
+        "description": "Number of distinct booking choices reported for the itinerary."
+      },
+      {
+        "name": "input_route",
+        "type": "Object",
+        "description": "Origin, destination, and any dates submitted for this route search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this itinerary was collected."
+      }
+    ]
+  },
+  "endpointSelectors": [
+    {
+      "input": "tripType",
+      "title": "Trip type",
+      "description": "Choose a one-way or round-trip search. Round-trip routes use a return date.",
+      "default": "one-way",
+      "choices": [
+        {
+          "value": "one-way",
+          "label": "One way",
+          "endpoint": "/kayak/flights/one-way"
+        },
+        {
+          "value": "round-trip",
+          "label": "Round trip",
+          "endpoint": "/kayak/flights/round-trip"
+        }
+      ]
+    }
+  ]
+}

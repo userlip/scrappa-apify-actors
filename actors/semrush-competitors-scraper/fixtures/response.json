@@ -1,0 +1,20 @@
+{
+  "search_parameters": {
+    "engine": "semrush_domain_competitors",
+    "domain": "wikipedia.org"
+  },
+  "covered": true,
+  "summary": {
+    "domain": "wikipedia.org",
+    "authority_score": 95,
+    "visits": 1000000
+  },
+  "competitors": [
+    {
+      "domain": "britannica.com",
+      "authority_score": 70,
+      "visits": 25000,
+      "semrush_rank": 54321
+    }
+  ]
+}

@@ -1,0 +1,1602 @@
+[
+ {
+  "slug": "apple-app-store-search-scraper",
+  "title": "Apple App Store Search Scraper",
+  "endpoint": "/apple/app-store/search",
+  "batch_param": "query",
+  "test_params": {
+   "query": "notion",
+   "country": "us"
+  },
+  "mode": "list",
+  "categories": [
+   "DEVELOPER_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "results"
+  ]
+ },
+ {
+  "slug": "apple-app-store-app-details-scraper",
+  "title": "Apple App Store App Details Scraper",
+  "endpoint": "/apple/app-store/details",
+  "batch_param": "product_id",
+  "test_params": {
+   "product_id": "1232780281",
+   "country": "us"
+  },
+  "mode": "single",
+  "categories": [
+   "DEVELOPER_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "product.privacy.privacyTypes",
+   "similar",
+   "more_by_developer"
+  ]
+ },
+ {
+  "slug": "apple-app-store-reviews-scraper",
+  "title": "Apple App Store Reviews Scraper",
+  "endpoint": "/apple/app-store/product/reviews",
+  "batch_param": "product_id",
+  "test_params": {
+   "product_id": "1232780281",
+   "country": "us"
+  },
+  "mode": "list",
+  "categories": [
+   "DEVELOPER_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "reviews"
+  ]
+ },
+ {
+  "slug": "apple-app-store-charts-scraper",
+  "title": "Apple App Store Top Charts Scraper",
+  "endpoint": "/apple/app-store/charts",
+  "batch_param": "chart",
+  "test_params": {
+   "chart": "top-free",
+   "country": "us"
+  },
+  "mode": "list",
+  "categories": [
+   "DEVELOPER_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "chart.items"
+  ]
+ },
+ {
+  "slug": "apple-app-store-developer-scraper",
+  "title": "Apple App Store Developer Apps Scraper",
+  "endpoint": "/apple/app-store/developer",
+  "batch_param": "artist_id",
+  "test_params": {
+   "artist_id": "284882218",
+   "country": "us"
+  },
+  "mode": "list",
+  "categories": [
+   "DEVELOPER_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "apps"
+  ]
+ },
+ {
+  "slug": "google-play-app-details-scraper",
+  "title": "Google Play App Details Scraper",
+  "endpoint": "/google/play/details",
+  "batch_param": "id",
+  "test_params": {
+   "id": "com.spotify.music"
+  },
+  "mode": "single",
+  "categories": [
+   "DEVELOPER_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "product_info.authors",
+   "product_info.offers",
+   "about_this_app.permissions"
+  ]
+ },
+ {
+  "slug": "google-play-reviews-scraper",
+  "title": "Google Play Reviews Scraper",
+  "endpoint": "/google/play/product/reviews",
+  "batch_param": "id",
+  "test_params": {
+   "id": "com.spotify.music",
+   "all_reviews": true,
+   "num": 20,
+   "sort_by": "newest",
+   "hl": "en",
+   "gl": "US"
+  },
+  "mode": "list",
+  "categories": [
+   "DEVELOPER_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "product_info.authors",
+   "product_info.offers",
+   "about_this_app.permissions"
+  ]
+ },
+ {
+  "slug": "arbeitsagentur-job-details-scraper",
+  "title": "Arbeitsagentur Job Details Scraper",
+  "endpoint": "/arbeitsagentur/job",
+  "batch_param": "refnr",
+  "test_params": {
+   "refnr": "12016-10005410012-S"
+  },
+  "mode": "single",
+  "categories": [
+   "JOBS",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "baidu-search-scraper",
+  "title": "Baidu Search Scraper",
+  "endpoint": "/baidu/search",
+  "batch_param": "query",
+  "test_params": {
+   "query": "apple iphone"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS",
+   "DEVELOPER_TOOLS"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "organic_results",
+   "results",
+   "provider_response.feed.entry"
+  ]
+ },
+ {
+  "slug": "baidu-images-scraper",
+  "title": "Baidu Images Scraper",
+  "endpoint": "/baidu/images",
+  "batch_param": "query",
+  "test_params": {
+   "query": "panda"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS",
+   "DEVELOPER_TOOLS"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "images_results",
+   "images",
+   "provider_response.data"
+  ]
+ },
+ {
+  "slug": "baidu-autocomplete-scraper",
+  "title": "Baidu Autocomplete Scraper",
+  "endpoint": "/baidu/autocomplete",
+  "batch_param": "query",
+  "test_params": {
+   "query": "iphone"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS",
+   "DEVELOPER_TOOLS"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "suggestions",
+   "provider_response.g"
+  ]
+ },
+ {
+  "slug": "baidu-trending-scraper",
+  "title": "Baidu Trending Searches Scraper",
+  "endpoint": "/baidu/trending",
+  "batch_param": null,
+  "test_params": {
+   "tab": "realtime"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS",
+   "NEWS"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "trending_searches",
+   "available_tabs",
+   "trending.cards"
+  ]
+ },
+ {
+  "slug": "billiger-search-scraper",
+  "title": "Billiger.de Price Comparison Search Scraper",
+  "endpoint": "/billiger/search",
+  "batch_param": "query",
+  "test_params": {
+   "query": "iphone 15"
+  },
+  "mode": "list",
+  "categories": [
+   "ECOMMERCE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.hits"
+  ]
+ },
+ {
+  "slug": "billiger-offers-scraper",
+  "title": "Billiger.de Product Offers Scraper",
+  "endpoint": "/billiger/offers",
+  "batch_param": "product_id",
+  "test_params": {
+   "product_id": "4612031183"
+  },
+  "mode": "list",
+  "categories": [
+   "ECOMMERCE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.hits"
+  ]
+ },
+ {
+  "slug": "bing-search-scraper",
+  "title": "Bing Search Scraper",
+  "endpoint": "/bing/search",
+  "batch_param": "query",
+  "test_params": {
+   "query": "best crm software"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data"
+  ]
+ },
+ {
+  "slug": "brave-search-scraper",
+  "title": "Brave Search Scraper",
+  "endpoint": "/brave/search",
+  "batch_param": "query",
+  "test_params": {
+   "query": "best crm software"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "organic_results",
+   "related_searches",
+   "related_questions"
+  ]
+ },
+ {
+  "slug": "booking-reviews-scraper",
+  "title": "Booking.com Reviews Scraper",
+  "endpoint": "/booking/reviews",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.reviews"
+  ]
+ },
+ {
+  "slug": "booking-rooms-scraper",
+  "title": "Booking.com Rooms & Rates Scraper",
+  "endpoint": "/booking/rooms",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+   "checkin": "2026-11-14",
+   "checkout": "2026-11-16"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.rooms"
+  ]
+ },
+ {
+  "slug": "booking-prices-scraper",
+  "title": "Booking.com Hotel Prices Scraper",
+  "endpoint": "/booking/prices",
+  "batch_param": "ss",
+  "test_params": {
+   "ss": "Berlin",
+   "checkin": "2026-11-14",
+   "checkout": "2026-11-16"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.prices"
+  ]
+ },
+ {
+  "slug": "booking-photos-scraper",
+  "title": "Booking.com Hotel Photos Scraper",
+  "endpoint": "/booking/photos",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.photos"
+  ]
+ },
+ {
+  "slug": "booking-review-scores-scraper",
+  "title": "Booking.com Review Scores Scraper",
+  "endpoint": "/booking/review-scores",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+  },
+  "mode": "single",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "booking-facilities-scraper",
+  "title": "Booking.com Hotel Facilities Scraper",
+  "endpoint": "/booking/facilities",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+  },
+  "mode": "single",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "google-flights-date-range-scraper",
+  "title": "Google Flights Cheapest Dates Scraper",
+  "endpoint": "/flights/v2/date-range",
+  "batch_param": "origin",
+  "test_params": {
+   "origin": "JFK",
+   "destination": "LAX",
+   "from_date": "2026-11-01",
+   "to_date": "2026-11-14"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "geizhals-search-scraper",
+  "title": "Geizhals Price Comparison Search Scraper",
+  "endpoint": "/geizhals/search",
+  "batch_param": "query",
+  "test_params": {
+   "query": "rtx 4070"
+  },
+  "mode": "list",
+  "categories": [
+   "ECOMMERCE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "products",
+   "facets.manufacturer",
+   "facets.categories"
+  ]
+ },
+ {
+  "slug": "geizhals-product-scraper",
+  "title": "Geizhals Product & Offers Scraper",
+  "endpoint": "/geizhals/product",
+  "batch_param": "product_id",
+  "test_params": {
+   "product_id": "3103639"
+  },
+  "mode": "single",
+  "categories": [
+   "ECOMMERCE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "product.category",
+   "product.test_reviews",
+   "product.description"
+  ]
+ },
+ {
+  "slug": "geizhals-price-history-scraper",
+  "title": "Geizhals Price History Scraper",
+  "endpoint": "/geizhals/price-history",
+  "batch_param": "product_id",
+  "test_params": {
+   "product_id": "3103639"
+  },
+  "mode": "list",
+  "categories": [
+   "ECOMMERCE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "history"
+  ]
+ },
+ {
+  "slug": "google-lens-scraper",
+  "title": "Google Lens Visual Search Scraper",
+  "endpoint": "/google/lens",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS",
+   "ECOMMERCE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "visual_matches"
+  ]
+ },
+ {
+  "slug": "google-scholar-scraper",
+  "title": "Google Scholar Scraper",
+  "endpoint": "/google/scholar",
+  "batch_param": "q",
+  "test_params": {
+   "q": "transformer attention"
+  },
+  "mode": "list",
+  "categories": [
+   "DEVELOPER_TOOLS",
+   "OTHER"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.organic_results",
+   "data.pagination.pages"
+  ]
+ },
+ {
+  "slug": "google-shopping-scraper",
+  "title": "Google Shopping Scraper",
+  "endpoint": "/google/shopping",
+  "batch_param": "q",
+  "test_params": {
+   "q": "running shoes"
+  },
+  "mode": "list",
+  "categories": [
+   "ECOMMERCE",
+   "SEO_TOOLS"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "shopping_results"
+  ]
+ },
+ {
+  "slug": "google-ai-overview-scraper",
+  "title": "Google AI Overview Scraper",
+  "endpoint": "/search-ai-overview",
+  "batch_param": "query",
+  "test_params": {
+   "query": "how does solar power work"
+  },
+  "mode": "single",
+  "categories": [
+   "SEO_TOOLS",
+   "AI"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "ai_overview.text_blocks",
+   "ai_overview.sections"
+  ]
+ },
+ {
+  "slug": "google-autocomplete-scraper",
+  "title": "Google Autocomplete Keyword Scraper",
+  "endpoint": "/search-light/autocomplete",
+  "batch_param": "query",
+  "test_params": {
+   "query": "best crm"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "idealista-search-scraper",
+  "title": "Idealista Property Search Scraper",
+  "endpoint": "/idealista/search",
+  "batch_param": "location_id",
+  "test_params": {
+   "country": "es",
+   "operation": "sale",
+   "property_type": "homes",
+   "location_id": "0-EU-ES-28-07-001-079"
+  },
+  "mode": "list",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.elementList"
+  ]
+ },
+ {
+  "slug": "idealista-listing-scraper",
+  "title": "Idealista Listing Details Scraper",
+  "endpoint": "/idealista/listing",
+  "batch_param": "ad_id",
+  "test_params": {
+   "country": "es",
+   "ad_id": "104570830"
+  },
+  "mode": "single",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "data.multimedia.images",
+   "data.multimedia.videos",
+   "data.multimedia.virtual3DTours"
+  ]
+ },
+ {
+  "slug": "idealista-agency-scraper",
+  "title": "Idealista Agency Scraper",
+  "endpoint": "/idealista/agency",
+  "batch_param": "microsite_short_name",
+  "test_params": {
+   "country": "es",
+   "microsite_short_name": "aproperties-mad"
+  },
+  "mode": "single",
+  "categories": [
+   "REAL_ESTATE",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "immobilienscout24-property-details-scraper",
+  "title": "ImmobilienScout24 Property Details Scraper",
+  "endpoint": "/immobilienscout24/property/{id}",
+  "batch_param": "id",
+  "test_params": {
+   "id": "170528322"
+  },
+  "mode": "single",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "images"
+  ]
+ },
+ {
+  "slug": "immowelt-property-details-scraper",
+  "title": "Immowelt Property Details Scraper",
+  "endpoint": "/immowelt/property",
+  "batch_param": "id",
+  "test_params": {
+   "id": "estate_9445e4a9-db4c-4829-aad9-1afa24bc9419"
+  },
+  "mode": "single",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "raw.prices",
+   "raw.areas",
+   "raw.pictures"
+  ]
+ },
+ {
+  "slug": "instagram-post-comments-scraper",
+  "title": "Instagram Comments Scraper",
+  "endpoint": "/instagram/post/comments",
+  "batch_param": "shortcode",
+  "test_params": {
+   "shortcode": "DdVztIfpeKW"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "comments"
+  ]
+ },
+ {
+  "slug": "instagram-user-reels-scraper",
+  "title": "Instagram Reels Scraper",
+  "endpoint": "/instagram/user/reels",
+  "batch_param": "username",
+  "test_params": {
+   "username": "nasa"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "reels"
+  ]
+ },
+ {
+  "slug": "instagram-tagged-posts-scraper",
+  "title": "Instagram Tagged Posts Scraper",
+  "endpoint": "/instagram/user/tagged-posts",
+  "batch_param": "username",
+  "test_params": {
+   "username": "nasa"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "posts"
+  ]
+ },
+ {
+  "slug": "instagram-hashtag-search-scraper",
+  "title": "Instagram Hashtag Search Scraper",
+  "endpoint": "/instagram/hashtags/search",
+  "batch_param": "q",
+  "test_params": {
+   "q": "coffee"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "hashtags"
+  ]
+ },
+ {
+  "slug": "instagram-trending-reels-scraper",
+  "title": "Instagram Trending Reels Scraper",
+  "endpoint": "/instagram/reels/trending",
+  "batch_param": null,
+  "test_params": {},
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "reels"
+  ]
+ },
+ {
+  "slug": "kayak-flights-scraper",
+  "title": "Kayak Flights Scraper",
+  "endpoint": "/kayak/flights/one-way",
+  "batch_param": "origin",
+  "test_params": {
+   "origin": "JFK",
+   "destination": "LAX",
+   "departure_date": "2026-11-14"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "flights",
+   "providers",
+   "airlines"
+  ]
+ },
+ {
+  "slug": "kayak-hotels-search-scraper",
+  "title": "Kayak Hotels Search Scraper",
+  "endpoint": "/kayak/stays/search",
+  "batch_param": "location_id",
+  "test_params": {
+   "location_id": "15830",
+   "checkin": "2026-11-14",
+   "checkout": "2026-11-16"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.results"
+  ]
+ },
+ {
+  "slug": "kayak-hotel-rates-scraper",
+  "title": "Kayak Hotel Rates Scraper",
+  "endpoint": "/kayak/stays/rates",
+  "batch_param": "hotel_id",
+  "test_params": {
+   "hotel_id": "15297",
+   "checkin": "2026-11-14",
+   "checkout": "2026-11-16"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.groups"
+  ]
+ },
+ {
+  "slug": "kayak-hotel-reviews-scraper",
+  "title": "Kayak Hotel Reviews Scraper",
+  "endpoint": "/kayak/stays/reviews",
+  "batch_param": "hotel_id",
+  "test_params": {
+   "hotel_id": "15297"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.reviews"
+  ]
+ },
+ {
+  "slug": "kayak-hotel-details-scraper",
+  "title": "Kayak Hotel Details Scraper",
+  "endpoint": "/kayak/stays/property",
+  "batch_param": "path",
+  "test_params": {
+   "path": "/Las-Vegas-Hotels-Park-MGM-Las-Vegas.15297.ksp"
+  },
+  "mode": "single",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.policies",
+   "data.source_data.kayak.amenitiesData.topAmenities"
+  ]
+ },
+ {
+  "slug": "kayak-vacation-rentals-scraper",
+  "title": "Kayak Vacation Rentals Scraper",
+  "endpoint": "/kayak/stays/vacation-rentals",
+  "batch_param": "path",
+  "test_params": {
+   "path": "/Seattle-Vacation-Rentals.7054.rental.ksp",
+   "location_id": "7054",
+   "checkin": "2026-11-14",
+   "checkout": "2026-11-16"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.indexed.rentalsLinks.linkhubOtherDestinationsLinks",
+   "data.source_data.kayak.indexed.providers.providers"
+  ]
+ },
+ {
+  "slug": "kayak-car-rentals-scraper",
+  "title": "Kayak Car Rentals Scraper",
+  "endpoint": "/kayak/cars/search",
+  "batch_param": "pickup",
+  "test_params": {
+   "pickup": "LAS",
+   "pickup_date": "2026-11-14",
+   "dropoff_date": "2026-11-18"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.combinedResults"
+  ]
+ },
+ {
+  "slug": "kayak-packages-scraper",
+  "title": "Kayak Vacation Packages Scraper",
+  "endpoint": "/kayak/packages/search",
+  "batch_param": "destination",
+  "test_params": {
+   "destination": "Z35107",
+   "origin": "ICT",
+   "departure_date": "2026-11-14",
+   "return_date": "2026-11-18"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.results"
+  ]
+ },
+ {
+  "slug": "kayak-cruises-scraper",
+  "title": "Kayak Cruises Scraper",
+  "endpoint": "/kayak/cruises/sailings",
+  "batch_param": null,
+  "test_params": {},
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.results"
+  ]
+ },
+ {
+  "slug": "kayak-explore-destinations-scraper",
+  "title": "Kayak Explore Cheapest Destinations Scraper",
+  "endpoint": "/kayak/explore/destinations",
+  "batch_param": "origin",
+  "test_params": {
+   "origin": "ICT",
+   "departure_from": "2026-10-30",
+   "departure_to": "2026-11-29",
+   "return_from": "2026-11-01",
+   "return_to": "2026-12-15",
+   "north_east_lat": "70",
+   "north_east_lng": "-50",
+   "south_west_lat": "15",
+   "south_west_lng": "-170"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.destinations"
+  ]
+ },
+ {
+  "slug": "kayak-flight-price-predictions-scraper",
+  "title": "Kayak Flight Price Predictions Scraper",
+  "endpoint": "/kayak/best-time/flight-price-predictions",
+  "batch_param": "origin",
+  "test_params": {
+   "origin": "ICT",
+   "destination": "LAS"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.predictions"
+  ]
+ },
+ {
+  "slug": "kayak-flight-tracker-scraper",
+  "title": "Kayak Airport Flight Tracker Scraper",
+  "endpoint": "/kayak/flight-tracker/airport",
+  "batch_param": "origin",
+  "test_params": {
+   "origin": "SFO",
+   "date_time": "2026-10-01T09:00:00"
+  },
+  "mode": "list",
+  "categories": [
+   "TRAVEL"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.results",
+   "data.source_data.kayak.flights"
+  ]
+ },
+ {
+  "slug": "kununu-company-search-scraper",
+  "title": "Kununu Company Search Scraper",
+  "endpoint": "/kununu/search",
+  "batch_param": "query",
+  "test_params": {
+   "query": "sap"
+  },
+  "mode": "list",
+  "categories": [
+   "JOBS",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data"
+  ]
+ },
+ {
+  "slug": "kununu-company-details-scraper",
+  "title": "Kununu Company Profile Scraper",
+  "endpoint": "/kununu/company-details",
+  "batch_param": "company_slug",
+  "test_params": {
+   "country": "de",
+   "company_slug": "sap"
+  },
+  "mode": "single",
+  "categories": [
+   "JOBS",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "kununu-company-salaries-scraper",
+  "title": "Kununu Company Salaries Scraper",
+  "endpoint": "/kununu/company-salary",
+  "batch_param": "company_slug",
+  "test_params": {
+   "country": "de",
+   "company_slug": "sap"
+  },
+  "mode": "list",
+  "categories": [
+   "JOBS"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.comments.comments",
+   "data.ranges"
+  ]
+ },
+ {
+  "slug": "kununu-salary-scraper",
+  "title": "Kununu Salary by Job Title Scraper",
+  "endpoint": "/kununu/salary",
+  "batch_param": "job_title",
+  "test_params": {
+   "country": "de",
+   "job_title": "Softwareentwickler"
+  },
+  "mode": "single",
+  "categories": [
+   "JOBS"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "data.jobTitle.stats.cities",
+   "data.jobTitle.stats.experienceGraph.experienceGroups",
+   "data.jobTitle.stats.infograph.leadershipSalaryHistogram.columns"
+  ]
+ },
+ {
+  "slug": "kununu-top-companies-scraper",
+  "title": "Kununu Top Companies Scraper",
+  "endpoint": "/kununu/top-companies",
+  "batch_param": null,
+  "test_params": {},
+  "mode": "list",
+  "categories": [
+   "JOBS",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data"
+  ]
+ },
+ {
+  "slug": "kununu-job-details-scraper",
+  "title": "Kununu Job Details Scraper",
+  "endpoint": "/kununu/job",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://www.kununu.com/de/job/4b83063a-0875-4d72-aed0-5dd03c738ec9"
+  },
+  "mode": "single",
+  "categories": [
+   "JOBS"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "data.similarJobs"
+  ]
+ },
+ {
+  "slug": "mobile-de-search-scraper",
+  "title": "mobile.de Car Search Scraper",
+  "endpoint": "/mobile-de/v1/search",
+  "batch_param": "query",
+  "test_params": {
+   "query": "golf"
+  },
+  "mode": "list",
+  "categories": [
+   "ECOMMERCE",
+   "AUTOMATION"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.listings"
+  ]
+ },
+ {
+  "slug": "mobile-de-listing-scraper",
+  "title": "mobile.de Listing Details Scraper",
+  "endpoint": "/mobile-de/v1/listing",
+  "batch_param": "listing_id",
+  "test_params": {
+   "listing_id": "457981580"
+  },
+  "mode": "single",
+  "categories": [
+   "ECOMMERCE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "data.listing.attributes",
+   "data.listing.financePlans",
+   "data.listing.insurancePlans"
+  ]
+ },
+ {
+  "slug": "mobile-de-dealer-inventory-scraper",
+  "title": "mobile.de Dealer Inventory Scraper",
+  "endpoint": "/mobile-de/v1/dealer-inventory",
+  "batch_param": "dealer_id",
+  "test_params": {
+   "dealer_id": "47546627"
+  },
+  "mode": "list",
+  "categories": [
+   "ECOMMERCE",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.listings"
+  ]
+ },
+ {
+  "slug": "ohne-makler-search-scraper",
+  "title": "Ohne-Makler Property Search Scraper",
+  "endpoint": "/ohne-makler/search",
+  "batch_param": "q",
+  "test_params": {
+   "q": "berlin",
+   "type": "wohnung",
+   "transaction": "mieten"
+  },
+  "mode": "list",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "results",
+   "price_histogram.buckets",
+   "area_histogram.buckets"
+  ]
+ },
+ {
+  "slug": "ohne-makler-listing-scraper",
+  "title": "Ohne-Makler Listing Details Scraper",
+  "endpoint": "/ohne-makler/listing",
+  "batch_param": "id",
+  "test_params": {
+   "id": "235423"
+  },
+  "mode": "single",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "listing.price_breakdown",
+   "listing.summary",
+   "listing.sections"
+  ]
+ },
+ {
+  "slug": "ohne-makler-property-prices-scraper",
+  "title": "Ohne-Makler Property Prices Scraper",
+  "endpoint": "/ohne-makler/market/immobilienpreise",
+  "batch_param": "state",
+  "test_params": {
+   "state": "berlin"
+  },
+  "mode": "single",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "sections"
+  ]
+ },
+ {
+  "slug": "ohne-makler-rent-index-scraper",
+  "title": "Ohne-Makler Rent Index (Mietspiegel) Scraper",
+  "endpoint": "/ohne-makler/market/mietspiegel",
+  "batch_param": "city",
+  "test_params": {
+   "state": "berlin",
+   "city": "berlin"
+  },
+  "mode": "single",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "sections"
+  ]
+ },
+ {
+  "slug": "realestate-com-au-search-scraper",
+  "title": "Realestate.com.au Property Search Scraper",
+  "endpoint": "/realestate-com-au/search",
+  "batch_param": "location",
+  "test_params": {
+   "location": "Richmond, VIC 3121"
+  },
+  "mode": "list",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.listings",
+   "data.raw.resi-property_listing-experience-web.urqlClientCache.21329423539.data.components.home.components.AiSearchSuggestionsComponent.component.groups",
+   "data.raw.resi-property_listing-experience-web.urqlClientCache.21329423539.data.buySearch.exclusiveShowcase.listings"
+  ]
+ },
+ {
+  "slug": "realestate-com-au-property-scraper",
+  "title": "Realestate.com.au Property Details Scraper",
+  "endpoint": "/realestate-com-au/property",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://www.realestate.com.au/property-house-vic-richmond-152489476"
+  },
+  "mode": "single",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "data.listing.media.images",
+   "data.listing.media.floorplans",
+   "data.listing.listers"
+  ]
+ },
+ {
+  "slug": "realestate-com-au-agents-scraper",
+  "title": "Realestate.com.au Agents Scraper",
+  "endpoint": "/realestate-com-au/agents",
+  "batch_param": "location",
+  "test_params": {
+   "location": "Richmond, VIC 3121"
+  },
+  "mode": "list",
+  "categories": [
+   "REAL_ESTATE",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.agents",
+   "data.raw.resi-agent_customer-search-mfe.AGENT_SEARCH.surroundingSuburbs",
+   "data.raw.resi-agent_customer-search-mfe.AGENT_SEARCH.results"
+  ]
+ },
+ {
+  "slug": "realestate-com-au-suburb-profile-scraper",
+  "title": "Realestate.com.au Suburb Profile Scraper",
+  "endpoint": "/realestate-com-au/suburb-profile",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://www.realestate.com.au/vic/richmond-3121/"
+  },
+  "mode": "single",
+  "categories": [
+   "REAL_ESTATE"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "data.profile.resi-property_market-explorer.suburb_data.marketProfileBySlug.insights.medianPrice.buy.house.allBed.trends",
+   "data.profile.resi-property_market-explorer.suburb_data.marketProfileBySlug.insights.medianPrice.buy.house.twoBed.trends",
+   "data.profile.resi-property_market-explorer.suburb_data.marketProfileBySlug.insights.medianPrice.buy.house.threeBed.trends"
+  ]
+ },
+ {
+  "slug": "semrush-domain-overview-scraper",
+  "title": "Semrush Domain Overview Scraper",
+  "endpoint": "/semrush/domain/overview",
+  "batch_param": "domain",
+  "test_params": {
+   "domain": "notion.so"
+  },
+  "mode": "single",
+  "categories": [
+   "SEO_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "website.categories",
+   "website.visits_history",
+   "website.device_history"
+  ]
+ },
+ {
+  "slug": "semrush-competitors-scraper",
+  "title": "Semrush Competitors Scraper",
+  "endpoint": "/semrush/domain/competitors",
+  "batch_param": "domain",
+  "test_params": {
+   "domain": "wikipedia.org"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "semrush-website-traffic-scraper",
+  "title": "Semrush Website Traffic Scraper",
+  "endpoint": "/semrush/website/traffic",
+  "batch_param": "domain",
+  "test_params": {
+   "domain": "notion.so"
+  },
+  "mode": "single",
+  "categories": [
+   "SEO_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": [
+   "categories",
+   "visits_history",
+   "device_history"
+  ]
+ },
+ {
+  "slug": "semrush-trending-websites-scraper",
+  "title": "Semrush Trending Websites Scraper",
+  "endpoint": "/semrush/trending",
+  "batch_param": "country",
+  "test_params": {
+   "country": "us"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS",
+   "MARKETING"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "domains",
+   "traffic_series"
+  ]
+ },
+ {
+  "slug": "semrush-keyword-suggestions-scraper",
+  "title": "Semrush Keyword Suggestions Scraper",
+  "endpoint": "/semrush/suggest",
+  "batch_param": "q",
+  "test_params": {
+   "q": "notion"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "semrush-sensor-movers-scraper",
+  "title": "Semrush Sensor Winners & Losers Scraper",
+  "endpoint": "/semrush/sensor/movers",
+  "batch_param": "category",
+  "test_params": {
+   "db": "US",
+   "category": "1",
+   "date": "2026-09-01"
+  },
+  "mode": "list",
+  "categories": [
+   "SEO_TOOLS"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "domains"
+  ]
+ },
+ {
+  "slug": "tiktok-trending-feed-scraper",
+  "title": "TikTok Trending Feed Scraper",
+  "endpoint": "/tiktok/feed/list",
+  "batch_param": "region",
+  "test_params": {
+   "region": "US"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data"
+  ]
+ },
+ {
+  "slug": "tiktok-user-search-scraper",
+  "title": "TikTok User Search Scraper",
+  "endpoint": "/tiktok/user/search",
+  "batch_param": "keywords",
+  "test_params": {
+   "keywords": "cooking"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.user_list"
+  ]
+ },
+ {
+  "slug": "tiktok-user-favorites-scraper",
+  "title": "TikTok User Favorites Scraper",
+  "endpoint": "/tiktok/user/favorites",
+  "batch_param": "unique_id",
+  "test_params": {
+   "unique_id": "tiktok"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "tiktok-stories-scraper",
+  "title": "TikTok Stories Scraper",
+  "endpoint": "/tiktok/user/story",
+  "batch_param": "unique_id",
+  "test_params": {
+   "unique_id": "tiktok"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "tiktok-collection-posts-scraper",
+  "title": "TikTok Collection Videos Scraper",
+  "endpoint": "/tiktok/collections/posts",
+  "batch_param": "collection_id",
+  "test_params": {
+   "collection_id": "7394627756635573022"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.videos"
+  ]
+ },
+ {
+  "slug": "tiktok-playlist-posts-scraper",
+  "title": "TikTok Playlist Videos Scraper",
+  "endpoint": "/tiktok/playlists/posts",
+  "batch_param": "mix_id",
+  "test_params": {
+   "mix_id": "7681171537575824159"
+  },
+  "mode": "list",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.videos"
+  ]
+ },
+ {
+  "slug": "tiktok-music-details-scraper",
+  "title": "TikTok Music Details Scraper",
+  "endpoint": "/tiktok/music/details",
+  "batch_param": "url",
+  "test_params": {
+   "url": "https://www.tiktok.com/music/original-sound-6689804660171082501"
+  },
+  "mode": "single",
+  "categories": [
+   "SOCIAL_MEDIA"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "trustedshops-category-shops-scraper",
+  "title": "Trusted Shops Category Shops Scraper",
+  "endpoint": "/trustedshops/category-shops",
+  "batch_param": "category",
+  "test_params": {
+   "category": "bucher"
+  },
+  "mode": "list",
+  "categories": [
+   "ECOMMERCE",
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "shops",
+   "categories"
+  ]
+ },
+ {
+  "slug": "vinted-similar-items-scraper",
+  "title": "Vinted Similar Items Scraper",
+  "endpoint": "/vinted/similar-items",
+  "batch_param": "item_id",
+  "test_params": {
+   "item_id": "9746922454",
+   "country": "de"
+  },
+  "mode": "list",
+  "categories": [
+   "ECOMMERCE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data.items"
+  ]
+ },
+ {
+  "slug": "impressum-extractor",
+  "title": "Impressum Contact Data Extractor",
+  "endpoint": "/web-scraper/impressum",
+  "batch_param": "domain",
+  "test_params": {
+   "domain": "scrappa.co",
+   "fields": "company_name,address,email,phone"
+  },
+  "mode": "single",
+  "categories": [
+   "LEAD_GENERATION"
+  ],
+  "price_usd_per_result": 0.0005,
+  "candidate_item_arrays": []
+ },
+ {
+  "slug": "wlw-supplier-search-scraper",
+  "title": "WLW (Wer liefert was) B2B Supplier Scraper",
+  "endpoint": "/wlw/search",
+  "batch_param": "q",
+  "test_params": {
+   "q": "schrauben"
+  },
+  "mode": "list",
+  "categories": [
+   "LEAD_GENERATION",
+   "ECOMMERCE"
+  ],
+  "price_usd_per_result": 0.0003,
+  "candidate_item_arrays": [
+   "data",
+   "meta.filters.categories",
+   "meta.filters.countries"
+  ]
+ }
+]

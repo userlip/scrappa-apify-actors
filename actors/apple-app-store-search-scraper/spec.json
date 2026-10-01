@@ -1,0 +1,311 @@
+{
+  "slug": "apple-app-store-search-scraper",
+  "title": "Apple App Store Search Scraper",
+  "description": "Search the Apple App Store for app names, publishers, prices, ratings, categories, and links. Submit several search phrases in one run to build catalogs or compare storefront listings.",
+  "endpoint": "/apple/app-store/search",
+  "openapiPath": "/apple/app-store/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Search queries",
+    "description": "App Store search phrases. Add one object per phrase.",
+    "valueDescription": "query used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Search query",
+      "schema": {
+        "type": "string",
+        "description": "Search term (q is accepted as an alias)",
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "store",
+      "apiParam": "store",
+      "location": "query",
+      "required": false,
+      "title": "Store",
+      "schema": {
+        "type": "string",
+        "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts",
+        "enum": [
+          "apps",
+          "mac",
+          "books",
+          "audiobooks",
+          "movies",
+          "tv",
+          "music",
+          "podcasts"
+        ],
+        "default": "apps"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "description": "Two-letter Apple storefront country code (default: us)",
+        "minLength": 2,
+        "maxLength": 2,
+        "default": "us"
+      }
+    },
+    {
+      "input": "limit",
+      "apiParam": "limit",
+      "location": "query",
+      "required": false,
+      "title": "Limit",
+      "schema": {
+        "type": "integer",
+        "description": "Maximum number of results",
+        "minimum": 1,
+        "maximum": 200,
+        "default": 20
+      }
+    }
+  ],
+  "resultPointer": "/results",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "notion"
+      }
+    ],
+    "country": "us",
+    "store": "apps",
+    "limit": 10,
+    "maxResults": 20
+  },
+  "testParams": {
+    "query": "notion",
+    "country": "us"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "apple_app_store_search",
+      "query": "sample notes app",
+      "store": "apps",
+      "country": "us",
+      "limit": 10
+    },
+    "results": [
+      {
+        "id": "1234567890",
+        "type": "apps",
+        "title": "Pocket Notes: Daily Planner",
+        "artist": "Northstar Mobile Studio",
+        "artist_id": "12345",
+        "description": "Organize daily tasks, quick notes, and reminders in one simple planner.",
+        "url": "https://apps.apple.com/us/app/pocket-notes-daily-planner/id1234567890",
+        "artwork": "https://cdn.northstarmobile.dev/apps/pocket-notes/icon-512.png",
+        "genres": [
+          "Productivity"
+        ],
+        "price": 0,
+        "formatted_price": "Free",
+        "currency": "USD",
+        "rating": 4.8,
+        "rating_count": 250,
+        "release_date": "2025-01-01",
+        "version": "1.0",
+        "content_rating": "4+",
+        "seller": "Northstar Mobile Studio"
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "artist",
+      "label": "Artist",
+      "format": "text"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "number"
+    },
+    {
+      "name": "rating_count",
+      "label": "Rating Count",
+      "format": "number"
+    },
+    {
+      "name": "url",
+      "label": "URL",
+      "format": "link"
+    }
+  ],
+  "dedupePointer": "/id",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "storeCopy": {
+    "seoTitle": "Apple App Store Search | App Listings",
+    "seoDescription": "Search Apple App Store apps by keyword for titles, developers, ratings, prices, and links. Build product catalogs and compare listings across storefronts.",
+    "intro": "Search App Store listings with one or more phrases. Collect app identity, developer, pricing, rating, release, and storefront fields for catalog and market analysis.",
+    "useCases": [
+      "App discovery teams can build localized catalogs of available apps.",
+      "Product marketers can compare competitor ratings, prices, and release history.",
+      "App publishers can monitor how listings appear across storefronts."
+    ],
+    "howToUse": [
+      "Add one search phrase to `queries` for each App Store search.",
+      "Set `store`, `country`, and `limit` to focus collection.",
+      "Run the Actor and export result rows from its dataset."
+    ],
+    "faqs": [
+      {
+        "question": "Can I search storefronts outside the United States?",
+        "answer": "Yes. Set `country` to the two-letter App Store country code and choose a supported store type."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "apple-app-store-app-details-scraper",
+        "title": "Apple App Store App Details Scraper"
+      },
+      {
+        "slug": "google-shopping-scraper",
+        "title": "Google Shopping Scraper"
+      },
+      {
+        "slug": "google-lens-scraper",
+        "title": "Google Lens Visual Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Apple product ID assigned to the app in the selected storefront."
+      },
+      {
+        "name": "type",
+        "type": "String",
+        "description": "Apple storefront record type for the app listing."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "App name displayed on the Apple App Store product page."
+      },
+      {
+        "name": "artist",
+        "type": "String",
+        "description": "Developer or publisher name shown on the app listing."
+      },
+      {
+        "name": "artist_id",
+        "type": "String",
+        "description": "Apple developer account ID associated with the listing."
+      },
+      {
+        "name": "description",
+        "type": "String",
+        "description": "App description displayed in the selected App Store storefront."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public Apple App Store product page URL for the app."
+      },
+      {
+        "name": "artwork",
+        "type": "String",
+        "description": "Image URL for the app icon or storefront artwork."
+      },
+      {
+        "name": "genres",
+        "type": "Array<string>",
+        "description": "App Store categories assigned to the product."
+      },
+      {
+        "name": "price",
+        "type": "Integer",
+        "description": "Current app price in the selected storefront currency."
+      },
+      {
+        "name": "formatted_price",
+        "type": "String",
+        "description": "Localized price label displayed in the storefront."
+      },
+      {
+        "name": "currency",
+        "type": "String",
+        "description": "ISO currency code used for the listed price."
+      },
+      {
+        "name": "rating",
+        "type": "Number",
+        "description": "Average customer rating on the App Store five-star scale."
+      },
+      {
+        "name": "rating_count",
+        "type": "Integer",
+        "description": "Number of customer ratings recorded for the app."
+      },
+      {
+        "name": "release_date",
+        "type": "String",
+        "description": "App release date reported by the storefront, in ISO 8601 format."
+      },
+      {
+        "name": "version",
+        "type": "String",
+        "description": "Current app version listed by the storefront."
+      },
+      {
+        "name": "content_rating",
+        "type": "String",
+        "description": "Age guidance or content rating assigned to the app."
+      },
+      {
+        "name": "seller",
+        "type": "String",
+        "description": "Seller name printed on the App Store product page."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Search phrase used to find this App Store listing."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this app listing was collected."
+      }
+    ]
+  }
+}

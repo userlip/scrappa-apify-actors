@@ -1,0 +1,245 @@
+{
+  "slug": "tiktok-user-search-scraper",
+  "title": "TikTok User Search Scraper",
+  "description": "Search public TikTok profiles by keyword and collect handles, display names, follower counts, and verification status. Batch topics to find creators in a niche or map public profiles.",
+  "endpoint": "/tiktok/user/search",
+  "openapiPath": "/tiktok/user/search",
+  "mode": "list",
+  "batch": {
+    "field": "keywords",
+    "valueField": "keywords",
+    "apiParam": "keywords",
+    "pathParam": null,
+    "title": "Keywords",
+    "description": "Keywords, account fragments, or creator niches to search.",
+    "valueDescription": "keywords used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "keywords",
+      "apiParam": "keywords",
+      "location": "query",
+      "required": true,
+      "title": "Keyword",
+      "schema": {
+        "type": "string",
+        "description": "Search text for public TikTok users. Use a username fragment, brand name, creator niche, product category, or campaign keyword.",
+        "maxLength": 255
+      }
+    },
+    {
+      "input": "count",
+      "apiParam": "count",
+      "location": "query",
+      "required": false,
+      "title": "Count",
+      "schema": {
+        "type": "integer",
+        "description": "Number of user matches to return for the page, up to 50.",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 10
+      }
+    },
+    {
+      "input": "cursor",
+      "apiParam": "cursor",
+      "location": "query",
+      "required": false,
+      "title": "Cursor",
+      "schema": {
+        "type": "string",
+        "description": "Pagination cursor from the previous response. Pass this value with the same `keywords` query when `hasMore` is true.",
+        "maxLength": 100,
+        "default": "0"
+      }
+    }
+  ],
+  "resultPointer": "/data/user_list",
+  "fallbackResultPointers": [
+    "/data/users"
+  ],
+  "pagination": {
+    "kind": "cursor",
+    "param": "cursor",
+    "start": "0",
+    "nextPointer": "/data/cursor",
+    "hasMorePointer": "/data/hasMore",
+    "maxPages": 5
+  },
+  "enrichment": {
+    "field": "input_keywords"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 2,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "keywords": [
+      {
+        "keywords": "cooking"
+      }
+    ],
+    "maxResults": 20,
+    "maxPages": 2,
+    "count": 10,
+    "cursor": "0"
+  },
+  "testParams": {
+    "keywords": "cooking"
+  },
+  "fixture": {
+    "code": 0,
+    "msg": "success",
+    "processed_time": 1.1,
+    "data": {
+      "user_list": [
+        {
+          "user": {
+            "user_id": "1234567890123456789",
+            "unique_id": "trailmixlab",
+            "nickname": "Trail Mix Lab",
+            "avatar": "https://cdn.trailmixlab.social/profile/avatar-512.jpg"
+          },
+          "stats": {
+            "follower_count": 28700,
+            "verified": false
+          }
+        }
+      ],
+      "cursor": "20",
+      "hasMore": true
+    }
+  },
+  "tableFields": [
+    {
+      "name": "user_id",
+      "label": "User ID",
+      "format": "text"
+    },
+    {
+      "name": "unique_id",
+      "label": "Unique ID",
+      "format": "text"
+    },
+    {
+      "name": "nickname",
+      "label": "Nickname",
+      "format": "text"
+    },
+    {
+      "name": "follower_count",
+      "label": "Follower Count",
+      "format": "number"
+    },
+    {
+      "name": "verified",
+      "label": "Verified",
+      "format": "text"
+    }
+  ],
+  "flattenPointers": {
+    "user_id": "/user/user_id",
+    "unique_id": "/user/unique_id",
+    "nickname": "/user/nickname",
+    "avatar": "/user/avatar",
+    "follower_count": "/stats/follower_count",
+    "verified": "/stats/verified"
+  },
+  "dedupePointer": "/user/user_id",
+  "categories": [
+    "SOCIAL_MEDIA",
+    "MARKETING"
+  ],
+  "storeCopy": {
+    "seoTitle": "TikTok User Search | Public Profiles",
+    "seoDescription": "Search public TikTok users by keyword for names, handles, followers, and verification status. Discover creators and map audience niches for research.",
+    "intro": "Search public TikTok accounts by keyword and collect profile identifiers, display names, avatar URLs, follower counts, and verification state. Cursor pagination bounds collection.",
+    "useCases": [
+      "Creator partnership teams can find public profiles that match a topic or niche.",
+      "Social analysts can compare follower counts and verification across searches.",
+      "Brand teams can build lists of relevant public accounts before planning outreach."
+    ],
+    "howToUse": [
+      "Add one keyword or creator niche to `keywords` per search.",
+      "Set `count` per page and use `maxPages` and `maxResults` to bound collection.",
+      "Read flattened profile fields alongside nested source objects."
+    ],
+    "faqs": [
+      {
+        "question": "Does the search include private accounts?",
+        "answer": "No. The Actor searches public user results and does not provide private account data."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "tiktok-profile-scraper",
+        "title": "TikTok Profile Scraper"
+      },
+      {
+        "slug": "tiktok-search-scraper",
+        "title": "TikTok Search Scraper"
+      },
+      {
+        "slug": "tiktok-followers-scraper",
+        "title": "TikTok Followers Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "user",
+        "type": "Object",
+        "description": "Public TikTok profile identity, including account ID, handle, display name, and avatar."
+      },
+      {
+        "name": "stats",
+        "type": "Object",
+        "description": "Public profile measures, including follower count and verified-account status."
+      },
+      {
+        "name": "user_id",
+        "type": "String or null",
+        "description": "TikTok account identifier returned for this public profile."
+      },
+      {
+        "name": "unique_id",
+        "type": "String or null",
+        "description": "Public TikTok handle shown on the profile."
+      },
+      {
+        "name": "nickname",
+        "type": "String or null",
+        "description": "Display name shown on the TikTok profile."
+      },
+      {
+        "name": "avatar",
+        "type": "String or null",
+        "description": "Public profile image URL returned for the account."
+      },
+      {
+        "name": "follower_count",
+        "type": "String or null",
+        "description": "Number of followers reported for the public account."
+      },
+      {
+        "name": "verified",
+        "type": "String or null",
+        "description": "True when TikTok marks the public account as verified."
+      },
+      {
+        "name": "input_keywords",
+        "type": "String",
+        "description": "Keyword submitted to find matching public TikTok profiles."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this profile record was collected."
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "search_information": {
+    "query_displayed": "example climate research"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Heat Island Cooling Strategies",
+      "link": "https://www.epa.gov/heatislands/heat-island-cooling-strategies",
+      "redirect_link": "https://www.epa.gov/heatislands/heat-island-cooling-strategies",
+      "displayed_link": "epa.gov/heatislands",
+      "snippet": "Trees, reflective surfaces, and green roofs can help lower urban temperatures.",
+      "source": "U.S. Environmental Protection Agency"
+    }
+  ],
+  "related_searches": [],
+  "related_questions": [],
+  "engine_used": "brave"
+}

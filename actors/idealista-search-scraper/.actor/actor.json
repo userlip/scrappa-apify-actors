@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "idealista-search-scraper",
+  "title": "Idealista Property Search Scraper",
+  "description": "Search Idealista listings with prices, size, rooms, photos, location, and links. Batch location searches and page through property results across supported European markets.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "propertyCode",
+              "price",
+              "size",
+              "rooms",
+              "municipality",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "propertyCode": {
+                "label": "Property Code",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "size": {
+                "label": "Size",
+                "format": "number"
+              },
+              "rooms": {
+                "label": "Rooms",
+                "format": "number"
+              },
+              "municipality": {
+                "label": "Municipality",
+                "format": "text"
+              },
+              "url": {
+                "label": "URL",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

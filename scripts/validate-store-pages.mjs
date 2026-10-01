@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -210,6 +211,8 @@ async function main() {
         const directory = path.join(actorDirectory, directoryName);
         try {
             const actor = await jsonFile(path.join(directory, '.actor/actor.json'));
+            // Spec-generated Actors are validated by scripts/validate-store-copy.mjs.
+            if (existsSync(path.join(REPO_ROOT, 'specs', `${actor.name}.json`))) continue;
             actorDefinitions.set(actor.name, { directory, actor });
         } catch {
             // Non-actor directories do not have an actor definition.

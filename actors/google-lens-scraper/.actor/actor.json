@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "google-lens-scraper",
+  "title": "Google Lens Visual Search Scraper",
+  "description": "Find Google Lens matches from public image URLs, including titles, sources, thumbnails, links, and prices. Submit several images per run to discover visually similar products or pages.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "title",
+              "link",
+              "source",
+              "thumbnail",
+              "position"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "link": {
+                "label": "Link",
+                "format": "link"
+              },
+              "source": {
+                "label": "Source",
+                "format": "text"
+              },
+              "thumbnail": {
+                "label": "Thumbnail",
+                "format": "text"
+              },
+              "position": {
+                "label": "Position",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

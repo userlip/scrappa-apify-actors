@@ -1,0 +1,88 @@
+{
+  "title": "Google Lens Visual Search Scraper",
+  "description": "Find Google Lens matches from public image URLs, including titles, sources, thumbnails, links, and prices. Submit several images per run to discover visually similar products or pages.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "image_urls"
+  ],
+  "properties": {
+    "image_urls": {
+      "title": "Image URLs",
+      "type": "array",
+      "description": "Public image URLs to use for visual search.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "title": "Image URL",
+            "type": "string",
+            "description": "Public HTTPS URL for the image to search.",
+            "maxLength": 2048,
+            "editor": "textfield"
+          },
+          "q": {
+            "title": "Search query",
+            "type": "string",
+            "description": "Optional text used to refine visual or product matches.",
+            "maxLength": 500,
+            "editor": "textfield"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string",
+            "description": "One of `all`, `products`, `exact_matches`, or `visual_matches`.",
+            "enum": [
+              "all",
+              "products",
+              "exact_matches",
+              "visual_matches"
+            ],
+            "default": "all",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "q": {
+      "title": "Search query",
+      "type": "string",
+      "description": "Optional text used to refine visual or product matches.",
+      "maxLength": 500,
+      "editor": "textfield"
+    },
+    "type": {
+      "title": "Type",
+      "type": "string",
+      "description": "One of `all`, `products`, `exact_matches`, or `visual_matches`.",
+      "enum": [
+        "all",
+        "products",
+        "exact_matches",
+        "visual_matches"
+      ],
+      "default": "all",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

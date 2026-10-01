@@ -1,0 +1,118 @@
+{
+  "title": "Apple App Store Search Scraper",
+  "description": "Search the Apple App Store for app names, publishers, prices, ratings, categories, and links. Submit several search phrases in one run to build catalogs or compare storefront listings.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Search queries",
+      "type": "array",
+      "description": "App Store search phrases. Add one object per phrase.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "query": "notion"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "title": "Search query",
+            "type": "string",
+            "description": "Search term (q is accepted as an alias)",
+            "maxLength": 500,
+            "editor": "textfield"
+          },
+          "store": {
+            "title": "Store",
+            "type": "string",
+            "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts",
+            "enum": [
+              "apps",
+              "mac",
+              "books",
+              "audiobooks",
+              "movies",
+              "tv",
+              "music",
+              "podcasts"
+            ],
+            "default": "apps",
+            "editor": "select"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "description": "Two-letter Apple storefront country code (default: us)",
+            "minLength": 2,
+            "maxLength": 2,
+            "default": "us",
+            "editor": "textfield"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer",
+            "description": "Maximum number of results",
+            "minimum": 1,
+            "maximum": 200,
+            "default": 20,
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "store": {
+      "title": "Store",
+      "type": "string",
+      "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts",
+      "enum": [
+        "apps",
+        "mac",
+        "books",
+        "audiobooks",
+        "movies",
+        "tv",
+        "music",
+        "podcasts"
+      ],
+      "default": "apps",
+      "editor": "select"
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter Apple storefront country code (default: us)",
+      "minLength": 2,
+      "maxLength": 2,
+      "default": "us",
+      "editor": "textfield"
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer",
+      "description": "Maximum number of results",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 20,
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

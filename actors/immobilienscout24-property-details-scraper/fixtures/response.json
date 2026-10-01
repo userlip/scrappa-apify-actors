@@ -1,0 +1,47 @@
+{
+  "success": true,
+  "id": "170000001",
+  "title": "Bright two-bedroom apartment near Stadtpark",
+  "description": "A sunny apartment with a balcony, elevator access, and a renovated kitchen.",
+  "type": "apartment",
+  "is_tenant_network": false,
+  "price": {
+    "cold_rent": 900,
+    "warm_rent": 1100,
+    "cold_rent_formatted": "€900",
+    "warm_rent_formatted": "€1,100",
+    "deposit": 1800,
+    "currency": "EUR"
+  },
+  "details": {
+    "rooms": 2,
+    "size_m2": 68,
+    "floor": 2,
+    "available_from": "2026-10-01",
+    "year_built": 2018
+  },
+  "address": {
+    "street": "Friedrichstrasse 18",
+    "postal_code": "10117",
+    "city": "Berlin",
+    "district": "Mitte",
+    "lat": 52.53,
+    "lon": 13.38
+  },
+  "features": [
+    "balcony",
+    "elevator"
+  ],
+  "energy_class": "B",
+  "images": [
+    {
+      "url": "https://www.immobilienscout24.de/expose/170000001/images/room-1",
+      "caption": "Living room"
+    }
+  ],
+  "agent": {
+    "name": "Nordlicht Immobilien",
+    "logo_url": "https://www.immobilienscout24.de/expose/170000001/images/agent-logo"
+  },
+  "url": "https://www.immobilienscout24.de/expose/170000001"
+}

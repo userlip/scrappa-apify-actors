@@ -1,0 +1,349 @@
+{
+  "slug": "apple-app-store-app-details-scraper",
+  "title": "Apple App Store App Details Scraper",
+  "description": "Get Apple App Store app details with publisher, price, rating, privacy labels, version, and related apps. Batch product IDs with a storefront country to enrich app catalogs or compare listings.",
+  "endpoint": "/apple/app-store/details",
+  "openapiPath": "/apple/app-store/details",
+  "mode": "single",
+  "batch": {
+    "field": "product_ids",
+    "valueField": "product_id",
+    "apiParam": "product_id",
+    "pathParam": null,
+    "title": "Product IDs",
+    "description": "Apple product IDs to look up. Add one object per supported product.",
+    "valueDescription": "product_id used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "id",
+      "apiParam": "id",
+      "location": "query",
+      "required": false,
+      "title": "ID",
+      "schema": {
+        "type": "string",
+        "description": "Legacy alias for the Apple product ID.",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    },
+    {
+      "input": "product_id",
+      "apiParam": "product_id",
+      "location": "query",
+      "required": true,
+      "title": "Product ID",
+      "schema": {
+        "type": "string",
+        "description": "Apple product id (numeric adam id; UMC ids also accepted for movies/TV)",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    },
+    {
+      "input": "store",
+      "apiParam": "store",
+      "location": "query",
+      "required": false,
+      "title": "Store",
+      "schema": {
+        "type": "string",
+        "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts",
+        "enum": [
+          "apps",
+          "mac",
+          "books",
+          "audiobooks",
+          "movies",
+          "tv",
+          "music",
+          "podcasts"
+        ],
+        "default": "apps"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "description": "Two-letter Apple storefront country code (default: us)",
+        "minLength": 2,
+        "maxLength": 2,
+        "default": "us"
+      }
+    },
+    {
+      "input": "season_id",
+      "apiParam": "season_id",
+      "location": "query",
+      "required": false,
+      "title": "Season ID",
+      "schema": {
+        "type": "string",
+        "description": "TV season id; returns the season product instead of the show",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    },
+    {
+      "input": "num",
+      "apiParam": "num",
+      "location": "query",
+      "required": false,
+      "title": "Results per page",
+      "schema": {
+        "type": "integer",
+        "description": "Requested review result count per page",
+        "minimum": 1,
+        "maximum": 50
+      }
+    },
+    {
+      "input": "offset",
+      "apiParam": "offset",
+      "location": "query",
+      "required": false,
+      "title": "Offset",
+      "schema": {
+        "type": "integer",
+        "description": "Review result offset for the selected App Store item.",
+        "minimum": 0
+      }
+    },
+    {
+      "input": "next_page_token",
+      "apiParam": "next_page_token",
+      "location": "query",
+      "required": false,
+      "title": "Next Page Token",
+      "schema": {
+        "type": "string",
+        "description": "Review pagination token from a previous response",
+        "maxLength": 100
+      }
+    }
+  ],
+  "resultPointer": null,
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_product_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "product_ids": [
+      {
+        "product_id": "1232780281"
+      }
+    ],
+    "country": "us",
+    "store": "apps",
+    "maxResults": 20
+  },
+  "testParams": {
+    "product_id": "1232780281",
+    "country": "us"
+  },
+  "fixture": {
+    "search_parameters": {
+      "product_id": "1234567890",
+      "country": "us",
+      "store": "apps",
+      "engine": "apple_app_store"
+    },
+    "product": {
+      "id": "1234567890",
+      "store": "apps",
+      "title": "Pocket Notes: Daily Planner",
+      "artist": "Northstar Mobile Studio",
+      "url": "https://apps.apple.com/us/app/pocket-notes-daily-planner/id1234567890",
+      "rating": 4.8,
+      "rating_count": 250,
+      "privacy": {
+        "privacyTypes": [
+          {
+            "dataCategories": [
+              "Contact Info"
+            ],
+            "description": "Product usage data is linked to the account for analytics.",
+            "identifier": "product_usage",
+            "privacyType": "data_used_to_track_you",
+            "purposes": [
+              "Analytics"
+            ]
+          }
+        ]
+      }
+    },
+    "ratings": {
+      "rating_count": 250,
+      "rating_average": 4.8,
+      "histogram": [
+        1,
+        2,
+        3,
+        10,
+        234
+      ],
+      "total_reviews": 120
+    },
+    "similar": [
+      {
+        "id": "1562071743",
+        "title": "Fieldnote: Simple Journal",
+        "artist": "Fieldnote Apps",
+        "rating": 4.7,
+        "url": "https://apps.apple.com/us/app/fieldnote-simple-journal/id1000000001"
+      }
+    ],
+    "more_by_developer": [
+      {
+        "id": "1494974266",
+        "title": "Northstar Habit Tracker",
+        "artist": "Northstar Mobile Studio",
+        "url": "https://apps.apple.com/us/app/northstar-habit-tracker/id1000000002"
+      }
+    ],
+    "reviews": [
+      {
+        "id": "review-2026-0814-01",
+        "author": "Jordan Lee",
+        "rating": 5,
+        "title": "Clear and useful",
+        "text": "The reminders are useful and the weekly view is easy to scan.",
+        "date": "2026-08-14",
+        "review": "A clear, lightweight way to organize daily plans."
+      }
+    ],
+    "reviews_pagination": {
+      "offset": 0,
+      "limit": 20,
+      "next_offset": 20,
+      "end_of_history": true
+    }
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "artist",
+      "label": "Artist",
+      "format": "text"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "number"
+    },
+    {
+      "name": "rating_count",
+      "label": "Rating Count",
+      "format": "number"
+    },
+    {
+      "name": "privacy",
+      "label": "Privacy",
+      "format": "text"
+    }
+  ],
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "storeCopy": {
+    "seoTitle": "Apple App Store Details | Product Data",
+    "seoDescription": "Get Apple App Store details, ratings, privacy labels, and reviews by product ID. Enrich app catalogs and compare listings across storefronts.",
+    "intro": "Look up Apple App Store apps and supported product types by product ID. Review listing facts, ratings, privacy labels, available reviews, and related products in one record.",
+    "useCases": [
+      "App catalog teams can enrich product records with publisher, version, ratings, and privacy labels.",
+      "Market analysts can compare app pricing and popularity across storefronts.",
+      "App publishers can review how their listings appear beside similar products."
+    ],
+    "howToUse": [
+      "Add one Apple product ID to `product_ids` for each supported product.",
+      "Choose store vertical and country for the target storefront.",
+      "Run the Actor and read one detailed item per product ID."
+    ],
+    "faqs": [
+      {
+        "question": "Which Apple product types can I look up?",
+        "answer": "Set `store` to apps, Mac apps, books, audiobooks, movies, TV, music, or podcasts when supported."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "apple-app-store-search-scraper",
+        "title": "Apple App Store Search Scraper"
+      },
+      {
+        "slug": "google-shopping-scraper",
+        "title": "Google Shopping Scraper"
+      },
+      {
+        "slug": "google-lens-scraper",
+        "title": "Google Lens Visual Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "search_parameters",
+        "type": "Object",
+        "description": "Apple product ID, selected storefront country, and storefront type used for the app lookup."
+      },
+      {
+        "name": "product",
+        "type": "Object",
+        "description": "App name, publisher, category, price, current version, privacy labels, and other product-page details."
+      },
+      {
+        "name": "ratings",
+        "type": "Object",
+        "description": "Average star score, total rating count, and rating distribution reported for the app."
+      },
+      {
+        "name": "similar",
+        "type": "Array<object>",
+        "description": "Other App Store products Apple surfaces as similar to this app."
+      },
+      {
+        "name": "more_by_developer",
+        "type": "Array<object>",
+        "description": "Other App Store products listed by the same developer account."
+      },
+      {
+        "name": "reviews",
+        "type": "Array<object>",
+        "description": "Review records returned for this app, with written feedback and star ratings when available."
+      },
+      {
+        "name": "reviews_pagination",
+        "type": "Object",
+        "description": "Review offsets, page size, and flags showing whether another review page is available."
+      },
+      {
+        "name": "input_product_id",
+        "type": "String",
+        "description": "Apple product ID submitted for this app details lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this app record was collected."
+      }
+    ]
+  }
+}

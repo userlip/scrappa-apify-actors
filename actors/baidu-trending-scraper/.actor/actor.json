@@ -1,0 +1,65 @@
+{
+  "actorSpecification": 1,
+  "name": "baidu-trending-scraper",
+  "title": "Baidu Trending Searches Scraper",
+  "description": "Track Baidu trending searches with topic text, rank, descriptions, and source links. Choose a trending board and collect a fresh batch of topics to monitor search interest in China.",
+  "categories": [
+    "SEO_TOOLS",
+    "MARKETING"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "query",
+              "title",
+              "position",
+              "link",
+              "is_top"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "query": {
+                "label": "Query",
+                "format": "text"
+              },
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "position": {
+                "label": "Position",
+                "format": "number"
+              },
+              "link": {
+                "label": "Link",
+                "format": "link"
+              },
+              "is_top": {
+                "label": "Top Trend",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

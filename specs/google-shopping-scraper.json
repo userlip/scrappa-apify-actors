@@ -1,0 +1,314 @@
+{
+  "slug": "google-shopping-scraper",
+  "title": "Google Shopping Scraper",
+  "description": "Search Google Shopping for product offers, merchants, prices, ratings, and review counts. Batch product phrases in one run to compare retail listings or monitor prices.",
+  "endpoint": "/google/shopping",
+  "openapiPath": "/google/shopping",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "q",
+    "apiParam": "q",
+    "pathParam": null,
+    "title": "Product queries",
+    "description": "Product phrases to search in Google Shopping.",
+    "valueDescription": "q used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "q",
+      "apiParam": "q",
+      "location": "query",
+      "required": true,
+      "title": "Search query",
+      "schema": {
+        "type": "string",
+        "description": "Product search query.",
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "gl",
+      "apiParam": "gl",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "description": "Two-letter country code. Default: us.",
+        "minLength": 2,
+        "maxLength": 2,
+        "default": "us"
+      }
+    },
+    {
+      "input": "hl",
+      "apiParam": "hl",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "description": "Two-letter interface language. Default: en.",
+        "minLength": 2,
+        "maxLength": 2,
+        "default": "en"
+      }
+    },
+    {
+      "input": "location",
+      "apiParam": "location",
+      "location": "query",
+      "required": false,
+      "title": "Location",
+      "schema": {
+        "type": "string",
+        "description": "Location name encoded as a best-effort canonical UULE. Cannot be used with uule; provide uule directly for exact targeting.",
+        "maxLength": 63
+      }
+    },
+    {
+      "input": "uule",
+      "apiParam": "uule",
+      "location": "query",
+      "required": false,
+      "title": "Uule",
+      "schema": {
+        "type": "string",
+        "description": "Encoded Google location. Cannot be used with location.",
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "start",
+      "apiParam": "start",
+      "location": "query",
+      "required": false,
+      "title": "Start",
+      "schema": {
+        "type": "integer",
+        "description": "Zero-based pagination offset. Default: 0.",
+        "minimum": 0,
+        "maximum": 990,
+        "default": 0
+      }
+    },
+    {
+      "input": "device",
+      "apiParam": "device",
+      "location": "query",
+      "required": false,
+      "title": "Device",
+      "schema": {
+        "type": "string",
+        "description": "desktop, mobile, or tablet. Default: desktop.",
+        "enum": [
+          "desktop",
+          "mobile",
+          "tablet"
+        ],
+        "default": "desktop"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "small_business",
+      "apiParam": "small_business",
+      "location": "query",
+      "required": false,
+      "title": "Small Business",
+      "schema": {
+        "type": "boolean",
+        "description": "Only return small-business results. Cannot be used with shoprs."
+      }
+    },
+    {
+      "input": "shoprs",
+      "apiParam": "shoprs",
+      "location": "query",
+      "required": false,
+      "title": "Shoprs",
+      "schema": {
+        "type": "string",
+        "description": "Opaque Google Shopping filter token. Cannot be used with small_business.",
+        "maxLength": 2000
+      }
+    }
+  ],
+  "resultPointer": "/shopping_results",
+  "fallbackResultPointers": [],
+  "pagination": {
+    "kind": "page",
+    "param": "start",
+    "start": 0,
+    "step": 20,
+    "nextPointer": "/pagination/next_start",
+    "maxPages": 5
+  },
+  "enrichment": {
+    "field": "input_q"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 2,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "q": "running shoes"
+      }
+    ],
+    "maxResults": 20,
+    "maxPages": 2
+  },
+  "testParams": {
+    "q": "running shoes"
+  },
+  "fixture": {
+    "search_parameters": {
+      "q": "example headphones",
+      "gl": "us",
+      "hl": "en",
+      "start": 0,
+      "device": "desktop"
+    },
+    "shopping_results": [
+      {
+        "position": 1,
+        "category": "Electronics",
+        "title": "Soundcore Space One Wireless Headphones",
+        "source": "Soundcore Store",
+        "thumbnail": "https://cdn.soundcore.com/products/space-one/black-front.jpg",
+        "price": "$99.99",
+        "rating": 4.6,
+        "reviews": 1842
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "start": 0,
+      "next_start": 50
+    }
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "source",
+      "label": "Source",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "number"
+    },
+    {
+      "name": "reviews",
+      "label": "Reviews",
+      "format": "number"
+    }
+  ],
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "storeCopy": {
+    "seoTitle": "Google Shopping Scraper | Product Prices",
+    "seoDescription": "Search Google Shopping by product keyword and collect offers, merchants, prices, ratings, and review counts. Compare listings and monitor retail pricing.",
+    "intro": "Collect Shopping offers for multiple phrases. Results include product names, merchants, prices, ratings, review totals, categories, and thumbnails.",
+    "useCases": [
+      "Retail teams can compare merchant offers and displayed prices.",
+      "E-commerce analysts can track ratings and review counts across products.",
+      "Category managers can collect product links for assortment reviews."
+    ],
+    "howToUse": [
+      "Add one product phrase to `queries` for each Shopping search.",
+      "Use `maxPages` to bound collection and `maxResults` to cap offers.",
+      "Compare merchant, price, rating, and review fields."
+    ],
+    "faqs": [
+      {
+        "question": "Are prices normalized to one currency?",
+        "answer": "The Actor returns source price text. Use the displayed market and currency context when comparing offers."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-lens-scraper",
+        "title": "Google Lens Visual Search Scraper"
+      },
+      {
+        "slug": "apple-app-store-search-scraper",
+        "title": "Apple App Store Search Scraper"
+      },
+      {
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Position of the offer in Google Shopping results, starting at 1."
+      },
+      {
+        "name": "category",
+        "type": "String",
+        "description": "Product category assigned to the shopping offer."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Product name displayed for this Google Shopping offer."
+      },
+      {
+        "name": "source",
+        "type": "String",
+        "description": "Merchant name selling the product."
+      },
+      {
+        "name": "thumbnail",
+        "type": "String",
+        "description": "Product image preview URL supplied with the offer."
+      },
+      {
+        "name": "price",
+        "type": "String",
+        "description": "Displayed offer price and currency when provided by the merchant."
+      },
+      {
+        "name": "rating",
+        "type": "Number",
+        "description": "Average customer rating shown for the product."
+      },
+      {
+        "name": "reviews",
+        "type": "Integer",
+        "description": "Number of customer reviews shown for the product."
+      },
+      {
+        "name": "input_q",
+        "type": "String",
+        "description": "Product search phrase submitted to Google Shopping."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this shopping offer was collected."
+      }
+    ]
+  }
+}

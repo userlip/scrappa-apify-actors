@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-flights-scraper",
+  "title": "Kayak Flights Scraper",
+  "description": "Get Kayak one-way or round-trip itineraries with flight legs, travel times, provider counts, and shareable links. Add several origin-destination routes in one run to compare fares or plan trips.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "resultId",
+              "type",
+              "shareableUrl",
+              "legs",
+              "totalProviders"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "resultId": {
+                "label": "Result ID",
+                "format": "text"
+              },
+              "type": {
+                "label": "Type",
+                "format": "text"
+              },
+              "shareableUrl": {
+                "label": "Shareable URL",
+                "format": "link"
+              },
+              "legs": {
+                "label": "Legs",
+                "format": "text"
+              },
+              "totalProviders": {
+                "label": "Total Providers",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

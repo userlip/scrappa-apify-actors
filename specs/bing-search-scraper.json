@@ -1,0 +1,273 @@
+{
+  "slug": "bing-search-scraper",
+  "title": "Bing Search Scraper",
+  "description": "Search Bing for ranked titles, page snippets, domains, and links. Batch multiple keywords in one run to monitor rankings, compare competitors, or gather source pages.",
+  "endpoint": "/bing/search",
+  "openapiPath": "/bing/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Search queries",
+    "description": "Bing search phrases. Add one object per phrase.",
+    "valueDescription": "query used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Search query",
+      "schema": {
+        "type": "string",
+        "description": "Search query (max 500 characters).",
+        "maxLength": 500
+      }
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "description": "Page number (1-50).",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 1
+      }
+    },
+    {
+      "input": "num",
+      "apiParam": "num",
+      "location": "query",
+      "required": false,
+      "title": "Results per page",
+      "schema": {
+        "type": "integer",
+        "description": "Results per page (1-50).",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 10
+      }
+    },
+    {
+      "input": "site",
+      "apiParam": "site",
+      "location": "query",
+      "required": false,
+      "title": "Site",
+      "schema": {
+        "type": "string",
+        "description": "Restrict results to this domain, e.g. example.com.",
+        "maxLength": 253
+      }
+    },
+    {
+      "input": "filetype",
+      "apiParam": "filetype",
+      "location": "query",
+      "required": false,
+      "title": "Filetype",
+      "schema": {
+        "type": "string",
+        "description": "Restrict results to this file extension, e.g. pdf.",
+        "maxLength": 20,
+        "pattern": "^[a-zA-Z0-9]+$"
+      }
+    },
+    {
+      "input": "safe",
+      "apiParam": "safe",
+      "location": "query",
+      "required": false,
+      "title": "Safe",
+      "schema": {
+        "type": "string",
+        "description": "SafeSearch level: off, moderate or strict.",
+        "enum": [
+          "off",
+          "moderate",
+          "strict"
+        ],
+        "default": "moderate"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "hl",
+      "apiParam": "hl",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "description": "Language code, e.g. en or en-GB.",
+        "maxLength": 20,
+        "pattern": "^[a-zA-Z]{2,3}(-[a-zA-Z]{2})?$"
+      }
+    },
+    {
+      "input": "include_html",
+      "apiParam": "include_html",
+      "location": "query",
+      "required": false,
+      "title": "Include raw HTML",
+      "schema": {
+        "type": "boolean",
+        "description": "Set to true to include the raw HTML in the response. Default: false."
+      }
+    }
+  ],
+  "resultPointer": "/data",
+  "fallbackResultPointers": [
+    "/results"
+  ],
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "python tutorial"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "query": "python tutorial"
+  },
+  "fixture": {
+    "data": [
+      {
+        "position": 1,
+        "title": "Getting Started",
+        "description": "Learn Python basics, from installing the interpreter to writing your first program.",
+        "url": "https://www.python.org/about/gettingstarted/",
+        "domain": "python.org"
+      }
+    ],
+    "people_also_search_for": [],
+    "people_also_ask": [],
+    "knowledge_graph": null,
+    "see_results_about": null,
+    "twitter_card": null,
+    "results_on_page": 1,
+    "source": "bing"
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "description",
+      "label": "Description",
+      "format": "text"
+    },
+    {
+      "name": "url",
+      "label": "URL",
+      "format": "link"
+    },
+    {
+      "name": "domain",
+      "label": "Domain",
+      "format": "text"
+    },
+    {
+      "name": "position",
+      "label": "Position",
+      "format": "number"
+    }
+  ],
+  "dedupePointer": "/url",
+  "categories": [
+    "SEO_TOOLS"
+  ],
+  "storeCopy": {
+    "seoTitle": "Bing Search Scraper | Search Results API",
+    "seoDescription": "Search Bing by keyword for result titles, snippets, domains, and URLs. Monitor rankings, research content, and compare competing websites in batch.",
+    "intro": "Collect ranked Bing web results for a batch of phrases. Optional language, domain, file type, and SafeSearch filters focus each search.",
+    "useCases": [
+      "SEO managers can monitor positions and snippets for target queries.",
+      "Content teams can collect useful publisher pages and source domains.",
+      "Competitor analysts can compare which sites appear for commercial searches."
+    ],
+    "howToUse": [
+      "Add one phrase per object in `queries`.",
+      "Set optional filters such as `site`, `filetype`, `safe`, or `hl`.",
+      "Use `maxResults` to cap saved rows across the batch."
+    ],
+    "faqs": [
+      {
+        "question": "Can I restrict results to one website?",
+        "answer": "Yes. Set `site` to a domain such as `example.com` to focus the query on that site."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "brave-search-scraper",
+        "title": "Brave Search Scraper"
+      },
+      {
+        "slug": "baidu-search-scraper",
+        "title": "Baidu Search Scraper"
+      },
+      {
+        "slug": "google-scholar-scraper",
+        "title": "Google Scholar Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Bing search-result rank for the page, starting at 1."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Page title shown in the Bing search result."
+      },
+      {
+        "name": "description",
+        "type": "String",
+        "description": "Snippet text Bing displays beneath the matching page title."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Destination URL for the page returned by Bing."
+      },
+      {
+        "name": "domain",
+        "type": "String",
+        "description": "Website host for this Bing result, without its page path."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Search phrase submitted to Bing for this result set."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when these Bing search results were collected."
+      }
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "title": "Baidu Trending Searches Scraper",
+  "description": "Track Baidu trending searches with topic text, rank, descriptions, and source links. Choose a trending board and collect a fresh batch of topics to monitor search interest in China.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "tabs"
+  ],
+  "properties": {
+    "tabs": {
+      "title": "Trending boards",
+      "type": "array",
+      "description": "Baidu trending board names to collect.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "tab": "realtime"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "tab"
+        ],
+        "properties": {
+          "tab": {
+            "title": "Trending board",
+            "type": "string",
+            "description": "Baidu trending board to read.",
+            "enum": [
+              "homepage",
+              "realtime",
+              "livelihood",
+              "finance",
+              "sports",
+              "new_entertainment",
+              "internation_news",
+              "challenge",
+              "movie",
+              "teleplay",
+              "novel",
+              "drama"
+            ],
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

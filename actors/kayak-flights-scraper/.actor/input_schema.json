@@ -1,0 +1,312 @@
+{
+  "title": "Kayak Flights Scraper",
+  "description": "Get Kayak one-way or round-trip itineraries with flight legs, travel times, provider counts, and shareable links. Add several origin-destination routes in one run to compare fares or plan trips.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "flights"
+  ],
+  "properties": {
+    "flights": {
+      "title": "Flight routes",
+      "type": "array",
+      "description": "Flight routes with an origin and destination for each search.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "origin": "JFK",
+          "destination": "LAX"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "origin",
+          "destination"
+        ],
+        "properties": {
+          "origin": {
+            "title": "Origin",
+            "type": "string",
+            "description": "3-letter IATA airport or metro code.",
+            "pattern": "^[A-Z]{3}$",
+            "editor": "textfield"
+          },
+          "destination": {
+            "title": "Destination",
+            "type": "string",
+            "description": "3-letter IATA airport or metro code.",
+            "pattern": "^[A-Z]{3}$",
+            "editor": "textfield"
+          },
+          "departure_date": {
+            "title": "Departure date",
+            "type": "string",
+            "description": "Departure date in YYYY-MM-DD format. When omitted, departure is set to 30 days from today.",
+            "editor": "textfield"
+          },
+          "adults": {
+            "title": "Adults",
+            "type": "integer",
+            "description": "Adult passengers, 1-9.",
+            "minimum": 1,
+            "maximum": 9,
+            "default": 1,
+            "editor": "number"
+          },
+          "children": {
+            "title": "Children",
+            "type": "integer",
+            "description": "Child passengers, 0-8.",
+            "minimum": 0,
+            "maximum": 8,
+            "default": 0,
+            "editor": "number"
+          },
+          "infants_in_seat": {
+            "title": "Infants In Seat",
+            "type": "integer",
+            "description": "Infants with a seat, 0-8.",
+            "minimum": 0,
+            "maximum": 8,
+            "default": 0,
+            "editor": "number"
+          },
+          "infants_on_lap": {
+            "title": "Infants On Lap",
+            "type": "integer",
+            "description": "Lap infants, 0-8.",
+            "minimum": 0,
+            "maximum": 8,
+            "default": 0,
+            "editor": "number"
+          },
+          "cabin": {
+            "title": "Cabin",
+            "type": "string",
+            "description": "economy, premium_economy, business, or first.",
+            "enum": [
+              "economy",
+              "premium_economy",
+              "business",
+              "first"
+            ],
+            "default": "economy",
+            "editor": "select"
+          },
+          "sort": {
+            "title": "Sort",
+            "type": "string",
+            "description": "best, price, or duration.",
+            "enum": [
+              "best",
+              "price",
+              "duration"
+            ],
+            "default": "best",
+            "editor": "select"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "description": "Results page, 1-20.",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 1,
+            "editor": "number"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string",
+            "description": "3-letter ISO currency code.",
+            "minLength": 3,
+            "maxLength": 3,
+            "pattern": "^[A-Z]{3}$",
+            "default": "USD",
+            "editor": "textfield"
+          },
+          "locale": {
+            "title": "Locale",
+            "type": "string",
+            "description": "Language locale such as en-US.",
+            "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+            "default": "en-US",
+            "editor": "textfield"
+          },
+          "include_price_prediction": {
+            "title": "Include Price Prediction",
+            "type": "boolean",
+            "description": "Include available price insight data.",
+            "editor": "checkbox"
+          },
+          "include_display_metadata": {
+            "title": "Include Display Metadata",
+            "type": "boolean",
+            "description": "Include available display and offer metadata.",
+            "editor": "checkbox"
+          },
+          "return_date": {
+            "title": "Return date",
+            "type": "string",
+            "description": "Return date in YYYY-MM-DD format. Required when tripType is round-trip. Required for Round trip searches. When omitted for a round trip, return is set to 4 days after departure.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "destination": {
+      "title": "Destination",
+      "type": "string",
+      "description": "3-letter IATA airport or metro code.",
+      "pattern": "^[A-Z]{3}$",
+      "editor": "textfield"
+    },
+    "departure_date": {
+      "title": "Departure date",
+      "type": "string",
+      "description": "Departure date in YYYY-MM-DD format. When omitted, departure is set to 30 days from today.",
+      "editor": "textfield"
+    },
+    "adults": {
+      "title": "Adults",
+      "type": "integer",
+      "description": "Adult passengers, 1-9.",
+      "minimum": 1,
+      "maximum": 9,
+      "default": 1,
+      "editor": "number"
+    },
+    "children": {
+      "title": "Children",
+      "type": "integer",
+      "description": "Child passengers, 0-8.",
+      "minimum": 0,
+      "maximum": 8,
+      "default": 0,
+      "editor": "number"
+    },
+    "infants_in_seat": {
+      "title": "Infants In Seat",
+      "type": "integer",
+      "description": "Infants with a seat, 0-8.",
+      "minimum": 0,
+      "maximum": 8,
+      "default": 0,
+      "editor": "number"
+    },
+    "infants_on_lap": {
+      "title": "Infants On Lap",
+      "type": "integer",
+      "description": "Lap infants, 0-8.",
+      "minimum": 0,
+      "maximum": 8,
+      "default": 0,
+      "editor": "number"
+    },
+    "cabin": {
+      "title": "Cabin",
+      "type": "string",
+      "description": "economy, premium_economy, business, or first.",
+      "enum": [
+        "economy",
+        "premium_economy",
+        "business",
+        "first"
+      ],
+      "default": "economy",
+      "editor": "select"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "description": "best, price, or duration.",
+      "enum": [
+        "best",
+        "price",
+        "duration"
+      ],
+      "default": "best",
+      "editor": "select"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "description": "Results page, 1-20.",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 1,
+      "editor": "number"
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string",
+      "description": "3-letter ISO currency code.",
+      "minLength": 3,
+      "maxLength": 3,
+      "pattern": "^[A-Z]{3}$",
+      "default": "USD",
+      "editor": "textfield"
+    },
+    "locale": {
+      "title": "Locale",
+      "type": "string",
+      "description": "Language locale such as en-US.",
+      "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+      "default": "en-US",
+      "editor": "textfield"
+    },
+    "include_price_prediction": {
+      "title": "Include Price Prediction",
+      "type": "boolean",
+      "description": "Include available price insight data.",
+      "editor": "checkbox"
+    },
+    "include_display_metadata": {
+      "title": "Include Display Metadata",
+      "type": "boolean",
+      "description": "Include available display and offer metadata.",
+      "editor": "checkbox"
+    },
+    "return_date": {
+      "title": "Return date",
+      "type": "string",
+      "description": "Return date in YYYY-MM-DD format. Required when tripType is round-trip. Required for Round trip searches. When omitted for a round trip, return is set to 4 days after departure.",
+      "editor": "textfield"
+    },
+    "tripType": {
+      "title": "Trip type",
+      "type": "string",
+      "description": "Choose a one-way or round-trip search. Round-trip routes use a return date.",
+      "editor": "select",
+      "enum": [
+        "one-way",
+        "round-trip"
+      ],
+      "enumTitles": [
+        "One way",
+        "Round trip"
+      ],
+      "default": "one-way"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 2
+    }
+  }
+}

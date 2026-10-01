@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "immobilienscout24-property-details-scraper",
+  "title": "ImmobilienScout24 Property Details Scraper",
+  "description": "Get ImmobilienScout24 listing details such as rent, rooms, address, features, energy class, and images by property ID. Batch IDs to enrich housing records or review German listings.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "id",
+              "title",
+              "price",
+              "details",
+              "address",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": {
+                "label": "ID",
+                "format": "text"
+              },
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "details": {
+                "label": "Details",
+                "format": "text"
+              },
+              "address": {
+                "label": "Address",
+                "format": "text"
+              },
+              "url": {
+                "label": "URL",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

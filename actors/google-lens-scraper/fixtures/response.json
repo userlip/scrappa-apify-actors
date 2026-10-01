@@ -1,0 +1,19 @@
+{
+  "search_parameters": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png",
+    "q": null,
+    "type": "all"
+  },
+  "visual_matches": [
+    {
+      "source": "Cedar & Clay",
+      "title": "Cobalt Blue Stoneware Mug",
+      "link": "https://cedarandclay.co/products/cobalt-blue-stoneware-mug",
+      "thumbnail": "https://cdn.cedarandclay.co/products/cobalt-mug/front-1200.jpg",
+      "price": "$28.00",
+      "position": 1
+    }
+  ],
+  "exact_matches": [],
+  "related_content": []
+}

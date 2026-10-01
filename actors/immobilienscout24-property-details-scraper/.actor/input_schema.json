@@ -1,0 +1,47 @@
+{
+  "title": "ImmobilienScout24 Property Details Scraper",
+  "description": "Get ImmobilienScout24 listing details such as rent, rooms, address, features, energy class, and images by property ID. Batch IDs to enrich housing records or review German listings.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "property_ids"
+  ],
+  "properties": {
+    "property_ids": {
+      "title": "Property IDs",
+      "type": "array",
+      "description": "Numeric ImmobilienScout24 listing IDs to look up.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "id": "170528322"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "string",
+            "description": "ImmobilienScout24 property ID (digits only).",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

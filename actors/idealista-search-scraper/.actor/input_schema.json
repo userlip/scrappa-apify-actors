@@ -1,0 +1,507 @@
+{
+  "title": "Idealista Property Search Scraper",
+  "description": "Search Idealista listings with prices, size, rooms, photos, location, and links. Batch location searches and page through property results across supported European markets.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "location_ids",
+    "country",
+    "operation",
+    "property_type"
+  ],
+  "properties": {
+    "location_ids": {
+      "title": "Locations",
+      "type": "array",
+      "description": "Idealista location IDs to search.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "location_id": "0-EU-ES-28-07-001-079"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "location_id"
+        ],
+        "properties": {
+          "location_id": {
+            "title": "Location ID",
+            "type": "string",
+            "description": "Idealista location id such as 0-EU-ES-28.",
+            "maxLength": 80,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "editor": "textfield"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "description": "Market: es, it, pt, or fr. Default es.",
+            "enum": [
+              "es",
+              "it",
+              "pt",
+              "fr"
+            ],
+            "editor": "select"
+          },
+          "operation": {
+            "title": "Operation",
+            "type": "string",
+            "description": "sale or rent. Room stock uses bedrooms + rent.",
+            "enum": [
+              "sale",
+              "rent"
+            ],
+            "editor": "select"
+          },
+          "property_type": {
+            "title": "Property Type",
+            "type": "string",
+            "description": "homes, newDevelopments, bedrooms, offices, premises, transfers, buildings, storageRooms, garages, vacationRentals, luxury, or lands.",
+            "enum": [
+              "homes",
+              "newDevelopments",
+              "bedrooms",
+              "offices",
+              "premises",
+              "transfers",
+              "buildings",
+              "storageRooms",
+              "garages",
+              "vacationRentals",
+              "luxury",
+              "lands"
+            ],
+            "editor": "select"
+          },
+          "center": {
+            "title": "Center",
+            "type": "string",
+            "description": "lat,lon for near-me search.",
+            "maxLength": 40,
+            "pattern": "^-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?$",
+            "editor": "textfield"
+          },
+          "distance": {
+            "title": "Distance",
+            "type": "integer",
+            "description": "Radius in meters when using center.",
+            "minimum": 1,
+            "maximum": 50000,
+            "editor": "number"
+          },
+          "max_items": {
+            "title": "Max Items",
+            "type": "integer",
+            "description": "Page size honored by origin, 1-5.",
+            "minimum": 1,
+            "maximum": 5,
+            "default": 5,
+            "editor": "number"
+          },
+          "num_page": {
+            "title": "NUM Page",
+            "type": "integer",
+            "description": "1-based page number.",
+            "minimum": 1,
+            "default": 1,
+            "editor": "number"
+          },
+          "order": {
+            "title": "Order",
+            "type": "string",
+            "description": "Sort direction or ordering mode for property results.",
+            "maxLength": 40,
+            "editor": "textfield"
+          },
+          "sort": {
+            "title": "Sort",
+            "type": "string",
+            "description": "Listing sort mode, such as price or publication date.",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc",
+            "editor": "select"
+          },
+          "quality": {
+            "title": "Quality",
+            "type": "string",
+            "description": "Filter results by listing quality when supported.",
+            "enum": [
+              "high",
+              "low"
+            ],
+            "editor": "select"
+          },
+          "gallery": {
+            "title": "Gallery",
+            "type": "boolean",
+            "description": "Filter for listings that include gallery photos.",
+            "default": false,
+            "editor": "checkbox"
+          },
+          "locale": {
+            "title": "Locale",
+            "type": "string",
+            "description": "Language and regional formatting for the listing search.",
+            "maxLength": 8,
+            "editor": "textfield"
+          },
+          "microsite_short_name": {
+            "title": "Microsite Short Name",
+            "type": "string",
+            "description": "Anonymous agency stock filter, for example clikalia.",
+            "maxLength": 80,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "editor": "textfield"
+          },
+          "chalet": {
+            "title": "Chalet",
+            "type": "boolean",
+            "description": "Apply-filter key. Send true on homes.",
+            "editor": "checkbox"
+          },
+          "current_occupation_type": {
+            "title": "Current Occupation Type",
+            "type": "string",
+            "description": "free, bareOwnership, tenanted, illegallyOccupied, or viager.",
+            "enum": [
+              "free",
+              "bareOwnership",
+              "tenanted",
+              "illegallyOccupied",
+              "viager"
+            ],
+            "editor": "select"
+          },
+          "auction": {
+            "title": "Auction",
+            "type": "string",
+            "description": "IT only: onlyAuctions or excludeAuctions.",
+            "enum": [
+              "onlyAuctions",
+              "excludeAuctions"
+            ],
+            "editor": "select"
+          },
+          "home_type": {
+            "title": "Home Type",
+            "type": "string",
+            "description": "Idealista home subtype, such as an apartment or house.",
+            "maxLength": 40,
+            "editor": "textfield"
+          },
+          "bank_offer": {
+            "title": "Bank Offer",
+            "type": "string",
+            "description": "Filter listings associated with a bank offer.",
+            "maxLength": 40,
+            "editor": "textfield"
+          },
+          "advertiser_type": {
+            "title": "Advertiser Type",
+            "type": "string",
+            "description": "Filter results by advertiser category.",
+            "maxLength": 40,
+            "editor": "textfield"
+          },
+          "min_price": {
+            "title": "Min Price",
+            "type": "integer",
+            "description": "Minimum asking price for a property listing.",
+            "minimum": 0,
+            "editor": "number"
+          },
+          "max_price": {
+            "title": "Max Price",
+            "type": "integer",
+            "description": "Maximum asking price for a property listing.",
+            "minimum": 0,
+            "editor": "number"
+          },
+          "min_size": {
+            "title": "Min Size",
+            "type": "integer",
+            "description": "Minimum property area in square metres.",
+            "minimum": 0,
+            "editor": "number"
+          },
+          "max_size": {
+            "title": "Max Size",
+            "type": "integer",
+            "description": "Maximum property area in square metres.",
+            "minimum": 0,
+            "editor": "number"
+          },
+          "min_rooms": {
+            "title": "Min Rooms",
+            "type": "integer",
+            "description": "Minimum room count for a property listing.",
+            "minimum": 0,
+            "editor": "number"
+          },
+          "max_rooms": {
+            "title": "Max Rooms",
+            "type": "integer",
+            "description": "Maximum room count for a property listing.",
+            "minimum": 0,
+            "editor": "number"
+          },
+          "shape": {
+            "title": "Shape",
+            "type": "string",
+            "description": "Geographic search shape used to restrict Idealista results.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "description": "Market: es, it, pt, or fr. Default es.",
+      "enum": [
+        "es",
+        "it",
+        "pt",
+        "fr"
+      ],
+      "editor": "select"
+    },
+    "operation": {
+      "title": "Operation",
+      "type": "string",
+      "description": "sale or rent. Room stock uses bedrooms + rent.",
+      "enum": [
+        "sale",
+        "rent"
+      ],
+      "editor": "select"
+    },
+    "property_type": {
+      "title": "Property Type",
+      "type": "string",
+      "description": "homes, newDevelopments, bedrooms, offices, premises, transfers, buildings, storageRooms, garages, vacationRentals, luxury, or lands.",
+      "enum": [
+        "homes",
+        "newDevelopments",
+        "bedrooms",
+        "offices",
+        "premises",
+        "transfers",
+        "buildings",
+        "storageRooms",
+        "garages",
+        "vacationRentals",
+        "luxury",
+        "lands"
+      ],
+      "editor": "select"
+    },
+    "center": {
+      "title": "Center",
+      "type": "string",
+      "description": "lat,lon for near-me search.",
+      "maxLength": 40,
+      "pattern": "^-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?$",
+      "editor": "textfield"
+    },
+    "distance": {
+      "title": "Distance",
+      "type": "integer",
+      "description": "Radius in meters when using center.",
+      "minimum": 1,
+      "maximum": 50000,
+      "editor": "number"
+    },
+    "max_items": {
+      "title": "Max Items",
+      "type": "integer",
+      "description": "Page size honored by origin, 1-5.",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 5,
+      "editor": "number"
+    },
+    "num_page": {
+      "title": "NUM Page",
+      "type": "integer",
+      "description": "1-based page number.",
+      "minimum": 1,
+      "default": 1,
+      "editor": "number"
+    },
+    "order": {
+      "title": "Order",
+      "type": "string",
+      "description": "Sort direction or ordering mode for property results.",
+      "maxLength": 40,
+      "editor": "textfield"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "description": "Listing sort mode, such as price or publication date.",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "default": "desc",
+      "editor": "select"
+    },
+    "quality": {
+      "title": "Quality",
+      "type": "string",
+      "description": "Filter results by listing quality when supported.",
+      "enum": [
+        "high",
+        "low"
+      ],
+      "editor": "select"
+    },
+    "gallery": {
+      "title": "Gallery",
+      "type": "boolean",
+      "description": "Filter for listings that include gallery photos.",
+      "default": false,
+      "editor": "checkbox"
+    },
+    "locale": {
+      "title": "Locale",
+      "type": "string",
+      "description": "Language and regional formatting for the listing search.",
+      "maxLength": 8,
+      "editor": "textfield"
+    },
+    "microsite_short_name": {
+      "title": "Microsite Short Name",
+      "type": "string",
+      "description": "Anonymous agency stock filter, for example clikalia.",
+      "maxLength": 80,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "editor": "textfield"
+    },
+    "chalet": {
+      "title": "Chalet",
+      "type": "boolean",
+      "description": "Apply-filter key. Send true on homes.",
+      "editor": "checkbox"
+    },
+    "current_occupation_type": {
+      "title": "Current Occupation Type",
+      "type": "string",
+      "description": "free, bareOwnership, tenanted, illegallyOccupied, or viager.",
+      "enum": [
+        "free",
+        "bareOwnership",
+        "tenanted",
+        "illegallyOccupied",
+        "viager"
+      ],
+      "editor": "select"
+    },
+    "auction": {
+      "title": "Auction",
+      "type": "string",
+      "description": "IT only: onlyAuctions or excludeAuctions.",
+      "enum": [
+        "onlyAuctions",
+        "excludeAuctions"
+      ],
+      "editor": "select"
+    },
+    "home_type": {
+      "title": "Home Type",
+      "type": "string",
+      "description": "Idealista home subtype, such as an apartment or house.",
+      "maxLength": 40,
+      "editor": "textfield"
+    },
+    "bank_offer": {
+      "title": "Bank Offer",
+      "type": "string",
+      "description": "Filter listings associated with a bank offer.",
+      "maxLength": 40,
+      "editor": "textfield"
+    },
+    "advertiser_type": {
+      "title": "Advertiser Type",
+      "type": "string",
+      "description": "Filter results by advertiser category.",
+      "maxLength": 40,
+      "editor": "textfield"
+    },
+    "min_price": {
+      "title": "Min Price",
+      "type": "integer",
+      "description": "Minimum asking price for a property listing.",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "max_price": {
+      "title": "Max Price",
+      "type": "integer",
+      "description": "Maximum asking price for a property listing.",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "min_size": {
+      "title": "Min Size",
+      "type": "integer",
+      "description": "Minimum property area in square metres.",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "max_size": {
+      "title": "Max Size",
+      "type": "integer",
+      "description": "Maximum property area in square metres.",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "min_rooms": {
+      "title": "Min Rooms",
+      "type": "integer",
+      "description": "Minimum room count for a property listing.",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "max_rooms": {
+      "title": "Max Rooms",
+      "type": "integer",
+      "description": "Maximum room count for a property listing.",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "shape": {
+      "title": "Shape",
+      "type": "string",
+      "description": "Geographic search shape used to restrict Idealista results.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    }
+  }
+}

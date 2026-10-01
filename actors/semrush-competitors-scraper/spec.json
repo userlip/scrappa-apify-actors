@@ -1,0 +1,169 @@
+{
+  "slug": "semrush-competitors-scraper",
+  "title": "Semrush Competitors Scraper",
+  "description": "Find organic competitors for a domain with Authority Score, estimated monthly visits, and Semrush Rank. Batch domains in one run to map competing sites or prioritize SEO analysis.",
+  "endpoint": "/semrush/domain/competitors",
+  "openapiPath": "/semrush/domain/competitors",
+  "mode": "list",
+  "batch": {
+    "field": "domains",
+    "valueField": "domain",
+    "apiParam": "domain",
+    "pathParam": null,
+    "title": "Domains",
+    "description": "Domains for which to find organic search competitors.",
+    "valueDescription": "domain used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "domain",
+      "apiParam": "domain",
+      "location": "query",
+      "required": true,
+      "title": "Domain",
+      "schema": {
+        "type": "string",
+        "description": "Root domain or subdomain to analyze",
+        "maxLength": 253,
+        "pattern": "^(?=.{1,253}$)[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$"
+      }
+    }
+  ],
+  "resultPointer": "/competitors",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_domain"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "domains": [
+      {
+        "domain": "wikipedia.org"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "domain": "wikipedia.org"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "semrush_domain_competitors",
+      "domain": "wikipedia.org"
+    },
+    "covered": true,
+    "summary": {
+      "domain": "wikipedia.org",
+      "authority_score": 95,
+      "visits": 1000000
+    },
+    "competitors": [
+      {
+        "domain": "britannica.com",
+        "authority_score": 70,
+        "visits": 25000,
+        "semrush_rank": 54321
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "domain",
+      "label": "Domain",
+      "format": "text"
+    },
+    {
+      "name": "authority_score",
+      "label": "Authority Score",
+      "format": "number"
+    },
+    {
+      "name": "visits",
+      "label": "Visits",
+      "format": "text"
+    },
+    {
+      "name": "semrush_rank",
+      "label": "Semrush Rank",
+      "format": "number"
+    }
+  ],
+  "categories": [
+    "SEO_TOOLS",
+    "MARKETING"
+  ],
+  "storeCopy": {
+    "seoTitle": "Semrush Competitors | SEO Data",
+    "seoDescription": "Find Semrush organic competitors for a domain with authority scores, estimated visits, and ranks. Map competing websites and guide SEO analysis.",
+    "intro": "Submit domains to retrieve sites Semrush associates with organic search competition. Compare each domain’s authority, estimated visits, and rank.",
+    "useCases": [
+      "SEO specialists can identify competing domains for a client website.",
+      "Agencies can rank possible competitors by estimated traffic and authority.",
+      "Growth teams can expand site-analysis lists with relevant competing domains."
+    ],
+    "howToUse": [
+      "Add one root domain or subdomain to `domains` for each comparison.",
+      "Set `maxResults` to cap competitor rows across the batch.",
+      "Sort the dataset by authority, visits, or Semrush rank."
+    ],
+    "faqs": [
+      {
+        "question": "Are visits measured values?",
+        "answer": "Visits are Semrush estimates and should be treated as directional competitor metrics."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "semrush-domain-overview-scraper",
+        "title": "Semrush Domain Overview Scraper"
+      },
+      {
+        "slug": "similarweb-traffic-analytics-scraper",
+        "title": "Similarweb Traffic Analytics Scraper"
+      },
+      {
+        "slug": "bing-search-scraper",
+        "title": "Bing Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "domain",
+        "type": "String",
+        "description": "Competing website domain identified for the searched site."
+      },
+      {
+        "name": "authority_score",
+        "type": "Integer",
+        "description": "Semrush Authority Score reported for the competing domain."
+      },
+      {
+        "name": "visits",
+        "type": "Integer",
+        "description": "Estimated monthly visits for the competing website."
+      },
+      {
+        "name": "semrush_rank",
+        "type": "Integer",
+        "description": "Semrush global rank assigned to the competing domain."
+      },
+      {
+        "name": "input_domain",
+        "type": "String",
+        "description": "Website domain used to find this competitor."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this competitor record was collected."
+      }
+    ]
+  }
+}

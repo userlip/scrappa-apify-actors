@@ -1,0 +1,189 @@
+{
+  "title": "Google Shopping Scraper",
+  "description": "Search Google Shopping for product offers, merchants, prices, ratings, and review counts. Batch product phrases in one run to compare retail listings or monitor prices.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Product queries",
+      "type": "array",
+      "description": "Product phrases to search in Google Shopping.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "q": "running shoes"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "q"
+        ],
+        "properties": {
+          "q": {
+            "title": "Search query",
+            "type": "string",
+            "description": "Product search query.",
+            "maxLength": 500,
+            "editor": "textfield"
+          },
+          "gl": {
+            "title": "Country",
+            "type": "string",
+            "description": "Two-letter country code. Default: us.",
+            "minLength": 2,
+            "maxLength": 2,
+            "default": "us",
+            "editor": "textfield"
+          },
+          "hl": {
+            "title": "Language",
+            "type": "string",
+            "description": "Two-letter interface language. Default: en.",
+            "minLength": 2,
+            "maxLength": 2,
+            "default": "en",
+            "editor": "textfield"
+          },
+          "location": {
+            "title": "Location",
+            "type": "string",
+            "description": "Location name encoded as a best-effort canonical UULE. Cannot be used with uule; provide uule directly for exact targeting.",
+            "maxLength": 63,
+            "editor": "textfield"
+          },
+          "uule": {
+            "title": "Uule",
+            "type": "string",
+            "description": "Encoded Google location. Cannot be used with location.",
+            "maxLength": 500,
+            "editor": "textfield"
+          },
+          "start": {
+            "title": "Start",
+            "type": "integer",
+            "description": "Zero-based pagination offset. Default: 0.",
+            "minimum": 0,
+            "maximum": 990,
+            "default": 0,
+            "editor": "number"
+          },
+          "device": {
+            "title": "Device",
+            "type": "string",
+            "description": "desktop, mobile, or tablet. Default: desktop.",
+            "enum": [
+              "desktop",
+              "mobile",
+              "tablet"
+            ],
+            "default": "desktop",
+            "editor": "select"
+          },
+          "small_business": {
+            "title": "Small Business",
+            "type": "boolean",
+            "description": "Only return small-business results. Cannot be used with shoprs.",
+            "editor": "checkbox"
+          },
+          "shoprs": {
+            "title": "Shoprs",
+            "type": "string",
+            "description": "Opaque Google Shopping filter token. Cannot be used with small_business.",
+            "maxLength": 2000,
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "gl": {
+      "title": "Country",
+      "type": "string",
+      "description": "Two-letter country code. Default: us.",
+      "minLength": 2,
+      "maxLength": 2,
+      "default": "us",
+      "editor": "textfield"
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "description": "Two-letter interface language. Default: en.",
+      "minLength": 2,
+      "maxLength": 2,
+      "default": "en",
+      "editor": "textfield"
+    },
+    "location": {
+      "title": "Location",
+      "type": "string",
+      "description": "Location name encoded as a best-effort canonical UULE. Cannot be used with uule; provide uule directly for exact targeting.",
+      "maxLength": 63,
+      "editor": "textfield"
+    },
+    "uule": {
+      "title": "Uule",
+      "type": "string",
+      "description": "Encoded Google location. Cannot be used with location.",
+      "maxLength": 500,
+      "editor": "textfield"
+    },
+    "start": {
+      "title": "Start",
+      "type": "integer",
+      "description": "Zero-based pagination offset. Default: 0.",
+      "minimum": 0,
+      "maximum": 990,
+      "default": 0,
+      "editor": "number"
+    },
+    "device": {
+      "title": "Device",
+      "type": "string",
+      "description": "desktop, mobile, or tablet. Default: desktop.",
+      "enum": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "default": "desktop",
+      "editor": "select"
+    },
+    "small_business": {
+      "title": "Small Business",
+      "type": "boolean",
+      "description": "Only return small-business results. Cannot be used with shoprs.",
+      "editor": "checkbox"
+    },
+    "shoprs": {
+      "title": "Shoprs",
+      "type": "string",
+      "description": "Opaque Google Shopping filter token. Cannot be used with small_business.",
+      "maxLength": 2000,
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 2
+    }
+  }
+}
