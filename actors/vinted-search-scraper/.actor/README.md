@@ -1,47 +1,47 @@
-# Vinted Search Scraper for Product Research
+# Vinted Search Scraper
 
-The Vinted Search Scraper for Product Research collects marketplace listings, prices, and item details from Vinted. Provide a search phrase or a short list of phrases; the actor saves source fields such as `id`, `title`, `price_amount`, and `price_currency` to an Apify dataset.
+Find secondhand fashion listings on Vinted with title, brand, condition and price. Search a clothing phrase and narrow listings with the available brand, size, color and price filters.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Vinted. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Prices and listing details follow the current Vinted page; availability can change when an item sells.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | text | Item ID returned for this result. |
-| `title` | text | Title returned for this result. |
-| `price_amount` | text | Price returned for this result. |
-| `price_currency` | text | Currency returned for this result. |
-| `total_item_price` | text | Total Price returned for this result. |
-| `shipping_price` | text | Shipping returned for this result. |
-| `brand_name` | text | Brand returned for this result. |
-| `category_name` | text | Category returned for this result. |
-| `size_name` | text | Size returned for this result. |
-| `condition` | text | Condition returned for this result. |
-| `url` | link | Listing URL returned for this result. |
-| `image_url` | image | Image returned for this result. |
-| `seller_login` | text | Seller returned for this result. |
-| `seller_feedback_reputation` | number | Seller Rating returned for this result. |
-| `favourite_count` | number | Favorites returned for this result. |
-| `view_count` | number | Views returned for this result. |
-| `request_query` | text | Search returned for this result. |
-| `request_country` | text | Country returned for this result. |
-| `request_page` | number | Page returned for this result. |
-| `request_order` | text | Sort returned for this result. |
-| `total_entries` | number | Total Listings returned for this result. |
-| `total_pages` | number | Total Pages returned for this result. |
+| `id` | text | source ID for the marketplace listing, assigned by Vinted; null when the source does not expose it. |
+| `title` | text | Title of the marketplace listing, as shown by Vinted; null when no title is published. |
+| `price_amount` | text | Listed price for this marketplace listing, as a numeric decimal amount in the listing currency; null when Vinted provides no price. |
+| `price_currency` | text | Price currency code for this marketplace listing, formatted as Vinted displays it, including the currency when shown; null when unavailable. |
+| `total_item_price` | text | Item total for this marketplace listing, formatted as Vinted displays it, including the currency when shown; null when unavailable. |
+| `shipping_price` | text | Shipping charge for this marketplace listing, formatted as Vinted displays it, including the currency when shown; null when unavailable. |
+| `brand_name` | text | Brand name shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `category_name` | text | Category name shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `size_name` | text | Size label shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `condition` | text | Item condition shown by Vinted, such as new or used; null when Vinted does not provide the value. |
+| `url` | link | Source page url for this marketplace listing on Vinted; null when the source does not provide a URL. |
+| `image_url` | image | Image url for this marketplace listing on Vinted; null when the source does not provide a URL. |
+| `seller_login` | text | Seller login shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `seller_feedback_reputation` | number | Seller feedback reputation shown for the marketplace listing by Vinted, in the format used by the source; null when it is omitted. |
+| `favourite_count` | number | Number of favorites shown by Vinted, as a whole number; zero is possible, and null means no count was reported. |
+| `view_count` | number | Number of video views shown by Vinted, as a whole number; zero is possible, and null means no count was reported. |
+| `request_query` | text | Search phrase passed to Vinted. This input value is copied into the output row; null when it was not supplied. |
+| `request_country` | text | Country code or country name passed to Vinted. This input value is copied into the output row; null when it was not supplied. |
+| `request_page` | number | Requested result page number passed to Vinted; A whole-number page number. This input value is copied into the output row; null when it was not supplied. |
+| `request_order` | text | Result order passed to Vinted. This input value is copied into the output row; null when it was not supplied. |
+| `total_entries` | number | Number of entries shown by Vinted, as a whole number; zero is possible, and null means no count was reported. |
+| `total_pages` | number | Number of pages shown by Vinted, as a whole number; zero is possible, and null means no count was reported. |
 
 ## Use cases
 
-- Collect marketplace listings, prices, and item details to research product availability and pricing.
-- Compare item, seller, and listing details across a small search batch.
-- Export marketplace records for catalog or resale analysis.
+- Resellers can compare listings by title, price, condition and location.
+- Marketplace teams can monitor inventory for a brand or category.
+- Catalog operators can collect source-linked records for product research.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Enter a phrase such as `vintage wool coat`, choose the country market, and add any supported brand, size, condition or price filters.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -53,25 +53,9 @@ The dataset contains fields returned by Vinted. The field names below match the 
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "id": "example-123",
-  "title": "Example result",
-  "price_amount": "129.99",
-  "price_currency": "USD",
-  "total_item_price": "129.99",
-  "shipping_price": "129.99",
-  "brand_name": "Example value"
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -90,34 +74,55 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `price_from` | number | No | Minimum listing price. Constraints: minimum 0. |
 | `price_to` | number | No | Maximum listing price. Constraints: minimum 0. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "title": "Vintage wool coat in very good condition",
+  "price_amount": "68.00",
+  "view_count": 18400,
+  "url": "https://listings.example.com/record/731-alder-way",
+  "id": "3482719082",
+  "price_currency": "EUR",
+  "total_item_price": "68.00",
+  "shipping_price": "4.99"
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.20 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved listing or profile record counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Vinted. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~vinted-search-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~vinted-search-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Which filters can I use on Vinted Search?
+
+Use only the country, brand, size and price fields listed in the Input table. These narrow the inventory returned by Vinted.
 
 ## Related Scrappa Actors
 
-- [Kleinanzeigen Listing Details Scraper for Buyers](https://apify.com/thescrappa/kleinanzeigen-listing-details-scraper)
-- [Kleinanzeigen Search Scraper for Product Research](https://apify.com/thescrappa/kleinanzeigen-search-scraper)
-- [Vinted Item Details Scraper for Product Research](https://apify.com/thescrappa/vinted-item-details-scraper)
-- [Vinted User Items Scraper for Product Research](https://apify.com/thescrappa/vinted-user-items-scraper)
-- [Vinted User Profile Scraper for Seller Research](https://apify.com/thescrappa/vinted-user-profile-scraper)
+- [Kleinanzeigen Listing Details Scraper](https://apify.com/thescrappa/kleinanzeigen-listing-details-scraper)
+- [Kleinanzeigen Search Scraper](https://apify.com/thescrappa/kleinanzeigen-search-scraper)
+- [Vinted Item Details Scraper](https://apify.com/thescrappa/vinted-item-details-scraper)
+- [Vinted User Items Scraper](https://apify.com/thescrappa/vinted-user-items-scraper)
+- [Vinted User Profile Scraper](https://apify.com/thescrappa/vinted-user-profile-scraper)

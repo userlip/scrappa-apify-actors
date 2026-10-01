@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "vinted-user-profile-scraper",
-  "title": "Vinted User Profile Scraper for Seller Research",
-  "description": "Collect public profile fields and account details from Vinted. Results can include `id`, `login`, `country_code`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Vinted User Profile Scraper",
+  "description": "Look up a Vinted seller profile with username, location, feedback and active item count. Paste the seller or user ID shown in the Input section to retrieve its public record.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

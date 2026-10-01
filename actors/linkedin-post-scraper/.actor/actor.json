@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "linkedin-post-scraper",
-  "title": "LinkedIn Post Scraper for Audience Research",
-  "description": "Collect public records and structured source fields from LinkedIn. Results can include `title`, `author_name`, `date_published`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "LinkedIn Post Scraper",
+  "description": "Read a public LinkedIn post with its text, author, publication date and reaction count. Paste a public LinkedIn post URL to retrieve its text and engagement details.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

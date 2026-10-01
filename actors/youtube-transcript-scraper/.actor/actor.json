@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-transcript-scraper",
-    "title": "YouTube Transcript Scraper for Creator Research",
-    "description": "Collect transcript text and timestamped segments from YouTube. Results can include `videoId`, `language`, `languageName`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "title": "YouTube Transcript Scraper",
+    "description": "Retrieve YouTube caption segments with text, language and timing information. Enter a YouTube video ID and choose a transcript language when needed.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

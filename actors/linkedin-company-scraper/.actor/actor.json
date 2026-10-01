@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "linkedin-company-scraper",
-  "title": "LinkedIn Company Scraper for Lead Research",
-  "description": "Collect company profiles and firmographic details from LinkedIn. Results can include `name`, `industry`, `size`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "LinkedIn Company Scraper",
+  "description": "Look up a LinkedIn company profile with industry, employee size, website and follower count. Use public company profile URLs, individually or as a batch, to compare company details.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

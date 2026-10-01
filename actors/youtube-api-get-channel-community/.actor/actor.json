@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-community",
-    "title": "YouTube Channel Community Posts Scraper for Brands",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `id`, `text`, `publishedTime`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "title": "YouTube Channel Community Posts Scraper",
+    "description": "Read public YouTube community posts with text, publication time, likes and comments. Start with a channel ID, then reuse a returned continuation value to request another community-post page.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

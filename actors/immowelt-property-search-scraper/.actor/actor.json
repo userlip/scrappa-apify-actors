@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "immowelt-property-search-scraper",
-  "title": "Immowelt Property Search Scraper for Real Estate",
-  "description": "Collect property listings, prices, and locations from Immowelt. Results can include `title`, `price`, `price_formatted`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Immowelt Property Search Scraper",
+  "description": "Search Immowelt listings by location and property type, then compare prices, rooms and floor area. Enter a city or area and choose the property type and page options you need.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

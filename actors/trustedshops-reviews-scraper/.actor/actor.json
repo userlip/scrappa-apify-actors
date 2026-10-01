@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "trustedshops-reviews-scraper",
-  "title": "TrustedShops Reviews Scraper for Campaign Research",
-  "description": "Collect reviews, ratings, and comment details from Trusted Shops. Results can include `tsid`, `shop_name`, `rating`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "TrustedShops Reviews Scraper",
+  "description": "Read Trusted Shops reviews with shop names, ratings, written feedback and posting dates. Use a Trusted Shops shop ID or URL and page through the reviews available for that profile.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

@@ -10,6 +10,26 @@ const ALLOWED_CATEGORIES = new Set([
     'VIDEOS', 'REAL_ESTATE', 'OTHER', 'INTEGRATIONS', 'EDUCATION', 'FOR_CREATORS',
 ]);
 const PRICING_FIELDS = ['FREE', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND'];
+const PROTECTED_TITLES = new Set([
+    'Google Maps Advanced Search Scraper', 'LinkedIn Company Scraper', 'LinkedIn Profile Scraper',
+    'Google Search Scraper', 'Google Images Scraper',
+    'Instagram User Info | Cheapest $0.20/1k results',
+    'Instagram Post Info | Cheapest $0.20/1k results',
+    'Google Maps Photos Scraper', 'Vinted Search Scraper', 'Trustpilot Company Reviews Scraper',
+]);
+const BANNED_COPY_PHRASES = [
+    'returned for this result', 'Provide the fields listed below', 'Results can include',
+    'Save and export Apify datasets', 'Search terms', 'collects structured data from',
+    'for Campaign Research', 'for Creator Research', 'for Audience Research', 'for Lead Research',
+    'for Market Research', 'for Video Analysis', 'for Hiring Teams', 'Each entry maps its',
+];
+const AUDIENCE_SUFFIX = /\s+for (?:Campaign|Creator|Audience|Lead|Market|Video|Hiring|Candidate|Travel Planning|Property Buyers|Seller|Real Estate)\b/i;
+const GENERIC_FAQ_QUESTIONS = new Set([
+    'Is it legal to collect public information?',
+    'How many records will a run return?',
+    'Can I call it through the API or connect it to other tools?',
+    'What happens when a request fails?',
+]);
 const BATCH_FIELD_NAMES = new Set([
     'urls', 'ids', 'domains', 'queries', 'searches', 'symbols', 'indices', 'routes', 'profiles',
     'keywords', 'challenge_ids', 'challenge_names', 'business_ids', 'property_ids', 'patent_ids',
@@ -131,6 +151,38 @@ function addError(errors, condition, message) {
     if (!condition) errors.push(message);
 }
 
+function collectValues(value, visit, key = '') {
+    visit(value, key);
+    if (Array.isArray(value)) {
+        for (const child of value) collectValues(child, visit, key);
+    } else if (value && typeof value === 'object') {
+        for (const [childKey, child] of Object.entries(value)) collectValues(child, visit, childKey);
+    }
+}
+
+function findPastPrefillDate(value, now = new Date()) {
+    let pastDate = null;
+    collectValues(value, (candidate) => {
+        if (typeof candidate !== 'string') return;
+        for (const match of candidate.matchAll(/\b20\d{2}-\d{2}-\d{2}\b/g)) {
+            const date = new Date(`${match[0]}T00:00:00.000Z`);
+            if (!Number.isNaN(date.valueOf()) && date < new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))) {
+                pastDate = match[0];
+                return;
+            }
+        }
+    });
+    return pastDate;
+}
+
+function containsEmptyJsonContainers(value) {
+    if (Array.isArray(value)) return value.length === 0 || value.some(containsEmptyJsonContainers);
+    if (value && typeof value === 'object') {
+        return Object.keys(value).length === 0 || Object.values(value).some(containsEmptyJsonContainers);
+    }
+    return false;
+}
+
 async function jsonFile(filePath) {
     return JSON.parse(await readFile(filePath, 'utf8'));
 }
@@ -175,6 +227,7 @@ async function main() {
     let minimumReadmeLength = Number.POSITIVE_INFINITY;
     let maximumReadmeLength = 0;
     let checkedPricing = 0;
+    const actorFaqQuestionOwners = new Map();
 
     for (const entry of metadata) {
         const actorRecord = actorDefinitions.get(entry.name);
@@ -189,12 +242,20 @@ async function main() {
         }
 
         addError(errors, liveActor.id === entry.id, `${entry.name}: metadata ID does not match the live snapshot`);
-        addError(errors, entry.title.length >= 40 && entry.title.length <= 50, `${entry.name}: title length ${entry.title.length} is outside 40-50`);
+        addError(errors, entry.title.length >= 15 && entry.title.length <= 60, `${entry.name}: title length ${entry.title.length} is outside 15-60`);
+        addError(errors, entry.title.length <= 45 || PROTECTED_TITLES.has(entry.title), `${entry.name}: title is padded beyond the natural 45-character range`);
+        addError(errors, !AUDIENCE_SUFFIX.test(entry.title), `${entry.name}: title contains an audience suffix`);
         addError(errors, entry.description.length <= 300, `${entry.name}: description exceeds 300 characters`);
-        addError(errors, entry.seoTitle.length >= 40 && entry.seoTitle.length <= 50, `${entry.name}: SEO title length ${entry.seoTitle.length} is outside 40-50`);
+        addError(errors, entry.seoTitle.length <= 60, `${entry.name}: SEO title exceeds 60 characters`);
         addError(errors, entry.seoDescription.length >= 145 && entry.seoDescription.length <= 155, `${entry.name}: SEO description length ${entry.seoDescription.length} is outside 145-155`);
+        const metadataText = [entry.title, entry.description, entry.seoTitle, entry.seoDescription].join('\n');
+        addError(errors, !metadataText.includes('`'), `${entry.name}: metadata text contains backtick field names`);
+        for (const phrase of BANNED_COPY_PHRASES) {
+            addError(errors, !metadataText.toLowerCase().includes(phrase.toLowerCase()), `${entry.name}: metadata contains banned phrase "${phrase}"`);
+        }
         addError(errors, Array.isArray(entry.categories) && entry.categories.length >= 1 && entry.categories.length <= 3, `${entry.name}: category count is outside 1-3`);
         addError(errors, entry.categories.every((category) => ALLOWED_CATEGORIES.has(category)), `${entry.name}: has an unsupported category`);
+        addError(errors, entry.categories[0] !== 'DEVELOPER_TOOLS', `${entry.name}: DEVELOPER_TOOLS cannot be the first category`);
 
         const actor = actorRecord.actor;
         addError(errors, actor.title === entry.title, `${entry.name}: .actor/actor.json title differs from metadata`);
@@ -221,9 +282,18 @@ async function main() {
         addError(errors, !readme.includes('—'), `${entry.name}: contains an em dash`);
         addError(errors, !readme.includes('{{'), `${entry.name}: contains a template placeholder`);
         addError(errors, !/\b(?:Rust ports?|QA runs?|run IDs?|build numbers?|maintenance notices?|test fixtures?|internal endpoints?)\b/i.test(readme), `${entry.name}: contains internal jargon`);
+        for (const phrase of BANNED_COPY_PHRASES) {
+            addError(errors, !readme.toLowerCase().includes(phrase.toLowerCase()), `${entry.name}: README contains banned phrase "${phrase}"`);
+        }
+
+        const intro = readme.split(/^## What data can you extract\?$/m)[0]
+            .replace(/^# .+$/m, '')
+            .trim();
+        const introSentenceCount = intro.split(/(?<=[.!?])\s+/).filter(Boolean).length;
+        addError(errors, introSentenceCount >= 2 && introSentenceCount <= 3, `${entry.name}: intro has ${introSentenceCount} sentences instead of 2-3`);
 
         for (const requiredHeading of [
-            'What data can you extract?', 'Use cases', 'How to use', 'Output example', 'Input fields', 'Pricing', 'FAQ', 'Related Scrappa Actors',
+            'What data can you extract?', 'Use cases', 'How to use', 'Output example', 'Input', 'Pricing', 'FAQ', 'Related Scrappa Actors',
         ]) {
             addError(errors, readme.includes(`## ${requiredHeading}`), `${entry.name}: missing section "${requiredHeading}"`);
         }
@@ -241,11 +311,22 @@ async function main() {
         const outputSection = readme.split('## What data can you extract?')[1]?.split('## Use cases')[0] ?? '';
         const outputFields = new Set(markdownTableFieldNames(outputSection));
         const outputBlock = readJsonBlock(readme, entry.name, errors, 1);
+        const outputExampleSection = readme.split('## Output example')[1]?.split('## Pricing')[0] ?? '';
+        addError(errors, !/\bExample result\b/i.test(outputExampleSection), `${entry.name}: output example uses the banned "Example result" placeholder`);
+        addError(errors, !/^\s*(?:\{\}|\[\])\s*$/m.test(outputExampleSection), `${entry.name}: output example contains an empty JSON placeholder`);
         if (outputBlock && typeof outputBlock === 'object' && !Array.isArray(outputBlock)) {
+            addError(errors, Object.keys(outputBlock).length > 0, `${entry.name}: output example is an empty object`);
+            addError(errors, !containsEmptyJsonContainers(outputBlock), `${entry.name}: output example contains an empty object or array`);
+            let number42Count = 0;
+            collectValues(outputBlock, (value, key) => {
+                if (value === 42) number42Count += 1;
+                if (typeof value === 'string') {
+                    addError(errors, !/record_demo_\d+|^Board name for the\b|\bExample result\b/i.test(value), `${entry.name}: output example contains a synthetic placeholder value`);
+                }
+                if (/(?:email|phone|telephone)/i.test(key)) addError(errors, value === null, `${entry.name}: output example must not contain a real email or phone value`);
+            });
+            addError(errors, number42Count < 2, `${entry.name}: output example repeats the placeholder value 42`);
             addError(errors, Object.keys(outputBlock).every((field) => outputFields.has(field)), `${entry.name}: output example contains a field not listed in the output table`);
-            for (const [field, value] of Object.entries(outputBlock)) {
-                if (/email|phone|telephone/i.test(field)) addError(errors, value === null, `${entry.name}: output example must not contain a real email or phone value`);
-            }
         }
 
         const schemaPath = path.join(actorRecord.directory, '.actor/input_schema.json');
@@ -271,6 +352,8 @@ async function main() {
                 addError(errors, matchesSchemaType(property.prefill, property.type), `${entry.name}: prefill "${key}" does not match its schema type`);
             }
             const value = property.prefill ?? property.default;
+            const pastDate = findPastPrefillDate(property.prefill);
+            addError(errors, !pastDate, `${entry.name}: prefill "${key}" contains fixed past date ${pastDate}`);
             if (Array.isArray(property.prefill)) addError(errors, property.prefill.length <= 2, `${entry.name}: prefill "${key}" has more than two values`);
             if (/(limit|count|num_homes|max_results)/i.test(key) && Number.isFinite(value)) {
                 addError(errors, value <= 10, `${entry.name}: prefill/default "${key}" is above the 10-result QA cap`);
@@ -280,6 +363,23 @@ async function main() {
                 addError(errors, targetCount <= 2, `${entry.name}: prefill "${key}" has more than two comma-separated targets`);
             }
         }
+
+        const faqSection = readme.split('## FAQ')[1]?.split('## Related Scrappa Actors')[0] ?? '';
+        const faqQuestions = [...faqSection.matchAll(/^### (.+)$/gm)].map((match) => match[1]);
+        const actorFaqQuestions = faqQuestions.filter((question) => !GENERIC_FAQ_QUESTIONS.has(question));
+        addError(errors, actorFaqQuestions.length >= 1 && actorFaqQuestions.length <= 3, `${entry.name}: expected 1-3 Actor-specific FAQ questions beyond the four generic questions, found ${actorFaqQuestions.length}`);
+        addError(errors, new Set(actorFaqQuestions).size === actorFaqQuestions.length, `${entry.name}: Actor-specific FAQ questions are duplicated`);
+        addError(errors, [...GENERIC_FAQ_QUESTIONS].every((question) => faqQuestions.includes(question))
+            && faqQuestions.filter((question) => GENERIC_FAQ_QUESTIONS.has(question)).length === GENERIC_FAQ_QUESTIONS.size,
+        `${entry.name}: FAQ is missing one or more of the four generic questions`);
+        for (const question of actorFaqQuestions) {
+            const previousOwner = actorFaqQuestionOwners.get(question);
+            addError(errors, !previousOwner, `${entry.name}: Actor-specific FAQ question is reused from ${previousOwner}`);
+            actorFaqQuestionOwners.set(question, entry.name);
+        }
+
+        const apiEndpoint = `POST https://api.apify.com/v2/acts/thescrappa~${entry.name}/runs`;
+        addError(errors, readme.includes(apiEndpoint), `${entry.name}: FAQ is missing its exact Apify API run URL`);
 
         const rootReadme = path.join(actorRecord.directory, 'README.md');
         const actorReadme = path.join(actorRecord.directory, '.actor/README.md');
@@ -326,7 +426,7 @@ async function main() {
     console.log(`Validated ${readmeCount} actor Store READMEs and ${metadata.length} metadata entries.`);
     console.log(`README length range: ${minimumReadmeLength}-${maximumReadmeLength} characters (minimum required: 3,000).`);
     console.log(`Pricing lines match the latest live pricing entry for ${checkedPricing} actors.`);
-    console.log('All README section, H1, placeholder, related-link, input-example, prefill, metadata-length, actor.json mirror, and inventory checks passed.');
+    console.log('All section, H1 and intro checks passed, including output realism, unique Actor-specific FAQs, banned-copy, related-link, input-example, prefill, metadata, pricing and actor.json checks.');
 }
 
 main().catch((error) => {

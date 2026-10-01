@@ -1,38 +1,38 @@
-# Google Trends Interest Scraper for SEO Research
+# Google Trends Interest Scraper
 
-The Google Trends Interest Scraper for SEO Research collects search interest values over time from Google Trends. Provide a search phrase or a short list of phrases; the actor saves source fields such as `position`, `date`, `timestamp`, and `value` to an Apify dataset.
+Track relative Google Trends interest over time with dates and a score from 0 to 100. Choose a region, time range and search type to compare interest for one topic over time.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Google Trends. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Interest values are relative scores for the selected topic, region and period, not raw search counts.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `position` | number | # returned for this result. |
-| `date` | text | Date returned for this result. |
-| `timestamp` | number | Timestamp returned for this result. |
-| `value` | number | Interest returned for this result. |
-| `average` | number | Average returned for this result. |
-| `max_value` | number | Max returned for this result. |
-| `min_value` | number | Min returned for this result. |
-| `request_q` | text | Query returned for this result. |
-| `request_geo` | text | Location returned for this result. |
-| `request_time_range` | text | Time Range returned for this result. |
-| `request_hl` | text | Language returned for this result. |
-| `request_search_type` | text | Search Type returned for this result. |
-| `response_time_ms` | number | Response Time returned for this result. |
+| `position` | number | Result position in the Google Trends search-interest reading list, as a whole number; null when the source does not supply one. |
+| `date` | text | Date attached to this Google Trends reading, in the source date format; null if the time bucket has no date. |
+| `timestamp` | number | Unix timestamp in seconds for this Google Trends reading; null if the source does not supply one. |
+| `value` | number | Google Trends interest for the selected topic and time bucket, normalized from 0 to 100. A score of 100 is the series peak; null means Google Trends supplied no reading. |
+| `average` | number | Average normalized Google Trends interest across the returned time buckets, from 0 to 100; null when the series has no readings. |
+| `max_value` | number | Highest normalized Google Trends interest score in the selected period, from 0 to 100; null when the series has no readings. |
+| `min_value` | number | Lowest normalized Google Trends interest score in the selected period, from 0 to 100; null when the series has no readings. |
+| `request_q` | text | Search phrase passed to Google Trends. This input value is copied into the output row; null when it was not supplied. |
+| `request_geo` | text | Geographic target passed to Google Trends. This input value is copied into the output row; null when it was not supplied. |
+| `request_time_range` | text | Time range passed to Google Trends. This input value is copied into the output row; null when it was not supplied. |
+| `request_hl` | text | Interface language code passed to Google Trends; Use a language code such as en or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_search_type` | text | Search category passed to Google Trends. This input value is copied into the output row; null when it was not supplied. |
+| `response_time_ms` | number | Response time for this Google Trends lookup, measured in milliseconds; null when no timing value was recorded. |
 
 ## Use cases
 
-- Collect search interest values over time to support SEO research.
-- Compare results across search terms, websites, or markets.
-- Export the dataset to a content, keyword, or reporting workflow.
+- SEO teams can compare relative search interest across topics, regions and selected periods before planning content.
+- Researchers can spot seasonal peaks in search demand and choose when to refresh a campaign.
+- Editors can compare interest series when deciding which topics deserve a dedicated page.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Enter a topic or search phrase, then adjust the locale, page or time range fields that this Actor supports.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -40,25 +40,9 @@ The dataset contains fields returned by Google Trends. The field names below mat
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "position": 42,
-  "date": "2026-09-30T10:00:00Z",
-  "timestamp": "2026-09-30T10:00:00Z",
-  "value": 42,
-  "average": 42,
-  "max_value": 42,
-  "min_value": 42
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -68,33 +52,53 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `hl` | string | No | Two-letter language code, such as en, de, es, or fr. |
 | `search_type` | string | No | Google Trends vertical to analyze. Constraints: allowed values: web, images, news, youtube, shopping. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "date": "2026-09-25",
+  "timestamp": 1790327700,
+  "value": 64,
+  "average": 48.5,
+  "max_value": 91,
+  "min_value": 7,
+  "response_time_ms": 348
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.20 per 1,000 price points.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved price point counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Google Trends. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~google-trends-interest-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~google-trends-interest-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### What does a Google Trends value of 100 mean?
+
+Google Trends normalizes interest from 0 to 100. A value of 100 marks the topic’s peak for the selected region and time range.
 
 ## Related Scrappa Actors
 
-- [Google Trends Autocomplete Scraper for SEO](https://apify.com/thescrappa/google-trends-autocomplete-scraper)
-- [Google Trends Related Queries Scraper for SEO](https://apify.com/thescrappa/google-trends-related-queries-scraper)
-- [Google Images Scraper for Creator Research](https://apify.com/thescrappa/google-images-scraper)
-- [Google Maps Reviews Scraper for Local Reputation](https://apify.com/thescrappa/google-maps-reviews-scraper)
+- [Google Trends Autocomplete Scraper](https://apify.com/thescrappa/google-trends-autocomplete-scraper)
+- [Google Trends Related Queries Scraper](https://apify.com/thescrappa/google-trends-related-queries-scraper)
+- [Google Images Scraper](https://apify.com/thescrappa/google-images-scraper)
+- [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)

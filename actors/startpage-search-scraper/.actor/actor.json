@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "startpage-search-scraper",
-  "title": "Startpage Search Scraper for SEO Research",
-  "description": "Collect search result titles, links, and snippets from Startpage. Results can include `position`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Startpage Search Scraper",
+  "description": "Find Startpage results with page titles, descriptions, domains and source links. Submit several phrases in one run and use only the locale and filters listed in the input.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

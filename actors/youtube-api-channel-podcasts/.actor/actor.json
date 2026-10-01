@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-channel-podcasts",
-    "title": "YouTube Channel Podcast Scraper for Video Analysis",
-    "description": "Collect channel video metadata and publication details from YouTube. Results can include `id`, `videoId`, `title`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "title": "YouTube Channel Podcasts Scraper",
+    "description": "Browse podcast playlists published by a YouTube channel, with titles, links and video counts. Provide one or more YouTube channel IDs to list their podcast playlists.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

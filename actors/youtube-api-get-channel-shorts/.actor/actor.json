@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-shorts",
-    "title": "YouTube Channel Shorts Scraper for Video Analysis",
-    "description": "Collect channel video metadata and publication details from YouTube. Results can include `videoId`, `title`, `url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "title": "YouTube Channel Shorts Scraper",
+    "description": "Browse Shorts from a YouTube channel with titles, links and view counts. Use a channel ID and continue with the next-page token when YouTube supplies one.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

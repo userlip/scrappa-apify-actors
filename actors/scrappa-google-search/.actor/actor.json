@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "scrappa-google-search",
-  "title": "Google Search SERP Scraper for SEO Research",
-  "description": "Collect search result titles, links, and snippets from Google Search. Results can include `position`, `title`, `link`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google Search Results Scraper",
+  "description": "Find Google Search results with page titles, displayed domains, snippets and links. Set the search phrase and regional options to retrieve Google results for a focused market.",
   "version": "1.0",
   "buildTag": "latest",
   "resources": {

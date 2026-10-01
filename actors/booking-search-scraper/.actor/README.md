@@ -1,43 +1,43 @@
-# Booking.com Search Scraper for Travel Planning
+# Booking.com Search Scraper
 
-The Booking.com Search Scraper for Travel Planning collects hotel listings, availability, and property details from Booking.com. Provide a Booking.com destination; the actor saves source fields such as `name`, `url`, `image`, and `review_score` to an Apify dataset.
+Compare Booking.com stays by property name, guest score, nightly price and review count. Choose destination, dates and guest counts to compare the stays returned for each search.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Booking.com. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Property details and nightly rates reflect the selected stay and the details Booking.com displays.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | text | Name returned for this result. |
-| `url` | link | URL returned for this result. |
-| `image` | image | Image returned for this result. |
-| `review_score` | number | Review Score returned for this result. |
-| `review_score_word` | text | Review Label returned for this result. |
-| `review_count` | number | Review Count returned for this result. |
-| `location` | text | Location returned for this result. |
-| `price` | text | Price returned for this result. |
-| `currency` | text | Currency returned for this result. |
-| `request_search_index` | number | Search Index returned for this result. |
-| `request_ss` | text | Request Destination returned for this result. |
-| `request_checkin` | date | Check-in returned for this result. |
-| `request_checkout` | date | Check-out returned for this result. |
-| `request_group_adults` | number | Adults returned for this result. |
-| `request_group_children` | number | Children returned for this result. |
-| `request_no_rooms` | number | Rooms returned for this result. |
-| `request_lang` | text | Language returned for this result. |
-| `request_currency` | text | Request Currency returned for this result. |
+| `name` | text | Name of the hotel listing, as shown by Booking.com; null when no name is published. |
+| `url` | link | Source page url for this hotel listing on Booking.com; null when the source does not provide a URL. |
+| `image` | image | Image for this hotel listing on Booking.com; null when the source does not provide a URL. |
+| `review_score` | number | Booking.com guest score for this hotel, on the source’s 1-to-10 scale; null when a property has no review score. |
+| `review_score_word` | text | Booking.com label for the guest score, such as Wonderful or Very good; null when the source has no label. |
+| `review_count` | number | Number of reviews shown by Booking.com, as a whole number; zero is possible, and null means no count was reported. |
+| `location` | text | Location shown for the hotel listing by Booking.com, in the format used by the source; null when it is omitted. |
+| `price` | text | Listed price for this hotel listing, as a numeric amount in the listing currency; null when Booking.com provides no price. |
+| `currency` | text | Currency code for this hotel listing, formatted as Booking.com displays it, including the currency when shown; null when unavailable. |
+| `request_search_index` | number | Search result index passed to Booking.com. This input value is copied into the output row; null when it was not supplied. |
+| `request_ss` | text | Source search selector passed to Booking.com. This input value is copied into the output row; null when it was not supplied. |
+| `request_checkin` | date | Check-in date passed to Booking.com; Use the date format listed in Input. This input value is copied into the output row; null when it was not supplied. |
+| `request_checkout` | date | Check-out date passed to Booking.com; Use the date format listed in Input. This input value is copied into the output row; null when it was not supplied. |
+| `request_group_adults` | number | Number of adult guests passed to Booking.com. This input value is copied into the output row; null when it was not supplied. |
+| `request_group_children` | number | Number of child guests passed to Booking.com. This input value is copied into the output row; null when it was not supplied. |
+| `request_no_rooms` | number | Number of rooms passed to Booking.com. This input value is copied into the output row; null when it was not supplied. |
+| `request_lang` | text | Language code passed to Booking.com; Use a language code such as en or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_currency` | text | Three-letter currency code passed to Booking.com; Use a three-letter code such as USD or EUR. This input value is copied into the output row; null when it was not supplied. |
 
 ## Use cases
 
-- Collect hotel listings, availability, and property details for a destination, route, or travel date.
-- Compare returned options and details before planning a trip.
-- Export travel records to a spreadsheet or booking research workflow.
+- Travelers can compare fares or nightly rates before choosing a trip.
+- Travel teams can check public options across routes, destinations and dates.
+- Researchers can track prices and ratings in a travel market.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `searches` and start with a short list.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `searches` and use the identifier or URL format required by Booking.com.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -50,25 +50,9 @@ The dataset contains fields returned by Booking.com. The field names below match
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "name": "Example value",
-  "url": "https://example.com/result/1",
-  "image": "https://example.com/image.jpg",
-  "review_score": 4.7,
-  "review_score_word": "4.7",
-  "review_count": 42,
-  "location": "Example location"
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -82,34 +66,55 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `currency` | string | No | Three-letter currency code such as USD, EUR, or GBP. |
 | `searches` | array of object | No | Optional list of Booking.com searches to run in one actor run. When provided, these searches are used instead of the single-search fields above. Constraints: maximum 25 items. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "name": "Juniper House Hotel",
+  "price": "€68.00",
+  "review_count": 184,
+  "location": "Seattle, WA",
+  "url": "https://listings.example.com/record/731-alder-way",
+  "image": "https://images.example.com/video/market-morning-thumb.jpg",
+  "review_score": 4.7,
+  "review_score_word": "Excellent"
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.20 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved hotel record counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Booking.com. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~booking-search-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~booking-search-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Which dates should I use for a Booking.com search?
+
+Set `checkin` and `checkout` to the stay dates and provide guest and room counts. Use the `searches` batch input to compare several supported queries in one run.
 
 ## Related Scrappa Actors
 
-- [Booking.com Hotel Details Scraper for Travel](https://apify.com/thescrappa/booking-hotel-details-scraper)
-- [Google Flights Search Scraper for Travel Planning](https://apify.com/thescrappa/google-flights-search-scraper)
-- [Google Hotels Autocomplete Scraper for Stays](https://apify.com/thescrappa/google-hotels-autocomplete-scraper)
-- [Google Hotels Search Scraper for Travel Planning](https://apify.com/thescrappa/google-hotels-search-scraper)
-- [Google Maps Directions Scraper for Travel Planning](https://apify.com/thescrappa/google-maps-directions-scraper)
+- [Booking.com Hotel Details Scraper](https://apify.com/thescrappa/booking-hotel-details-scraper)
+- [Google Flights Scraper](https://apify.com/thescrappa/google-flights-search-scraper)
+- [Google Hotels Autocomplete Scraper](https://apify.com/thescrappa/google-hotels-autocomplete-scraper)
+- [Google Hotels Search Scraper](https://apify.com/thescrappa/google-hotels-search-scraper)
+- [Google Maps Directions Scraper](https://apify.com/thescrappa/google-maps-directions-scraper)

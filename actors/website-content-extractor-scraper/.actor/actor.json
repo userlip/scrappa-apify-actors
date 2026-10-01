@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "website-content-extractor-scraper",
-  "title": "Website Content Extractor Scraper for SEO Research",
-  "description": "Collect page text, metadata, links, and content fields from the website URL you provide. Results can include `success`, `input_url`, `url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Website Content Extractor",
+  "description": "Extract page titles, descriptions, readable text and links from public web pages. Add one or more public page URLs and choose whether to include HTML in the extracted content.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

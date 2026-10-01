@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "arbeitsagentur-jobs-scraper",
-  "title": "Arbeitsagentur Jobs Scraper for Candidate Research",
-  "description": "Collect job listings and job details from Germany Federal Employment Agency. Results can include `title`, `occupation`, `company_name`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Arbeitsagentur Jobs Scraper",
+  "description": "Find German job listings from the Federal Employment Agency with titles, employers, locations and work details. Set a job title or occupation and a location, then narrow listings by work type or posting date.",
   "categories": [
     "LEAD_GENERATION",
     "MARKETING",

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "similarweb-traffic-analytics-scraper",
-  "title": "Similarweb Traffic Analytics Scraper for SEO",
-  "description": "Collect website traffic, engagement, and channel metrics from Similarweb. Results can include `success`, `domain`, `site_name`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Similarweb Traffic Analytics Scraper",
+  "description": "Review Similarweb traffic estimates, visit trends, referral shares and country breakdowns. Add several domains to compare estimated visits, traffic sources and audience locations together.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

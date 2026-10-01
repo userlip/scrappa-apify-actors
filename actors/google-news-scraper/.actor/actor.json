@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-news-scraper",
-  "title": "Google News Scraper for Media Monitoring",
-  "description": "Collect public records and structured source fields from Google News. Results can include `position`, `title`, `link`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google News Scraper",
+  "description": "Find Google News articles with headlines, publishers, publication dates and result links. Set a locale and supported time filter to focus the article list on a market or period.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

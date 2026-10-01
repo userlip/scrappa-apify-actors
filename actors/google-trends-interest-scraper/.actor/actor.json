@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-trends-interest-scraper",
-  "title": "Google Trends Interest Scraper for SEO Research",
-  "description": "Collect search interest values over time from Google Trends. Results can include `position`, `date`, `timestamp`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google Trends Interest Scraper",
+  "description": "Track relative Google Trends interest over time with dates and a score from 0 to 100. Choose a region, time range and search type to compare interest for one topic over time.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

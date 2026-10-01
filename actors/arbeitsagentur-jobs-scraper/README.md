@@ -1,40 +1,40 @@
-# Arbeitsagentur Jobs Scraper for Candidate Research
+# Arbeitsagentur Jobs Scraper
 
-The Arbeitsagentur Jobs Scraper for Candidate Research collects job listings and job details from Germany Federal Employment Agency. Provide the fields listed below; the actor saves source fields such as `title`, `occupation`, `company_name`, and `location_formatted` to an Apify dataset.
+Find German job listings from the Federal Employment Agency with titles, employers, locations and work details. Set a job title or occupation and a location, then narrow listings by work type or posting date.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Germany Federal Employment Agency. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Job fields reflect listings published by Germany’s Federal Employment Agency.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `title` | text | Title returned for this result. |
-| `occupation` | text | Occupation returned for this result. |
-| `company_name` | text | Employer returned for this result. |
-| `location_formatted` | text | Location returned for this result. |
-| `location_city` | text | City returned for this result. |
-| `postal_code` | text | Postal Code returned for this result. |
-| `region` | text | Region returned for this result. |
-| `country` | text | Country returned for this result. |
-| `latitude` | number | Latitude returned for this result. |
-| `longitude` | number | Longitude returned for this result. |
-| `published_date` | text | Published returned for this result. |
-| `start_date` | text | Start Date returned for this result. |
-| `job_url` | link | Job URL returned for this result. |
-| `reference_number` | text | Reference returned for this result. |
-| `distance_km` | text | Distance returned for this result. |
+| `title` | text | Title of the job listing, as shown by Germany’s Federal Employment Agency; null when no title is published. |
+| `occupation` | text | Occupation shown for the job listing by Germany’s Federal Employment Agency; null when Germany’s Federal Employment Agency does not provide the value. |
+| `company_name` | text | Employer name attached to the job listing, as shown by Germany’s Federal Employment Agency; null when the listing does not identify its employer. |
+| `location_formatted` | text | Formatted location shown for the job listing by Germany’s Federal Employment Agency, in the format used by the source; null when it is omitted. |
+| `location_city` | text | Location city shown for the job listing by Germany’s Federal Employment Agency, in the format used by the source; null when it is omitted. |
+| `postal_code` | text | Postal code shown for the job listing by Germany’s Federal Employment Agency, in the format used by the source; null when it is omitted. |
+| `region` | text | Region shown for the job listing by Germany’s Federal Employment Agency; null when Germany’s Federal Employment Agency does not provide the value. |
+| `country` | text | Country shown for the job listing by Germany’s Federal Employment Agency; null when Germany’s Federal Employment Agency does not provide the value. |
+| `latitude` | number | Latitude for this job listing on Germany’s Federal Employment Agency, in decimal degrees; null when the source provides no coordinates. |
+| `longitude` | number | Longitude for this job listing on Germany’s Federal Employment Agency, in decimal degrees; null when the source provides no coordinates. |
+| `published_date` | text | Date this review was published shown by Germany’s Federal Employment Agency, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `start_date` | text | Start date for this job listing shown by Germany’s Federal Employment Agency, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `job_url` | link | Job page url for this job listing on Germany’s Federal Employment Agency; null when the source does not provide a URL. |
+| `reference_number` | text | source reference number for the job listing, assigned by Germany’s Federal Employment Agency; null when the source does not expose it. |
+| `distance_km` | text | Distance for this job listing, in kilometers; null when no distance is available. |
 
 ## Use cases
 
-- Build a focused list of job listings and job details for a role, employer, or location.
-- Compare job titles, employers, locations, and other returned listing fields.
-- Send structured listings to a recruiting report or hiring workflow.
+- Recruiters can compare titles, locations and employers while mapping an open role market.
+- Hiring teams can track posting requirements and employment terms across vacancies.
+- Job boards can refresh vacancy records from source pages their users follow.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set a role or keyword and location, then apply only the job type, date and workplace filters shown in the input table.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -45,25 +45,9 @@ The dataset contains fields returned by Germany Federal Employment Agency. The f
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "title": "Example result",
-  "occupation": "Example value",
-  "company_name": "Example Company",
-  "location_formatted": "Example location",
-  "location_city": "New York",
-  "postal_code": "Example value",
-  "region": "Example value"
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -81,34 +65,55 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `page` | integer | No | Arbeitsagentur result page to fetch. Pagination starts at 1. Constraints: minimum 1; maximum 500. |
 | `size` | integer | No | Number of jobs to return in one request. Scrappa accepts 1 to 100. Constraints: minimum 1; maximum 100. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "title": "Senior Product Analyst, Retail Insights",
+  "company_name": "Northstar Market Labs",
+  "published_date": "2026-09-25",
+  "occupation": "Product analyst",
+  "location_formatted": "Seattle, WA",
+  "location_city": "Seattle",
+  "postal_code": "98101",
+  "region": "Washington"
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.30 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved job listing counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Germany Federal Employment Agency. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~arbeitsagentur-jobs-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~arbeitsagentur-jobs-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How can I find Federal Employment Agency jobs by occupation?
+
+Enter a job title or occupation and a location. Use the listed work-type and posting-date filters to narrow the German job listings.
 
 ## Related Scrappa Actors
 
-- [Google Jobs Data Scraper for Hiring Teams](https://apify.com/thescrappa/google-jobs-scraper)
-- [Indeed Job Listings Scraper for Hiring Teams](https://apify.com/thescrappa/indeed-jobs-scraper)
-- [Kununu Jobs Scraper for Employer Research](https://apify.com/thescrappa/kununu-jobs-scraper)
-- [LinkedIn Job Details Scraper for Hiring Teams](https://apify.com/thescrappa/linkedin-job-details-scraper)
-- [LinkedIn Jobs Search Scraper for Hiring Teams](https://apify.com/thescrappa/linkedin-jobs-search-scraper)
+- [Google Jobs Scraper](https://apify.com/thescrappa/google-jobs-scraper)
+- [Indeed Jobs Scraper](https://apify.com/thescrappa/indeed-jobs-scraper)
+- [Kununu Jobs Scraper](https://apify.com/thescrappa/kununu-jobs-scraper)
+- [LinkedIn Job Details Scraper](https://apify.com/thescrappa/linkedin-job-details-scraper)
+- [LinkedIn Jobs Search Scraper](https://apify.com/thescrappa/linkedin-jobs-search-scraper)

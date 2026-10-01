@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-user-posts-scraper",
-  "title": "TikTok User Posts Scraper for Creator Research",
-  "description": "Collect public post text, media links, and engagement counts from TikTok. Results can include `desc`, `author`, `digg_count`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "TikTok User Posts Scraper",
+  "description": "List public videos from a TikTok profile with captions and engagement counts. Set a public TikTok username and continue with the cursor when another page is available.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

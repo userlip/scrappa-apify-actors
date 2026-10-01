@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-playlists",
-    "title": "YouTube Channel Playlist Scraper for Creators",
-    "description": "Collect playlist metadata, titles, and video counts from YouTube. Results can include `id`, `title`, `thumbnail`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "title": "YouTube Channel Playlists Scraper",
+    "description": "List playlists from a YouTube channel with titles, thumbnails and video counts. Submit a channel ID or a list of IDs to collect the public playlists published by each channel.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

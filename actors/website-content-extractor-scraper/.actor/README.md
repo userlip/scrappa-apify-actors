@@ -1,46 +1,46 @@
-# Website Content Extractor Scraper for SEO Research
+# Website Content Extractor
 
-The Website Content Extractor Scraper for SEO Research collects page text, metadata, links, and content fields from website content extractor scraper. Provide one or more public URLs; the actor saves source fields such as `success`, `input_url`, `url`, and `final_url` to an Apify dataset.
+Extract page titles, descriptions, readable text and links from public web pages. Add one or more public page URLs and choose whether to include HTML in the extracted content.
 
 ## What data can you extract?
 
-The dataset contains fields returned by website content extractor scraper. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Extracted text and page metadata depend on what the submitted public page exposes.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `success` | boolean | Success returned for this result. |
-| `input_url` | link | Input URL returned for this result. |
-| `url` | link | Requested URL returned for this result. |
-| `final_url` | link | Final URL returned for this result. |
-| `response_type` | text | Response Type returned for this result. |
-| `include_html` | boolean | Include HTML returned for this result. |
-| `site_status_code` | number | Site Status returned for this result. |
-| `title` | text | Title returned for this result. |
-| `description` | text | Description returned for this result. |
-| `body_text` | text | Body Text returned for this result. |
-| `links_count` | number | Links returned for this result. |
-| `emails_count` | number | Emails returned for this result. |
-| `phone_numbers_count` | number | Phones returned for this result. |
-| `images_count` | number | Images returned for this result. |
-| `languages_detected` | array | Languages returned for this result. |
-| `markdown` | text | Markdown returned for this result. |
-| `markdown_length` | number | Markdown Length returned for this result. |
-| `error` | text | Error returned for this result. |
-| `error_type` | text | Error Type returned for this result. |
-| `error_code` | text | Error Code returned for this result. |
-| `status_code` | number | Scrappa Status returned for this result. |
+| `success` | boolean | Whether the lookup completed successfully; false is a reported value, while null means the submitted website provided no flag. |
+| `input_url` | link | Source page url passed to the submitted website. This input value is copied into the output row; null when it was not supplied. |
+| `url` | link | Source page url for this web page on the submitted website; null when the source does not provide a URL. |
+| `final_url` | link | Final page url for this web page on the submitted website; null when the source does not provide a URL. |
+| `response_type` | text | Response type shown for the web page by the submitted website; null when the submitted website does not provide the value. |
+| `include_html` | boolean | Whether HTML was requested for the page; false is a reported value, while null means the submitted website provided no flag. |
+| `site_status_code` | number | Site status code shown for the web page by the submitted website, in the format used by the source; null when it is omitted. |
+| `title` | text | Title of the web page, as shown by the submitted website; null when no title is published. |
+| `description` | text | Description text from the submitted website for this web page; null when the source has no text to show. |
+| `body_text` | text | Readable page text from the submitted website for this web page; null when the source has no text to show. |
+| `links_count` | number | Number of links shown by the submitted website, as a whole number; zero is possible, and null means no count was reported. |
+| `emails_count` | number | Number of emails shown by the submitted website, as a whole number; zero is possible, and null means no count was reported. |
+| `phone_numbers_count` | number | Number of phone numbers shown by the submitted website, as a whole number; zero is possible, and null means no count was reported. |
+| `images_count` | number | Number of images shown by the submitted website, as a whole number; zero is possible, and null means no count was reported. |
+| `languages_detected` | array | Languages detected in the submitted page or text from the submitted website; an empty list when no entries are available. |
+| `markdown` | text | Page content in markdown from the submitted website for this web page; null when the source has no text to show. |
+| `markdown_length` | number | Markdown length shown for the web page by the submitted website, in the format used by the source; null when it is omitted. |
+| `error` | text | Diagnostic text for the the submitted website lookup; null when the request completes without an error. |
+| `error_type` | text | Diagnostic text for the the submitted website lookup; null when the request completes without an error. |
+| `error_code` | text | Diagnostic text for the the submitted website lookup; null when the request completes without an error. |
+| `status_code` | number | Http status code shown for the web page by the submitted website, in the format used by the source; null when it is omitted. |
 
 ## Use cases
 
-- Collect page text, metadata, links, and content fields to support SEO research.
-- Compare results across search terms, websites, or markets.
-- Export the dataset to a content, keyword, or reporting workflow.
+- SEO teams can audit page titles, descriptions, links and readable text across a site.
+- Editors can review extracted copy before updating an article or landing page.
+- Researchers can collect page content and metadata from public URLs.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `urls` and start with a short list.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `urls` and use the identifier or URL format required by the website URL you provide.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -50,25 +50,9 @@ The dataset contains fields returned by website content extractor scraper. The f
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "success": true,
-  "input_url": "https://example.com/result/1",
-  "url": "https://example.com/result/1",
-  "final_url": "https://example.com/result/1",
-  "response_type": "Example value",
-  "include_html": true,
-  "site_status_code": 42
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -77,32 +61,56 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `include_html` | boolean | No | Include raw page HTML in JSON responses. Ignored when Response Type is Markdown. |
 | `response_type` | string | No | Choose JSON for structured extraction fields, or Markdown for clean page content. Constraints: allowed values: json, markdown. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "languages_detected": [
+    "en",
+    "es"
+  ],
+  "title": "A practical guide to independent neighborhood shops",
+  "description": "Northstar Market Labs helps local retailers plan inventory with a clear view of seasonal demand.",
+  "url": "https://listings.example.com/record/731-alder-way",
+  "final_url": "https://source.example.com/record/market-guide",
+  "response_type": "text",
+  "include_html": false,
+  "site_status_code": 7.3
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.20 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved dataset record counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from website content extractor scraper. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~website-content-extractor-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~website-content-extractor-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Can Website Content Extractor process several pages at once?
+
+Yes. Submit page URLs in `urls` or a single URL in `url`. `include_html` and `response_type` control the optional page content returned.
 
 ## Related Scrappa Actors
 
-- [Domain Availability Checker for Business Sites](https://apify.com/thescrappa/domain-availability-checker)
-- [Similarweb Traffic Analytics Scraper for SEO](https://apify.com/thescrappa/similarweb-traffic-analytics-scraper)
-- [Google Search Results Scraper for SEO Research](https://apify.com/thescrappa/google-search-scraper)
+- [Domain Availability Checker](https://apify.com/thescrappa/domain-availability-checker)
+- [Similarweb Traffic Analytics Scraper](https://apify.com/thescrappa/similarweb-traffic-analytics-scraper)
+- [Google Search Scraper](https://apify.com/thescrappa/google-search-scraper)

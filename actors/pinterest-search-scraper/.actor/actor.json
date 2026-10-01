@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "pinterest-search-scraper",
-  "title": "Pinterest Search Scraper for Audience Research",
-  "description": "Collect search results, names, and source links from Pinterest. Results can include `id`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Pinterest Search Scraper",
+  "description": "Find Pinterest pins with titles, descriptions, image links and source pages. Search a subject or style phrase to find public pins and follow their image links back to the source pages.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

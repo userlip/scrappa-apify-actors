@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-finance-markets-scraper",
-  "title": "Google Finance Markets Scraper for Investors",
-  "description": "Collect market movers and performance data from Google Finance. Results can include `item_type`, `section`, `trend`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google Finance Markets Scraper",
+  "description": "Review Google Finance market movers by section, trend and price movement. Choose the market trend and index view that match the movers you want to review.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

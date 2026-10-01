@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-challenge-posts-scraper",
-  "title": "TikTok Hashtag Videos Scraper for Creator Research",
-  "description": "Collect hashtag and challenge video records from TikTok. Results can include `video_id`, `aweme_id`, `title`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "TikTok Hashtag Videos Scraper",
+  "description": "Collect public TikTok videos linked to a challenge, with captions, creators and engagement counts. Pass one or more challenge IDs; use TikTok Challenge Search or Challenge Details to find an ID first.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

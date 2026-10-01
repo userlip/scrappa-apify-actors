@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "youtube-api-hashtags",
-  "title": "YouTube Hashtag Video Scraper for Creator Research",
-  "description": "Collect hashtag and challenge video records from YouTube. Results can include `videoId`, `title`, `url`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "YouTube Hashtag Videos Scraper",
+  "description": "Find public YouTube videos for a hashtag, with titles, channels and view counts. Enter a hashtag and optionally set video length, upload time or sort order.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

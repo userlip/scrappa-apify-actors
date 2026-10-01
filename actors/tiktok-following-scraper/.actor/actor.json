@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-following-scraper",
-  "title": "TikTok Following Scraper for Audience Research",
-  "description": "Collect public TikTok follower or following records from TikTok. Results can include `unique_id`, `user_id`, `nickname`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "TikTok Following Scraper",
+  "description": "Review public profiles followed by a TikTok account, with usernames and profile details. Choose a public TikTok profile and requested count to list accounts it follows.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

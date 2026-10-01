@@ -2,7 +2,7 @@
     "actorSpecification": 1,
     "name": "instagram-post-info-cheapest-0-20-1000-results",
     "title": "Instagram Post Info | Cheapest $0.20/1k results",
-    "description": "Collect public record details and identifying fields from Instagram. Results can include `success`, `data`, `error`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "description": "Look up a public Instagram post to see its caption, media type and engagement counts. Paste a public post URL or its shortcode to retrieve the details for that post.",
     "version": "0.0",
     "buildTag": "latest",
     "defaultRunOptions": {

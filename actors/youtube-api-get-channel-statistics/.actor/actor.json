@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-statistics",
-    "title": "YouTube Channel Statistics Scraper for Creators",
-    "description": "Collect channel views, subscriber, and video counts from YouTube. Results can include `channelId`, `viewCount`, `subscriberCount`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "title": "YouTube Channel Statistics Scraper",
+    "description": "Review public YouTube channel totals for views, subscribers and published videos. Provide a channel ID to retrieve the public subscriber, view and video totals currently available.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

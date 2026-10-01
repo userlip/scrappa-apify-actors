@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-maps-reviews-scraper",
-  "title": "Google Maps Reviews Scraper for Local Reputation",
-  "description": "Collect Google Maps customer reviews, ratings, and reply details from Google Maps. Results can include `author_name`, `rating`, `review_text`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google Maps Reviews Scraper",
+  "description": "Read Google Maps reviews with star ratings, written feedback, posting dates and owner replies. Start with a place ID and choose a review order or text filter for the public feedback.",
   "categories": [
     "LEAD_GENERATION",
     "MARKETING",

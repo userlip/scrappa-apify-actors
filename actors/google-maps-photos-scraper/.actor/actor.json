@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-maps-photos-scraper",
-  "title": "Google Maps Photos Scraper for Place Research",
-  "description": "Collect business photo records and image URLs from Google Maps. Results can include `photo_url_large`, `width`, `height`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google Maps Photos Scraper",
+  "description": "Browse photos shared on Google Maps place pages, with image links and contributor details. Submit place IDs for one or more locations whose public photos you want to catalog.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": { "templateId": "rust-start" },

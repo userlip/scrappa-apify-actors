@@ -1,51 +1,51 @@
-# ImmobilienScout24 Search Scraper for Real Estate
+# ImmobilienScout24 Search Scraper
 
-The ImmobilienScout24 Search Scraper for Real Estate collects property listings, prices, and locations from ImmobilienScout24. Provide the fields listed below; the actor saves source fields such as `title`, `price`, `price_formatted`, and `rooms` to an Apify dataset.
+Search ImmobilienScout24 property listings by location, property type, price, rooms and floor area. Use an ImmobilienScout24 location code, then set property type and price or room filters.
 
 ## What data can you extract?
 
-The dataset contains fields returned by ImmobilienScout24. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Listing prices and property details follow the current ImmobilienScout24 page and can change over time.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `title` | text | Title returned for this result. |
-| `price` | number | Price returned for this result. |
-| `price_formatted` | text | Price Text returned for this result. |
-| `rooms` | number | Rooms returned for this result. |
-| `rooms_max` | number | Rooms Max returned for this result. |
-| `size_m2` | number | Size m2 returned for this result. |
-| `size_m2_max` | number | Size m2 Max returned for this result. |
-| `address` | text | Address returned for this result. |
-| `latitude` | number | Latitude returned for this result. |
-| `longitude` | number | Longitude returned for this result. |
-| `url` | link | Expose URL returned for this result. |
-| `online_id` | text | Online ID returned for this result. |
-| `id` | text | Listing ID returned for this result. |
-| `image_url` | image | Image returned for this result. |
-| `is_private` | boolean | Private Seller returned for this result. |
-| `published` | text | Published returned for this result. |
-| `request_location` | text | Request Location returned for this result. |
-| `request_type` | text | Search Type returned for this result. |
-| `request_price_min` | number | Min Price returned for this result. |
-| `request_price_max` | number | Max Price returned for this result. |
-| `request_rooms_min` | number | Min Rooms returned for this result. |
-| `request_rooms_max` | number | Max Rooms returned for this result. |
-| `request_size_min` | number | Min Size returned for this result. |
-| `request_size_max` | number | Max Size returned for this result. |
-| `request_page` | number | Page returned for this result. |
-| `request_per_page` | number | Per Page returned for this result. |
+| `title` | text | Title of the property listing, as shown by ImmobilienScout24; null when no title is published. |
+| `price` | number | Listed price for this property listing, as a numeric amount in the listing currency; null when ImmobilienScout24 provides no price. |
+| `price_formatted` | text | Displayed price for this property listing, formatted as ImmobilienScout24 displays it, including the currency when shown; null when unavailable. |
+| `rooms` | number | Number of rooms shown by ImmobilienScout24, as a whole number; zero is possible, and null means no count was reported. |
+| `rooms_max` | number | Rooms max shown for the property listing by ImmobilienScout24, in the format used by the source; null when it is omitted. |
+| `size_m2` | number | Floor area for this property listing, in area in square meters; null when ImmobilienScout24 does not supply the value. |
+| `size_m2_max` | number | Size m2 max shown for the property listing by ImmobilienScout24, in the format used by the source; null when it is omitted. |
+| `address` | text | Address shown for the property listing by ImmobilienScout24, in the format used by the source; null when it is omitted. |
+| `latitude` | number | Latitude for this property listing on ImmobilienScout24, in decimal degrees; null when the source provides no coordinates. |
+| `longitude` | number | Longitude for this property listing on ImmobilienScout24, in decimal degrees; null when the source provides no coordinates. |
+| `url` | link | Source page url for this property listing on ImmobilienScout24; null when the source does not provide a URL. |
+| `online_id` | text | online id for the property listing, assigned by ImmobilienScout24; null when the source does not expose it. |
+| `id` | text | source ID for the property listing, assigned by ImmobilienScout24; null when the source does not expose it. |
+| `image_url` | image | Image url for this property listing on ImmobilienScout24; null when the source does not provide a URL. |
+| `is_private` | boolean | Whether the account is private; false is a reported value, while null means ImmobilienScout24 provided no flag. |
+| `published` | text | Published for this property listing shown by ImmobilienScout24, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `request_location` | text | Location filter passed to ImmobilienScout24. This input value is copied into the output row; null when it was not supplied. |
+| `request_type` | text | Requested result type passed to ImmobilienScout24. This input value is copied into the output row; null when it was not supplied. |
+| `request_price_min` | number | Minimum price filter passed to ImmobilienScout24. This input value is copied into the output row; null when it was not supplied. |
+| `request_price_max` | number | Maximum price filter passed to ImmobilienScout24. This input value is copied into the output row; null when it was not supplied. |
+| `request_rooms_min` | number | Minimum room count passed to ImmobilienScout24. This input value is copied into the output row; null when it was not supplied. |
+| `request_rooms_max` | number | Maximum room count passed to ImmobilienScout24. This input value is copied into the output row; null when it was not supplied. |
+| `request_size_min` | number | Minimum floor area passed to ImmobilienScout24. This input value is copied into the output row; null when it was not supplied. |
+| `request_size_max` | number | Maximum floor area passed to ImmobilienScout24. This input value is copied into the output row; null when it was not supplied. |
+| `request_page` | number | Requested result page number passed to ImmobilienScout24; A whole-number page number. This input value is copied into the output row; null when it was not supplied. |
+| `request_per_page` | number | Number of results per page passed to ImmobilienScout24; A whole-number result count. This input value is copied into the output row; null when it was not supplied. |
 
 ## Use cases
 
-- Collect property listings, prices, and locations for a target area or property search.
-- Compare listing, price, and location fields across a set of properties.
-- Prepare property research exports for spreadsheets or market reports.
+- Agents can compare asking prices, room counts and floor area in a target market.
+- Researchers can review homes by location before building a market snapshot.
+- Search teams can collect listing details for a property shortlist.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `location` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -55,25 +55,9 @@ The dataset contains fields returned by ImmobilienScout24. The field names below
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "title": "Example result",
-  "price": 129.99,
-  "price_formatted": "129.99",
-  "rooms": 42,
-  "rooms_max": 42,
-  "size_m2": 42,
-  "size_m2_max": 42
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -88,34 +72,55 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `page` | integer | No | Results page to fetch. Constraints: minimum 1; maximum 10000. |
 | `per_page` | integer | No | Number of listings to request for this page. Constraints: minimum 1; maximum 50. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "title": "Two-bedroom Craftsman near Green Lake",
+  "price": 824000,
+  "url": "https://listings.example.com/record/731-alder-way",
+  "price_formatted": "$824,000",
+  "rooms": 2,
+  "rooms_max": 3,
+  "size_m2": 74.5,
+  "size_m2_max": 96
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.30 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved property record counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from ImmobilienScout24. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~immobilienscout24-search-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~immobilienscout24-search-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How do I get an ImmobilienScout24 location code?
+
+Use ImmobilienScout24 Location Autocomplete with a city or district, then copy its returned code into this search.
 
 ## Related Scrappa Actors
 
 - [ImmobilienScout24 Location Autocomplete Scraper](https://apify.com/thescrappa/immobilienscout24-locations-scraper)
 - [ImmobilienScout24 Price Insights Scraper](https://apify.com/thescrappa/immobilienscout24-price-insights-scraper)
-- [Immowelt Property Search Scraper for Real Estate](https://apify.com/thescrappa/immowelt-property-search-scraper)
-- [Redfin Property Details Scraper for Real Estate](https://apify.com/thescrappa/redfin-property-details-scraper)
-- [Redfin Property Search Scraper for Property Buyers](https://apify.com/thescrappa/redfin-property-search-scraper)
+- [Immowelt Property Search Scraper](https://apify.com/thescrappa/immowelt-property-search-scraper)
+- [Redfin Property Details Scraper](https://apify.com/thescrappa/redfin-property-details-scraper)
+- [Redfin Property Search Scraper](https://apify.com/thescrappa/redfin-property-search-scraper)

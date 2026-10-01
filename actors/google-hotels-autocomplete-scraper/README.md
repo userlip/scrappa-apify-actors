@@ -1,38 +1,38 @@
-# Google Hotels Autocomplete Scraper for Stays
+# Google Hotels Autocomplete Scraper
 
-The Google Hotels Autocomplete Scraper for Stays collects hotel and destination suggestions from Google Hotels. Provide a search phrase or a short list of phrases; the actor saves source fields such as `position`, `value`, `autocomplete_suggestion`, and `type` to an Apify dataset.
+Find hotel and destination suggestions on Google Hotels before searching for a stay. Use a city, district or hotel name to get a property suggestion that can refine a later stay search.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Google Hotels. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Suggestions and destination tokens follow the hotel or place name entered; not every suggestion has a property token.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `position` | number | # returned for this result. |
-| `value` | text | Suggestion returned for this result. |
-| `autocomplete_suggestion` | text | Normalized Suggestion returned for this result. |
-| `type` | text | Type returned for this result. |
-| `property_token` | text | Property Token returned for this result. |
-| `thumbnail` | image | Thumbnail returned for this result. |
-| `scrappa_google_hotels_link` | link | Hotel Search returned for this result. |
-| `source_query` | text | Source Query returned for this result. |
-| `request_gl` | text | Country returned for this result. |
-| `request_hl` | text | Language returned for this result. |
-| `request_currency` | text | Currency returned for this result. |
-| `request_type` | text | Requested Type returned for this result. |
-| `response_time_ms` | number | Response Time returned for this result. |
+| `position` | number | Result position in the Google Hotels source record list, as a whole number; null when the source does not supply one. |
+| `value` | text | Place or hotel name matched by Google Hotels autocomplete; null when the suggestion has no display label. |
+| `autocomplete_suggestion` | text | Full hotel or destination phrase suggested for the input query; null when Google Hotels provides no expanded phrase. |
+| `type` | text | Google Hotels suggestion category, such as location or accommodation; null when no category is supplied. |
+| `property_token` | text | Token Google Hotels uses to identify a property or destination suggestion; null when the match has no token. |
+| `thumbnail` | image | Thumbnail url for this source record on Google Hotels; null when the source does not provide a URL. |
+| `scrappa_google_hotels_link` | link | Scrappa google hotels link for this source record on Google Hotels; null when the source does not provide a URL. |
+| `source_query` | text | Place or hotel name submitted for this autocomplete lookup. |
+| `request_gl` | text | Two-letter country or region code passed to Google Hotels; Use a two-letter country code such as us or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_hl` | text | Interface language code passed to Google Hotels; Use a language code such as en or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_currency` | text | Three-letter currency code passed to Google Hotels; Use a three-letter code such as USD or EUR. This input value is copied into the output row; null when it was not supplied. |
+| `request_type` | text | Requested result type passed to Google Hotels. This input value is copied into the output row; null when it was not supplied. |
+| `response_time_ms` | number | Response time for this Google Hotels lookup, measured in milliseconds; null when no timing value was recorded. |
 
 ## Use cases
 
-- Collect hotel and destination suggestions for a destination, route, or travel date.
-- Compare returned options and details before planning a trip.
-- Export travel records to a spreadsheet or booking research workflow.
+- Travelers can compare fares or nightly rates before choosing a trip.
+- Travel teams can check public options across routes, destinations and dates.
+- Researchers can track prices and ratings in a travel market.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `queries` and start with a short list.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `queries` and use the identifier or URL format required by Google Hotels.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -42,25 +42,9 @@ The dataset contains fields returned by Google Hotels. The field names below mat
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "position": 42,
-  "value": "Example value",
-  "autocomplete_suggestion": "Example value",
-  "type": "Example value",
-  "property_token": "Example value",
-  "thumbnail": "https://example.com/image.jpg",
-  "scrappa_google_hotels_link": "https://example.com/result/1"
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -71,34 +55,55 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `currency` | string | No | Three-letter currency code used in generated hotel-search links. |
 | `type` | string | No | Return locations, hotels/accommodations, or both. Constraints: allowed values: location, hotel, all. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "value": "Juniper House Hotel, Portland",
+  "autocomplete_suggestion": "Juniper House Hotel, Portland",
+  "type": "Video",
+  "property_token": "Cg9qLW1vY2stcHJvcGVydHk",
+  "thumbnail": "https://images.example.com/video/market-morning-thumb.jpg",
+  "scrappa_google_hotels_link": "https://source.example.com/record/market-guide",
+  "source_query": "Seattle, WA",
+  "response_time_ms": 348
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.25 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved hotel record counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Google Hotels. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~google-hotels-autocomplete-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~google-hotels-autocomplete-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How do I use a Google Hotels suggestion in a stay search?
+
+Enter a destination or hotel name in `q`. The returned suggestion can include a property token that Google Hotels Search accepts for a more specific lookup.
 
 ## Related Scrappa Actors
 
-- [Booking.com Hotel Details Scraper for Travel](https://apify.com/thescrappa/booking-hotel-details-scraper)
-- [Booking.com Search Scraper for Travel Planning](https://apify.com/thescrappa/booking-search-scraper)
-- [Google Flights Search Scraper for Travel Planning](https://apify.com/thescrappa/google-flights-search-scraper)
-- [Google Hotels Search Scraper for Travel Planning](https://apify.com/thescrappa/google-hotels-search-scraper)
-- [Google Maps Directions Scraper for Travel Planning](https://apify.com/thescrappa/google-maps-directions-scraper)
+- [Booking.com Hotel Details Scraper](https://apify.com/thescrappa/booking-hotel-details-scraper)
+- [Booking.com Search Scraper](https://apify.com/thescrappa/booking-search-scraper)
+- [Google Flights Scraper](https://apify.com/thescrappa/google-flights-search-scraper)
+- [Google Hotels Search Scraper](https://apify.com/thescrappa/google-hotels-search-scraper)
+- [Google Maps Directions Scraper](https://apify.com/thescrappa/google-maps-directions-scraper)

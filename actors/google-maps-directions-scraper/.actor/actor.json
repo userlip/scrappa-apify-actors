@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-maps-directions-scraper",
-  "title": "Google Maps Directions Scraper for Travel Planning",
-  "description": "Collect route distances, durations, and directions from Google Maps. Results can include `alternative_index`, `request_index`, `request_origin`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google Maps Directions Scraper",
+  "description": "Compare Google Maps routes by distance, estimated travel time, travel mode and route steps. Enter origin and destination locations, then compare supported travel modes and route alternatives.",
   "version": "1.0",
   "buildTag": "latest",
   "icon": "🗺️",

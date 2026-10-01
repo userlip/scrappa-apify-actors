@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "vinted-search-scraper",
-  "title": "Vinted Search Scraper for Product Research",
-  "description": "Collect marketplace listings, prices, and item details from Vinted. Results can include `id`, `title`, `price_amount`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Vinted Search Scraper",
+  "description": "Find secondhand fashion listings on Vinted with title, brand, condition and price. Search a clothing phrase and narrow listings with the available brand, size, color and price filters.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

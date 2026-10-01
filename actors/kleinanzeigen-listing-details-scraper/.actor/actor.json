@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "kleinanzeigen-listing-details-scraper",
-  "title": "Kleinanzeigen Listing Details Scraper for Buyers",
-  "description": "Collect public record details and identifying fields from Kleinanzeigen. Results can include `id`, `title`, `price`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Kleinanzeigen Listing Details Scraper",
+  "description": "Look up a Kleinanzeigen listing for its description, price, photos and seller details. Paste a Kleinanzeigen ad ID for details, or use the supported query input to search by phrase.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

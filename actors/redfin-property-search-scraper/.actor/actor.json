@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "redfin-property-search-scraper",
-  "title": "Redfin Property Search Scraper for Property Buyers",
-  "description": "Collect property listings, prices, and locations from Redfin. Results can include `property_id`, `listing_id`, `address`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Redfin Property Search Scraper",
+  "description": "Search Redfin homes by market and filters, then compare addresses, prices and room counts. Set a Redfin market or region, then narrow the search by price, rooms or property status.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

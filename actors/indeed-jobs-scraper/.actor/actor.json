@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "indeed-jobs-scraper",
-  "title": "Indeed Job Listings Scraper for Hiring Teams",
-  "description": "Collect job listings and job details from Indeed. Results can include `title`, `company_name`, `location_formatted`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Indeed Jobs Scraper",
+  "description": "Search Indeed job listings with titles, employers, locations and salary ranges when provided. Enter the role and location you want to hire for, then review salary details when Indeed publishes them.",
   "categories": [
     "LEAD_GENERATION",
     "MARKETING",

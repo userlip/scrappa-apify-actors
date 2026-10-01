@@ -1,51 +1,51 @@
-# Google Hotels Search Scraper for Travel Planning
+# Google Hotels Search Scraper
 
-The Google Hotels Search Scraper for Travel Planning collects hotel listings, availability, and property details from Google Hotels. Provide a search phrase or a short list of phrases; the actor saves source fields such as `name`, `type`, `hotel_class`, and `overall_rating` to an Apify dataset.
+Compare Google Hotels stays by property, guest rating, nightly rate and review count. Set future stay dates and guest counts to compare rates for the destination you choose.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Google Hotels. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Hotel rates reflect the searched stay and displayed currency; availability and offers can change between searches.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | text | Name returned for this result. |
-| `type` | text | Type returned for this result. |
-| `hotel_class` | text | Class returned for this result. |
-| `overall_rating` | number | Rating returned for this result. |
-| `reviews` | number | Reviews returned for this result. |
-| `rate_per_night_lowest` | text | Nightly Rate returned for this result. |
-| `rate_per_night_extracted_lowest` | number | Nightly Rate Numeric returned for this result. |
-| `total_rate_lowest` | text | Total Rate returned for this result. |
-| `total_rate_extracted_lowest` | number | Total Rate Numeric returned for this result. |
-| `booking_link` | link | Booking Link returned for this result. |
-| `property_token` | text | Property Token returned for this result. |
-| `entity_id` | text | Entity ID returned for this result. |
-| `place_id` | text | Place ID returned for this result. |
-| `latitude` | number | Latitude returned for this result. |
-| `longitude` | number | Longitude returned for this result. |
-| `thumbnail` | image | Thumbnail returned for this result. |
-| `price_sources_count` | number | Price Sources returned for this result. |
-| `amenities_count` | number | Amenities returned for this result. |
-| `request_q` | text | Request Query returned for this result. |
-| `request_check_in_date` | date | Check-in returned for this result. |
-| `request_check_out_date` | date | Check-out returned for this result. |
-| `request_adults` | number | Adults returned for this result. |
-| `request_children` | number | Children returned for this result. |
-| `request_currency` | text | Currency returned for this result. |
-| `request_gl` | text | Country returned for this result. |
-| `request_hl` | text | Language returned for this result. |
+| `name` | text | Name of the hotel listing, as shown by Google Hotels; null when no name is published. |
+| `type` | text | Property type shown by Google Hotels, such as hotel or vacation rental; null when no type is shown. |
+| `hotel_class` | text | Hotel class shown for the hotel listing by Google Hotels, in the format used by the source; null when it is omitted. |
+| `overall_rating` | number | Guest rating on Google Hotels’ 1-to-5 star scale; null when no rating is shown. |
+| `reviews` | number | Number of Google Hotels reviews for the property; null if no review total is shown. |
+| `rate_per_night_lowest` | text | Lowest nightly rate formatted as Google Hotels displays it, including currency; null when no rate is listed. |
+| `rate_per_night_extracted_lowest` | number | Lowest nightly rate parsed as a number in the searched currency; null when no rate is listed. |
+| `total_rate_lowest` | text | Lowest stay total formatted as Google Hotels displays it, including currency; null when no total is listed. |
+| `total_rate_extracted_lowest` | number | Lowest stay total parsed as a number in the searched currency; null when no total is listed. |
+| `booking_link` | link | Booking link for this hotel listing on Google Hotels; null when the source does not provide a URL. |
+| `property_token` | text | Property token shown for the hotel listing by Google Hotels, in the format used by the source; null when it is omitted. |
+| `entity_id` | text | Google Hotels property ID for the hotel listing, assigned by Google Hotels; null when the source does not expose it. |
+| `place_id` | text | Google Maps place ID for the hotel listing, assigned by Google Hotels; null when the source does not expose it. |
+| `latitude` | number | Latitude for this hotel listing on Google Hotels, in decimal degrees; null when the source provides no coordinates. |
+| `longitude` | number | Longitude for this hotel listing on Google Hotels, in decimal degrees; null when the source provides no coordinates. |
+| `thumbnail` | image | Thumbnail url for this hotel listing on Google Hotels; null when the source does not provide a URL. |
+| `price_sources_count` | number | Number of available price-sources shown by Google Hotels, as a whole number; zero is possible, and null means no count was reported. |
+| `amenities_count` | number | Number of amenities shown by Google Hotels, as a whole number; zero is possible, and null means no count was reported. |
+| `request_q` | text | Search phrase passed to Google Hotels. This input value is copied into the output row; null when it was not supplied. |
+| `request_check_in_date` | date | Check-in date passed to Google Hotels; Use YYYY-MM-DD or a supported relative date. This input value is copied into the output row; null when it was not supplied. |
+| `request_check_out_date` | date | Check-out date passed to Google Hotels; Use YYYY-MM-DD or a supported relative date. This input value is copied into the output row; null when it was not supplied. |
+| `request_adults` | number | Adults passed to Google Hotels. This input value is copied into the output row; null when it was not supplied. |
+| `request_children` | number | Children passed to Google Hotels. This input value is copied into the output row; null when it was not supplied. |
+| `request_currency` | text | Three-letter currency code passed to Google Hotels; Use a three-letter code such as USD or EUR. This input value is copied into the output row; null when it was not supplied. |
+| `request_gl` | text | Two-letter country or region code passed to Google Hotels; Use a two-letter country code such as us or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_hl` | text | Interface language code passed to Google Hotels; Use a language code such as en or de. This input value is copied into the output row; null when it was not supplied. |
 
 ## Use cases
 
-- Collect hotel listings, availability, and property details for a destination, route, or travel date.
-- Compare returned options and details before planning a trip.
-- Export travel records to a spreadsheet or booking research workflow.
+- Travelers can compare fares or nightly rates before choosing a trip.
+- Travel teams can check public options across routes, destinations and dates.
+- Researchers can track prices and ratings in a travel market.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `q` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -55,25 +55,9 @@ The dataset contains fields returned by Google Hotels. The field names below mat
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "name": "Example value",
-  "type": "Example value",
-  "hotel_class": "Example value",
-  "overall_rating": 4.7,
-  "reviews": 42,
-  "rate_per_night_lowest": "Example value",
-  "rate_per_night_extracted_lowest": 42
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -103,34 +87,55 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `next_page_token` | string | No | Pagination token returned by a previous Google Hotels search response. |
 | `property_token` | string | No | Specific Google Hotels property token, often returned by Google Hotels autocomplete. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "name": "Juniper House Hotel",
+  "type": "Hotel",
+  "hotel_class": "4-star hotel",
+  "overall_rating": 4.6,
+  "reviews": 184,
+  "rate_per_night_lowest": "$184",
+  "rate_per_night_extracted_lowest": 184,
+  "total_rate_lowest": "$552"
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.20 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved hotel record counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Google Hotels. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~google-hotels-search-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~google-hotels-search-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Which dates should I use for Google Hotels?
+
+Set check-in and check-out to future dates and include guest or room counts when needed.
 
 ## Related Scrappa Actors
 
-- [Booking.com Hotel Details Scraper for Travel](https://apify.com/thescrappa/booking-hotel-details-scraper)
-- [Booking.com Search Scraper for Travel Planning](https://apify.com/thescrappa/booking-search-scraper)
-- [Google Flights Search Scraper for Travel Planning](https://apify.com/thescrappa/google-flights-search-scraper)
-- [Google Hotels Autocomplete Scraper for Stays](https://apify.com/thescrappa/google-hotels-autocomplete-scraper)
-- [Google Maps Directions Scraper for Travel Planning](https://apify.com/thescrappa/google-maps-directions-scraper)
+- [Booking.com Hotel Details Scraper](https://apify.com/thescrappa/booking-hotel-details-scraper)
+- [Booking.com Search Scraper](https://apify.com/thescrappa/booking-search-scraper)
+- [Google Flights Scraper](https://apify.com/thescrappa/google-flights-search-scraper)
+- [Google Hotels Autocomplete Scraper](https://apify.com/thescrappa/google-hotels-autocomplete-scraper)
+- [Google Maps Directions Scraper](https://apify.com/thescrappa/google-maps-directions-scraper)

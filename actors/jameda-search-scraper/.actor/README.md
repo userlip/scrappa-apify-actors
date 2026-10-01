@@ -1,40 +1,40 @@
-# Jameda Search Scraper for Lead Generation
+# Jameda Search Scraper
 
-The Jameda Search Scraper for Lead Generation collects search results, names, and source links from Jameda. Provide a search phrase or a short list of phrases; the actor saves source fields such as `name`, `specialty`, `rating`, and `review_count` to an Apify dataset.
+Find Jameda doctors by specialty and location, with names, ratings and practice links. Search by medical specialty and city to find public doctor profiles for a local shortlist.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Jameda. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Doctor details and patient reviews follow public Jameda pages; profiles and reviews can omit optional details.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | text | Name returned for this result. |
-| `specialty` | text | Specialty returned for this result. |
-| `rating` | text | Rating returned for this result. |
-| `review_count` | text | Reviews returned for this result. |
-| `review_count_number` | number | Review Count returned for this result. |
-| `address` | text | Address returned for this result. |
-| `profile_url` | link | Jameda Profile returned for this result. |
-| `image_url` | image | Image returned for this result. |
-| `request_q` | text | Request Query returned for this result. |
-| `request_loc` | text | Location returned for this result. |
-| `request_page` | number | Page returned for this result. |
-| `request_per_page` | number | Per Page returned for this result. |
-| `total_results` | number | Total Results returned for this result. |
-| `total_pages` | number | Total Pages returned for this result. |
-| `has_next_page` | boolean | Has Next Page returned for this result. |
+| `name` | text | Name of the business search result, as shown by Jameda; null when no name is published. |
+| `specialty` | text | Medical specialty shown for the business search result by Jameda; null when Jameda does not provide the value. |
+| `rating` | text | Rating for this business search result, on the rating scale shown by Jameda; null when no score is shown. |
+| `review_count` | text | Number of reviews shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `review_count_number` | number | Number of reviews shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `address` | text | Address shown for the business search result by Jameda, in the format used by the source; null when it is omitted. |
+| `profile_url` | link | Profile url for this business search result on Jameda; null when the source does not provide a URL. |
+| `image_url` | image | Image url for this business search result on Jameda; null when the source does not provide a URL. |
+| `request_q` | text | Search phrase passed to Jameda. This input value is copied into the output row; null when it was not supplied. |
+| `request_loc` | text | Location query passed to Jameda. This input value is copied into the output row; null when it was not supplied. |
+| `request_page` | number | Requested result page number passed to Jameda; A whole-number page number. This input value is copied into the output row; null when it was not supplied. |
+| `request_per_page` | number | Number of results per page passed to Jameda; A whole-number result count. This input value is copied into the output row; null when it was not supplied. |
+| `total_results` | number | Number of total results shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `total_pages` | number | Number of pages shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `has_next_page` | boolean | Whether another result page is available; false is a reported value, while null means Jameda provided no flag. |
 
 ## Use cases
 
-- Collect search results, names, and source links to support lead generation.
-- Compare records across the input queries or entities you provide.
-- Export structured results to research and reporting workflows.
+- Practice managers can review public provider profiles and patient feedback.
+- Patients can compare doctor ratings and written feedback for a specialty.
+- Healthcare researchers can summarize public review themes across practices.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `searches` and start with a short list.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `searches` and use the identifier or URL format required by Jameda.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -55,25 +55,9 @@ The dataset contains fields returned by Jameda. The field names below match the 
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "name": "Example value",
-  "specialty": "Example value",
-  "rating": "4.7",
-  "review_count": "42",
-  "review_count_number": 42,
-  "address": "Example location",
-  "profile_url": "https://example.com/result/1"
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -84,33 +68,54 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `per_page` | integer | No | Maximum doctor results to save per page. Jameda returns up to 28 results per page. Constraints: minimum 1; maximum 28. |
 | `max_pages` | integer | No | Number of result pages to fetch, starting from Start Page. Constraints: minimum 1; maximum 2. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "name": "Northstar Market Labs",
+  "rating": "4.7/5",
+  "review_count": "184",
+  "specialty": "Family medicine",
+  "review_count_number": 184,
+  "address": "731 Alder Way, Seattle, WA 98103",
+  "profile_url": "https://profiles.example.com/northstar-market-labs",
+  "image_url": "https://images.example.com/listings/vintage-coat-01.jpg"
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.20 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved source match counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Jameda. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~jameda-search-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~jameda-search-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### What should I enter in Jameda search?
+
+Enter a specific topic or product in the q field. Use filters only when this source supports them.
 
 ## Related Scrappa Actors
 
-- [Jameda Doctor Details Scraper for Lead Research](https://apify.com/thescrappa/jameda-doctor-details-scraper)
-- [Jameda Reviews Scraper for Lead Research](https://apify.com/thescrappa/jameda-reviews-scraper)
-- [Google Maps Search Scraper for Lead Research](https://apify.com/thescrappa/google-maps-search-scraper)
-- [Google Maps Reviews Scraper for Local Reputation](https://apify.com/thescrappa/google-maps-reviews-scraper)
+- [Jameda Doctor Details Scraper](https://apify.com/thescrappa/jameda-doctor-details-scraper)
+- [Jameda Reviews Scraper](https://apify.com/thescrappa/jameda-reviews-scraper)
+- [Google Maps Search Scraper](https://apify.com/thescrappa/google-maps-search-scraper)
+- [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)

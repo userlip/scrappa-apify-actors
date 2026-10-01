@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "jameda-doctor-details-scraper",
-  "title": "Jameda Doctor Details Scraper for Lead Research",
-  "description": "Collect doctor and medical practice profile details from Jameda. Results can include `doctor_name`, `title`, `specialty`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Jameda Doctor Details Scraper",
+  "description": "Review a Jameda doctor profile with name, specialty, ratings and practice details. Submit one or more public doctor profile URLs to collect specialty and practice information together.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

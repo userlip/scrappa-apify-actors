@@ -1,45 +1,45 @@
-# Jameda Reviews Scraper for Lead Research
+# Jameda Reviews Scraper
 
-The Jameda Reviews Scraper for Lead Research collects reviews, ratings, and comment details from Jameda. Provide the fields listed below; the actor saves source fields such as `review_id`, `rating`, `rating_number`, and `date` to an Apify dataset.
+Read Jameda patient reviews with ratings, written feedback, posting dates and review titles. Use a doctor profile URL and choose the supported review sort and rating filters.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Jameda. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Doctor details and patient reviews follow public Jameda pages; profiles and reviews can omit optional details.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `review_id` | text | Review ID returned for this result. |
-| `rating` | text | Rating returned for this result. |
-| `rating_number` | number | Rating Number returned for this result. |
-| `date` | date | Date returned for this result. |
-| `date_formatted` | text | Date Text returned for this result. |
-| `verification_badge` | text | Verified returned for this result. |
-| `review_text` | text | Review returned for this result. |
-| `doctor_name` | text | Doctor returned for this result. |
-| `doctor_specializations` | text | Specialization returned for this result. |
-| `doctor_overall_rating` | text | Doctor Rating returned for this result. |
-| `input_doctor_url` | link | Input URL returned for this result. |
-| `normalized_doctor_url` | link | Doctor URL returned for this result. |
-| `request_page` | number | Page returned for this result. |
-| `request_sort` | text | Sort returned for this result. |
-| `request_rating` | text | Rating Filter returned for this result. |
-| `request_per_page` | number | Per Page returned for this result. |
-| `total_reviews` | number | Total Reviews returned for this result. |
-| `total_pages` | number | Total Pages returned for this result. |
-| `has_next_page` | boolean | Has Next returned for this result. |
-| `response_source` | text | Source returned for this result. |
+| `review_id` | text | review ID for the customer or employee review, assigned by Jameda; null when the source does not expose it. |
+| `rating` | text | Rating for this customer or employee review, on the rating scale shown by Jameda; null when no score is shown. |
+| `rating_number` | number | Rating number for this customer or employee review, on the rating scale shown by Jameda; null when no score is shown. |
+| `date` | date | Date shown for the customer or employee review shown by Jameda, in YYYY-MM-DD when the source provides a calendar date; null if the source omits the date. |
+| `date_formatted` | text | Date formatted shown for the customer or employee review by Jameda, in the format used by the source; null when it is omitted. |
+| `verification_badge` | text | Verification badge shown for the customer or employee review by Jameda, in the format used by the source; null when it is omitted. |
+| `review_text` | text | Written review from Jameda for this customer or employee review; null when the source has no text to show. |
+| `doctor_name` | text | Doctor name shown for the customer or employee review by Jameda, in the format used by the source; null when it is omitted. |
+| `doctor_specializations` | text | Doctor specialties shown for the customer or employee review by Jameda, in the format used by the source; null when it is omitted. |
+| `doctor_overall_rating` | text | Doctor overall rating for this customer or employee review, on the rating scale shown by Jameda; null when no score is shown. |
+| `input_doctor_url` | link | Jameda doctor profile url passed to Jameda. This input value is copied into the output row; null when it was not supplied. |
+| `normalized_doctor_url` | link | Normalized doctor url for this customer or employee review on Jameda; null when the source does not provide a URL. |
+| `request_page` | number | Requested result page number passed to Jameda; A whole-number page number. This input value is copied into the output row; null when it was not supplied. |
+| `request_sort` | text | Result sort order passed to Jameda. This input value is copied into the output row; null when it was not supplied. |
+| `request_rating` | text | Minimum rating filter passed to Jameda. This input value is copied into the output row; null when it was not supplied. |
+| `request_per_page` | number | Number of results per page passed to Jameda; A whole-number result count. This input value is copied into the output row; null when it was not supplied. |
+| `total_reviews` | number | Number of reviews shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `total_pages` | number | Number of pages shown by Jameda, as a whole number; zero is possible, and null means no count was reported. |
+| `has_next_page` | boolean | Whether another result page is available; false is a reported value, while null means Jameda provided no flag. |
+| `response_source` | text | Source used for the response shown for the customer or employee review by Jameda, in the format used by the source; null when it is omitted. |
 
 ## Use cases
 
-- Collect reviews, ratings, and comment details to support lead generation.
-- Compare records across the input queries or entities you provide.
-- Export structured results to research and reporting workflows.
+- Practice managers can review public provider profiles and patient feedback.
+- Patients can compare doctor ratings and written feedback for a specialty.
+- Healthcare researchers can summarize public review themes across practices.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `doctor_urls` and start with a short list.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Enter a company, shop, place or provider identifier and use the available sort, rating and page fields to focus the reviews.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -52,25 +52,9 @@ The dataset contains fields returned by Jameda. The field names below match the 
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "review_id": "Example public text.",
-  "rating": "4.7",
-  "rating_number": 4.7,
-  "date": "2026-09-30T10:00:00Z",
-  "date_formatted": "2026-09-30T10:00:00Z",
-  "verification_badge": "Example value",
-  "review_text": "Example public text."
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -81,34 +65,55 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `rating` | string | No | Optional rating filter. Use a single value from 1 to 5 or comma-separated values such as 4,5. |
 | `per_page` | integer | No | Number of reviews to request per doctor URL. Constraints: minimum 1; maximum 100. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "review_text": "Helpful staff answered my question clearly and followed up the same day.",
+  "rating": "4.7/5",
+  "date": "1790294400000",
+  "review_id": "review_demo_184",
+  "rating_number": 4.7,
+  "date_formatted": "September 25, 2026",
+  "verification_badge": "Verified purchase",
+  "doctor_name": "Taylor Morgan"
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.25 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved review counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Jameda. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~jameda-reviews-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~jameda-reviews-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How do I sort or filter Jameda reviews?
+
+Provide a doctor URL through `doctor_url` or `doctor_urls`, then select the supported `sort`, `rating` and page settings in Input.
 
 ## Related Scrappa Actors
 
-- [Google Maps Reviews Scraper for Local Reputation](https://apify.com/thescrappa/google-maps-reviews-scraper)
-- [Kununu Reviews Scraper for Campaign Research](https://apify.com/thescrappa/kununu-reviews-scraper)
-- [TrustedShops Reviews Scraper for Campaign Research](https://apify.com/thescrappa/trustedshops-reviews-scraper)
-- [Trusted Shops Search Scraper for Campaign Research](https://apify.com/thescrappa/trustedshops-search-scraper)
-- [TrustedShops Shop Profile Scraper for Marketing](https://apify.com/thescrappa/trustedshops-shop-profile-scraper)
+- [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)
+- [Kununu Reviews Scraper](https://apify.com/thescrappa/kununu-reviews-scraper)
+- [TrustedShops Reviews Scraper](https://apify.com/thescrappa/trustedshops-reviews-scraper)
+- [Trusted Shops Search Scraper](https://apify.com/thescrappa/trustedshops-search-scraper)
+- [TrustedShops Shop Profile Scraper](https://apify.com/thescrappa/trustedshops-shop-profile-scraper)

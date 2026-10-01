@@ -1,40 +1,40 @@
-# Google Maps Directions Scraper for Travel Planning
+# Google Maps Directions Scraper
 
-The Google Maps Directions Scraper for Travel Planning collects route distances, durations, and directions from Google Maps. Provide one or more route pairs; the actor saves source fields such as `alternative_index`, `request_index`, `request_origin`, and `request_destination` to an Apify dataset.
+Compare Google Maps routes by distance, estimated travel time, travel mode and route steps. Enter origin and destination locations, then compare supported travel modes and route alternatives.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Google Maps. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Route distance and travel time reflect the selected origin, destination and travel mode.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `alternative_index` | number | Alternative returned for this result. |
-| `request_index` | number | Request returned for this result. |
-| `request_origin` | text | Origin returned for this result. |
-| `request_destination` | text | Destination returned for this result. |
-| `request_mode` | text | Requested mode returned for this result. |
-| `request_hl` | text | Language returned for this result. |
-| `request_gl` | text | Region returned for this result. |
-| `travel_mode` | text | Travel mode returned for this result. |
-| `via` | text | Via returned for this result. |
-| `distance` | number | Distance (m) returned for this result. |
-| `duration` | number | Duration (s) returned for this result. |
-| `formatted_distance` | text | Distance returned for this result. |
-| `formatted_duration` | text | Duration returned for this result. |
-| `step_coordinates` | array | Step coordinates returned for this result. |
-| `trips` | array | Trips returned for this result. |
+| `alternative_index` | number | Route alternative index in the Google Maps route option list, as a whole number; null when the source does not supply one. |
+| `request_index` | number | Zero-based position of this request in the submitted Google Maps input batch; null for a single-item lookup. |
+| `request_origin` | text | Route origin passed to Google Maps. This input value is copied into the output row; null when it was not supplied. |
+| `request_destination` | text | Route destination passed to Google Maps. This input value is copied into the output row; null when it was not supplied. |
+| `request_mode` | text | Route travel mode passed to Google Maps. This input value is copied into the output row; null when it was not supplied. |
+| `request_hl` | text | Interface language code passed to Google Maps; Use a language code such as en or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_gl` | text | Two-letter country or region code passed to Google Maps; Use a two-letter country code such as us or de. This input value is copied into the output row; null when it was not supplied. |
+| `travel_mode` | text | Travel mode used for the route, such as driving, walking, cycling or transit; null when Google Maps does not provide the value. |
+| `via` | text | Road or route waypoint shown for the route option by Google Maps, in the format used by the source; null when it is omitted. |
+| `distance` | number | Length of this Google Maps route, in meters; null if no distance is available. |
+| `duration` | number | Estimated travel time for this Google Maps route, in seconds; null if Google Maps has no estimate. |
+| `formatted_distance` | text | Route length in Google Maps display format, such as miles or kilometers; null when no route is available. |
+| `formatted_duration` | text | Travel time as Google Maps displays it, such as minutes or hours; null when no estimate is available. |
+| `step_coordinates` | array | Route step coordinates as decimal latitude and longitude from Google Maps; an empty list when no entries are available. |
+| `trips` | array | Route legs with distance in meters, travel time in seconds and turn-by-turn steps from Google Maps; an empty list when no entries are available. |
 
 ## Use cases
 
-- Collect route distances, durations, and directions for a destination, route, or travel date.
-- Compare returned options and details before planning a trip.
-- Export travel records to a spreadsheet or booking research workflow.
+- Dispatch teams can compare route length and estimated time before assigning a service visit.
+- Field teams can check driving, walking, cycling or transit options for an appointment route.
+- Travel planners can inspect route steps and coordinates while preparing a local itinerary.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `routes` and start with a short list.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `routes` and use the identifier or URL format required by Google Maps.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -51,25 +51,9 @@ The dataset contains fields returned by Google Maps. The field names below match
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "alternative_index": 42,
-  "request_index": 42,
-  "request_origin": "Example value",
-  "request_destination": "Example value",
-  "request_mode": "Example value",
-  "request_hl": "Example value",
-  "request_gl": "Example value"
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -80,34 +64,80 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `hl` | string | No | Language code for route labels, such as en or de-DE. |
 | `gl` | string | No | Two-letter country or region code for geo-filtering. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "travel_mode": "Driving",
+  "distance": 5200,
+  "duration": 1260,
+  "via": "Broadway via West 81st Street",
+  "formatted_distance": "3.2 mi",
+  "formatted_duration": "21 min",
+  "trips": [
+    {
+      "distance": 5200,
+      "duration": 1260,
+      "steps": [
+        {
+          "instruction": "Continue north on Broadway",
+          "distance": 420,
+          "duration": 96,
+          "gps_coordinates": {
+            "latitude": 40.7580,
+            "longitude": -73.9855
+          }
+        }
+      ]
+    }
+  ],
+  "step_coordinates": [
+    {
+      "latitude": 40.7580,
+      "longitude": -73.9855
+    },
+    {
+      "latitude": 40.7812,
+      "longitude": -73.9665
+    }
+  ]
+}
+```
+
 ## Pricing
 
 **Current live price:** $0.50 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved dataset record counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Google Maps. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~google-maps-directions-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~google-maps-directions-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Which travel modes can Google Maps Directions compare?
+
+The mode input accepts driving, walking, bicycling, cycling or transit. The number of route alternatives may differ by mode.
 
 ## Related Scrappa Actors
 
-- [Google Maps Advanced Search Scraper for Sales](https://apify.com/thescrappa/google-maps-advanced-search-scraper)
-- [Google Maps Autocomplete Scraper for Local Search](https://apify.com/thescrappa/google-maps-autocomplete-scraper)
-- [Google Maps Business Details Scraper for Sales](https://apify.com/thescrappa/google-maps-business-details-scraper)
-- [Google Maps Photos Scraper for Place Research](https://apify.com/thescrappa/google-maps-photos-scraper)
-- [Google Maps Reviews Scraper for Local Reputation](https://apify.com/thescrappa/google-maps-reviews-scraper)
+- [Google Maps Advanced Search Scraper](https://apify.com/thescrappa/google-maps-advanced-search-scraper)
+- [Google Maps Autocomplete Scraper](https://apify.com/thescrappa/google-maps-autocomplete-scraper)
+- [Google Maps Business Details Scraper](https://apify.com/thescrappa/google-maps-business-details-scraper)
+- [Google Maps Photos Scraper](https://apify.com/thescrappa/google-maps-photos-scraper)
+- [Google Maps Reviews Scraper](https://apify.com/thescrappa/google-maps-reviews-scraper)

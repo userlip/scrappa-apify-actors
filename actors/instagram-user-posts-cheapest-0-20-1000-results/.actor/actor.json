@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "instagram-user-posts-cheapest-0-20-1000-results",
-  "title": "Instagram User Posts Scraper for Audience Research",
-  "description": "Collect public post text, media links, and engagement counts from Instagram. Results can include `request_username`, `id`, `username`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Instagram User Posts Scraper",
+  "description": "List recent public Instagram posts with captions, media types and publication times. Choose a public username and use the returned pagination cursor to continue through available posts.",
   "version": "0.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

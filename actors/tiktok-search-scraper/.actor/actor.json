@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-search-scraper",
-  "title": "TikTok Search Scraper for Audience Research",
-  "description": "Collect search results, names, and source links from TikTok. Results can include `desc`, `author`, `digg_count`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "TikTok Search Scraper",
+  "description": "Search TikTok videos by phrase and collect captions, creator details and play counts. Search video captions or topics, then refine by region, publication time or sort order.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

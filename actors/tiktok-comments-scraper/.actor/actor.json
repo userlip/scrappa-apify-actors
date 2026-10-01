@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "tiktok-comments-scraper",
-  "title": "TikTok Comments Scraper for Audience Research",
-  "description": "Collect reviews, ratings, and comment details from TikTok. Results can include `comment_type`, `text`, `user`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "TikTok Comments Scraper",
+  "description": "Read public TikTok video comments with text, commenter details, likes and replies. Paste a public video URL and choose whether to include replies when the source provides them.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

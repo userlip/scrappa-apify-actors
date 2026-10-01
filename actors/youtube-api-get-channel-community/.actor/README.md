@@ -1,31 +1,31 @@
-# YouTube Channel Community Posts Scraper for Brands
+# YouTube Channel Community Posts Scraper
 
-The YouTube Channel Community Posts Scraper for Brands collects video, channel, and search result data from YouTube. Provide one or more source identifiers; the actor saves source fields such as `id`, `text`, `publishedTime`, and `likeCount` to an Apify dataset.
+Read public YouTube community posts with text, publication time, likes and comments. Start with a channel ID, then reuse a returned continuation value to request another community-post page.
 
 ## What data can you extract?
 
-The dataset contains fields returned by YouTube. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Titles, publication details and engagement counts reflect public YouTube pages; some fields are hidden or unavailable for a video.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | string | The YouTube community post ID. |
-| `text` | string | The community post text. |
-| `publishedTime` | string | The human-readable publish time. |
-| `likeCount` | integer/number/string | The post like count. |
-| `commentCount` | integer/number/string | The post comment count. |
-| `attachments` | object | Images, videos, polls, quizzes, or other attachments returned with the post. |
+| `id` | string | source ID for the channel community post, assigned by YouTube; null when the source does not expose it. |
+| `text` | string | Text content from YouTube for this channel community post; null when the source has no text to show. |
+| `publishedTime` | string | Publication age displayed by YouTube, such as “2 days ago”; null when YouTube does not show it. |
+| `likeCount` | integer/number/string | Number of likes shown by YouTube, as a number or digit string; zero is possible, and null means no count was reported. |
+| `commentCount` | integer/number/string | Number of comments shown by YouTube, as a number or digit string; zero is possible, and null means no count was reported. |
+| `attachments` | array of objects | Community post attachments with media type, title, URL and thumbnail from YouTube; an empty list when no entries are available. |
 
 ## Use cases
 
-- Collect video, channel, and search result data for video and creator research.
-- Review returned titles, channels, timestamps, or engagement fields.
-- Export video records to a content planning or analysis workflow.
+- Creator teams can review a channel profile or catalog before a partnership discussion.
+- Researchers can compare channel descriptions, subscriber counts and published videos.
+- Analysts can maintain a directory of public YouTube channels.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `id` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -33,58 +33,69 @@ The dataset contains fields returned by YouTube. The field names below match the
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "id": "example-123",
-  "text": "Example public text.",
-  "publishedTime": "Recently",
-  "likeCount": "Example value",
-  "commentCount": "Example public text.",
-  "attachments": {}
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `id` | string | Yes | Youtube Channel ID |
 | `continuation` | string | No | Pagination token for next page |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "id": "aB3dE5fG7hJ",
+  "text": "We are planning a live session about balcony planters this Friday. Leave your questions below.",
+  "publishedTime": "September 25, 2026",
+  "likeCount": 864,
+  "commentCount": 27,
+  "attachments": [
+    {
+      "type": "image",
+      "title": "Community market photo",
+      "url": "https://images.example.com/community/market-day.jpg",
+      "thumbnail": "https://images.example.com/community/market-day-thumb.jpg"
+    }
+  ]
+}
+```
+
 ## Pricing
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved video, post or comment record counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from YouTube. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~youtube-api-get-channel-community/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~youtube-api-get-channel-community/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### How do I get another page of YouTube community posts?
+
+Reuse the channel `id` and pass the `continuation` value from the previous response. YouTube provides a continuation only when more posts are available.
 
 ## Related Scrappa Actors
 
-- [YouTube Batch Video Scraper for Creator Research](https://apify.com/thescrappa/youtube-api-batch-videos)
-- [YouTube Channel Podcast Scraper for Video Analysis](https://apify.com/thescrappa/youtube-api-channel-podcasts)
-- [YouTube Channel Video Scraper for Creator Research](https://apify.com/thescrappa/youtube-api-channel-videos)
-- [YouTube Channel Profile Scraper for Creators](https://apify.com/thescrappa/youtube-api-get-channel-about-details)
-- [YouTube Channel Details Scraper for Creators](https://apify.com/thescrappa/youtube-api-get-channel-details)
+- [YouTube Batch Video Scraper](https://apify.com/thescrappa/youtube-api-batch-videos)
+- [YouTube Channel Podcasts Scraper](https://apify.com/thescrappa/youtube-api-channel-podcasts)
+- [YouTube Channel Video Scraper](https://apify.com/thescrappa/youtube-api-channel-videos)
+- [YouTube Channel About Details Scraper](https://apify.com/thescrappa/youtube-api-get-channel-about-details)
+- [YouTube Channel Details Scraper](https://apify.com/thescrappa/youtube-api-get-channel-details)

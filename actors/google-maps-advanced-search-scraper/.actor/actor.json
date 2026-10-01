@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-maps-advanced-search-scraper",
-  "title": "Google Maps Advanced Search Scraper for Sales",
-  "description": "Collect local business details, ratings, and addresses from Google Maps. Results can include `name`, `rating`, `review_count`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google Maps Advanced Search Scraper",
+  "description": "Find local businesses on Google Maps with names, categories, star ratings and addresses. Set the map center and a business category to find places in a chosen local area.",
   "version": "1.0",
   "buildTag": "latest",
   "icon": "🎯",

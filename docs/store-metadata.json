@@ -2,190 +2,191 @@
   {
     "id": "EiUCYz2MjYUuGT6Xu",
     "name": "arbeitsagentur-jobs-scraper",
-    "title": "Arbeitsagentur Jobs Scraper for Candidate Research",
-    "description": "Collect job listings and job details from Germany Federal Employment Agency. Results can include `title`, `occupation`, `company_name`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Arbeitsagentur Jobs Scraper for Candidate Research",
-    "seoDescription": "Scrape job listings and employer details from Germany Federal Employment Agency for hiring research. Apify datasets make results easy to export and reuse.",
+    "title": "Arbeitsagentur Jobs Scraper",
+    "description": "Find German job listings from the Federal Employment Agency with titles, employers, locations and work details. Set a job title or occupation and a location, then narrow listings by work type or posting date.",
+    "seoTitle": "Arbeitsagentur Jobs Scraper | German Job Listings",
+    "seoDescription": "Arbeitsagentur Jobs Scraper: Get job titles, employers, locations, work arrangements. Use Arbeitsagentur Jobs output in a recurring Apify API workflow.",
     "categories": [
       "JOBS",
-      "LEAD_GENERATION"
+      "BUSINESS"
     ]
   },
   {
     "id": "8ZePaJAlap4mdN78V",
     "name": "booking-hotel-details-scraper",
-    "title": "Booking.com Hotel Details Scraper for Travel",
-    "description": "Collect hotel listings, availability, and property details from Booking.com. Results can include `title`, `canonical_url`, `hotel_schema`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Booking.com Hotel Details Scraper for Travel",
-    "seoDescription": "Scrape hotel details, amenities, and policies from Booking.com for travel planning. Run it in Apify and export the dataset or call it through the API.",
+    "title": "Booking.com Hotel Details Scraper",
+    "description": "Review a Booking.com hotel page with its property name, address, guest rating and check-in details. Submit a hotel URL or country and slug, with batch input for multiple properties.",
+    "seoTitle": "Booking.com Hotel Details Scraper | Hotel Profile Data",
+    "seoDescription": "Booking.com Hotel Details Scraper: Compare property names, addresses, guest ratings. Connect Booking.com Hotel Details results to Make, Zapier or n8n.",
     "categories": [
       "TRAVEL",
-      "DEVELOPER_TOOLS"
+      "BUSINESS"
     ]
   },
   {
     "id": "BehWN3LEvBxhEiJDF",
     "name": "booking-search-scraper",
-    "title": "Booking.com Search Scraper for Travel Planning",
-    "description": "Collect hotel listings, availability, and property details from Booking.com. Results can include `name`, `url`, `image`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Booking.com Search Scraper for Travel Planning",
-    "seoDescription": "Collect hotel listings, rates, and property details from Booking.com for travel planning. Schedule runs in Apify and export results for your workflow.",
+    "title": "Booking.com Search Scraper",
+    "description": "Compare Booking.com stays by property name, guest score, nightly price and review count. Choose destination, dates and guest counts to compare the stays returned for each search.",
+    "seoTitle": "Booking.com Search Scraper | Hotel Prices",
+    "seoDescription": "Booking.com Search Scraper: Compare hotel names, guest scores, nightly prices, review counts. Download Booking.com Search records as CSV for analysis.",
     "categories": [
       "TRAVEL",
-      "DEVELOPER_TOOLS"
+      "BUSINESS"
     ]
   },
   {
     "id": "h2QanwCb13z8BMesx",
     "name": "domain-availability-checker",
-    "title": "Domain Availability Checker for Business Sites",
-    "description": "Check domain names against domain registries availability data. Results can include `success`, `domain`, `available`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Domain Availability Checker for Business Sites",
-    "seoDescription": "Collect domain availability and registration status from domain registries for market research. Apify datasets make results easy to export and reuse.",
+    "title": "Domain Availability Checker",
+    "description": "Check domain registration status and registry events using public RDAP records. Submit one domain or a batch of names to check their current RDAP registration status.",
+    "seoTitle": "Domain Availability Checker | RDAP Status",
+    "seoDescription": "Domain Availability Checker: Get registration status, RDAP events, nameservers. Use the Apify API to schedule repeat Domain Availability Checker runs.",
     "categories": [
-      "DEVELOPER_TOOLS",
-      "BUSINESS"
+      "SEO_TOOLS",
+      "BUSINESS",
+      "DEVELOPER_TOOLS"
     ]
   },
   {
     "id": "zqckCpYtvPvxb2oxl",
     "name": "google-finance-historical-prices-scraper",
     "title": "Google Finance Historical Prices Scraper",
-    "description": "Collect historical price points and trading dates from Google Finance. Results can include `position`, `date`, `date_iso`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Finance Historical Prices Scraper",
-    "seoDescription": "Collect historical stock prices and dates from Google Finance for market research. Export the dataset from Apify, or schedule repeats through the API.",
+    "description": "Track historical Google Finance prices with dates, closing values and daily changes. Choose a ticker, exchange and supported date range to review past daily or interval prices.",
+    "seoTitle": "Google Finance Historical Prices Scraper | Price History",
+    "seoDescription": "Google Finance Historical Prices Scraper: Compare trading dates, closing prices. Download Google Finance Historical Prices records as CSV for analysis.",
     "categories": [
       "BUSINESS",
-      "DEVELOPER_TOOLS"
+      "NEWS"
     ]
   },
   {
     "id": "iArTP4r7dSglECf1f",
     "name": "google-finance-indices-scraper",
-    "title": "Google Finance Indices Scraper for Market Research",
-    "description": "Collect market index data and price changes from Google Finance. Results can include `id`, `requested_symbol`, `symbol`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Finance Indices Scraper for Market Research",
-    "seoDescription": "Collect index prices, performance, and market data from Google Finance for market research. Export the Apify dataset or call the Actor from your code.",
+    "title": "Google Finance Indices Scraper",
+    "description": "Compare Google Finance index quotes with tickers, index levels and daily changes. Supply supported index codes to compare their current levels and daily movement.",
+    "seoTitle": "Google Finance Indices Scraper | Index Quotes",
+    "seoDescription": "Google Finance Indices Scraper: Compare index names, ticker symbols, current levels. Use the Apify API to schedule repeat Google Finance Indices runs.",
     "categories": [
       "BUSINESS",
-      "DEVELOPER_TOOLS"
+      "NEWS"
     ]
   },
   {
     "id": "IeOWC1bvG8SUebyDa",
     "name": "google-finance-intraday-scraper",
-    "title": "Google Finance Intraday Scraper for Research",
-    "description": "Collect intraday price and volume points from Google Finance. Results can include `position`, `date`, `date_iso`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Finance Intraday Scraper for Research",
-    "seoDescription": "Collect intraday stock prices and volume data from Google Finance for market research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Google Finance Intraday Scraper",
+    "description": "Check Google Finance intraday prices with timestamps, price changes and market volume. Submit one or more tickers to inspect intraday price points available from Google Finance.",
+    "seoTitle": "Google Finance Intraday Scraper | Intraday Quotes",
+    "seoDescription": "Google Finance Intraday Scraper: Compare price timestamps, intraday prices, price changes. Download Google Finance Intraday records as CSV for analysis.",
     "categories": [
       "BUSINESS",
-      "DEVELOPER_TOOLS"
+      "NEWS"
     ]
   },
   {
     "id": "WvbWRqj67ve6fwwWZ",
     "name": "google-finance-markets-scraper",
-    "title": "Google Finance Markets Scraper for Investors",
-    "description": "Collect market movers and performance data from Google Finance. Results can include `item_type`, `section`, `trend`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Finance Markets Scraper for Investors",
-    "seoDescription": "Collect market movers, prices, and performance data from Google Finance for market research. Save the dataset in Apify and automate repeat collection.",
+    "title": "Google Finance Markets Scraper",
+    "description": "Review Google Finance market movers by section, trend and price movement. Choose the market trend and index view that match the movers you want to review.",
+    "seoTitle": "Google Finance Markets Scraper | Market Movers",
+    "seoDescription": "Google Finance Markets Scraper: Compare market sections, tickers, price trends, daily moves. Download Google Finance Markets records as CSV for analysis.",
     "categories": [
       "BUSINESS",
-      "DEVELOPER_TOOLS"
+      "NEWS"
     ]
   },
   {
     "id": "aE7VcbT6CIWBxob7U",
     "name": "google-finance-quote-scraper",
-    "title": "Google Finance Quote Scraper for Market Research",
-    "description": "Collect company and market quote data from Google Finance. Results can include `symbol`, `exchange`, `name`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Finance Quote Scraper for Market Research",
-    "seoDescription": "Collect stock quotes and market data from Google Finance for market research. Use Apify schedules, dataset exports, or API calls to repeat research.",
+    "title": "Google Finance Quote Scraper",
+    "description": "Look up Google Finance share prices with ticker, exchange and percentage change. Enter the ticker and exchange, then request period statistics only when they are useful for your quote.",
+    "seoTitle": "Google Finance Quote Scraper | Stock Quotes",
+    "seoDescription": "Google Finance Quote Scraper: Compare ticker symbols, current share prices, daily changes. Connect Google Finance Quote results to Make, Zapier or n8n.",
     "categories": [
       "BUSINESS",
-      "DEVELOPER_TOOLS"
+      "NEWS"
     ]
   },
   {
     "id": "JiWVC7gsvVEfwCxKv",
     "name": "google-finance-search-scraper",
-    "title": "Google Finance Search Scraper for Market Research",
-    "description": "Collect matching ticker and company records from Google Finance. Results can include `query`, `position`, `name`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Finance Search Scraper for Market Research",
-    "seoDescription": "Collect company and ticker search results from Google Finance for market research. Export the dataset from Apify, or schedule repeats through the API.",
+    "title": "Google Finance Search Scraper",
+    "description": "Find matching financial instruments on Google Finance by company name or ticker. Look up companies by name or ticker and provide several queries when building a watchlist.",
+    "seoTitle": "Google Finance Search Scraper | Ticker Lookup",
+    "seoDescription": "Google Finance Search Scraper: Compare company names, ticker symbols, exchanges. Export Google Finance Search results as CSV for a spreadsheet review.",
     "categories": [
       "BUSINESS",
-      "DEVELOPER_TOOLS"
+      "NEWS"
     ]
   },
   {
     "id": "IIPXRhbeyXH7ssOK6",
     "name": "google-flights-search-scraper",
-    "title": "Google Flights Search Scraper for Travel Planning",
-    "description": "Collect flight options, prices, and schedules from Google Flights. Results can include `position`, `trip_type`, `price`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Flights Search Scraper for Travel Planning",
-    "seoDescription": "Scrape flight fares, routes, airlines, and schedule details from Google Flights for travel planning. Apify datasets make results easy to export and reuse.",
+    "title": "Google Flights Scraper",
+    "description": "Compare Google Flights itineraries by fare, airlines, stops and total travel time. Compare routes using a future date and the one-way or round-trip option.",
+    "seoTitle": "Google Flights Scraper | Flight Prices",
+    "seoDescription": "Google Flights Scraper: Compare flight prices, airlines, stops, total travel time. Export Google Flights results as CSV for a spreadsheet review.",
     "categories": [
       "TRAVEL",
-      "DEVELOPER_TOOLS"
+      "BUSINESS"
     ]
   },
   {
     "id": "xia6FSMyeuCxEu7cu",
     "name": "google-hotels-autocomplete-scraper",
-    "title": "Google Hotels Autocomplete Scraper for Stays",
-    "description": "Collect hotel and destination suggestions from Google Hotels. Results can include `position`, `value`, `autocomplete_suggestion`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Hotels Autocomplete Scraper for Stays",
-    "seoDescription": "Collect destination and property search suggestions from Google Hotels for travel planning. Export the Apify dataset or call the Actor from your code.",
+    "title": "Google Hotels Autocomplete Scraper",
+    "description": "Find hotel and destination suggestions on Google Hotels before searching for a stay. Use a city, district or hotel name to get a property suggestion that can refine a later stay search.",
+    "seoTitle": "Google Hotels Autocomplete Scraper | Hotel Suggestions",
+    "seoDescription": "Google Hotels Autocomplete Scraper: Compare hotel and destination suggestions. Use Google Hotels Autocomplete output in a recurring Apify API workflow.",
     "categories": [
       "TRAVEL",
-      "DEVELOPER_TOOLS"
+      "BUSINESS"
     ]
   },
   {
     "id": "Kc3rfsV2Hif23mctw",
     "name": "google-hotels-search-scraper",
-    "title": "Google Hotels Search Scraper for Travel Planning",
-    "description": "Collect hotel listings, availability, and property details from Google Hotels. Results can include `name`, `type`, `hotel_class`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Hotels Search Scraper for Travel Planning",
-    "seoDescription": "Collect hotel listings, rates, and property details from Google Hotels for travel planning. Export the Apify dataset or call the Actor from your code.",
+    "title": "Google Hotels Search Scraper",
+    "description": "Compare Google Hotels stays by property, guest rating, nightly rate and review count. Set future stay dates and guest counts to compare rates for the destination you choose.",
+    "seoTitle": "Google Hotels Search Scraper | Hotel Prices",
+    "seoDescription": "Google Hotels Search Scraper: Compare hotel names, guest ratings, nightly rates, review counts. Download Google Hotels Search records as CSV for analysis.",
     "categories": [
       "TRAVEL",
-      "DEVELOPER_TOOLS"
+      "BUSINESS"
     ]
   },
   {
     "id": "MrbqFgdpNTQcRW0Vt",
     "name": "google-images-scraper",
-    "title": "Google Images Scraper for Creator Research",
-    "description": "Collect public records and structured source fields from Google Images. Results can include `position`, `thumbnail_url`, `image_url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Images Scraper for Creator Research",
-    "seoDescription": "Scrape image titles, source links, URLs, and dimensions from Google Images for creator research. Apify datasets make results easy to export and reuse.",
+    "title": "Google Images Scraper",
+    "description": "Find Google Images results with image links, titles, publishers and dimensions. Choose a region and optional image filters to make a visual search more specific.",
+    "seoTitle": "Google Images Scraper | Image Results",
+    "seoDescription": "Google Images Scraper: Get image titles, image links, publishers, image dimensions. Export Google Images results as CSV for a spreadsheet review.",
     "categories": [
-      "FOR_CREATORS",
-      "MARKETING"
+      "SEO_TOOLS",
+      "VIDEOS"
     ]
   },
   {
     "id": "4DwyH8vZcinXWrHBA",
     "name": "google-jobs-scraper",
-    "title": "Google Jobs Data Scraper for Hiring Teams",
-    "description": "Collect job listings and job details from Google Jobs. Results can include `title`, `company`, `company_name`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Jobs Data Scraper for Hiring Teams",
-    "seoDescription": "Collect job listings with titles, employers, and locations from Google Jobs for hiring research. Apify datasets make results easy to export and reuse.",
+    "title": "Google Jobs Scraper",
+    "description": "Find Google Jobs postings with job titles, employers, locations and available salary details. Use a role or employer phrase and the supported market settings to find matching openings.",
+    "seoTitle": "Google Jobs Scraper | Job Listings",
+    "seoDescription": "Google Jobs Scraper: Get job titles, employers, locations. Use supported employment or date filters. Download Google Jobs records as CSV for analysis.",
     "categories": [
       "JOBS",
-      "LEAD_GENERATION"
+      "BUSINESS"
     ]
   },
   {
     "id": "DT8bUdm2Vn4HjlyDo",
     "name": "google-maps-advanced-search-scraper",
-    "title": "Google Maps Advanced Search Scraper for Sales",
-    "description": "Collect local business details, ratings, and addresses from Google Maps. Results can include `name`, `rating`, `review_count`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Maps Advanced Search Scraper for Sales",
-    "seoDescription": "Scrape local business listings, addresses, and ratings from Google Maps for lead generation. Save the dataset in Apify and automate repeat collection.",
+    "title": "Google Maps Advanced Search Scraper",
+    "description": "Find local businesses on Google Maps with names, categories, star ratings and addresses. Set the map center and a business category to find places in a chosen local area.",
+    "seoTitle": "Google Maps Advanced Search Scraper | Local Results",
+    "seoDescription": "Google Maps Advanced Search Scraper: Find business names, categories, star ratings. Connect Google Maps Advanced Search results to Make, Zapier or n8n.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -194,22 +195,22 @@
   {
     "id": "hhS8GkceJHFiexWe6",
     "name": "google-maps-autocomplete-scraper",
-    "title": "Google Maps Autocomplete Scraper for Local Search",
-    "description": "Collect location and place suggestions from Google Maps. Results can include `main_text`, `type`, `country`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Maps Autocomplete Scraper for Local Search",
-    "seoDescription": "Scrape place suggestions with names, addresses, and identifiers from Google Maps for lead generation. Apify datasets make results easy to export and reuse.",
+    "title": "Google Maps Autocomplete Scraper",
+    "description": "Find place and business suggestions from Google Maps for a city, address or venue name. Enter the start of an address, business or place name to see matching suggestions.",
+    "seoTitle": "Google Maps Autocomplete Scraper | Place Suggestions",
+    "seoDescription": "Google Maps Autocomplete Scraper: Find place suggestions, place categories, addresses. Connect Google Maps Autocomplete results to Make, Zapier or n8n.",
     "categories": [
-      "LEAD_GENERATION",
+      "TRAVEL",
       "BUSINESS"
     ]
   },
   {
     "id": "JCqaAyY3Vy7K5UoRd",
     "name": "google-maps-business-details-scraper",
-    "title": "Google Maps Business Details Scraper for Sales",
-    "description": "Collect local business profiles, locations, and contact fields from Google Maps. Results can include `name`, `rating`, `review_count`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Maps Business Details Scraper for Sales",
-    "seoDescription": "Collect business profiles, locations, and contact details from Google Maps for lead generation. Apify datasets make results easy to export and reuse.",
+    "title": "Google Maps Business Details Scraper",
+    "description": "Look up a Google Maps business profile with its address, rating, hours and website. Pass one or more place IDs to look up the matching Google Maps business profiles.",
+    "seoTitle": "Google Maps Business Details Scraper | Business Profiles",
+    "seoDescription": "Google Maps Business Details Scraper: Get business names, addresses, star ratings. Connect Google Maps Business Details results to Make, Zapier or n8n.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -218,46 +219,46 @@
   {
     "id": "ZF8jFdzF15k49AZQh",
     "name": "google-maps-directions-scraper",
-    "title": "Google Maps Directions Scraper for Travel Planning",
-    "description": "Collect route distances, durations, and directions from Google Maps. Results can include `alternative_index`, `request_index`, `request_origin`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Maps Directions Scraper for Travel Planning",
-    "seoDescription": "Collect route directions, distances, and travel times from Google Maps for travel planning. Export the Apify dataset or call the Actor from your code.",
+    "title": "Google Maps Directions Scraper",
+    "description": "Compare Google Maps routes by distance, estimated travel time, travel mode and route steps. Enter origin and destination locations, then compare supported travel modes and route alternatives.",
+    "seoTitle": "Google Maps Directions Scraper | Route Planning",
+    "seoDescription": "Google Maps Directions Scraper: Get route distances, estimated travel times, travel modes. Download Google Maps Directions records as CSV for analysis.",
     "categories": [
       "TRAVEL",
-      "DEVELOPER_TOOLS"
+      "BUSINESS"
     ]
   },
   {
     "id": "gLbfii9Nq4H7auMnN",
     "name": "google-maps-photos-scraper",
-    "title": "Google Maps Photos Scraper for Place Research",
-    "description": "Collect business photo records and image URLs from Google Maps. Results can include `photo_url_large`, `width`, `height`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Maps Photos Scraper for Place Research",
-    "seoDescription": "Collect business photo URLs, captions, and image metadata from Google Maps for lead generation. Apify datasets make results easy to export and reuse.",
+    "title": "Google Maps Photos Scraper",
+    "description": "Browse photos shared on Google Maps place pages, with image links and contributor details. Submit place IDs for one or more locations whose public photos you want to catalog.",
+    "seoTitle": "Google Maps Photos Scraper | Place Photos",
+    "seoDescription": "Google Maps Photos Scraper: Get photo links, contributor names, image dimensions, posting dates. Download Google Maps Photos records as CSV for analysis.",
     "categories": [
-      "LEAD_GENERATION",
-      "BUSINESS"
+      "BUSINESS",
+      "MARKETING"
     ]
   },
   {
     "id": "QvxzSeJiQrMggt1Vn",
     "name": "google-maps-reviews-scraper",
-    "title": "Google Maps Reviews Scraper for Local Reputation",
-    "description": "Collect Google Maps customer reviews, ratings, and reply details from Google Maps. Results can include `author_name`, `rating`, `review_text`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Maps Reviews Scraper for Local Reputation",
-    "seoDescription": "Collect local reviews, ratings, and replies from Google Maps for local reputation tracking. Export the Apify dataset or call the Actor from your code.",
+    "title": "Google Maps Reviews Scraper",
+    "description": "Read Google Maps reviews with star ratings, written feedback, posting dates and owner replies. Start with a place ID and choose a review order or text filter for the public feedback.",
+    "seoTitle": "Google Maps Reviews Scraper | Customer Reviews",
+    "seoDescription": "Google Maps Reviews Scraper: Read star ratings, review text, posting dates, owner replies. Connect Google Maps Reviews results to Make, Zapier or n8n.",
     "categories": [
-      "LEAD_GENERATION",
-      "MARKETING"
+      "MARKETING",
+      "BUSINESS"
     ]
   },
   {
     "id": "3fXhf8bJruXVWgDKy",
     "name": "google-maps-search-scraper",
-    "title": "Google Maps Search Scraper for Lead Research",
-    "description": "Collect local business details, ratings, and addresses from Google Maps. Results can include `name`, `type`, `rating`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Maps Search Scraper for Lead Research",
-    "seoDescription": "Scrape local business listings, addresses, and ratings from Google Maps for lead generation. Save the dataset in Apify and automate repeat collection.",
+    "title": "Google Maps Search Scraper",
+    "description": "Search Google Maps for local places with names, categories, star ratings and addresses. Enter a business or place query and set the region when you need locally focused results.",
+    "seoTitle": "Google Maps Search Scraper | Local Results",
+    "seoDescription": "Google Maps Search Scraper: Find place names, categories, star ratings, addresses. Export Google Maps Search results as CSV for a spreadsheet review.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -266,10 +267,10 @@
   {
     "id": "HYG9AqNEDSHMHgH4O",
     "name": "google-news-scraper",
-    "title": "Google News Scraper for Media Monitoring",
-    "description": "Collect public records and structured source fields from Google News. Results can include `position`, `title`, `link`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google News Scraper for Media Monitoring",
-    "seoDescription": "Collect news headlines, publishers, and article links from Google News for news monitoring. Export the Apify dataset or call the Actor from your code.",
+    "title": "Google News Scraper",
+    "description": "Find Google News articles with headlines, publishers, publication dates and result links. Set a locale and supported time filter to focus the article list on a market or period.",
+    "seoTitle": "Google News Scraper | News Articles",
+    "seoDescription": "Google News Scraper: Get article headlines, publishers, publication dates, search snippets. Add Google News results to a scheduled spreadsheet report.",
     "categories": [
       "NEWS",
       "MARKETING"
@@ -278,58 +279,60 @@
   {
     "id": "O7u78wndFctfx6KvD",
     "name": "google-patents-details-scraper",
-    "title": "Google Patents Details Scraper for IP Research",
-    "description": "Collect patent records, inventors, and filing details from Google Patents. Results can include `success`, `input_patent_id`, `normalized_patent_id`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Patents Details Scraper for IP Research",
-    "seoDescription": "Scrape patent claims, inventors, and filing details from Google Patents for market research. Save the dataset in Apify and automate repeat collection.",
+    "title": "Google Patents Details Scraper",
+    "description": "Review Google Patents records with titles, abstracts, inventors and assignees. Submit publication numbers or supported Google Patents URLs to retrieve several records together.",
+    "seoTitle": "Google Patents Details Scraper | Patent Records",
+    "seoDescription": "Google Patents Details Scraper: Get patent titles, abstracts, inventors, assignees. Use the Apify API to schedule repeat Google Patents Details runs.",
     "categories": [
-      "DEVELOPER_TOOLS",
-      "BUSINESS"
+      "BUSINESS",
+      "MARKETING",
+      "DEVELOPER_TOOLS"
     ]
   },
   {
     "id": "bSdKk0P65oTGDXLIh",
     "name": "google-patents-search-scraper",
-    "title": "Google Patents Search Scraper for IP Research",
-    "description": "Collect patent records, inventors, and filing details from Google Patents. Results can include `rank`, `title`, `patent_id`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Patents Search Scraper for IP Research",
-    "seoDescription": "Collect patent titles, inventors, and filing data from Google Patents for market research. Trigger it from Make, Zapier, or n8n through the Apify API.",
+    "title": "Google Patents Search Scraper",
+    "description": "Search Google Patents by invention topic, inventor, assignee, date and publication status. Search by invention topic and add supported inventor, assignee or date filters.",
+    "seoTitle": "Google Patents Search Scraper | Patent Search",
+    "seoDescription": "Google Patents Search Scraper: Find patent titles, publication numbers, inventors, assignees. Download Google Patents Search records as CSV for analysis.",
     "categories": [
-      "DEVELOPER_TOOLS",
-      "BUSINESS"
+      "BUSINESS",
+      "MARKETING",
+      "DEVELOPER_TOOLS"
     ]
   },
   {
     "id": "2pU7EbKhShUz8BAnN",
     "name": "google-search-scraper",
-    "title": "Google Search Results Scraper for SEO Research",
-    "description": "Collect search result titles, links, and snippets from Google Search. Results can include `position`, `title`, `link`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Search Results Scraper for SEO Research",
-    "seoDescription": "Collect search result titles, links, and snippets from Google Search for SEO research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Google Search Scraper",
+    "description": "Find Google Search results with page titles, displayed domains, snippets and links. Use the phrase, location and locale options to shape a Google results page for your query.",
+    "seoTitle": "Google Search Scraper | Web Search Results",
+    "seoDescription": "Google Search Scraper: Find page titles, displayed domains, search snippets, result links. Use Google Search output in a recurring Apify API workflow.",
     "categories": [
       "SEO_TOOLS",
-      "LEAD_GENERATION"
+      "MARKETING"
     ]
   },
   {
     "id": "Ngzco8X5Z5Qz49zvH",
     "name": "google-translate-scraper",
-    "title": "Google Translate Scraper for Localization",
-    "description": "Translate supplied text with Google Translate and return translated text and detected language data. Results can include `success`, `index`, `text`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Translate Scraper for Localization",
-    "seoDescription": "Collect translated text and language details from Google Translate for data workflows. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Google Translate Scraper",
+    "description": "Translate short text with Google Translate and keep the source phrase with its language pair. Send the source text and target language, with batch input for multiple phrases.",
+    "seoTitle": "Google Translate Scraper | Text Translation",
+    "seoDescription": "Google Translate Scraper: Get source text, translated text, source language, target language. Connect Google Translate results to Make, Zapier or n8n.",
     "categories": [
-      "EDUCATION",
-      "DEVELOPER_TOOLS"
+      "AUTOMATION",
+      "OTHER"
     ]
   },
   {
     "id": "x4NPccdc4xbJZ2r6c",
     "name": "google-trends-autocomplete-scraper",
-    "title": "Google Trends Autocomplete Scraper for SEO",
-    "description": "Collect search suggestions and related terms from Google Trends. Results can include `position`, `suggestion`, `type`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Trends Autocomplete Scraper for SEO",
-    "seoDescription": "Collect search suggestions and related query terms from Google Trends for SEO research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Google Trends Autocomplete Scraper",
+    "description": "Find topic and query suggestions from Google Trends before building a search list. Enter a topic or phrase and choose a region and language to guide related suggestions.",
+    "seoTitle": "Google Trends Autocomplete Scraper | Topic Suggestions",
+    "seoDescription": "Google Trends Autocomplete Scraper: Find topic suggestions, related phrases, result types. Download Google Trends Autocomplete records as CSV for analysis.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -338,10 +341,10 @@
   {
     "id": "1D1neAFKb8LnbKvHG",
     "name": "google-trends-interest-scraper",
-    "title": "Google Trends Interest Scraper for SEO Research",
-    "description": "Collect search interest values over time from Google Trends. Results can include `position`, `date`, `timestamp`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Trends Interest Scraper for SEO Research",
-    "seoDescription": "Collect search interest values over time and by region from Google Trends for SEO research. Export the Apify dataset or call the Actor from your code.",
+    "title": "Google Trends Interest Scraper",
+    "description": "Track relative Google Trends interest over time with dates and a score from 0 to 100. Choose a region, time range and search type to compare interest for one topic over time.",
+    "seoTitle": "Google Trends Interest Scraper | Search Interest",
+    "seoDescription": "Google Trends Interest Scraper: Track search-interest scores, dates, time buckets. Use Google Trends Interest output in a recurring Apify API workflow.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -350,10 +353,10 @@
   {
     "id": "hoF0Qgm3S0wAfpY8y",
     "name": "google-trends-related-queries-scraper",
-    "title": "Google Trends Related Queries Scraper for SEO",
-    "description": "Collect related queries and topic interest data from Google Trends. Results can include `position`, `result_kind`, `type`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Trends Related Queries Scraper for SEO",
-    "seoDescription": "Collect related queries, topics, and interest values from Google Trends for SEO research. Schedule runs in Apify and export results for your workflow.",
+    "title": "Google Trends Related Queries Scraper",
+    "description": "Explore related Google Trends queries and topics with their relative interest scores. Choose a region and time range to see which searches are associated with the selected topic.",
+    "seoTitle": "Google Trends Related Queries Scraper | Related Queries",
+    "seoDescription": "Google Trends Related Queries Scraper: Get related queries, related topics. Use Google Trends Related Queries output in a recurring Apify API workflow.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
@@ -362,22 +365,22 @@
   {
     "id": "kAdTwn5fkBCGKOQUq",
     "name": "google-videos-scraper",
-    "title": "Google Videos Scraper for Creator Research",
-    "description": "Collect public video metadata and engagement counts from Google Videos. Results can include `position`, `title`, `video_url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Videos Scraper for Creator Research",
-    "seoDescription": "Collect video titles, URLs, and source names from Google Videos for video research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "Google Videos Scraper",
+    "description": "Find Google Videos results with titles, video links, publishers and thumbnails. Set the locale and page options to browse more videos relevant to your phrase.",
+    "seoTitle": "Google Videos Scraper | Video Results",
+    "seoDescription": "Google Videos Scraper: Get video titles, video links. Set a region or language when available. Use the Apify API to schedule repeat Google Videos runs.",
     "categories": [
-      "VIDEOS",
-      "FOR_CREATORS"
+      "SEO_TOOLS",
+      "VIDEOS"
     ]
   },
   {
     "id": "GfUpTPe50dbtzt6Cb",
     "name": "immobilienscout24-locations-scraper",
-    "title": "ImmobilienScout24 Location Autocomplete Scraper",
-    "description": "Collect location and place suggestions from ImmobilienScout24. Results can include `geocode`, `name`, `type`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "ImmobilienScout24 Location Autocomplete Scraper",
-    "seoDescription": "Scrape property listings, prices, and location data from ImmobilienScout24 for property research. Apify datasets make results easy to export and reuse.",
+    "title": "ImmobilienScout24 Locations Scraper",
+    "description": "Find ImmobilienScout24 city and district suggestions with the location codes used in property searches. Enter a city or district to get matching ImmobilienScout24 location suggestions.",
+    "seoTitle": "ImmobilienScout24 Locations Scraper | Location Codes",
+    "seoDescription": "ImmobilienScout24 Locations Scraper: Compare location suggestions, location codes. Connect ImmobilienScout24 Locations results to Make, Zapier or n8n.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -387,9 +390,9 @@
     "id": "gw1ZWMNQMBu0dGUnz",
     "name": "immobilienscout24-price-insights-scraper",
     "title": "ImmobilienScout24 Price Insights Scraper",
-    "description": "Collect property estimates, price ranges, and market metrics from ImmobilienScout24. Results can include `location`, `geocode`, `currency`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "ImmobilienScout24 Price Insights Scraper",
-    "seoDescription": "Scrape property listings, prices, and location data from ImmobilienScout24 for property research. Apify datasets make results easy to export and reuse.",
+    "description": "Compare ImmobilienScout24 rent and sale price estimates per square meter for apartments and houses. Enter one or more city or district names to compare rent and sale estimates.",
+    "seoTitle": "ImmobilienScout24 Price Insights Scraper | Local Price",
+    "seoDescription": "ImmobilienScout24 Price Insights Scraper: Compare apartment rent per square meter. Download ImmobilienScout24 Price Insights records as CSV for analysis.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -398,10 +401,10 @@
   {
     "id": "601ilBYtO52NNsMrT",
     "name": "immobilienscout24-search-scraper",
-    "title": "ImmobilienScout24 Search Scraper for Real Estate",
-    "description": "Collect property listings, prices, and locations from ImmobilienScout24. Results can include `title`, `price`, `price_formatted`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "ImmobilienScout24 Search Scraper for Real Estate",
-    "seoDescription": "Scrape property listings, prices, and location data from ImmobilienScout24 for property research. Apify datasets make results easy to export and reuse.",
+    "title": "ImmobilienScout24 Search Scraper",
+    "description": "Search ImmobilienScout24 property listings by location, property type, price, rooms and floor area. Use an ImmobilienScout24 location code, then set property type and price or room filters.",
+    "seoTitle": "ImmobilienScout24 Search Scraper | Property Listings",
+    "seoDescription": "ImmobilienScout24 Search Scraper: Compare listing titles, asking prices, room counts. Connect ImmobilienScout24 Search results to Make, Zapier or n8n.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -410,10 +413,10 @@
   {
     "id": "RtBugF27PKeDYceRA",
     "name": "immowelt-property-search-scraper",
-    "title": "Immowelt Property Search Scraper for Real Estate",
-    "description": "Collect property listings, prices, and locations from Immowelt. Results can include `title`, `price`, `price_formatted`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Immowelt Property Search Scraper for Real Estate",
-    "seoDescription": "Collect property listings, prices, and location data from Immowelt for property research. Schedule runs in Apify and export results for your workflow.",
+    "title": "Immowelt Property Search Scraper",
+    "description": "Search Immowelt listings by location and property type, then compare prices, rooms and floor area. Enter a city or area and choose the property type and page options you need.",
+    "seoTitle": "Immowelt Property Search Scraper | Property Listings",
+    "seoDescription": "Immowelt Property Search Scraper: Compare listing titles, asking prices, room counts. Connect Immowelt Property Search results to Make, Zapier or n8n.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -422,58 +425,58 @@
   {
     "id": "OVlDREBAcO4iPyW64",
     "name": "indeed-jobs-scraper",
-    "title": "Indeed Job Listings Scraper for Hiring Teams",
-    "description": "Collect job listings and job details from Indeed. Results can include `title`, `company_name`, `location_formatted`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Indeed Job Listings Scraper for Hiring Teams",
-    "seoDescription": "Collect job listings and employer details from Indeed for hiring research. Use Apify schedules, dataset exports, or API calls to repeat research.",
+    "title": "Indeed Jobs Scraper",
+    "description": "Search Indeed job listings with titles, employers, locations and salary ranges when provided. Enter the role and location you want to hire for, then review salary details when Indeed publishes them.",
+    "seoTitle": "Indeed Jobs Scraper | Job Listings",
+    "seoDescription": "Indeed Jobs Scraper: Get job titles, employers, locations. Use supported employment or date filters. Download Indeed Jobs records as CSV for analysis.",
     "categories": [
       "JOBS",
-      "LEAD_GENERATION"
+      "BUSINESS"
     ]
   },
   {
     "id": "nfdzs1z0cRIU1Bfhw",
     "name": "instagram-post-info-cheapest-0-20-1000-results",
     "title": "Instagram Post Info | Cheapest $0.20/1k results",
-    "description": "Collect public record details and identifying fields from Instagram. Results can include `success`, `data`, `error`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "description": "Look up a public Instagram post to see its caption, media type and engagement counts. Paste a public post URL or its shortcode to retrieve the details for that post.",
     "seoTitle": "Instagram Post Info | Cheapest $0.20/1k results",
-    "seoDescription": "Scrape post captions, media, and engagement counts from Instagram for creator research. Start runs in Apify, then fetch dataset items through the API.",
+    "seoDescription": "Instagram Post Info | Cheapest $0.20/1k results: Get post captions, media type, likes. Use the Apify API to schedule repeat Instagram Post Info runs.",
     "categories": [
       "SOCIAL_MEDIA",
-      "FOR_CREATORS"
+      "MARKETING"
     ]
   },
   {
     "id": "VZrsJ6bO3h92y0duj",
     "name": "instagram-user-info-cheapest-0-20-1000-results",
     "title": "Instagram User Info | Cheapest $0.20/1k results",
-    "description": "Collect public record details and identifying fields from Instagram. Results can include `username`, `full_name`, `biography`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "description": "Review a public Instagram profile with its biography, follower count and account details. Submit one public username or several usernames to retrieve the profiles available to Instagram.",
     "seoTitle": "Instagram User Info | Cheapest $0.20/1k results",
-    "seoDescription": "Scrape public profile details, biography, and account metrics from Instagram for creator research. Apify datasets make results easy to export and reuse.",
+    "seoDescription": "Instagram User Info | Cheapest $0.20/1k results: Get usernames, profile biographies. Use Instagram User Info output in a recurring Apify API workflow.",
     "categories": [
       "SOCIAL_MEDIA",
-      "FOR_CREATORS"
+      "MARKETING"
     ]
   },
   {
     "id": "mp03zGSA2pR31azfU",
     "name": "instagram-user-posts-cheapest-0-20-1000-results",
-    "title": "Instagram User Posts Scraper for Audience Research",
-    "description": "Collect public post text, media links, and engagement counts from Instagram. Results can include `request_username`, `id`, `username`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Instagram User Posts Scraper for Audience Research",
-    "seoDescription": "Collect user posts, captions, media, and engagement counts from Instagram for creator research. Apify datasets make results easy to export and reuse.",
+    "title": "Instagram User Posts Scraper",
+    "description": "List recent public Instagram posts with captions, media types and publication times. Choose a public username and use the returned pagination cursor to continue through available posts.",
+    "seoTitle": "Instagram User Posts Scraper | Recent Posts",
+    "seoDescription": "Instagram User Posts Scraper: Get post shortcodes, captions, media types, publication times. Download Instagram User Posts records as CSV for analysis.",
     "categories": [
       "SOCIAL_MEDIA",
-      "FOR_CREATORS"
+      "MARKETING"
     ]
   },
   {
     "id": "f3yuncFhgFusn3oRI",
     "name": "jameda-doctor-details-scraper",
-    "title": "Jameda Doctor Details Scraper for Lead Research",
-    "description": "Collect doctor and medical practice profile details from Jameda. Results can include `doctor_name`, `title`, `specialty`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Jameda Doctor Details Scraper for Lead Research",
-    "seoDescription": "Collect public source records and structured data from Jameda for lead generation. Export the dataset from Apify, or schedule repeats through the API.",
+    "title": "Jameda Doctor Details Scraper",
+    "description": "Review a Jameda doctor profile with name, specialty, ratings and practice details. Submit one or more public doctor profile URLs to collect specialty and practice information together.",
+    "seoTitle": "Jameda Doctor Details Scraper | Doctor Profiles",
+    "seoDescription": "Jameda Doctor Details Scraper: Get doctor names, medical specialties, ratings. Export Jameda Doctor Details results as CSV for a spreadsheet review.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -482,22 +485,22 @@
   {
     "id": "kqyuVCOyip4fBlGqG",
     "name": "jameda-reviews-scraper",
-    "title": "Jameda Reviews Scraper for Lead Research",
-    "description": "Collect reviews, ratings, and comment details from Jameda. Results can include `review_id`, `rating`, `rating_number`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Jameda Reviews Scraper for Lead Research",
-    "seoDescription": "Collect reviews, ratings, and public feedback from Jameda in batches for lead generation. Schedule runs in Apify and export results for your workflow.",
+    "title": "Jameda Reviews Scraper",
+    "description": "Read Jameda patient reviews with ratings, written feedback, posting dates and review titles. Use a doctor profile URL and choose the supported review sort and rating filters.",
+    "seoTitle": "Jameda Reviews Scraper | Patient Reviews",
+    "seoDescription": "Jameda Reviews Scraper: Read star ratings, review text, posting dates, review titles. Export Jameda Reviews results as CSV for a spreadsheet review.",
     "categories": [
-      "LEAD_GENERATION",
+      "MARKETING",
       "BUSINESS"
     ]
   },
   {
     "id": "8SvzPgdsdg1yZK1t4",
     "name": "jameda-search-scraper",
-    "title": "Jameda Search Scraper for Lead Generation",
-    "description": "Collect doctor and medical practice profile details from Jameda. Results can include `name`, `specialty`, `rating`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Jameda Search Scraper for Lead Generation",
-    "seoDescription": "Collect search result titles, links, and snippets from Jameda for lead generation. Export the dataset from Apify, or schedule repeats through the API.",
+    "title": "Jameda Search Scraper",
+    "description": "Find Jameda doctors by specialty and location, with names, ratings and practice links. Search by medical specialty and city to find public doctor profiles for a local shortlist.",
+    "seoTitle": "Jameda Search Scraper | Doctor Search",
+    "seoDescription": "Jameda Search Scraper: Find doctor names, medical specialties, ratings, practice locations. Use Jameda Search output in a recurring Apify API workflow.",
     "categories": [
       "LEAD_GENERATION",
       "BUSINESS"
@@ -506,10 +509,10 @@
   {
     "id": "1hSNdgPwGINp7xeHB",
     "name": "kleinanzeigen-listing-details-scraper",
-    "title": "Kleinanzeigen Listing Details Scraper for Buyers",
-    "description": "Collect public record details and identifying fields from Kleinanzeigen. Results can include `id`, `title`, `price`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Kleinanzeigen Listing Details Scraper for Buyers",
-    "seoDescription": "Scrape marketplace listings, prices, and seller data from Kleinanzeigen for product research. Save the dataset in Apify and automate repeat collection.",
+    "title": "Kleinanzeigen Listing Details Scraper",
+    "description": "Look up a Kleinanzeigen listing for its description, price, photos and seller details. Paste a Kleinanzeigen ad ID for details, or use the supported query input to search by phrase.",
+    "seoTitle": "Kleinanzeigen Listing Details Scraper | Listing Details",
+    "seoDescription": "Kleinanzeigen Listing Details Scraper: Get listing titles, descriptions, asking prices. Download Kleinanzeigen Listing Details records as CSV for analysis.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -518,10 +521,10 @@
   {
     "id": "OTzcE9BHg83MpDprO",
     "name": "kleinanzeigen-search-scraper",
-    "title": "Kleinanzeigen Search Scraper for Product Research",
-    "description": "Collect marketplace listings, prices, and item details from Kleinanzeigen. Results can include `id`, `title`, `price`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Kleinanzeigen Search Scraper for Product Research",
-    "seoDescription": "Collect search result titles, links, and snippets from Kleinanzeigen for product research. Trigger it from Make, Zapier, or n8n through the Apify API.",
+    "title": "Kleinanzeigen Search Scraper",
+    "description": "Search Kleinanzeigen listings by phrase, location, category and price range. Enter an item phrase and use the location, category and price range fields to narrow local listings.",
+    "seoTitle": "Kleinanzeigen Search Scraper | Classified Listings",
+    "seoDescription": "Kleinanzeigen Search Scraper: Find listing titles, asking prices, item condition, locations. Download Kleinanzeigen Search records as CSV for analysis.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -530,70 +533,70 @@
   {
     "id": "WlWaDQRQn6Mv5jVdi",
     "name": "kununu-jobs-scraper",
-    "title": "Kununu Jobs Scraper for Employer Research",
-    "description": "Collect job listings and job details from kununu. Results can include `title`, `company_name`, `company_score`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Kununu Jobs Scraper for Employer Research",
-    "seoDescription": "Collect job listings and employer details from kununu for hiring research. Use Apify schedules, dataset exports, or API calls to repeat research.",
+    "title": "Kununu Jobs Scraper",
+    "description": "Find jobs listed on kununu with titles, employers, company ratings and work arrangements. Search the role or company you have in mind and review work arrangement and employer ratings when shown.",
+    "seoTitle": "Kununu Jobs Scraper | Company Jobs",
+    "seoDescription": "Kununu Jobs Scraper: Get job titles, employers, employer ratings. Search job titles and locations. Connect Kununu Jobs results to Make, Zapier or n8n.",
     "categories": [
       "JOBS",
-      "LEAD_GENERATION"
+      "BUSINESS"
     ]
   },
   {
     "id": "u5QoR4Um3MXwbdavk",
     "name": "kununu-reviews-scraper",
-    "title": "Kununu Reviews Scraper for Campaign Research",
-    "description": "Collect reviews, ratings, and comment details from kununu. Results can include `company_name`, `company_country`, `company_slug`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Kununu Reviews Scraper for Campaign Research",
-    "seoDescription": "Collect reviews, ratings, and public feedback from kununu for reputation research. Export the dataset from Apify, or schedule repeats through the API.",
+    "title": "Kununu Reviews Scraper",
+    "description": "Review kununu employer feedback with company ratings, review text and recommendation scores. Submit multiple company slugs in one run to retrieve records for each target.",
+    "seoTitle": "Kununu Reviews Scraper | Employer Reviews",
+    "seoDescription": "Kununu Reviews Scraper: Read employer names, employee ratings, review text, recommendation scores. Download Kununu Reviews records as CSV for analysis.",
     "categories": [
-      "MARKETING",
+      "JOBS",
       "BUSINESS"
     ]
   },
   {
     "id": "EMGCTVXuOBRERiDMf",
     "name": "linkedin-company-scraper",
-    "title": "LinkedIn Company Scraper for Lead Research",
-    "description": "Collect company profiles and firmographic details from LinkedIn. Results can include `name`, `industry`, `size`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "LinkedIn Company Scraper for Lead Research",
-    "seoDescription": "Collect company profiles and firmographic data from LinkedIn for B2B lead research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "LinkedIn Company Scraper",
+    "description": "Look up a LinkedIn company profile with industry, employee size, website and follower count. Use public company profile URLs, individually or as a batch, to compare company details.",
+    "seoTitle": "LinkedIn Company Scraper | Company Profiles",
+    "seoDescription": "LinkedIn Company Scraper: Get company names, industries, employee counts, follower counts. Use the Apify API to schedule repeat LinkedIn Company runs.",
     "categories": [
       "LEAD_GENERATION",
-      "SOCIAL_MEDIA"
+      "BUSINESS"
     ]
   },
   {
     "id": "nnhijBaERF1aPtw7J",
     "name": "linkedin-job-details-scraper",
-    "title": "LinkedIn Job Details Scraper for Hiring Teams",
-    "description": "Collect job listings and job details from LinkedIn. Results can include `success`, `title`, `company`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "LinkedIn Job Details Scraper for Hiring Teams",
-    "seoDescription": "Collect job listings and employer details from LinkedIn in batches for hiring research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "LinkedIn Job Details Scraper",
+    "description": "Review a LinkedIn job post with title, employer, location and employment details. Pass a public LinkedIn job URL or a list of URLs to inspect several vacancies in one run.",
+    "seoTitle": "LinkedIn Job Details Scraper | Job Details",
+    "seoDescription": "LinkedIn Job Details Scraper: Get job titles, employers, locations, employment types. Use the Apify API to schedule repeat LinkedIn Job Details runs.",
     "categories": [
       "JOBS",
-      "LEAD_GENERATION"
+      "BUSINESS"
     ]
   },
   {
     "id": "GAAKVpkPvj3lMbO6G",
     "name": "linkedin-jobs-search-scraper",
-    "title": "LinkedIn Jobs Search Scraper for Hiring Teams",
-    "description": "Collect job listings and job details from LinkedIn. Results can include `position`, `title`, `link`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "LinkedIn Jobs Search Scraper for Hiring Teams",
-    "seoDescription": "Collect job listings and employer details from LinkedIn for hiring research. Use Apify schedules, dataset exports, or API calls to repeat research.",
+    "title": "LinkedIn Jobs Search Scraper",
+    "description": "Find LinkedIn job listings by title and location, with employer names and result links. Describe the role, seniority or location in the query and page through the supported Google results.",
+    "seoTitle": "LinkedIn Jobs Search Scraper | Job Listings",
+    "seoDescription": "LinkedIn Jobs Search Scraper: Find job titles, employers, locations, search snippets. Use the Apify API to schedule repeat LinkedIn Jobs Search runs.",
     "categories": [
       "JOBS",
-      "LEAD_GENERATION"
+      "BUSINESS"
     ]
   },
   {
     "id": "hVDOXgRoKJbnATxzs",
     "name": "linkedin-post-scraper",
-    "title": "LinkedIn Post Scraper for Audience Research",
-    "description": "Collect public records and structured source fields from LinkedIn. Results can include `title`, `author_name`, `date_published`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "LinkedIn Post Scraper for Audience Research",
-    "seoDescription": "Collect post text, reactions, and comments from LinkedIn for audience and content research. Export the Apify dataset or call the Actor from your code.",
+    "title": "LinkedIn Post Scraper",
+    "description": "Read a public LinkedIn post with its text, author, publication date and reaction count. Paste a public LinkedIn post URL to retrieve its text and engagement details.",
+    "seoTitle": "LinkedIn Post Scraper | Public Post Data",
+    "seoDescription": "LinkedIn Post Scraper: Get post text, author names. Use a post URL to retrieve its details. Use LinkedIn Post output in a recurring Apify API workflow.",
     "categories": [
       "SOCIAL_MEDIA",
       "MARKETING"
@@ -602,22 +605,22 @@
   {
     "id": "87AaxKjjQrK0F0g60",
     "name": "linkedin-profile-scraper",
-    "title": "LinkedIn Profile Scraper for Lead Research",
-    "description": "Collect professional profile details and career fields from LinkedIn. Results can include `name`, `location`, `followers`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "LinkedIn Profile Scraper for Lead Research",
-    "seoDescription": "Scrape professional profiles and career data from LinkedIn for lead generation. Use Apify schedules, dataset exports, or API calls to repeat research.",
+    "title": "LinkedIn Profile Scraper",
+    "description": "Review a public LinkedIn profile with name, headline, location and follower count. Submit one or more public LinkedIn profile URLs to build a consistent profile dataset.",
+    "seoTitle": "LinkedIn Profile Scraper | Profile Data",
+    "seoDescription": "LinkedIn Profile Scraper: Get member names, headlines, locations, follower counts. Export LinkedIn Profile results as CSV for a spreadsheet review.",
     "categories": [
       "LEAD_GENERATION",
-      "SOCIAL_MEDIA"
+      "BUSINESS"
     ]
   },
   {
     "id": "jGkqg68Hqx9nWDenM",
     "name": "linkedin-search-scraper",
-    "title": "LinkedIn Search Scraper for Lead Research",
-    "description": "Collect search results, names, and source links from LinkedIn. Results can include `position`, `title`, `link`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "LinkedIn Search Scraper for Lead Research",
-    "seoDescription": "Collect public profiles, company pages, and job listings from LinkedIn for lead generation. Export the Apify dataset or call the Actor from your code.",
+    "title": "LinkedIn Search Scraper",
+    "description": "Find LinkedIn pages through search, with titles, displayed links and result snippets. Add a LinkedIn page type such as profile, company, post or job to the search query.",
+    "seoTitle": "LinkedIn Search Scraper | LinkedIn Search Results",
+    "seoDescription": "LinkedIn Search Scraper: Find page titles, displayed domains, search snippets, result links. Use the Apify API to schedule repeat LinkedIn Search runs.",
     "categories": [
       "LEAD_GENERATION",
       "SOCIAL_MEDIA"
@@ -626,21 +629,22 @@
   {
     "id": "LXBYlqViHcR0tnt5i",
     "name": "pinterest-search-scraper",
-    "title": "Pinterest Search Scraper for Audience Research",
-    "description": "Collect search results, names, and source links from Pinterest. Results can include `id`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Pinterest Search Scraper for Audience Research",
-    "seoDescription": "Scrape search result titles, links, and snippets from Pinterest for audience and content research. Apify datasets make results easy to export and reuse.",
+    "title": "Pinterest Search Scraper",
+    "description": "Find Pinterest pins with titles, descriptions, image links and source pages. Search a subject or style phrase to find public pins and follow their image links back to the source pages.",
+    "seoTitle": "Pinterest Search Scraper | Pin Results",
+    "seoDescription": "Pinterest Search Scraper: Find pin titles, descriptions, image links, source pages. Export Pinterest Search results as CSV for a spreadsheet review.",
     "categories": [
-      "SOCIAL_MEDIA"
+      "SOCIAL_MEDIA",
+      "MARKETING"
     ]
   },
   {
     "id": "9DsqUcpBF5b66AFOY",
     "name": "redfin-property-details-scraper",
-    "title": "Redfin Property Details Scraper for Real Estate",
-    "description": "Collect public record details and identifying fields from Redfin. Results can include `property_id`, `address`, `city`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Redfin Property Details Scraper for Real Estate",
-    "seoDescription": "Collect property listings, prices, and location data from Redfin for property research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Redfin Property Details Scraper",
+    "description": "Review Redfin home details with address, estimated value, bedrooms and bathrooms. Look up one property by ID or URL, or submit a batch to review several homes together.",
+    "seoTitle": "Redfin Property Details Scraper | Property Details",
+    "seoDescription": "Redfin Property Details Scraper: Compare property addresses, estimated values, bedrooms. Download Redfin Property Details records as CSV for analysis.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -649,10 +653,10 @@
   {
     "id": "Xa9ClmgD4tI9lHT91",
     "name": "redfin-property-search-scraper",
-    "title": "Redfin Property Search Scraper for Property Buyers",
-    "description": "Collect property listings, prices, and locations from Redfin. Results can include `property_id`, `listing_id`, `address`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Redfin Property Search Scraper for Property Buyers",
-    "seoDescription": "Collect property listings, prices, and location data from Redfin for property research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Redfin Property Search Scraper",
+    "description": "Search Redfin homes by market and filters, then compare addresses, prices and room counts. Set a Redfin market or region, then narrow the search by price, rooms or property status.",
+    "seoTitle": "Redfin Property Search Scraper | Home Listings",
+    "seoDescription": "Redfin Property Search Scraper: Compare property addresses, asking prices, bedrooms. Use the Apify API to schedule repeat Redfin Property Search runs.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -661,10 +665,10 @@
   {
     "id": "g4let6UdMxr2Io4uc",
     "name": "redfin-valuation-scraper",
-    "title": "Redfin Valuation Scraper for Property Research",
-    "description": "Collect property estimates, price ranges, and market metrics from Redfin. Results can include `success`, `status`, `message`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Redfin Valuation Scraper for Property Research",
-    "seoDescription": "Collect property listings, prices, and location data from Redfin for property research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Redfin Valuation Scraper",
+    "description": "Check Redfin’s estimated home value and range alongside comparable property details. Provide a property ID or URL to get Redfin’s estimate and comparables when the home has coverage.",
+    "seoTitle": "Redfin Valuation Scraper | Home Value Estimates",
+    "seoDescription": "Redfin Valuation Scraper: Compare estimated home value, low and high estimates, comparable homes. Download Redfin Valuation records as CSV for analysis.",
     "categories": [
       "REAL_ESTATE",
       "BUSINESS"
@@ -673,81 +677,82 @@
   {
     "id": "8ejIZ0nfRPShvWBSP",
     "name": "scrappa-google-search",
-    "title": "Google Search SERP Scraper for SEO Research",
-    "description": "Collect search result titles, links, and snippets from Google Search. Results can include `position`, `title`, `link`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Google Search SERP Scraper for SEO Research",
-    "seoDescription": "Collect search result titles, links, and snippets from Google Search for SEO research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Google Search Results Scraper",
+    "description": "Find Google Search results with page titles, displayed domains, snippets and links. Set the search phrase and regional options to retrieve Google results for a focused market.",
+    "seoTitle": "Google Search Results Scraper | Google Search Results",
+    "seoDescription": "Google Search Results Scraper: Find page titles, displayed domains, search snippets. Use the Apify API to schedule repeat Google Search Results runs.",
     "categories": [
       "SEO_TOOLS",
-      "LEAD_GENERATION"
+      "MARKETING"
     ]
   },
   {
     "id": "MDgsOkRoh1bAfC28g",
     "name": "similarweb-traffic-analytics-scraper",
-    "title": "Similarweb Traffic Analytics Scraper for SEO",
-    "description": "Collect website traffic, engagement, and channel metrics from Similarweb. Results can include `success`, `domain`, `site_name`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Similarweb Traffic Analytics Scraper for SEO",
-    "seoDescription": "Collect website traffic, engagement, and channel metrics from Similarweb for SEO research. Trigger it from Make, Zapier, or n8n through the Apify API.",
+    "title": "Similarweb Traffic Analytics Scraper",
+    "description": "Review Similarweb traffic estimates, visit trends, referral shares and country breakdowns. Add several domains to compare estimated visits, traffic sources and audience locations together.",
+    "seoTitle": "Similarweb Traffic Analytics Scraper | Website Traffic Data",
+    "seoDescription": "Similarweb Traffic Analytics Scraper: Get estimated monthly visits, traffic sources. Download Similarweb Traffic Analytics records as CSV for analysis.",
     "categories": [
       "SEO_TOOLS",
-      "BUSINESS"
+      "MARKETING"
     ]
   },
   {
     "id": "YL4VFRD3clscCfOLc",
     "name": "startpage-search-scraper",
-    "title": "Startpage Search Scraper for SEO Research",
-    "description": "Collect search result titles, links, and snippets from Startpage. Results can include `position`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Startpage Search Scraper for SEO Research",
-    "seoDescription": "Collect search result titles, links, and snippets from Startpage for SEO research. Export the dataset from Apify, or schedule repeats through the API.",
+    "title": "Startpage Search Scraper",
+    "description": "Find Startpage results with page titles, descriptions, domains and source links. Submit several phrases in one run and use only the locale and filters listed in the input.",
+    "seoTitle": "Startpage Search Scraper | Search Results",
+    "seoDescription": "Startpage Search Scraper: Find page titles, displayed domains, search snippets, result links. Connect Startpage Search results to Make, Zapier or n8n.",
     "categories": [
       "SEO_TOOLS",
-      "LEAD_GENERATION"
+      "MARKETING"
     ]
   },
   {
     "id": "DUUlFa5LGId75vOI0",
     "name": "stepstone-jobs-scraper",
-    "title": "Stepstone Job Listings Scraper for Hiring Teams",
-    "description": "Collect job listings and job details from Stepstone. Results can include `title`, `company_name`, `company_url`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Stepstone Job Listings Scraper for Hiring Teams",
-    "seoDescription": "Collect job listings and employer details from Stepstone for hiring research. Use Apify schedules, dataset exports, or API calls to repeat research.",
+    "title": "Stepstone Jobs Scraper",
+    "description": "Find Stepstone job listings with titles, employers, locations and salary details when available. Set a job title and location to compare current vacancies, with pay details where Stepstone provides them.",
+    "seoTitle": "Stepstone Jobs Scraper | Job Listings",
+    "seoDescription": "Stepstone Jobs Scraper: Get job titles, employers, locations. Search job titles and locations. Connect Stepstone Jobs results to Make, Zapier or n8n.",
     "categories": [
       "JOBS",
-      "LEAD_GENERATION"
+      "BUSINESS"
     ]
   },
   {
     "id": "c1Lt3EdNOuoen5In7",
     "name": "tiktok-ads-scraper",
-    "title": "TikTok Ads Scraper for Campaign Research",
-    "description": "Collect TikTok ad creative and campaign details from TikTok. Results can include `ad_id`, `advertiser_name`, `brand_name`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Ads Scraper for Campaign Research",
-    "seoDescription": "Scrape ad creatives, advertisers, and campaign metrics from TikTok for ad campaign research. Save the dataset in Apify and automate repeat collection.",
+    "title": "TikTok Ads Scraper",
+    "description": "Review public TikTok ad creatives with advertiser names, copy, calls to action and landing pages. Provide a public ad page URL or a list of ad URLs to compare creatives and landing pages.",
+    "seoTitle": "TikTok Ads Scraper | Ad Creative Data",
+    "seoDescription": "TikTok Ads Scraper: Get advertiser names, ad copy, calls to action. Paste one or more public ad URLs. Download TikTok Ads records as CSV for analysis.",
     "categories": [
-      "MARKETING",
-      "SOCIAL_MEDIA"
+      "SOCIAL_MEDIA",
+      "VIDEOS"
     ]
   },
   {
     "id": "bEajaru9WVbLA0YBh",
     "name": "tiktok-challenge-details-scraper",
-    "title": "TikTok Hashtag & Challenge Details Scraper",
-    "description": "Collect hashtag and challenge video records from TikTok. Results can include `challenge_id`, `challenge_name`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Hashtag & Challenge Details Scraper",
-    "seoDescription": "Collect hashtag details and video counts from TikTok for audience and content research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "TikTok Hashtag Details Scraper",
+    "description": "Look up TikTok hashtag challenges with names, descriptions and participant counts. Submit multiple challenge names in one run to retrieve records for each target.",
+    "seoTitle": "TikTok Hashtag Details Scraper | Challenge Details",
+    "seoDescription": "TikTok Hashtag Details Scraper: Get challenge names, descriptions, participant counts. Connect TikTok Hashtag Details results to Make, Zapier or n8n.",
     "categories": [
-      "SOCIAL_MEDIA"
+      "SOCIAL_MEDIA",
+      "VIDEOS"
     ]
   },
   {
     "id": "CVaJEgPjl3jWKbm71",
     "name": "tiktok-challenge-posts-scraper",
-    "title": "TikTok Hashtag Videos Scraper for Creator Research",
-    "description": "Collect hashtag and challenge video records from TikTok. Results can include `video_id`, `aweme_id`, `title`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Hashtag Videos Scraper for Creator Research",
-    "seoDescription": "Scrape hashtag video posts, captions, URLs, and engagement counts from TikTok for video research. Apify datasets make results easy to export and reuse.",
+    "title": "TikTok Hashtag Videos Scraper",
+    "description": "Collect public TikTok videos linked to a challenge, with captions, creators and engagement counts. Pass one or more challenge IDs; use TikTok Challenge Search or Challenge Details to find an ID first.",
+    "seoTitle": "TikTok Hashtag Videos Scraper | Challenge Videos",
+    "seoDescription": "TikTok Hashtag Videos Scraper: Get video captions, creator details, play counts, likes. Connect TikTok Hashtag Videos results to Make, Zapier or n8n.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -756,54 +761,58 @@
   {
     "id": "MM5bzu7V8yORRFTqW",
     "name": "tiktok-challenge-search-scraper",
-    "title": "TikTok Challenge Search Scraper for Trends",
-    "description": "Collect hashtag and challenge video records from TikTok. Results can include `challenge_name`, `challenge_id`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Challenge Search Scraper for Trends",
-    "seoDescription": "Collect hashtag and challenge search results from TikTok for audience and content research. Export the Apify dataset or call the Actor from your code.",
+    "title": "TikTok Challenge Search Scraper",
+    "description": "Find TikTok challenges by keyword and review their names, IDs and video counts. Enter a challenge keyword to find matching challenge names and IDs for a follow-up lookup.",
+    "seoTitle": "TikTok Challenge Search Scraper | Challenge Search",
+    "seoDescription": "TikTok Challenge Search Scraper: Find challenge names, challenge IDs, descriptions. Use the Apify API to schedule repeat TikTok Challenge Search runs.",
     "categories": [
-      "SOCIAL_MEDIA"
+      "SOCIAL_MEDIA",
+      "VIDEOS"
     ]
   },
   {
     "id": "oaJANlheGg9o3EZjU",
     "name": "tiktok-comments-scraper",
-    "title": "TikTok Comments Scraper for Audience Research",
-    "description": "Collect reviews, ratings, and comment details from TikTok. Results can include `comment_type`, `text`, `user`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Comments Scraper for Audience Research",
-    "seoDescription": "Scrape video comments, replies, and engagement counts from TikTok for audience and content research. Apify datasets make results easy to export and reuse.",
+    "title": "TikTok Comments Scraper",
+    "description": "Read public TikTok video comments with text, commenter details, likes and replies. Paste a public video URL and choose whether to include replies when the source provides them.",
+    "seoTitle": "TikTok Comments Scraper | Video Comments",
+    "seoDescription": "TikTok Comments Scraper: Read comment text, commenter details. Paste a public TikTok video URL. Connect TikTok Comments results to Make, Zapier or n8n.",
     "categories": [
-      "SOCIAL_MEDIA"
+      "SOCIAL_MEDIA",
+      "VIDEOS"
     ]
   },
   {
     "id": "1WE6uJzTx1DbS5u39",
     "name": "tiktok-followers-scraper",
-    "title": "TikTok Followers Scraper for Audience Research",
-    "description": "Collect public TikTok follower or following records from TikTok. Results can include `unique_id`, `user_id`, `nickname`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Followers Scraper for Audience Research",
-    "seoDescription": "Collect follower profiles and account details from TikTok for audience and content research. Save the dataset in Apify and automate repeat collection.",
+    "title": "TikTok Followers Scraper",
+    "description": "Review public profiles following a TikTok account, with usernames and follower counts. Enter a public TikTok username and set the requested count to inspect that account’s followers.",
+    "seoTitle": "TikTok Followers Scraper | Follower Profiles",
+    "seoDescription": "TikTok Followers Scraper: Get usernames, display names, profile photos, follower counts. Use TikTok Followers output in a recurring Apify API workflow.",
     "categories": [
-      "SOCIAL_MEDIA"
+      "SOCIAL_MEDIA",
+      "VIDEOS"
     ]
   },
   {
     "id": "a3CzWl85xlYKi9UIn",
     "name": "tiktok-following-scraper",
-    "title": "TikTok Following Scraper for Audience Research",
-    "description": "Collect public TikTok follower or following records from TikTok. Results can include `unique_id`, `user_id`, `nickname`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Following Scraper for Audience Research",
-    "seoDescription": "Scrape following profiles and account details from TikTok for audience and content research. Save the dataset in Apify and automate repeat collection.",
+    "title": "TikTok Following Scraper",
+    "description": "Review public profiles followed by a TikTok account, with usernames and profile details. Choose a public TikTok profile and requested count to list accounts it follows.",
+    "seoTitle": "TikTok Following Scraper | Following Profiles",
+    "seoDescription": "TikTok Following Scraper: Get usernames, display names, profile photos, follower counts. Use TikTok Following output in a recurring Apify API workflow.",
     "categories": [
-      "SOCIAL_MEDIA"
+      "SOCIAL_MEDIA",
+      "VIDEOS"
     ]
   },
   {
     "id": "H2dZTreGZ7s3XJsQ7",
     "name": "tiktok-hashtag-posts-scraper",
-    "title": "TikTok Hashtag Posts Scraper for Creator Research",
-    "description": "Collect hashtag and challenge video records from TikTok. Results can include `desc`, `author`, `digg_count`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Hashtag Posts Scraper for Creator Research",
-    "seoDescription": "Scrape hashtag video posts, captions, URLs, and engagement counts from TikTok for video research. Apify datasets make results easy to export and reuse.",
+    "title": "TikTok Hashtag Posts Scraper",
+    "description": "Find public TikTok videos using a hashtag, with captions, creators and engagement counts. Enter a hashtag and optionally choose a region or result count.",
+    "seoTitle": "TikTok Hashtag Posts Scraper | Hashtag Videos",
+    "seoDescription": "TikTok Hashtag Posts Scraper: Get video captions, creator details, play counts, likes. Use the Apify API to schedule repeat TikTok Hashtag Posts runs.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -812,10 +821,10 @@
   {
     "id": "wzEBOBvzGVv5qrpLB",
     "name": "tiktok-music-posts-scraper",
-    "title": "TikTok Music Posts Scraper for Creator Research",
-    "description": "Collect public post text, media links, and engagement counts from TikTok. Results can include `desc`, `author`, `digg_count`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Music Posts Scraper for Creator Research",
-    "seoDescription": "Collect music video posts, captions, URLs, and engagement counts from TikTok for video research. Apify datasets make results easy to export and reuse.",
+    "title": "TikTok Music Posts Scraper",
+    "description": "Find TikTok videos using a sound and compare captions, creators and engagement. Submit multiple sound IDs in one run to retrieve records for each target.",
+    "seoTitle": "TikTok Music Posts Scraper | Sound Videos",
+    "seoDescription": "TikTok Music Posts Scraper: Get video captions, creator details, play counts, likes. Add TikTok Music Posts results to a scheduled spreadsheet report.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -824,32 +833,34 @@
   {
     "id": "ElkkSkWZ7xAaOqsr4",
     "name": "tiktok-profile-scraper",
-    "title": "TikTok Profile Scraper for Audience Research",
-    "description": "Collect public profile fields and account details from TikTok. Results can include `unique_id`, `nickname`, `user_id`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Profile Scraper for Audience Research",
-    "seoDescription": "Collect profile details and account metrics from TikTok for audience and content research. Trigger it from Make, Zapier, or n8n through the Apify API.",
+    "title": "TikTok Profile Scraper",
+    "description": "Look up a public TikTok profile with display name, username and follower counts. Enter a public TikTok username to retrieve profile details without searching for posts.",
+    "seoTitle": "TikTok Profile Scraper | Profile Data",
+    "seoDescription": "TikTok Profile Scraper: Get username, display name, follower count, following count. Export TikTok Profile results as CSV for a spreadsheet review.",
     "categories": [
-      "SOCIAL_MEDIA"
+      "SOCIAL_MEDIA",
+      "VIDEOS"
     ]
   },
   {
     "id": "0h6AKrgNYjn7pM5EO",
     "name": "tiktok-search-scraper",
-    "title": "TikTok Search Scraper for Audience Research",
-    "description": "Collect search results, names, and source links from TikTok. Results can include `desc`, `author`, `digg_count`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Search Scraper for Audience Research",
-    "seoDescription": "Scrape video search results, creators, and engagement from TikTok for audience and content research. Apify datasets make results easy to export and reuse.",
+    "title": "TikTok Search Scraper",
+    "description": "Search TikTok videos by phrase and collect captions, creator details and play counts. Search video captions or topics, then refine by region, publication time or sort order.",
+    "seoTitle": "TikTok Search Scraper | Video Search Results",
+    "seoDescription": "TikTok Search Scraper: Find video captions, creator details. Choose a region or sort option. Use the Apify API to schedule repeat TikTok Search runs.",
     "categories": [
+      "VIDEOS",
       "SOCIAL_MEDIA"
     ]
   },
   {
     "id": "iSnxQQAvqnI0ZKL9F",
     "name": "tiktok-user-posts-scraper",
-    "title": "TikTok User Posts Scraper for Creator Research",
-    "description": "Collect public post text, media links, and engagement counts from TikTok. Results can include `desc`, `author`, `digg_count`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok User Posts Scraper for Creator Research",
-    "seoDescription": "Collect user video posts, captions, URLs, and engagement counts from TikTok for video research. Apify datasets make results easy to export and reuse.",
+    "title": "TikTok User Posts Scraper",
+    "description": "List public videos from a TikTok profile with captions and engagement counts. Set a public TikTok username and continue with the cursor when another page is available.",
+    "seoTitle": "TikTok User Posts Scraper | Profile Videos",
+    "seoDescription": "TikTok User Posts Scraper: Get video captions, creator details, play counts, likes. Export TikTok User Posts results as CSV for a spreadsheet review.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -858,10 +869,10 @@
   {
     "id": "4DSOKG4JhcS4lhu60",
     "name": "tiktok-video-scraper",
-    "title": "TikTok Video Details Scraper for Creator Research",
-    "description": "Collect public video metadata and engagement counts from TikTok. Results can include `title`, `author`, `play_count`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TikTok Video Details Scraper for Creator Research",
-    "seoDescription": "Collect video captions, creators, and engagement counts from TikTok for video research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "TikTok Video Details Scraper",
+    "description": "Look up a public TikTok video with its caption, creator and engagement metrics. Paste a public video URL or submit several URLs, then enable the optional HD setting when required.",
+    "seoTitle": "TikTok Video Details Scraper | Video Details",
+    "seoDescription": "TikTok Video Details Scraper: Get video caption, creator details, play count, likes. Use TikTok Video Details output in a recurring Apify API workflow.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -870,10 +881,10 @@
   {
     "id": "L5tTNPlxeCTlFUUjl",
     "name": "trustedshops-reviews-scraper",
-    "title": "TrustedShops Reviews Scraper for Campaign Research",
-    "description": "Collect reviews, ratings, and comment details from Trusted Shops. Results can include `tsid`, `shop_name`, `rating`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TrustedShops Reviews Scraper for Campaign Research",
-    "seoDescription": "Collect reviews, ratings, and public feedback from Trusted Shops for reputation research. Schedule runs in Apify and export results for your workflow.",
+    "title": "TrustedShops Reviews Scraper",
+    "description": "Read Trusted Shops reviews with shop names, ratings, written feedback and posting dates. Use a Trusted Shops shop ID or URL and page through the reviews available for that profile.",
+    "seoTitle": "TrustedShops Reviews Scraper | Shop Reviews",
+    "seoDescription": "TrustedShops Reviews Scraper: Read shop names, star ratings, review text, posting dates. Connect TrustedShops Reviews results to Make, Zapier or n8n.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -882,10 +893,10 @@
   {
     "id": "m7Ss9UWPRN5cQhIAK",
     "name": "trustedshops-search-scraper",
-    "title": "Trusted Shops Search Scraper for Campaign Research",
-    "description": "Collect search results, names, and source links from Trusted Shops. Results can include `accountName`, `shopName`, `tsID`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Trusted Shops Search Scraper for Campaign Research",
-    "seoDescription": "Scrape search result titles, links, and snippets from Trusted Shops for reputation research. Save the dataset in Apify and automate repeat collection.",
+    "title": "Trusted Shops Search Scraper",
+    "description": "Find Trusted Shops profiles by name and compare shop ratings, review counts and links. Enter a shop name to find its public Trusted Shops profile and review summary.",
+    "seoTitle": "Trusted Shops Search Scraper | Shop Search",
+    "seoDescription": "Trusted Shops Search Scraper: Find shop names, average ratings, review counts, profile links. Download Trusted Shops Search records as CSV for analysis.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -894,10 +905,10 @@
   {
     "id": "hhSb9mCZkXYTQc3Lo",
     "name": "trustedshops-shop-profile-scraper",
-    "title": "TrustedShops Shop Profile Scraper for Marketing",
-    "description": "Collect public profile fields and account details from Trusted Shops. Results can include `tsid`, `requested_tsid`, `name`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "TrustedShops Shop Profile Scraper for Marketing",
-    "seoDescription": "Scrape public source records and structured data from Trusted Shops for reputation research. Save the dataset in Apify and automate repeat collection.",
+    "title": "TrustedShops Shop Profile Scraper",
+    "description": "Look up a Trusted Shops profile with shop details, rating and certification status. Submit a shop ID or profile URL, with batch input available for multiple shops.",
+    "seoTitle": "TrustedShops Shop Profile Scraper | Shop Profiles",
+    "seoDescription": "TrustedShops Shop Profile Scraper: Get shop names, ratings, certification status. Use the Apify API to schedule repeat TrustedShops Shop Profile runs.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -906,10 +917,10 @@
   {
     "id": "W8yULHo0Mzq7CYRrM",
     "name": "trustpilot-business-search-scraper",
-    "title": "Trustpilot Business Search Scraper for Marketing",
-    "description": "Collect search results, names, and source links from Trustpilot. Results can include `business_name`, `identifying_name`, `trust_score`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Trustpilot Business Search Scraper for Marketing",
-    "seoDescription": "Collect search result titles, links, and snippets from Trustpilot for reputation research. Trigger it from Make, Zapier, or n8n through the Apify API.",
+    "title": "Trustpilot Business Search Scraper",
+    "description": "Find Trustpilot businesses by name and compare star ratings, TrustScores and review counts. Search a company name and apply supported market, rating or review-count filters to the business results.",
+    "seoTitle": "Trustpilot Business Search Scraper | Business Reviews",
+    "seoDescription": "Trustpilot Business Search Scraper: Find business names, Trustpilot scores, star ratings. Download Trustpilot Business Search records as CSV for analysis.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -918,10 +929,10 @@
   {
     "id": "HUWnflZ9OPGnNujNH",
     "name": "trustpilot-company-details-scraper",
-    "title": "Trustpilot Company Details Scraper for Marketing",
-    "description": "Collect public record details and identifying fields from Trustpilot. Results can include `company_name`, `company_domain`, `trust_score`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Trustpilot Company Details Scraper for Marketing",
-    "seoDescription": "Collect public source records and structured data from Trustpilot for reputation research. Trigger it from Make, Zapier, or n8n through the Apify API.",
+    "title": "Trustpilot Company Details Scraper",
+    "description": "Review a Trustpilot company profile with domain, TrustScore, star rating and review count. Submit multiple company domains in one run to retrieve records for each target.",
+    "seoTitle": "Trustpilot Company Details Scraper | Company Profiles",
+    "seoDescription": "Trustpilot Company Details Scraper: Get business names, Trustpilot scores, star ratings. Download Trustpilot Company Details records as CSV for analysis.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -930,10 +941,10 @@
   {
     "id": "nBSazp2iBmBm1FQvz",
     "name": "trustpilot-company-reviews-scraper",
-    "title": "Trustpilot Company Reviews Scraper for Marketing",
-    "description": "Collect reviews, ratings, and comment details from Trustpilot. Results can include `consumer_name`, `rating`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Trustpilot Company Reviews Scraper for Marketing",
-    "seoDescription": "Collect reviews, ratings, and public feedback from Trustpilot for reputation research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Trustpilot Company Reviews Scraper",
+    "description": "Read public Trustpilot reviews with reviewer name, rating, title and written feedback. Choose a company domain and apply supported rating, date or reply filters to its public reviews.",
+    "seoTitle": "Trustpilot Company Reviews Scraper | Customer Reviews",
+    "seoDescription": "Trustpilot Company Reviews Scraper: Read reviewer names, star ratings, review titles. Download Trustpilot Company Reviews records as CSV for analysis.",
     "categories": [
       "MARKETING",
       "BUSINESS"
@@ -942,10 +953,10 @@
   {
     "id": "nA0kqXK4aSTiOHpQd",
     "name": "vinted-item-details-scraper",
-    "title": "Vinted Item Details Scraper for Product Research",
-    "description": "Collect public record details and identifying fields from Vinted. Results can include `id`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Vinted Item Details Scraper for Product Research",
-    "seoDescription": "Collect marketplace listings, prices, and seller data from Vinted for product research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Vinted Item Details Scraper",
+    "description": "Review a Vinted item with its title, description, price, size and condition. Submit multiple listing IDs in one run to retrieve records for each target.",
+    "seoTitle": "Vinted Item Details Scraper | Item Details",
+    "seoDescription": "Vinted Item Details Scraper: Compare listing titles, item descriptions, prices, item condition. Download Vinted Item Details records as CSV for analysis.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -954,10 +965,10 @@
   {
     "id": "u8F5YhfXkQIrgLe73",
     "name": "vinted-search-scraper",
-    "title": "Vinted Search Scraper for Product Research",
-    "description": "Collect marketplace listings, prices, and item details from Vinted. Results can include `id`, `title`, `price_amount`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Vinted Search Scraper for Product Research",
-    "seoDescription": "Collect search result titles, links, and snippets from Vinted for product research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "Vinted Search Scraper",
+    "description": "Find secondhand fashion listings on Vinted with title, brand, condition and price. Search a clothing phrase and narrow listings with the available brand, size, color and price filters.",
+    "seoTitle": "Vinted Search Scraper | Secondhand Listings",
+    "seoDescription": "Vinted Search Scraper: Compare listing titles, brands. Search by item phrase and choose filters. Connect Vinted Search results to Make, Zapier or n8n.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -966,10 +977,10 @@
   {
     "id": "GLc2eaPsRYtwajL0D",
     "name": "vinted-user-items-scraper",
-    "title": "Vinted User Items Scraper for Product Research",
-    "description": "Collect public records and structured source fields from Vinted. Results can include `id`, `title`, `price_amount`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Vinted User Items Scraper for Product Research",
-    "seoDescription": "Collect marketplace listings, prices, and seller data from Vinted for product research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Vinted User Items Scraper",
+    "description": "Browse a Vinted seller’s items with listing titles, brands, condition and prices. Submit multiple user IDs in one run to retrieve records for each target.",
+    "seoTitle": "Vinted User Items Scraper | Seller Listings",
+    "seoDescription": "Vinted User Items Scraper: Compare listing titles, brands, item condition, prices. Export Vinted User Items results as CSV for a spreadsheet review.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -978,10 +989,10 @@
   {
     "id": "0z7FbFWBw77KVoabS",
     "name": "vinted-user-profile-scraper",
-    "title": "Vinted User Profile Scraper for Seller Research",
-    "description": "Collect public profile fields and account details from Vinted. Results can include `id`, `login`, `country_code`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Vinted User Profile Scraper for Seller Research",
-    "seoDescription": "Collect marketplace listings, prices, and seller data from Vinted for product research. Start runs in Apify, then fetch dataset items through the API.",
+    "title": "Vinted User Profile Scraper",
+    "description": "Look up a Vinted seller profile with username, location, feedback and active item count. Paste the seller or user ID shown in the Input section to retrieve its public record.",
+    "seoTitle": "Vinted User Profile Scraper | Seller Profiles",
+    "seoDescription": "Vinted User Profile Scraper: Compare seller usernames, locations, feedback scores. Export Vinted User Profile results as CSV for a spreadsheet review.",
     "categories": [
       "ECOMMERCE",
       "BUSINESS"
@@ -990,22 +1001,22 @@
   {
     "id": "bAUjzVta9rv6bpa10",
     "name": "website-content-extractor-scraper",
-    "title": "Website Content Extractor Scraper for SEO Research",
-    "description": "Collect page text, metadata, links, and content fields from the website URL you provide. Results can include `success`, `input_url`, `url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "Website Content Extractor Scraper for SEO Research",
-    "seoDescription": "Collect web page text, metadata, headings, and links from web pages in batches for SEO research. Apify datasets make results easy to export and reuse.",
+    "title": "Website Content Extractor",
+    "description": "Extract page titles, descriptions, readable text and links from public web pages. Add one or more public page URLs and choose whether to include HTML in the extracted content.",
+    "seoTitle": "Website Content Extractor | Page Text and Links",
+    "seoDescription": "Website Content Extractor: Get page titles, descriptions, readable text, outgoing links. Download Website Content Extractor records as CSV for analysis.",
     "categories": [
       "SEO_TOOLS",
-      "DEVELOPER_TOOLS"
+      "MARKETING"
     ]
   },
   {
     "id": "6ZUj6u4SWuJxOQnn9",
     "name": "youtube-api-batch-videos",
-    "title": "YouTube Batch Video Scraper for Creator Research",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `id`, `videoId`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Batch Video Scraper for Creator Research",
-    "seoDescription": "Scrape video metadata, titles, channels, and engagement statistics from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Batch Video Scraper",
+    "description": "Look up YouTube videos by ID to get titles, descriptions, channel names and view counts. Provide one or more comma-separated YouTube video IDs in the IDs input.",
+    "seoTitle": "YouTube Batch Video Scraper | Video Details",
+    "seoDescription": "YouTube Batch Video Scraper: Get video titles, descriptions, channel names, view counts. Use the Apify API to schedule repeat YouTube Batch Video runs.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1014,10 +1025,10 @@
   {
     "id": "Y3mKYlGNhsrBE7aZO",
     "name": "youtube-api-channel-podcasts",
-    "title": "YouTube Channel Podcast Scraper for Video Analysis",
-    "description": "Collect channel video metadata and publication details from YouTube. Results can include `id`, `videoId`, `title`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Channel Podcast Scraper for Video Analysis",
-    "seoDescription": "Collect podcast episodes and channel video details from YouTube for video research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "YouTube Channel Podcasts Scraper",
+    "description": "Browse podcast playlists published by a YouTube channel, with titles, links and video counts. Provide one or more YouTube channel IDs to list their podcast playlists.",
+    "seoTitle": "YouTube Channel Podcasts Scraper | Podcast Playlists",
+    "seoDescription": "YouTube Channel Podcasts Scraper: Get podcast titles, channel names, playlist links. Connect YouTube Channel Podcasts results to Make, Zapier or n8n.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1026,10 +1037,10 @@
   {
     "id": "w464EbPGGZqcmrC8j",
     "name": "youtube-api-channel-videos",
-    "title": "YouTube Channel Video Scraper for Creator Research",
-    "description": "Collect channel video metadata and publication details from YouTube. Results can include `id`, `videoId`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Channel Video Scraper for Creator Research",
-    "seoDescription": "Scrape channel videos, titles, publication dates, and view counts from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Channel Videos Scraper",
+    "description": "List videos published by a YouTube channel, with titles, publication dates, links and views. Pass the channel ID and use the returned continuation value when you need another page of videos.",
+    "seoTitle": "YouTube Channel Videos Scraper | Channel Videos",
+    "seoDescription": "YouTube Channel Videos Scraper: Get video titles, publication dates, video links, view counts. Download YouTube Channel Videos records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1038,10 +1049,10 @@
   {
     "id": "vKqlzEXa47Ubpuix5",
     "name": "youtube-api-get-channel-about-details",
-    "title": "YouTube Channel Profile Scraper for Creators",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `channelId`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Channel Profile Scraper for Creators",
-    "seoDescription": "Scrape channel profile descriptions, handles, and public details from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Channel About Details Scraper",
+    "description": "Review a YouTube channel’s About details, including name, description, custom URL and country. Submit a YouTube channel ID to retrieve the public details shown on its About page.",
+    "seoTitle": "YouTube Channel About Details Scraper | Channel About Data",
+    "seoDescription": "YouTube Channel About Details Scraper: Get channel names, descriptions, custom URLs. Download YouTube Channel About Details records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1050,10 +1061,10 @@
   {
     "id": "S9Gf6PSqzz6hxvMNA",
     "name": "youtube-api-get-channel-community",
-    "title": "YouTube Channel Community Posts Scraper for Brands",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `id`, `text`, `publishedTime`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Channel Community Posts Scraper for Brands",
-    "seoDescription": "Collect channel community posts, text, and publication details from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Channel Community Posts Scraper",
+    "description": "Read public YouTube community posts with text, publication time, likes and comments. Start with a channel ID, then reuse a returned continuation value to request another community-post page.",
+    "seoTitle": "YouTube Channel Community Posts Scraper | Community Posts",
+    "seoDescription": "YouTube Channel Community Posts Scraper: Get post text, publication times, likes. Download YouTube Channel Community Posts records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1062,10 +1073,10 @@
   {
     "id": "svtEvWGEssObsU72e",
     "name": "youtube-api-get-channel-details",
-    "title": "YouTube Channel Details Scraper for Creators",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `channelId`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Channel Details Scraper for Creators",
-    "seoDescription": "Scrape channel profile details, descriptions, and public metrics from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Channel Details Scraper",
+    "description": "Look up a YouTube channel profile with name, description, custom URL and subscriber count. Provide a channel ID for its public profile; a channel handle or display name is not a substitute.",
+    "seoTitle": "YouTube Channel Details Scraper | Channel Profile Data",
+    "seoDescription": "YouTube Channel Details Scraper: Get channel names, descriptions, custom URLs. Export YouTube Channel Details results as CSV for a spreadsheet review.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1074,10 +1085,10 @@
   {
     "id": "WT3XhaJ0lUYmp0eFu",
     "name": "youtube-api-get-channel-livestreams",
-    "title": "YouTube Channel Livestream Scraper for Creators",
-    "description": "Collect channel video metadata and publication details from YouTube. Results can include `videoId`, `title`, `url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Channel Livestream Scraper for Creators",
-    "seoDescription": "Scrape channel livestream titles, URLs, and publication details from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Channel Livestreams Scraper",
+    "description": "Find public YouTube livestreams from a channel, with titles, watch links and thumbnails. Choose a supported sort order and continuation value when you need to page through the channel’s streams.",
+    "seoTitle": "YouTube Channel Livestreams Scraper | Channel Livestreams",
+    "seoDescription": "YouTube Channel Livestreams Scraper: Get livestream titles, watch links, thumbnails. Download YouTube Channel Livestreams records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1086,10 +1097,10 @@
   {
     "id": "3ERhmU2MUBjdR4AOq",
     "name": "youtube-api-get-channel-playlists",
-    "title": "YouTube Channel Playlist Scraper for Creators",
-    "description": "Collect playlist metadata, titles, and video counts from YouTube. Results can include `id`, `title`, `thumbnail`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Channel Playlist Scraper for Creators",
-    "seoDescription": "Scrape channel playlists, titles, and video counts from YouTube for video research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "YouTube Channel Playlists Scraper",
+    "description": "List playlists from a YouTube channel with titles, thumbnails and video counts. Submit a channel ID or a list of IDs to collect the public playlists published by each channel.",
+    "seoTitle": "YouTube Channel Playlists Scraper | Channel Playlists",
+    "seoDescription": "YouTube Channel Playlists Scraper: Get playlist titles, thumbnails, video counts. Use the Apify API to schedule repeat YouTube Channel Playlists runs.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1098,10 +1109,10 @@
   {
     "id": "608amsD2lD6xRKbax",
     "name": "youtube-api-get-channel-shorts",
-    "title": "YouTube Channel Shorts Scraper for Video Analysis",
-    "description": "Collect channel video metadata and publication details from YouTube. Results can include `videoId`, `title`, `url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Channel Shorts Scraper for Video Analysis",
-    "seoDescription": "Collect channel Shorts titles, URLs, and view counts from YouTube in batches for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Channel Shorts Scraper",
+    "description": "Browse Shorts from a YouTube channel with titles, links and view counts. Use a channel ID and continue with the next-page token when YouTube supplies one.",
+    "seoTitle": "YouTube Channel Shorts Scraper | Channel Shorts",
+    "seoDescription": "YouTube Channel Shorts Scraper: Get Shorts titles, channel names, view counts, video links. Download YouTube Channel Shorts records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1110,10 +1121,10 @@
   {
     "id": "yJiDippxXaK5hWQRC",
     "name": "youtube-api-get-channel-statistics",
-    "title": "YouTube Channel Statistics Scraper for Creators",
-    "description": "Collect channel views, subscriber, and video counts from YouTube. Results can include `channelId`, `viewCount`, `subscriberCount`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Channel Statistics Scraper for Creators",
-    "seoDescription": "Collect channel subscriber, view, and video counts from YouTube for video research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "YouTube Channel Statistics Scraper",
+    "description": "Review public YouTube channel totals for views, subscribers and published videos. Provide a channel ID to retrieve the public subscriber, view and video totals currently available.",
+    "seoTitle": "YouTube Channel Statistics Scraper | Channel Statistics",
+    "seoDescription": "YouTube Channel Statistics Scraper: Get channel views, subscriber counts, video counts. Download YouTube Channel Statistics records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1122,10 +1133,10 @@
   {
     "id": "Xhwtx7clQKnPRez1H",
     "name": "youtube-api-get-playlists-details",
-    "title": "YouTube Playlist Details Scraper for Creators",
-    "description": "Collect playlist metadata, titles, and video counts from YouTube. Results can include `id`, `playlistId`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Playlist Details Scraper for Creators",
-    "seoDescription": "Collect playlist titles, channel details, and video counts from YouTube for video research. Export the Apify dataset or call the Actor from your code.",
+    "title": "YouTube Playlist Details Scraper",
+    "description": "Look up a YouTube playlist with its title, description, channel and video count. Paste a YouTube playlist ID to retrieve its details.",
+    "seoTitle": "YouTube Playlist Details Scraper | Playlist Details",
+    "seoDescription": "YouTube Playlist Details Scraper: Get playlist titles, descriptions, channel names. Use the Apify API to schedule repeat YouTube Playlist Details runs.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1134,10 +1145,10 @@
   {
     "id": "P1Jv1QuMoId4XUPlC",
     "name": "youtube-api-get-video-details",
-    "title": "YouTube Video Details Scraper for Creator Research",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `id`, `videoId`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Video Details Scraper for Creator Research",
-    "seoDescription": "Collect video metadata, descriptions, and engagement statistics from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Video Details Scraper",
+    "description": "Look up a YouTube video with title, description, channel and view count. Paste a YouTube video ID to retrieve its public details.",
+    "seoTitle": "YouTube Video Details Scraper | Video Details",
+    "seoDescription": "YouTube Video Details Scraper: Get video titles, descriptions, channel names, view counts. Download YouTube Video Details records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1146,10 +1157,10 @@
   {
     "id": "N5ol78TtqiMj4MtM6",
     "name": "youtube-api-hashtags",
-    "title": "YouTube Hashtag Video Scraper for Creator Research",
-    "description": "Collect hashtag and challenge video records from YouTube. Results can include `videoId`, `title`, `url`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Hashtag Video Scraper for Creator Research",
-    "seoDescription": "Collect hashtag video titles, channels, and engagement details from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Hashtag Videos Scraper",
+    "description": "Find public YouTube videos for a hashtag, with titles, channels and view counts. Enter a hashtag and optionally set video length, upload time or sort order.",
+    "seoTitle": "YouTube Hashtag Videos Scraper | Hashtag Videos",
+    "seoDescription": "YouTube Hashtag Videos Scraper: Get video titles, descriptions, channel names, view counts. Download YouTube Hashtag Videos records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1158,10 +1169,10 @@
   {
     "id": "hueJrwkrbo20Ufrna",
     "name": "youtube-api-playlists",
-    "title": "YouTube Playlist Search Scraper for Video Analysis",
-    "description": "Collect playlist metadata, titles, and video counts from YouTube. Results can include `playlistId`, `title`, `url`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Playlist Search Scraper for Video Analysis",
-    "seoDescription": "Scrape playlist search results, titles, and counts from YouTube for video research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "YouTube Playlist Search Scraper",
+    "description": "Find YouTube playlists by phrase, with titles, channel names and playlist links. Enter a playlist search phrase and choose a supported sort order.",
+    "seoTitle": "YouTube Playlist Search Scraper | Playlist Search",
+    "seoDescription": "YouTube Playlist Search Scraper: Get playlist titles, descriptions, channel names. Use the Apify API to schedule repeat YouTube Playlist Search runs.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1170,10 +1181,10 @@
   {
     "id": "eKzA6GhEOJACIiCUW",
     "name": "youtube-api-related-videos",
-    "title": "YouTube Related Video Scraper for Creator Research",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `id`, `videoId`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Related Video Scraper for Creator Research",
-    "seoDescription": "Collect related video titles and channel details from YouTube for video research. Export the dataset from Apify, or schedule repeats through the API.",
+    "title": "YouTube Related Videos Scraper",
+    "description": "Find YouTube videos related to a video ID, with titles, channels and view counts. Enter a YouTube video ID and pass a continuation value to request another page.",
+    "seoTitle": "YouTube Related Videos Scraper | Related Videos",
+    "seoDescription": "YouTube Related Videos Scraper: Get video titles, descriptions, channel names, view counts. Download YouTube Related Videos records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1182,10 +1193,10 @@
   {
     "id": "O1ltDU9qk4adR2x86",
     "name": "youtube-api-search-by-category",
-    "title": "YouTube Category Search Scraper for Video Analysis",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `type`, `id`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Category Search Scraper for Video Analysis",
-    "seoDescription": "Collect videos matched to a category, with titles and channels from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Category Search Scraper",
+    "description": "Find YouTube videos in selected categories with titles, descriptions and channel details. Choose one or more video categories and supported sort, length or upload-time filters.",
+    "seoTitle": "YouTube Category Search Scraper | Category Search",
+    "seoDescription": "YouTube Category Search Scraper: Find video titles, descriptions, channel names, view counts. Download YouTube Category Search records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1194,10 +1205,10 @@
   {
     "id": "ziD2fUoLsdzKlc6zR",
     "name": "youtube-api-search-data",
-    "title": "YouTube Search Results Scraper for Video Analysis",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `type`, `id`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Search Results Scraper for Video Analysis",
-    "seoDescription": "Scrape video titles, channel names, and view counts from YouTube for video research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "YouTube Search Scraper",
+    "description": "Search YouTube videos by phrase with titles, descriptions and channel details. Search a video topic and use the listed duration, type, upload-date and sort filters.",
+    "seoTitle": "YouTube Search Scraper | Video Search Results",
+    "seoDescription": "YouTube Search Scraper: Find video titles, descriptions, channel names, view counts. Export YouTube Search results as CSV for a spreadsheet review.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1206,10 +1217,10 @@
   {
     "id": "oecJ81oeff1KozCtd",
     "name": "youtube-api-search-suggestions",
-    "title": "YouTube Search Suggestions Scraper for Creators",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `query`, `suggestion`, `position`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Search Suggestions Scraper for Creators",
-    "seoDescription": "Collect search suggestions and related query terms from YouTube for video research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "YouTube Search Suggestions Scraper",
+    "description": "Find YouTube search suggestions for a phrase and locale. Enter a phrase and select a language or country to request localized YouTube suggestions.",
+    "seoTitle": "YouTube Search Suggestions Scraper | Search Suggestions",
+    "seoDescription": "YouTube Search Suggestions Scraper: Find search suggestions, language, country or region. Download YouTube Search Suggestions records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1218,10 +1229,10 @@
   {
     "id": "T7ddx0tgVCwMHi9ET",
     "name": "youtube-api-trending-videos",
-    "title": "YouTube Trending Video Scraper for Video Analysis",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `type`, `id`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Trending Video Scraper for Video Analysis",
-    "seoDescription": "Scrape trending video titles, channel names, and view counts from YouTube for video research. Save the dataset in Apify and automate repeat collection.",
+    "title": "YouTube Trending Videos Scraper",
+    "description": "Browse YouTube’s default trending feed with video titles, channel names and view counts. Start with the default trending feed, then choose a supported time range if needed.",
+    "seoTitle": "YouTube Trending Videos Scraper | Trending Videos",
+    "seoDescription": "YouTube Trending Videos Scraper: Get video titles, descriptions, channel names, view counts. Download YouTube Trending Videos records as CSV for analysis.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1230,10 +1241,10 @@
   {
     "id": "fq5Kq9OfBRWYu9go1",
     "name": "youtube-api-video-chapters",
-    "title": "YouTube Video Chapters Scraper for Creators",
-    "description": "Collect video chapter titles and time markers from YouTube. Results can include `videoId`, `chapters`, `title`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Video Chapters Scraper for Creators",
-    "seoDescription": "Scrape video chapter titles, descriptions, and timestamp markers from YouTube for video research. Apify datasets make results easy to export and reuse.",
+    "title": "YouTube Video Chapters Scraper",
+    "description": "Get YouTube video chapter titles and their start times in seconds. Enter one or more YouTube video IDs to retrieve their chapter lists.",
+    "seoTitle": "YouTube Video Chapters Scraper | Video Chapters",
+    "seoDescription": "YouTube Video Chapters Scraper: Get chapter titles, start times, end times, video title. Connect YouTube Video Chapters results to Make, Zapier or n8n.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"
@@ -1242,22 +1253,22 @@
   {
     "id": "ZT2Z352FLhgqgtMrg",
     "name": "youtube-api-video-comments",
-    "title": "YouTube Video Comments Scraper for Viewer Insights",
-    "description": "Collect reviews, ratings, and comment details from YouTube. Results can include `id`, `text`, `publishedTime`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Video Comments Scraper for Viewer Insights",
-    "seoDescription": "Scrape video comments, replies, and public feedback from YouTube for video research. Run it in Apify and export the dataset or call it through the API.",
+    "title": "YouTube Video Comments Scraper",
+    "description": "Read public YouTube video comments with text, publication time, likes and replies. Enter a YouTube video ID and pass the continuation value to request another page.",
+    "seoTitle": "YouTube Video Comments Scraper | Video Comments",
+    "seoDescription": "YouTube Video Comments Scraper: Read comment text, publication times, likes, reply counts. Download YouTube Video Comments records as CSV for analysis.",
     "categories": [
-      "VIDEOS",
-      "SOCIAL_MEDIA"
+      "SOCIAL_MEDIA",
+      "VIDEOS"
     ]
   },
   {
     "id": "ztc698cHC09lkCDYE",
     "name": "youtube-transcript-scraper",
-    "title": "YouTube Transcript Scraper for Creator Research",
-    "description": "Collect transcript text and timestamped segments from YouTube. Results can include `videoId`, `language`, `languageName`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
-    "seoTitle": "YouTube Transcript Scraper for Creator Research",
-    "seoDescription": "Collect transcript text, language, and timestamped segments from YouTube for video research. Save the dataset in Apify and automate repeat collection.",
+    "title": "YouTube Transcript Scraper",
+    "description": "Retrieve YouTube caption segments with text, language and timing information. Enter a YouTube video ID and choose a transcript language when needed.",
+    "seoTitle": "YouTube Transcript Scraper | Caption Segments",
+    "seoDescription": "YouTube Transcript Scraper: Read caption text, language, start times, segment duration. Use the Apify API to schedule repeat YouTube Transcript runs.",
     "categories": [
       "VIDEOS",
       "SOCIAL_MEDIA"

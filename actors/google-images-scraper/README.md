@@ -1,42 +1,42 @@
-# Google Images Scraper for Creator Research
+# Google Images Scraper
 
-The Google Images Scraper for Creator Research collects public records and structured source fields from Google Images. Provide a search phrase or a short list of phrases; the actor saves source fields such as `position`, `thumbnail_url`, `image_url`, and `title` to an Apify dataset.
+Find Google Images results with image links, titles, publishers and dimensions. Choose a region and optional image filters to make a visual search more specific.
 
 ## What data can you extract?
 
-The dataset contains fields returned by Google Images. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Image links and dimensions are shown when Google Images provides them for a result.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `position` | number | # returned for this result. |
-| `thumbnail_url` | image | Thumbnail returned for this result. |
-| `image_url` | link | Original Image returned for this result. |
-| `title` | text | Title returned for this result. |
-| `source` | text | Source returned for this result. |
-| `source_url` | link | Source URL returned for this result. |
-| `width` | number | Width returned for this result. |
-| `height` | number | Height returned for this result. |
-| `is_product` | boolean | Product returned for this result. |
-| `request_q` | text | Query returned for this result. |
-| `request_page` | number | Page returned for this result. |
-| `request_gl` | text | Country returned for this result. |
-| `request_hl` | text | Language returned for this result. |
-| `request_imgsz` | text | Size Filter returned for this result. |
-| `request_imgtype` | text | Type Filter returned for this result. |
-| `request_imgcolor` | text | Color Filter returned for this result. |
-| `request_imgar` | text | Aspect Filter returned for this result. |
+| `position` | number | Result position in the Google Images image result list, as a whole number; null when the source does not supply one. |
+| `thumbnail_url` | image | Thumbnail url for this image result on Google Images; null when the source does not provide a URL. |
+| `image_url` | link | Image url for this image result on Google Images; null when the source does not provide a URL. |
+| `title` | text | Title of the image result, as shown by Google Images; null when no title is published. |
+| `source` | text | Source or language label shown for the image result by Google Images, in the format used by the source; null when it is omitted. |
+| `source_url` | link | Source page url for this image result on Google Images; null when the source does not provide a URL. |
+| `width` | number | Image width of the image shown by Google Images, in pixels; null when the source does not publish the dimension. |
+| `height` | number | Image height of the image shown by Google Images, in pixels; null when the source does not publish the dimension. |
+| `is_product` | boolean | Whether Google Images classifies the result as a product; false is a reported value, while null means Google Images provided no flag. |
+| `request_q` | text | Search phrase passed to Google Images. This input value is copied into the output row; null when it was not supplied. |
+| `request_page` | number | Requested result page number passed to Google Images; A whole-number page number. This input value is copied into the output row; null when it was not supplied. |
+| `request_gl` | text | Two-letter country or region code passed to Google Images; Use a two-letter country code such as us or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_hl` | text | Interface language code passed to Google Images; Use a language code such as en or de. This input value is copied into the output row; null when it was not supplied. |
+| `request_imgsz` | text | Image size filter passed to Google Images. This input value is copied into the output row; null when it was not supplied. |
+| `request_imgtype` | text | Image type filter passed to Google Images. This input value is copied into the output row; null when it was not supplied. |
+| `request_imgcolor` | text | Image color filter passed to Google Images. This input value is copied into the output row; null when it was not supplied. |
+| `request_imgar` | text | Image aspect-ratio filter passed to Google Images. This input value is copied into the output row; null when it was not supplied. |
 
 ## Use cases
 
-- Collect public records and structured source fields from Google Images for creator research.
-- Review the structured fields returned for each result.
-- Export the dataset or schedule recurring runs in Apify.
+- Designers can collect image links and source pages while building visual references.
+- Editorial teams can check image publishers and dimensions for a topic.
+- Researchers can compare image results across phrases and locales.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. For multi-target work, use `queries` and start with a short list.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Put the supported targets in `queries` and use the identifier or URL format required by Google Images.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -47,25 +47,9 @@ The dataset contains fields returned by Google Images. The field names below mat
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "position": 42,
-  "thumbnail_url": "https://example.com/image.jpg",
-  "image_url": "https://example.com/image.jpg",
-  "title": "Example result",
-  "source": "Example value",
-  "source_url": "https://example.com/result/1",
-  "width": 42
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -81,33 +65,54 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `tbs` | string | No | Google tbs filter syntax, such as qdr:d for past day, qdr:w for past week, qdr:m for past month, or qdr:y for past year. |
 | `safe` | string | No | Safe search filtering. Constraints: allowed values: active, off. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "title": "Seattle neighborhood market guide",
+  "thumbnail_url": "https://images.example.com/video/market-morning-thumb.jpg",
+  "image_url": "https://images.example.com/listings/vintage-coat-01.jpg",
+  "source": "Google Search",
+  "source_url": "https://source.example.com/articles/market-guide",
+  "width": 1280,
+  "height": 720,
+  "is_product": false
+}
+```
+
 ## Pricing
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results; plus $0.00005 per Actor Start event.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+The listed amount is charged once when a run starts.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from Google Images. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~google-images-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~google-images-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Can Google Images filter results by color or size?
+
+Use the image filters listed in Input, such as size, color or type when supported. Set a phrase and locale to find matching image results.
 
 ## Related Scrappa Actors
 
-- [Google Videos Scraper for Creator Research](https://apify.com/thescrappa/google-videos-scraper)
-- [YouTube Search Results Scraper for Video Analysis](https://apify.com/thescrappa/youtube-api-search-data)
-- [YouTube Video Comments Scraper for Viewer Insights](https://apify.com/thescrappa/youtube-api-video-comments)
-- [YouTube Transcript Scraper for Creator Research](https://apify.com/thescrappa/youtube-transcript-scraper)
+- [Google Videos Scraper](https://apify.com/thescrappa/google-videos-scraper)
+- [YouTube Search Scraper](https://apify.com/thescrappa/youtube-api-search-data)
+- [YouTube Video Comments Scraper](https://apify.com/thescrappa/youtube-api-video-comments)
+- [YouTube Transcript Scraper](https://apify.com/thescrappa/youtube-transcript-scraper)

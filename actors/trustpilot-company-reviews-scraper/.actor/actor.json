@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "trustpilot-company-reviews-scraper",
-  "title": "Trustpilot Company Reviews Scraper for Marketing",
-  "description": "Collect reviews, ratings, and comment details from Trustpilot. Results can include `consumer_name`, `rating`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Trustpilot Company Reviews Scraper",
+  "description": "Read public Trustpilot reviews with reviewer name, rating, title and written feedback. Choose a company domain and apply supported rating, date or reply filters to its public reviews.",
   "categories": [
     "MARKETING",
     "LEAD_GENERATION",

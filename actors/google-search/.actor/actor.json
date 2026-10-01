@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-search-scraper",
-  "title": "Google Search Results Scraper for SEO Research",
-  "description": "Collect search result titles, links, and snippets from Google Search. Results can include `position`, `title`, `link`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google Search Scraper",
+  "description": "Find Google Search results with page titles, displayed domains, snippets and links. Use the phrase, location and locale options to shape a Google results page for your query.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "google-images-scraper",
-  "title": "Google Images Scraper for Creator Research",
-  "description": "Collect public records and structured source fields from Google Images. Results can include `position`, `thumbnail_url`, `image_url`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Google Images Scraper",
+  "description": "Find Google Images results with image links, titles, publishers and dimensions. Choose a region and optional image filters to make a visual search more specific.",
   "version": "1.0",
   "buildTag": "latest",
   "input": "./input_schema.json",

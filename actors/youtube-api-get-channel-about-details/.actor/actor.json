@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-get-channel-about-details",
-    "title": "YouTube Channel Profile Scraper for Creators",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `channelId`, `title`, `description`. Batch inputs can process multiple targets in one run. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "title": "YouTube Channel About Details Scraper",
+    "description": "Review a YouTube channel’s About details, including name, description, custom URL and country. Submit a YouTube channel ID to retrieve the public details shown on its About page.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

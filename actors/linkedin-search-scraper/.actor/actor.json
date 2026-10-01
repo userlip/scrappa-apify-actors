@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "linkedin-search-scraper",
-  "title": "LinkedIn Search Scraper for Lead Research",
-  "description": "Collect search results, names, and source links from LinkedIn. Results can include `position`, `title`, `link`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "LinkedIn Search Scraper",
+  "description": "Find LinkedIn pages through search, with titles, displayed links and result snippets. Add a LinkedIn page type such as profile, company, post or job to the search query.",
   "version": "1.0",
   "buildTag": "latest",
   "meta": {

@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-batch-videos",
-    "title": "YouTube Batch Video Scraper for Creator Research",
-    "description": "Collect video, channel, and search result data from YouTube. Results can include `id`, `videoId`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "title": "YouTube Batch Video Scraper",
+    "description": "Look up YouTube videos by ID to get titles, descriptions, channel names and view counts. Provide one or more comma-separated YouTube video IDs in the IDs input.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "stepstone-jobs-scraper",
-  "title": "Stepstone Job Listings Scraper for Hiring Teams",
-  "description": "Collect job listings and job details from Stepstone. Results can include `title`, `company_name`, `company_url`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+  "title": "Stepstone Jobs Scraper",
+  "description": "Find Stepstone job listings with titles, employers, locations and salary details when available. Set a job title and location to compare current vacancies, with pay details where Stepstone provides them.",
   "categories": [
     "LEAD_GENERATION",
     "MARKETING",

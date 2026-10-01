@@ -1,8 +1,8 @@
 {
     "actorSpecification": 1,
     "name": "youtube-api-channel-videos",
-    "title": "YouTube Channel Video Scraper for Creator Research",
-    "description": "Collect channel video metadata and publication details from YouTube. Results can include `id`, `videoId`, `title`. Save and export Apify datasets, schedule runs, or call the Actor through the API.",
+    "title": "YouTube Channel Videos Scraper",
+    "description": "List videos published by a YouTube channel, with titles, publication dates, links and views. Pass the channel ID and use the returned continuation value when you need another page of videos.",
     "version": "0.0",
     "buildTag": "latest",
     "input": "./input_schema.json",

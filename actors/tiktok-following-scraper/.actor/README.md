@@ -1,33 +1,33 @@
-# TikTok Following Scraper for Audience Research
+# TikTok Following Scraper
 
-The TikTok Following Scraper for Audience Research collects public TikTok follower or following records from TikTok. Provide a public profile name or URL; the actor saves source fields such as `unique_id`, `user_id`, `nickname`, and `avatar` to an Apify dataset.
+Review public profiles followed by a TikTok account, with usernames and profile details. Choose a public TikTok profile and requested count to list accounts it follows.
 
 ## What data can you extract?
 
-The dataset contains fields returned by TikTok. The field names below match the Actor output schema. A source may leave optional values empty or omit fields when they are not available for a result.
+Followed profile details are limited to information TikTok makes visible for the requested account.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `unique_id` | text | Username returned for this result. |
-| `user_id` | text | User ID returned for this result. |
-| `nickname` | text | Nickname returned for this result. |
-| `avatar` | image | Avatar returned for this result. |
-| `follower_count` | number | Follower Count returned for this result. |
-| `verified` | boolean | Verified returned for this result. |
-| `lookup_unique_id` | text | Lookup Username returned for this result. |
-| `lookup_user_id` | text | Lookup User ID returned for this result. |
+| `unique_id` | text | TikTok username for this profile; null when the account does not expose a username. |
+| `user_id` | text | user ID for the followed profile, assigned by TikTok; null when the source does not expose it. |
+| `nickname` | text | Nickname shown for the followed profile by TikTok, in the format used by the source; null when it is omitted. |
+| `avatar` | image | Profile image url for this followed profile on TikTok; null when the source does not provide a URL. |
+| `follower_count` | number | Number of followers shown by TikTok, as a whole number; zero is possible, and null means no count was reported. |
+| `verified` | boolean | Whether the source marks the profile or review as verified; false is a reported value, while null means TikTok provided no flag. |
+| `lookup_unique_id` | text | lookup unique id for the followed profile, assigned by TikTok; null when the source does not expose it. |
+| `lookup_user_id` | text | lookup user id for the followed profile, assigned by TikTok; null when the source does not expose it. |
 
 ## Use cases
 
-- Collect public TikTok follower or following records for audience and content research.
-- Review public profile, post, or engagement fields returned for each item.
-- Export the dataset to a social reporting or creator workflow.
+- Creator managers can review public account connections while mapping a niche community.
+- Researchers can compare profiles and counts across a creator network.
+- Partnership teams can shortlist public accounts for manual review.
 
 ## How to use
 
-1. Open the **Input** tab and use the example JSON below.
-2. Change the query, URL, identifier, or other fields you need. Set the lookup fields to match the query or identifier you want to collect.
-3. Start the Actor. Open the run's default dataset to inspect, download, or export the returned records.
+1. Open the Actor’s **Input** tab and start with the JSON below.
+2. Set `profile` to the search term or source identifier you want to look up, then use the optional filters listed below.
+3. Start the run and open its default dataset to inspect or download the rows.
 
 ```json
 {
@@ -36,25 +36,9 @@ The dataset contains fields returned by TikTok. The field names below match the 
 }
 ```
 
-Apify stores the run output in a dataset. You can download the dataset in JSON, CSV, Excel, XML, or other available formats from the run page.
+The run dataset can be downloaded as JSON, CSV, Excel or another format offered by Apify.
 
-## Output example
-
-This illustrative record uses synthetic values. It shows the real output field names; optional source values may be null or absent.
-
-```json
-{
-  "unique_id": "example-123",
-  "user_id": "example-123",
-  "nickname": "Example value",
-  "avatar": "Example value",
-  "follower_count": 42,
-  "verified": true,
-  "lookup_unique_id": "example-123"
-}
-```
-
-## Input fields
+## Input
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -62,34 +46,55 @@ This illustrative record uses synthetic values. It shows the real output field n
 | `count` | integer | No | Maximum number of followed accounts to return. The actor fetches additional Scrappa pages when you request more than 50. Constraints: minimum 1. |
 | `time` | integer | No | Following pagination token/time marker from a previous run. Leave empty for the first page. The actor also accepts cursor as an alias when provided through API input. Constraints: minimum 0. |
 
+## Output example
+
+The record below is synthetic. Names and links are examples, and private contact fields are omitted.
+
+```json
+{
+  "follower_count": 12600,
+  "unique_id": "morgan.creates",
+  "user_id": "7210458831",
+  "nickname": "Morgan Creates",
+  "avatar": "https://source.example.com/record/market-guide",
+  "verified": true,
+  "lookup_unique_id": "morgan.creates",
+  "lookup_user_id": "7210458831"
+}
+```
+
 ## Pricing
 
 **Current live price:** Apify Free tier: $0.30 per 1,000 results; Bronze: $0.25 per 1,000 results; Silver: $0.22 per 1,000 results; Gold, Platinum, and Diamond: $0.20 per 1,000 results.
 
-The price is based on the latest live Apify pricing entry. Per-result charges depend on the number of billed results returned. If the price line lists subscription tiers, the rate shown for each tier applies to that Apify subscription level.
+Each saved video, post or comment record counts as one result.
 
 ## FAQ
 
-### Is it legal to scrape this data?
+### Is it legal to collect public information?
 
-This Actor is intended for data that is publicly available from TikTok. You are responsible for following the source site's terms, privacy and copyright rules, and the laws that apply to your use of the data. Only collect information you have a lawful basis to use.
+This Actor is for information visible on the public source pages it reads. You are responsible for checking the source terms, privacy and copyright rules, and the laws that apply to your use.
 
-### What limits should I expect?
+### How many records will a run return?
 
-Use the field constraints and limits in the input table. The source controls which records are available, so a narrow query or unavailable page can return fewer results or none. Keep batch lists small when you need a quick first run.
+The result count depends on the input limits, pagination settings and what the source makes available. A small query or unavailable page can return fewer records, including none.
 
-### Can I run it through the API or connect it to other tools?
+### Can I call it through the API or connect it to other tools?
 
-Yes. Send the same JSON input to `POST https://api.apify.com/v2/actors/thescrappa~tiktok-following-scraper/runs`. The response includes `defaultDatasetId`; use it to fetch the run's dataset items. See the [Apify Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) and [Actor runs guide](https://docs.apify.com/api/v2/actors-actor-runs). Apify integrations for [Make](https://docs.apify.com/integrations/make), [Zapier](https://docs.apify.com/integrations/zapier), and [n8n](https://docs.apify.com/integrations/n8n) can trigger runs and pass results to the next workflow step. Send dataset rows to Google Sheets through a Sheets step or a workflow integration.
+Yes. Send the same JSON input to `POST https://api.apify.com/v2/acts/thescrappa~tiktok-following-scraper/runs`, then read the run’s default dataset. Make, Zapier and n8n can start runs and pass dataset rows to the next step; Google Sheets can receive rows through those workflows or a dataset export.
 
-### What happens if a request fails?
+### What happens when a request fails?
 
-Apify reports input validation and source request errors in the run details. Review the error, correct the input, and retry after a temporary source problem. Depending on when a request stops, the dataset may be empty or contain results collected before the failure.
+Check the run log for the source or input error, correct the input and retry after a temporary source issue. A run can contain rows saved before a later request failed.
+
+### Does TikTok Following return accounts followed by the target profile?
+
+Yes. Set `profile` to a public TikTok username. The output lists public accounts that profile follows, subject to the requested `count` and what TikTok makes available.
 
 ## Related Scrappa Actors
 
-- [TikTok Ads Scraper for Campaign Research](https://apify.com/thescrappa/tiktok-ads-scraper)
-- [TikTok Hashtag & Challenge Details Scraper](https://apify.com/thescrappa/tiktok-challenge-details-scraper)
-- [TikTok Hashtag Videos Scraper for Creator Research](https://apify.com/thescrappa/tiktok-challenge-posts-scraper)
-- [TikTok Challenge Search Scraper for Trends](https://apify.com/thescrappa/tiktok-challenge-search-scraper)
-- [TikTok Comments Scraper for Audience Research](https://apify.com/thescrappa/tiktok-comments-scraper)
+- [TikTok Ads Scraper](https://apify.com/thescrappa/tiktok-ads-scraper)
+- [TikTok Hashtag Details Scraper](https://apify.com/thescrappa/tiktok-challenge-details-scraper)
+- [TikTok Hashtag Videos Scraper](https://apify.com/thescrappa/tiktok-challenge-posts-scraper)
+- [TikTok Challenge Search Scraper](https://apify.com/thescrappa/tiktok-challenge-search-scraper)
+- [TikTok Comments Scraper](https://apify.com/thescrappa/tiktok-comments-scraper)
