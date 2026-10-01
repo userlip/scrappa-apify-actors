@@ -50,12 +50,12 @@ Compared with the live actor snapshots downloaded on 2026-09-30. 106 actors have
 | `kleinanzeigen-search-scraper` | Kleinanzeigen Search Scraper | Kleinanzeigen Search Scraper | ECOMMERCE, LEAD_GENERATION, DEVELOPER_TOOLS | ECOMMERCE, BUSINESS |
 | `kununu-jobs-scraper` | Kununu Jobs Scraper ($0.30/1k results) | Kununu Jobs Scraper | LEAD_GENERATION, MARKETING, AUTOMATION | JOBS, BUSINESS |
 | `kununu-reviews-scraper` | Kununu Reviews Scraper | Kununu Reviews Scraper | MARKETING, LEAD_GENERATION, AUTOMATION | JOBS, BUSINESS |
-| `linkedin-company-scraper` | LinkedIn Company Scraper - $0.30/1k results | LinkedIn Company Scraper | LEAD_GENERATION, SOCIAL_MEDIA | LEAD_GENERATION, BUSINESS |
+| `linkedin-company-scraper` | LinkedIn Company Scraper - $0.30/1k results | LinkedIn Company Scraper - $0.30/1k results | LEAD_GENERATION, SOCIAL_MEDIA | LEAD_GENERATION, BUSINESS |
 | `linkedin-job-details-scraper` | LinkedIn Job Details Scraper | LinkedIn Job Details Scraper | LEAD_GENERATION, MARKETING, AUTOMATION | JOBS, BUSINESS |
 | `linkedin-jobs-search-scraper` | LinkedIn Jobs Search Scraper ($0.30/1k results) | LinkedIn Jobs Search Scraper | LEAD_GENERATION, SOCIAL_MEDIA | JOBS, BUSINESS |
 | `linkedin-post-scraper` | LinkedIn Post Scraper - $0.30/1k results | LinkedIn Post Scraper | LEAD_GENERATION, SOCIAL_MEDIA | SOCIAL_MEDIA, MARKETING |
-| `linkedin-profile-scraper` | LinkedIn Profile Scraper - $0.30/1k results | LinkedIn Profile Scraper | LEAD_GENERATION, SOCIAL_MEDIA | LEAD_GENERATION, BUSINESS |
-| `linkedin-search-scraper` | LinkedIn Search Scraper ($0.30/1k results) | LinkedIn Search Scraper | LEAD_GENERATION, SOCIAL_MEDIA | LEAD_GENERATION, SOCIAL_MEDIA |
+| `linkedin-profile-scraper` | LinkedIn Profile Scraper - $0.30/1k results | LinkedIn Profile Scraper - $0.30/1k results | LEAD_GENERATION, SOCIAL_MEDIA | LEAD_GENERATION, BUSINESS |
+| `linkedin-search-scraper` | LinkedIn Search Scraper ($0.30/1k results) | LinkedIn Search Scraper - $0.30/1k results | LEAD_GENERATION, SOCIAL_MEDIA | LEAD_GENERATION, SOCIAL_MEDIA |
 | `pinterest-search-scraper` | Pinterest Search Scraper | Pinterest Search Scraper | SOCIAL_MEDIA, MARKETING, DEVELOPER_TOOLS | SOCIAL_MEDIA, MARKETING |
 | `redfin-property-details-scraper` | Redfin Property Details Scraper | Redfin Property Details Scraper | BUSINESS, DEVELOPER_TOOLS, AUTOMATION | REAL_ESTATE, BUSINESS |
 | `redfin-property-search-scraper` | Redfin Property Search Scraper | Redfin Property Search Scraper | BUSINESS, DEVELOPER_TOOLS, AUTOMATION | REAL_ESTATE, BUSINESS |
@@ -79,7 +79,7 @@ Compared with the live actor snapshots downloaded on 2026-09-30. 106 actors have
 | `tiktok-video-scraper` | TikTok Video Details Scraper | TikTok Video Details Scraper | SOCIAL_MEDIA, DEVELOPER_TOOLS | VIDEOS, SOCIAL_MEDIA |
 | `trustedshops-reviews-scraper` | TrustedShops Reviews Scraper | TrustedShops Reviews Scraper | MARKETING, LEAD_GENERATION, AUTOMATION | MARKETING, BUSINESS |
 | `trustedshops-search-scraper` | Trusted Shops Search Scraper | Trusted Shops Search Scraper | MARKETING, LEAD_GENERATION, AUTOMATION | MARKETING, BUSINESS |
-| `trustedshops-shop-profile-scraper` | TrustedShops Shop Profile Scraper | TrustedShops Shop Profile Scraper | MARKETING, LEAD_GENERATION, AUTOMATION | MARKETING, BUSINESS |
+| `trustedshops-shop-profile-scraper` | TrustedShops Shop Profile Scraper | Trusted Shops Shop Profile Scraper | MARKETING, LEAD_GENERATION, AUTOMATION | MARKETING, BUSINESS |
 | `trustpilot-business-search-scraper` | Trustpilot Business Search Scraper | Trustpilot Business Search Scraper | MARKETING, LEAD_GENERATION, AUTOMATION | MARKETING, BUSINESS |
 | `trustpilot-company-details-scraper` | Trustpilot Company Details Scraper | Trustpilot Company Details Scraper | MARKETING, LEAD_GENERATION, AUTOMATION | MARKETING, BUSINESS |
 | `trustpilot-company-reviews-scraper` | Trustpilot Company Reviews Scraper | Trustpilot Company Reviews Scraper | MARKETING, LEAD_GENERATION, AUTOMATION | MARKETING, BUSINESS |

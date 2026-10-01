@@ -250,7 +250,7 @@ async function main() {
 
         addError(errors, liveActor.id === entry.id, `${entry.name}: metadata ID does not match the live snapshot`);
         addError(errors, entry.title.length >= 15 && entry.title.length <= 60, `${entry.name}: title length ${entry.title.length} is outside 15-60`);
-        addError(errors, entry.title.length <= 45 || PROTECTED_TITLES.has(entry.title), `${entry.name}: title is padded beyond the natural 45-character range`);
+        addError(errors, entry.title.length <= 45 || PROTECTED_TITLES.has(headingTitle(entry.title)), `${entry.name}: title is padded beyond the natural 45-character range`);
         addError(errors, !AUDIENCE_SUFFIX.test(entry.title), `${entry.name}: title contains an audience suffix`);
         addError(errors, entry.description.length <= 300, `${entry.name}: description exceeds 300 characters`);
         addError(errors, entry.seoTitle.length <= 60, `${entry.name}: SEO title exceeds 60 characters`);

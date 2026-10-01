@@ -17,7 +17,7 @@
     "title": "Booking.com Hotel Details Scraper",
     "description": "Review Booking.com hotel pages for the property name, address, guest rating, check-in times and structured hotel details. Submit a hotel URL or a country and hotel slug, with batch input for multiple properties.",
     "seoTitle": "Booking.com Hotel Details Scraper | Export to CSV or API",
-    "seoDescription": "Scrape Booking.com hotel pages for name, address, guest rating, check-in times and amenities. Batch many hotel URLs in one run and export to CSV or JSON.",
+    "seoDescription": "Booking.com Hotel Details Scraper: Get names, addresses, guest ratings and check-in/check-out times. Batch hotel URLs and export records to CSV or JSON.",
     "categories": [
       "TRAVEL",
       "BUSINESS"
@@ -617,7 +617,7 @@
   {
     "id": "jGkqg68Hqx9nWDenM",
     "name": "linkedin-search-scraper",
-    "title": "LinkedIn Search Scraper ($0.30/1k results)",
+    "title": "LinkedIn Search Scraper - $0.30/1k results",
     "description": "Find LinkedIn pages through search, with titles, displayed links and result snippets. Add a LinkedIn page type such as profile, company, post or job to the search query.",
     "seoTitle": "LinkedIn Search Scraper | No Login Needed",
     "seoDescription": "Find LinkedIn profiles, companies, posts and jobs by keyword via search. Get titles, links and snippets for prospecting lists. Export to CSV or the API.",
@@ -1004,7 +1004,7 @@
     "title": "Website Content Extractor",
     "description": "Extract page titles, descriptions, readable text and links from public web pages. Add one or more public page URLs and choose whether to include HTML in the extracted content.",
     "seoTitle": "Website Content Extractor | Export to CSV or API",
-    "seoDescription": "Extract clean text, titles, meta descriptions and links from any web page. Batch many URLs and optionally include raw HTML. Great for AI and RAG pipelines.",
+    "seoDescription": "Website Content Extractor: Get text, page titles, meta descriptions and links from public pages. Batch URLs and optionally include raw HTML for AI or RAG.",
     "categories": [
       "SEO_TOOLS",
       "MARKETING"
