@@ -10,20 +10,13 @@
     "audit:pricing": "node scripts/audit-apify-pricing.mjs",
     "audit:health": "node scripts/audit-apify-health.mjs",
     "audit:secrets": "node scripts/audit-apify-secrets.mjs",
-    "build": "pnpm -r build",
     "import:live-actors": "node scripts/import-live-actor-sources.mjs",
-    "lint": "eslint . --ext .ts",
     "test:audit-secrets": "node --test scripts/audit-apify-secrets.test.mjs",
     "test:audit-health": "node --test scripts/audit-apify-health.test.mjs",
     "test:audit-pricing": "node --test scripts/audit-apify-pricing.test.mjs",
     "test:store-metadata": "node --test scripts/apply-store-metadata.test.mjs",
     "test:live-actors": "node --test scripts/live-actor-source-utils.test.mjs",
-    "typecheck": "pnpm -r typecheck",
-    "verify:live-actors": "node scripts/verify-live-actor-sources.mjs"
-  },
-  "devDependencies": {
-    "@types/node": "^25.2.0",
-    "typescript": "^5.7.2",
-    "eslint": "^9.17.0"
+    "verify:live-actors": "node scripts/verify-live-actor-sources.mjs",
+    "test:prefill": "node scripts/validate-prefill.mjs actors/*"
   }
 }

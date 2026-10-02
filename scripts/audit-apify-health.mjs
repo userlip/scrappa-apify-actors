@@ -31,7 +31,7 @@ async function runCli() {
 
   if (!token) {
     console.error('Missing APIFY_TOKEN or APIFY_API_TOKEN.');
-    console.error('Run with: APIFY_TOKEN=... pnpm audit:health');
+    console.error('Run with: APIFY_TOKEN=... npm run audit:health');
     process.exit(2);
   }
 
@@ -612,8 +612,8 @@ function printHelp() {
 The audit strictly includes only public actors owned by userId ${THESCRAPPA_USER_ID} or username ${THESCRAPPA_USERNAME}.
 
 Usage:
-  APIFY_TOKEN=... pnpm audit:health
-  APIFY_TOKEN=... pnpm audit:health --json
+  APIFY_TOKEN=... npm run audit:health
+  APIFY_TOKEN=... npm run audit:health -- --json
 
 Options:
   --json       Print machine-readable JSON.

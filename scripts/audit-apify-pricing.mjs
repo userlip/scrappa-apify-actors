@@ -33,7 +33,7 @@ async function runCli() {
 
   if (!token) {
     console.error('Missing APIFY_TOKEN or APIFY_API_TOKEN.');
-    console.error('Run with: APIFY_TOKEN=... pnpm audit:pricing');
+    console.error('Run with: APIFY_TOKEN=... npm run audit:pricing');
     process.exit(2);
   }
 
@@ -497,8 +497,8 @@ function printHelp() {
   console.log(`Audit public Apify actors for scheduled paid pricing that should be active.
 
 Usage:
-  APIFY_TOKEN=... pnpm audit:pricing
-  APIFY_TOKEN=... pnpm audit:pricing --now 2026-05-17T15:00:00.000Z
+  APIFY_TOKEN=... npm run audit:pricing
+  APIFY_TOKEN=... npm run audit:pricing -- --now 2026-05-17T15:00:00.000Z
 
 Options:
   --json             Print machine-readable JSON.

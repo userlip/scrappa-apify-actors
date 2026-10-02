@@ -25,7 +25,7 @@ async function runCli() {
 
   if (!token) {
     console.error('Missing APIFY_TOKEN or APIFY_API_TOKEN.');
-    console.error('Run with: APIFY_TOKEN=... pnpm audit:secrets');
+    console.error('Run with: APIFY_TOKEN=... npm run audit:secrets');
     process.exit(2);
   }
 
@@ -444,7 +444,7 @@ function printHelp() {
   console.log(`Audit public Apify actors for the SCRAPPA_API_KEY secret on their default version.
 
 Usage:
-  APIFY_TOKEN=... pnpm audit:secrets
+  APIFY_TOKEN=... npm run audit:secrets
 
 Options:
   --json              Print machine-readable JSON.

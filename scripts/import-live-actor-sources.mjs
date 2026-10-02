@@ -135,8 +135,8 @@ function printHelp() {
   console.log(`Import missing live Apify SOURCE_FILES actors into actors/{slug}.
 
 Usage:
-  APIFY_TOKEN=... pnpm import:live-actors
-  APIFY_TOKEN=... pnpm import:live-actors --slug youtube-api-video-chapters
+  APIFY_TOKEN=... npm run import:live-actors
+  APIFY_TOKEN=... npm run import:live-actors -- --slug youtube-api-video-chapters
 
 The importer creates only missing actor directories. Existing local actor
 directories are never overwritten by this command.
