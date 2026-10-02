@@ -83,7 +83,7 @@ function printHelp() {
   console.log(`Verify every live Apify actor has a local actors/{slug} source directory.
 
 Usage:
-  APIFY_TOKEN=... pnpm verify:live-actors
-  APIFY_TOKEN=... pnpm verify:live-actors --json
+  APIFY_TOKEN=... npm run verify:live-actors
+  APIFY_TOKEN=... npm run verify:live-actors -- --json
 `);
 }

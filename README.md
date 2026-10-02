@@ -41,7 +41,7 @@ APIFY_TOKEN=... npm run audit:pricing
 For an exact activation checkpoint, pass the verification timestamp:
 
 ```bash
-APIFY_TOKEN=... npm run audit:pricing --now 2026-05-17T15:00:00.000Z
+APIFY_TOKEN=... npm run audit:pricing -- --now 2026-05-17T15:00:00.000Z
 ```
 
 The audit exits with code `1` when a public actor has due paid `pricingInfos` but no active paid evidence in `pricingInfo` or `currentPricingInfo`, or when a public actor has no paid `pricingInfos`.
@@ -57,7 +57,7 @@ APIFY_TOKEN=... npm run audit:health
 For machine-readable triage output, use:
 
 ```bash
-APIFY_TOKEN=... npm run audit:health --json
+APIFY_TOKEN=... npm run audit:health -- --json
 ```
 
 The health audit fetches visible Apify actors, then strictly scopes reports to public TheScrappa-owned actors where `userId` is `8683TqwnXHrQ46FhH` or `username` is `thescrappa`. Public actors that are visible to the token but are not owned by TheScrappa, or that have unknown ownership fields, are reported as exclusions instead of being included in run/build/notice health. This prevents accessible store actors such as Apify-owned actors from creating false Scrappa alarms. Do not commit raw Apify tokens.
@@ -73,7 +73,7 @@ APIFY_TOKEN=... npm run audit:secrets
 For machine-readable evidence, use:
 
 ```bash
-APIFY_TOKEN=... npm run audit:secrets --json --include-present
+APIFY_TOKEN=... npm run audit:secrets -- --json --include-present
 ```
 
 ### Verifying live actor source parity
