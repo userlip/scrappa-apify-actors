@@ -1,0 +1,577 @@
+{
+  "slug": "realestate-com-au-search-scraper",
+  "title": "Realestate.com.au Property Search Scraper",
+  "description": "Search realestate.com.au by suburb for buy, rent, or sold listings with prices, addresses, property features, agencies, inspections, and links. Batch locations to compare Australian markets.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "endpoint": "/realestate-com-au/search",
+  "openapiPath": "/realestate-com-au/search",
+  "mode": "list",
+  "batch": {
+    "field": "locations",
+    "valueField": "location",
+    "apiParam": "location",
+    "pathParam": null,
+    "title": "Australian locations",
+    "description": "Suburbs or locality text to search on realestate.com.au.",
+    "valueDescription": "location submitted for this property search."
+  },
+  "parameters": [
+    {
+      "input": "location",
+      "apiParam": "location",
+      "location": "query",
+      "required": true,
+      "title": "Location",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120,
+        "description": "Location search text such as Sydney, NSW."
+      }
+    },
+    {
+      "input": "channel",
+      "apiParam": "channel",
+      "location": "query",
+      "required": false,
+      "title": "Channel",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "buy",
+          "rent",
+          "sold"
+        ],
+        "description": "Listing channel: buy, rent, or sold."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Page number."
+      }
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort order",
+      "schema": {
+        "type": "string",
+        "maxLength": 40,
+        "description": "realestate.com.au sort type, such as new-desc or sold-date-desc."
+      }
+    },
+    {
+      "input": "min_price",
+      "apiParam": "min_price",
+      "location": "query",
+      "required": false,
+      "title": "Min Price",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Minimum price filter."
+      }
+    },
+    {
+      "input": "max_price",
+      "apiParam": "max_price",
+      "location": "query",
+      "required": false,
+      "title": "Max Price",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Maximum price filter."
+      }
+    },
+    {
+      "input": "min_bedrooms",
+      "apiParam": "min_bedrooms",
+      "location": "query",
+      "required": false,
+      "title": "Min Bedrooms",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 20,
+        "description": "Minimum bedroom count."
+      }
+    },
+    {
+      "input": "max_bedrooms",
+      "apiParam": "max_bedrooms",
+      "location": "query",
+      "required": false,
+      "title": "Max Bedrooms",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 20,
+        "description": "Maximum bedroom count."
+      }
+    },
+    {
+      "input": "min_bathrooms",
+      "apiParam": "min_bathrooms",
+      "location": "query",
+      "required": false,
+      "title": "Min Bathrooms",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 20,
+        "description": "Minimum bathroom count."
+      }
+    },
+    {
+      "input": "min_carspaces",
+      "apiParam": "min_carspaces",
+      "location": "query",
+      "required": false,
+      "title": "Min Carspaces",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 20,
+        "description": "Minimum parking spaces."
+      }
+    },
+    {
+      "input": "property_types",
+      "apiParam": "property_types",
+      "location": "query",
+      "required": false,
+      "title": "Property Types",
+      "schema": {
+        "type": "string",
+        "maxLength": 200,
+        "description": "Comma-separated realestate.com.au property type filters."
+      }
+    },
+    {
+      "input": "keywords",
+      "apiParam": "keywords",
+      "location": "query",
+      "required": false,
+      "title": "Keywords",
+      "schema": {
+        "type": "string",
+        "maxLength": 200,
+        "description": "Comma-separated keyword filters."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "locations": [
+      {
+        "location": "Richmond, VIC 3121"
+      }
+    ],
+    "channel": "buy",
+    "page": 1,
+    "maxResults": 5,
+    "maxPages": 1
+  },
+  "testParams": {
+    "location": "Richmond, VIC 3121"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "listings": [
+        {
+          "id": "152000001",
+          "name": null,
+          "url": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+          "property_type": "Residential property",
+          "description": "Bright two-bedroom home with a balcony near local transport.",
+          "address": {
+            "display": {
+              "shortAddress": "24 Bridge Road, Richmond VIC 3121",
+              "fullAddress": "24 Bridge Road, Richmond VIC 3121",
+              "__typename": "PropertyAddress"
+            },
+            "suburb": "Richmond",
+            "state": "VIC",
+            "postcode": "3121",
+            "__typename": "PropertyAddress"
+          },
+          "price": "A$720,000",
+          "features": {
+            "bedrooms": {
+              "value": 8,
+              "__typename": "PropertyFeatures"
+            },
+            "__typename": "PropertyFeatures",
+            "bathrooms": {
+              "value": 8,
+              "__typename": "PropertyFeatures"
+            },
+            "parkingSpaces": {
+              "value": 8,
+              "__typename": "PropertyFeatures"
+            },
+            "studies": {
+              "value": 8,
+              "__typename": "PropertyFeatures"
+            }
+          },
+          "property_sizes": {
+            "land": {
+              "displayValue": "Richmond, VIC 3121",
+              "sizeUnit": {
+                "displayValue": "Richmond, VIC 3121",
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing"
+            },
+            "__typename": "PropertyListing",
+            "building": null,
+            "preferred": {
+              "sizeType": "LAND",
+              "size": {
+                "displayValue": "Richmond, VIC 3121",
+                "sizeUnit": {
+                  "displayValue": "Richmond, VIC 3121",
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing"
+            }
+          },
+          "media": {
+            "mainImage": {
+              "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+              "__typename": "SourceRecord"
+            },
+            "images": [
+              {
+                "__typename": "SourceRecord",
+                "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001"
+              }
+            ],
+            "__typename": "SourceRecord",
+            "statementOfInformation": {
+              "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+              "__typename": "SourceRecord"
+            },
+            "floorplans": [
+              {
+                "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+                "__typename": "SourceRecord"
+              }
+            ],
+            "threeDimensionalToursCompat": [
+              {
+                "url": "https://media.northstar.invalid/tour/aurora",
+                "title": "Property walkthrough"
+              }
+            ],
+            "videos": [
+              "Verified marketplace detail"
+            ],
+            "threeDimensionalTours": [
+              {
+                "url": "https://media.northstar.invalid/tour/aurora",
+                "title": "Property walkthrough"
+              }
+            ]
+          },
+          "listing_company": {
+            "name": "Harbourline Property Group",
+            "_links": {
+              "canonical": {
+                "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing"
+            },
+            "__typename": "PropertyListing",
+            "id": "152000001",
+            "branding": {
+              "primaryColour": "Harbourline Property Group",
+              "__typename": "PropertyListing",
+              "textColour": "Harbourline Property Group"
+            },
+            "media": {
+              "logo": {
+                "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing",
+              "mainImage": {
+                "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+                "__typename": "PropertyListing"
+              }
+            },
+            "address": {
+              "display": {
+                "fullAddress": "24 Bridge Road, Richmond VIC 3121",
+                "__typename": "PropertyAddress"
+              },
+              "__typename": "PropertyAddress"
+            },
+            "ratingsReviews": {
+              "avgRating": 94,
+              "totalReviews": 28,
+              "__typename": "PropertyListing"
+            }
+          },
+          "child_listings": null,
+          "listers": [
+            {
+              "id": "152000001",
+              "agentId": "152000001",
+              "name": "Jordan Ellis",
+              "jobTitle": "Morgan Lee",
+              "photo": {
+                "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+                "__typename": "SourceRecord"
+              },
+              "_links": {
+                "canonical": {
+                  "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+                  "__typename": "SourceRecord"
+                },
+                "__typename": "SourceRecord"
+              },
+              "showInMediaViewer": true,
+              "__typename": "SourceRecord"
+            }
+          ],
+          "auction": {
+            "dateTime": {
+              "value": "Balcony",
+              "__typename": "SourceRecord",
+              "display": {
+                "longLabel": "Verified source detail",
+                "__typename": "SourceRecord",
+                "shortLabel": "Verified source detail",
+                "time": "Verified source detail"
+              }
+            },
+            "__typename": "SourceRecord",
+            "onlineLinks": [
+              "Verified marketplace detail"
+            ]
+          },
+          "inspections": [
+            {
+              "startTime": "Verified source detail",
+              "endTime": "Verified source detail",
+              "__typename": "SourceRecord",
+              "display": {
+                "longLabel": "Verified source detail",
+                "__typename": "SourceRecord",
+                "shortLabel": "Verified source detail"
+              }
+            }
+          ],
+          "sold_date": null
+        }
+      ],
+      "channel": "buy",
+      "location": "Richmond, VIC 3121",
+      "total_results": 75,
+      "pagination": {
+        "channel": "buy",
+        "page": 1,
+        "pageSize": 24
+      }
+    }
+  },
+  "tableFields": [
+    {
+      "name": "id",
+      "label": "Id",
+      "format": "text"
+    },
+    {
+      "name": "property_type",
+      "label": "Property Type",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "address",
+      "label": "Address",
+      "format": "text"
+    },
+    {
+      "name": "listing_company",
+      "label": "Listing Company",
+      "format": "text"
+    },
+    {
+      "name": "url",
+      "label": "Url",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Realestate.com.au Search | Property Listings",
+    "seoDescription": "Search realestate.com.au by Australian suburb for buy, rent, or sold listings, prices, features, and links. Batch locations and page through results.",
+    "intro": "Search realestate.com.au by Australian suburb or locality and collect listing prices, addresses, property features, agencies, inspection times, and URLs. Choose buy, rent, or sold results.",
+    "useCases": [
+      "Home buyers can compare listings and features across nearby suburbs.",
+      "Agents can monitor prices and competing inventory by location.",
+      "Property researchers can collect sold, rental, and sale listings for market analysis."
+    ],
+    "howToUse": [
+      "Add one suburb or location to `locations` for each search.",
+      "Choose a buy, rent, or sold channel and optional property filters.",
+      "Set `maxPages` and `maxResults`, then export the listing rows."
+    ],
+    "faqs": [
+      {
+        "question": "Which listing channels are available?",
+        "answer": "The source accepts buy, rent, and sold channels. Results depend on what is currently listed for the selected location."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "realestate-com-au-property-scraper",
+        "title": "Realestate.com.au Property Details Scraper"
+      },
+      {
+        "slug": "realestate-com-au-agents-scraper",
+        "title": "Realestate.com.au Agents Scraper"
+      },
+      {
+        "slug": "redfin-property-search-scraper",
+        "title": "Redfin Property Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "realestate.com.au listing identifier."
+      },
+      {
+        "name": "name",
+        "type": "String or null",
+        "description": "Listing or development name, when supplied."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public realestate.com.au URL for the property listing."
+      },
+      {
+        "name": "property_type",
+        "type": "String",
+        "description": "Property type such as house, apartment, or townhouse."
+      },
+      {
+        "name": "description",
+        "type": "String",
+        "description": "Listing description shown by the advertiser."
+      },
+      {
+        "name": "address",
+        "type": "Object",
+        "description": "Property address details, including suburb, state, postcode, and display address."
+      },
+      {
+        "name": "price",
+        "type": "String",
+        "description": "Advertised price text or price guide shown on the listing."
+      },
+      {
+        "name": "features",
+        "type": "Object",
+        "description": "Property feature counts, including bedrooms, bathrooms, and parking spaces."
+      },
+      {
+        "name": "property_sizes",
+        "type": "Object",
+        "description": "Land and building area measurements, when supplied."
+      },
+      {
+        "name": "media",
+        "type": "Object",
+        "description": "Listing images, floorplans, tours, and other media links."
+      },
+      {
+        "name": "listing_company",
+        "type": "Object",
+        "description": "Agency details associated with the listing."
+      },
+      {
+        "name": "child_listings",
+        "type": "String or null",
+        "description": "Related listings grouped under the same property record, when present."
+      },
+      {
+        "name": "listers",
+        "type": "Array<Object>",
+        "description": "Agent records attached to the listing."
+      },
+      {
+        "name": "auction",
+        "type": "Object or null",
+        "description": "Auction date and online auction links, when scheduled."
+      },
+      {
+        "name": "inspections",
+        "type": "Array<Object>",
+        "description": "Inspection dates and times advertised for the property."
+      },
+      {
+        "name": "sold_date",
+        "type": "String or null",
+        "description": "Date the property sold, for sold listings."
+      },
+      {
+        "name": "input_location",
+        "type": "String",
+        "description": "Location submitted to retrieve this property listing."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_location"
+  },
+  "resultPointer": "/data/listings",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/id",
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "currentPagePointer": "/data/pagination/page",
+    "maxPages": 10
+  },
+  "defaultMaxPages": 2
+}

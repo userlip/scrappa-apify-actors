@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "geizhals-price-history-scraper",
+  "title": "Geizhals Price History Scraper",
+  "description": "Track Geizhals prices by product and market with history timestamps, observed prices, and current range values. Batch product IDs and choose a lookback window.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "timestamp",
+              "timestamp_ms",
+              "price",
+              "marker"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "timestamp": {
+                "label": "Timestamp",
+                "format": "number"
+              },
+              "timestamp_ms": {
+                "label": "Timestamp Ms",
+                "format": "number"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "marker": {
+                "label": "Marker",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

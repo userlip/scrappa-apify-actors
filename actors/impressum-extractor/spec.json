@@ -1,0 +1,226 @@
+{
+  "slug": "impressum-extractor",
+  "title": "Impressum Contact Data Extractor",
+  "description": "Extract requested company details such as name, address, email, and phone from website legal notices when available. Batch domains and choose fields and language for each lookup.",
+  "categories": [
+    "LEAD_GENERATION"
+  ],
+  "endpoint": "/web-scraper/impressum",
+  "openapiPath": "/web-scraper/impressum",
+  "mode": "single",
+  "batch": {
+    "field": "domains",
+    "valueField": "domain",
+    "apiParam": "domain",
+    "pathParam": null,
+    "title": "Domains",
+    "description": "Company website domains whose legal notice you want to inspect.",
+    "valueDescription": "domain checked for a German-language legal notice."
+  },
+  "parameters": [
+    {
+      "input": "domain",
+      "apiParam": "domain",
+      "location": "query",
+      "required": true,
+      "title": "Domain",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 253,
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*$",
+        "description": "The domain to search for impressum (e.g., example.com)"
+      }
+    },
+    {
+      "input": "fields",
+      "apiParam": "fields",
+      "location": "query",
+      "required": true,
+      "title": "Fields",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000,
+        "pattern": "^[a-zA-Z0-9_]+(,[a-zA-Z0-9_]+)*$",
+        "description": "Comma-separated list of field names to extract (e.g., company_name,address,email,vat_id)"
+      }
+    },
+    {
+      "input": "language",
+      "apiParam": "language",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 5,
+        "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+        "description": "Language code for extracted values (e.g., de, en, fr). Country names and other localizable values will be returned in this language."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "domains": [
+      {
+        "domain": "scrappa.co"
+      }
+    ],
+    "fields": "company_name,address,email,phone",
+    "language": "de",
+    "maxResults": 1
+  },
+  "testParams": {
+    "domain": "scrappa.co",
+    "fields": "company_name,address,email,phone"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "company_name": "Morgenrot Handel GmbH",
+      "address": "Hafenallee 17, 10115 Berlin",
+      "email": "kontakt@morgenrot.invalid",
+      "phone": "+49 30 555 0184"
+    },
+    "error": null,
+    "error_code": null,
+    "impressum_url": "https://morgenrot.invalid/impressum"
+  },
+  "tableFields": [
+    {
+      "name": "company_name",
+      "label": "Company Name",
+      "format": "text"
+    },
+    {
+      "name": "address",
+      "label": "Address",
+      "format": "text"
+    },
+    {
+      "name": "email",
+      "label": "Email",
+      "format": "text"
+    },
+    {
+      "name": "phone",
+      "label": "Phone",
+      "format": "text"
+    },
+    {
+      "name": "impressum_url",
+      "label": "Impressum Url",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Impressum Scraper | Company Contact Data",
+    "seoDescription": "Extract company name, address, email, phone, and legal notice URL when available. Batch domains and choose requested fields and language for each website.",
+    "intro": "Inspect a list of company domains for an Impressum or legal notice. Request company name, address, email, phone, and other supported fields, with values returned when the source provides them.",
+    "useCases": [
+      "B2B teams can prepare company records from public legal notices.",
+      "Compliance analysts can check which contact fields a website publishes.",
+      "Researchers can map legal notice pages and company details across domains."
+    ],
+    "howToUse": [
+      "Add one website domain to `domains` for each lookup.",
+      "Choose the comma-separated fields and an optional language for extracted values.",
+      "Set `maxResults` and export one contact record per domain."
+    ],
+    "faqs": [
+      {
+        "question": "Are all requested fields always present?",
+        "answer": "No. A website may omit a field or use a different legal page format, so unavailable values can be null."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "linkedin-company-scraper",
+        "title": "LinkedIn Company Scraper - $0.30/1k results"
+      },
+      {
+        "slug": "trustpilot-company-details-scraper",
+        "title": "Trustpilot Company Details Scraper"
+      },
+      {
+        "slug": "trustedshops-shop-profile-scraper",
+        "title": "Trusted Shops Shop Profile Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when the German legal notice request returned a successful response."
+      },
+      {
+        "name": "data",
+        "type": "Object",
+        "description": "German legal notice response payload for this legal notice record, including `company_name`, `address`, `email` and related source fields."
+      },
+      {
+        "name": "error",
+        "type": "String or null",
+        "description": "Error message or code returned by the request; null when the requested information was retrieved."
+      },
+      {
+        "name": "error_code",
+        "type": "String or null",
+        "description": "Error message or code returned by the request; null when the requested information was retrieved."
+      },
+      {
+        "name": "impressum_url",
+        "type": "String",
+        "description": "Public page URL identified as the website legal notice."
+      },
+      {
+        "name": "phone",
+        "type": "String or null",
+        "description": "Phone number requested from the company legal notice; null when the website does not publish it."
+      },
+      {
+        "name": "company_name",
+        "type": "String",
+        "description": "Name or title assigned to this German legal notice legal notice record."
+      },
+      {
+        "name": "address",
+        "type": "String",
+        "description": "Postal address published in the website legal notice."
+      },
+      {
+        "name": "email",
+        "type": "String",
+        "description": "Contact email address published in the website legal notice."
+      },
+      {
+        "name": "input_domain",
+        "type": "String",
+        "description": "Domain submitted to retrieve this legal notice record."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_domain"
+  },
+  "flattenPointers": {
+    "company_name": "/data/company_name",
+    "address": "/data/address",
+    "email": "/data/email",
+    "phone": "/data/phone",
+    "impressum_url": "/impressum_url"
+  }
+}

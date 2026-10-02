@@ -1,0 +1,74 @@
+{
+  "title": "Idealista Agency Scraper",
+  "description": "Collect Idealista agency profiles with commercial names, website, contact details, listing totals, languages, and media. Batch agency short names and choose a supported market.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "agencies",
+    "country"
+  ],
+  "properties": {
+    "agencies": {
+      "title": "Agency short names",
+      "type": "array",
+      "description": "Idealista agency short names from agency microsite URLs.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "microsite_short_name": "aproperties-mad"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "microsite_short_name"
+        ],
+        "properties": {
+          "microsite_short_name": {
+            "title": "Agency short name",
+            "type": "string",
+            "maxLength": 80,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "description": "Agency short name, for example clikalia.",
+            "editor": "textfield"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "enum": [
+              "es",
+              "it",
+              "pt",
+              "fr"
+            ],
+            "description": "es, it, pt, or fr.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "country": {
+      "title": "Country",
+      "type": "string",
+      "enum": [
+        "es",
+        "it",
+        "pt",
+        "fr"
+      ],
+      "description": "es, it, pt, or fr.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

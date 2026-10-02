@@ -1,0 +1,428 @@
+{
+  "success": true,
+  "data": {
+    "url": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+    "listing_id": "152000001",
+    "hidden_price": null,
+    "listing": {
+      "id": "152000001",
+      "name": null,
+      "url": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+      "property_type": "Residential property",
+      "description": "Bright two-bedroom home with a balcony near local transport.",
+      "address": {
+        "suburb": "Richmond",
+        "state": "VIC",
+        "postcode": "3121",
+        "display": {
+          "shortAddress": "24 Bridge Road, Richmond VIC 3121",
+          "__typename": "PropertyAddress",
+          "fullAddress": "24 Bridge Road, Richmond VIC 3121",
+          "geocode": {
+            "latitude": -37.82,
+            "longitude": 144.999,
+            "__typename": "PropertyAddress"
+          }
+        },
+        "__typename": "PropertyAddress"
+      },
+      "price": "A$720,000",
+      "features": {
+        "bedrooms": {
+          "value": 8,
+          "__typename": "PropertyFeatures"
+        },
+        "bathrooms": {
+          "value": 8,
+          "__typename": "PropertyFeatures"
+        },
+        "parkingSpaces": {
+          "value": 8,
+          "__typename": "PropertyFeatures"
+        },
+        "studies": {
+          "value": 8,
+          "__typename": "PropertyFeatures"
+        },
+        "__typename": "PropertyFeatures"
+      },
+      "property_sizes": {
+        "building": null,
+        "land": {
+          "displayValue": "Richmond, VIC 3121",
+          "sizeUnit": {
+            "displayValue": "Richmond, VIC 3121",
+            "__typename": "PropertyListing"
+          },
+          "__typename": "PropertyListing"
+        },
+        "preferred": {
+          "sizeType": "LAND",
+          "size": {
+            "displayValue": "Richmond, VIC 3121",
+            "sizeUnit": {
+              "displayValue": "Richmond, VIC 3121",
+              "__typename": "PropertyListing"
+            },
+            "__typename": "PropertyListing"
+          },
+          "__typename": "PropertyListing"
+        },
+        "__typename": "PropertyListing"
+      },
+      "media": {
+        "statementOfInformation": {
+          "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+          "__typename": "PropertyListing"
+        },
+        "__typename": "PropertyListing",
+        "mainImage": {
+          "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+          "__typename": "PropertyListing"
+        },
+        "images": [
+          {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "PropertyListing"
+          }
+        ],
+        "floorplans": [
+          {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "PropertyListing"
+          }
+        ],
+        "threeDimensionalToursCompat": [
+          {
+            "url": "https://media.northstar.invalid/tour/aurora",
+            "title": "Property walkthrough"
+          }
+        ],
+        "videos": [
+          "Verified marketplace detail"
+        ]
+      },
+      "listing_company": {
+        "id": "152000001",
+        "name": "Harbourline Property Group",
+        "branding": {
+          "primaryColour": "Harbourline Property Group",
+          "__typename": "PropertyListing",
+          "textColour": "Harbourline Property Group"
+        },
+        "media": {
+          "logo": {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "PropertyListing"
+          },
+          "__typename": "PropertyListing",
+          "mainImage": {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "PropertyListing"
+          }
+        },
+        "__typename": "PropertyListing",
+        "_links": {
+          "canonical": {
+            "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "PropertyListing",
+            "templated": true
+          },
+          "__typename": "PropertyListing"
+        },
+        "address": {
+          "display": {
+            "fullAddress": "24 Bridge Road, Richmond VIC 3121",
+            "__typename": "PropertyAddress"
+          },
+          "__typename": "PropertyAddress"
+        }
+      },
+      "child_listings": null,
+      "listers": [
+        {
+          "id": "152000001",
+          "agentId": "152000001",
+          "name": "Jordan Ellis",
+          "jobTitle": "Morgan Lee",
+          "photo": {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "PropertyListing"
+          },
+          "_links": {
+            "canonical": {
+              "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+              "__typename": "PropertyListing"
+            },
+            "__typename": "PropertyListing"
+          },
+          "showInMediaViewer": true
+        }
+      ],
+      "auction": {
+        "dateTime": {
+          "value": "Balcony",
+          "__typename": "PropertyListing",
+          "display": {
+            "longLabel": "Verified source detail",
+            "__typename": "PropertyListing"
+          }
+        },
+        "__typename": "PropertyListing",
+        "onlineLinks": [
+          "Verified marketplace detail"
+        ]
+      },
+      "inspections": [
+        {
+          "display": {
+            "longLabel": "Verified source detail",
+            "__typename": "PropertyListing"
+          },
+          "__typename": "PropertyListing",
+          "startTime": "Verified source detail",
+          "endTime": "Verified source detail"
+        }
+      ],
+      "sold_date": null
+    },
+    "raw": {
+      "id": "152000001",
+      "_links": {
+        "canonical": {
+          "path": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+          "__typename": "SourceRecord",
+          "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001"
+        },
+        "__typename": "SourceRecord",
+        "submitEnquiry": {
+          "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+          "__typename": "SourceRecord"
+        }
+      },
+      "__typename": "SourceRecord",
+      "parent": null,
+      "aboveTheFoldId": "152000001",
+      "badge": {
+        "colour": "navy",
+        "label": "Verified source detail",
+        "__typename": "SourceRecord"
+      },
+      "address": {
+        "suburb": "Richmond",
+        "state": "VIC",
+        "postcode": "3121",
+        "display": {
+          "shortAddress": "24 Bridge Road, Richmond VIC 3121",
+          "__typename": "PropertyAddress",
+          "fullAddress": "24 Bridge Road, Richmond VIC 3121",
+          "geocode": {
+            "latitude": -37.82,
+            "longitude": 144.999,
+            "__typename": "PropertyAddress"
+          }
+        },
+        "__typename": "PropertyAddress"
+      },
+      "propertyType": {
+        "id": "152000001",
+        "display": "Richmond, VIC 3121",
+        "__typename": "PropertyListing"
+      },
+      "viewConfiguration": {
+        "details": {
+          "showBreadcrumbs": true,
+          "__typename": "SourceRecord",
+          "agencyBrandingOnSidePanel": true,
+          "branding": {
+            "header": {
+              "size": "Verified source detail",
+              "__typename": "SourceRecord"
+            },
+            "__typename": "SourceRecord"
+          },
+          "posterBoard": true,
+          "showWalkthroughVideo": true,
+          "showWalkthroughVideoV2": true
+        },
+        "__typename": "SourceRecord",
+        "searchResults": {
+          "showDisplayPrice": true,
+          "__typename": "SourceRecord",
+          "showAgencyInMediaViewer": true
+        }
+      },
+      "listingCompany": {
+        "id": "152000001",
+        "name": "Harbourline Property Group",
+        "branding": {
+          "primaryColour": "Harbourline Property Group",
+          "__typename": "PropertyListing",
+          "textColour": "Harbourline Property Group"
+        },
+        "media": {
+          "logo": {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "PropertyListing"
+          },
+          "__typename": "PropertyListing",
+          "mainImage": {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "PropertyListing"
+          }
+        },
+        "__typename": "PropertyListing",
+        "_links": {
+          "canonical": {
+            "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "PropertyListing",
+            "templated": true
+          },
+          "__typename": "PropertyListing"
+        },
+        "address": {
+          "display": {
+            "fullAddress": "24 Bridge Road, Richmond VIC 3121",
+            "__typename": "PropertyAddress"
+          },
+          "__typename": "PropertyAddress"
+        }
+      },
+      "generalFeatures": {
+        "bedrooms": {
+          "value": 8,
+          "__typename": "PropertyFeatures"
+        },
+        "bathrooms": {
+          "value": 8,
+          "__typename": "PropertyFeatures"
+        },
+        "parkingSpaces": {
+          "value": 8,
+          "__typename": "PropertyFeatures"
+        },
+        "studies": {
+          "value": 8,
+          "__typename": "PropertyFeatures"
+        },
+        "__typename": "PropertyFeatures"
+      },
+      "propertySizes": {
+        "building": null,
+        "land": {
+          "displayValue": "Richmond, VIC 3121",
+          "sizeUnit": {
+            "displayValue": "Richmond, VIC 3121",
+            "__typename": "PropertyListing"
+          },
+          "__typename": "PropertyListing"
+        },
+        "preferred": {
+          "sizeType": "LAND",
+          "size": {
+            "displayValue": "Richmond, VIC 3121",
+            "sizeUnit": {
+              "displayValue": "Richmond, VIC 3121",
+              "__typename": "PropertyListing"
+            },
+            "__typename": "PropertyListing"
+          },
+          "__typename": "PropertyListing"
+        },
+        "__typename": "PropertyListing"
+      },
+      "price": {
+        "display": "Richmond, VIC 3121",
+        "__typename": "SourceRecord",
+        "searchRange": null,
+        "information": null,
+        "disclaimer": null
+      },
+      "media": {
+        "statementOfInformation": {
+          "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+          "__typename": "SourceRecord"
+        },
+        "__typename": "SourceRecord",
+        "mainImage": {
+          "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+          "__typename": "SourceRecord"
+        },
+        "images": [
+          {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "SourceRecord"
+          }
+        ],
+        "floorplans": [
+          {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "SourceRecord"
+          }
+        ],
+        "threeDimensionalToursCompat": [
+          {
+            "url": "https://media.northstar.invalid/tour/aurora",
+            "title": "Property walkthrough"
+          }
+        ],
+        "videos": [
+          "Verified marketplace detail"
+        ]
+      },
+      "inspections": [
+        {
+          "display": {
+            "longLabel": "Verified source detail",
+            "__typename": "SourceRecord"
+          },
+          "__typename": "SourceRecord",
+          "startTime": "Verified source detail",
+          "endTime": "Verified source detail"
+        }
+      ],
+      "description": "Bright two-bedroom home with a balcony near local transport.",
+      "auction": {
+        "dateTime": {
+          "value": "Balcony",
+          "__typename": "SourceRecord",
+          "display": {
+            "longLabel": "Verified source detail",
+            "__typename": "SourceRecord"
+          }
+        },
+        "__typename": "SourceRecord",
+        "onlineLinks": [
+          "Verified marketplace detail"
+        ]
+      },
+      "productDepth": "Verified source detail",
+      "introduction": null,
+      "listers": [
+        {
+          "id": "152000001",
+          "agentId": "152000001",
+          "name": "Jordan Ellis",
+          "jobTitle": "Morgan Lee",
+          "photo": {
+            "templatedUrl": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+            "__typename": "SourceRecord"
+          },
+          "_links": {
+            "canonical": {
+              "href": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+              "__typename": "SourceRecord"
+            },
+            "__typename": "SourceRecord"
+          },
+          "showInMediaViewer": true
+        }
+      ],
+      "faq": null,
+      "inspectionTimes": {
+        "registrationsEnabled": true,
+        "__typename": "SourceRecord"
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "actorSpecification": 1,
+  "name": "ohne-makler-listing-scraper",
+  "title": "Ohne-Makler Listing Details Scraper",
+  "description": "Extract an Ohne-Makler listing’s asking price, rooms, area, condition, location, photos, energy details, and description. Batch listing IDs for property research.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "title",
+              "price",
+              "rooms",
+              "living_area_m2",
+              "construction_year",
+              "location_text",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "rooms": {
+                "label": "Rooms",
+                "format": "number"
+              },
+              "living_area_m2": {
+                "label": "Living Area M2",
+                "format": "number"
+              },
+              "construction_year": {
+                "label": "Construction Year",
+                "format": "text"
+              },
+              "location_text": {
+                "label": "Location Text",
+                "format": "text"
+              },
+              "url": {
+                "label": "Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "geizhals-search-scraper",
+  "title": "Geizhals Price Comparison Search Scraper",
+  "description": "Search Geizhals for products with manufacturer, GTIN, rating summaries, best-price ranges, and product links. Batch keywords across German and European markets.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "product",
+              "manufacturer_name",
+              "gzhid",
+              "bestprices",
+              "rating_percent"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "product": {
+                "label": "Product",
+                "format": "text"
+              },
+              "manufacturer_name": {
+                "label": "Manufacturer Name",
+                "format": "text"
+              },
+              "gzhid": {
+                "label": "Gzhid",
+                "format": "text"
+              },
+              "bestprices": {
+                "label": "Bestprices",
+                "format": "number"
+              },
+              "rating_percent": {
+                "label": "Rating Percent",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

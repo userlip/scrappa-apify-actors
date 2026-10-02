@@ -1,0 +1,49 @@
+{
+  "title": "mobile.de Listing Details Scraper",
+  "description": "Retrieve a mobile.de listing with vehicle attributes, images, seller information, financing options, and links. Batch listing IDs to compare advertised cars in one run.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "listing_ids"
+  ],
+  "properties": {
+    "listing_ids": {
+      "title": "Listing IDs",
+      "type": "array",
+      "description": "Numeric mobile.de listing IDs to retrieve.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "listing_id": "457981580"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "listing_id"
+        ],
+        "properties": {
+          "listing_id": {
+            "title": "Listing ID",
+            "type": "string",
+            "maxLength": 32,
+            "pattern": "^[0-9]+$",
+            "description": "Listing identifier returned by search.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

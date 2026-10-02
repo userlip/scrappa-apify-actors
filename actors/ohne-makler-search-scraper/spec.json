@@ -1,0 +1,440 @@
+{
+  "slug": "ohne-makler-search-scraper",
+  "title": "Ohne-Makler Property Search Scraper",
+  "description": "Find German property listings on Ohne-Makler with prices, rooms, area, location, coordinates, and listing links. Batch city searches and page through local results.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "endpoint": "/ohne-makler/search",
+  "openapiPath": "/ohne-makler/search",
+  "mode": "list",
+  "batch": {
+    "field": "locations",
+    "valueField": "q",
+    "apiParam": "q",
+    "pathParam": null,
+    "title": "German locations",
+    "description": "City, postal code, county, or state names to resolve on Ohne-Makler.",
+    "valueDescription": "place query used for this property search."
+  },
+  "parameters": [
+    {
+      "input": "q",
+      "apiParam": "q",
+      "location": "query",
+      "required": true,
+      "title": "Search text",
+      "schema": {
+        "type": "string",
+        "maxLength": 200,
+        "description": "Free-text location: postal code (80331), city (München), Kreis, or Bundesland. Results are limited to the resolved place (returned as location). State/city segments are not accepted alongside q."
+      }
+    },
+    {
+      "input": "type",
+      "apiParam": "type",
+      "location": "query",
+      "required": false,
+      "title": "Type",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "wohnung",
+          "haus",
+          "grundstueck",
+          "zimmer",
+          "buero",
+          "einzelhandel",
+          "gastronomie",
+          "lagerhalle",
+          "landwirtschaftliches-objekt",
+          "wohnen-auf-zeit",
+          "gewerbliche-freizeitimmobilie",
+          "zinshaus-rendite",
+          "sonstiges",
+          "immobilie"
+        ],
+        "description": "Property type slug: wohnung, haus, grundstueck, zimmer, buero, einzelhandel, gastronomie, lagerhalle, landwirtschaftliches-objekt, wohnen-auf-zeit, gewerbliche-freizeitimmobilie, zinshaus-rendite, sonstiges, immobilie. Required unless q is used."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "transaction",
+      "apiParam": "transaction",
+      "location": "query",
+      "required": false,
+      "title": "Transaction",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "kaufen",
+          "mieten"
+        ],
+        "description": "kaufen (buy) or mieten (rent). Required unless q is used."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "state",
+      "apiParam": "state",
+      "location": "query",
+      "required": false,
+      "title": "State",
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "description": "Bundesland URL slug (transliterated umlauts, e.g. baden-wurttemberg). Omit for a Germany-wide class."
+      }
+    },
+    {
+      "input": "city",
+      "apiParam": "city",
+      "location": "query",
+      "required": false,
+      "title": "City",
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "description": "City or Kreis URL slug; requires state."
+      }
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "1-based result page. Beyond the last page returns a non-billable 404."
+      }
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort order",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "price_asc",
+          "price_desc",
+          "date_asc",
+          "date_desc"
+        ],
+        "description": "price_asc, price_desc, date_asc, or date_desc."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "price_min",
+      "apiParam": "price_min",
+      "location": "query",
+      "required": false,
+      "title": "Price Min",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Minimum price in EUR."
+      }
+    },
+    {
+      "input": "price_max",
+      "apiParam": "price_max",
+      "location": "query",
+      "required": false,
+      "title": "Price Max",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Maximum price in EUR."
+      }
+    },
+    {
+      "input": "area_min",
+      "apiParam": "area_min",
+      "location": "query",
+      "required": false,
+      "title": "Area Min",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Minimum living area in m²."
+      }
+    },
+    {
+      "input": "area_max",
+      "apiParam": "area_max",
+      "location": "query",
+      "required": false,
+      "title": "Area Max",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Maximum living area in m²."
+      }
+    },
+    {
+      "input": "radius",
+      "apiParam": "radius",
+      "location": "query",
+      "required": false,
+      "title": "Radius",
+      "schema": {
+        "type": "integer",
+        "enum": [
+          "0",
+          "10",
+          "25",
+          "50",
+          "100"
+        ],
+        "description": "Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis (non-billable 422 radius_requires_city)."
+      },
+      "editor": "select"
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "locations": [
+      {
+        "q": "berlin"
+      }
+    ],
+    "type": "wohnung",
+    "transaction": "mieten",
+    "page": 1,
+    "maxResults": 5,
+    "maxPages": 1
+  },
+  "testParams": {
+    "q": "berlin",
+    "type": "wohnung",
+    "transaction": "mieten"
+  },
+  "fixture": {
+    "success": true,
+    "results": [
+      {
+        "id": 8000205,
+        "object_number": "OM-583214",
+        "title": "Bright two-bedroom flat in Berlin",
+        "url": "https://www.ohne-makler.net/immobilie/offer/583214/",
+        "price": 549,
+        "price_on_request": true,
+        "postal_code": "10115",
+        "city": "Berlin",
+        "district": "Verified source detail",
+        "street": null,
+        "rooms": 2,
+        "living_area_m2": 78,
+        "plot_area_m2": null,
+        "preview_image": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "seller_type": null,
+        "latitude": 52.52,
+        "longitude": 13.405
+      }
+    ],
+    "page": 1,
+    "page_size": 24,
+    "total_results": 120,
+    "last_page": 5,
+    "next_page": 2
+  },
+  "tableFields": [
+    {
+      "name": "id",
+      "label": "Id",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "rooms",
+      "label": "Rooms",
+      "format": "number"
+    },
+    {
+      "name": "living_area_m2",
+      "label": "Living Area M2",
+      "format": "number"
+    },
+    {
+      "name": "city",
+      "label": "City",
+      "format": "text"
+    },
+    {
+      "name": "url",
+      "label": "Url",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Ohne-Makler Search Scraper | German Listings",
+    "seoDescription": "Search Ohne-Makler by German city and property type for prices, rooms, area, location, and links. Batch searches and page through local property results.",
+    "intro": "Search Ohne-Makler by German city, postal code, county, or state. Collect listing prices, rooms, living area, location, coordinates, and links across result pages.",
+    "useCases": [
+      "Home seekers can compare listings by location, room count, and living area.",
+      "Property investors can monitor German supply by city and transaction type.",
+      "Housing researchers can export asking prices and coordinates for market analysis."
+    ],
+    "howToUse": [
+      "Add a German place name or postal code to `locations` for each search.",
+      "Choose a property type and buy or rent transaction, then set optional price and area filters.",
+      "Set `maxPages` and `maxResults`, then export the listing rows."
+    ],
+    "faqs": [
+      {
+        "question": "Can I search by postal code?",
+        "answer": "Yes. The location query accepts a city, postal code, county, or German state. A radius filter applies only when the location resolves to a city."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "ohne-makler-listing-scraper",
+        "title": "Ohne-Makler Listing Details Scraper"
+      },
+      {
+        "slug": "ohne-makler-property-prices-scraper",
+        "title": "Ohne-Makler Property Prices Scraper"
+      },
+      {
+        "slug": "idealista-search-scraper",
+        "title": "Idealista Property Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "Integer",
+        "description": "Numeric Ohne-Makler identifier for the property listing."
+      },
+      {
+        "name": "object_number",
+        "type": "String",
+        "description": "Public object number displayed on the Ohne-Makler listing."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Property title shown in Ohne-Makler search results."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public Ohne-Makler URL for the property listing."
+      },
+      {
+        "name": "price",
+        "type": "Integer",
+        "description": "Advertised asking price in euros, when the seller publishes it."
+      },
+      {
+        "name": "price_on_request",
+        "type": "Boolean",
+        "description": "True when the seller asks viewers to request the price."
+      },
+      {
+        "name": "postal_code",
+        "type": "String",
+        "description": "German postal code for the listed property location."
+      },
+      {
+        "name": "city",
+        "type": "String",
+        "description": "City assigned to the listing."
+      },
+      {
+        "name": "district",
+        "type": "String or null",
+        "description": "City district for the property, when reported."
+      },
+      {
+        "name": "street",
+        "type": "String or null",
+        "description": "Street address for the listing, when published."
+      },
+      {
+        "name": "rooms",
+        "type": "Number",
+        "description": "Number of rooms advertised for the property."
+      },
+      {
+        "name": "living_area_m2",
+        "type": "Integer",
+        "description": "Advertised living area in square metres."
+      },
+      {
+        "name": "plot_area_m2",
+        "type": "String or null",
+        "description": "Land area in square metres for houses or land listings, when available."
+      },
+      {
+        "name": "preview_image",
+        "type": "String",
+        "description": "Preview image URL for the property listing."
+      },
+      {
+        "name": "seller_type",
+        "type": "String or null",
+        "description": "Seller category reported by Ohne-Makler, when available."
+      },
+      {
+        "name": "latitude",
+        "type": "Number",
+        "description": "Property latitude in decimal degrees."
+      },
+      {
+        "name": "longitude",
+        "type": "Number",
+        "description": "Property longitude in decimal degrees."
+      },
+      {
+        "name": "input_q",
+        "type": "String",
+        "description": "Q submitted to retrieve this property listing."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_q"
+  },
+  "resultPointer": "/results",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/id",
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "currentPagePointer": "/page",
+    "totalPagesPointer": "/last_page",
+    "nextPointer": "/next_page",
+    "maxPages": 10
+  },
+  "defaultMaxPages": 2
+}

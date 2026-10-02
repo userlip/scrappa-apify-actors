@@ -1,0 +1,434 @@
+{
+  "slug": "geizhals-search-scraper",
+  "title": "Geizhals Price Comparison Search Scraper",
+  "description": "Search Geizhals for products with manufacturer, GTIN, rating summaries, best-price ranges, and product links. Batch keywords across German and European markets.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "endpoint": "/geizhals/search",
+  "openapiPath": "/geizhals/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Product searches",
+    "description": "Product keywords to search across Geizhals markets.",
+    "valueDescription": "keyword used for this Geizhals search."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Keyword",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "description": "Search keyword, e.g. thinkpad."
+      }
+    },
+    {
+      "input": "loc",
+      "apiParam": "loc",
+      "location": "query",
+      "required": false,
+      "title": "Market",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "at",
+          "eu",
+          "pl",
+          "uk"
+        ],
+        "description": "Market code: de, at, eu, pl, or uk. Defaults to de."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "lang",
+      "apiParam": "lang",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "en"
+        ],
+        "description": "Response language: de or en. Defaults to de."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000,
+        "description": "1-based page number. Defaults to 1."
+      }
+    },
+    {
+      "input": "pagesize",
+      "apiParam": "pagesize",
+      "location": "query",
+      "required": false,
+      "title": "Pagesize",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000,
+        "description": "Results per page, between 1 and 1000. Defaults to 10."
+      }
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort order",
+      "schema": {
+        "type": "string",
+        "maxLength": 20,
+        "description": "Optional sort key as used by Geizhals (e.g. price). Defaults to relevance."
+      }
+    },
+    {
+      "input": "category",
+      "apiParam": "category",
+      "location": "query",
+      "required": false,
+      "title": "Category",
+      "schema": {
+        "type": "string",
+        "maxLength": 100,
+        "description": "Optional Geizhals category id to constrain results."
+      }
+    },
+    {
+      "input": "manufacturer",
+      "apiParam": "manufacturer",
+      "location": "query",
+      "required": false,
+      "title": "Manufacturer",
+      "schema": {
+        "type": "string",
+        "maxLength": 100,
+        "description": "Optional manufacturer id to constrain results."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "rtx 4070"
+      }
+    ],
+    "loc": "de",
+    "lang": "de",
+    "page": 1,
+    "pagesize": 5,
+    "maxResults": 5,
+    "maxPages": 1
+  },
+  "testParams": {
+    "query": "rtx 4070"
+  },
+  "fixture": {
+    "success": true,
+    "products": [
+      {
+        "description": [
+          {
+            "prop": "USB-C interface",
+            "value": "USB-C interface"
+          }
+        ],
+        "manufacturer_id": 8000694,
+        "variant_count": 28,
+        "rating_percent": 94,
+        "category": [
+          {
+            "label": "Verified source detail",
+            "id": {
+              "m": 8
+            }
+          }
+        ],
+        "bpoffer_link": "Verified source detail",
+        "rating_stars": 94,
+        "rating_comments": 94,
+        "gtin": [
+          "9345678901234"
+        ],
+        "urls": {
+          "overview": "Verified source detail",
+          "reviews": "Verified source detail",
+          "pricehist": "€549.90",
+          "rate": "Verified source detail",
+          "manufacturer": "Verified source detail",
+          "offers": "Verified source detail"
+        },
+        "gzhid": 8000544,
+        "listed_since": "2026-09-18",
+        "product_for_sort": "relevance",
+        "bestprices": {
+          "first": 8,
+          "min": 549,
+          "last": 8,
+          "max": 549
+        },
+        "images": [
+          "https://cdn.northstar.invalid/images/aurora-front.webp"
+        ],
+        "asins": [
+          "B0N0RTHSTAR"
+        ],
+        "test_reviews": [
+          {
+            "ctime": 8,
+            "title": "Northstar Aurora 1 TB Smartphone",
+            "status": "Published",
+            "position": 8,
+            "flag": "verified",
+            "logo_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+            "url": "https://geizhals.de/northstar-aurora-1-tb-a4450000.html",
+            "abstract_status": "Published",
+            "abstract": "Customers praise the clear product details and responsive service."
+          }
+        ],
+        "rating_count": 94,
+        "average_test_reviews_metascore": 94,
+        "product": "Northstar Aurora 1 TB Smartphone",
+        "variant_id": 8000177,
+        "manufacturer_name": "Northstar"
+      }
+    ],
+    "page": 1,
+    "pager": {
+      "first_page": 1,
+      "next_page": 2,
+      "last_page": 5
+    },
+    "total": 50
+  },
+  "tableFields": [
+    {
+      "name": "product",
+      "label": "Product",
+      "format": "text"
+    },
+    {
+      "name": "manufacturer_name",
+      "label": "Manufacturer Name",
+      "format": "text"
+    },
+    {
+      "name": "gzhid",
+      "label": "Gzhid",
+      "format": "text"
+    },
+    {
+      "name": "bestprices",
+      "label": "Bestprices",
+      "format": "number"
+    },
+    {
+      "name": "rating_percent",
+      "label": "Rating Percent",
+      "format": "number"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Geizhals Search Scraper | Compare Products",
+    "seoDescription": "Search Geizhals by keyword for manufacturers, GTINs, ratings, and best prices. Batch queries to compare products across German and European markets.",
+    "intro": "Search Geizhals by product keyword and collect manufacturer names, product IDs, GTINs, price summaries, and rating information. Choose a market and page through matching products.",
+    "useCases": [
+      "Shopping researchers can compare product variants and price ranges across Geizhals markets.",
+      "Retail teams can track manufacturers, GTINs, and product coverage by keyword.",
+      "Buyers can export product IDs and links for a shortlist of hardware or electronics."
+    ],
+    "howToUse": [
+      "Add one product keyword to `queries` for each search.",
+      "Choose a market and language, then optionally set category or manufacturer filters.",
+      "Set `maxPages` and `maxResults` before exporting product matches."
+    ],
+    "faqs": [
+      {
+        "question": "Which markets can I search?",
+        "answer": "The source accepts de, at, eu, pl, and uk market codes. Results and currency presentation follow the selected market."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "geizhals-product-scraper",
+        "title": "Geizhals Product & Offers Scraper"
+      },
+      {
+        "slug": "geizhals-price-history-scraper",
+        "title": "Geizhals Price History Scraper"
+      },
+      {
+        "slug": "billiger-search-scraper",
+        "title": "Billiger.de Price Comparison Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "description",
+        "type": "Array<Object>",
+        "description": "Product specification entries, each pairing a property name with its value."
+      },
+      {
+        "name": "manufacturer_id",
+        "type": "Integer",
+        "description": "Geizhals identifier for the product manufacturer."
+      },
+      {
+        "name": "variant_count",
+        "type": "Integer",
+        "description": "Number of variants grouped under the product result."
+      },
+      {
+        "name": "rating_percent",
+        "type": "Integer",
+        "description": "Percentage rating reported for the product by Geizhals."
+      },
+      {
+        "name": "category",
+        "type": "Array<Object>",
+        "description": "Geizhals category records associated with the product."
+      },
+      {
+        "name": "bpoffer_link",
+        "type": "String",
+        "description": "Geizhals link to the best-price offer for this product."
+      },
+      {
+        "name": "rating_stars",
+        "type": "Integer",
+        "description": "Star rating displayed for the product."
+      },
+      {
+        "name": "rating_comments",
+        "type": "Integer",
+        "description": "Number of rating comments associated with the product."
+      },
+      {
+        "name": "gtin",
+        "type": "Array<String>",
+        "description": "Global Trade Item Number values identifying the product."
+      },
+      {
+        "name": "urls",
+        "type": "Object",
+        "description": "Geizhals product links for overview, offers, reviews, and price history."
+      },
+      {
+        "name": "gzhid",
+        "type": "Integer",
+        "description": "Geizhals product identifier."
+      },
+      {
+        "name": "listed_since",
+        "type": "String",
+        "description": "Date when the product first appeared in the Geizhals catalog."
+      },
+      {
+        "name": "product_for_sort",
+        "type": "String",
+        "description": "Product label used by Geizhals when sorting search results."
+      },
+      {
+        "name": "bestprices",
+        "type": "Object",
+        "description": "Lowest, highest, first, and most recent prices reported for the product."
+      },
+      {
+        "name": "images",
+        "type": "Array<String> or null",
+        "description": "Product image URLs returned by Geizhals."
+      },
+      {
+        "name": "asins",
+        "type": "Array<String>",
+        "description": "Amazon Standard Identification Numbers linked to the product."
+      },
+      {
+        "name": "test_reviews",
+        "type": "Array<Object>",
+        "description": "Product test review records with source, title, and score details."
+      },
+      {
+        "name": "rating_count",
+        "type": "Integer",
+        "description": "Number of Geizhals user ratings for the product."
+      },
+      {
+        "name": "average_test_reviews_metascore",
+        "type": "Integer",
+        "description": "Average metascore across product tests."
+      },
+      {
+        "name": "product",
+        "type": "String",
+        "description": "Product name as displayed in Geizhals search results."
+      },
+      {
+        "name": "variant_id",
+        "type": "Integer",
+        "description": "Geizhals identifier for the selected product variant."
+      },
+      {
+        "name": "manufacturer_name",
+        "type": "String",
+        "description": "Manufacturer name displayed for the product."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Query submitted to retrieve this product result."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_query"
+  },
+  "resultPointer": "/products",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/gzhid",
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "currentPagePointer": "/page",
+    "totalPagesPointer": "/pager/last_page",
+    "nextPointer": "/pager/next_page",
+    "maxPages": 10
+  },
+  "defaultMaxPages": 2
+}

@@ -1,0 +1,11 @@
+{
+  "queries": [
+    {
+      "query": "iphone 15"
+    }
+  ],
+  "page": 1,
+  "page_size": 5,
+  "maxResults": 5,
+  "maxPages": 1
+}

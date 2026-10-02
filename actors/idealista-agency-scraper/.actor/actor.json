@@ -1,0 +1,65 @@
+{
+  "actorSpecification": 1,
+  "name": "idealista-agency-scraper",
+  "title": "Idealista Agency Scraper",
+  "description": "Collect Idealista agency profiles with commercial names, website, contact details, listing totals, languages, and media. Batch agency short names and choose a supported market.",
+  "categories": [
+    "REAL_ESTATE",
+    "LEAD_GENERATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "agency_name",
+              "agency_short_name",
+              "agency_website",
+              "active_since_year",
+              "listing_count"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "agency_name": {
+                "label": "Agency Name",
+                "format": "text"
+              },
+              "agency_short_name": {
+                "label": "Agency Short Name",
+                "format": "text"
+              },
+              "agency_website": {
+                "label": "Agency Website",
+                "format": "text"
+              },
+              "active_since_year": {
+                "label": "Active Since Year",
+                "format": "text"
+              },
+              "listing_count": {
+                "label": "Listing Count",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

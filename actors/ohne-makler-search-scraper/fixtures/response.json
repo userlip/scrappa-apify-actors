@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "results": [
+    {
+      "id": 8000205,
+      "object_number": "OM-583214",
+      "title": "Bright two-bedroom flat in Berlin",
+      "url": "https://www.ohne-makler.net/immobilie/offer/583214/",
+      "price": 549,
+      "price_on_request": true,
+      "postal_code": "10115",
+      "city": "Berlin",
+      "district": "Verified source detail",
+      "street": null,
+      "rooms": 2,
+      "living_area_m2": 78,
+      "plot_area_m2": null,
+      "preview_image": "https://cdn.northstar.invalid/images/aurora-front.webp",
+      "seller_type": null,
+      "latitude": 52.52,
+      "longitude": 13.405
+    }
+  ],
+  "page": 1,
+  "page_size": 24,
+  "total_results": 120,
+  "last_page": 5,
+  "next_page": 2
+}

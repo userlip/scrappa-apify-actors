@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "billiger-offers-scraper",
+  "title": "Billiger.de Product Offers Scraper",
+  "description": "Compare Billiger.de product offers by shop, price, shipping cost, availability, seller rating, and offer link. Batch product IDs to review merchants in one run.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "shop",
+              "name",
+              "price",
+              "shipping_costs",
+              "availability_text",
+              "offer_id"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "shop": {
+                "label": "Shop",
+                "format": "text"
+              },
+              "name": {
+                "label": "Name",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "shipping_costs": {
+                "label": "Shipping Costs",
+                "format": "text"
+              },
+              "availability_text": {
+                "label": "Availability Text",
+                "format": "text"
+              },
+              "offer_id": {
+                "label": "Offer Id",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,704 @@
+{
+  "slug": "billiger-search-scraper",
+  "title": "Billiger.de Price Comparison Search Scraper",
+  "description": "Compare Billiger.de products with prices, brands, review counts, offer totals, and product links. Batch keywords in one run and page through results to monitor German retail prices.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "endpoint": "/billiger/search",
+  "openapiPath": "/billiger/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Search queries",
+    "description": "Keywords for products to compare on Billiger.de.",
+    "valueDescription": "keyword used for this Billiger.de search."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Keyword",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "description": "Search text. Alias: q."
+      }
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "description": "1-based page number. Defaults to 1."
+      }
+    },
+    {
+      "input": "page_size",
+      "apiParam": "page_size",
+      "location": "query",
+      "required": false,
+      "title": "Page size",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50,
+        "description": "Results per page. Defaults to 20, maximum 50."
+      }
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort order",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "relevance",
+          "clickout_relevance",
+          "price",
+          "price_rev",
+          "rating",
+          "disjunctive"
+        ],
+        "description": "relevance, clickout_relevance, price, price_rev, rating, or disjunctive."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "cat",
+      "apiParam": "cat",
+      "location": "query",
+      "required": false,
+      "title": "Cat",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Billiger category ID."
+      }
+    },
+    {
+      "input": "doctype",
+      "apiParam": "doctype",
+      "location": "query",
+      "required": false,
+      "title": "Document Type",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "auto",
+          "offer",
+          "product",
+          "product_offer"
+        ],
+        "description": "auto, offer, product, or product_offer."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "fuzzy",
+      "apiParam": "fuzzy",
+      "location": "query",
+      "required": false,
+      "title": "Fuzzy",
+      "schema": {
+        "type": "boolean",
+        "description": "Enable fuzzy matching."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "iphone 15"
+      }
+    ],
+    "page": 1,
+    "page_size": 5,
+    "maxResults": 5,
+    "maxPages": 1
+  },
+  "testParams": {
+    "query": "iphone 15"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "hits": [
+        {
+          "cheapest_offer_id": 8000870,
+          "lowest_total_price_offer_ids": [
+            584
+          ],
+          "userreview_count": 347,
+          "userreview_histogram": [
+            8
+          ],
+          "offer_count": 12,
+          "offer_conditions": [
+            "Verified source detail"
+          ],
+          "product_url": "https://www.billiger.de/products/northstar-aurora-1-tb",
+          "brand_id": 8000826,
+          "ean": "9345678901234",
+          "deal": null,
+          "test_count": 6,
+          "images": [
+            {
+              "image_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+              "height": 800,
+              "width": 1200,
+              "purpose": "Main product image"
+            }
+          ],
+          "description": null,
+          "category": "Consumer electronics",
+          "differentiators": [
+            8
+          ],
+          "differentiator_data": null,
+          "min_price": 549,
+          "min_total_price": 584,
+          "shipping_costs": 4,
+          "price_per_unit": null,
+          "total_price_per_unit": null,
+          "price_info": null,
+          "relevance": 12.8,
+          "type": "Product",
+          "brand": "Northstar",
+          "indexable": true,
+          "image_url_small": null,
+          "offers": null,
+          "properties": null,
+          "pricehistory": null,
+          "pricehistory_meta": null,
+          "related_products": null,
+          "product_variants": null,
+          "testreports": null,
+          "userreviews": null,
+          "userreviews_trustami": [
+            "Verified marketplace detail"
+          ],
+          "userreviews_combined": null,
+          "userreview_source_url_trustami": null,
+          "name": "Northstar Aurora 1 TB Smartphone",
+          "baseproduct_name": "Northstar Aurora 1 TB Smartphone",
+          "short_name": null,
+          "userreview_rating": 4.7,
+          "combined_grade": 8,
+          "is_deleted": false,
+          "baseproduct_id": 8000624,
+          "product_variant_ids": [
+            8000281
+          ],
+          "efficiency_labels": [
+            {
+              "id": 8000251,
+              "name": "Northstar Aurora 1 TB Smartphone",
+              "value": "USB-C interface",
+              "icon": null,
+              "override": null,
+              "color_name": "Northstar Outdoor Supply",
+              "color": "navy"
+            }
+          ],
+          "energy_tyre_labels": [
+            {
+              "icon": "primary-image",
+              "desc": "Main listing image and product details."
+            }
+          ],
+          "efficiency_label_image_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "test_rating": 94,
+          "image_url_large": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "product_id": 8000220,
+          "has_image": true,
+          "category_id": 8000315,
+          "max_price": 629,
+          "videos": [
+            {
+              "video_id": "https://media.northstar.invalid/video/aurora-overview.mp4",
+              "key": "primary-image",
+              "video_big": "https://media.northstar.invalid/video/aurora-overview.mp4",
+              "video_thumbnail_big": "https://media.northstar.invalid/video/aurora-overview.mp4",
+              "type": "Product",
+              "purpose": "Product overview video",
+              "definition": "Main listing image and product details.",
+              "title": "Northstar Aurora 1 TB Smartphone",
+              "description": "Compact design with dependable performance and a two-year warranty.",
+              "duration": 8
+            }
+          ],
+          "category_tags": [
+            "Consumer electronics"
+          ],
+          "cheapest_product_id": 8000266,
+          "filters": null,
+          "product_ids": null,
+          "product_count": 28,
+          "url": "https://www.billiger.de/products/northstar-aurora-1-tb",
+          "show_brand": true,
+          "image": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "products": null,
+          "root_category_id": 8000874
+        }
+      ],
+      "total_hits": 25
+    },
+    "meta": {
+      "pagination": {
+        "page": 1,
+        "page_size": 5,
+        "total": 25,
+        "total_pages": 5,
+        "has_more": true,
+        "exhausted": false
+      }
+    }
+  },
+  "tableFields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "format": "text"
+    },
+    {
+      "name": "brand",
+      "label": "Brand",
+      "format": "text"
+    },
+    {
+      "name": "min_price",
+      "label": "Min Price",
+      "format": "number"
+    },
+    {
+      "name": "offer_count",
+      "label": "Offer Count",
+      "format": "number"
+    },
+    {
+      "name": "userreview_rating",
+      "label": "User Review Rating",
+      "format": "number"
+    },
+    {
+      "name": "product_url",
+      "label": "Product Url",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Billiger.de Search Scraper | Compare Prices",
+    "seoDescription": "Search Billiger.de for product prices, brands, review counts, and shop offers. Batch queries to compare German retail results and export data to CSV.",
+    "intro": "Search Billiger.de for products and compare prices, brands, review counts, and available offers. Add several keywords to follow retail inventory across search pages.",
+    "useCases": [
+      "Retail analysts can compare product prices and availability across German shops.",
+      "Ecommerce teams can monitor competing brands and offer counts for a keyword set.",
+      "Buyers can build product shortlists from names, ratings, and direct product links."
+    ],
+    "howToUse": [
+      "Add one product keyword to `queries` for each search.",
+      "Choose an optional category, sort order, or product type to refine the matches.",
+      "Set `maxPages` and `maxResults`, then export product rows."
+    ],
+    "faqs": [
+      {
+        "question": "Can I filter by category?",
+        "answer": "Yes. Add a Billiger.de category ID and choose a sort order or document type. Category IDs are available in Billiger.de search results."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "billiger-offers-scraper",
+        "title": "Billiger.de Product Offers Scraper"
+      },
+      {
+        "slug": "geizhals-search-scraper",
+        "title": "Geizhals Price Comparison Search Scraper"
+      },
+      {
+        "slug": "trustedshops-search-scraper",
+        "title": "Trusted Shops Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "cheapest_offer_id",
+        "type": "Integer",
+        "description": "Identifier of the merchant offer with the lowest listed product price."
+      },
+      {
+        "name": "lowest_total_price_offer_ids",
+        "type": "Array<Integer>",
+        "description": "IDs of merchant offers with the lowest total cost after shipping."
+      },
+      {
+        "name": "userreview_count",
+        "type": "Integer",
+        "description": "Number of customer reviews associated with this product."
+      },
+      {
+        "name": "userreview_histogram",
+        "type": "Array<Integer>",
+        "description": "Counts of customer ratings in the source rating buckets, from lowest to highest."
+      },
+      {
+        "name": "offer_count",
+        "type": "Integer",
+        "description": "Number of shop offers currently associated with the product."
+      },
+      {
+        "name": "offer_conditions",
+        "type": "Array<String> or null",
+        "description": "Condition labels on available offers, such as new or used."
+      },
+      {
+        "name": "product_url",
+        "type": "String",
+        "description": "Public Billiger.de URL for the product result or linked resource."
+      },
+      {
+        "name": "brand_id",
+        "type": "Integer",
+        "description": "Billiger.de identifier for the product brand."
+      },
+      {
+        "name": "ean",
+        "type": "String",
+        "description": "European Article Number for the product when supplied."
+      },
+      {
+        "name": "deal",
+        "type": "String or null",
+        "description": "Deal badge or promotion label attached to the product, when available."
+      },
+      {
+        "name": "test_count",
+        "type": "Integer",
+        "description": "Number of product tests or reviews indexed by Billiger.de."
+      },
+      {
+        "name": "images",
+        "type": "Array<Object> or null",
+        "description": "List of images records for this product result; each record carries `image_url`, `height`, `width`."
+      },
+      {
+        "name": "description",
+        "type": "String or null",
+        "description": "Description text for the product result as shown by Billiger.de."
+      },
+      {
+        "name": "category",
+        "type": "String",
+        "description": "Product or listing category assigned by Billiger.de."
+      },
+      {
+        "name": "differentiators",
+        "type": "Array<Integer> or null",
+        "description": "Feature values Billiger.de uses to distinguish this product from similar products."
+      },
+      {
+        "name": "differentiator_data",
+        "type": "String or null",
+        "description": "Structured attributes used by Billiger.de to compare this product with similar models."
+      },
+      {
+        "name": "min_price",
+        "type": "Integer",
+        "description": "Lowest listed product price before delivery costs, in the source currency."
+      },
+      {
+        "name": "min_total_price",
+        "type": "Integer",
+        "description": "Lowest offer total including the delivery cost, in the source currency."
+      },
+      {
+        "name": "shipping_costs",
+        "type": "Integer",
+        "description": "Delivery cost associated with the lowest-priced offer, in the source currency."
+      },
+      {
+        "name": "price_per_unit",
+        "type": "String or null",
+        "description": "Unit price shown for the product, in the source currency and format."
+      },
+      {
+        "name": "total_price_per_unit",
+        "type": "String or null",
+        "description": "Per-unit cost including delivery, in the product currency."
+      },
+      {
+        "name": "price_info",
+        "type": "String or null",
+        "description": "Formatted price details supplied by Billiger.de for the product."
+      },
+      {
+        "name": "relevance",
+        "type": "Number",
+        "description": "Billiger.de search relevance score for the product result."
+      },
+      {
+        "name": "type",
+        "type": "String",
+        "description": "Billiger.de result type, distinguishing product and offer records."
+      },
+      {
+        "name": "brand",
+        "type": "String",
+        "description": "Brand name assigned to the product."
+      },
+      {
+        "name": "indexable",
+        "type": "Boolean or null",
+        "description": "True when Billiger.de marks the product page as indexable."
+      },
+      {
+        "name": "image_url_small",
+        "type": "String or null",
+        "description": "Small preview image URL for the product."
+      },
+      {
+        "name": "offers",
+        "type": "String or null",
+        "description": "Offer data associated with the product in the source response."
+      },
+      {
+        "name": "properties",
+        "type": "String or null",
+        "description": "Product specification properties supplied by Billiger.de."
+      },
+      {
+        "name": "pricehistory",
+        "type": "String or null",
+        "description": "Historical price values associated with the product, when available."
+      },
+      {
+        "name": "pricehistory_meta",
+        "type": "String or null",
+        "description": "Metadata describing the product price history, when available."
+      },
+      {
+        "name": "related_products",
+        "type": "String or null",
+        "description": "Related product records returned alongside this product."
+      },
+      {
+        "name": "product_variants",
+        "type": "String or null",
+        "description": "Variant records linked to the base product."
+      },
+      {
+        "name": "testreports",
+        "type": "String or null",
+        "description": "Product test report records indexed by Billiger.de."
+      },
+      {
+        "name": "userreviews",
+        "type": "String or null",
+        "description": "Customer review records associated with the product."
+      },
+      {
+        "name": "userreviews_trustami",
+        "type": "Array<String>",
+        "description": "Trustami review entries associated with the product."
+      },
+      {
+        "name": "userreviews_combined",
+        "type": "String or null",
+        "description": "Combined customer review summary returned by Billiger.de."
+      },
+      {
+        "name": "userreview_source_url_trustami",
+        "type": "String or null",
+        "description": "Trustami page URL used as a source for customer reviews."
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "description": "Display name of the product on Billiger.de."
+      },
+      {
+        "name": "baseproduct_name",
+        "type": "String",
+        "description": "Name of the product family before individual variants are applied."
+      },
+      {
+        "name": "short_name",
+        "type": "String or null",
+        "description": "Short product name used in compact Billiger.de labels."
+      },
+      {
+        "name": "userreview_rating",
+        "type": "Number",
+        "description": "Average customer rating reported by Billiger.de; scale follows the source."
+      },
+      {
+        "name": "combined_grade",
+        "type": "Integer",
+        "description": "Combined product grade calculated from source reviews and tests."
+      },
+      {
+        "name": "is_deleted",
+        "type": "Boolean",
+        "description": "True when Billiger.de marks the product as deleted."
+      },
+      {
+        "name": "baseproduct_id",
+        "type": "Integer",
+        "description": "Identifier of the base product family."
+      },
+      {
+        "name": "product_variant_ids",
+        "type": "Array<Integer>",
+        "description": "IDs of product variants linked to this base product."
+      },
+      {
+        "name": "efficiency_labels",
+        "type": "Array<Object> or null",
+        "description": "Energy efficiency label records, including label name and value."
+      },
+      {
+        "name": "energy_tyre_labels",
+        "type": "Array<Object> or null",
+        "description": "Tyre efficiency label records attached to the product."
+      },
+      {
+        "name": "efficiency_label_image_url",
+        "type": "String",
+        "description": "Image URL for the product efficiency label."
+      },
+      {
+        "name": "test_rating",
+        "type": "Integer",
+        "description": "Product test score reported by Billiger.de; scale follows the source."
+      },
+      {
+        "name": "image_url_large",
+        "type": "String",
+        "description": "Large product image URL."
+      },
+      {
+        "name": "product_id",
+        "type": "Integer",
+        "description": "Billiger.de product identifier used to request merchant offers."
+      },
+      {
+        "name": "has_image",
+        "type": "Boolean",
+        "description": "True when Billiger.de reports at least one product image."
+      },
+      {
+        "name": "category_id",
+        "type": "Integer",
+        "description": "Billiger.de category identifier assigned to the product."
+      },
+      {
+        "name": "max_price",
+        "type": "Integer or null",
+        "description": "Highest listed price among returned product offers, when reported."
+      },
+      {
+        "name": "videos",
+        "type": "Array<Object> or null",
+        "description": "Product video records and their source media links."
+      },
+      {
+        "name": "category_tags",
+        "type": "Array<String>",
+        "description": "Category labels associated with the product."
+      },
+      {
+        "name": "cheapest_product_id",
+        "type": "Integer",
+        "description": "Identifier of the product record with the lowest price in this result group."
+      },
+      {
+        "name": "filters",
+        "type": "String or null",
+        "description": "Filter and facet data that can refine the product search."
+      },
+      {
+        "name": "product_ids",
+        "type": "String or null",
+        "description": "Product identifiers represented in the result group."
+      },
+      {
+        "name": "product_count",
+        "type": "Integer",
+        "description": "Number of products represented by this result group."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Billiger.de page URL for the product result."
+      },
+      {
+        "name": "show_brand",
+        "type": "Boolean",
+        "description": "True when Billiger.de displays the brand name for this product."
+      },
+      {
+        "name": "image",
+        "type": "String",
+        "description": "Primary product image URL or source image value."
+      },
+      {
+        "name": "products",
+        "type": "String or null",
+        "description": "Product records associated with this search result."
+      },
+      {
+        "name": "root_category_id",
+        "type": "Integer",
+        "description": "Top-level Billiger.de category identifier."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Query submitted to retrieve this product result."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_query"
+  },
+  "resultPointer": "/data/hits",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/product_id",
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "currentPagePointer": "/meta/pagination/page",
+    "totalPagesPointer": "/meta/pagination/total_pages",
+    "hasMorePointer": "/meta/pagination/has_more",
+    "maxPages": 10
+  },
+  "defaultMaxPages": 2
+}

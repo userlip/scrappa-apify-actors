@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "impressum-extractor",
+  "title": "Impressum Contact Data Extractor",
+  "description": "Extract requested company details such as name, address, email, and phone from website legal notices when available. Batch domains and choose fields and language for each lookup.",
+  "categories": [
+    "LEAD_GENERATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "company_name",
+              "address",
+              "email",
+              "phone",
+              "impressum_url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "company_name": {
+                "label": "Company Name",
+                "format": "text"
+              },
+              "address": {
+                "label": "Address",
+                "format": "text"
+              },
+              "email": {
+                "label": "Email",
+                "format": "text"
+              },
+              "phone": {
+                "label": "Phone",
+                "format": "text"
+              },
+              "impressum_url": {
+                "label": "Impressum Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "dealer_ids": [
+    {
+      "dealer_id": "47546627"
+    }
+  ],
+  "vehicle_type": "car",
+  "offset": 0,
+  "limit": 5,
+  "maxResults": 5,
+  "maxPages": 1
+}

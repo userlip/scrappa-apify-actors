@@ -1,0 +1,49 @@
+{
+  "title": "Realestate.com.au Suburb Profile Scraper",
+  "description": "Get a realestate.com.au suburb profile with median prices, market trends, rental yields, local areas, and source data. Batch profile URLs to compare Australian housing markets.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "profile_urls"
+  ],
+  "properties": {
+    "profile_urls": {
+      "title": "Suburb profile URLs",
+      "type": "array",
+      "description": "Full realestate.com.au suburb or market profile URLs.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "url": "https://www.realestate.com.au/vic/richmond-3121/"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "title": "URL",
+            "type": "string",
+            "pattern": "^https:\\/\\/www\\.realestate\\.com\\.au\\/(?!property-|find-agent|agent\\/|agency\\/)",
+            "format": "uri",
+            "description": "Full realestate.com.au suburb or market profile URL.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "geizhals-product-scraper",
+  "title": "Geizhals Product & Offers Scraper",
+  "description": "Get a Geizhals product record with manufacturer, current merchant offers, price summaries, categories, ratings, and review links. Batch product IDs to compare catalog entries.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "product_id",
+              "product_name",
+              "manufacturer",
+              "best_price",
+              "offer_count",
+              "product_url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "product_id": {
+                "label": "Product Id",
+                "format": "text"
+              },
+              "product_name": {
+                "label": "Product Name",
+                "format": "text"
+              },
+              "manufacturer": {
+                "label": "Manufacturer",
+                "format": "text"
+              },
+              "best_price": {
+                "label": "Best Price",
+                "format": "number"
+              },
+              "offer_count": {
+                "label": "Offer Count",
+                "format": "number"
+              },
+              "product_url": {
+                "label": "Product Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

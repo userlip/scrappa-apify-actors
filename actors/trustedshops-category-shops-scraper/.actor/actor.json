@@ -1,0 +1,70 @@
+{
+  "actorSpecification": 1,
+  "name": "trustedshops-category-shops-scraper",
+  "title": "Trusted Shops Category Shops Scraper",
+  "description": "Browse Trusted Shops stores by category with shop names, ratings, review counts, certification status, and profile links. Batch categories and choose a country market.",
+  "categories": [
+    "ECOMMERCE",
+    "LEAD_GENERATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "shopName",
+              "shopUrl",
+              "averageRating",
+              "reviewCount",
+              "certificationState",
+              "profileUrl"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "shopName": {
+                "label": "Shop Name",
+                "format": "text"
+              },
+              "shopUrl": {
+                "label": "Shop Url",
+                "format": "text"
+              },
+              "averageRating": {
+                "label": "Average Rating",
+                "format": "text"
+              },
+              "reviewCount": {
+                "label": "Review Count",
+                "format": "text"
+              },
+              "certificationState": {
+                "label": "Certification State",
+                "format": "text"
+              },
+              "profileUrl": {
+                "label": "Profile Url",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "success": true,
+  "product_id": 8000170,
+  "loc": "Berlin",
+  "lang": "de",
+  "product": {
+    "images": [
+      "https://cdn.northstar.invalid/images/aurora-front.webp"
+    ],
+    "productvideo": [
+      "Verified marketplace detail"
+    ],
+    "bpoffer_link": "Verified source detail",
+    "category": [
+      {
+        "id": {
+          "m": 8
+        },
+        "label": "Verified source detail"
+      }
+    ],
+    "test_reviews": [
+      {
+        "ctime": 8,
+        "status": "Published",
+        "title": "Northstar Aurora 1 TB Smartphone",
+        "logo_url": {
+          "w": 8,
+          "u": "Current listing detail",
+          "h": 8
+        },
+        "flag": "verified",
+        "position": 8,
+        "abstract_status": "Published"
+      }
+    ],
+    "average_test_reviews_metascore": 94,
+    "manufacturer_name": "Northstar",
+    "variant_id": 8000168,
+    "product": "Northstar Aurora 1 TB Smartphone",
+    "prices": {
+      "best": 549,
+      "avg": 12.8
+    },
+    "gtin": [
+      "9345678901234"
+    ],
+    "urls": {
+      "manufacturer": "Verified source detail",
+      "rate": "Verified source detail",
+      "pricehist": "€549.90",
+      "reviews": "Verified source detail",
+      "overview": "Verified source detail",
+      "offers": "Verified source detail"
+    },
+    "deals": {
+      "alltime": null,
+      "change": null,
+      "oldprice": null,
+      "top_deal": null
+    },
+    "offer_count": 12,
+    "description": [
+      {
+        "value": "USB-C interface",
+        "prop": "USB-C interface"
+      }
+    ],
+    "offers": [
+      {
+        "price": {
+          "currency": "EUR",
+          "ppu": null,
+          "value": 12.8,
+          "url": "https://geizhals.de/northstar-aurora-1-tb-a4450000.html",
+          "legal": null,
+          "date": "2026-09-18"
+        },
+        "pricing": {
+          "loc_currency": "EUR",
+          "loc_value": 12.8,
+          "eur_value": 12.8,
+          "orig_value": 12.8,
+          "loc": "Berlin",
+          "orig_currency": "EUR",
+          "orig_loc": "Berlin"
+        },
+        "avl": {
+          "best_code": 8,
+          "descr": [
+            {
+              "text": "High quality and prompt delivery.",
+              "branch": "Verified source detail"
+            }
+          ],
+          "time": null
+        },
+        "shop": {
+          "opening_hours": null,
+          "url": "https://geizhals.de/northstar-aurora-1-tb-a4450000.html",
+          "agb_link": "Verified source detail",
+          "latitude": null,
+          "multimerchant_id": 8000831,
+          "id": 8000232,
+          "longitude": null
+        }
+      }
+    ],
+    "gzhid": 8000554,
+    "manufacturer_id": 8000714,
+    "listed_since": "2026-09-18",
+    "product_for_sort": "relevance",
+    "variant_count": 28
+  },
+  "meta": {
+    "duration_ms": 8,
+    "attempts": 8
+  }
+}

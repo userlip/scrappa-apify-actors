@@ -1,0 +1,49 @@
+{
+  "title": "Realestate.com.au Property Details Scraper",
+  "description": "Retrieve realestate.com.au property details with price, address, bedrooms, bathrooms, parking, media, agency, and agent information. Batch listing URLs to review Australian homes.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "property_urls"
+  ],
+  "properties": {
+    "property_urls": {
+      "title": "Property URLs",
+      "type": "array",
+      "description": "Full realestate.com.au listing URLs to retrieve.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "url": "https://www.realestate.com.au/property-house-vic-richmond-152489476"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "title": "URL",
+            "type": "string",
+            "pattern": "^https:\\/\\/www\\.realestate\\.com\\.au\\/(?:sold\\/)?property-[a-z0-9%+.-]+-\\d+(?:\\?.*)?$",
+            "format": "uri",
+            "description": "Full realestate.com.au property URL.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

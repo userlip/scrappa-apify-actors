@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "ohne-makler-rent-index-scraper",
+  "title": "Ohne-Makler Rent Index Scraper",
+  "description": "Read the Ohne-Makler Mietspiegel for German cities, with rent tables, market sections, and available chart data. Batch city and state pairs to compare reference rents.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "state",
+              "city",
+              "title",
+              "sections"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "state": {
+                "label": "State",
+                "format": "text"
+              },
+              "city": {
+                "label": "City",
+                "format": "text"
+              },
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "sections": {
+                "label": "Sections",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

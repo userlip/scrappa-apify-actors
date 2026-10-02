@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "realestate-com-au-search-scraper",
+  "title": "Realestate.com.au Property Search Scraper",
+  "description": "Search realestate.com.au by suburb for buy, rent, or sold listings with prices, addresses, property features, agencies, inspections, and links. Batch locations to compare Australian markets.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "id",
+              "property_type",
+              "price",
+              "address",
+              "listing_company",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": {
+                "label": "Id",
+                "format": "text"
+              },
+              "property_type": {
+                "label": "Property Type",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "address": {
+                "label": "Address",
+                "format": "text"
+              },
+              "listing_company": {
+                "label": "Listing Company",
+                "format": "text"
+              },
+              "url": {
+                "label": "Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

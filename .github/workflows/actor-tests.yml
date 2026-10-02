@@ -44,11 +44,16 @@ jobs:
           - actors/baidu-images-scraper
           - actors/baidu-search-scraper
           - actors/baidu-trending-scraper
+          - actors/billiger-offers-scraper
+          - actors/billiger-search-scraper
           - actors/bing-search-scraper
           - actors/booking-hotel-details-scraper
           - actors/booking-search-scraper
           - actors/brave-search-scraper
           - actors/domain-availability-checker
+          - actors/geizhals-price-history-scraper
+          - actors/geizhals-product-scraper
+          - actors/geizhals-search-scraper
           - actors/google-autocomplete-scraper
           - actors/google-finance-historical-prices-scraper
           - actors/google-finance-indices-scraper
@@ -81,12 +86,15 @@ jobs:
           - actors/google-trends-interest-scraper
           - actors/google-trends-related-queries-scraper
           - actors/google-videos-scraper
+          - actors/idealista-agency-scraper
+          - actors/idealista-listing-scraper
           - actors/idealista-search-scraper
           - actors/immobilienscout24-locations-scraper
           - actors/immobilienscout24-property-details-scraper
           - actors/immobilienscout24-price-insights-scraper
           - actors/immobilienscout24-search-scraper
           - actors/immowelt-property-search-scraper
+          - actors/impressum-extractor
           - actors/indeed-jobs-scraper
           - actors/instagram-hashtag-search-scraper
           - actors/instagram-post-comments-scraper
@@ -110,7 +118,18 @@ jobs:
           - actors/linkedin-post-scraper
           - actors/linkedin-profile-scraper
           - actors/linkedin-search-scraper
+          - actors/mobile-de-dealer-inventory-scraper
+          - actors/mobile-de-listing-scraper
+          - actors/mobile-de-search-scraper
+          - actors/ohne-makler-listing-scraper
+          - actors/ohne-makler-property-prices-scraper
+          - actors/ohne-makler-rent-index-scraper
+          - actors/ohne-makler-search-scraper
           - actors/pinterest-search-scraper
+          - actors/realestate-com-au-agents-scraper
+          - actors/realestate-com-au-property-scraper
+          - actors/realestate-com-au-search-scraper
+          - actors/realestate-com-au-suburb-profile-scraper
           - actors/redfin-property-details-scraper
           - actors/redfin-property-search-scraper
           - actors/redfin-valuation-scraper
@@ -142,6 +161,7 @@ jobs:
           - actors/tiktok-user-posts-scraper
           - actors/tiktok-user-search-scraper
           - actors/tiktok-video-scraper
+          - actors/trustedshops-category-shops-scraper
           - actors/trustedshops-reviews-scraper
           - actors/trustedshops-search-scraper
           - actors/trustedshops-shop-profile-scraper
@@ -153,6 +173,7 @@ jobs:
           - actors/vinted-user-items-scraper
           - actors/vinted-user-profile-scraper
           - actors/website-content-extractor-scraper
+          - actors/wlw-supplier-search-scraper
           - actors/youtube-api-batch-videos
           - actors/youtube-api-channel-podcasts
           - actors/youtube-api-channel-videos

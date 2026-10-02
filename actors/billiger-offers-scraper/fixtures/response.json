@@ -1,0 +1,85 @@
+{
+  "success": true,
+  "data": {
+    "hits": [
+      {
+        "shop": "Northstar Outdoor Supply",
+        "shop_tags": [
+          "outdoor specialist"
+        ],
+        "mp_seller_name": "Morgenrot Handelskontor",
+        "shop_group_size": null,
+        "price_per_unit": "€549.90",
+        "availability_code": "AVAILABLE",
+        "brand_id": 8000825,
+        "brand": "Northstar",
+        "condition": "New",
+        "shop_id": 8000751,
+        "category_id": 8000272,
+        "category": "Consumer electronics",
+        "category_tags": [
+          "Consumer electronics"
+        ],
+        "energy_tyre_labels": [
+          {
+            "icon": "primary-image",
+            "desc": "Main listing image and product details."
+          }
+        ],
+        "starting_prizes": true,
+        "shop_logo_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "shipping_costs": 4,
+        "shop_threshold_free_shipping": 4,
+        "type": "Product",
+        "price": 549,
+        "promo_text": "High quality and prompt delivery.",
+        "description": "Compact design with dependable performance and a two-year warranty.",
+        "old_price": 629,
+        "availability_text": "In stock",
+        "mp_feedback_url": "https://www.billiger.de/products/northstar-aurora-1-tb",
+        "mp_seller_userreview_count": null,
+        "shop_userreview_count": 347,
+        "offer_id": 8000857,
+        "voucher_text": "High quality and prompt delivery.",
+        "listed_price": 629,
+        "total_price": 584,
+        "mobile_optimized": true,
+        "name": "Northstar Aurora 1 TB Smartphone",
+        "mp_seller_userreview_rating": 4.7,
+        "shop_userreview_rating": 4.7,
+        "shop_userreview_rating_combined": 4.7,
+        "shop_userreview_count_combined": 347,
+        "payment_methods": [
+          {
+            "id": 8000242,
+            "sort_key": 8,
+            "description": "Compact design with dependable performance and a two-year warranty."
+          }
+        ],
+        "shipping_methods": [
+          {
+            "id": 8000243,
+            "sort_key": 8,
+            "description": "Compact design with dependable performance and a two-year warranty."
+          }
+        ],
+        "image_url_large": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "product_id": 8000209,
+        "image_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "has_image": true,
+        "shop_data": null
+      }
+    ],
+    "total_hits": 25
+  },
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "page_size": 5,
+      "total": 25,
+      "total_pages": 5,
+      "has_more": true,
+      "exhausted": false
+    }
+  }
+}

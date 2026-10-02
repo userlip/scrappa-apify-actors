@@ -1,0 +1,1968 @@
+{
+  "success": true,
+  "data": {
+    "url": "https://www.realestate.com.au/property-house-vic-richmond-152000001",
+    "profile": {
+      "resi-property_market-explorer": {
+        "suburb_data": {
+          "marketProfileBySlug": {
+            "insights": {
+              "medianPrice": {
+                "buy": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "rent": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "transactionVolume": {
+                "buy": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "rent": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "daysOnSite": {
+                "buy": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "rent": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "rentalYield": {
+                "house": {
+                  "allBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "twoBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "threeBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "fourBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "unit": {
+                  "allBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "oneBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "twoBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "threeBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "supplyDemand": {
+                "buy": {
+                  "house": {
+                    "allBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "rent": {
+                  "house": {
+                    "allBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing"
+            },
+            "market": {
+              "url": {
+                "href": "https://www.realestate.com.au/agent/jordan-ellis",
+                "path": "https://www.realestate.com.au/agent/jordan-ellis",
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing",
+              "location": {
+                "suburb": "Richmond",
+                "state": "VIC",
+                "postcode": "3121",
+                "__typename": "PropertyListing"
+              }
+            },
+            "breadcrumbs": [
+              {
+                "display": "Richmond, VIC 3121",
+                "url": {
+                  "path": "https://www.realestate.com.au/agent/jordan-ellis",
+                  "href": "https://www.realestate.com.au/agent/jordan-ellis",
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              }
+            ],
+            "__typename": "PropertyListing",
+            "parentMarket": {
+              "name": "Harbourline Property Group",
+              "__typename": "PropertyListing"
+            },
+            "surroundingMarkets": [
+              {
+                "location": {
+                  "state": "VIC",
+                  "suburb": "Richmond",
+                  "postcode": "3121",
+                  "__typename": "PropertyListing"
+                },
+                "url": {
+                  "path": "https://www.realestate.com.au/agent/jordan-ellis",
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              }
+            ],
+            "leadGen": {
+              "actionUrl": "https://www.realestate.com.au/agent/jordan-ellis",
+              "data": {
+                "listingCompany": {
+                  "id": "152000001",
+                  "name": "Harbourline Property Group",
+                  "branding": {
+                    "primaryColour": "Harbourline Property Group",
+                    "textColour": "Harbourline Property Group",
+                    "__typename": "PropertyListing"
+                  },
+                  "media": {
+                    "logo": {
+                      "url": "https://www.realestate.com.au/agent/jordan-ellis",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing"
+            }
+          }
+        }
+      }
+    },
+    "raw": {
+      "resi-property_market-explorer": {
+        "suburb_data": {
+          "marketProfileBySlug": {
+            "insights": {
+              "medianPrice": {
+                "buy": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "rent": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 12.8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "startDate": "2026-09-18",
+                        "endDate": "2026-09-18",
+                        "display": "Richmond, VIC 3121",
+                        "volume": 8,
+                        "changePercentage": {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "__typename": "PropertyListing"
+                        },
+                        "__typename": "PropertyListing"
+                      },
+                      "trends": [
+                        {
+                          "value": 8,
+                          "display": "Richmond, VIC 3121",
+                          "volume": 8,
+                          "endDate": "2026-09-18",
+                          "startDate": "2026-09-18",
+                          "__typename": "PropertyListing"
+                        }
+                      ],
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "transactionVolume": {
+                "buy": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "rent": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "daysOnSite": {
+                "buy": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "rent": {
+                  "house": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "yearly": {
+                        "value": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "rentalYield": {
+                "house": {
+                  "allBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "twoBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "threeBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "fourBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "unit": {
+                  "allBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "oneBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "twoBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "threeBed": {
+                    "yearly": {
+                      "display": "Richmond, VIC 3121",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "supplyDemand": {
+                "buy": {
+                  "house": {
+                    "allBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "rent": {
+                  "house": {
+                    "allBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "fourBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "unit": {
+                    "allBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "oneBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "twoBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "threeBed": {
+                      "monthly": {
+                        "supply": 8,
+                        "demand": 8,
+                        "__typename": "PropertyListing"
+                      },
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing"
+            },
+            "market": {
+              "url": {
+                "href": "https://www.realestate.com.au/agent/jordan-ellis",
+                "path": "https://www.realestate.com.au/agent/jordan-ellis",
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing",
+              "location": {
+                "suburb": "Richmond",
+                "state": "VIC",
+                "postcode": "3121",
+                "__typename": "PropertyListing"
+              }
+            },
+            "breadcrumbs": [
+              {
+                "display": "Richmond, VIC 3121",
+                "url": {
+                  "path": "https://www.realestate.com.au/agent/jordan-ellis",
+                  "href": "https://www.realestate.com.au/agent/jordan-ellis",
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              }
+            ],
+            "__typename": "PropertyListing",
+            "parentMarket": {
+              "name": "Harbourline Property Group",
+              "__typename": "PropertyListing"
+            },
+            "surroundingMarkets": [
+              {
+                "location": {
+                  "state": "VIC",
+                  "suburb": "Richmond",
+                  "postcode": "3121",
+                  "__typename": "PropertyListing"
+                },
+                "url": {
+                  "path": "https://www.realestate.com.au/agent/jordan-ellis",
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              }
+            ],
+            "leadGen": {
+              "actionUrl": "https://www.realestate.com.au/agent/jordan-ellis",
+              "data": {
+                "listingCompany": {
+                  "id": "152000001",
+                  "name": "Harbourline Property Group",
+                  "branding": {
+                    "primaryColour": "Harbourline Property Group",
+                    "textColour": "Harbourline Property Group",
+                    "__typename": "PropertyListing"
+                  },
+                  "media": {
+                    "logo": {
+                      "url": "https://www.realestate.com.au/agent/jordan-ellis",
+                      "__typename": "PropertyListing"
+                    },
+                    "__typename": "PropertyListing"
+                  },
+                  "__typename": "PropertyListing"
+                },
+                "__typename": "PropertyListing"
+              },
+              "__typename": "PropertyListing"
+            }
+          }
+        }
+      }
+    }
+  }
+}

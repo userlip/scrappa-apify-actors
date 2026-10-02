@@ -1,0 +1,90 @@
+{
+  "title": "Geizhals Price History Scraper",
+  "description": "Track Geizhals prices by product and market with history timestamps, observed prices, and current range values. Batch product IDs and choose a lookback window.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "product_ids"
+  ],
+  "properties": {
+    "product_ids": {
+      "title": "Product IDs",
+      "type": "array",
+      "description": "Geizhals product IDs whose price history you want to review.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "product_id": "3103639"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "properties": {
+          "product_id": {
+            "title": "Product ID",
+            "type": "integer",
+            "minimum": 1,
+            "description": "Known Geizhals product id from product URLs such as ...-a2194110.html.",
+            "editor": "number"
+          },
+          "days": {
+            "title": "Days",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3650,
+            "description": "History window in days. Defaults to 31. Maximum 3650.",
+            "editor": "number"
+          },
+          "loc": {
+            "title": "Market",
+            "type": "string",
+            "enum": [
+              "de",
+              "at",
+              "eu",
+              "pl",
+              "uk"
+            ],
+            "description": "Market code: de, at, eu, pl, or uk. Defaults to de.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "days": {
+      "title": "Days",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3650,
+      "description": "History window in days. Defaults to 31. Maximum 3650.",
+      "editor": "number"
+    },
+    "loc": {
+      "title": "Market",
+      "type": "string",
+      "enum": [
+        "de",
+        "at",
+        "eu",
+        "pl",
+        "uk"
+      ],
+      "description": "Market code: de, at, eu, pl, or uk. Defaults to de.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}
