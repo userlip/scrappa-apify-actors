@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use std::{env, error::Error, fmt, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -8,7 +10,7 @@ use url::Url;
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
+const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
 const SCRAPPA_USER_AGENT: &str = "thescrappa-google-trends-autocomplete-scraper/1.0";
 const SUGGESTION_RESULT_CHARGE_EVENT: &str = "suggestion-result";
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
@@ -493,7 +495,7 @@ impl ScrappaRequestError {
     fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout => true,
-            Self::Api { status, .. } => matches!(*status, 408 | 429 | 500 | 502 | 503 | 504),
+            Self::Api { status, .. } => matches!(*status, 429 | 500 | 502 | 503 | 504),
             Self::Endpoint(_) => false,
             Self::Request(error) => error.is_timeout() || error.is_connect() || error.is_body(),
             Self::InvalidJson(_) => false,
@@ -555,7 +557,7 @@ impl ScrappaClient<'_> {
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, SCRAPPA_USER_AGENT)
             .timeout(SCRAPPA_REQUEST_TIMEOUT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(scrappa_transport_error)?;
         let status = response.status();

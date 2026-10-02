@@ -2,6 +2,7 @@ mod apify;
 mod request_params;
 mod response_utils;
 mod scrappa_client;
+mod scrappa_retry;
 
 use anyhow::{anyhow, Result};
 use apify::{is_pay_per_event, ApifyClient, ApifyConfig, PpeBudget};

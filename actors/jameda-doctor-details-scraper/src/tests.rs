@@ -347,7 +347,7 @@ fn formats_scrappa_http_errors_and_retries_only_transient_statuses() {
         scrappa_error_message(503, "[]", "Service Unavailable"),
         "Service Unavailable"
     );
-    for status in [408, 429, 500, 502, 503, 504] {
+    for status in [429, 500, 502, 503, 504] {
         assert!(is_retryable_scrappa_status(
             StatusCode::from_u16(status).unwrap()
         ));

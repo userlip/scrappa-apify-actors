@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Context, Result, anyhow};
 use reqwest::{Client, StatusCode, Url};
 use serde_json::{Map, Value};
@@ -44,7 +45,7 @@ impl ScrappaClient {
             .get(url)
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(map_request_error)?;
         let status = response.status();

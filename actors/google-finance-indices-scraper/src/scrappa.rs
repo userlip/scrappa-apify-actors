@@ -1,17 +1,14 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::Duration;
 
 use anyhow::{anyhow, Context, Result};
 use reqwest::{Client, StatusCode, Url};
 use serde_json::Value;
-use tokio::time::{sleep, timeout};
 
-use crate::{
-    request_params::IndicesParams,
-    runtime_config::{request_timeout, REQUEST_ATTEMPTS, RETRY_BACKOFF_MS},
-};
+use crate::{request_params::IndicesParams, runtime_config::request_timeout};
 
 const DEFAULT_SCRAPPA_API_BASE: &str = "https://scrappa.co/api";
-const RETRYABLE_STATUSES: [u16; 6] = [408, 429, 500, 502, 503, 504];
+const RETRYABLE_STATUSES: [u16; 5] = [429, 500, 502, 503, 504];
 
 #[derive(Clone)]
 pub struct ScrappaClient {
@@ -39,33 +36,7 @@ impl ScrappaClient {
 
     pub async fn get_indices(&self, params: &IndicesParams, symbol: Option<&str>) -> Result<Value> {
         let url = self.indices_url(params, symbol)?;
-        let mut last_error = None;
-
-        for attempt in 1..=REQUEST_ATTEMPTS {
-            match timeout(request_timeout(), self.get_once(&url)).await {
-                Ok(Ok(response)) => return Ok(response),
-                Ok(Err(error)) => {
-                    let retryable = is_retryable_error(&error);
-                    last_error = Some(error);
-                    if !retryable || attempt == REQUEST_ATTEMPTS {
-                        break;
-                    }
-                }
-                Err(_) => {
-                    last_error = Some(anyhow!(
-                        "Scrappa API request timed out after {}ms",
-                        request_timeout().as_millis()
-                    ));
-                    if attempt == REQUEST_ATTEMPTS {
-                        break;
-                    }
-                }
-            }
-
-            sleep(Duration::from_millis(attempt as u64 * RETRY_BACKOFF_MS)).await;
-        }
-
-        Err(last_error.unwrap_or_else(|| anyhow!("Scrappa API request failed")))
+        self.get_once(&url).await
     }
 
     fn indices_url(&self, params: &IndicesParams, symbol: Option<&str>) -> Result<Url> {
@@ -92,7 +63,7 @@ impl ScrappaClient {
             .get(url.clone())
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .context("Scrappa API request failed")?;
         let status = response.status();
@@ -178,7 +149,7 @@ mod tests {
 
     #[test]
     fn retries_only_documented_http_errors() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable_error(&anyhow!(ScrappaStatus(
                 StatusCode::from_u16(status).unwrap()
             ))));

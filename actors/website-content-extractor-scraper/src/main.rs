@@ -19,7 +19,7 @@ use website_content_extractor_scraper::{
 
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(90);
-const SCRAPPA_MAX_ATTEMPTS: usize = 2;
+const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 const SCRAPPA_RETRY_DELAY: Duration = Duration::from_secs(1);
 
 struct Config {

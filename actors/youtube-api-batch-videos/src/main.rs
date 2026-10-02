@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response, StatusCode};
 use serde_json::Value;
@@ -9,7 +11,7 @@ const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://ytapi.scrappa.co";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const ACTOR_TIMEOUT: Duration = Duration::from_secs(300);
-const MAX_ATTEMPTS: u8 = 3;
+const MAX_ATTEMPTS: u8 = 1;
 
 struct ActorConfig {
     apify_api_base_url: Url,
@@ -130,7 +132,10 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
 
 async fn fetch_batch_videos(client: &Client, url: &Url) -> Result<Vec<Value>> {
     for attempt in 1..=MAX_ATTEMPTS {
-        let response = client.get(url.clone()).send().await;
+        let response = client
+            .get(url.clone())
+            .send_scrappa_with_retry("Scrappa API request")
+            .await;
         let response = match response {
             Ok(response) => response,
             Err(error) => {
@@ -160,8 +165,12 @@ async fn fetch_batch_videos(client: &Client, url: &Url) -> Result<Vec<Value>> {
             );
             let retryable = matches!(
                 status,
-                StatusCode::REQUEST_TIMEOUT | StatusCode::TOO_MANY_REQUESTS
-            ) || status.is_server_error();
+                StatusCode::TOO_MANY_REQUESTS
+                    | StatusCode::INTERNAL_SERVER_ERROR
+                    | StatusCode::BAD_GATEWAY
+                    | StatusCode::SERVICE_UNAVAILABLE
+                    | StatusCode::GATEWAY_TIMEOUT
+            );
             if attempt == MAX_ATTEMPTS || !retryable {
                 bail!(message);
             }
@@ -629,21 +638,17 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn retries_a_transient_408_before_saving_videos() {
+    async fn fails_fast_on_a_408_response() {
         let server = MockServer::start(vec![
             response(200, r#"{"ids":"video"}"#),
             response(408, "{}"),
-            response(200, r#"{"videos":[{"id":"video"}]}"#),
-            pricing_response(1.0, 0),
-            response(201, "{}"),
         ]);
-        run_actor(&client(), &config(&server.base_url))
+        let error = run_actor(&client(), &config(&server.base_url))
             .await
-            .unwrap();
+            .unwrap_err();
+        assert!(error.to_string().contains("408 Request Timeout"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 5);
-        assert_eq!(request_parts(&requests[1]).1, request_parts(&requests[2]).1);
-        assert_eq!(request_parts(&requests[4]).0, "POST");
+        assert_eq!(requests.len(), 2);
     }
 
     #[tokio::test]
@@ -702,9 +707,13 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn persistent_504_fails_after_three_upstream_attempts_without_dataset_rows() {
+    async fn persistent_504_fails_after_seven_upstream_attempts_without_dataset_rows() {
         let server = MockServer::start(vec![
             response(200, r#"{"ids":"video"}"#),
+            response(504, "{}"),
+            response(504, "{}"),
+            response(504, "{}"),
+            response(504, "{}"),
             response(504, "{}"),
             response(504, "{}"),
             response(504, "{}"),
@@ -714,7 +723,7 @@ mod tests {
             .unwrap_err();
         assert!(error.to_string().contains("504 Gateway Timeout"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 8);
         assert!(requests
             .iter()
             .all(|request| !request.starts_with("POST /v2/datasets/")));
@@ -743,10 +752,10 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn transport_failure_retries_and_apify_errors_propagate() {
+    async fn retryable_scrappa_response_retries_and_apify_errors_propagate() {
         let server = MockServer::start(vec![
             response(200, r#"{"ids":"video"}"#),
-            response(0, ""),
+            response(503, r#"{"message":"Unavailable"}"#),
             response(200, r#"{"videos":[{"id":"video"}]}"#),
             pricing_response(1.0, 0),
             response(201, "{}"),

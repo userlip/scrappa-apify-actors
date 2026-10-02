@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response};
 use serde_json::Value;
@@ -304,7 +306,7 @@ async fn fetch_scrappa_page(client: &Client, config: &ActorConfig, url: Url) -> 
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
         .header("X-API-Key", &config.scrappa_api_key)
         .header("Accept", "application/json")
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(scrappa_request_error)?;
     response_json(response, "Scrappa API request").await

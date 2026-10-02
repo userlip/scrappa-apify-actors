@@ -2,6 +2,7 @@ mod apify;
 mod input;
 mod response;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{bail, Context, Result};
 use apify::{base_url_from_env, max_total_charge_from_env, ApifyClient, EventBudget, PricingMode};

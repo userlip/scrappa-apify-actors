@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, RequestBuilder, Response, StatusCode};
 use serde_json::{json, Value};
@@ -223,7 +225,7 @@ fn is_transient_upstream_error(message: &str) -> bool {
         .and_then(|message| message.split_once(')'))
         .and_then(|(status, _)| status.parse::<u16>().ok())
     {
-        if status == 408 || status == 429 || (500..=599).contains(&status) {
+        if status == 429 || matches!(status, 500 | 502 | 503 | 504) {
             return true;
         }
     }
@@ -329,7 +331,7 @@ async fn fetch_scrappa_endpoint(
         .header(header::USER_AGENT, SCRAPPA_USER_AGENT)
         .header("X-API-Key", &config.scrappa_api_key)
         .timeout(config.scrappa_request_timeout)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| {
             if error.is_timeout() {

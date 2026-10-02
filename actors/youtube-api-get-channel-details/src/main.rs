@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response, Url};
 use serde_json::{json, Value};
@@ -140,7 +142,7 @@ async fn fetch_channel_details(client: &Client, url: &Url, api_key: &str) -> Res
         .header("X-API-Key", api_key)
         .header("Accept", "application/json")
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| {
             if error.is_timeout() {
@@ -637,7 +639,7 @@ mod tests {
 
     #[tokio::test]
     async fn batches_preserve_response_rows_and_write_one_failure_row_per_channel() {
-        let server = MockServer::start(vec![
+        let mut responses = vec![
             response(200, r#"{"ids":" UC one , UC2 ","id":"UC2"}"#),
             response(200, &run_metadata(100.0, json!({ "other-event": 1 }))),
             response(
@@ -646,8 +648,10 @@ mod tests {
             ),
             response(201, ""),
             response(429, "{}"),
-            response(201, ""),
-        ]);
+        ];
+        responses.extend(std::iter::repeat_with(|| response(429, "{}")).take(6));
+        responses.push(response(201, ""));
+        let server = MockServer::start(responses);
         let scrappa_url = server.base_url.join("api/youtube/channel").unwrap();
         let config = config(&server.base_url, &scrappa_url);
         let client = Client::builder().build().unwrap();
@@ -655,7 +659,7 @@ mod tests {
         run_actor(&client, &config).await.unwrap();
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 6);
+        assert_eq!(requests.len(), 12);
         assert_eq!(
             request_parts(&requests[0]).1,
             "/v2/key-value-stores/test-store/records/INPUT"
@@ -697,7 +701,7 @@ mod tests {
             request_parts(&requests[4]).1,
             "/api/youtube/channel?channel_id=UC2"
         );
-        let (method, path, body) = request_parts(&requests[5]);
+        let (method, path, body) = request_parts(&requests[11]);
         assert_eq!((method, path), ("POST", "/v2/datasets/test-dataset/items"));
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),

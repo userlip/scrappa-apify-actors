@@ -168,7 +168,7 @@ fn parses_scrappa_error_messages_and_fallback_text() {
 
 #[test]
 fn retries_only_transient_scrappa_errors_with_bounded_backoff() {
-    for status in [408, 429, 500, 502, 503, 504] {
+    for status in [429, 500, 502, 503, 504] {
         let error = anyhow!(ScrappaFailure::Http {
             status,
             details: "failure".to_owned()

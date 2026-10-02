@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{
     error::Error,
     fmt,
@@ -13,7 +14,7 @@ use crate::{config::Config, input::InterestParams};
 
 pub const SCRAPPA_ENDPOINT: &str = "/google-trends/interest";
 pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-pub const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+pub const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 pub const SCRAPPA_USER_AGENT: &str = "thescrappa-google-trends-interest-scraper/1.0";
 
 #[derive(Debug)]
@@ -61,7 +62,7 @@ pub fn retryable_scrappa_error(error: &anyhow::Error) -> bool {
     }
     error
         .downcast_ref::<ScrappaHttpError>()
-        .is_some_and(|error| matches!(error.status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504))
+        .is_some_and(|error| matches!(error.status.as_u16(), 429 | 500 | 502 | 503 | 504))
 }
 
 fn scrappa_timeout_or_request_error(error: reqwest::Error) -> anyhow::Error {
@@ -133,7 +134,7 @@ async fn send_scrappa_request(
         .header(header::ACCEPT, "application/json")
         .header("X-API-Key", &config.scrappa_api_key)
         .header(header::USER_AGENT, SCRAPPA_USER_AGENT)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(scrappa_timeout_or_request_error)?;
 

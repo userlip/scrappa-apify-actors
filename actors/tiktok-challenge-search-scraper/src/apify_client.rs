@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Method, Response, StatusCode};
 use serde_json::{json, Value};
@@ -314,7 +315,7 @@ impl ActorClient {
             .header("X-API-Key", &self.config.scrappa_api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .timeout(SCRAPPA_REQUEST_TIMEOUT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {

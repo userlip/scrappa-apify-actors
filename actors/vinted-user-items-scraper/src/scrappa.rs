@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{
     error::Error,
     fmt,
@@ -9,7 +10,7 @@ use serde_json::Value;
 use url::Url;
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
-pub const MAX_ATTEMPTS: usize = 3;
+pub const MAX_ATTEMPTS: usize = 1;
 const BASE_RETRY_DELAY_MS: u64 = 1_000;
 const MAX_RETRY_DELAY_MS: u64 = 10_000;
 const USER_AGENT: &str = "thescrappa-vinted-user-items-scraper/1.0";
@@ -97,7 +98,7 @@ impl ScrappaClient {
             .header("Accept", "application/json")
             .header("User-Agent", USER_AGENT)
             .timeout(Duration::from_millis(REQUEST_TIMEOUT_MS))
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(map_transport_error)?;
 
@@ -130,7 +131,7 @@ pub fn is_retryable(error: &ScrappaError) -> bool {
 }
 
 fn is_retryable_status(status: u16) -> bool {
-    matches!(status, 408 | 429 | 500 | 502 | 503 | 504)
+    matches!(status, 429 | 500 | 502 | 503 | 504)
 }
 
 fn map_transport_error(error: reqwest::Error) -> ScrappaError {
@@ -234,7 +235,7 @@ mod tests {
 
     #[test]
     fn retries_only_transient_api_statuses_and_transport_timeouts() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable(&ScrappaError::Api {
                 status,
                 message: "temporary".to_owned(),

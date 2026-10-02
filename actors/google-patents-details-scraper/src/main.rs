@@ -1,4 +1,6 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 mod patents;
+mod scrappa_retry;
 
 use std::{env, time::Duration};
 
@@ -16,7 +18,7 @@ const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_REQUEST_ATTEMPTS: usize = 3;
+const SCRAPPA_REQUEST_ATTEMPTS: usize = 1;
 const SCRAPPA_RETRY_MAX_DELAY_MS: u64 = 10_000;
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const USER_AGENT: &str = "thescrappa-google-patents-details-scraper/1.0";
@@ -247,7 +249,7 @@ impl ScrappaFailure {
         self.timed_out
             || self
                 .status
-                .is_some_and(|status| matches!(status, 408 | 429 | 500 | 502 | 503 | 504))
+                .is_some_and(|status| matches!(status, 429 | 500 | 502 | 503 | 504))
     }
 }
 
@@ -310,7 +312,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| map_reqwest_error(error, self.timeout))?;
         let status = response.status();

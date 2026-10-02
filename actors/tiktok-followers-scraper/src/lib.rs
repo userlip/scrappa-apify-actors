@@ -3,6 +3,7 @@ mod config;
 mod input;
 mod output;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{bail, Context, Result};
 use reqwest::Client;

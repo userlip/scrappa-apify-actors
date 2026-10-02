@@ -13,7 +13,7 @@
   },
   "defaultMemoryMbytes": 128,
   "defaultRunOptions": {
-    "timeoutSecs": 120
+    "timeoutSecs": 240
   },
   "storages": {
     "dataset": {

@@ -6,9 +6,10 @@ pub const ACTOR_TIMEOUT_MS: u64 = 375_000;
 pub const ACTOR_COMPLETION_RESERVE_MS: u64 = 30_000;
 
 pub const APIFY_REQUEST_TIMEOUT_MS: u64 = 30_000;
+pub const SCRAPPA_REQUEST_BUDGET_MS: u64 = 90_000;
 pub const RELATED_REQUEST_TIMEOUT_MS: u64 = 30_000;
-pub const RELATED_MAX_ATTEMPTS: usize = 4;
-pub const RELATED_MAX_RETRY_DELAY_MS: u64 = 20_000;
+pub const RELATED_MAX_ATTEMPTS: usize = 1;
+pub const RELATED_MAX_RETRY_DELAY_MS: u64 = 0;
 
 pub const AUTOCOMPLETE_REQUEST_TIMEOUT_MS: u64 = 15_000;
 pub const AUTOCOMPLETE_MAX_ATTEMPTS: usize = 1;
@@ -47,26 +48,19 @@ mod tests {
         // INPUT, run pricing, dataset write, then charge plus OUTPUT or terminal status.
         const MAX_APIFY_REQUESTS_PER_RUN: u64 = 5;
 
-        let related = maximum_request_duration_ms(
-            RELATED_REQUEST_TIMEOUT_MS,
-            RELATED_MAX_ATTEMPTS,
-            RELATED_MAX_RETRY_DELAY_MS,
-        );
+        let related = SCRAPPA_REQUEST_BUDGET_MS;
         let apify = APIFY_REQUEST_TIMEOUT_MS.saturating_mul(MAX_APIFY_REQUESTS_PER_RUN);
-        let autocomplete = maximum_request_duration_ms(
-            AUTOCOMPLETE_REQUEST_TIMEOUT_MS,
-            AUTOCOMPLETE_MAX_ATTEMPTS,
-            0,
-        );
+        let autocomplete = SCRAPPA_REQUEST_BUDGET_MS;
 
-        assert_eq!(related, 180_000);
+        assert_eq!(related, 90_000);
         assert_eq!(apify, 150_000);
-        assert_eq!(autocomplete, 15_000);
-        assert_eq!(related + apify + autocomplete, 345_000);
+        assert_eq!(autocomplete, 90_000);
+        assert_eq!(related + apify + autocomplete, 330_000);
         assert_eq!(
             related + apify + autocomplete + ACTOR_COMPLETION_RESERVE_MS,
-            ACTOR_TIMEOUT_MS
+            360_000
         );
+        assert!(related + apify + autocomplete + ACTOR_COMPLETION_RESERVE_MS < ACTOR_TIMEOUT_MS);
 
         let actor: Value = serde_json::from_str(include_str!("../.actor/actor.json")).unwrap();
         assert_eq!(

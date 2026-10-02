@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::Result;
 use reqwest::{header, Client};
 use serde_json::Value;
@@ -10,7 +11,7 @@ use url::Url;
 
 pub const DEFAULT_API_BASE_URL: &str = "https://scrappa.co/api";
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
-pub const MAX_ATTEMPTS: usize = 3;
+pub const MAX_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-vinted-item-details-scraper/1.0";
 
 #[derive(Debug)]
@@ -137,7 +138,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(header::USER_AGENT, USER_AGENT)
             .timeout(self.timeout)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(transport_error)?;
 
@@ -229,7 +230,7 @@ fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
         return true;
     }
     if let Some(error) = error.downcast_ref::<ScrappaApiError>() {
-        return matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504);
+        return matches!(error.status, 429 | 500 | 502 | 503 | 504);
     }
     error
         .downcast_ref::<ScrappaTransportError>()

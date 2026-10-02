@@ -1,3 +1,4 @@
+use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 use std::{fmt, time::Duration};
 
 use anyhow::{anyhow, Context, Result};
@@ -9,7 +10,7 @@ use crate::config::{endpoint_url, Config};
 use crate::input::GoogleFinanceSearchRequest;
 
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
+const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
 const SCRAPPA_USER_AGENT: &str = "thescrappa-google-finance-search-scraper/1.0";
 
 #[derive(Debug)]
@@ -37,7 +38,7 @@ impl ScrappaFailure {
     fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout | Self::Network(_) => true,
-            Self::Http { status, .. } => matches!(*status, 408 | 429 | 500 | 502 | 503 | 504),
+            Self::Http { status, .. } => matches!(*status, 429 | 500 | 502 | 503 | 504),
         }
     }
 }
@@ -96,7 +97,7 @@ impl ScrappaClient<'_> {
                 .header("X-API-Key", &self.config.scrappa_api_key)
                 .header(header::ACCEPT, "application/json")
                 .header(header::USER_AGENT, SCRAPPA_USER_AGENT)
-                .send()
+                .send_scrappa_with_retry("Scrappa API request")
                 .await
                 .map_err(scrappa_transport_error)?;
 
@@ -121,7 +122,7 @@ impl ScrappaClient<'_> {
             serde_json::from_str(&body).context("Scrappa API response was not valid JSON")
         };
 
-        match timeout(SCRAPPA_REQUEST_TIMEOUT, operation).await {
+        match timeout(ENTRY_TIME_BUDGET, operation).await {
             Ok(result) => result,
             Err(_) => Err(anyhow!(ScrappaFailure::Timeout)),
         }

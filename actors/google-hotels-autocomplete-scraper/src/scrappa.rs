@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use reqwest::{header, Client};
 use serde_json::Value;
 use std::{
@@ -8,9 +9,9 @@ use std::{
 use url::Url;
 
 pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-pub const MAX_ATTEMPTS: u8 = 3;
+pub const MAX_ATTEMPTS: u8 = 1;
 const USER_AGENT: &str = "thescrappa-google-hotels-autocomplete-scraper/1.0";
-const RETRYABLE_STATUS_CODES: [u16; 6] = [408, 429, 500, 502, 503, 504];
+const RETRYABLE_STATUS_CODES: [u16; 5] = [429, 500, 502, 503, 504];
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ScrappaError {
@@ -141,7 +142,7 @@ impl ScrappaClient {
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
             .timeout(timeout)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {
@@ -350,7 +351,7 @@ mod tests {
 
     #[test]
     fn retries_only_transient_http_errors_or_body_flagged_403() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(ScrappaError::Http {
                 status,
                 message: "error".to_owned(),

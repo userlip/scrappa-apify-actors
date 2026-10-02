@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use std::{env, process::ExitCode, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -189,7 +191,7 @@ async fn fetch_scrappa_post(client: &Client, config: &ActorConfig, url: Url) -> 
         .get(url)
         .header("X-API-Key", &config.scrappa_api_key)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .context("Scrappa API request failed")?;
     let status = response.status();

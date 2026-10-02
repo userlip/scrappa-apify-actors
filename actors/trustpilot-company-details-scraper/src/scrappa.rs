@@ -1,4 +1,5 @@
 use crate::request_params::RequestParams;
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{anyhow, Result};
 use reqwest::{Client, Response, StatusCode, Url};
 use serde_json::Value;
@@ -6,7 +7,7 @@ use std::{error::Error, fmt, time::Duration};
 use tokio::time::sleep;
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
-pub const MAX_ATTEMPTS: usize = 3;
+pub const MAX_ATTEMPTS: usize = 1;
 const DEFAULT_BASE_URL: &str = "https://scrappa.co/api";
 const USER_AGENT: &str = "thescrappa-trustpilot-company-details-scraper/1.0";
 
@@ -135,7 +136,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| map_request_error(error, "Scrappa API request failed"))
     }
@@ -182,7 +183,7 @@ fn is_retryable_error(error: &anyhow::Error) -> bool {
 }
 
 fn retryable_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
+    matches!(status.as_u16(), 429 | 500 | 502 | 503 | 504)
 }
 
 fn retry_delay_ms(failed_attempt: usize, jitter_ms: u64) -> u64 {
@@ -329,7 +330,7 @@ mod tests {
 
     #[test]
     fn only_transient_scrappa_statuses_are_retryable() {
-        for code in [408, 429, 500, 502, 503, 504] {
+        for code in [429, 500, 502, 503, 504] {
             assert!(retryable_status(StatusCode::from_u16(code).unwrap()));
         }
         for code in [400, 401, 404] {

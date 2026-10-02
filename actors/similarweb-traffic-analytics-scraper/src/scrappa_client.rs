@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::{anyhow, Result};
@@ -6,7 +7,7 @@ use serde_json::Value;
 use url::Url;
 
 const USER_AGENT: &str = "thescrappa-similarweb-traffic-analytics-scraper/1.0";
-const MAX_ATTEMPTS: usize = 2;
+const MAX_ATTEMPTS: usize = 1;
 
 #[derive(Debug)]
 pub(crate) struct ScrappaHttpError {
@@ -107,7 +108,7 @@ impl ScrappaClient {
             .header(header::USER_AGENT, USER_AGENT)
             .header("X-API-Key", &self.api_key)
             .timeout(self.timeout)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {
@@ -222,7 +223,7 @@ fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
         return true;
     }
     if let Some(error) = error.downcast_ref::<ScrappaHttpError>() {
-        return matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504);
+        return matches!(error.status, 429 | 500 | 502 | 503 | 504);
     }
     error.downcast_ref::<reqwest::Error>().is_some_and(|error| {
         error.is_timeout() || error.is_connect() || error.is_request() || error.is_body()
@@ -249,7 +250,7 @@ mod tests {
 
     #[test]
     fn retries_only_transient_upstream_failures() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             let error = anyhow::Error::new(ScrappaHttpError {
                 status,
                 details: "temporary".to_owned(),

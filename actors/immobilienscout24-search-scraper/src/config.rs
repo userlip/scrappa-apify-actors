@@ -5,7 +5,7 @@ pub(crate) const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 pub(crate) const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(90);
 pub(crate) const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-pub(crate) const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+pub(crate) const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 pub(crate) const APIFY_MAX_RETRIES: usize = 2;
 
 #[derive(Clone)]

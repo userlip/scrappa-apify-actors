@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{time::Duration, time::SystemTime, time::UNIX_EPOCH};
 
 use anyhow::{anyhow, Result};
@@ -60,7 +61,7 @@ impl ScrappaRequestError {
                 }
             }
             Self::Http { status, .. } => {
-                matches!(status.as_u16(), 404 | 408 | 429 | 500 | 502 | 503 | 504)
+                matches!(status.as_u16(), 404 | 429 | 500 | 502 | 503 | 504)
             }
             Self::InvalidJson(_) => false,
         }
@@ -162,7 +163,7 @@ impl ScrappaClient {
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, REQUEST_USER_AGENT)
             .timeout(SCRAPPA_REQUEST_TIMEOUT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(map_request_error)?;
 

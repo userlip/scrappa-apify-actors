@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Error, Result, anyhow};
 use reqwest::{Response, Url};
 use serde_json::{Map, Value};
@@ -7,7 +8,7 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-const RETRYABLE_STATUS_CODES: [u16; 6] = [408, 429, 500, 502, 503, 504];
+const RETRYABLE_STATUS_CODES: [u16; 5] = [429, 500, 502, 503, 504];
 
 pub struct ScrappaClient {
     client: reqwest::Client,
@@ -42,39 +43,7 @@ impl ScrappaClient {
 
     pub async fn get(&self, endpoint: &str, params: &Map<String, Value>) -> Result<Value> {
         let url = self.request_url(endpoint, params)?;
-        let mut last_error = None;
-
-        for attempt in 1..=self.max_attempts {
-            match self.send(&url).await {
-                Ok(response) => return Ok(response),
-                Err(error) => {
-                    if attempt >= self.max_attempts || !is_retryable(&error) {
-                        return Err(error);
-                    }
-
-                    let retry_after_ms = error
-                        .downcast_ref::<ScrappaApiError>()
-                        .and_then(|error| error.retry_after_ms);
-                    let delay_ms = get_retry_delay_ms(
-                        attempt,
-                        jitter_ms(),
-                        retry_after_ms,
-                        self.max_retry_delay_ms,
-                    );
-                    eprintln!(
-                        "Scrappa API request failed ({}). Retrying attempt {}/{} in {}ms.",
-                        error,
-                        attempt + 1,
-                        self.max_attempts,
-                        delay_ms
-                    );
-                    tokio::time::sleep(Duration::from_millis(delay_ms)).await;
-                    last_error = Some(error);
-                }
-            }
-        }
-
-        Err(last_error.unwrap_or_else(|| anyhow!("Scrappa API request did not complete")))
+        self.send(&url).await
     }
 
     async fn send(&self, url: &Url) -> Result<Value> {
@@ -85,7 +54,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .header("User-Agent", "thescrappa-stepstone-jobs-scraper/1.0")
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| request_error(error, self.timeout))?;
 
@@ -440,25 +409,17 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn retries_transient_errors_four_times_and_preserves_nested_error_text() {
-        let server = MockServer::start(vec![
-            MockResponse::json(
-                503,
-                json!({"error": {"message": "Stepstone is temporarily unavailable."}}),
-            ),
-            MockResponse::json(
-                503,
-                json!({"error": {"message": "Stepstone is temporarily unavailable."}}),
-            ),
-            MockResponse::json(
-                503,
-                json!({"error": {"message": "Stepstone is temporarily unavailable."}}),
-            ),
-            MockResponse::json(
-                503,
-                json!({"error": {"message": "Stepstone is temporarily unavailable."}}),
-            ),
-        ]);
+    async fn returns_the_transient_error_after_seven_attempts() {
+        let server = MockServer::start(
+            (0..7)
+                .map(|_| {
+                    MockResponse::json(
+                        503,
+                        json!({"error": {"message": "Stepstone is temporarily unavailable."}}),
+                    )
+                })
+                .collect(),
+        );
         let client = client(&server, 1000, 0);
 
         let error = client
@@ -470,7 +431,7 @@ mod tests {
                 .to_string()
                 .contains("Stepstone is temporarily unavailable.")
         );
-        assert_eq!(server.requests().len(), 4);
+        assert_eq!(server.requests().len(), 7);
     }
 
     #[tokio::test]

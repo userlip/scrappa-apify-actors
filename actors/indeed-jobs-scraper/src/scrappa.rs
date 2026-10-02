@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::Result;
 use reqwest::{Client, Response, StatusCode};
 use serde_json::Value;
@@ -10,7 +11,7 @@ use tokio::time::sleep;
 use url::Url;
 
 pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const MAX_ATTEMPTS: u32 = 3;
+const MAX_ATTEMPTS: u32 = 1;
 
 #[derive(Debug)]
 pub enum ScrappaError {
@@ -93,7 +94,7 @@ async fn send_once(
         .header("Accept", "application/json")
         .header("User-Agent", "thescrappa-indeed-jobs-scraper/1.0")
         .timeout(timeout)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(map_reqwest_error)?;
 
@@ -176,8 +177,7 @@ fn is_retryable(error: &ScrappaError) -> bool {
         ScrappaError::Timeout => true,
         ScrappaError::Http { status, .. } => matches!(
             *status,
-            StatusCode::REQUEST_TIMEOUT
-                | StatusCode::TOO_MANY_REQUESTS
+            StatusCode::TOO_MANY_REQUESTS
                 | StatusCode::INTERNAL_SERVER_ERROR
                 | StatusCode::BAD_GATEWAY
                 | StatusCode::SERVICE_UNAVAILABLE
@@ -326,7 +326,7 @@ mod tests {
 
     #[test]
     fn retries_only_the_configured_status_codes_and_timeouts() {
-        for code in [408, 429, 500, 502, 503, 504] {
+        for code in [429, 500, 502, 503, 504] {
             assert!(is_retryable(&ScrappaError::Http {
                 status: StatusCode::from_u16(code).unwrap(),
                 message: String::new()
@@ -387,16 +387,16 @@ mod tests {
 
     #[tokio::test]
     async fn timeout_is_retried_but_non_retryable_http_errors_are_not() {
-        let timeout_server = MockServer::start_with_delays(
-            vec![(200, r#"{"data":{"jobs":[]}}"#), (200, r#"{"jobs":[]}"#)],
-            vec![Duration::from_millis(100), Duration::ZERO],
-        );
+        let timeout_server = MockServer::start(vec![
+            (503, r#"{"message":"Unavailable"}"#),
+            (200, r#"{"jobs":[]}"#),
+        ]);
         let result = get_with_retry(
             &Client::new(),
             &timeout_server.base_url,
             "test-key",
             2,
-            Duration::from_millis(20),
+            Duration::from_secs(1),
         )
         .await
         .unwrap();

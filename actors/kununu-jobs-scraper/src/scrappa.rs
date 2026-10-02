@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Error, Result};
 #[cfg(test)]
 use reqwest::StatusCode;
@@ -10,7 +11,7 @@ use std::{
 };
 
 pub const REQUEST_TIMEOUT_MS: u64 = 60_000;
-pub const MAX_ATTEMPTS: u32 = 3;
+pub const MAX_ATTEMPTS: u32 = 1;
 pub const DEFAULT_BASE_URL: &str = "https://scrappa.co/api";
 const USER_AGENT: &str = "thescrappa-kununu-jobs-scraper/1.0";
 
@@ -107,7 +108,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(header::USER_AGENT, USER_AGENT)
             .timeout(self.timeout)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| map_transport_error(error, self.timeout.as_millis() as u64))?;
 
@@ -243,7 +244,7 @@ fn is_retryable_scrappa_error(error: &Error) -> bool {
     }
     error
         .downcast_ref::<ScrappaApiError>()
-        .is_some_and(|error| matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504))
+        .is_some_and(|error| matches!(error.status, 429 | 500 | 502 | 503 | 504))
 }
 
 fn random_jitter_ms() -> u64 {
@@ -309,7 +310,7 @@ mod tests {
         assert!(is_retryable_scrappa_error(&Error::new(
             ScrappaTimeoutError { timeout_ms: 60_000 }
         )));
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable_scrappa_error(&status_error(
                 reqwest::StatusCode::from_u16(status).unwrap(),
                 "upstream error"

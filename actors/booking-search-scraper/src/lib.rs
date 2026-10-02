@@ -2,6 +2,7 @@ pub mod apify;
 pub mod booking;
 pub mod pricing;
 pub mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{bail, Result};
 use reqwest::Client;

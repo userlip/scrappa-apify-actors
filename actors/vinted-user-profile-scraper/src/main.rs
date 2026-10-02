@@ -4,6 +4,7 @@ mod response_utils;
 mod run_user_profiles;
 mod runtime_budget;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{anyhow, Result};
 use serde_json::Value;

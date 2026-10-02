@@ -2,6 +2,7 @@ mod apify_client;
 mod challenges;
 mod charge_budget;
 mod orchestration;
+mod scrappa_retry;
 
 pub use apify_client::{ActorClient, ActorConfig};
 pub use challenges::{build_search_requests, extract_challenges, format_lookup, SearchRequest};

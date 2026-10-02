@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Error, Result, anyhow};
 use reqwest::{Client, Response, Url};
 use serde_json::{Map, Value};
@@ -8,7 +9,7 @@ use std::{
 };
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
-const MAX_ATTEMPTS: usize = 3;
+const MAX_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-trustpilot-business-search-scraper/1.0";
 
 pub struct ScrappaClient {
@@ -100,7 +101,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(transport_error)?;
         if !response.status().is_success() {
@@ -235,7 +236,7 @@ fn is_retryable_error(error: &Error) -> bool {
         .any(|code| message.contains(code));
     }
     error.to_string().contains("Scrappa API error (")
-        && [408, 429, 500, 502, 503, 504].iter().any(|status| {
+        && [429, 500, 502, 503, 504].iter().any(|status| {
             error
                 .to_string()
                 .starts_with(&format!("Scrappa API error ({status})"))
@@ -262,7 +263,7 @@ mod tests {
 
     #[test]
     fn retries_only_transient_scrappa_statuses_and_transport_errors() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable_error(&anyhow!(
                 "Scrappa API error ({status}): temporary"
             )));

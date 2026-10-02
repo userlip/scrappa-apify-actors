@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use std::{collections::HashSet, env, fmt, process, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -498,7 +500,7 @@ async fn scrape_company(
         .header("X-API-Key", api_key)
         .header("Accept", "application/json")
         .query(&params)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| ScrappaError::Request(error.into()))?;
 

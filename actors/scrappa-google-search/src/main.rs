@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use std::{env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -9,7 +11,7 @@ use url::Url;
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_MAX_ATTEMPTS: u8 = 3;
+const SCRAPPA_MAX_ATTEMPTS: u8 = 1;
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const SEARCH_PARAMETERS: [&str; 15] = [
     "query",
@@ -201,7 +203,7 @@ impl ScrappaFailure {
     fn is_retryable(&self) -> bool {
         match self {
             Self::Http { status, .. } => {
-                matches!(*status, 408 | 429 | 500 | 502 | 503 | 504)
+                matches!(*status, 429 | 500 | 502 | 503 | 504)
             }
             Self::Request(error) => error.is_timeout() || error.is_connect() || error.is_body(),
             Self::InvalidJson(_) => false,
@@ -284,7 +286,7 @@ async fn fetch_google_search(
             .timeout(config.scrappa_request_timeout)
             .header("X-API-Key", &config.scrappa_api_key)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(ScrappaFailure::Request);
 

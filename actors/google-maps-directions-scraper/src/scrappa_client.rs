@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{
     error::Error,
     fmt,
@@ -13,7 +14,7 @@ use crate::{batch_runner::DirectionsClient, request_params::DirectionsRequest};
 
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const SCRAPPA_TIMEOUT: Duration = Duration::from_secs(45);
-const MAX_ATTEMPTS: usize = 3;
+const MAX_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-google-maps-directions-scraper/1.0";
 
 #[derive(Debug)]
@@ -131,7 +132,7 @@ impl ScrappaClient {
             .header(reqwest::header::USER_AGENT, USER_AGENT)
             .header("X-API-Key", &self.api_key)
             .timeout(timeout)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {
@@ -199,7 +200,7 @@ fn is_retryable(error: &anyhow::Error) -> bool {
         return true;
     }
     if let Some(error) = error.downcast_ref::<ScrappaHttpError>() {
-        return matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504);
+        return matches!(error.status, 429 | 500 | 502 | 503 | 504);
     }
     error
         .downcast_ref::<reqwest::Error>()

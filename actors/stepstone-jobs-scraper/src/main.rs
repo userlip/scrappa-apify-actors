@@ -1,6 +1,7 @@
 mod apify;
 mod runtime_config;
 mod scrappa;
+mod scrappa_retry;
 mod stepstone_input;
 mod stepstone_response;
 

@@ -3,6 +3,7 @@ mod input;
 mod response;
 mod runner;
 mod scrappa;
+mod scrappa_retry;
 
 use std::process;
 

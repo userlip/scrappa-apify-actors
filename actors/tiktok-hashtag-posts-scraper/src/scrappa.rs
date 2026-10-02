@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use crate::{
     apify::{endpoint_url, ActorConfig},
     input::js_string,
@@ -94,7 +95,7 @@ pub(crate) async fn fetch_scrappa_response(
         .header("X-API-Key", &config.scrappa_api_key)
         .header("Accept", "application/json")
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(scrappa_request_error)?;
     if !response.status().is_success() {

@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{
     fmt,
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -10,7 +11,7 @@ use url::Url;
 
 pub(crate) const DEFAULT_API_BASE_URL: &str = "https://scrappa.co/api";
 pub(crate) const REQUEST_TIMEOUT_MS: u64 = 90_000;
-pub(crate) const MAX_ATTEMPTS: usize = 3;
+pub(crate) const MAX_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-redfin-property-search-scraper/1.0";
 
 #[derive(Debug)]
@@ -45,7 +46,7 @@ impl ScrappaError {
     pub(crate) fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout { .. } | Self::Network => true,
-            Self::Http { status, .. } => matches!(*status, 408 | 429 | 500 | 502 | 503 | 504),
+            Self::Http { status, .. } => matches!(*status, 429 | 500 | 502 | 503 | 504),
             Self::InvalidResponse => false,
         }
     }
@@ -132,7 +133,7 @@ impl ScrappaClient {
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)
             .timeout(Duration::from_millis(self.timeout_ms))
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {

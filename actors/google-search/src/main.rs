@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Response};
 use serde_json::{json, Value};
@@ -551,7 +553,7 @@ async fn fetch_google_search(
         .timeout(timeout)
         .header("X-API-Key", &config.scrappa_api_key)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| scrappa_request_error(error, timeout))?;
     let status = response.status();
@@ -705,12 +707,11 @@ mod tests {
                         500 => "Internal Server Error",
                         _ => "Error",
                     };
-                    write!(
+                    let _ = write!(
                         stream,
                         "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
                         body.len()
-                    )
-                    .unwrap();
+                    );
                 }
             });
             Self {

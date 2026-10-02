@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{
     sync::atomic::{AtomicU64, Ordering},
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -10,7 +11,7 @@ use tokio::time::sleep;
 use url::Url;
 
 pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-pub const MAX_ATTEMPTS: usize = 5;
+pub const MAX_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-google-flights-search-scraper/1.0";
 static RETRY_JITTER_COUNTER: AtomicU64 = AtomicU64::new(0);
 
@@ -131,7 +132,7 @@ impl<'a> ScrappaClient<'a> {
             .header("X-API-Key", self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(transport_error)?;
         let status = response.status();
@@ -157,7 +158,7 @@ pub fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
     }
     error
         .downcast_ref::<ScrappaApiError>()
-        .is_some_and(|error| matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504))
+        .is_some_and(|error| matches!(error.status, 429 | 500 | 502 | 503 | 504))
 }
 
 pub fn get_retry_delay_ms(failed_attempt: usize, jitter_ms: u64) -> u64 {
@@ -253,7 +254,7 @@ mod tests {
 
     #[test]
     fn retries_only_transient_statuses_and_transport_failures() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable_scrappa_error(
                 &ScrappaApiError {
                     status,
@@ -313,7 +314,7 @@ mod tests {
     #[test]
     fn uses_the_actor_timeout_and_retry_contract() {
         assert_eq!(REQUEST_TIMEOUT, Duration::from_secs(30));
-        assert_eq!(MAX_ATTEMPTS, 5);
+        assert_eq!(MAX_ATTEMPTS, 1);
     }
 
     #[tokio::test]

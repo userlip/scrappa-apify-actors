@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response};
 use serde_json::Value;
@@ -148,16 +150,20 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
 }
 
 async fn fetch_related_videos(client: &Client, url: &Url) -> Result<Value> {
-    let response = client.get(url.clone()).send().await.map_err(|error| {
-        if error.is_timeout() {
-            anyhow!(
-                "Scrappa API request timed out after {}s",
-                REQUEST_TIMEOUT.as_secs()
-            )
-        } else {
-            anyhow!("Scrappa API request failed: {error}")
-        }
-    })?;
+    let response = client
+        .get(url.clone())
+        .send_scrappa_with_retry("Scrappa API request")
+        .await
+        .map_err(|error| {
+            if error.is_timeout() {
+                anyhow!(
+                    "Scrappa API request timed out after {}s",
+                    REQUEST_TIMEOUT.as_secs()
+                )
+            } else {
+                anyhow!("Scrappa API request failed: {error}")
+            }
+        })?;
     let status = response.status();
     if !status.is_success() {
         let reason = status.canonical_reason().unwrap_or("Unknown status");

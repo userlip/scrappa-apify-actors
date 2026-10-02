@@ -333,7 +333,7 @@ fn ppe_budget_counts_all_priced_events_and_limits_rows() {
 #[test]
 fn retry_policy_covers_timeouts_transient_statuses_and_network_errors() {
     assert!(ScrappaRequestError::Timeout.is_retryable());
-    for status in [408, 429, 500, 502, 503, 504] {
+    for status in [429, 500, 502, 503, 504] {
         assert!(ScrappaRequestError::Api {
             status,
             message: String::new()

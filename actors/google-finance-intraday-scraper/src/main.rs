@@ -3,6 +3,7 @@ mod config;
 mod input;
 mod pricing;
 mod scrappa;
+mod scrappa_retry;
 mod transform;
 
 use std::time::Duration;

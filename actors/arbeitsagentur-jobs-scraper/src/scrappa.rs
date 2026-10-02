@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
@@ -10,7 +11,7 @@ use super::endpoint_url;
 pub(super) const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 pub(super) const SCRAPPA_USER_AGENT: &str = "thescrappa-arbeitsagentur-jobs-scraper/1.0";
 pub(super) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const SCRAPPA_MAX_ATTEMPTS: usize = 4;
+const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 const SCRAPPA_MAX_RETRY_DELAY: Duration = Duration::from_secs(20);
 pub(super) const SCRAPPA_REQUEST_DEADLINE: Duration = Duration::from_secs(180);
 
@@ -112,7 +113,7 @@ impl ScrappaClient {
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, SCRAPPA_USER_AGENT)
             .timeout(timeout)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(ScrappaFailure::from_reqwest)?;
 
@@ -164,7 +165,7 @@ impl ScrappaFailure {
     pub(super) fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout => true,
-            Self::Api { status, .. } => matches!(*status, 408 | 429 | 500 | 502 | 503 | 504),
+            Self::Api { status, .. } => matches!(*status, 429 | 500 | 502 | 503 | 504),
             Self::Transport(_) | Self::InvalidJson(_) => false,
         }
     }

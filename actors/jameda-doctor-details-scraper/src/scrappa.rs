@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
@@ -10,7 +11,7 @@ use crate::{apify::endpoint_url, doctor_details::js_string};
 
 pub(crate) const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(90);
-pub(crate) const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+pub(crate) const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 
 pub(crate) struct ScrappaClient {
     http: Client,
@@ -107,7 +108,7 @@ impl ScrappaClient {
                 header::USER_AGENT,
                 "thescrappa-jameda-doctor-details-scraper/1.0",
             )
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {
@@ -178,7 +179,7 @@ impl ScrappaClient {
 }
 
 pub(crate) fn is_retryable_scrappa_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
+    matches!(status.as_u16(), 429 | 500 | 502 | 503 | 504)
 }
 
 pub(crate) fn get_retry_delay_ms(failed_attempt: usize, jitter_ms: u64) -> u64 {

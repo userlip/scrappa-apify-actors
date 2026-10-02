@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use reqwest::{Client, StatusCode, Url};
@@ -5,7 +6,7 @@ use serde_json::{Map, Value};
 use tokio::time::sleep;
 
 pub const SCRAPPA_REQUEST_TIMEOUT_MS: u64 = 90_000;
-pub const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+pub const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 const SCRAPPA_USER_AGENT: &str = "thescrappa-booking-hotel-details-scraper/1.0";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -41,7 +42,7 @@ impl ScrappaError {
     pub fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout | Self::Network(_) => true,
-            Self::Api { status, .. } => matches!(*status, 408 | 429 | 500 | 502 | 503 | 504),
+            Self::Api { status, .. } => matches!(*status, 429 | 500 | 502 | 503 | 504),
             Self::InvalidJson(_) => false,
         }
     }
@@ -157,7 +158,7 @@ impl ScrappaClient {
             .header("X-API-Key", self.api_key.as_str())
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, SCRAPPA_USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(map_request_error)?;
         let status = response.status();

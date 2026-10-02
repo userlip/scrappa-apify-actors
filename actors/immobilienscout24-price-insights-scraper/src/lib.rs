@@ -3,6 +3,7 @@ mod batch;
 mod input;
 mod output;
 mod scrappa;
+mod scrappa_retry;
 
 #[cfg(test)]
 mod test_support;

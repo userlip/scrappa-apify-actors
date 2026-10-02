@@ -1,3 +1,4 @@
+use crate::scrappa_retry::{ENTRY_TIME_BUDGET, ScrappaRetryExt};
 use std::{error::Error, fmt, time::Duration};
 
 use anyhow::{Context, Result, anyhow};
@@ -10,7 +11,7 @@ use crate::error_utils::error_summary;
 
 pub const DETAIL_REQUEST_TIMEOUT_MS: u64 = 90_000;
 pub const DISCOVERY_REQUEST_TIMEOUT_MS: u64 = 60_000;
-pub const MAX_DETAIL_ATTEMPTS: usize = 3;
+pub const MAX_DETAIL_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-kleinanzeigen-listing-details-scraper/1.0";
 
 #[derive(Debug)]
@@ -142,12 +143,19 @@ impl ScrappaClient {
             let response = self
                 .client
                 .get(url)
+                .timeout(Duration::from_millis(timeout_ms))
                 .header("X-API-Key", &self.api_key)
                 .header(reqwest::header::ACCEPT, "application/json")
                 .header(reqwest::header::USER_AGENT, USER_AGENT)
-                .send()
+                .send_scrappa_with_retry("Scrappa API request")
                 .await
-                .map_err(anyhow::Error::new)?;
+                .map_err(|error| {
+                    if error.is_timeout() {
+                        anyhow::Error::new(ScrappaTimeoutError::new(timeout_ms))
+                    } else {
+                        anyhow::Error::new(error)
+                    }
+                })?;
 
             if !response.status().is_success() {
                 return Err(format_api_error(response).await);
@@ -159,7 +167,7 @@ impl ScrappaClient {
                 .context("Scrappa API response was not valid JSON")
         };
 
-        timeout(Duration::from_millis(timeout_ms), request)
+        timeout(ENTRY_TIME_BUDGET, request)
             .await
             .map_err(|_| anyhow::Error::new(ScrappaTimeoutError::new(timeout_ms)))?
     }
@@ -189,7 +197,7 @@ pub fn is_retryable_error(error: &anyhow::Error) -> bool {
     }
     if error
         .downcast_ref::<ScrappaApiError>()
-        .is_some_and(|error| matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504))
+        .is_some_and(|error| matches!(error.status, 429 | 500 | 502 | 503 | 504))
     {
         return true;
     }
@@ -328,7 +336,7 @@ mod tests {
         assert!(is_retryable_error(&Error::new(ScrappaTimeoutError::new(
             1000
         ))));
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable_error(&Error::new(ScrappaApiError {
                 status,
                 message: "temporary".into(),
@@ -401,8 +409,11 @@ mod tests {
 
     #[tokio::test]
     async fn enforces_the_per_request_deadline() {
-        let (base_url, requests, server) =
-            mock_http_server(vec![(200, Duration::from_millis(80), r#"{"ok":true}"#)]);
+        let (base_url, requests, server) = mock_http_server(
+            (0..7)
+                .map(|_| (200, Duration::from_millis(80), r#"{"ok":true}"#))
+                .collect(),
+        );
         let client = ScrappaClient::new("test-key".into(), base_url).unwrap();
         let error = client.get("/details", &[], 1, 10).await.unwrap_err();
 

@@ -1,4 +1,6 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 mod business_id;
+mod scrappa_retry;
 
 use anyhow::{anyhow, bail, Context, Result};
 use business_id::{get_business_id_requests, BusinessIdRequest};
@@ -12,7 +14,7 @@ const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
+const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
 const SCRAPPA_RETRY_DELAY: Duration = Duration::from_millis(500);
 const ACTOR_TIMEOUT: Duration = Duration::from_secs(720);
 const APIFY_MAX_RETRIES: u8 = 8;
@@ -476,7 +478,7 @@ impl ScrappaClient<'_> {
                 .header("X-API-Key", self.api_key)
                 .header(header::ACCEPT, "application/json")
                 .timeout(SCRAPPA_REQUEST_TIMEOUT)
-                .send()
+                .send_scrappa_with_retry("Scrappa API request")
                 .await;
 
             match response {
@@ -489,9 +491,14 @@ impl ScrappaClient<'_> {
                 Ok(response) => {
                     let status = response.status();
                     if attempt + 1 < SCRAPPA_MAX_ATTEMPTS
-                        && (status == StatusCode::REQUEST_TIMEOUT
-                            || status == StatusCode::TOO_MANY_REQUESTS
-                            || status.is_server_error())
+                        && matches!(
+                            status,
+                            StatusCode::TOO_MANY_REQUESTS
+                                | StatusCode::INTERNAL_SERVER_ERROR
+                                | StatusCode::BAD_GATEWAY
+                                | StatusCode::SERVICE_UNAVAILABLE
+                                | StatusCode::GATEWAY_TIMEOUT
+                        )
                     {
                         sleep(SCRAPPA_RETRY_DELAY * (attempt + 1)).await;
                         continue;

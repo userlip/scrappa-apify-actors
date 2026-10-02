@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response};
 use serde_json::Value;
@@ -181,7 +183,7 @@ async fn fetch_channel_community(client: &Client, url: &Url) -> Result<Value> {
     let response = client
         .get(url.clone())
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(scrappa_request_error)?;
     let status = response.status();
@@ -843,15 +845,17 @@ mod tests {
 
     #[tokio::test]
     async fn malformed_scrappa_json_falls_back_to_an_empty_post_page() {
-        let server = MockServer::start(vec![
+        let mut responses = vec![
             response(200, r#"{"id":"UC123"}"#),
             response(200, "not-json"),
-        ]);
+        ];
+        responses.extend(std::iter::repeat_with(|| response(200, "not-json")).take(6));
+        let server = MockServer::start(responses);
         let config = test_config(server.base_url.clone());
 
         run_actor(&Client::new(), &config).await.unwrap();
 
-        assert_eq!(server.requests().len(), 2);
+        assert_eq!(server.requests().len(), 8);
     }
 
     #[tokio::test]

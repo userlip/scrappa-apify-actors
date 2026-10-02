@@ -2,6 +2,7 @@ mod apify;
 mod params;
 mod response;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{anyhow, Context, Result};
 use apify::{ApifyClient, RESULT_CHARGE_EVENT};

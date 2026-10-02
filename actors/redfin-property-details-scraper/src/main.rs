@@ -1,3 +1,4 @@
+mod scrappa_retry;
 use std::{env, process::ExitCode};
 
 use anyhow::{anyhow, Result};

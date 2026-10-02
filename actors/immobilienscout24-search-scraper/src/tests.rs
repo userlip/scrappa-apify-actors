@@ -288,7 +288,7 @@ fn handles_only_location_400_and_upstream_502_as_empty_search_errors() {
 
 #[test]
 fn retries_only_the_configured_upstream_statuses_and_timeouts() {
-    for status in [408, 429, 500, 502, 503, 504] {
+    for status in [429, 500, 502, 503, 504] {
         assert!(is_retryable_scrappa_error(&ScrappaError::Api {
             status,
             message: "temporary".to_owned()

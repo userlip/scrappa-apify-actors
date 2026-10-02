@@ -4,6 +4,7 @@ mod listing_processing;
 mod request_params;
 mod response_utils;
 mod scrappa;
+mod scrappa_retry;
 
 use std::{env, process};
 

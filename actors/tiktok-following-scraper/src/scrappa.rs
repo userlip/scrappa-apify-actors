@@ -1,3 +1,4 @@
+use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::Client;
 use serde_json::{Map, Value};
@@ -206,7 +207,7 @@ pub(crate) async fn fetch_scrappa_json(client: &Client, url: &Url, api_key: &str
             .get(url.clone())
             .header(reqwest::header::ACCEPT, "application/json")
             .header("X-API-Key", api_key)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(scrappa_request_error)?;
         let status = response.status();
@@ -226,7 +227,7 @@ pub(crate) async fn fetch_scrappa_json(client: &Client, url: &Url, api_key: &str
             .context("Scrappa API response was not valid JSON")
     };
 
-    timeout(REQUEST_TIMEOUT, request).await.map_err(|_| {
+    timeout(ENTRY_TIME_BUDGET, request).await.map_err(|_| {
         anyhow!(
             "Scrappa API request timed out after {}s",
             REQUEST_TIMEOUT.as_secs()

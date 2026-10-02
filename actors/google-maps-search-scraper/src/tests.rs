@@ -330,7 +330,7 @@ fn adds_contact_aliases_without_overwriting_existing_fields() {
 }
 
 #[tokio::test]
-async fn transient_simple_search_falls_back_and_obeys_ppe_budget_for_dataset_rows() {
+async fn transient_simple_search_retries_before_obeying_ppe_budget_for_dataset_rows() {
     let input = json!({
         "query": "pizza in Manhattan",
         "hl": "en",
@@ -389,11 +389,11 @@ async fn transient_simple_search_falls_back_and_obeys_ppe_budget_for_dataset_row
     ));
     assert_eq!(
         request_parts(&requests[2]).1.split('?').next(),
-        Some("/api/maps/advanced-search")
+        Some("/api/maps/simple-search")
     );
     assert_eq!(
         query_pairs(&requests[2]).last(),
-        Some(&("zoom".to_owned(), "17".to_owned()))
+        Some(&("debug".to_owned(), "1".to_owned()))
     );
     assert!(!has_apify_auth(&requests[1]));
 
@@ -417,7 +417,7 @@ async fn transient_simple_search_falls_back_and_obeys_ppe_budget_for_dataset_row
     );
     assert!(has_apify_auth(&requests[5]));
     let output: Value = serde_json::from_str(body).unwrap();
-    assert_eq!(output["fallback_used"], "advanced-search");
+    assert!(output.get("fallback_used").is_none());
     assert_eq!(output["items"].as_array().unwrap().len(), 3);
     assert_eq!(output["items"][2]["phone"], "333");
 }
@@ -490,7 +490,7 @@ async fn dataset_append_is_not_retried_after_a_lost_response() {
 }
 
 #[tokio::test]
-async fn scrappa_timeout_uses_the_advanced_search_fallback() {
+async fn scrappa_timeout_retry_uses_the_next_simple_search_response() {
     let server = MockServer::start(vec![
         response(200, r#"{"query":"pizza","fallback_zoom":13}"#),
         delayed_response(
@@ -515,7 +515,7 @@ async fn scrappa_timeout_uses_the_advanced_search_fallback() {
         .starts_with("/api/maps/simple-search?"));
     assert!(request_parts(&requests[2])
         .1
-        .starts_with("/api/maps/advanced-search?"));
+        .starts_with("/api/maps/simple-search?"));
 }
 
 #[tokio::test]

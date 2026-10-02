@@ -3,6 +3,7 @@ mod app;
 mod job;
 mod pricing;
 mod scrappa;
+mod scrappa_retry;
 
 #[cfg(test)]
 mod tests;

@@ -907,7 +907,7 @@ async fn apify_input_does_not_retry_not_found_or_non_retryable_client_errors() {
 }
 
 #[tokio::test]
-async fn scrappa_uses_the_api_key_contract_and_does_not_retry_upstream_errors() {
+async fn scrappa_uses_the_api_key_contract_and_retries_upstream_errors() {
     let server = MockServer::start(|_| (429, r#"{"msg":"rate limited"}"#.to_owned())).await;
     let client = ScrappaClient::with_base_url(
         "secret".to_owned(),
@@ -926,7 +926,7 @@ async fn scrappa_uses_the_api_key_contract_and_does_not_retry_upstream_errors() 
 
     assert!(result.unwrap_err().to_string().contains("HTTP 429"));
     let requests = server.requests();
-    assert_eq!(requests.len(), 1);
+    assert_eq!(requests.len(), 7);
     assert_eq!(requests[0].method, "GET");
     assert_eq!(
         requests[0].headers.get("x-api-key").map(String::as_str),

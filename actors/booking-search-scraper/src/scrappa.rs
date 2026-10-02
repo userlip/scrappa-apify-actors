@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use rand::random;
 use reqwest::{header, Client, Response};
 use serde_json::Value;
@@ -8,7 +9,7 @@ use url::Url;
 use crate::booking::booking_search_url;
 
 pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(90);
-pub const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
+pub const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ScrappaErrorKind {
@@ -50,7 +51,7 @@ impl ScrappaError {
     pub fn is_retryable(&self) -> bool {
         match self.kind {
             ScrappaErrorKind::Timeout | ScrappaErrorKind::Network => true,
-            ScrappaErrorKind::Api(status) => matches!(status, 408 | 429 | 500 | 502 | 503 | 504),
+            ScrappaErrorKind::Api(status) => matches!(status, 429 | 500 | 502 | 503 | 504),
             ScrappaErrorKind::InvalidJson | ScrappaErrorKind::Other => false,
         }
     }
@@ -125,7 +126,7 @@ impl ScrappaClient {
             .header("X-API-Key", self.api_key.as_str())
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, "thescrappa-booking-search-scraper/1.0")
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {

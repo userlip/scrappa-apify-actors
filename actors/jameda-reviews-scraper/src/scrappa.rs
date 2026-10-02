@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::Result;
 use reqwest::{Client, Url};
 use serde_json::{Map, Value};
@@ -8,9 +9,9 @@ use std::{
 };
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
-pub const MAX_ATTEMPTS: usize = 3;
+pub const MAX_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-jameda-reviews-scraper/1.0";
-const RETRYABLE_STATUS_CODES: [u16; 6] = [408, 429, 500, 502, 503, 504];
+const RETRYABLE_STATUS_CODES: [u16; 5] = [429, 500, 502, 503, 504];
 
 #[derive(Debug)]
 pub struct ScrappaTimeoutError {
@@ -130,7 +131,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| map_request_error(error, self.timeout_ms))?;
 

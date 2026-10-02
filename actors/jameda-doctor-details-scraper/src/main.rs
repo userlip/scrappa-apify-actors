@@ -2,6 +2,7 @@ mod actor;
 mod apify;
 mod doctor_details;
 mod scrappa;
+mod scrappa_retry;
 #[cfg(test)]
 mod tests;
 

@@ -3,6 +3,7 @@ mod billing;
 mod input;
 mod response;
 mod scrappa;
+mod scrappa_retry;
 
 use std::{env, process::ExitCode};
 

@@ -4,6 +4,7 @@ mod ports;
 mod response;
 mod scrape;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{anyhow, bail, Result};
 use apify::{ActorConfig, ApifyActor, ApifyClient, RunPricing};

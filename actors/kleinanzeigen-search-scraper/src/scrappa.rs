@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{
     error::Error as StdError,
     fmt,
@@ -12,7 +13,7 @@ use crate::config::{endpoint_url, Config};
 use crate::input::{js_string, js_truthy};
 
 pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(90);
-const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 
 #[derive(Debug)]
 struct ScrappaApiError {
@@ -128,7 +129,7 @@ fn scrappa_error(status: u16, body: &str) -> ScrappaApiError {
 pub(crate) fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
     for cause in error.chain() {
         if let Some(api_error) = cause.downcast_ref::<ScrappaApiError>() {
-            return matches!(api_error.status, 408 | 429 | 500 | 502 | 503 | 504);
+            return matches!(api_error.status, 429 | 500 | 502 | 503 | 504);
         }
         if cause.downcast_ref::<ScrappaTimeoutError>().is_some() {
             return true;
@@ -216,7 +217,7 @@ impl<'a> ScrappaClient<'a> {
                 header::USER_AGENT,
                 "thescrappa-kleinanzeigen-search-scraper/1.0",
             )
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| scrappa_transport_error(error, self.timeout))?;
 
@@ -250,7 +251,7 @@ mod tests {
 
     #[test]
     fn preserves_retryable_statuses_timeout_deadline_and_error_text() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             let error: anyhow::Error = scrappa_error(status, "busy").into();
             assert!(is_retryable_scrappa_error(&error));
         }

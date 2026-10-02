@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{anyhow, Context, Result};
 use reqwest::{header, Client, Response, StatusCode};
 use serde_json::{Map, Value};
@@ -140,7 +141,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| self.request_error(error))?;
         if !response.status().is_success() {
@@ -222,7 +223,7 @@ fn is_retryable(error: &anyhow::Error) -> bool {
     }
     error
         .downcast_ref::<ScrappaApiError>()
-        .is_some_and(|error| matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504))
+        .is_some_and(|error| matches!(error.status, 429 | 500 | 502 | 503 | 504))
 }
 
 fn get_retry_delay(failed_attempt: usize) -> Duration {
@@ -394,7 +395,7 @@ mod tests {
 
     #[test]
     fn retry_rules_and_backoff_match_the_typescript_client() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable(&anyhow::Error::new(ScrappaApiError {
                 status,
                 message: "temporary".to_owned(),

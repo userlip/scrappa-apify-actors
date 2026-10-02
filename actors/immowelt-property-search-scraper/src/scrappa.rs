@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Context, Result};
 use reqwest::{Client, Response, Url};
 use serde_json::Value;
@@ -8,7 +9,7 @@ use std::{
 };
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
-pub const MAX_ATTEMPTS: usize = 3;
+pub const MAX_ATTEMPTS: usize = 1;
 
 #[derive(Debug)]
 pub enum ScrappaError {
@@ -26,7 +27,7 @@ impl ScrappaError {
     fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout { .. } => true,
-            Self::Api { status, .. } => matches!(*status, 408 | 429 | 500 | 502 | 503 | 504),
+            Self::Api { status, .. } => matches!(*status, 429 | 500 | 502 | 503 | 504),
             Self::Request(_) | Self::InvalidJson(_) => false,
         }
     }
@@ -126,7 +127,7 @@ impl ScrappaClient {
                 reqwest::header::USER_AGENT,
                 "thescrappa-immowelt-property-search-scraper/1.0",
             )
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {
@@ -272,7 +273,7 @@ mod tests {
     #[test]
     fn retries_timeouts_and_only_selected_http_errors() {
         assert!(ScrappaError::Timeout { timeout_ms: 1 }.is_retryable());
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(ScrappaError::Api {
                 status,
                 message: "temporary".into()
