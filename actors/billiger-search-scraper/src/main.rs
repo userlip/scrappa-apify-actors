@@ -315,7 +315,15 @@ impl Storage {
             let chunks = dataset_item_chunks(&items[..count])?;
             let mut saved = 0;
             for chunk in chunks {
-                let written = self.dataset_written.unwrap_or_default();
+                // After an unresolved write the count is unknown; re-read it instead of guessing 0.
+                let written = match self.dataset_written {
+                    Some(written) => written,
+                    None => {
+                        let written = self.current_dataset_item_count().await?;
+                        self.dataset_written = Some(written);
+                        written
+                    }
+                };
                 let chunk_result = self
                     .push_dataset_chunk(&url, &chunk.items, &chunk.body, written)
                     .await;
@@ -535,6 +543,8 @@ impl Storage {
             .append_pair("limit", &expected.len().to_string());
         let stop_checking_at = (Instant::now() + wait_limit).min(deadline);
         let mut previous_prefix = None;
+        // Once any rows of this chunk were seen, a full re-post could duplicate them.
+        let mut saw_rows = false;
 
         loop {
             let remaining = deadline.saturating_duration_since(Instant::now());
@@ -558,11 +568,13 @@ impl Storage {
                     return Ok(verification);
                 }
                 DatasetVerification::Prefix(count) => {
+                    saw_rows = true;
                     if previous_prefix == Some(count) {
                         return Ok(DatasetVerification::Prefix(count));
                     }
                     previous_prefix = Some(count);
                 }
+                DatasetVerification::None if saw_rows => return Ok(DatasetVerification::Mismatch),
                 DatasetVerification::None => previous_prefix = None,
             }
             if cfg!(test) && previous_prefix.is_none() {
@@ -570,7 +582,11 @@ impl Storage {
             }
 
             if Instant::now() >= stop_checking_at {
-                return Ok(DatasetVerification::None);
+                return Ok(if saw_rows {
+                    DatasetVerification::Mismatch
+                } else {
+                    DatasetVerification::None
+                });
             }
             let settle = DATASET_VERIFY_SETTLE.min(stop_checking_at - Instant::now());
             dataset_settle_sleep(settle).await;
@@ -3017,6 +3033,30 @@ mod tests {
         );
         assert_eq!(request_method(&requests[5]), "POST");
         assert_eq!(request_method(&requests[6]), "GET");
+    }
+
+    #[tokio::test]
+    async fn never_reposts_a_chunk_after_some_of_its_rows_were_seen() {
+        let items = vec![json!({"id":"one"}), json!({"id":"two"})];
+        let server = MockApifyServer::start(vec![
+            (502, "{}".to_owned()),
+            (200, "[{\"id\":\"one\"}]".to_owned()),
+            (200, "[]".to_owned()),
+            // Only consumed if the chunk were wrongly re-posted.
+            (201, "{}".to_owned()),
+        ]);
+        let storage = test_storage(server.base.clone());
+
+        let result = push_test_chunk(&storage, &items).await;
+        assert!(result.is_err());
+
+        // Read the captured requests directly: the spare response stays unused on success.
+        let requests = server.requests.lock().unwrap().clone();
+        let posts = requests
+            .iter()
+            .filter(|request| request_method(request) == "POST")
+            .count();
+        assert_eq!(posts, 1);
     }
 
     #[tokio::test]

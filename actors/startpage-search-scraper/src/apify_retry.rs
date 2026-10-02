@@ -469,10 +469,16 @@ async fn verify_dataset_chunk(
     let started = Instant::now();
     let mut attempt = 0;
     let mut previous_prefix = None;
+    // Once any rows of this chunk were seen, a full re-post could duplicate them.
+    let mut saw_rows = false;
 
     loop {
         if started.elapsed() >= wait_limit && attempt > 0 {
-            return Ok(DatasetVerification::None);
+            return Ok(if saw_rows {
+                DatasetVerification::Mismatch
+            } else {
+                DatasetVerification::None
+            });
         }
         settle_sleep(VERIFY_SETTLE.min(wait_limit.saturating_sub(started.elapsed()))).await;
         let verify_deadline = (started + wait_limit).min(deadline);
@@ -514,11 +520,15 @@ async fn verify_dataset_chunk(
                 return Ok(DatasetVerification::Complete(response));
             }
             DatasetVerificationResult::Prefix(count) => {
+                saw_rows = true;
                 if previous_prefix == Some(count) {
                     return Ok(DatasetVerification::Prefix(count));
                 }
                 previous_prefix = Some(count);
                 attempt += 1;
+            }
+            DatasetVerificationResult::None if saw_rows => {
+                return Ok(DatasetVerification::Mismatch);
             }
             DatasetVerificationResult::None if cfg!(test) => {
                 return Ok(DatasetVerification::None);
@@ -1009,6 +1019,25 @@ mod tests {
             request_target(&requests[2]),
             "/v2/datasets/dataset-3/items?offset=0&limit=2"
         );
+    }
+
+    #[tokio::test]
+    async fn never_reposts_a_chunk_after_some_of_its_rows_were_seen() {
+        let server = MockServer::start(vec![
+            response(502, json!({})),
+            response(200, json!([{"id":1}])),
+            response(200, json!([])),
+            // Only consumed if the chunk were wrongly re-posted.
+            response(201, json!({})),
+        ]);
+        let result = Client::new()
+            .post(format!("{}/v2/datasets/dataset-7/items", server.base))
+            .json(&json!([{"id":1},{"id":2}]))
+            .send_apify_with_retry()
+            .await;
+        assert!(result.is_err());
+        // requests() instead of finish(): the spare response stays unused on success.
+        assert_eq!(method_count(&server.requests(), "POST"), 1);
     }
 
     #[tokio::test]
