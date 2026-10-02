@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, StatusCode};
 use serde_json::Value;
@@ -57,7 +58,7 @@ pub(crate) async fn fetch_search(http: &Client, config: &Config, input: &Value) 
         .timeout(config.scrappa_request_timeout)
         .header("X-API-Key", &config.scrappa_api_key)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| {
             if error.is_timeout() {

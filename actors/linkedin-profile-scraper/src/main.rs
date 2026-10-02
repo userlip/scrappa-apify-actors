@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use std::{collections::HashSet, env, process::ExitCode, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -362,7 +364,7 @@ impl ScrappaClient {
             .header("X-API-Key", self.api_key.as_str())
             .header(header::ACCEPT, "application/json")
             .query(&params)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(scrappa_transport_error)?;
 

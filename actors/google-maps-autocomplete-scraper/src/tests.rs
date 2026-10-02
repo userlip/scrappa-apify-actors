@@ -290,7 +290,7 @@ async fn apify_request_deadline_stops_a_slow_request() {
 }
 
 #[tokio::test]
-async fn scrappa_request_deadline_stops_a_slow_request_without_retry() {
+async fn scrappa_request_deadline_retries_slow_requests() {
     let apify = MockServer::start(|_| json_response(200, json!({"query": "coffee"})));
     let scrappa = MockServer::start(|_| {
         thread::sleep(Duration::from_millis(100));
@@ -309,7 +309,7 @@ async fn scrappa_request_deadline_stops_a_slow_request_without_retry() {
             .to_string();
 
     assert!(error.contains("Scrappa API request timed out after 20ms"));
-    assert_eq!(scrappa.requests().len(), 1);
+    assert_eq!(scrappa.requests().len(), 2);
     assert_eq!(SCRAPPA_REQUEST_TIMEOUT, Duration::from_secs(60));
 }
 
@@ -538,7 +538,7 @@ async fn actor_preserves_auth_dataset_rows_output_and_pay_per_event_budget() {
 }
 
 #[tokio::test]
-async fn scrappa_upstream_error_is_returned_without_retry() {
+async fn scrappa_retries_persistent_upstream_errors_before_returning_them() {
     let apify = MockServer::start(|request| {
         if request.method == "GET" && request.target == "/v2/key-value-stores/store/records/INPUT" {
             json_response(200, json!({"query": "coffee"}))
@@ -555,6 +555,6 @@ async fn scrappa_upstream_error_is_returned_without_retry() {
     let error = run_actor(&client, &config).await.unwrap_err().to_string();
 
     assert!(error.contains("Scrappa API error (503): Service temporarily unavailable"));
-    assert_eq!(scrappa.requests().len(), 1);
+    assert_eq!(scrappa.requests().len(), 7);
     assert_eq!(apify.requests().len(), 1);
 }

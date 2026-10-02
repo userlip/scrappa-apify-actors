@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::Duration;
 
 use reqwest::{header, Client, Response, StatusCode};
@@ -11,7 +12,7 @@ use crate::{
 
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const USER_AGENT: &str = "thescrappa-vinted-user-profile-scraper/1.0";
-const RETRYABLE_STATUSES: [u16; 6] = [408, 429, 500, 502, 503, 504];
+const RETRYABLE_STATUSES: [u16; 5] = [429, 500, 502, 503, 504];
 
 #[derive(Debug)]
 pub enum ScrappaError {
@@ -134,7 +135,7 @@ impl ScrappaClient {
             .header(header::ACCEPT, "application/json")
             .header("X-API-Key", &self.api_key)
             .header(header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| map_request_error(error, self.timeout_ms))?;
 
@@ -252,7 +253,7 @@ mod tests {
 
     #[test]
     fn retries_only_transient_scrappa_statuses() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable_status(StatusCode::from_u16(status).unwrap()));
         }
         for status in [400, 401, 403, 404, 422] {

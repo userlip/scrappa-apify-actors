@@ -3,6 +3,7 @@ mod charging;
 mod request_params;
 mod response_utils;
 mod scrappa;
+mod scrappa_retry;
 
 #[cfg(test)]
 mod test_support;

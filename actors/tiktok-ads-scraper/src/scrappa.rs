@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use crate::urls::endpoint_url;
 use anyhow::{anyhow, Result};
 use reqwest::{Client, Response};
@@ -31,7 +32,7 @@ impl ScrappaClient {
             .header(reqwest::header::ACCEPT, "application/json")
             .query(&[("url", url)])
             .timeout(REQUEST_TIMEOUT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {

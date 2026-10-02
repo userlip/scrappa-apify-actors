@@ -1,10 +1,11 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use reqwest::{Client, StatusCode};
 use serde_json::Value;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
 
 pub const SCRAPPA_REQUEST_TIMEOUT_MS: u64 = 60_000;
-pub const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+pub const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 const ACTOR_USER_AGENT: &str = "thescrappa-redfin-valuation-scraper/1.0";
 
 #[derive(Debug)]
@@ -34,7 +35,7 @@ impl ScrappaError {
     pub fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout { .. } | Self::Network => true,
-            Self::Http { status, .. } => matches!(status, 408 | 429 | 500 | 502 | 503 | 504),
+            Self::Http { status, .. } => matches!(status, 429 | 500 | 502 | 503 | 504),
             Self::InvalidResponse(_) | Self::Request(_) => false,
         }
     }
@@ -143,7 +144,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header("Accept", "application/json")
             .header("User-Agent", ACTOR_USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| map_request_error(error, self.timeout_ms))?;
 
@@ -338,7 +339,7 @@ mod tests {
             Some("Invalid request - property_id: The property ID is required.")
         );
         assert!(!error.is_retryable());
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(ScrappaError::Http {
                 status,
                 details: String::new()

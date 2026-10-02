@@ -5,6 +5,7 @@ mod input;
 mod locations;
 mod runner;
 mod scrappa_client;
+mod scrappa_retry;
 
 #[cfg(test)]
 mod test_utils;

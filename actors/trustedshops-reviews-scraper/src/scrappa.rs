@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use reqwest::{Client, Url};
 use serde_json::{Map, Value};
 use std::{
@@ -7,7 +8,7 @@ use std::{
 };
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
-const MAX_ATTEMPTS: usize = 3;
+const MAX_ATTEMPTS: usize = 1;
 const RETRY_BASE_DELAY_MS: u64 = 1_000;
 const RETRY_JITTER_MS: u64 = 1_000;
 const MAX_RETRY_DELAY_MS: u64 = 10_000;
@@ -66,7 +67,7 @@ impl ScrappaError {
     fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout => true,
-            Self::Api { status, .. } => matches!(*status, 408 | 429 | 500 | 502 | 503 | 504),
+            Self::Api { status, .. } => matches!(*status, 429 | 500 | 502 | 503 | 504),
             Self::Transport(error) => error.is_timeout() || error.is_connect(),
             Self::InvalidResponse(_) | Self::InvalidUrl(_) => false,
         }
@@ -165,7 +166,7 @@ impl ScrappaClient {
             .header("X-API-Key", self.api_key.as_str())
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(map_request_error)?;
 
@@ -278,7 +279,7 @@ fn api_error_message(body: &str, fallback: &str) -> String {
 
 #[cfg(test)]
 fn retryable_status(status: reqwest::StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
+    matches!(status.as_u16(), 429 | 500 | 502 | 503 | 504)
 }
 
 #[cfg(test)]

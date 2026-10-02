@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Context, Result, anyhow};
 use reqwest::{Client, Response, StatusCode};
 use serde_json::Value;
@@ -9,7 +10,7 @@ use std::{
 use url::Url;
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
-const MAX_ATTEMPTS: u32 = 3;
+const MAX_ATTEMPTS: u32 = 1;
 const USER_AGENT: &str = "thescrappa-trustedshops-shop-profile-scraper/1.0";
 
 pub struct ScrappaClient {
@@ -115,7 +116,7 @@ impl ScrappaClient {
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)
             .timeout(self.timeout)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| self.map_request_error(error))?;
 
@@ -190,7 +191,7 @@ pub fn is_retryable(error: &anyhow::Error) -> bool {
         return true;
     }
     if let Some(error) = error.downcast_ref::<ScrappaApiError>() {
-        return matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504);
+        return matches!(error.status, 429 | 500 | 502 | 503 | 504);
     }
 
     error.chain().any(|cause| {

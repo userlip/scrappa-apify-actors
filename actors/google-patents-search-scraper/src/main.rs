@@ -2,6 +2,7 @@ mod apify;
 mod request_params;
 mod response;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{anyhow, Result};
 use apify::{ActorConfig, ApifyClient};

@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response, Url};
 use serde_json::{json, Value};
@@ -353,7 +355,7 @@ async fn fetch_channel_about_details(
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
         .header("X-API-Key", &config.scrappa_api_key)
         .header(reqwest::header::ACCEPT, "application/json")
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| {
             if error.is_timeout() {
@@ -768,7 +770,7 @@ mod tests {
         let row =
             json!({ "id":"UC2", "error":"Request failed with status code 500", "success":false })
                 .to_string();
-        let server = MockServer::start(vec![
+        let mut responses = vec![
             response(200, &input),
             response(200, &pricing),
             response(
@@ -777,8 +779,10 @@ mod tests {
             ),
             response(201, ""),
             response(500, "upstream failure"),
-            response(201, ""),
-        ]);
+        ];
+        responses.extend(std::iter::repeat_with(|| response(500, "upstream failure")).take(6));
+        responses.push(response(201, ""));
+        let server = MockServer::start(responses);
         let mut scrappa_base = server.base_url.clone();
         scrappa_base.set_path("/api/youtube/channel");
         run_actor(&client(), &config(&server.base_url, &scrappa_base))
@@ -786,7 +790,7 @@ mod tests {
             .unwrap();
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 6);
+        assert_eq!(requests.len(), 12);
         assert_eq!(
             request_parts(&requests[0]).1,
             "/v2/key-value-stores/test-store/records/INPUT"
@@ -809,7 +813,7 @@ mod tests {
             serde_json::from_str::<Value>(body).unwrap()["details"]["videoCount"],
             "2 videos"
         );
-        let (method, path, body) = request_parts(&requests[5]);
+        let (method, path, body) = request_parts(&requests[11]);
         assert_eq!((method, path), ("POST", "/v2/datasets/test-dataset/items"));
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),

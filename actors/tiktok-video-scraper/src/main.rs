@@ -1,4 +1,5 @@
 mod apify;
+mod scrappa_retry;
 mod tiktok_video;
 
 #[cfg(test)]

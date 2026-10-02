@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response, Url};
 use serde_json::{json, Value};
@@ -154,7 +156,7 @@ async fn get_channel_statistics(client: &Client, url: &Url, api_key: &str) -> Re
         .header("X-API-Key", api_key)
         .header("Accept", "application/json")
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(scrappa_request_error)?;
 
@@ -425,22 +427,24 @@ mod tests {
 
     #[tokio::test]
     async fn preserves_auth_response_data_and_dataset_row_order() {
-        let server = MockServer::start(vec![
+        let mut responses = vec![
             response(200, r#"{"ids":"UC1, UC2"}"#),
             response(
                 200,
                 r#"[{"id":"UC1","statistics":{"views":12}},{"id":"UC1b","statistics":{"views":8}}]"#,
             ),
             response(500, ""),
-            pricing_response(4.506432, 0, 1),
-            response(201, ""),
-        ]);
+        ];
+        responses.extend(std::iter::repeat_with(|| response(500, "")).take(6));
+        responses.push(pricing_response(4.506432, 0, 1));
+        responses.push(response(201, ""));
+        let server = MockServer::start(responses);
         let config = config(&server.base_url);
 
         run_actor(&client(), &config).await.unwrap();
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 5);
+        assert_eq!(requests.len(), 11);
         assert!(has_header(
             &requests[0],
             "authorization",
@@ -461,17 +465,17 @@ mod tests {
             "/api/youtube/channel?channel_id=UC2"
         );
         assert!(has_header(&requests[2], "x-api-key", "test-scrappa-key"));
-        assert_eq!(request_parts(&requests[3]).1, "/v2/actor-runs/test-run");
+        assert_eq!(request_parts(&requests[9]).1, "/v2/actor-runs/test-run");
         assert!(has_header(
-            &requests[3],
+            &requests[9],
             "authorization",
             "Bearer test-token"
         ));
 
-        let (method, path, body) = request_parts(&requests[4]);
+        let (method, path, body) = request_parts(&requests[10]);
         assert_eq!((method, path), ("POST", "/v2/datasets/test-dataset/items"));
         assert!(has_header(
-            &requests[4],
+            &requests[10],
             "authorization",
             "Bearer test-token"
         ));
@@ -640,13 +644,15 @@ mod tests {
 
     #[tokio::test]
     async fn writes_failure_rows_before_failing_when_every_request_fails() {
-        let server = MockServer::start(vec![
+        let mut responses = vec![
             response(200, r#"{"ids":"UC1,UC2"}"#),
             response(500, ""),
             response(500, ""),
-            pricing_response(1.0, 0, 0),
-            response(201, ""),
-        ]);
+        ];
+        responses.extend(std::iter::repeat_with(|| response(500, "")).take(12));
+        responses.push(pricing_response(1.0, 0, 0));
+        responses.push(response(201, ""));
+        let server = MockServer::start(responses);
         let config = config(&server.base_url);
 
         let error = run_actor(&client(), &config).await.unwrap_err();
@@ -654,7 +660,8 @@ mod tests {
             .to_string()
             .contains("Failed to fetch statistics for all 2 channel(s)."));
         let requests = server.requests();
-        let (_, _, body) = request_parts(&requests[4]);
+        assert_eq!(requests.len(), 17);
+        let (_, _, body) = request_parts(&requests[16]);
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),
             json!([

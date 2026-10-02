@@ -459,7 +459,7 @@ fn ignores_non_finite_numeric_strings_in_normalized_fields() {
 
 #[test]
 fn validates_retry_policy_and_timeout() {
-    assert_eq!(SCRAPPA_MAX_ATTEMPTS, 3);
+    assert_eq!(SCRAPPA_MAX_ATTEMPTS, 1);
     assert_eq!(SCRAPPA_REQUEST_TIMEOUT, Duration::from_secs(90));
     assert_eq!(retry_delay_ms(1, 0), 2_000);
     assert_eq!(retry_delay_ms(2, 500), 4_500);

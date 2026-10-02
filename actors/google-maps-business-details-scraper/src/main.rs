@@ -2,6 +2,7 @@ mod apify;
 mod config;
 mod input;
 mod scrappa;
+mod scrappa_retry;
 
 use std::process::ExitCode;
 

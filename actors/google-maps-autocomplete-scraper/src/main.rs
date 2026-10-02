@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, RequestBuilder, Response, StatusCode};
 use serde_json::{json, Value};
@@ -236,7 +238,7 @@ async fn fetch_suggestions_with_timeout(
         .header(reqwest::header::ACCEPT, "application/json")
         .header("X-API-Key", &config.scrappa_api_key)
         .timeout(timeout)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| {
             if error.is_timeout() || error.to_string().contains("aborted") {

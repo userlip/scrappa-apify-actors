@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use crate::{
     config::{SCRAPPA_MAX_ATTEMPTS, SCRAPPA_REQUEST_TIMEOUT},
     endpoint::endpoint_url,
@@ -90,7 +91,7 @@ impl ScrappaClient {
                 header::USER_AGENT,
                 "thescrappa-immobilienscout24-search-scraper/1.0",
             )
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(scrappa_transport_error)?;
 
@@ -131,7 +132,7 @@ pub(crate) fn is_retryable_scrappa_error(error: &ScrappaError) -> bool {
     match error {
         ScrappaError::Timeout => true,
         ScrappaError::Api { status, .. } => {
-            matches!(*status, 408 | 429 | 500 | 502 | 503 | 504)
+            matches!(*status, 429 | 500 | 502 | 503 | 504)
         }
         ScrappaError::Request(_) => false,
     }

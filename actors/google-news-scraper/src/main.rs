@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use std::{collections::HashSet, env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -447,7 +449,7 @@ async fn fetch_google_news(
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
         .header("X-API-Key", &config.scrappa_api_key)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(scrappa_request_error)?;
     let status = response.status();

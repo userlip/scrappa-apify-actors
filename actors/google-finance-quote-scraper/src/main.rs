@@ -3,6 +3,7 @@ mod quote_fetch;
 mod request_params;
 mod response_utils;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{Context, Result, anyhow};
 use apify::{ActorPricing, ApifyClient, ApifyConfig};
@@ -14,7 +15,7 @@ use serde_json::Value;
 use std::{env, process};
 
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
-const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 const QUOTE_RESULT_CHARGE_EVENT: &str = "quote-result";
 
 fn required_scrappa_api_key() -> Result<String> {

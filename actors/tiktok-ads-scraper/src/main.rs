@@ -2,6 +2,7 @@ mod apify;
 mod normalize;
 mod request_params;
 mod scrappa;
+mod scrappa_retry;
 mod urls;
 
 use anyhow::{anyhow, bail, Context, Result};

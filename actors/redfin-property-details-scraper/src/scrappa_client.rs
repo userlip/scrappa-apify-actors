@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
@@ -9,7 +10,7 @@ use url::Url;
 use crate::http_utils::endpoint_url;
 
 pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(90);
-const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 pub(crate) const SCRAPPA_USER_AGENT: &str = "thescrappa-redfin-property-details-scraper/1.0";
 const TERMINAL_PROPERTY_ERROR: &str = "Failed to fetch property details after multiple attempts";
 
@@ -130,7 +131,7 @@ impl ScrappaClient {
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, SCRAPPA_USER_AGENT)
             .query(&[("property_id", property_id)])
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(map_scrappa_transport_error)?;
 
@@ -235,7 +236,7 @@ fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
     match error.kind {
         ScrappaApiErrorKind::Timeout | ScrappaApiErrorKind::Network => true,
         ScrappaApiErrorKind::Http => {
-            matches!(error.status, Some(408 | 429 | 500 | 502 | 503 | 504))
+            matches!(error.status, Some(429 | 500 | 502 | 503 | 504))
         }
     }
 }
@@ -263,7 +264,7 @@ mod tests {
     use super::*;
     #[test]
     fn classifies_transient_and_per_property_errors() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable_scrappa_error(
                 &ScrappaApiError::http(status, "temporary".to_owned()).into()
             ));

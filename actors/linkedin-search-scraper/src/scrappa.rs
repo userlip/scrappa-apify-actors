@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{
     fmt,
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -10,7 +11,7 @@ use url::Url;
 use crate::search::append_search_params;
 
 pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-pub const MAX_ATTEMPTS: usize = 3;
+pub const MAX_ATTEMPTS: usize = 1;
 const MAX_RETRY_DELAY: Duration = Duration::from_secs(10);
 const USER_AGENT: &str = "thescrappa-linkedin-search-scraper/1.0";
 
@@ -56,7 +57,7 @@ impl ScrappaError {
         match self {
             Self::Timeout => true,
             Self::Api { status, .. } => {
-                matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
+                matches!(status.as_u16(), 429 | 500 | 502 | 503 | 504)
             }
             Self::Request(_) | Self::InvalidJson(_) => false,
         }
@@ -172,7 +173,7 @@ impl ScrappaClient {
             .header("X-API-Key", api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(request_error)?;
 

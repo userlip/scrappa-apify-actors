@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{fmt, time::Duration};
 
 use reqwest::{header, Client, Response, StatusCode};
@@ -7,7 +8,7 @@ use url::Url;
 
 pub const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-pub const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
+pub const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
 const USER_AGENT: &str = "thescrappa-google-finance-markets-scraper/1.0";
 
 #[derive(Debug)]
@@ -23,7 +24,7 @@ impl ScrappaError {
         match self {
             Self::Timeout { .. } => true,
             Self::Http { status, .. } => {
-                matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
+                matches!(status.as_u16(), 429 | 500 | 502 | 503 | 504)
             }
             Self::Transport(error) => error.is_timeout() || error.is_connect() || error.is_body(),
             Self::InvalidJson(_) => false,
@@ -132,7 +133,7 @@ impl ScrappaClient {
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
             .header("X-API-Key", &self.api_key)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| classify_transport_error(error, self.timeout))?;
         parse_response(response, self.timeout).await
@@ -316,7 +317,7 @@ mod tests {
 
     #[test]
     fn classifies_retryable_http_failures() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             let error = ScrappaError::Http {
                 status: StatusCode::from_u16(status).unwrap(),
                 message: "temporary".to_owned(),

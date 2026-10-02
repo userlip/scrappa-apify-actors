@@ -2,6 +2,7 @@ mod actor;
 mod apify;
 mod input;
 mod scrappa;
+mod scrappa_retry;
 mod url_utils;
 mod value;
 

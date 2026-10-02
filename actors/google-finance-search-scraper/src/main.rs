@@ -4,6 +4,7 @@ mod config;
 mod input;
 mod response;
 mod scrappa;
+mod scrappa_retry;
 mod status;
 
 #[cfg(test)]

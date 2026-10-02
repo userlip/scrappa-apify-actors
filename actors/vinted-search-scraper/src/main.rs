@@ -3,6 +3,7 @@ mod config;
 mod input;
 mod response;
 mod scrappa;
+mod scrappa_retry;
 
 use std::process::ExitCode;
 
@@ -20,7 +21,7 @@ use crate::{
     scrappa::{ScrappaClient, ScrappaTimeoutError},
 };
 
-const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 
 struct PushChargedItemsResult {
     saved_count: usize,

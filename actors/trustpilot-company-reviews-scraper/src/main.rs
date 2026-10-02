@@ -2,6 +2,7 @@ mod apify;
 mod request_params;
 mod review_processing;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{Context, Result, anyhow};
 use request_params::{RequestPlan, build_request_plan, describe_request, page_params};

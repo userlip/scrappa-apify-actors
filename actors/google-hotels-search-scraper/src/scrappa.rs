@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Context, Result};
 use rand::random_range;
 use reqwest::{header, Client, Response};
@@ -6,7 +7,7 @@ use std::{fmt, time::Duration};
 use url::Url;
 
 pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(90);
-pub const REQUEST_ATTEMPTS: usize = 3;
+pub const REQUEST_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-google-hotels-search-scraper/1.0";
 
 #[derive(Debug)]
@@ -25,7 +26,7 @@ impl ScrappaError {
     fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout => true,
-            Self::Api { status, .. } => matches!(*status, 408 | 429 | 500 | 502 | 503 | 504),
+            Self::Api { status, .. } => matches!(*status, 429 | 500 | 502 | 503 | 504),
             Self::Transport(_) | Self::InvalidResponse(_) => false,
         }
     }
@@ -126,7 +127,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(map_request_error)?;
 
@@ -385,8 +386,8 @@ mod tests {
     #[test]
     fn preserves_retry_statuses_timeout_and_backoff_bounds() {
         assert_eq!(REQUEST_TIMEOUT, Duration::from_secs(90));
-        assert_eq!(REQUEST_ATTEMPTS, 3);
-        for status in [408, 429, 500, 502, 503, 504] {
+        assert_eq!(REQUEST_ATTEMPTS, 1);
+        for status in [429, 500, 502, 503, 504] {
             assert!(ScrappaError::Api {
                 status,
                 message: String::new()
@@ -395,6 +396,11 @@ mod tests {
         }
         assert!(!ScrappaError::Api {
             status: 401,
+            message: String::new()
+        }
+        .is_retryable());
+        assert!(!ScrappaError::Api {
+            status: 408,
             message: String::new()
         }
         .is_retryable());

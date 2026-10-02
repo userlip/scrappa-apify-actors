@@ -534,7 +534,7 @@ async fn budget_stops_before_scrappa_lookup_and_keeps_an_affordable_prefix() {
 #[tokio::test]
 async fn zero_total_charge_cap_keeps_legacy_unbounded_output() {
     let run = pricing_run(0.0, json!({}));
-    let (address, server) = start_mock_server(vec![
+    let responses = vec![
         ("200 OK".to_owned(), json!({"url": VIDEO_URL}).to_string()),
         ("200 OK".to_owned(), run),
         (
@@ -542,7 +542,8 @@ async fn zero_total_charge_cap_keeps_legacy_unbounded_output() {
             json!({"data": {"aweme_id":"uncapped-video"}}).to_string(),
         ),
         ("201 Created".to_owned(), String::new()),
-    ]);
+    ];
+    let (address, server) = start_mock_server(responses);
 
     run_actor(&Client::new(), &request_config(address))
         .await
@@ -562,21 +563,28 @@ async fn zero_total_charge_cap_keeps_legacy_unbounded_output() {
 #[tokio::test]
 async fn scrappa_http_errors_become_dataset_error_rows() {
     let run = pricing_run(0.0002, json!({}));
-    let (address, server) = start_mock_server(vec![
+    let mut responses = vec![
         ("200 OK".to_owned(), json!({"url": VIDEO_URL}).to_string()),
         ("200 OK".to_owned(), run),
-        (
-            "500 Internal Server Error".to_owned(),
-            json!({"message":"upstream failed", "errors":{"url":["unavailable"]}}).to_string(),
-        ),
-        ("201 Created".to_owned(), String::new()),
-    ]);
+    ];
+    responses.extend(
+        std::iter::repeat_with(|| {
+            (
+                "500 Internal Server Error".to_owned(),
+                json!({"message":"upstream failed", "errors":{"url":["unavailable"]}}).to_string(),
+            )
+        })
+        .take(7),
+    );
+    responses.push(("201 Created".to_owned(), String::new()));
+    let (address, server) = start_mock_server(responses);
 
     run_actor(&Client::new(), &request_config(address))
         .await
         .unwrap();
     let requests = server.join().unwrap();
-    let row: Value = serde_json::from_str(&requests[3].body).unwrap();
+    assert_eq!(requests.len(), 10);
+    let row: Value = serde_json::from_str(&requests[9].body).unwrap();
     assert_eq!(row["result_found"], false);
     assert_eq!(
         row["error_message"],

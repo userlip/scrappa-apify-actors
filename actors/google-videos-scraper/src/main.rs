@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use std::{collections::HashSet, env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -9,7 +11,7 @@ const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const SCRAPPA_RETRY_DELAYS: [Duration; 2] = [Duration::from_secs(1), Duration::from_secs(2)];
-const TRANSIENT_SCRAPPA_STATUSES: [u16; 6] = [408, 429, 500, 502, 503, 504];
+const TRANSIENT_SCRAPPA_STATUSES: [u16; 5] = [429, 500, 502, 503, 504];
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const MAX_QUERIES_PER_RUN: usize = 10;
 const REQUEST_ENRICHMENT_FIELDS: [&str; 13] = [
@@ -498,7 +500,7 @@ impl ScrappaClient<'_> {
             url.query_pairs_mut().append_pair(key, &js_string(value));
         }
 
-        let max_attempts = self.retry_delays.len() + 1;
+        let max_attempts = 1;
         for attempt in 1..=max_attempts {
             let result = self.request_once(&url).await;
             match result {
@@ -524,7 +526,7 @@ impl ScrappaClient<'_> {
             .timeout(self.request_timeout)
             .header("X-API-Key", &self.config.scrappa_api_key)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| scrappa_request_error(error, self.request_timeout))?;
         let status = response.status();

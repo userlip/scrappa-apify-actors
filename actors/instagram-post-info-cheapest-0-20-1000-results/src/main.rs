@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use std::{env, process::ExitCode, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -302,7 +304,7 @@ impl ScrappaError {
         if matches!(status, Some(401 | 403)) {
             return false;
         }
-        if matches!(status, Some(408 | 425 | 429 | 500 | 502 | 503 | 504)) {
+        if matches!(status, Some(429 | 500 | 502 | 503 | 504)) {
             return true;
         }
 
@@ -748,7 +750,7 @@ impl ScrappaClient {
             .header("X-API-Key", self.api_key.as_str())
             .header(header::ACCEPT, "application/json")
             .timeout(remaining)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 let timed_out = error.is_timeout();
@@ -836,7 +838,7 @@ async fn request_with_retry_policy(
         match result {
             Ok(data) => return Ok(data),
             Err(error) => {
-                let last_attempt = attempt == delays.len();
+                let last_attempt = true;
                 let retry_reason = if error.is_transient() {
                     if error.is_rate_limit() {
                         saw_rate_limit = true;

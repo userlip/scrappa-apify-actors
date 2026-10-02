@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Context, Result, anyhow};
 use reqwest::{Client, Response, StatusCode, Url};
 use serde_json::Value;
@@ -8,7 +9,7 @@ use crate::request_params::RequestParams;
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
 pub const REQUEST_DEADLINE_MS: u64 = 180_000;
 const REVIEWS_ENDPOINT: &str = "/kununu/reviews";
-const MAX_ATTEMPTS: usize = 4;
+const MAX_ATTEMPTS: usize = 1;
 const RETRY_BACKOFF_MS: u64 = 500;
 
 #[derive(Debug)]
@@ -106,7 +107,7 @@ impl ScrappaClient {
                     .get(url.clone())
                     .header("X-API-Key", &self.api_key)
                     .header(reqwest::header::ACCEPT, "application/json")
-                    .send()
+                    .send_scrappa_with_retry("Scrappa API request")
                     .await;
 
                 let result = match response {
@@ -150,9 +151,14 @@ fn map_request_error(error: reqwest::Error) -> anyhow::Error {
 }
 
 fn is_retryable_status(status: StatusCode) -> bool {
-    status == StatusCode::REQUEST_TIMEOUT
-        || status == StatusCode::TOO_MANY_REQUESTS
-        || status.is_server_error()
+    matches!(
+        status,
+        StatusCode::TOO_MANY_REQUESTS
+            | StatusCode::INTERNAL_SERVER_ERROR
+            | StatusCode::BAD_GATEWAY
+            | StatusCode::SERVICE_UNAVAILABLE
+            | StatusCode::GATEWAY_TIMEOUT
+    )
 }
 
 fn is_retryable_request_error(error: &anyhow::Error) -> bool {
@@ -366,9 +372,9 @@ mod tests {
 
     #[test]
     fn retries_only_the_transient_http_status_ranges() {
-        assert!(super::is_retryable_status(StatusCode::REQUEST_TIMEOUT));
         assert!(super::is_retryable_status(StatusCode::TOO_MANY_REQUESTS));
         assert!(super::is_retryable_status(StatusCode::SERVICE_UNAVAILABLE));
+        assert!(!super::is_retryable_status(StatusCode::REQUEST_TIMEOUT));
         assert!(!super::is_retryable_status(StatusCode::BAD_REQUEST));
         assert!(!super::is_retryable_status(
             StatusCode::UNPROCESSABLE_ENTITY

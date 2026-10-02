@@ -4,6 +4,7 @@ mod input;
 mod results;
 mod run_translations;
 mod scrappa;
+mod scrappa_retry;
 
 use std::env;
 

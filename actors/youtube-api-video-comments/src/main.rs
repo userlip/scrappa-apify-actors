@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response};
 use serde_json::{json, Value};
@@ -207,7 +209,7 @@ async fn fetch_video_comments(
         .get(url)
         .header("X-API-Key", &config.scrappa_api_key)
         .header(reqwest::header::ACCEPT, "application/json")
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| {
             if error.is_timeout() {
@@ -864,19 +866,21 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn upstream_and_storage_errors_fail_without_retry_or_partial_output() {
+    async fn upstream_errors_retry_and_storage_errors_still_fail_without_partial_output() {
         let input = json!({"id":"video"});
-        let upstream_error = MockServer::start(vec![
+        let mut upstream_responses = vec![
             response(200, &input.to_string()),
             response(503, "unavailable"),
-        ]);
+        ];
+        upstream_responses.extend(std::iter::repeat_with(|| response(503, "unavailable")).take(6));
+        let upstream_error = MockServer::start(upstream_responses);
         let error = run_actor(&client(SCRAPPA_REQUEST_TIMEOUT), &config(&upstream_error))
             .await
             .unwrap_err();
         assert!(error
             .to_string()
             .contains("Scrappa API request failed with 503 Service Unavailable"));
-        assert_eq!(upstream_error.requests().len(), 2);
+        assert_eq!(upstream_error.requests().len(), 8);
 
         let storage_error = MockServer::start(vec![
             response(200, &input.to_string()),
@@ -910,7 +914,7 @@ mod tests {
         .await
         .unwrap_err();
         assert_eq!(error.to_string(), "Scrappa API request timed out after 60s");
-        assert_eq!(server.requests().len(), 1);
+        assert_eq!(server.requests().len(), 2);
     }
 
     #[tokio::test]

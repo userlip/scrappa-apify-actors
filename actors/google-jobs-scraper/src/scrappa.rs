@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{error::Error, fmt, time::Duration};
 
 use reqwest::{Client, Response};
@@ -20,7 +21,7 @@ impl ScrappaError {
         match self {
             Self::Timeout(_) => true,
             Self::HttpStatus { status, .. } => {
-                matches!(*status, 408 | 429 | 500 | 502 | 503 | 504)
+                matches!(*status, 429 | 500 | 502 | 503 | 504)
             }
             Self::Transport(_) | Self::InvalidJson(_) | Self::Fallback(_) => false,
         }
@@ -125,7 +126,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| self.map_request_error(error))?;
 

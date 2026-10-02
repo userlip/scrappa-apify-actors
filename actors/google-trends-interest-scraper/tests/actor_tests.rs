@@ -257,7 +257,7 @@ fn combined_ppe_prices_limit_rows_to_the_user_budget() {
 
 #[test]
 fn matches_retryable_scrappa_statuses_and_backoff_schedule() {
-    for status in [408, 429, 500, 502, 503, 504] {
+    for status in [429, 500, 502, 503, 504] {
         let error = anyhow::Error::new(ScrappaHttpError {
             status: StatusCode::from_u16(status).unwrap(),
             message: "retry".to_owned(),

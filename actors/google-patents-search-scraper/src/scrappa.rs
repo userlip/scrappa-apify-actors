@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{anyhow, Result};
 use rand::random;
 use reqwest::{header, Client, StatusCode};
@@ -9,8 +10,8 @@ use url::Url;
 use crate::request_params::js_string;
 
 pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_REQUEST_ATTEMPTS: u8 = 3;
-const RETRYABLE_STATUS_CODES: [u16; 6] = [408, 429, 500, 502, 503, 504];
+const SCRAPPA_REQUEST_ATTEMPTS: u8 = 1;
+const RETRYABLE_STATUS_CODES: [u16; 5] = [429, 500, 502, 503, 504];
 
 #[derive(Debug)]
 enum ScrappaFailure {
@@ -104,7 +105,7 @@ async fn fetch_once(
             header::USER_AGENT,
             "thescrappa-google-patents-search-scraper/1.0",
         )
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(scrappa_transport_error)?;
     let status = response.status();

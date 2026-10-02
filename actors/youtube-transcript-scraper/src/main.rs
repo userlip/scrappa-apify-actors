@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use rand::random;
 use reqwest::{header::RETRY_AFTER, Client, Response, StatusCode};
@@ -11,12 +13,12 @@ use url::Url;
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube/transcript";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const MAX_ATTEMPTS: u8 = 4;
+const MAX_ATTEMPTS: u8 = 1;
 const RETRY_BASE_DELAY_MS: u64 = 1_000;
 const RETRY_MAX_DELAY_MS: u64 = 10_000;
 const RETRY_JITTER_RATIO: f64 = 0.2;
 const MAX_TIMER_DELAY_MS: u64 = 2_147_483_647;
-const RETRYABLE_STATUS_CODES: [u16; 7] = [408, 429, 500, 502, 503, 504, 522];
+const RETRYABLE_STATUS_CODES: [u16; 5] = [429, 500, 502, 503, 504];
 
 struct ActorConfig {
     apify_api_base_url: Url,
@@ -314,7 +316,7 @@ async fn fetch_transcript(client: &Client, config: &ActorConfig, input: &Value) 
             .header("X-API-Key", config.scrappa_api_key.as_str())
             .header("Accept", "application/json")
             .timeout(REQUEST_TIMEOUT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await;
 
         let response = match response {
@@ -762,7 +764,7 @@ mod tests {
 
     #[test]
     fn retry_policy_matches_transient_statuses_and_retry_after_delays() {
-        for status in [408, 429, 500, 502, 503, 504, 522] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(retryable_status(StatusCode::from_u16(status).unwrap()));
         }
         for status in [400, 401, 422, 501, 505] {

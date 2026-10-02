@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::Duration;
 
 use rand::Rng;
@@ -8,7 +9,7 @@ use url::Url;
 use crate::config::endpoint_url;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
-const MAX_ATTEMPTS: usize = 2;
+const MAX_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-immobilienscout24-locations-scraper/1.0";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -60,7 +61,7 @@ impl ScrappaError {
     pub fn is_retryable(&self) -> bool {
         match self {
             Self::Timeout { .. } => true,
-            Self::Api { status, .. } => [408, 429, 500, 502, 503, 504].contains(status),
+            Self::Api { status, .. } => [429, 500, 502, 503, 504].contains(status),
             Self::Transport { retryable, .. } => *retryable,
             Self::InvalidJson { .. } => false,
         }
@@ -151,7 +152,7 @@ impl ScrappaClient {
             .header("X-API-Key", self.api_key.as_str())
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| {
                 if error.is_timeout() {
@@ -357,7 +358,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn enforces_request_deadline_and_retries_timeout_once() {
+    async fn enforces_request_deadline_and_retries_timeouts_up_to_seven_attempts() {
         let count = Arc::new(AtomicUsize::new(0));
         let server_count = count.clone();
         let server = MockServer::start(move |_| {
@@ -376,6 +377,6 @@ mod tests {
 
         let error = client.get_locations("Berlin", 1).await.unwrap_err();
         assert_eq!(error, ScrappaError::Timeout { timeout_ms: 20 });
-        assert_eq!(count.load(Ordering::SeqCst), 2);
+        assert_eq!(count.load(Ordering::SeqCst), 7);
     }
 }

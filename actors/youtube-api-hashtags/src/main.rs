@@ -1,3 +1,5 @@
+use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use chrono::{DateTime, Datelike, SecondsFormat, TimeZone, Timelike, Utc};
 use reqwest::{Client, Response};
@@ -271,7 +273,7 @@ async fn fetch_hashtag(client: &Client, url: &Url, api_key: &str) -> Result<Valu
             .get(url.clone())
             .header(reqwest::header::ACCEPT, "application/json")
             .header("X-API-Key", api_key)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(scrappa_request_error)?;
         let status = response.status();
@@ -294,7 +296,7 @@ async fn fetch_hashtag(client: &Client, url: &Url, api_key: &str) -> Result<Valu
             .context("Scrappa API response was not valid JSON")
     };
 
-    timeout(REQUEST_TIMEOUT, request).await.map_err(|_| {
+    timeout(ENTRY_TIME_BUDGET, request).await.map_err(|_| {
         anyhow!(
             "Scrappa API request timed out after {}s",
             REQUEST_TIMEOUT.as_secs()

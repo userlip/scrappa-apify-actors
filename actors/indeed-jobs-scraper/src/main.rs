@@ -1,6 +1,7 @@
 mod apify;
 mod indeed;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{anyhow, Context, Result};
 use reqwest::Client;

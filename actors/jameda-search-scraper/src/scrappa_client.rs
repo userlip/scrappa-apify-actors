@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{anyhow, Result};
 use reqwest::{header, Client, Response};
 use serde_json::{Map, Value};
@@ -9,7 +10,7 @@ use std::{
 use url::Url;
 
 pub const REQUEST_TIMEOUT_MS: u64 = 90_000;
-pub const MAX_ATTEMPTS: usize = 3;
+pub const MAX_ATTEMPTS: usize = 1;
 const DEFAULT_BASE_URL: &str = "https://scrappa.co/api";
 
 #[derive(Debug)]
@@ -79,7 +80,7 @@ pub fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
         return true;
     }
     if let Some(error) = error.downcast_ref::<ScrappaApiError>() {
-        return matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504);
+        return matches!(error.status, 429 | 500 | 502 | 503 | 504);
     }
     error
         .downcast_ref::<ScrappaTransportError>()
@@ -203,7 +204,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, "thescrappa-jameda-search-scraper/1.0")
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| reqwest_error(error, self.request_timeout_ms))?;
         if !response.status().is_success() {
@@ -363,7 +364,7 @@ mod tests {
         assert!(is_retryable_scrappa_error(
             &ScrappaTimeoutError { timeout_ms: 90_000 }.into()
         ));
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             assert!(is_retryable_scrappa_error(
                 &ScrappaApiError {
                     status,

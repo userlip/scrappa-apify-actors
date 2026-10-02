@@ -1,11 +1,12 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{fmt, time::Duration};
 
 use rand::Rng;
 use reqwest::{Client, Response, Url};
 use serde_json::{Map, Value};
 
-const SCRAPPA_MAX_ATTEMPTS: usize = 3;
-const SCRAPPA_RETRYABLE_STATUS_CODES: [u16; 6] = [408, 429, 500, 502, 503, 504];
+const SCRAPPA_MAX_ATTEMPTS: usize = 1;
+const SCRAPPA_RETRYABLE_STATUS_CODES: [u16; 5] = [429, 500, 502, 503, 504];
 
 #[derive(Debug)]
 pub enum ScrappaError {
@@ -127,7 +128,7 @@ impl ScrappaClient {
                 reqwest::header::USER_AGENT,
                 "thescrappa-domain-availability-checker/1.0",
             )
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| self.request_error(error))?;
 

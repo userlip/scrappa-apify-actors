@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::{Context, Result};
@@ -9,7 +10,7 @@ use crate::{api_url::endpoint_url, pinterest_input::PinterestSearchParams};
 
 pub(crate) const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(90);
-pub(crate) const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+pub(crate) const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 
 #[derive(Debug)]
 pub(crate) struct ScrappaApiError {
@@ -106,7 +107,7 @@ impl ScrappaClient {
                 header::USER_AGENT,
                 "thescrappa-pinterest-search-scraper/1.0",
             )
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(scrappa_transport_error)?;
 
@@ -137,7 +138,7 @@ pub(crate) fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
         return true;
     }
     if let Some(error) = error.downcast_ref::<ScrappaApiError>() {
-        return matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504);
+        return matches!(error.status, 429 | 500 | 502 | 503 | 504);
     }
     error
         .downcast_ref::<reqwest::Error>()

@@ -1,6 +1,7 @@
 mod apify;
 mod request_params;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{anyhow, Result};
 use apify::{ApifyClient, ApifyConfig};
@@ -10,7 +11,7 @@ use serde_json::{json, Value};
 use std::{env, process};
 
 const SCRAPPA_TIMEOUT_MS: u64 = 60_000;
-const SCRAPPA_REQUEST_ATTEMPTS: usize = 3;
+const SCRAPPA_REQUEST_ATTEMPTS: usize = 1;
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 

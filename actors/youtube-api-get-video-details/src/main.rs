@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response, Url};
 use serde_json::Value;
@@ -195,7 +197,7 @@ async fn fetch_video_details(client: &Client, url: &Url) -> Result<Value> {
     let response = client
         .get(url.clone())
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| {
             if error.is_timeout() {

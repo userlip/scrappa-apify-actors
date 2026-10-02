@@ -309,19 +309,26 @@ fn zero_spending_limit_is_unbounded_for_dataset_items() {
 #[tokio::test]
 async fn feed_fallback_returns_only_the_requested_post_with_api_auth() {
     let post = json!({"shortcode": "Dc30nJeRKKz", "caption": "Actual caption"});
-    let (base_url, server) = start_mock_server(vec![
-        MockResponse::json(
-            503,
-            json!({"message": "Temporarily unavailable", "retryable": true}),
-        ),
-        MockResponse::json(
-            200,
-            json!({"success": true, "posts": [
-                {"shortcode": "OTHER"}, post.clone()
-            ]}),
-        ),
-    ])
-    .await;
+    let mut responses = vec![MockResponse::json(
+        503,
+        json!({"message": "Temporarily unavailable", "retryable": true}),
+    )];
+    responses.extend(
+        std::iter::repeat_with(|| {
+            MockResponse::json(
+                503,
+                json!({"message": "Temporarily unavailable", "retryable": true}),
+            )
+        })
+        .take(6),
+    );
+    responses.push(MockResponse::json(
+        200,
+        json!({"success": true, "posts": [
+            {"shortcode": "OTHER"}, post.clone()
+        ]}),
+    ));
+    let (base_url, server) = start_mock_server(responses).await;
     let client = scrappa_client(base_url);
     let request =
         resolve_input(&json!({"url": "https://www.instagram.com/instagram/p/Dc30nJeRKKz/"}))
@@ -334,11 +341,11 @@ async fn feed_fallback_returns_only_the_requested_post_with_api_auth() {
     );
 
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 2);
+    assert_eq!(requests.len(), 8);
     assert!(requests[0].path.starts_with(
         "/instagram/post?url=https%3A%2F%2Fwww.instagram.com%2Finstagram%2Fp%2FDc30nJeRKKz%2F"
     ));
-    assert!(requests[1]
+    assert!(requests[7]
         .path
         .starts_with("/instagram/user/posts?username=instagram"));
     for request in requests {
@@ -355,17 +362,24 @@ async fn feed_fallback_returns_only_the_requested_post_with_api_auth() {
 
 #[tokio::test]
 async fn missing_feed_match_returns_the_original_single_post_error() {
-    let (base_url, server) = start_mock_server(vec![
-        MockResponse::json(
-            503,
-            json!({"message": "Temporarily unavailable", "retryable": true}),
-        ),
-        MockResponse::json(
-            200,
-            json!({"success": true, "posts": [{"shortcode": "OTHER"}]}),
-        ),
-    ])
-    .await;
+    let mut responses = vec![MockResponse::json(
+        503,
+        json!({"message": "Temporarily unavailable", "retryable": true}),
+    )];
+    responses.extend(
+        std::iter::repeat_with(|| {
+            MockResponse::json(
+                503,
+                json!({"message": "Temporarily unavailable", "retryable": true}),
+            )
+        })
+        .take(6),
+    );
+    responses.push(MockResponse::json(
+        200,
+        json!({"success": true, "posts": [{"shortcode": "OTHER"}]}),
+    ));
+    let (base_url, server) = start_mock_server(responses).await;
     let client = scrappa_client(base_url);
     let request =
         resolve_input(&json!({"url": "https://www.instagram.com/instagram/p/REQUESTED/"})).unwrap();
@@ -375,7 +389,7 @@ async fn missing_feed_match_returns_the_original_single_post_error() {
         .unwrap_err();
     assert_eq!(error.http_status, Some(503));
     assert_eq!(error.message, "Temporarily unavailable");
-    assert_eq!(server.await.unwrap().len(), 2);
+    assert_eq!(server.await.unwrap().len(), 8);
 }
 
 #[tokio::test]
@@ -472,26 +486,25 @@ async fn authentication_error_is_not_retried_without_a_rate_limit() {
 }
 
 #[tokio::test]
-async fn rate_limit_can_be_followed_by_a_cooldown_auth_retry() {
+async fn a_non_retryable_auth_response_stops_after_a_rate_limit() {
     let (base_url, server) = start_mock_server(vec![
         MockResponse::json(500, json!({"error": "Rate limited (HTTP 429)"})),
         MockResponse::json(401, json!({"error": "Authentication required (HTTP 401)"})),
-        MockResponse::json(200, json!({"success": true, "data": {"shortcode": "CODE"}})),
     ])
     .await;
     let client = scrappa_client(base_url);
     let request = resolve_input(&json!({"shortcode": "CODE"})).unwrap();
-    let result = request_with_retry_policy(
+    let error = request_with_retry_policy(
         &client,
         &request,
         &[Duration::ZERO, Duration::ZERO],
         REQUEST_TIMEOUT,
     )
     .await
-    .unwrap();
-    assert_eq!(result["data"]["shortcode"], "CODE");
+    .unwrap_err();
+    assert_eq!(error.http_status, Some(401));
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 3);
+    assert_eq!(requests.len(), 2);
     assert!(requests
         .iter()
         .all(|request| request.path.starts_with("/instagram/post?shortcode=CODE")));

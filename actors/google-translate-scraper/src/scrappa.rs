@@ -1,13 +1,13 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{fmt, time::Duration};
 
-use rand::Rng;
 use reqwest::{Client, StatusCode, Url, header};
 use serde_json::{Map, Value};
 
 use crate::{input::TranslationRequest, run_translations::TranslationRunner};
 
 pub const REQUEST_TIMEOUT_MS: u64 = 30_000;
-const MAX_ATTEMPTS: usize = 2;
+const MAX_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-google-translate-scraper/1.0";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -30,14 +30,6 @@ impl ScrappaError {
     pub fn is_authentication_error(&self) -> bool {
         self.status_code()
             .is_some_and(|status| matches!(status, 401 | 403))
-    }
-
-    fn is_retryable(&self) -> bool {
-        match self {
-            Self::Timeout { .. } | Self::Network(_) => true,
-            Self::Http { status, .. } => matches!(*status, 408 | 429 | 500 | 502 | 503 | 504),
-            Self::InvalidJson(_) | Self::Configuration(_) => false,
-        }
     }
 }
 
@@ -94,37 +86,13 @@ impl ScrappaClient {
         &self,
         endpoint: &str,
         params: &Map<String, Value>,
-        attempts: usize,
-        retry_delay: F,
+        _attempts: usize,
+        _retry_delay: F,
     ) -> Result<Value, ScrappaError>
     where
         F: Fn(u32) -> Duration,
     {
-        let attempts = attempts.max(1);
-        let mut last_error = None;
-
-        for attempt in 1..=attempts {
-            match self.send(endpoint, params).await {
-                Ok(response) => return Ok(response),
-                Err(error) => {
-                    if attempt >= attempts || !error.is_retryable() {
-                        return Err(error);
-                    }
-                    let delay = retry_delay(attempt as u32);
-                    eprintln!(
-                        "Scrappa API request failed ({error}). Retrying attempt {}/{attempts} in {}ms.",
-                        attempt + 1,
-                        delay.as_millis()
-                    );
-                    tokio::time::sleep(delay).await;
-                    last_error = Some(error);
-                }
-            }
-        }
-
-        Err(last_error.unwrap_or_else(|| {
-            ScrappaError::Configuration("Scrappa request did not run".to_owned())
-        }))
+        self.send(endpoint, params).await
     }
 
     async fn send(
@@ -141,7 +109,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| self.map_request_error(error))?;
 
@@ -178,19 +146,11 @@ impl TranslationRunner for ScrappaClient {
         params.insert("text".to_owned(), Value::String(request.text.clone()));
         params.insert("source".to_owned(), Value::String(request.source.clone()));
         params.insert("target".to_owned(), Value::String(request.target.clone()));
-        self.get_json_with_retry("/google-translate", &params, MAX_ATTEMPTS, retry_delay)
-            .await
+        self.get_json_with_retry("/google-translate", &params, MAX_ATTEMPTS, |_| {
+            Duration::ZERO
+        })
+        .await
     }
-}
-
-fn retry_delay(failed_attempt: u32) -> Duration {
-    let jitter_ms = rand::thread_rng().gen_range(0..1_000_u64);
-    retry_delay_with_jitter(failed_attempt, jitter_ms)
-}
-
-fn retry_delay_with_jitter(failed_attempt: u32, jitter_ms: u64) -> Duration {
-    let exponential_ms = 1_000_u64.saturating_mul(2_u64.saturating_pow(failed_attempt));
-    Duration::from_millis(exponential_ms.saturating_add(jitter_ms).min(10_000))
 }
 
 fn read_error_message(status: StatusCode, body: &str) -> String {
@@ -525,22 +485,20 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn returns_the_last_transient_http_error_after_two_attempts() {
-        let server = MockServer::start(vec![
-            MockResponse {
-                status: 503,
-                body: r#"{"error":"Temporary upstream failure 1."}"#.to_owned(),
-            },
-            MockResponse {
-                status: 503,
-                body: r#"{"error":"Temporary upstream failure 2."}"#.to_owned(),
-            },
-        ]);
+    async fn returns_the_last_transient_http_error_after_seven_attempts() {
+        let server = MockServer::start(
+            (1..=7)
+                .map(|attempt| MockResponse {
+                    status: 503,
+                    body: format!(r#"{{"error":"Temporary upstream failure {attempt}."}}"#),
+                })
+                .collect(),
+        );
         let client = ScrappaClient::new("test-key".to_owned(), server.base_url.clone()).unwrap();
         let params =
             serde_json::from_value(json!({"text":"Hello","source":"en","target":"de"})).unwrap();
         let error = client
-            .get_json_with_retry("/google-translate", &params, 2, |_| Duration::ZERO)
+            .get_json_with_retry("/google-translate", &params, 7, |_| Duration::ZERO)
             .await
             .unwrap_err();
 
@@ -548,14 +506,14 @@ mod tests {
             error,
             ScrappaError::Http {
                 status: 503,
-                details: "Temporary upstream failure 2.".to_owned(),
+                details: "Temporary upstream failure 7.".to_owned(),
             }
         );
-        assert_eq!(server.requests().len(), 2);
+        assert_eq!(server.requests().len(), 7);
     }
 
     #[test]
-    fn formats_structured_and_plain_text_errors_and_backoff() {
+    fn formats_structured_and_plain_text_errors() {
         assert_eq!(
             read_error_message(
                 StatusCode::BAD_REQUEST,
@@ -570,32 +528,6 @@ mod tests {
         assert_eq!(
             read_error_message(StatusCode::BAD_GATEWAY, &"x".repeat(600)).len(),
             500
-        );
-        assert_eq!(
-            retry_delay_with_jitter(1, 250),
-            Duration::from_millis(2_250)
-        );
-        assert_eq!(
-            retry_delay_with_jitter(4, 250),
-            Duration::from_millis(10_000)
-        );
-        assert!(retry_delay(1) >= Duration::from_millis(2_000));
-        assert!(retry_delay(1) < Duration::from_millis(3_000));
-        assert!(ScrappaError::Timeout { timeout_ms: 30_000 }.is_retryable());
-        assert!(ScrappaError::Network("fetch failed".to_owned()).is_retryable());
-        assert!(
-            ScrappaError::Http {
-                status: 429,
-                details: String::new()
-            }
-            .is_retryable()
-        );
-        assert!(
-            !ScrappaError::Http {
-                status: 400,
-                details: String::new()
-            }
-            .is_retryable()
         );
     }
 }

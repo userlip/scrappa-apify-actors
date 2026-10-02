@@ -2,6 +2,7 @@ mod apify;
 mod input;
 mod output;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{anyhow, Result};
 use apify::{ActorApi, ActorConfig};
@@ -11,7 +12,7 @@ use scrappa::{ScrappaClient, ScrappaError};
 use std::process;
 
 const SCRAPPA_REQUEST_TIMEOUT_SECS: u64 = 60;
-const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
+const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
 const NO_DATA_STATUS_MESSAGE: &str = "No Google Finance historical price points found for this custom date range. Scrappa returned NOT_FOUND; use a preset range for the most stable historical data.";
 const CHARGE_LIMIT_STATUS_MESSAGE: &str = "Charge limit reached before saving all Google Finance historical price points; OUTPUT was not written.";
 

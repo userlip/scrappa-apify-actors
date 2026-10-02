@@ -2,6 +2,7 @@ mod apify;
 mod input;
 mod results;
 mod scrappa;
+mod scrappa_retry;
 
 use std::{env, process, time::Duration};
 

@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::time::Duration;
 
 use reqwest::{header, Client, Response};
@@ -186,7 +187,7 @@ impl ScrappaWebScraperClient {
             .header(header::ACCEPT, accept)
             .header(header::USER_AGENT, USER_AGENT);
         let response = request
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| ScrappaError::Request {
                 message: error.to_string(),

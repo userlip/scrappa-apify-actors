@@ -4,6 +4,7 @@ mod charging;
 mod pinterest_input;
 mod pinterest_response;
 mod scrappa_client;
+mod scrappa_retry;
 
 use std::process::ExitCode;
 use std::time::Duration;

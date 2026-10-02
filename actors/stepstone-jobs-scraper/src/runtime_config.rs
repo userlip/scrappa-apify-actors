@@ -3,8 +3,9 @@ pub const ACTOR_TIMEOUT_MS: u64 = 240_000;
 #[cfg(test)]
 pub const ACTOR_COMPLETION_RESERVE_MS: u64 = 30_000;
 pub const JOBS_REQUEST_TIMEOUT_MS: u64 = 30_000;
-pub const JOBS_MAX_ATTEMPTS: usize = 4;
-pub const JOBS_MAX_RETRY_DELAY_MS: u64 = 20_000;
+pub const JOBS_MAX_ATTEMPTS: usize = 1;
+pub const JOBS_MAX_RETRY_DELAY_MS: u64 = 15_000;
+pub const JOBS_REQUEST_BUDGET_MS: u64 = 90_000;
 
 #[cfg(test)]
 pub fn maximum_request_duration_ms(
@@ -22,13 +23,8 @@ mod tests {
 
     #[test]
     fn keeps_scrappa_retries_and_completion_within_actor_timeout() {
-        let request_maximum_ms = maximum_request_duration_ms(
-            JOBS_REQUEST_TIMEOUT_MS,
-            JOBS_MAX_ATTEMPTS,
-            JOBS_MAX_RETRY_DELAY_MS,
-        );
-        assert_eq!(request_maximum_ms, 180_000);
-        assert_eq!(request_maximum_ms + ACTOR_COMPLETION_RESERVE_MS, 210_000);
+        let request_maximum_ms = JOBS_REQUEST_BUDGET_MS;
+        assert_eq!(request_maximum_ms + ACTOR_COMPLETION_RESERVE_MS, 120_000);
         assert!(request_maximum_ms + ACTOR_COMPLETION_RESERVE_MS < ACTOR_TIMEOUT_MS);
 
         let actor_config: Value =

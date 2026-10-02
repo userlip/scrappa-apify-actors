@@ -3,6 +3,7 @@ mod request_params;
 mod response_utils;
 mod runtime_config;
 mod scrappa;
+mod scrappa_retry;
 
 use std::{env, process};
 

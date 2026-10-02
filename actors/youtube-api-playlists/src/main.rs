@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response};
 use serde_json::Value;
@@ -163,7 +165,7 @@ async fn fetch_playlists(client: &Client, config: &ActorConfig, url: &Url) -> Re
         .get(url.clone())
         .header("X-API-Key", &config.scrappa_api_key)
         .header("Accept", "application/json")
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| {
             if error.is_timeout() {

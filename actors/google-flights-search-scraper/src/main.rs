@@ -2,6 +2,7 @@ mod apify;
 mod request_params;
 mod response_utils;
 mod scrappa_client;
+mod scrappa_retry;
 
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 

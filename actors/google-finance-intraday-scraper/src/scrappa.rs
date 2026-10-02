@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{
     error::Error,
     fmt,
@@ -23,7 +24,7 @@ fn js_string(value: &Value) -> String {
 }
 
 pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_MAX_ATTEMPTS: usize = 3;
+const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 const ACTOR_USER_AGENT: &str = "thescrappa-google-finance-intraday-scraper/1.0";
 
 #[derive(Debug)]
@@ -122,7 +123,7 @@ impl<'a> ScrappaClient<'a> {
             .header("X-API-Key", self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, ACTOR_USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(scrappa_request_error)?;
 
@@ -210,7 +211,7 @@ fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
         return true;
     }
     if let Some(api_error) = error.downcast_ref::<ScrappaApiError>() {
-        return matches!(api_error.status, 408 | 429 | 500 | 502 | 503 | 504);
+        return matches!(api_error.status, 429 | 500 | 502 | 503 | 504);
     }
     error.chain().any(|cause| {
         cause

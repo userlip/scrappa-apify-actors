@@ -1,3 +1,5 @@
+use crate::scrappa_retry::ScrappaRetryExt;
+mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use chrono::{DateTime, Datelike, Duration as ChronoDuration, TimeZone, Timelike, Utc};
 use reqwest::{Client, Response};
@@ -8,7 +10,7 @@ use url::Url;
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube/search";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_MAX_ATTEMPTS: u32 = 3;
+const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
 const SCRAPPA_RETRY_BASE_DELAY: Duration = Duration::from_secs(2);
 const MAX_LIMIT: u64 = 20;
 
@@ -247,7 +249,7 @@ fn timeout_error() -> anyhow::Error {
 }
 
 fn is_retryable_status(status: u16) -> bool {
-    matches!(status, 408 | 429 | 500 | 502 | 503 | 504)
+    matches!(status, 429 | 500 | 502 | 503 | 504)
 }
 
 async fn fetch_search_attempt(
@@ -260,7 +262,7 @@ async fn fetch_search_attempt(
         .header("X-API-Key", &config.scrappa_api_key)
         .header("Accept", "application/json")
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
-        .send()
+        .send_scrappa_with_retry("Scrappa API request")
         .await
         .map_err(|error| {
             FetchError::retryable(if error.is_timeout() {
@@ -291,9 +293,7 @@ async fn fetch_search_attempt(
     })
 }
 
-/// Retries transient Scrappa failures (network errors, timeouts, 408/429/5xx).
-/// Worst case stays well inside Apify's 300-second QA window:
-/// 3 x 60s attempts + 2s + 4s backoff.
+/// Scrappa transient failures use the shared bounded retry policy.
 async fn fetch_search_results(
     client: &Client,
     config: &ActorConfig,
@@ -1069,9 +1069,13 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn persistent_scrappa_503_fails_after_max_attempts() {
+    async fn persistent_scrappa_503_fails_after_seven_attempts() {
         let server = MockServer::start(vec![
             response(200, r#"{"q":"test query"}"#),
+            response(503, "{}"),
+            response(503, "{}"),
+            response(503, "{}"),
+            response(503, "{}"),
             response(503, "{}"),
             response(503, "{}"),
             response(503, "{}"),
@@ -1082,7 +1086,7 @@ mod tests {
                 .unwrap_err();
 
         assert!(format!("{error:#}").contains("503"));
-        assert_eq!(server.requests().len(), 1 + SCRAPPA_MAX_ATTEMPTS as usize);
+        assert_eq!(server.requests().len(), 8);
     }
 
     #[tokio::test]

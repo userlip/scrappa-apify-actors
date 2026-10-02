@@ -3,6 +3,7 @@ mod batch_runner;
 mod request_params;
 mod response_utils;
 mod scrappa_client;
+mod scrappa_retry;
 
 use std::{env, process::ExitCode};
 

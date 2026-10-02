@@ -3,6 +3,7 @@ mod charging;
 mod request_params;
 mod response_utils;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{Result, anyhow};
 use apify::ApifyClient;

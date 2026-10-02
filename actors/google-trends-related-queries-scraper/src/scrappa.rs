@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use std::{
     error::Error,
     fmt,
@@ -134,7 +135,7 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, SCRAPPA_USER_AGENT)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| request_error(error, timeout))?;
         parse_json_response(response, timeout).await
@@ -301,7 +302,7 @@ pub fn is_retryable(error: &anyhow::Error) -> bool {
     }
     error
         .downcast_ref::<ScrappaApiError>()
-        .is_some_and(|error| matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504))
+        .is_some_and(|error| matches!(error.status, 429 | 500 | 502 | 503 | 504))
 }
 
 pub fn retry_delay_ms(
@@ -398,7 +399,7 @@ mod tests {
 
     #[test]
     fn retries_only_timeouts_and_transient_http_statuses() {
-        for status in [408, 429, 500, 502, 503, 504] {
+        for status in [429, 500, 502, 503, 504] {
             let error: anyhow::Error = ScrappaApiError {
                 status,
                 message: "temporary".to_owned(),

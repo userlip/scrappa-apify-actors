@@ -3,6 +3,7 @@ mod fallback;
 mod jobs;
 mod params;
 mod scrappa;
+mod scrappa_retry;
 #[cfg(test)]
 mod test_support;
 
@@ -23,8 +24,8 @@ use url::Url;
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_MAX_ATTEMPTS: usize = 3;
-const SCRAPPA_FALLBACK_ATTEMPTS: usize = 2;
+const SCRAPPA_MAX_ATTEMPTS: usize = 1;
+const SCRAPPA_FALLBACK_ATTEMPTS: usize = 1;
 
 struct Config {
     apify_api_base: Url,
@@ -219,6 +220,10 @@ mod tests {
             MockResponse::json(504, r#"{"message":"Gateway Timeout"}"#),
             MockResponse::json(503, r#"{"message":"Unavailable"}"#),
             MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
+            MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
+            MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
+            MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
+            MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
             MockResponse::json(200, r#"{"jobs":[{"id":"fallback-job","title":"Nurse"}]}"#),
         ]);
         let client = test_client(&server);
@@ -232,11 +237,11 @@ mod tests {
         assert_eq!(response["service_used"], "indeed");
         assert_eq!(response["jobs_results"][0]["job_id"], "fallback-job");
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
-        assert!(requests[..3]
+        assert_eq!(requests.len(), 8);
+        assert!(requests[..7]
             .iter()
             .all(|request| request.starts_with("GET /google/jobs?")));
-        assert!(requests[3].starts_with(
+        assert!(requests[7].starts_with(
             "GET /indeed/jobs?query=nurse&limit=10&location=Austin&country=US&gl=us&hl=en"
         ));
     }

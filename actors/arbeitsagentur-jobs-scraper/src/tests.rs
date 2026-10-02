@@ -327,7 +327,7 @@ fn dataset_job_preserves_raw_fields_and_adds_table_aliases() {
 
 #[test]
 fn scrappa_retry_rules_and_retry_after_match_the_node_client() {
-    for status in [408, 429, 500, 502, 503, 504] {
+    for status in [429, 500, 502, 503, 504] {
         assert!(ScrappaFailure::Api {
             status,
             message: String::new(),

@@ -769,6 +769,7 @@ name = "stepstone-jobs-scraper"
 version = "1.0.0"
 dependencies = [
  "anyhow",
+ "http",
  "httpdate",
  "reqwest",
  "serde_json",

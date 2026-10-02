@@ -319,7 +319,7 @@ fn formats_scrappa_errors_and_selects_only_transient_retry_statuses() {
         scrappa_api_error_message(StatusCode::BAD_REQUEST, " bad   request\nbody "),
         "bad request body"
     );
-    for status in [408, 429, 500, 502, 503, 504] {
+    for status in [429, 500, 502, 503, 504] {
         let error = ScrappaApiError {
             status,
             message: "retry".to_owned(),

@@ -1,10 +1,11 @@
+use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 use reqwest::{Client, Response, StatusCode, Url};
 use serde_json::Value;
 use std::{time::Duration, time::SystemTime};
 use tokio::time::{sleep, timeout};
 
 const PRICE_INSIGHTS_PATH: [&str; 2] = ["immobilienscout24", "price-insights"];
-const REQUEST_ATTEMPTS: usize = 2;
+const REQUEST_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-immobilienscout24-price-insights-scraper/1.0";
 
 #[derive(Clone)]
@@ -89,9 +90,9 @@ impl ScrappaClient {
             .header(reqwest::header::USER_AGENT, USER_AGENT)
             .timeout(self.request_timeout);
 
-        let result = timeout(self.request_timeout, async {
+        let result = timeout(ENTRY_TIME_BUDGET, async {
             let response = request
-                .send()
+                .send_scrappa_with_retry("Scrappa API request")
                 .await
                 .map_err(|error| ScrappaFailure::from_request(error, self.request_timeout))?;
             if !response.status().is_success() {
@@ -178,7 +179,7 @@ impl ScrappaFailure {
         Self {
             message: response_message.clone(),
             status: Some(code),
-            retryable: matches!(code, 408 | 429 | 500 | 502 | 503 | 504),
+            retryable: matches!(code, 429 | 500 | 502 | 503 | 504),
             retry_message: Some(format!("Scrappa API error ({code}): {response_message}")),
         }
     }
@@ -297,7 +298,7 @@ mod tests {
 
     #[test]
     fn retries_only_the_original_transient_status_codes() {
-        for code in [408, 429, 500, 502, 503, 504] {
+        for code in [429, 500, 502, 503, 504] {
             assert!(
                 ScrappaFailure::http(StatusCode::from_u16(code).unwrap(), "temporary".to_owned())
                     .retryable
@@ -354,7 +355,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn bounds_each_scrappa_attempt_and_retries_timeouts_once() {
+    async fn bounds_each_scrappa_attempt_and_retries_timeouts_up_to_seven_attempts() {
         let server = MockServer::start(|_| {
             MockResponse::json(200, json!({"success": true})).delayed(Duration::from_millis(300))
         });
@@ -373,6 +374,6 @@ mod tests {
 
         assert_eq!(error.message, "Scrappa API request timed out after 50ms");
         assert_eq!(error.status, None);
-        assert_eq!(server.requests().len(), 2);
+        assert_eq!(server.requests().len(), 7);
     }
 }

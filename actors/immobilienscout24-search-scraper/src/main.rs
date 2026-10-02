@@ -5,6 +5,7 @@ mod endpoint;
 mod input;
 mod response;
 mod scrappa;
+mod scrappa_retry;
 
 use anyhow::{Context, Result};
 use reqwest::Client;

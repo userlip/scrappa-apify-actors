@@ -3,6 +3,7 @@ mod batch;
 mod challenge;
 mod config;
 mod scrappa;
+mod scrappa_retry;
 
 pub use batch::run_actor;
 

@@ -1,3 +1,4 @@
+use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Context, Result, anyhow};
 use reqwest::{Client, Response, StatusCode, Url};
 use serde_json::{Map, Value};
@@ -85,9 +86,9 @@ impl ScrappaClient {
         &self,
         endpoint: &str,
         params: &Map<String, Value>,
-        attempts: usize,
+        _attempts: usize,
     ) -> Result<Value> {
-        let attempts = attempts.max(1);
+        let attempts = 1;
         for attempt in 1..=attempts {
             match self.send_get(endpoint, params).await {
                 Ok(response) => return Ok(response),
@@ -125,7 +126,7 @@ impl ScrappaClient {
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)
             .header("X-API-Key", &self.api_key)
-            .send()
+            .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| map_request_error(error, self.timeout))?;
 
@@ -282,7 +283,7 @@ pub fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
         return true;
     }
     if let Some(error) = error.downcast_ref::<ScrappaHttpError>() {
-        return matches!(error.status, 408 | 429 | 500 | 502 | 503 | 504);
+        return matches!(error.status, 429 | 500 | 502 | 503 | 504);
     }
 
     let Some(status) = error
@@ -293,7 +294,7 @@ pub fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
     else {
         return false;
     };
-    matches!(status, 408 | 429 | 500 | 502 | 503 | 504)
+    matches!(status, 429 | 500 | 502 | 503 | 504)
 }
 
 #[cfg(test)]
@@ -503,6 +504,10 @@ mod tests {
             response(500, r#"{"message":"Internal Server Error"}"#),
             response(500, r#"{"message":"Internal Server Error"}"#),
             response(500, r#"{"message":"Internal Server Error"}"#),
+            response(500, r#"{"message":"Internal Server Error"}"#),
+            response(500, r#"{"message":"Internal Server Error"}"#),
+            response(500, r#"{"message":"Internal Server Error"}"#),
+            response(500, r#"{"message":"Internal Server Error"}"#),
             response(200, r#"{"quote":{"summary":{"symbol":"MSFT"}}}"#),
         ]);
         let client =
@@ -527,15 +532,15 @@ mod tests {
             "scrappa_5xx_after_financial_period_request"
         );
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
-        assert!(requests[..3].iter().all(|request| {
+        assert_eq!(requests.len(), 8);
+        assert!(requests[..7].iter().all(|request| {
             request
                 .lines()
                 .next()
                 .is_some_and(|line| line.contains("period_type=quarterly"))
         }));
         assert!(
-            requests[3]
+            requests[7]
                 .lines()
                 .next()
                 .is_some_and(|line| !line.contains("period_type="))
