@@ -1,0 +1,87 @@
+{
+  "title": "TikTok Collection Videos Scraper",
+  "description": "Collect public TikTok collection videos with creators, captions, play counts, likes, and sound references. Batch collection IDs and follow cursor pages.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "collection_ids"
+  ],
+  "properties": {
+    "collection_ids": {
+      "title": "Collection IDs",
+      "type": "array",
+      "description": "Public TikTok collection IDs whose videos you want to list.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "collection_id": "7394627756635573022"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "collection_id"
+        ],
+        "properties": {
+          "collection_id": {
+            "title": "Collection ID",
+            "type": "string",
+            "maxLength": 100,
+            "description": "Collection ID sent to the source search.",
+            "editor": "textfield"
+          },
+          "count": {
+            "title": "Results Per Page",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Results Per Page sent to the source search.",
+            "editor": "number"
+          },
+          "cursor": {
+            "title": "Pagination Cursor",
+            "type": "string",
+            "maxLength": 100,
+            "description": "Pagination Cursor sent to the source search.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "count": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Results Per Page sent to the source search.",
+      "editor": "number"
+    },
+    "cursor": {
+      "title": "Pagination Cursor",
+      "type": "string",
+      "maxLength": 100,
+      "description": "Pagination Cursor sent to the source search.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 1
+    }
+  }
+}

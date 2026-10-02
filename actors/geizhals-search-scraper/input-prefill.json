@@ -1,0 +1,13 @@
+{
+  "queries": [
+    {
+      "query": "rtx 4070"
+    }
+  ],
+  "loc": "de",
+  "lang": "de",
+  "page": 1,
+  "pagesize": 5,
+  "maxResults": 5,
+  "maxPages": 1
+}

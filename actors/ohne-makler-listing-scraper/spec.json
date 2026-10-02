@@ -1,0 +1,258 @@
+{
+  "slug": "ohne-makler-listing-scraper",
+  "title": "Ohne-Makler Listing Details Scraper",
+  "description": "Extract an Ohne-Makler listing’s asking price, rooms, area, condition, location, photos, energy details, and description. Batch listing IDs for property research.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "endpoint": "/ohne-makler/listing",
+  "openapiPath": "/ohne-makler/listing",
+  "mode": "single",
+  "batch": {
+    "field": "listing_ids",
+    "valueField": "id",
+    "apiParam": "id",
+    "pathParam": null,
+    "title": "Listing IDs",
+    "description": "Ohne-Makler numeric IDs or OM-prefixed object numbers.",
+    "valueDescription": "Ohne-Makler listing identifier used for this detail lookup."
+  },
+  "parameters": [
+    {
+      "input": "id",
+      "apiParam": "id",
+      "location": "query",
+      "required": true,
+      "title": "ID",
+      "schema": {
+        "type": "string",
+        "maxLength": 32,
+        "pattern": "^(?:OM-)?[0-9]+$",
+        "description": "Listing id: numeric (498791) or object number (OM-498791)."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "listing_ids": [
+      {
+        "id": "235423"
+      }
+    ],
+    "maxResults": 1
+  },
+  "testParams": {
+    "id": "235423"
+  },
+  "fixture": {
+    "success": true,
+    "listing": {
+      "id": 8000206,
+      "object_number": "OM-583214",
+      "title": "Bright two-bedroom flat in Berlin",
+      "url": "https://www.ohne-makler.net/immobilie/offer/583214/",
+      "available": true,
+      "price": 549,
+      "price_label": "€ 32,900",
+      "price_on_request": true,
+      "price_breakdown": [
+        {
+          "label": "Verified source detail",
+          "value": "Balcony"
+        }
+      ],
+      "rooms": 2,
+      "living_area_m2": 78,
+      "plot_area_m2": null,
+      "condition": "New",
+      "construction_year": 2023,
+      "object_art": "Verified source detail",
+      "object_type": "Residential property",
+      "energy": null,
+      "summary": [
+        {
+          "label": "Verified source detail",
+          "value": "Balcony"
+        }
+      ],
+      "seller_type": "Morgenrot Handelskontor",
+      "latitude": 52.52,
+      "longitude": 13.405,
+      "gallery": [
+        "Verified source detail"
+      ],
+      "attachments_available": true,
+      "description": "Bright two-bedroom home with a balcony near local transport.",
+      "location_text": "Hafenallee 17, 10115 Berlin",
+      "sections": [
+        {
+          "heading": "Verified source detail",
+          "tables": [
+            {
+              "headers": [
+                "Verified marketplace detail"
+              ],
+              "rows": [
+                [
+                  "Verified source detail"
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "aggregate_rating": {
+        "rating_value": "Verified source detail",
+        "best_rating": "Verified source detail",
+        "rating_count": "Verified source detail"
+      }
+    }
+  },
+  "tableFields": [
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "rooms",
+      "label": "Rooms",
+      "format": "number"
+    },
+    {
+      "name": "living_area_m2",
+      "label": "Living Area M2",
+      "format": "number"
+    },
+    {
+      "name": "construction_year",
+      "label": "Construction Year",
+      "format": "text"
+    },
+    {
+      "name": "location_text",
+      "label": "Location Text",
+      "format": "text"
+    },
+    {
+      "name": "url",
+      "label": "Url",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Ohne-Makler Listing Scraper | Property Details",
+    "seoDescription": "Get Ohne-Makler property details by listing ID, including asking price, rooms, area, condition, energy data, location, and photos. Batch IDs for analysis.",
+    "intro": "Retrieve an Ohne-Makler listing by numeric ID or object number. The record includes asking price, room count, area, condition, energy information, location, gallery, and description.",
+    "useCases": [
+      "Property buyers can review full details for listings found in search.",
+      "Investors can compare asking price, area, and construction year across properties.",
+      "Housing analysts can enrich listing IDs with location and energy fields."
+    ],
+    "howToUse": [
+      "Add a numeric ID or OM-prefixed object number to `listing_ids`.",
+      "Set `maxResults` to cap the number of detailed property records.",
+      "Export one complete listing record for each ID."
+    ],
+    "faqs": [
+      {
+        "question": "Can I use an object number instead of a numeric ID?",
+        "answer": "Yes. The input accepts a numeric listing ID or an object number such as an OM-prefixed value."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "ohne-makler-search-scraper",
+        "title": "Ohne-Makler Property Search Scraper"
+      },
+      {
+        "slug": "ohne-makler-property-prices-scraper",
+        "title": "Ohne-Makler Property Prices Scraper"
+      },
+      {
+        "slug": "idealista-listing-scraper",
+        "title": "Idealista Listing Details Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when the Ohne-Makler request returned a successful response."
+      },
+      {
+        "name": "listing",
+        "type": "Object",
+        "description": "Full Ohne-Makler property record with asking price, features, location, media, and listing details."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Name or title assigned to this Ohne-Makler property listing."
+      },
+      {
+        "name": "price",
+        "type": "Integer",
+        "description": "Price amount for this property listing; currency follows the selected source market."
+      },
+      {
+        "name": "rooms",
+        "type": "Integer",
+        "description": "Number of rooms reported for the property."
+      },
+      {
+        "name": "living_area_m2",
+        "type": "Integer",
+        "description": "Living area m2 measurement in the units supplied by Ohne-Makler."
+      },
+      {
+        "name": "construction_year",
+        "type": "Integer",
+        "description": "Year the residential property was built."
+      },
+      {
+        "name": "location_text",
+        "type": "String",
+        "description": "The source location name or code used to place this property listing on Ohne-Makler."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public Ohne-Makler URL for the property listing or linked resource."
+      },
+      {
+        "name": "input_id",
+        "type": "String",
+        "description": "Id submitted to retrieve this property listing."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_id"
+  },
+  "flattenPointers": {
+    "title": "/listing/title",
+    "price": "/listing/price",
+    "rooms": "/listing/rooms",
+    "living_area_m2": "/listing/living_area_m2",
+    "construction_year": "/listing/construction_year",
+    "location_text": "/listing/location_text",
+    "url": "/listing/url"
+  }
+}

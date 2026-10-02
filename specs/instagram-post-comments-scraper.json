@@ -1,0 +1,228 @@
+{
+  "slug": "instagram-post-comments-scraper",
+  "title": "Instagram Comments Scraper",
+  "description": "Collect public Instagram comments with text, posting times, likes, and author handles. Add several post shortcodes in one run and page through replies.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "endpoint": "/instagram/post/comments",
+  "openapiPath": "/instagram/post/comments",
+  "mode": "list",
+  "batch": {
+    "field": "shortcodes",
+    "valueField": "shortcode",
+    "apiParam": "shortcode",
+    "pathParam": null,
+    "title": "Instagram posts",
+    "description": "Instagram post shortcodes to retrieve public comments.",
+    "valueDescription": "Shortcode of the Instagram post to read."
+  },
+  "parameters": [
+    {
+      "input": "shortcode",
+      "apiParam": "shortcode",
+      "location": "query",
+      "required": true,
+      "title": "Post Shortcode",
+      "schema": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "minLength": 5,
+        "maxLength": 20,
+        "description": "Post Shortcode sent to the source search."
+      }
+    },
+    {
+      "input": "max_id",
+      "apiParam": "max_id",
+      "location": "query",
+      "required": false,
+      "title": "Next Page Cursor",
+      "schema": {
+        "type": "string",
+        "maxLength": 500,
+        "description": "Next Page Cursor sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/comments",
+  "flattenPointers": {
+    "author_id": "/author/id",
+    "author_username": "/author/username",
+    "author_verified": "/author/is_verified"
+  },
+  "dedupePointer": "/id",
+  "pagination": {
+    "kind": "cursor",
+    "param": "max_id",
+    "start": "",
+    "nextPointer": "/next_max_id",
+    "hasMorePointer": "/more_available",
+    "maxPages": 5
+  },
+  "enrichment": {
+    "field": "input_shortcode"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "shortcodes": [
+      {
+        "shortcode": "DdVztIfpeKW"
+      }
+    ],
+    "maxResults": 20,
+    "maxPages": 1
+  },
+  "testParams": {
+    "shortcode": "DdVztIfpeKW"
+  },
+  "fixture": {
+    "success": true,
+    "found": true,
+    "shortcode": "DdVztIfpeKW",
+    "comments": [
+      {
+        "id": "18012345678901234",
+        "text": "The colors in this landscape are beautiful.",
+        "taken_at": "2025-09-18T14:32:11Z",
+        "taken_at_timestamp": 1758205931,
+        "like_count": 86,
+        "author": {
+          "id": "584700123456789",
+          "username": "coastline.creator",
+          "profile_pic_url": "https://cdn.instagram.com/profiles/coastline-creator.jpg",
+          "is_verified": false
+        }
+      }
+    ],
+    "comments_count": 176,
+    "more_available": true,
+    "next_max_id": "QVFCaWQ0WlE9"
+  },
+  "tableFields": [
+    {
+      "name": "id",
+      "label": "Comment ID",
+      "format": "text"
+    },
+    {
+      "name": "text",
+      "label": "Comment Text",
+      "format": "text"
+    },
+    {
+      "name": "author_username",
+      "label": "Author Username",
+      "format": "text"
+    },
+    {
+      "name": "like_count",
+      "label": "Like Count",
+      "format": "number"
+    },
+    {
+      "name": "taken_at",
+      "label": "Posted At",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Instagram Comments Scraper | Post Replies",
+    "seoDescription": "Scrape Instagram post comments with text, timestamps, likes, and public author details. Batch post shortcodes and page through replies as available.",
+    "intro": "Collect public comments from Instagram posts with text, posting times, like totals, and author profile details. Batch post shortcodes and follow available comment pages.",
+    "useCases": [
+      "Community managers can review public replies across several posts.",
+      "Researchers can compare comment activity and posting times on public content.",
+      "Brand teams can export comments and author handles for moderation workflows."
+    ],
+    "howToUse": [
+      "Add each post shortcode to `shortcodes`.",
+      "Set `maxPages` to limit comment pages requested for each post.",
+      "Use `maxResults` to cap all saved comments in the run."
+    ],
+    "faqs": [
+      {
+        "question": "How do I find a post shortcode?",
+        "answer": "Open the Instagram post URL and use the letters and numbers after `/p/` or `/reel/`."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "instagram-post-info-cheapest-0-20-1000-results",
+        "title": "Instagram Post Info | Cheapest $0.20/1k results"
+      },
+      {
+        "slug": "instagram-user-posts-cheapest-0-20-1000-results",
+        "title": "Instagram User Posts Scraper"
+      },
+      {
+        "slug": "tiktok-comments-scraper",
+        "title": "TikTok Comments Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Instagram identifier for this comment."
+      },
+      {
+        "name": "text",
+        "type": "String",
+        "description": "Comment text published beneath the Instagram post."
+      },
+      {
+        "name": "taken_at",
+        "type": "String",
+        "description": "ISO 8601 timestamp when the comment was posted, when available."
+      },
+      {
+        "name": "taken_at_timestamp",
+        "type": "Integer",
+        "description": "Unix timestamp for the comment posting time."
+      },
+      {
+        "name": "like_count",
+        "type": "Integer",
+        "description": "Number of likes shown for the comment."
+      },
+      {
+        "name": "author",
+        "type": "Object",
+        "description": "Public profile details associated with the comment author."
+      },
+      {
+        "name": "author_id",
+        "type": "String",
+        "description": "Instagram identifier for the public comment author."
+      },
+      {
+        "name": "author_username",
+        "type": "String",
+        "description": "Public Instagram handle of the comment author."
+      },
+      {
+        "name": "author_verified",
+        "type": "String",
+        "description": "True when Instagram marks the comment author as verified."
+      },
+      {
+        "name": "input_shortcode",
+        "type": "String",
+        "description": "Instagram post shortcode used to retrieve this comment."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

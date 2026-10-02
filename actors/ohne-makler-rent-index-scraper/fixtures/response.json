@@ -1,0 +1,40 @@
+{
+  "success": true,
+  "market": "mietspiegel",
+  "state": "berlin",
+  "city": "berlin",
+  "title": "Mietspiegel Berlin 2026",
+  "intro": "Cold rent values by apartment size for the Berlin market.",
+  "sections": [
+    {
+      "heading": "Apartments by size",
+      "tables": [
+        {
+          "headers": [
+            "Apartment size",
+            "Cold rent per m²"
+          ],
+          "rows": [
+            [
+              "50 to 70 m²",
+              "12.80 EUR"
+            ],
+            [
+              "70 to 90 m²",
+              "13.40 EUR"
+            ]
+          ]
+        }
+      ],
+      "charts": [
+        "Median rent by apartment size"
+      ],
+      "regions": [
+        {
+          "path": "berlin-mitte",
+          "name": "Berlin Mitte"
+        }
+      ]
+    }
+  ]
+}

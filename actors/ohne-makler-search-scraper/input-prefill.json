@@ -1,0 +1,12 @@
+{
+  "locations": [
+    {
+      "q": "berlin"
+    }
+  ],
+  "type": "wohnung",
+  "transaction": "mieten",
+  "page": 1,
+  "maxResults": 5,
+  "maxPages": 1
+}

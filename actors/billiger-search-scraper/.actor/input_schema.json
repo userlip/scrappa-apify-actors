@@ -1,0 +1,168 @@
+{
+  "title": "Billiger.de Price Comparison Search Scraper",
+  "description": "Compare Billiger.de products with prices, brands, review counts, offer totals, and product links. Batch keywords in one run and page through results to monitor German retail prices.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Search queries",
+      "type": "array",
+      "description": "Keywords for products to compare on Billiger.de.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "query": "iphone 15"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "title": "Keyword",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Search text. Alias: q.",
+            "editor": "textfield"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "1-based page number. Defaults to 1.",
+            "editor": "number"
+          },
+          "page_size": {
+            "title": "Page size",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Results per page. Defaults to 20, maximum 50.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort order",
+            "type": "string",
+            "enum": [
+              "relevance",
+              "clickout_relevance",
+              "price",
+              "price_rev",
+              "rating",
+              "disjunctive"
+            ],
+            "description": "relevance, clickout_relevance, price, price_rev, rating, or disjunctive.",
+            "editor": "select"
+          },
+          "cat": {
+            "title": "Cat",
+            "type": "integer",
+            "minimum": 1,
+            "description": "Billiger category ID.",
+            "editor": "number"
+          },
+          "doctype": {
+            "title": "Document Type",
+            "type": "string",
+            "enum": [
+              "auto",
+              "offer",
+              "product",
+              "product_offer"
+            ],
+            "description": "auto, offer, product, or product_offer.",
+            "editor": "select"
+          },
+          "fuzzy": {
+            "title": "Fuzzy",
+            "type": "boolean",
+            "description": "Enable fuzzy matching.",
+            "editor": "checkbox"
+          }
+        }
+      }
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "1-based page number. Defaults to 1.",
+      "editor": "number"
+    },
+    "page_size": {
+      "title": "Page size",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Results per page. Defaults to 20, maximum 50.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort order",
+      "type": "string",
+      "enum": [
+        "relevance",
+        "clickout_relevance",
+        "price",
+        "price_rev",
+        "rating",
+        "disjunctive"
+      ],
+      "description": "relevance, clickout_relevance, price, price_rev, rating, or disjunctive.",
+      "editor": "select"
+    },
+    "cat": {
+      "title": "Cat",
+      "type": "integer",
+      "minimum": 1,
+      "description": "Billiger category ID.",
+      "editor": "number"
+    },
+    "doctype": {
+      "title": "Document Type",
+      "type": "string",
+      "enum": [
+        "auto",
+        "offer",
+        "product",
+        "product_offer"
+      ],
+      "description": "auto, offer, product, or product_offer.",
+      "editor": "select"
+    },
+    "fuzzy": {
+      "title": "Fuzzy",
+      "type": "boolean",
+      "description": "Enable fuzzy matching.",
+      "editor": "checkbox"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    }
+  }
+}

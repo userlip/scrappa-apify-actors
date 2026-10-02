@@ -1,0 +1,67 @@
+{
+  "title": "Ohne-Makler Rent Index Scraper",
+  "description": "Read the Ohne-Makler Mietspiegel for German cities, with rent tables, market sections, and available chart data. Batch city and state pairs to compare reference rents.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "cities"
+  ],
+  "properties": {
+    "cities": {
+      "title": "City and state slugs",
+      "type": "array",
+      "description": "City and state slugs used to look up an Ohne-Makler rent index.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "city": "berlin",
+          "state": "berlin"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "city",
+          "state"
+        ],
+        "properties": {
+          "city": {
+            "title": "City",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "City slug (e.g. abtsgmund).",
+            "editor": "textfield"
+          },
+          "state": {
+            "title": "State",
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "Bundesland slug (e.g. baden-wurttemberg).",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "state": {
+      "title": "State",
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Bundesland slug (e.g. baden-wurttemberg).",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

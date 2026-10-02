@@ -1,0 +1,12 @@
+{
+  "product_ids": [
+    {
+      "product_id": "4612031183"
+    }
+  ],
+  "page": 1,
+  "page_size": 5,
+  "all": false,
+  "maxResults": 5,
+  "maxPages": 1
+}

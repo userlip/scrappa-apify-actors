@@ -1,0 +1,213 @@
+{
+  "slug": "ohne-makler-property-prices-scraper",
+  "title": "Ohne-Makler Property Prices Scraper",
+  "description": "Review Ohne-Makler residential price reports by German state, including market tables, charts, and local regions. Batch state slugs to compare property indicators.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "endpoint": "/ohne-makler/market/immobilienpreise",
+  "openapiPath": "/ohne-makler/market/immobilienpreise",
+  "mode": "single",
+  "batch": {
+    "field": "states",
+    "valueField": "state",
+    "apiParam": "state",
+    "pathParam": null,
+    "title": "German states",
+    "description": "German state URL slugs for Ohne-Makler residential price reports.",
+    "valueDescription": "state slug whose property price report is requested."
+  },
+  "parameters": [
+    {
+      "input": "state",
+      "apiParam": "state",
+      "location": "query",
+      "required": true,
+      "title": "State",
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "description": "Bundesland slug (e.g. baden-wurttemberg)."
+      }
+    },
+    {
+      "input": "city",
+      "apiParam": "city",
+      "location": "query",
+      "required": false,
+      "title": "City",
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "description": "Optional city slug for locality price tables and charts."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "states": [
+      {
+        "state": "berlin"
+      }
+    ],
+    "maxResults": 1
+  },
+  "testParams": {
+    "state": "berlin"
+  },
+  "fixture": {
+    "success": true,
+    "market": "immobilienpreise",
+    "state": "berlin",
+    "city": null,
+    "title": "Residential prices in Berlin",
+    "intro": "Residential asking prices and local indicators for the Berlin market.",
+    "sections": [
+      {
+        "heading": "Apartment asking prices",
+        "tables": [
+          {
+            "headers": [
+              "Property type",
+              "Median asking price"
+            ],
+            "rows": [
+              [
+                "Apartment",
+                "4,850 EUR per m²"
+              ],
+              [
+                "House",
+                "5,420 EUR per m²"
+              ]
+            ]
+          }
+        ],
+        "charts": [
+          "Median asking price by property type"
+        ],
+        "regions": [
+          {
+            "path": "berlin-mitte",
+            "name": "Berlin Mitte"
+          }
+        ]
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "state",
+      "label": "State",
+      "format": "text"
+    },
+    {
+      "name": "city",
+      "label": "City",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "sections",
+      "label": "Sections",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Ohne-Makler Property Prices | State Data",
+    "seoDescription": "Scrape Ohne-Makler property price reports by German state, with market sections, tables, charts, and regions. Batch states to compare price trends.",
+    "intro": "Retrieve residential price-report sections from Ohne-Makler by German state slug. The response contains headings, tables, available charts, and locality information for the report.",
+    "useCases": [
+      "Housing analysts can compare state-level asking price information.",
+      "Property investors can review tables and charts before selecting a market.",
+      "Real estate writers can collect structured report sections for regional briefs."
+    ],
+    "howToUse": [
+      "Add one German state slug to `states` per report.",
+      "Optionally include a city slug when you need local tables and charts.",
+      "Set `maxResults` and export each report as one dataset record."
+    ],
+    "faqs": [
+      {
+        "question": "Can I request city-level information?",
+        "answer": "Yes. Add a city slug alongside the state to request locality price tables and charts when the report provides them."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "ohne-makler-rent-index-scraper",
+        "title": "Ohne-Makler Rent Index Scraper"
+      },
+      {
+        "slug": "ohne-makler-search-scraper",
+        "title": "Ohne-Makler Property Search Scraper"
+      },
+      {
+        "slug": "immobilienscout24-price-insights-scraper",
+        "title": "ImmobilienScout24 Price Insights Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when the Ohne-Makler request returned a successful response."
+      },
+      {
+        "name": "market",
+        "type": "String",
+        "description": "Report type for local residential asking prices."
+      },
+      {
+        "name": "state",
+        "type": "String",
+        "description": "The source location name or code used to place this price report on Ohne-Makler."
+      },
+      {
+        "name": "city",
+        "type": "String or null",
+        "description": "The source location name or code used to place this price report on Ohne-Makler."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Name or title assigned to this Ohne-Makler price report."
+      },
+      {
+        "name": "intro",
+        "type": "String",
+        "description": "Introductory text summarizing the report coverage and market."
+      },
+      {
+        "name": "sections",
+        "type": "Array<Object>",
+        "description": "Ordered Ohne-Makler report sections with headings, rent or price tables, chart labels, and region rows."
+      },
+      {
+        "name": "input_state",
+        "type": "String",
+        "description": "State submitted to retrieve this price report."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_state"
+  }
+}

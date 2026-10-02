@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "instagram-post-comments-scraper",
+  "title": "Instagram Comments Scraper",
+  "description": "Collect public Instagram comments with text, posting times, likes, and author handles. Add several post shortcodes in one run and page through replies.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "id",
+              "text",
+              "author_username",
+              "like_count",
+              "taken_at"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": {
+                "label": "Comment ID",
+                "format": "text"
+              },
+              "text": {
+                "label": "Comment Text",
+                "format": "text"
+              },
+              "author_username": {
+                "label": "Author Username",
+                "format": "text"
+              },
+              "like_count": {
+                "label": "Like Count",
+                "format": "number"
+              },
+              "taken_at": {
+                "label": "Posted At",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

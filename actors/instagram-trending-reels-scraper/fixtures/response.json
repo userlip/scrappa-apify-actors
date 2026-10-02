@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "reels": [
+    {
+      "id": "1801234567890123456",
+      "shortcode": "CSTtrendReel52",
+      "media_type": "Video",
+      "caption": "A quiet walk along the coast at golden hour.",
+      "taken_at": "2025-09-18T14:32:11Z",
+      "taken_at_timestamp": 1758205931,
+      "like_count": 18400,
+      "comment_count": 420,
+      "play_count": 96800,
+      "has_audio": true,
+      "video_url": "https://cdn.instagram.com/media/coast-walk.mp4",
+      "thumbnail_url": "https://cdn.instagram.com/media/coast-walk-cover.jpg",
+      "author": {
+        "id": "584700123456794",
+        "username": "coastline.creator",
+        "profile_pic_url": "https://cdn.instagram.com/profiles/coastline-creator.jpg",
+        "is_verified": false
+      },
+      "permalink": "https://www.instagram.com/reel/CSTtrendReel52/"
+    }
+  ],
+  "reels_count": 8,
+  "more_available": true,
+  "next_max_id": null
+}

@@ -1,0 +1,407 @@
+{
+  "slug": "tiktok-playlist-posts-scraper",
+  "title": "TikTok Playlist Videos Scraper",
+  "description": "Collect TikTok playlist videos with creators, captions, play counts, likes, and sound references. Batch playlist IDs and follow cursor pages.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "endpoint": "/tiktok/playlists/posts",
+  "openapiPath": "/tiktok/playlists/posts",
+  "mode": "list",
+  "batch": {
+    "field": "playlist_ids",
+    "valueField": "mix_id",
+    "apiParam": "mix_id",
+    "pathParam": null,
+    "title": "Playlist IDs",
+    "description": "TikTok playlist IDs whose videos you want to collect.",
+    "valueDescription": "TikTok playlist identifier used for this video list."
+  },
+  "parameters": [
+    {
+      "input": "mix_id",
+      "apiParam": "mix_id",
+      "location": "query",
+      "required": true,
+      "title": "Playlist ID",
+      "schema": {
+        "type": "string",
+        "maxLength": 100,
+        "description": "Playlist ID sent to the source search."
+      }
+    },
+    {
+      "input": "count",
+      "apiParam": "count",
+      "location": "query",
+      "required": false,
+      "title": "Results Per Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50,
+        "description": "Results Per Page sent to the source search."
+      }
+    },
+    {
+      "input": "cursor",
+      "apiParam": "cursor",
+      "location": "query",
+      "required": false,
+      "title": "Pagination Cursor",
+      "schema": {
+        "type": "string",
+        "maxLength": 100,
+        "description": "Pagination Cursor sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/data/videos",
+  "flattenPointers": {
+    "author_id": "/author/id",
+    "author_username": "/author/unique_id",
+    "author_nickname": "/author/nickname",
+    "author_avatar": "/author/avatar"
+  },
+  "dedupePointer": "/aweme_id",
+  "pagination": {
+    "kind": "cursor",
+    "param": "cursor",
+    "start": "0",
+    "nextPointer": "/data/cursor",
+    "hasMorePointer": "/data/hasMore",
+    "maxPages": 5
+  },
+  "enrichment": {
+    "field": "input_mix_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "playlist_ids": [
+      {
+        "mix_id": "7681171537575824159"
+      }
+    ],
+    "count": 10,
+    "maxResults": 20,
+    "maxPages": 1
+  },
+  "testParams": {
+    "mix_id": "7681171537575824159"
+  },
+  "fixture": {
+    "code": 0,
+    "msg": "success",
+    "processed_time": 0.7,
+    "data": {
+      "videos": [
+        {
+          "aweme_id": "7419000123456789012",
+          "video_id": "7419000123456789012",
+          "region": "GB",
+          "title": "A simple guide to crisp sourdough at home",
+          "content_desc": [
+            "field recording",
+            "ambient music"
+          ],
+          "cover": "https://p16-sign.tiktokcdn.com/obj/tos-useast5-p-0068/loaf-cover.jpeg",
+          "ai_dynamic_cover": "https://p16-sign.tiktokcdn.com/obj/tos-useast5-p-0068/loaf-dynamic.jpeg",
+          "origin_cover": "https://p16-sign.tiktokcdn.com/obj/tos-useast5-p-0068/loaf-origin.jpeg",
+          "duration": 36,
+          "play": "https://v16-webapp.tiktok.com/video/loaf-play.mp4",
+          "wmplay": "https://v16-webapp.tiktok.com/video/loaf-watermarked.mp4",
+          "size": 4821032,
+          "wm_size": 4938200,
+          "music": "7418000123456789012",
+          "play_count": 128000,
+          "digg_count": 9800,
+          "comment_count": 310,
+          "share_count": 740,
+          "download_count": 210,
+          "collect_count": 1400,
+          "create_time": 1758205931,
+          "anchors": null,
+          "anchors_extras": "[]",
+          "is_ad": false,
+          "commerce_info": {
+            "auction_ad_invited": false,
+            "with_comment_filter_words": false,
+            "adv_promotable": false,
+            "branded_content_type": 0,
+            "organic_log_extra": "{}",
+            "is_diversion_ad": 0
+          },
+          "commercial_video_info": "organic",
+          "item_comment_settings": 0,
+          "mentioned_users": "[]",
+          "author": {
+            "id": "7123456789012345678",
+            "unique_id": "harborbakehouse",
+            "nickname": "Harbor Bakehouse",
+            "avatar": "https://p16-sign.tiktokcdn.com/tos-maliva-avt-0068/harborbakehouse.jpeg"
+          },
+          "is_nff_or_nr": false,
+          "is_top": 0
+        }
+      ],
+      "cursor": 2,
+      "hasMore": true
+    }
+  },
+  "tableFields": [
+    {
+      "name": "aweme_id",
+      "label": "Video ID",
+      "format": "text"
+    },
+    {
+      "name": "author_username",
+      "label": "Author Username",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "play_count",
+      "label": "Play Count",
+      "format": "number"
+    },
+    {
+      "name": "digg_count",
+      "label": "Like Count",
+      "format": "number"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "TikTok Playlist Videos Scraper | Video Lists",
+    "seoDescription": "Collect TikTok playlist videos with creators, captions, plays, likes, and sound references. Batch playlist IDs and follow cursors to retrieve more posts.",
+    "intro": "Collect TikTok playlist videos with captions, author profiles, media links, engagement counts, and sound references. Batch playlist IDs and follow source cursors within your limits.",
+    "useCases": [
+      "Music researchers can review videos grouped in public TikTok playlists.",
+      "Social analysts can compare creator and engagement data across playlists.",
+      "Content teams can export video links and captions from curated lists."
+    ],
+    "howToUse": [
+      "Add each TikTok playlist ID to `playlist_ids`.",
+      "Set `count` for the number of videos requested per source page.",
+      "Choose `maxPages` and `maxResults` to limit each run."
+    ],
+    "faqs": [
+      {
+        "question": "How is a playlist ID different from a collection ID?",
+        "answer": "A playlist groups videos through TikTok’s playlist feature, while a collection is a saved set of videos. Use the matching ID and Actor for the URL type."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "tiktok-user-posts-scraper",
+        "title": "TikTok User Posts Scraper"
+      },
+      {
+        "slug": "tiktok-music-posts-scraper",
+        "title": "TikTok Music Posts Scraper"
+      },
+      {
+        "slug": "tiktok-video-scraper",
+        "title": "TikTok Video Details Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "aweme_id",
+        "type": "String",
+        "description": "TikTok identifier for the video post."
+      },
+      {
+        "name": "video_id",
+        "type": "String",
+        "description": "Alternate video identifier returned with the post."
+      },
+      {
+        "name": "region",
+        "type": "String",
+        "description": "Market code associated with the feed result."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Short description or caption attached to the video."
+      },
+      {
+        "name": "content_desc",
+        "type": "Array<String>",
+        "description": "Content phrases associated with the post."
+      },
+      {
+        "name": "cover",
+        "type": "String",
+        "description": "URL of the default video cover image."
+      },
+      {
+        "name": "ai_dynamic_cover",
+        "type": "String",
+        "description": "URL of the animated or dynamic cover when supplied."
+      },
+      {
+        "name": "origin_cover",
+        "type": "String",
+        "description": "URL of the original cover image."
+      },
+      {
+        "name": "duration",
+        "type": "Integer",
+        "description": "Video length in seconds."
+      },
+      {
+        "name": "play",
+        "type": "String",
+        "description": "Playback reference returned for the video."
+      },
+      {
+        "name": "wmplay",
+        "type": "String",
+        "description": "Playback reference for a watermarked version, when supplied."
+      },
+      {
+        "name": "size",
+        "type": "Integer",
+        "description": "Reported size of the video media asset in bytes."
+      },
+      {
+        "name": "wm_size",
+        "type": "Integer",
+        "description": "Reported size of the watermarked media asset in bytes."
+      },
+      {
+        "name": "music",
+        "type": "String",
+        "description": "Music identifier or reference attached to the post."
+      },
+      {
+        "name": "play_count",
+        "type": "Integer",
+        "description": "Number of plays reported for the video."
+      },
+      {
+        "name": "digg_count",
+        "type": "Integer",
+        "description": "Number of likes reported for the video."
+      },
+      {
+        "name": "comment_count",
+        "type": "Integer",
+        "description": "Number of comments reported for the video."
+      },
+      {
+        "name": "share_count",
+        "type": "Integer",
+        "description": "Number of shares reported for the video."
+      },
+      {
+        "name": "download_count",
+        "type": "Integer",
+        "description": "Number of downloads reported for the video."
+      },
+      {
+        "name": "collect_count",
+        "type": "Integer",
+        "description": "Number of saves reported for the video."
+      },
+      {
+        "name": "create_time",
+        "type": "Integer",
+        "description": "Unix timestamp when the video was published."
+      },
+      {
+        "name": "anchors",
+        "type": "String or null",
+        "description": "Commercial anchor data, or null when none is supplied."
+      },
+      {
+        "name": "anchors_extras",
+        "type": "String",
+        "description": "Serialized metadata for commercial anchors."
+      },
+      {
+        "name": "is_ad",
+        "type": "Boolean",
+        "description": "True when TikTok marks the post as an advertisement."
+      },
+      {
+        "name": "commerce_info",
+        "type": "Object",
+        "description": "Commerce and promotion flags returned for the post."
+      },
+      {
+        "name": "commercial_video_info",
+        "type": "String",
+        "description": "Commercial status information for the post."
+      },
+      {
+        "name": "item_comment_settings",
+        "type": "Integer",
+        "description": "Numeric comment-setting code returned for the video."
+      },
+      {
+        "name": "mentioned_users",
+        "type": "String",
+        "description": "Serialized user mentions attached to the video."
+      },
+      {
+        "name": "author",
+        "type": "Object",
+        "description": "Public TikTok profile details for the video author."
+      },
+      {
+        "name": "is_nff_or_nr",
+        "type": "Boolean",
+        "description": "TikTok content status flag, or null when not supplied."
+      },
+      {
+        "name": "is_top",
+        "type": "Integer",
+        "description": "Numeric flag indicating whether the video is pinned or top-ranked."
+      },
+      {
+        "name": "author_id",
+        "type": "String",
+        "description": "TikTok profile identifier for the author."
+      },
+      {
+        "name": "author_username",
+        "type": "String",
+        "description": "Public TikTok handle of the video author."
+      },
+      {
+        "name": "author_nickname",
+        "type": "String",
+        "description": "Display name on the TikTok profile."
+      },
+      {
+        "name": "author_avatar",
+        "type": "String",
+        "description": "Public TikTok profile image URL."
+      },
+      {
+        "name": "input_mix_id",
+        "type": "String",
+        "description": "TikTok playlist identifier used to retrieve its videos."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

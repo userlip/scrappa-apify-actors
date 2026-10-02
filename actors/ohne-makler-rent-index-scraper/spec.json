@@ -1,0 +1,219 @@
+{
+  "slug": "ohne-makler-rent-index-scraper",
+  "title": "Ohne-Makler Rent Index Scraper",
+  "description": "Read the Ohne-Makler Mietspiegel for German cities, with rent tables, market sections, and available chart data. Batch city and state pairs to compare reference rents.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "endpoint": "/ohne-makler/market/mietspiegel",
+  "openapiPath": "/ohne-makler/market/mietspiegel",
+  "mode": "single",
+  "batch": {
+    "field": "cities",
+    "valueField": "city",
+    "apiParam": "city",
+    "pathParam": null,
+    "title": "City and state slugs",
+    "description": "City and state slugs used to look up an Ohne-Makler rent index.",
+    "valueDescription": "city slug used for this Mietspiegel lookup.",
+    "itemRequired": [
+      "state"
+    ],
+    "enrichBatchItem": true
+  },
+  "parameters": [
+    {
+      "input": "state",
+      "apiParam": "state",
+      "location": "query",
+      "required": true,
+      "title": "State",
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "description": "Bundesland slug (e.g. baden-wurttemberg)."
+      }
+    },
+    {
+      "input": "city",
+      "apiParam": "city",
+      "location": "query",
+      "required": true,
+      "title": "City",
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "description": "City slug (e.g. abtsgmund)."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "cities": [
+      {
+        "city": "berlin",
+        "state": "berlin"
+      }
+    ],
+    "maxResults": 1
+  },
+  "testParams": {
+    "state": "berlin",
+    "city": "berlin"
+  },
+  "fixture": {
+    "success": true,
+    "market": "mietspiegel",
+    "state": "berlin",
+    "city": "berlin",
+    "title": "Mietspiegel Berlin 2026",
+    "intro": "Cold rent values by apartment size for the Berlin market.",
+    "sections": [
+      {
+        "heading": "Apartments by size",
+        "tables": [
+          {
+            "headers": [
+              "Apartment size",
+              "Cold rent per m²"
+            ],
+            "rows": [
+              [
+                "50 to 70 m²",
+                "12.80 EUR"
+              ],
+              [
+                "70 to 90 m²",
+                "13.40 EUR"
+              ]
+            ]
+          }
+        ],
+        "charts": [
+          "Median rent by apartment size"
+        ],
+        "regions": [
+          {
+            "path": "berlin-mitte",
+            "name": "Berlin Mitte"
+          }
+        ]
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "state",
+      "label": "State",
+      "format": "text"
+    },
+    {
+      "name": "city",
+      "label": "City",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "sections",
+      "label": "Sections",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Ohne-Makler Rent Index | City Mietspiegel",
+    "seoDescription": "Get city Mietspiegel data from Ohne-Makler, with rent tables and market sections. Batch city and state pairs to compare local rent reference values.",
+    "intro": "Retrieve an Ohne-Makler Mietspiegel by city and state slug. The record contains rent-reference sections, tables, available chart information, and locality details.",
+    "useCases": [
+      "Renters can review local rent reference tables before comparing housing costs.",
+      "Property owners can compare city-level rent figures across German markets.",
+      "Housing analysts can build a dataset of rent-index sections by city."
+    ],
+    "howToUse": [
+      "Add each city and its state slug to `cities`.",
+      "Set `maxResults` to cap the number of city reports saved.",
+      "Export each Mietspiegel response as one dataset record."
+    ],
+    "faqs": [
+      {
+        "question": "Why does every city need a state?",
+        "answer": "The source identifies Mietspiegel pages with both a city slug and its state slug, so include both values in each batch entry."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "ohne-makler-property-prices-scraper",
+        "title": "Ohne-Makler Property Prices Scraper"
+      },
+      {
+        "slug": "ohne-makler-search-scraper",
+        "title": "Ohne-Makler Property Search Scraper"
+      },
+      {
+        "slug": "immowelt-property-search-scraper",
+        "title": "Immowelt Property Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when the Ohne-Makler request returned a successful response."
+      },
+      {
+        "name": "market",
+        "type": "String",
+        "description": "Report type identifying the local residential rent index."
+      },
+      {
+        "name": "state",
+        "type": "String",
+        "description": "The source location name or code used to place this rent index on Ohne-Makler."
+      },
+      {
+        "name": "city",
+        "type": "String",
+        "description": "The source location name or code used to place this rent index on Ohne-Makler."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Name or title assigned to this Ohne-Makler rent index."
+      },
+      {
+        "name": "intro",
+        "type": "String",
+        "description": "Introductory text describing the rent index coverage and market."
+      },
+      {
+        "name": "sections",
+        "type": "Array<Object>",
+        "description": "Ordered Ohne-Makler report sections with headings, rent or price tables, chart labels, and region rows."
+      },
+      {
+        "name": "input_city",
+        "type": "Object",
+        "description": "City and state slugs supplied for this rent-index lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_city"
+  }
+}

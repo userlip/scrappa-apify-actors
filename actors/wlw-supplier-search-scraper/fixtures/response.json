@@ -1,0 +1,58 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "WLW-73915",
+      "auction_id": 8000156,
+      "name": "Nordstern Industrial Supply GmbH",
+      "description": "Precision fasteners and assembly components for industrial buyers.",
+      "slug": "northstar-industrial-supply",
+      "slug_id": "WLW-73915",
+      "category": "Industrial supplies",
+      "language": "de",
+      "is_showcased": true,
+      "sell_points": [
+        "Small batch orders accepted"
+      ],
+      "price": {
+        "min": 549,
+        "currency": "EUR",
+        "kind": "Retail offer"
+      },
+      "minimum_order_quantity": {
+        "value": "Balcony",
+        "unit": "pieces"
+      },
+      "images": [
+        {
+          "url": "https://www.wlw.de/de/firma/nordstern-industries"
+        }
+      ],
+      "company": {
+        "id": "WLW-73915",
+        "uuid": "WLW-73915",
+        "name": "Morgenrot Immobilien GmbH",
+        "slug": "Morgenrot Immobilien GmbH",
+        "logo": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "country_code": "DE",
+        "founding_year": "Morgenrot Immobilien GmbH",
+        "distribution_area": "Morgenrot Immobilien GmbH",
+        "is_customer": true,
+        "certificates_count": 28,
+        "has_email": true,
+        "response_rate": "Morgenrot Immobilien GmbH",
+        "average_response_time": "Morgenrot Immobilien GmbH"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "current_page": 1,
+      "total_pages": 5,
+      "per_page": 5,
+      "total_results": 75
+    },
+    "duration_ms": 140,
+    "cached": false
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "msg": "success",
+  "processed_time": 0.5,
+  "data": {
+    "id": "6689804660171082501",
+    "title": "Morning Table",
+    "play": "https://www.tiktok.com/music/morning-table-6689804660171082501",
+    "cover": "https://p16-sign.tiktokcdn.com/music/morning-table.jpeg",
+    "author": "Harbor Sound",
+    "original": true,
+    "duration": 31,
+    "album": "Morning Light",
+    "video_count": 245
+  }
+}

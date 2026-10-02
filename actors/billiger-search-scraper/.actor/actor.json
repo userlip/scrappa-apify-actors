@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "billiger-search-scraper",
+  "title": "Billiger.de Price Comparison Search Scraper",
+  "description": "Compare Billiger.de products with prices, brands, review counts, offer totals, and product links. Batch keywords in one run and page through results to monitor German retail prices.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "name",
+              "brand",
+              "min_price",
+              "offer_count",
+              "userreview_rating",
+              "product_url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": {
+                "label": "Name",
+                "format": "text"
+              },
+              "brand": {
+                "label": "Brand",
+                "format": "text"
+              },
+              "min_price": {
+                "label": "Min Price",
+                "format": "number"
+              },
+              "offer_count": {
+                "label": "Offer Count",
+                "format": "number"
+              },
+              "userreview_rating": {
+                "label": "User Review Rating",
+                "format": "number"
+              },
+              "product_url": {
+                "label": "Product Url",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

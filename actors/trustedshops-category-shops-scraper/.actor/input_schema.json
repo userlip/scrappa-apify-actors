@@ -1,0 +1,112 @@
+{
+  "title": "Trusted Shops Category Shops Scraper",
+  "description": "Browse Trusted Shops stores by category with shop names, ratings, review counts, certification status, and profile links. Batch categories and choose a country market.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "categories"
+  ],
+  "properties": {
+    "categories": {
+      "title": "Category paths",
+      "type": "array",
+      "description": "Trusted Shops category URL paths such as buch, bekleidung, or sport.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "category": "bucher"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "category"
+        ],
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "description": "Category URL path (e.g. bekleidung). Use the Categories endpoint to get available values.",
+            "editor": "textfield"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500,
+            "description": "Page number for pagination (0-500). Default: 0",
+            "editor": "number"
+          },
+          "market": {
+            "title": "Market",
+            "type": "string",
+            "enum": [
+              "DEU",
+              "GBR",
+              "AUT",
+              "CHE",
+              "NLD",
+              "ESP",
+              "ITA",
+              "FRA",
+              "BEL",
+              "POL",
+              "PRT"
+            ],
+            "description": "Market code filter (DEU, GBR, AUT, CHE, NLD, ESP, ITA, FRA, BEL, POL, PRT). Default: DEU",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 500,
+      "description": "Page number for pagination (0-500). Default: 0",
+      "editor": "number"
+    },
+    "market": {
+      "title": "Market",
+      "type": "string",
+      "enum": [
+        "DEU",
+        "GBR",
+        "AUT",
+        "CHE",
+        "NLD",
+        "ESP",
+        "ITA",
+        "FRA",
+        "BEL",
+        "POL",
+        "PRT"
+      ],
+      "description": "Market code filter (DEU, GBR, AUT, CHE, NLD, ESP, ITA, FRA, BEL, POL, PRT). Default: DEU",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 2
+    }
+  }
+}

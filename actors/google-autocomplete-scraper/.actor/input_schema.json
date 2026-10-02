@@ -1,0 +1,81 @@
+{
+  "title": "Google Autocomplete Keyword Scraper",
+  "description": "Get Google autocomplete suggestions with phrases related to each search. Batch seed keywords, choose a language, and export long-tail search ideas.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Search queries",
+      "type": "array",
+      "description": "Google search phrases to expand with autocomplete.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "query": "best crm"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "title": "Search Query",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Search Query sent to the source search.",
+            "editor": "textfield"
+          },
+          "hl": {
+            "title": "Language",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "description": "Language sent to the source search.",
+            "editor": "textfield"
+          },
+          "limit": {
+            "title": "Suggestion Limit",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "Suggestion Limit sent to the source search.",
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "hl": {
+      "title": "Language",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "description": "Language sent to the source search.",
+      "editor": "textfield"
+    },
+    "limit": {
+      "title": "Suggestion Limit",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Suggestion Limit sent to the source search.",
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

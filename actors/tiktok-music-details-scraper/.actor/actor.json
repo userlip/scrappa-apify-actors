@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-music-details-scraper",
+  "title": "TikTok Music Details Scraper",
+  "description": "Look up TikTok sound titles, authors, durations, covers, and linked video counts. Batch music URLs to build audio research datasets.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "music_title",
+              "music_author",
+              "music_duration",
+              "video_count"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "music_title": {
+                "label": "Sound Title",
+                "format": "text"
+              },
+              "music_author": {
+                "label": "Sound Author",
+                "format": "text"
+              },
+              "music_duration": {
+                "label": "Sound Duration",
+                "format": "number"
+              },
+              "video_count": {
+                "label": "Video Count",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

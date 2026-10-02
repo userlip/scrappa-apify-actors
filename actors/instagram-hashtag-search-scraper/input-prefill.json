@@ -1,0 +1,8 @@
+{
+  "queries": [
+    {
+      "q": "coffee"
+    }
+  ],
+  "maxResults": 20
+}

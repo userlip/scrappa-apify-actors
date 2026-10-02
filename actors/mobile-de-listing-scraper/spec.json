@@ -1,0 +1,336 @@
+{
+  "slug": "mobile-de-listing-scraper",
+  "title": "mobile.de Listing Details Scraper",
+  "description": "Retrieve a mobile.de listing with vehicle attributes, images, seller information, financing options, and links. Batch listing IDs to compare advertised cars in one run.",
+  "categories": [
+    "ECOMMERCE"
+  ],
+  "endpoint": "/mobile-de/v1/listing",
+  "openapiPath": "/mobile-de/v1/listing",
+  "mode": "single",
+  "batch": {
+    "field": "listing_ids",
+    "valueField": "listing_id",
+    "apiParam": "listing_id",
+    "pathParam": null,
+    "title": "Listing IDs",
+    "description": "Numeric mobile.de listing IDs to retrieve.",
+    "valueDescription": "mobile.de listing ID used for this detail request."
+  },
+  "parameters": [
+    {
+      "input": "listing_id",
+      "apiParam": "listing_id",
+      "location": "query",
+      "required": true,
+      "title": "Listing ID",
+      "schema": {
+        "type": "string",
+        "maxLength": 32,
+        "pattern": "^[0-9]+$",
+        "description": "Listing identifier returned by search."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "listing_ids": [
+      {
+        "listing_id": "457981580"
+      }
+    ],
+    "maxResults": 1
+  },
+  "testParams": {
+    "listing_id": "457981580"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "listing": {
+        "attributes": [
+          {
+            "label": "Verified source detail",
+            "tag": "Verified source detail",
+            "value": "Balcony"
+          }
+        ],
+        "adMobPlacements": {
+          "contentUrl": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+          "slots": {
+            "lightboxtextlink": {
+              "adId": "457981580",
+              "adSizes": [
+                "Verified source detail"
+              ]
+            },
+            "textlink": {
+              "adId": "457981580",
+              "adSizes": [
+                "Verified source detail"
+              ]
+            },
+            "vip_1": {
+              "adId": "457981580",
+              "adSizes": [
+                "Verified source detail"
+              ]
+            },
+            "vip_2": {
+              "adId": "457981580",
+              "adSizes": [
+                "Verified source detail"
+              ]
+            },
+            "vip_3": {
+              "adId": "457981580",
+              "adSizes": [
+                "Verified source detail"
+              ]
+            },
+            "vip_gal": {
+              "adId": "457981580",
+              "adSizes": [
+                "Verified source detail"
+              ]
+            },
+            "vip_gal2": {
+              "adId": "457981580",
+              "adSizes": [
+                "Verified source detail"
+              ]
+            }
+          }
+        },
+        "mediaGallery": {
+          "slideShow": true,
+          "additionalAds": true
+        },
+        "shortTitle": "2023 Volvo XC60 B4 AWD",
+        "subTitle": "Verified source detail",
+        "makeKey": "Verified source detail",
+        "modelKey": "Verified source detail",
+        "isNew": true,
+        "onCustomerBehalf": true,
+        "readyToDrive": true,
+        "isConditionNew": true,
+        "created": 1791036800,
+        "modified": 1791123200,
+        "renewed": 1791209600,
+        "version": 1,
+        "makeId": 8000635,
+        "modelId": 8000751,
+        "make": {
+          "id": "457981580",
+          "localized": "Volvo"
+        },
+        "model": {
+          "id": "457981580",
+          "localized": "Volvo"
+        },
+        "financePlans": [
+          {
+            "type": "Supplier",
+            "url": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+            "shortFlow": true,
+            "promotion": true,
+            "showInGallery": true,
+            "offer": {
+              "bankName": "Northstar Outdoor Supply",
+              "loanBroker": "Verified source detail",
+              "loanType": "Residential property",
+              "downPayment": 8,
+              "creditTerm": 8,
+              "yearlyMileage": 2023,
+              "creditAmount": 8
+            }
+          }
+        ],
+        "insurancePlans": [
+          {
+            "href": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+            "provider": "Verified source detail",
+            "title": "2023 Volvo XC60 B4 AWD",
+            "description": "Compact design with dependable performance and a two-year warranty.",
+            "icon": "primary-image",
+            "iconDark": "Verified source detail",
+            "insuranceOffers": [
+              {
+                "id": "457981580",
+                "name": "Northstar Outdoor Supply",
+                "startPrice": 629,
+                "href": "https://www.mobile.de/angebote/volvo-xc60-b4-awd"
+              }
+            ]
+          }
+        ],
+        "links": [
+          {
+            "rel": "Current listing detail",
+            "href": "https://www.mobile.de/angebote/volvo-xc60-b4-awd"
+          }
+        ],
+        "images": [
+          {
+            "uri": "https://cdn.northstar.invalid/images/aurora-front.webp"
+          }
+        ],
+        "features": [
+          "Verified source detail"
+        ],
+        "sellerId": 8000877,
+        "priceRating": {
+          "rating": "Verified source detail",
+          "ratingLabel": "Verified source detail",
+          "thresholdLabels": [
+            "Verified source detail"
+          ],
+          "vehiclePriceOffset": 629
+        },
+        "segment": "SUV",
+        "title": "2023 Volvo XC60 B4 AWD",
+        "url": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+        "vc": "SUV",
+        "category": "Industrial supplies",
+        "id": 8000237,
+        "price": {
+          "grs": {
+            "amount": 549,
+            "currency": "EUR",
+            "localized": "Volvo"
+          },
+          "type": "Supplier"
+        },
+        "kba": {
+          "hsn": "Current listing detail",
+          "tsn": "Current listing detail"
+        },
+        "onLoadFlags": {
+          "welcomeMessage": true,
+          "dealershipDetails": true,
+          "map": true
+        },
+        "htmlDescription": "Verified source detail",
+        "carfaxEligible": true,
+        "listing_id": "457981580"
+      }
+    },
+    "meta": {
+      "duration_ms": 8,
+      "endpoint_family": "Verified source detail"
+    }
+  },
+  "tableFields": [
+    {
+      "name": "listing_title",
+      "label": "Listing Title",
+      "format": "text"
+    },
+    {
+      "name": "make",
+      "label": "Make",
+      "format": "text"
+    },
+    {
+      "name": "model",
+      "label": "Model",
+      "format": "text"
+    },
+    {
+      "name": "data",
+      "label": "Data",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "mobile.de Listing Scraper | Car Details",
+    "seoDescription": "Scrape mobile.de listing details by ID, including vehicle attributes, images, seller data, finance plans, and links. Batch car IDs to compare listings.",
+    "intro": "Retrieve the full mobile.de record for a listing ID, including vehicle attributes, photos, seller details, finance options, and related links. Add multiple IDs to inspect cars together.",
+    "useCases": [
+      "Car shoppers can compare specifications and photos for saved listings.",
+      "Dealers can check seller and financing details for selected vehicles.",
+      "Automotive data teams can enrich listing IDs with structured vehicle attributes."
+    ],
+    "howToUse": [
+      "Add a mobile.de listing ID to `listing_ids` for each car.",
+      "Set `maxResults` to control how many listing records are saved.",
+      "Export the results and inspect the nested attributes, images, and finance data."
+    ],
+    "faqs": [
+      {
+        "question": "Where do I find a mobile.de listing ID?",
+        "answer": "Use the numeric ID in a mobile.de listing URL or take it from a mobile.de search result."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "mobile-de-search-scraper",
+        "title": "mobile.de Car Search Scraper"
+      },
+      {
+        "slug": "mobile-de-dealer-inventory-scraper",
+        "title": "mobile.de Dealer Inventory Scraper"
+      },
+      {
+        "slug": "google-search",
+        "title": "Google Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when the mobile.de request returned a successful response."
+      },
+      {
+        "name": "data",
+        "type": "Object",
+        "description": "mobile.de response payload for this vehicle listing, including `listing` and related source fields."
+      },
+      {
+        "name": "meta",
+        "type": "Object",
+        "description": "Response metadata from mobile.de, such as request duration and endpoint family."
+      },
+      {
+        "name": "listing_title",
+        "type": "String",
+        "description": "Vehicle title assembled from the model year, make, model, and trim."
+      },
+      {
+        "name": "make",
+        "type": "String",
+        "description": "Vehicle manufacturer name."
+      },
+      {
+        "name": "model",
+        "type": "String",
+        "description": "Vehicle model name."
+      },
+      {
+        "name": "input_listing_id",
+        "type": "String",
+        "description": "Listing id submitted to retrieve this vehicle listing."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_listing_id"
+  },
+  "flattenPointers": {
+    "listing_title": "/data/listing/shortTitle",
+    "make": "/data/listing/make/localized",
+    "model": "/data/listing/model/localized"
+  }
+}

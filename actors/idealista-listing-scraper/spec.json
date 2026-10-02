@@ -1,0 +1,538 @@
+{
+  "slug": "idealista-listing-scraper",
+  "title": "Idealista Listing Details Scraper",
+  "description": "Get Idealista listing details with price, operation, property type, rooms, location, media, agency information, and links. Batch listing IDs across supported European markets.",
+  "categories": [
+    "REAL_ESTATE"
+  ],
+  "endpoint": "/idealista/listing",
+  "openapiPath": "/idealista/listing",
+  "mode": "single",
+  "batch": {
+    "field": "listing_ids",
+    "valueField": "ad_id",
+    "apiParam": "ad_id",
+    "pathParam": null,
+    "title": "Listing IDs",
+    "description": "Idealista listing IDs to retrieve across supported markets.",
+    "valueDescription": "Idealista listing ID used for this detail request."
+  },
+  "parameters": [
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": true,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "es",
+          "it",
+          "pt",
+          "fr"
+        ],
+        "description": "es, it, pt, or fr."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "ad_id",
+      "apiParam": "ad_id",
+      "location": "query",
+      "required": true,
+      "title": "Listing ID",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\d{1,20}$",
+        "description": "Listing identifier from search."
+      }
+    },
+    {
+      "input": "typology",
+      "apiParam": "typology",
+      "location": "query",
+      "required": false,
+      "title": "Typology",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "vacationRentals"
+        ],
+        "description": ""
+      },
+      "editor": "select"
+    },
+    {
+      "input": "from_date",
+      "apiParam": "from_date",
+      "location": "query",
+      "required": false,
+      "title": "From date",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": ""
+      }
+    },
+    {
+      "input": "to_date",
+      "apiParam": "to_date",
+      "location": "query",
+      "required": false,
+      "title": "To date",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": ""
+      }
+    },
+    {
+      "input": "guests",
+      "apiParam": "guests",
+      "location": "query",
+      "required": false,
+      "title": "Guests",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30,
+        "description": ""
+      }
+    },
+    {
+      "input": "quality",
+      "apiParam": "quality",
+      "location": "query",
+      "required": false,
+      "title": "Quality",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "high",
+          "low"
+        ],
+        "description": ""
+      },
+      "editor": "select"
+    },
+    {
+      "input": "locale",
+      "apiParam": "locale",
+      "location": "query",
+      "required": false,
+      "title": "Locale",
+      "schema": {
+        "type": "string",
+        "maxLength": 8,
+        "description": ""
+      }
+    },
+    {
+      "input": "language",
+      "apiParam": "language",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "maxLength": 8,
+        "description": ""
+      }
+    },
+    {
+      "input": "max_items",
+      "apiParam": "max_items",
+      "location": "query",
+      "required": false,
+      "title": "Max Items",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5,
+        "description": ""
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "listing_ids": [
+      {
+        "ad_id": "104570830"
+      }
+    ],
+    "country": "es",
+    "maxResults": 1
+  },
+  "testParams": {
+    "country": "es",
+    "ad_id": "104570830"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "adid": 8000403,
+      "price": 549,
+      "priceInfo": {
+        "amount": 549,
+        "currencySuffix": "EUR"
+      },
+      "operation": "sale",
+      "propertyType": "Apartment",
+      "extendedPropertyType": "Residential property",
+      "homeType": "Residential property",
+      "state": "berlin",
+      "multimedia": {
+        "images": [
+          {
+            "url": "https://www.idealista.com/en/inmueble/99999117/",
+            "tag": "Verified source detail",
+            "localizedName": "Northstar Outdoor Supply",
+            "multimediaId": 8000384,
+            "deeplinkUrl": "https://www.idealista.com/en/inmueble/99999117/",
+            "madeByIdealista": true,
+            "width": 1200
+          }
+        ],
+        "videos": [
+          {
+            "url": "https://www.idealista.com/en/inmueble/99999117/",
+            "isProfessionalVideo": true,
+            "thumbnail": "https://cdn.northstar.invalid/images/aurora-front.webp",
+            "multimediaId": 8000385,
+            "deeplinkUrl": "https://www.idealista.com/en/inmueble/99999117/",
+            "madeByIdealista": true
+          }
+        ],
+        "virtual3DTours": [
+          {
+            "url": "https://www.idealista.com/en/inmueble/99999117/",
+            "tourType": "Residential property",
+            "creationDate": 8,
+            "thumbnail": "https://cdn.northstar.invalid/images/aurora-front.webp",
+            "category": "Residential property",
+            "deeplinkUrl": "https://www.idealista.com/en/inmueble/99999117/",
+            "madeByIdealista": true
+          }
+        ],
+        "hasMultimediasMadeByIdealista": true
+      },
+      "propertyComment": "Bright two-bedroom home with a balcony near local transport.",
+      "ubication": {
+        "title": "Bright two-bedroom flat in Berlin",
+        "latitude": 40.4168,
+        "longitude": -3.7038,
+        "hasHiddenAddress": false,
+        "administrativeAreaLevel4": "Verified source detail",
+        "administrativeAreaLevel3": "Verified source detail",
+        "administrativeAreaLevel2": "Verified source detail",
+        "administrativeAreaLevel1": "Verified source detail",
+        "locationId": "99999117",
+        "administrativeAreaLevel1Id": "99999117",
+        "locationName": "Madrid"
+      },
+      "country": "Spain",
+      "contactInfo": {
+        "commercialName": "Morgenrot Immobilien GmbH",
+        "phone1": {
+          "phoneNumber": "+49 30 555 0184",
+          "formattedPhone": "+49 30 555 0184",
+          "prefix": "Verified source detail",
+          "phoneNumberForMobileDialing": "+49 30 555 0184",
+          "nationalNumber": true,
+          "formattedPhoneWithPrefix": "+49 30 555 0184"
+        },
+        "contactName": "Morgan Lee",
+        "externalReference": "WEB-583214",
+        "userType": "Residential property",
+        "agencyLogo": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "contactMethod": "Verified source detail",
+        "micrositeShortName": "Northstar Outdoor Supply",
+        "address": {
+          "streetName": "Northstar Outdoor Supply",
+          "streetNumber": 8,
+          "locationName": "Madrid",
+          "postalCode": "Verified source detail"
+        },
+        "agentInfo": {
+          "name": "Jordan Ellis",
+          "proAgent": true
+        },
+        "inVirtualMicrosite": true,
+        "sharedSeekerProfile": true,
+        "corporateVideo": {
+          "thumbnail": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "url": "https://www.idealista.com/en/inmueble/99999117/"
+        },
+        "corporatePhrase": {
+          "text": "High quality and prompt delivery.",
+          "autoTranslated": true
+        },
+        "totalAds": 28,
+        "needLoginForContact": true,
+        "needLoginForPhone": true,
+        "chatEnabled": true,
+        "professional": true
+      },
+      "priceDropInfo": {
+        "priceDropValue": 629,
+        "priceDropPercentage": 629,
+        "dropDate": 8
+      },
+      "moreCharacteristics": {
+        "communityCosts": 8,
+        "roomNumber": 2,
+        "isStudio": true,
+        "bathNumber": 8,
+        "isAuction": false,
+        "exterior": true,
+        "housingFurnitures": "Verified source detail",
+        "agencyIsABank": true,
+        "energyPerformance": 8,
+        "isPenthouse": true,
+        "energyCertificationType": "Residential property",
+        "swimmingPool": true,
+        "flatLocation": "Verified source detail",
+        "modificationDate": 8,
+        "isInTopFloor": true,
+        "constructedArea": 78,
+        "lift": true,
+        "garden": true,
+        "boxroom": true,
+        "isDuplex": true,
+        "floor": "Verified source detail",
+        "status": "Published"
+      },
+      "translatedTexts": {
+        "floorNumberDescription": "Verified source detail",
+        "layoutDescription": "Verified source detail",
+        "characteristicsDescriptions": [
+          {
+            "key": "primary-image",
+            "title": "Bright two-bedroom flat in Berlin",
+            "detailFeatures": [
+              {
+                "phrase": "Verified source detail"
+              }
+            ]
+          }
+        ]
+      },
+      "suggestedTexts": {
+        "title": "Bright two-bedroom flat in Berlin"
+      },
+      "detailedType": {
+        "typology": "Verified source detail",
+        "subTypology": "Verified source detail"
+      },
+      "link": {
+        "url": "https://www.idealista.com/en/inmueble/99999117/"
+      },
+      "comments": [
+        {
+          "propertyComment": "Bright two-bedroom home with a balcony near local transport.",
+          "autoTranslated": true,
+          "language": "de",
+          "defaultLanguage": true
+        }
+      ],
+      "detailWebLink": "Verified source detail",
+      "energyCertification": {
+        "title": "Bright two-bedroom flat in Berlin",
+        "energyConsumption": {
+          "prefix": "Verified source detail",
+          "suffix": "Verified source detail",
+          "value": 8,
+          "type": "Apartment"
+        },
+        "emissions": {
+          "prefix": "Verified source detail",
+          "suffix": "Verified source detail",
+          "value": 8,
+          "type": "Apartment"
+        }
+      },
+      "allowsCounterOffers": true,
+      "allowsRemoteVisit": true,
+      "allowsMortgageSimulator": true,
+      "allowsAiAssistant": true,
+      "allowsProfileQualification": true,
+      "tracking": {
+        "isSuitableForRecommended": true,
+        "commercialDataId": 8000796
+      },
+      "has360VHS": true,
+      "labels": [
+        "Verified marketplace detail"
+      ],
+      "showSuggestedPrice": true,
+      "allowsRecommendation": true,
+      "modificationDate": {
+        "value": 8,
+        "text": "High quality and prompt delivery."
+      }
+    },
+    "meta": {
+      "duration_ms": 8,
+      "endpoint_family": "Verified source detail"
+    }
+  },
+  "tableFields": [
+    {
+      "name": "listing_id",
+      "label": "Listing Id",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "operation",
+      "label": "Operation",
+      "format": "text"
+    },
+    {
+      "name": "property_type",
+      "label": "Property Type",
+      "format": "text"
+    },
+    {
+      "name": "rooms",
+      "label": "Rooms",
+      "format": "number"
+    },
+    {
+      "name": "location_name",
+      "label": "Location Name",
+      "format": "text"
+    },
+    {
+      "name": "listing_url",
+      "label": "Listing Url",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Idealista Listing Scraper | Property Details",
+    "seoDescription": "Scrape Idealista listing details with price, rooms, location, and agency data. Batch IDs across Spain, Italy, Portugal, and France for property research.",
+    "intro": "Retrieve detailed Idealista records by listing ID, including price, property type, room counts, location, media, agency information, and page links. Choose the country for each market.",
+    "useCases": [
+      "Property researchers can enrich saved listing IDs with detailed attributes and photos.",
+      "Agents can compare advertised price, rooms, and location for a property shortlist.",
+      "Housing analysts can build consistent records from multiple Idealista markets."
+    ],
+    "howToUse": [
+      "Add an Idealista listing ID to `listing_ids` for each property.",
+      "Choose the market and any supported language or quality options.",
+      "Set `maxResults` and export one detailed record per listing ID."
+    ],
+    "faqs": [
+      {
+        "question": "Where can I find a listing ID?",
+        "answer": "Use the numeric identifier in an Idealista property URL or copy it from an Idealista search result."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "idealista-search-scraper",
+        "title": "Idealista Property Search Scraper"
+      },
+      {
+        "slug": "idealista-agency-scraper",
+        "title": "Idealista Agency Scraper"
+      },
+      {
+        "slug": "immowelt-property-search-scraper",
+        "title": "Immowelt Property Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when the Idealista request returned a successful response."
+      },
+      {
+        "name": "data",
+        "type": "Object",
+        "description": "Idealista response payload for this property listing, including `adid`, `price`, `priceInfo`, `operation` and related source fields."
+      },
+      {
+        "name": "meta",
+        "type": "Object",
+        "description": "Response metadata from Idealista, such as request duration and endpoint family."
+      },
+      {
+        "name": "listing_id",
+        "type": "Integer",
+        "description": "Numeric identifier for this Idealista property listing."
+      },
+      {
+        "name": "price",
+        "type": "Integer",
+        "description": "Price amount for this property listing; currency follows the selected source market."
+      },
+      {
+        "name": "operation",
+        "type": "String",
+        "description": "Listing transaction type, such as sale or rent."
+      },
+      {
+        "name": "property_type",
+        "type": "String",
+        "description": "Idealista property category, such as apartment or house."
+      },
+      {
+        "name": "rooms",
+        "type": "Integer",
+        "description": "Number of rooms reported for the property."
+      },
+      {
+        "name": "bathrooms",
+        "type": "Integer",
+        "description": "Number of bathrooms reported for the property."
+      },
+      {
+        "name": "location_name",
+        "type": "String",
+        "description": "Named town, district, or neighborhood attached to the listing."
+      },
+      {
+        "name": "listing_url",
+        "type": "String",
+        "description": "Public Idealista URL for the property listing or linked resource."
+      },
+      {
+        "name": "input_ad_id",
+        "type": "String",
+        "description": "Ad id submitted to retrieve this property listing."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_ad_id"
+  },
+  "flattenPointers": {
+    "listing_id": "/data/adid",
+    "price": "/data/price",
+    "operation": "/data/operation",
+    "property_type": "/data/propertyType",
+    "rooms": "/data/moreCharacteristics/roomNumber",
+    "bathrooms": "/data/moreCharacteristics/bathNumber",
+    "location_name": "/data/ubication/locationName",
+    "listing_url": "/data/link/url"
+  }
+}

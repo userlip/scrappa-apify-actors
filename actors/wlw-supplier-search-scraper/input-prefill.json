@@ -1,0 +1,13 @@
+{
+  "queries": [
+    {
+      "q": "schrauben"
+    }
+  ],
+  "page": 1,
+  "per_page": 5,
+  "country": "DE",
+  "language": "de",
+  "maxResults": 5,
+  "maxPages": 1
+}

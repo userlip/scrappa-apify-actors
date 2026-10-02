@@ -1,0 +1,612 @@
+{
+  "slug": "mobile-de-dealer-inventory-scraper",
+  "title": "mobile.de Dealer Inventory Scraper",
+  "description": "Browse mobile.de dealer inventory with vehicle titles, prices, mileage, registration, images, and listing IDs. Batch dealer IDs to compare used car stock across sellers.",
+  "categories": [
+    "ECOMMERCE",
+    "LEAD_GENERATION"
+  ],
+  "endpoint": "/mobile-de/v1/dealer-inventory",
+  "openapiPath": "/mobile-de/v1/dealer-inventory",
+  "mode": "list",
+  "batch": {
+    "field": "dealer_ids",
+    "valueField": "dealer_id",
+    "apiParam": "dealer_id",
+    "pathParam": null,
+    "title": "Dealer IDs",
+    "description": "mobile.de dealer identifiers whose car stock you want to browse.",
+    "valueDescription": "dealer ID whose mobile.de inventory is being searched."
+  },
+  "parameters": [
+    {
+      "input": "vehicle_type",
+      "apiParam": "vehicle_type",
+      "location": "query",
+      "required": false,
+      "title": "Vehicle type",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "car"
+        ],
+        "description": "Vehicle type. v1 supports car."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "offset",
+      "apiParam": "offset",
+      "location": "query",
+      "required": false,
+      "title": "Offset",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Zero-based result offset."
+      }
+    },
+    {
+      "input": "limit",
+      "apiParam": "limit",
+      "location": "query",
+      "required": false,
+      "title": "Limit",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20,
+        "description": "Listings to return, from 1 to 20."
+      }
+    },
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": false,
+      "title": "Keyword",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "description": "Optional free-text vehicle search."
+      }
+    },
+    {
+      "input": "price_min",
+      "apiParam": "price_min",
+      "location": "query",
+      "required": false,
+      "title": "Price Min",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Optional non-negative minimum price."
+      }
+    },
+    {
+      "input": "price_max",
+      "apiParam": "price_max",
+      "location": "query",
+      "required": false,
+      "title": "Price Max",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Optional non-negative maximum price."
+      }
+    },
+    {
+      "input": "registration_year_min",
+      "apiParam": "registration_year_min",
+      "location": "query",
+      "required": false,
+      "title": "Registration Year Min",
+      "schema": {
+        "type": "integer",
+        "minimum": 1886,
+        "maximum": 2100,
+        "description": "Optional minimum first-registration year."
+      }
+    },
+    {
+      "input": "registration_year_max",
+      "apiParam": "registration_year_max",
+      "location": "query",
+      "required": false,
+      "title": "Registration Year Max",
+      "schema": {
+        "type": "integer",
+        "minimum": 1886,
+        "maximum": 2100,
+        "description": "Optional maximum first-registration year."
+      }
+    },
+    {
+      "input": "mileage_min",
+      "apiParam": "mileage_min",
+      "location": "query",
+      "required": false,
+      "title": "Mileage Min",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Optional non-negative minimum mileage."
+      }
+    },
+    {
+      "input": "mileage_max",
+      "apiParam": "mileage_max",
+      "location": "query",
+      "required": false,
+      "title": "Mileage Max",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Optional non-negative maximum mileage."
+      }
+    },
+    {
+      "input": "make_id",
+      "apiParam": "make_id",
+      "location": "query",
+      "required": false,
+      "title": "Make Id",
+      "schema": {
+        "type": "string",
+        "maxLength": 50,
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "description": "Validated marketplace make identifier."
+      }
+    },
+    {
+      "input": "model_id",
+      "apiParam": "model_id",
+      "location": "query",
+      "required": false,
+      "title": "Model Id",
+      "schema": {
+        "type": "string",
+        "maxLength": 50,
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "description": "Validated marketplace model identifier. Requires make_id."
+      }
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort order",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "relevance",
+          "price_asc",
+          "price_desc"
+        ],
+        "description": "relevance, price_asc, or price_desc."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "dealer_id",
+      "apiParam": "dealer_id",
+      "location": "query",
+      "required": true,
+      "title": "Dealer ID",
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "pattern": "^[A-Za-z0-9_-]+$",
+        "description": "Dealer identifier returned by a listing."
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "dealer_ids": [
+      {
+        "dealer_id": "47546627"
+      }
+    ],
+    "vehicle_type": "car",
+    "offset": 0,
+    "limit": 5,
+    "maxResults": 5,
+    "maxPages": 1
+  },
+  "testParams": {
+    "dealer_id": "47546627"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "listings": [
+        {
+          "isEyeCatcher": true,
+          "numImages": 9,
+          "attr": {
+            "cn": "Volvo",
+            "z": "XC60",
+            "loc": "Berlin",
+            "fr": "2023",
+            "pw": "145 kW",
+            "ft": "DIESEL",
+            "ml": "64,000 km",
+            "cc": "1,969 cc",
+            "tr": "AUTOMATIC_GEAR",
+            "gi": "6-speed automatic",
+            "ecol": "Verified source detail",
+            "eu": "EURO6",
+            "door": "5",
+            "sc": "4",
+            "c": "Used",
+            "emc": "201",
+            "pvo": "4",
+            "nw": "140 kW"
+          },
+          "siteId": "DE-29185",
+          "p": "€ 32,900",
+          "st": "SUV",
+          "shortTitle": "2023 Volvo XC60 B4 AWD",
+          "subTitle": "Verified source detail",
+          "hasDamage": false,
+          "isVideoEnabled": true,
+          "readyToDrive": true,
+          "created": 1790950400,
+          "modified": 1791036800,
+          "renewed": 1791123200,
+          "version": 1,
+          "makeId": 8000634,
+          "modelId": 8000750,
+          "make": {
+            "id": "457981580",
+            "localized": "Volvo"
+          },
+          "model": {
+            "id": "457981580",
+            "localized": "Volvo"
+          },
+          "financePlans": [
+            {
+              "type": "Supplier",
+              "url": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+              "shortFlow": true,
+              "promotion": true,
+              "showInGallery": true,
+              "offer": {
+                "bankName": "Northstar Outdoor Supply",
+                "loanBroker": "Verified source detail",
+                "loanType": "Residential property",
+                "downPayment": 8,
+                "creditTerm": 8,
+                "yearlyMileage": 2023,
+                "creditAmount": 8
+              }
+            }
+          ],
+          "images": [
+            {
+              "uri": "https://cdn.northstar.invalid/images/aurora-front.webp"
+            }
+          ],
+          "sellerId": 8000873,
+          "priceRating": {
+            "rating": "Verified source detail",
+            "ratingLabel": "Verified source detail",
+            "thresholdLabels": [
+              "Verified source detail"
+            ],
+            "vehiclePriceOffset": 629
+          },
+          "segment": "SUV",
+          "title": "2023 Volvo XC60 B4 AWD",
+          "url": "https://www.mobile.de/angebote/volvo-xc60-b4-awd",
+          "vc": "SUV",
+          "category": "Industrial supplies",
+          "id": 8000233,
+          "price": {
+            "grs": {
+              "amount": 549,
+              "currency": "EUR",
+              "localized": "Volvo"
+            },
+            "type": "Supplier"
+          },
+          "kba": {
+            "hsn": "Current listing detail",
+            "tsn": "Current listing detail"
+          },
+          "listing_id": "457981580",
+          "isDamageCase": false,
+          "vat": "Current listing detail",
+          "isNew": true
+        }
+      ],
+      "pagination": {
+        "offset": 0,
+        "limit": 5,
+        "next_offset": 5,
+        "total": 50,
+        "live_snapshot": true
+      }
+    }
+  },
+  "tableFields": [
+    {
+      "name": "listing_id",
+      "label": "Listing Id",
+      "format": "text"
+    },
+    {
+      "name": "shortTitle",
+      "label": "Short Title",
+      "format": "text"
+    },
+    {
+      "name": "make",
+      "label": "Make",
+      "format": "text"
+    },
+    {
+      "name": "model",
+      "label": "Model",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "url",
+      "label": "Url",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "mobile.de Dealer Scraper | Inventory",
+    "seoDescription": "Browse mobile.de dealer inventory with vehicle titles, prices, mileage, registration, and listing IDs. Batch dealers to compare stock across sellers.",
+    "intro": "Retrieve cars offered by mobile.de dealers, including vehicle titles, make and model, prices, mileage, registration, and listing links. Batch dealer IDs to compare inventory.",
+    "useCases": [
+      "Dealers can benchmark their stock against other mobile.de sellers.",
+      "Automotive researchers can compare inventory depth by dealer.",
+      "Car buyers can review vehicles listed by a known dealer before visiting."
+    ],
+    "howToUse": [
+      "Add one mobile.de dealer ID to `dealer_ids` per inventory search.",
+      "Set a page size and optional price, year, mileage, or model filters.",
+      "Limit pages and results, then export the vehicle rows."
+    ],
+    "faqs": [
+      {
+        "question": "Where can I find a dealer ID?",
+        "answer": "Use the dealer identifier associated with a mobile.de listing or dealer profile."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "mobile-de-search-scraper",
+        "title": "mobile.de Car Search Scraper"
+      },
+      {
+        "slug": "mobile-de-listing-scraper",
+        "title": "mobile.de Listing Details Scraper"
+      },
+      {
+        "slug": "google-search",
+        "title": "Google Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "isEyeCatcher",
+        "type": "Boolean",
+        "description": "Flag indicating whether mobile.de marks this vehicle listing as is eye catcher."
+      },
+      {
+        "name": "numImages",
+        "type": "Integer",
+        "description": "Number of num images reported for this vehicle listing."
+      },
+      {
+        "name": "attr",
+        "type": "Object",
+        "description": "Compact mobile.de vehicle attributes, including make, model, mileage, fuel, and transmission codes."
+      },
+      {
+        "name": "siteId",
+        "type": "String",
+        "description": "mobile.de listing identifier used in the public vehicle URL."
+      },
+      {
+        "name": "p",
+        "type": "String",
+        "description": "Formatted advertised vehicle price and currency."
+      },
+      {
+        "name": "st",
+        "type": "String",
+        "description": "Vehicle body style, such as SUV or estate."
+      },
+      {
+        "name": "shortTitle",
+        "type": "String",
+        "description": "Short vehicle title shown in dealer inventory results."
+      },
+      {
+        "name": "subTitle",
+        "type": "String",
+        "description": "Additional vehicle trim or engine details shown below the title."
+      },
+      {
+        "name": "hasDamage",
+        "type": "Boolean",
+        "description": "Flag indicating whether mobile.de marks this vehicle listing as has damage."
+      },
+      {
+        "name": "isVideoEnabled",
+        "type": "Boolean",
+        "description": "Flag indicating whether mobile.de marks this vehicle listing as is video enabled."
+      },
+      {
+        "name": "readyToDrive",
+        "type": "Boolean",
+        "description": "Flag indicating whether mobile.de marks this vehicle listing as ready to drive."
+      },
+      {
+        "name": "created",
+        "type": "Integer",
+        "description": "Unix timestamp in seconds when the listing was created."
+      },
+      {
+        "name": "modified",
+        "type": "Integer",
+        "description": "Unix timestamp in seconds when the listing was last changed."
+      },
+      {
+        "name": "renewed",
+        "type": "Integer",
+        "description": "Unix timestamp in seconds when the listing was renewed."
+      },
+      {
+        "name": "version",
+        "type": "Integer",
+        "description": "mobile.de listing record version number."
+      },
+      {
+        "name": "makeId",
+        "type": "Integer",
+        "description": "mobile.de identifier for the vehicle manufacturer."
+      },
+      {
+        "name": "modelId",
+        "type": "Integer",
+        "description": "mobile.de identifier for the vehicle model."
+      },
+      {
+        "name": "make",
+        "type": "Object",
+        "description": "Vehicle manufacturer identifier and localized name."
+      },
+      {
+        "name": "model",
+        "type": "Object",
+        "description": "Vehicle model identifier and localized name."
+      },
+      {
+        "name": "financePlans",
+        "type": "Array<Object>",
+        "description": "List of finance plans records for this vehicle listing; each record carries `type`, `url`, `shortFlow`."
+      },
+      {
+        "name": "images",
+        "type": "Array<Object>",
+        "description": "List of images records for this vehicle listing; each record carries `uri`."
+      },
+      {
+        "name": "sellerId",
+        "type": "Integer",
+        "description": "mobile.de identifier for the selling dealer or private seller."
+      },
+      {
+        "name": "priceRating",
+        "type": "Object",
+        "description": "Price rating amount for this vehicle listing; currency follows the selected source market."
+      },
+      {
+        "name": "segment",
+        "type": "String",
+        "description": "Vehicle segment classification returned by mobile.de."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Name or title assigned to this mobile.de vehicle listing."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public mobile.de URL for the vehicle listing or linked resource."
+      },
+      {
+        "name": "vc",
+        "type": "String",
+        "description": "Vehicle category code returned by mobile.de."
+      },
+      {
+        "name": "category",
+        "type": "String",
+        "description": "Product or listing category assigned by mobile.de."
+      },
+      {
+        "name": "id",
+        "type": "Integer",
+        "description": "Numeric identifier for this mobile.de vehicle listing."
+      },
+      {
+        "name": "price",
+        "type": "Object",
+        "description": "Price amount for this vehicle listing; currency follows the selected source market."
+      },
+      {
+        "name": "kba",
+        "type": "Object",
+        "description": "German vehicle registration identifiers, including HSN and TSN."
+      },
+      {
+        "name": "listing_id",
+        "type": "String",
+        "description": "Listing id identifier for this mobile.de vehicle listing."
+      },
+      {
+        "name": "isDamageCase",
+        "type": "Boolean",
+        "description": "Flag indicating whether mobile.de marks this vehicle listing as is damage case."
+      },
+      {
+        "name": "vat",
+        "type": "String",
+        "description": "Value-added tax details for the vehicle price."
+      },
+      {
+        "name": "isNew",
+        "type": "Boolean",
+        "description": "Flag indicating whether mobile.de marks this vehicle listing as is new."
+      },
+      {
+        "name": "input_dealer_id",
+        "type": "String",
+        "description": "Dealer id submitted to retrieve this vehicle listing."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_dealer_id"
+  },
+  "resultPointer": "/data/listings",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/id",
+  "pagination": {
+    "kind": "page",
+    "param": "offset",
+    "start": 0,
+    "step": 1,
+    "currentPagePointer": "/data/pagination/offset",
+    "nextPointer": "/data/pagination/next_offset",
+    "maxPages": 10
+  },
+  "defaultMaxPages": 2
+}

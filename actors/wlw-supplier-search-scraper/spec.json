@@ -1,0 +1,464 @@
+{
+  "slug": "wlw-supplier-search-scraper",
+  "title": "WLW Supplier Search Scraper",
+  "description": "Search WLW for suppliers with company profiles, product descriptions, categories, selling points, and order details. Batch queries and filter by country or supplier attributes.",
+  "categories": [
+    "LEAD_GENERATION",
+    "ECOMMERCE"
+  ],
+  "endpoint": "/wlw/search",
+  "openapiPath": "/wlw/search",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "q",
+    "apiParam": "q",
+    "pathParam": null,
+    "title": "Supplier queries",
+    "description": "Product or service keywords to search on WLW (Wer liefert was).",
+    "valueDescription": "keyword used for this WLW supplier search."
+  },
+  "parameters": [
+    {
+      "input": "q",
+      "apiParam": "q",
+      "location": "query",
+      "required": true,
+      "title": "Search text",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "Search query (e.g., \"agentur\", \"software\", \"logistik\")"
+      }
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Page number (default: 1)"
+      }
+    },
+    {
+      "input": "per_page",
+      "apiParam": "per_page",
+      "location": "query",
+      "required": false,
+      "title": "Results per page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50,
+        "description": "Results per page (1-50, default: 15)"
+      }
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "DE",
+          "AT",
+          "CH"
+        ],
+        "description": "Country code: DE (Germany), AT (Austria), CH (Switzerland). Default: DE"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "countries",
+      "apiParam": "countries",
+      "location": "query",
+      "required": false,
+      "title": "Countries",
+      "schema": {
+        "type": "string",
+        "pattern": "^[A-Za-z]{2}(,[A-Za-z]{2})*$",
+        "description": "Filter by country codes (comma-separated, e.g., \"DE,AT\")"
+      }
+    },
+    {
+      "input": "category",
+      "apiParam": "category",
+      "location": "query",
+      "required": false,
+      "title": "Category",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\d+$",
+        "description": "Filter by category ID"
+      }
+    },
+    {
+      "input": "supplier_type",
+      "apiParam": "supplier_type",
+      "location": "query",
+      "required": false,
+      "title": "Supplier Type",
+      "schema": {
+        "type": "string",
+        "maxLength": 100,
+        "description": "Filter by supplier type (comma-separated)"
+      }
+    },
+    {
+      "input": "attributes",
+      "apiParam": "attributes",
+      "location": "query",
+      "required": false,
+      "title": "Attributes",
+      "schema": {
+        "type": "string",
+        "maxLength": 500,
+        "description": "Filter by attribute codes (comma-separated)"
+      }
+    },
+    {
+      "input": "verified",
+      "apiParam": "verified",
+      "location": "query",
+      "required": false,
+      "title": "Verified",
+      "schema": {
+        "type": "boolean",
+        "description": "Only show verified suppliers"
+      }
+    },
+    {
+      "input": "top_responder",
+      "apiParam": "top_responder",
+      "location": "query",
+      "required": false,
+      "title": "Top Responder",
+      "schema": {
+        "type": "boolean",
+        "description": "Only show top responders"
+      }
+    },
+    {
+      "input": "latitude",
+      "apiParam": "latitude",
+      "location": "query",
+      "required": false,
+      "title": "Latitude",
+      "schema": {
+        "type": "number",
+        "minimum": -90,
+        "maximum": 90,
+        "description": "Location filter: latitude"
+      }
+    },
+    {
+      "input": "longitude",
+      "apiParam": "longitude",
+      "location": "query",
+      "required": false,
+      "title": "Longitude",
+      "schema": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180,
+        "description": "Location filter: longitude"
+      }
+    },
+    {
+      "input": "radius",
+      "apiParam": "radius",
+      "location": "query",
+      "required": false,
+      "title": "Radius",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 500,
+        "description": "Search radius in km (requires lat/lng)"
+      }
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort order",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "relevance",
+          "recency",
+          "trending",
+          "distance"
+        ],
+        "description": "Sort: relevance, recency, trending, distance"
+      },
+      "editor": "select"
+    },
+    {
+      "input": "language",
+      "apiParam": "language",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 2,
+        "description": "Language code (default: de)"
+      }
+    }
+  ],
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "q": "schrauben"
+      }
+    ],
+    "page": 1,
+    "per_page": 5,
+    "country": "DE",
+    "language": "de",
+    "maxResults": 5,
+    "maxPages": 1
+  },
+  "testParams": {
+    "q": "schrauben"
+  },
+  "fixture": {
+    "success": true,
+    "data": [
+      {
+        "id": "WLW-73915",
+        "auction_id": 8000156,
+        "name": "Nordstern Industrial Supply GmbH",
+        "description": "Precision fasteners and assembly components for industrial buyers.",
+        "slug": "northstar-industrial-supply",
+        "slug_id": "WLW-73915",
+        "category": "Industrial supplies",
+        "language": "de",
+        "is_showcased": true,
+        "sell_points": [
+          "Small batch orders accepted"
+        ],
+        "price": {
+          "min": 549,
+          "currency": "EUR",
+          "kind": "Retail offer"
+        },
+        "minimum_order_quantity": {
+          "value": "Balcony",
+          "unit": "pieces"
+        },
+        "images": [
+          {
+            "url": "https://www.wlw.de/de/firma/nordstern-industries"
+          }
+        ],
+        "company": {
+          "id": "WLW-73915",
+          "uuid": "WLW-73915",
+          "name": "Morgenrot Immobilien GmbH",
+          "slug": "Morgenrot Immobilien GmbH",
+          "logo": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "country_code": "DE",
+          "founding_year": "Morgenrot Immobilien GmbH",
+          "distribution_area": "Morgenrot Immobilien GmbH",
+          "is_customer": true,
+          "certificates_count": 28,
+          "has_email": true,
+          "response_rate": "Morgenrot Immobilien GmbH",
+          "average_response_time": "Morgenrot Immobilien GmbH"
+        }
+      }
+    ],
+    "meta": {
+      "pagination": {
+        "current_page": 1,
+        "total_pages": 5,
+        "per_page": 5,
+        "total_results": 75
+      },
+      "duration_ms": 140,
+      "cached": false
+    }
+  },
+  "tableFields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "format": "text"
+    },
+    {
+      "name": "category",
+      "label": "Category",
+      "format": "text"
+    },
+    {
+      "name": "company",
+      "label": "Company",
+      "format": "text"
+    },
+    {
+      "name": "description",
+      "label": "Description",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "minimum_order_quantity",
+      "label": "Minimum Order Quantity",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "WLW Supplier Scraper | B2B Company Data",
+    "seoDescription": "Search WLW suppliers by query for company profiles, product descriptions, categories, sales points, and order details. Batch queries and filter by country.",
+    "intro": "Search WLW (Wer liefert was) for suppliers and products by keyword. Collect company names, descriptions, categories, selling points, available pricing hints, and order quantities.",
+    "useCases": [
+      "Procurement teams can build supplier lists for a product category.",
+      "B2B researchers can compare company profiles, countries, and supplier attributes.",
+      "Buyers can shortlist manufacturers and distributors from WLW results."
+    ],
+    "howToUse": [
+      "Add one supplier or product keyword to `queries` per search.",
+      "Choose a country, category, supplier type, or verification filter.",
+      "Set `maxPages` and `maxResults`, then export supplier records."
+    ],
+    "faqs": [
+      {
+        "question": "Can I filter suppliers by country?",
+        "answer": "Yes. Choose one country code or provide a comma-separated list of country codes in the country filter."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "linkedin-company-scraper",
+        "title": "LinkedIn Company Scraper - $0.30/1k results"
+      },
+      {
+        "slug": "trustpilot-company-details-scraper",
+        "title": "Trustpilot Company Details Scraper"
+      },
+      {
+        "slug": "google-maps-reviews-scraper",
+        "title": "Google Maps Reviews Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "WLW identifier for the supplier result."
+      },
+      {
+        "name": "auction_id",
+        "type": "Integer",
+        "description": "WLW internal identifier for the supplier listing."
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "description": "Supplier or product name shown in WLW search results."
+      },
+      {
+        "name": "description",
+        "type": "String",
+        "description": "Supplier description or product summary shown in WLW."
+      },
+      {
+        "name": "slug",
+        "type": "String",
+        "description": "URL slug for the supplier or product record."
+      },
+      {
+        "name": "slug_id",
+        "type": "String",
+        "description": "WLW slug identifier for the result."
+      },
+      {
+        "name": "category",
+        "type": "String",
+        "description": "WLW category assigned to the supplier result."
+      },
+      {
+        "name": "language",
+        "type": "String",
+        "description": "Language code used for the supplier result."
+      },
+      {
+        "name": "is_showcased",
+        "type": "Boolean",
+        "description": "True when WLW highlights the supplier result as a showcase."
+      },
+      {
+        "name": "sell_points",
+        "type": "Array<String>",
+        "description": "Supplier selling points displayed in the search result."
+      },
+      {
+        "name": "price",
+        "type": "Object or null",
+        "description": "Price range or pricing hint, with currency when available."
+      },
+      {
+        "name": "minimum_order_quantity",
+        "type": "Object or null",
+        "description": "Minimum order quantity and unit, when supplied."
+      },
+      {
+        "name": "images",
+        "type": "Array<Object>",
+        "description": "Supplier or product image records with image URLs."
+      },
+      {
+        "name": "company",
+        "type": "Object",
+        "description": "Company identity and public supplier details."
+      },
+      {
+        "name": "input_q",
+        "type": "String",
+        "description": "Q submitted to retrieve this supplier result."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC ISO 8601 timestamp when this dataset record was collected."
+      }
+    ]
+  },
+  "enrichment": {
+    "field": "input_q"
+  },
+  "resultPointer": "/data",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/id",
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "currentPagePointer": "/meta/pagination/current_page",
+    "totalPagesPointer": "/meta/pagination/total_pages",
+    "maxPages": 10
+  },
+  "defaultMaxPages": 2
+}

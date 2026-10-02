@@ -1,0 +1,209 @@
+{
+  "success": true,
+  "data": {
+    "adid": 8000403,
+    "price": 549,
+    "priceInfo": {
+      "amount": 549,
+      "currencySuffix": "EUR"
+    },
+    "operation": "sale",
+    "propertyType": "Apartment",
+    "extendedPropertyType": "Residential property",
+    "homeType": "Residential property",
+    "state": "berlin",
+    "multimedia": {
+      "images": [
+        {
+          "url": "https://www.idealista.com/en/inmueble/99999117/",
+          "tag": "Verified source detail",
+          "localizedName": "Northstar Outdoor Supply",
+          "multimediaId": 8000384,
+          "deeplinkUrl": "https://www.idealista.com/en/inmueble/99999117/",
+          "madeByIdealista": true,
+          "width": 1200
+        }
+      ],
+      "videos": [
+        {
+          "url": "https://www.idealista.com/en/inmueble/99999117/",
+          "isProfessionalVideo": true,
+          "thumbnail": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "multimediaId": 8000385,
+          "deeplinkUrl": "https://www.idealista.com/en/inmueble/99999117/",
+          "madeByIdealista": true
+        }
+      ],
+      "virtual3DTours": [
+        {
+          "url": "https://www.idealista.com/en/inmueble/99999117/",
+          "tourType": "Residential property",
+          "creationDate": 8,
+          "thumbnail": "https://cdn.northstar.invalid/images/aurora-front.webp",
+          "category": "Residential property",
+          "deeplinkUrl": "https://www.idealista.com/en/inmueble/99999117/",
+          "madeByIdealista": true
+        }
+      ],
+      "hasMultimediasMadeByIdealista": true
+    },
+    "propertyComment": "Bright two-bedroom home with a balcony near local transport.",
+    "ubication": {
+      "title": "Bright two-bedroom flat in Berlin",
+      "latitude": 40.4168,
+      "longitude": -3.7038,
+      "hasHiddenAddress": false,
+      "administrativeAreaLevel4": "Verified source detail",
+      "administrativeAreaLevel3": "Verified source detail",
+      "administrativeAreaLevel2": "Verified source detail",
+      "administrativeAreaLevel1": "Verified source detail",
+      "locationId": "99999117",
+      "administrativeAreaLevel1Id": "99999117",
+      "locationName": "Madrid"
+    },
+    "country": "Spain",
+    "contactInfo": {
+      "commercialName": "Morgenrot Immobilien GmbH",
+      "phone1": {
+        "phoneNumber": "+49 30 555 0184",
+        "formattedPhone": "+49 30 555 0184",
+        "prefix": "Verified source detail",
+        "phoneNumberForMobileDialing": "+49 30 555 0184",
+        "nationalNumber": true,
+        "formattedPhoneWithPrefix": "+49 30 555 0184"
+      },
+      "contactName": "Morgan Lee",
+      "externalReference": "WEB-583214",
+      "userType": "Residential property",
+      "agencyLogo": "https://cdn.northstar.invalid/images/aurora-front.webp",
+      "contactMethod": "Verified source detail",
+      "micrositeShortName": "Northstar Outdoor Supply",
+      "address": {
+        "streetName": "Northstar Outdoor Supply",
+        "streetNumber": 8,
+        "locationName": "Madrid",
+        "postalCode": "Verified source detail"
+      },
+      "agentInfo": {
+        "name": "Jordan Ellis",
+        "proAgent": true
+      },
+      "inVirtualMicrosite": true,
+      "sharedSeekerProfile": true,
+      "corporateVideo": {
+        "thumbnail": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "url": "https://www.idealista.com/en/inmueble/99999117/"
+      },
+      "corporatePhrase": {
+        "text": "High quality and prompt delivery.",
+        "autoTranslated": true
+      },
+      "totalAds": 28,
+      "needLoginForContact": true,
+      "needLoginForPhone": true,
+      "chatEnabled": true,
+      "professional": true
+    },
+    "priceDropInfo": {
+      "priceDropValue": 629,
+      "priceDropPercentage": 629,
+      "dropDate": 8
+    },
+    "moreCharacteristics": {
+      "communityCosts": 8,
+      "roomNumber": 2,
+      "isStudio": true,
+      "bathNumber": 8,
+      "isAuction": false,
+      "exterior": true,
+      "housingFurnitures": "Verified source detail",
+      "agencyIsABank": true,
+      "energyPerformance": 8,
+      "isPenthouse": true,
+      "energyCertificationType": "Residential property",
+      "swimmingPool": true,
+      "flatLocation": "Verified source detail",
+      "modificationDate": 8,
+      "isInTopFloor": true,
+      "constructedArea": 78,
+      "lift": true,
+      "garden": true,
+      "boxroom": true,
+      "isDuplex": true,
+      "floor": "Verified source detail",
+      "status": "Published"
+    },
+    "translatedTexts": {
+      "floorNumberDescription": "Verified source detail",
+      "layoutDescription": "Verified source detail",
+      "characteristicsDescriptions": [
+        {
+          "key": "primary-image",
+          "title": "Bright two-bedroom flat in Berlin",
+          "detailFeatures": [
+            {
+              "phrase": "Verified source detail"
+            }
+          ]
+        }
+      ]
+    },
+    "suggestedTexts": {
+      "title": "Bright two-bedroom flat in Berlin"
+    },
+    "detailedType": {
+      "typology": "Verified source detail",
+      "subTypology": "Verified source detail"
+    },
+    "link": {
+      "url": "https://www.idealista.com/en/inmueble/99999117/"
+    },
+    "comments": [
+      {
+        "propertyComment": "Bright two-bedroom home with a balcony near local transport.",
+        "autoTranslated": true,
+        "language": "de",
+        "defaultLanguage": true
+      }
+    ],
+    "detailWebLink": "Verified source detail",
+    "energyCertification": {
+      "title": "Bright two-bedroom flat in Berlin",
+      "energyConsumption": {
+        "prefix": "Verified source detail",
+        "suffix": "Verified source detail",
+        "value": 8,
+        "type": "Apartment"
+      },
+      "emissions": {
+        "prefix": "Verified source detail",
+        "suffix": "Verified source detail",
+        "value": 8,
+        "type": "Apartment"
+      }
+    },
+    "allowsCounterOffers": true,
+    "allowsRemoteVisit": true,
+    "allowsMortgageSimulator": true,
+    "allowsAiAssistant": true,
+    "allowsProfileQualification": true,
+    "tracking": {
+      "isSuitableForRecommended": true,
+      "commercialDataId": 8000796
+    },
+    "has360VHS": true,
+    "labels": [
+      "Verified marketplace detail"
+    ],
+    "showSuggestedPrice": true,
+    "allowsRecommendation": true,
+    "modificationDate": {
+      "value": 8,
+      "text": "High quality and prompt delivery."
+    }
+  },
+  "meta": {
+    "duration_ms": 8,
+    "endpoint_family": "Verified source detail"
+  }
+}

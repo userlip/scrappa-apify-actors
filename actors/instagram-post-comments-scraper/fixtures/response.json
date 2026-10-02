@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "found": true,
+  "shortcode": "DdVztIfpeKW",
+  "comments": [
+    {
+      "id": "18012345678901234",
+      "text": "The colors in this landscape are beautiful.",
+      "taken_at": "2025-09-18T14:32:11Z",
+      "taken_at_timestamp": 1758205931,
+      "like_count": 86,
+      "author": {
+        "id": "584700123456789",
+        "username": "coastline.creator",
+        "profile_pic_url": "https://cdn.instagram.com/profiles/coastline-creator.jpg",
+        "is_verified": false
+      }
+    }
+  ],
+  "comments_count": 176,
+  "more_available": true,
+  "next_max_id": "QVFCaWQ0WlE9"
+}

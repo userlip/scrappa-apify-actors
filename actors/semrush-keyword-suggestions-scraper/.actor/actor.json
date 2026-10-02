@@ -1,0 +1,44 @@
+{
+  "actorSpecification": 1,
+  "name": "semrush-keyword-suggestions-scraper",
+  "title": "Semrush Keyword Suggestions Scraper",
+  "description": "Expand seed keywords into Semrush suggestion phrases. Batch multiple queries to build topic lists for SEO briefs and content research.",
+  "categories": [
+    "SEO_TOOLS"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "value"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "value": {
+                "label": "Suggested Keyword",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

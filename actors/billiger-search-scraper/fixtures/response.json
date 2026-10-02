@@ -1,0 +1,135 @@
+{
+  "success": true,
+  "data": {
+    "hits": [
+      {
+        "cheapest_offer_id": 8000870,
+        "lowest_total_price_offer_ids": [
+          584
+        ],
+        "userreview_count": 347,
+        "userreview_histogram": [
+          8
+        ],
+        "offer_count": 12,
+        "offer_conditions": [
+          "Verified source detail"
+        ],
+        "product_url": "https://www.billiger.de/products/northstar-aurora-1-tb",
+        "brand_id": 8000826,
+        "ean": "9345678901234",
+        "deal": null,
+        "test_count": 6,
+        "images": [
+          {
+            "image_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+            "height": 800,
+            "width": 1200,
+            "purpose": "Main product image"
+          }
+        ],
+        "description": null,
+        "category": "Consumer electronics",
+        "differentiators": [
+          8
+        ],
+        "differentiator_data": null,
+        "min_price": 549,
+        "min_total_price": 584,
+        "shipping_costs": 4,
+        "price_per_unit": null,
+        "total_price_per_unit": null,
+        "price_info": null,
+        "relevance": 12.8,
+        "type": "Product",
+        "brand": "Northstar",
+        "indexable": true,
+        "image_url_small": null,
+        "offers": null,
+        "properties": null,
+        "pricehistory": null,
+        "pricehistory_meta": null,
+        "related_products": null,
+        "product_variants": null,
+        "testreports": null,
+        "userreviews": null,
+        "userreviews_trustami": [
+          "Verified marketplace detail"
+        ],
+        "userreviews_combined": null,
+        "userreview_source_url_trustami": null,
+        "name": "Northstar Aurora 1 TB Smartphone",
+        "baseproduct_name": "Northstar Aurora 1 TB Smartphone",
+        "short_name": null,
+        "userreview_rating": 4.7,
+        "combined_grade": 8,
+        "is_deleted": false,
+        "baseproduct_id": 8000624,
+        "product_variant_ids": [
+          8000281
+        ],
+        "efficiency_labels": [
+          {
+            "id": 8000251,
+            "name": "Northstar Aurora 1 TB Smartphone",
+            "value": "USB-C interface",
+            "icon": null,
+            "override": null,
+            "color_name": "Northstar Outdoor Supply",
+            "color": "navy"
+          }
+        ],
+        "energy_tyre_labels": [
+          {
+            "icon": "primary-image",
+            "desc": "Main listing image and product details."
+          }
+        ],
+        "efficiency_label_image_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "test_rating": 94,
+        "image_url_large": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "product_id": 8000220,
+        "has_image": true,
+        "category_id": 8000315,
+        "max_price": 629,
+        "videos": [
+          {
+            "video_id": "https://media.northstar.invalid/video/aurora-overview.mp4",
+            "key": "primary-image",
+            "video_big": "https://media.northstar.invalid/video/aurora-overview.mp4",
+            "video_thumbnail_big": "https://media.northstar.invalid/video/aurora-overview.mp4",
+            "type": "Product",
+            "purpose": "Product overview video",
+            "definition": "Main listing image and product details.",
+            "title": "Northstar Aurora 1 TB Smartphone",
+            "description": "Compact design with dependable performance and a two-year warranty.",
+            "duration": 8
+          }
+        ],
+        "category_tags": [
+          "Consumer electronics"
+        ],
+        "cheapest_product_id": 8000266,
+        "filters": null,
+        "product_ids": null,
+        "product_count": 28,
+        "url": "https://www.billiger.de/products/northstar-aurora-1-tb",
+        "show_brand": true,
+        "image": "https://cdn.northstar.invalid/images/aurora-front.webp",
+        "products": null,
+        "root_category_id": 8000874
+      }
+    ],
+    "total_hits": 25
+  },
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "page_size": 5,
+      "total": 25,
+      "total_pages": 5,
+      "has_more": true,
+      "exhausted": false
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "success": true,
+  "data": {
+    "shortName": "Northstar Outdoor Supply",
+    "activeSinceYear": "Verified source detail",
+    "commercialName": "Morgenrot Immobilien GmbH",
+    "agencyWebUrl": "https://www.idealista.com/en/inmueble/99999117/",
+    "slogan": "Clear advice for every move.",
+    "defaultTypology": "Verified source detail",
+    "defaultOperation": "sale",
+    "contactInfo": {
+      "phone": "+49 30 555 0184",
+      "contactPhone": {
+        "phoneNumber": "+49 30 555 0184",
+        "formattedPhone": "+49 30 555 0184",
+        "prefix": "Verified source detail",
+        "phoneNumberForMobileDialing": "+49 30 555 0184",
+        "nationalNumber": true,
+        "formattedPhoneWithPrefix": "+49 30 555 0184"
+      },
+      "showContactButton": true,
+      "address": {
+        "streetName": "Northstar Outdoor Supply",
+        "streetNumber": 8,
+        "locationName": "Madrid",
+        "postalCode": "Verified source detail",
+        "latitude": 40.4168,
+        "longitude": -3.7038
+      },
+      "proAgent": true
+    },
+    "multimedias": {
+      "mainImage": "https://cdn.northstar.invalid/images/aurora-front.webp",
+      "brandingLogo": "https://cdn.northstar.invalid/images/aurora-front.webp"
+    },
+    "total": 28,
+    "languages": [
+      "de"
+    ],
+    "commercialDataId": 8000779,
+    "hasChatEnabled": true,
+    "micrositeLeadAllowed": true,
+    "corporateVideo": {
+      "url": "https://www.idealista.com/en/inmueble/99999117/",
+      "thumbnail": "https://cdn.northstar.invalid/images/aurora-front.webp"
+    },
+    "corporatePhrase": {
+      "text": "High quality and prompt delivery.",
+      "autoTranslated": true
+    }
+  },
+  "meta": {
+    "duration_ms": 8,
+    "endpoint_family": "Verified source detail"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "title": "Realestate.com.au Agents Scraper",
+  "description": "Find realestate.com.au agents by location with names, agencies, ratings, reviews, recent sales, and profile details. Batch Australian suburbs and page through results.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "locations"
+  ],
+  "properties": {
+    "locations": {
+      "title": "Agent search locations",
+      "type": "array",
+      "description": "Australian suburbs or localities to search for realestate.com.au agents.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "location": "Richmond, VIC 3121"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "location"
+        ],
+        "properties": {
+          "location": {
+            "title": "Location",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "pattern": "^[a-z0-9,+ -]+$",
+            "description": "Location slug or text such as sydney-nsw-2000. Required unless url is supplied.",
+            "editor": "textfield"
+          },
+          "url": {
+            "title": "URL",
+            "type": "string",
+            "pattern": "^https:\\/\\/www\\.realestate\\.com\\.au\\/find-agent",
+            "format": "uri",
+            "description": "Full realestate.com.au find-agent URL.",
+            "editor": "textfield"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200,
+            "description": "Page number for find-agent pagination.",
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "url": {
+      "title": "URL",
+      "type": "string",
+      "pattern": "^https:\\/\\/www\\.realestate\\.com\\.au\\/find-agent",
+      "format": "uri",
+      "description": "Full realestate.com.au find-agent URL.",
+      "editor": "textfield"
+    },
+    "page": {
+      "title": "Page",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "Page number for find-agent pagination.",
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 2
+    }
+  }
+}

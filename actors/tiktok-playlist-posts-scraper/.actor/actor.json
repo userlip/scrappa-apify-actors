@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "tiktok-playlist-posts-scraper",
+  "title": "TikTok Playlist Videos Scraper",
+  "description": "Collect TikTok playlist videos with creators, captions, play counts, likes, and sound references. Batch playlist IDs and follow cursor pages.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "aweme_id",
+              "author_username",
+              "title",
+              "play_count",
+              "digg_count"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "aweme_id": {
+                "label": "Video ID",
+                "format": "text"
+              },
+              "author_username": {
+                "label": "Author Username",
+                "format": "text"
+              },
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "play_count": {
+                "label": "Play Count",
+                "format": "number"
+              },
+              "digg_count": {
+                "label": "Like Count",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

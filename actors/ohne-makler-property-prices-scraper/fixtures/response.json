@@ -1,0 +1,40 @@
+{
+  "success": true,
+  "market": "immobilienpreise",
+  "state": "berlin",
+  "city": null,
+  "title": "Residential prices in Berlin",
+  "intro": "Residential asking prices and local indicators for the Berlin market.",
+  "sections": [
+    {
+      "heading": "Apartment asking prices",
+      "tables": [
+        {
+          "headers": [
+            "Property type",
+            "Median asking price"
+          ],
+          "rows": [
+            [
+              "Apartment",
+              "4,850 EUR per m²"
+            ],
+            [
+              "House",
+              "5,420 EUR per m²"
+            ]
+          ]
+        }
+      ],
+      "charts": [
+        "Median asking price by property type"
+      ],
+      "regions": [
+        {
+          "path": "berlin-mitte",
+          "name": "Berlin Mitte"
+        }
+      ]
+    }
+  ]
+}

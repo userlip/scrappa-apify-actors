@@ -1,0 +1,10 @@
+{
+  "domains": [
+    {
+      "domain": "scrappa.co"
+    }
+  ],
+  "fields": "company_name,address,email,phone",
+  "language": "de",
+  "maxResults": 1
+}
