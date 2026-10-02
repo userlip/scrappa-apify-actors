@@ -1,0 +1,13 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Baidu Trending Searches Scraper output",
+  "description": "Results saved by Baidu Trending Searches Scraper, one dataset item per result.",
+  "properties": {
+    "results": {
+      "type": "string",
+      "title": "Results",
+      "description": "All results from this run in the default dataset.",
+      "template": "{{links.apiDefaultDatasetUrl}}/items"
+    }
+  }
+}

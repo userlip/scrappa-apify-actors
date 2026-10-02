@@ -1,0 +1,13 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Booking.com Reviews Scraper output",
+  "description": "Results saved by Booking.com Reviews Scraper, one dataset item per result.",
+  "properties": {
+    "results": {
+      "type": "string",
+      "title": "Results",
+      "description": "All results from this run in the default dataset.",
+      "template": "{{links.apiDefaultDatasetUrl}}/items"
+    }
+  }
+}

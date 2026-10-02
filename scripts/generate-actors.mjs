@@ -231,6 +231,24 @@ function inputSchema(spec) {
   };
 }
 
+// Apify requires an output schema to publish an Actor. Results always live in
+// the default dataset; the overview view matches the dataset table in actor.json.
+function outputSchema(spec) {
+  return {
+    actorOutputSchemaVersion: 1,
+    title: `${spec.title} output`,
+    description: `Results saved by ${spec.title}, one dataset item per result.`,
+    properties: {
+      results: {
+        type: 'string',
+        title: 'Results',
+        description: 'All results from this run in the default dataset.',
+        template: '{{links.apiDefaultDatasetUrl}}/items',
+      },
+    },
+  };
+}
+
 function actorJson(spec) {
   const fields = spec.tableFields;
   const display = {};
@@ -250,6 +268,7 @@ function actorJson(spec) {
     version: '1.0',
     buildTag: 'latest',
     input: './input_schema.json',
+    output: './output_schema.json',
     dockerfile: './Dockerfile',
     environmentVariables: {
       SCRAPPA_API_KEY: '@SCRAPPA_API_KEY',
@@ -419,6 +438,7 @@ async function render(spec, sourceFiles) {
   files.set('fixtures/response.json', Buffer.from(json(spec.fixture)));
   files.set('.actor/actor.json', Buffer.from(json(actorJson(spec))));
   files.set('.actor/input_schema.json', Buffer.from(json(inputSchema(spec))));
+  files.set('.actor/output_schema.json', Buffer.from(json(outputSchema(spec))));
   files.set('.actor/README.md', Buffer.from(readme(spec)));
   return files;
 }
