@@ -110,7 +110,28 @@ apify push
 
 ### Updating an actor
 
-From the actor directory, run `cargo test --locked` and build its Docker image before uploading. Push with a candidate build tag, verify its run and dataset, then promote the tested build ID to `latest`. Keep the previous build ID available for rollback.
+Run `cargo test --locked` in the Actor directory first. Then deploy with the safe candidate flow:
+
+```bash
+APIFY_TOKEN=... node scripts/deploy-actor.mjs actors/<dir> [actors/<dir> ...]
+```
+
+The script uploads the directory to the version behind the `latest` build (env vars and the `SCRAPPA_API_KEY` secret stay untouched), builds it under the `candidate` tag, runs the prefilled input, and moves `latest` only when the run succeeds with at least one dataset item. It prints the previous build ID; roll back with `node scripts/deploy-actor.mjs --rollback <actorId> <buildId>`.
+
+### Creating and publishing a new generated Actor
+
+```bash
+APIFY_TOKEN=... SCRAPPA_API_KEY=... node scripts/create-actor.mjs actors/<slug>
+APIFY_TOKEN=... node scripts/create-actor.mjs --publish <slug>
+```
+
+`create-actor.mjs` creates the Actor privately with Store metadata, limited permissions, the Scrappa key as a secret and tiered PAY_PER_EVENT pricing, then builds it and verifies the prefilled run. Apify allows only 5 publications per account per day; the backlog is published in priority order by a cron job on the Mimir server (`~/scrappa-apify-publisher`, every 4 hours, log in `publish.log`).
+
+### Store pages and checks
+
+- Store metadata (title, descriptions, SEO fields, categories): `docs/store-metadata.json`, applied with `APIFY_TOKEN=... node scripts/apply-store-metadata.mjs [--dry-run]`.
+- Copy rules: [docs/store-copy-style-guide.md](docs/store-copy-style-guide.md).
+- CI runs `scripts/validate-store-pages.mjs`, `scripts/validate-store-copy.mjs`, `scripts/validate-prefill.mjs` (prefilled input matches the input schema, as Apify's daily QA run requires) and `scripts/validate-input-schemas.mjs` (Apify's own input schema validator).
 
 ## Available Actors
 
@@ -234,6 +255,94 @@ Use [docs/monetization-activation-checklist.md](docs/monetization-activation-che
 | `actors/trustpilot-company-details-scraper` | `trustpilot-company-details-scraper` | `HUWnflZ9OPGnNujNH` | Trustpilot Company Details Scraper | Rust source present | Verify live pricing before changing it |
 | `actors/vinted-item-details-scraper` | `vinted-item-details-scraper` | `nA0kqXK4aSTiOHpQd` | Vinted Item Details Scraper | Rust source present | Verify live pricing before changing it |
 | `actors/vinted-user-items-scraper` | `vinted-user-items-scraper` | `GLc2eaPsRYtwajL0D` | Vinted User Items Scraper | Rust source present | Verify live pricing before changing it |
+## Generated endpoint Actors
+
+These 81 Actors are generated from `specs/<slug>.json` with the shared Rust template (see [docs/generated-actors.md](docs/generated-actors.md)) and cover the Scrappa endpoints listed in [docs/endpoint-coverage.md](docs/endpoint-coverage.md). All are live-verified on Apify; they become public in priority order because of Apify's daily publication limit.
+
+| Actor | Scrappa endpoint | Price |
+|---|---|---|
+| [Apple App Store App Details Scraper](https://apify.com/thescrappa/apple-app-store-app-details-scraper) | `/apple/app-store/details` | $0.50 per 1,000 results |
+| [Apple App Store Top Charts Scraper](https://apify.com/thescrappa/apple-app-store-charts-scraper) | `/apple/app-store/charts` | $0.30 per 1,000 results |
+| [Apple App Store Developer Apps Scraper](https://apify.com/thescrappa/apple-app-store-developer-scraper) | `/apple/app-store/developer` | $0.30 per 1,000 results |
+| [Apple App Store Reviews Scraper](https://apify.com/thescrappa/apple-app-store-reviews-scraper) | `/apple/app-store/product/reviews` | $0.30 per 1,000 results |
+| [Apple App Store Search Scraper](https://apify.com/thescrappa/apple-app-store-search-scraper) | `/apple/app-store/search` | $0.30 per 1,000 results |
+| [Arbeitsagentur Job Details Scraper](https://apify.com/thescrappa/arbeitsagentur-job-details-scraper) | `/arbeitsagentur/job` | $0.50 per 1,000 results |
+| [Baidu Autocomplete Scraper](https://apify.com/thescrappa/baidu-autocomplete-scraper) | `/baidu/autocomplete` | $0.30 per 1,000 results |
+| [Baidu Images Scraper](https://apify.com/thescrappa/baidu-images-scraper) | `/baidu/images` | $0.30 per 1,000 results |
+| [Baidu Search Scraper](https://apify.com/thescrappa/baidu-search-scraper) | `/baidu/search` | $0.30 per 1,000 results |
+| [Baidu Trending Searches Scraper](https://apify.com/thescrappa/baidu-trending-scraper) | `/baidu/trending` | $0.30 per 1,000 results |
+| [Billiger.de Product Offers Scraper](https://apify.com/thescrappa/billiger-offers-scraper) | `/billiger/offers` | $0.30 per 1,000 results |
+| [Billiger.de Price Comparison Search Scraper](https://apify.com/thescrappa/billiger-search-scraper) | `/billiger/search` | $0.30 per 1,000 results |
+| [Bing Search Scraper](https://apify.com/thescrappa/bing-search-scraper) | `/bing/search` | $0.30 per 1,000 results |
+| [Booking.com Hotel Facilities Scraper](https://apify.com/thescrappa/booking-facilities-scraper) | `/booking/facilities` | $0.50 per 1,000 results |
+| [Booking.com Hotel Photos Scraper](https://apify.com/thescrappa/booking-photos-scraper) | `/booking/photos` | $0.30 per 1,000 results |
+| [Booking.com Hotel Prices Scraper](https://apify.com/thescrappa/booking-prices-scraper) | `/booking/prices` | $0.30 per 1,000 results |
+| [Booking.com Review Scores Scraper](https://apify.com/thescrappa/booking-review-scores-scraper) | `/booking/review-scores` | $0.50 per 1,000 results |
+| [Booking.com Reviews Scraper](https://apify.com/thescrappa/booking-reviews-scraper) | `/booking/reviews` | $0.30 per 1,000 results |
+| [Booking.com Rooms & Rates Scraper](https://apify.com/thescrappa/booking-rooms-scraper) | `/booking/rooms` | $0.30 per 1,000 results |
+| [Brave Search Scraper](https://apify.com/thescrappa/brave-search-scraper) | `/brave/search` | $0.30 per 1,000 results |
+| [Geizhals Price History Scraper](https://apify.com/thescrappa/geizhals-price-history-scraper) | `/geizhals/price-history` | $0.30 per 1,000 results |
+| [Geizhals Product & Offers Scraper](https://apify.com/thescrappa/geizhals-product-scraper) | `/geizhals/product` | $0.50 per 1,000 results |
+| [Geizhals Price Comparison Search Scraper](https://apify.com/thescrappa/geizhals-search-scraper) | `/geizhals/search` | $0.30 per 1,000 results |
+| [Google AI Overview Scraper](https://apify.com/thescrappa/google-ai-overview-scraper) | `/search-ai-overview` | $0.50 per 1,000 results |
+| [Google Autocomplete Keyword Scraper](https://apify.com/thescrappa/google-autocomplete-scraper) | `/search-light/autocomplete` | $0.30 per 1,000 results |
+| [Google Flights Cheapest Dates Scraper](https://apify.com/thescrappa/google-flights-date-range-scraper) | `/flights/v2/date-range` | $0.30 per 1,000 results |
+| [Google Lens Visual Search Scraper](https://apify.com/thescrappa/google-lens-scraper) | `/google/lens` | $0.30 per 1,000 results |
+| [Google Play App Details Scraper](https://apify.com/thescrappa/google-play-app-details-scraper) | `/google/play/details` | $0.50 per 1,000 results |
+| [Google Scholar Scraper](https://apify.com/thescrappa/google-scholar-scraper) | `/google/scholar` | $0.30 per 1,000 results |
+| [Google Shopping Scraper](https://apify.com/thescrappa/google-shopping-scraper) | `/google/shopping` | $0.30 per 1,000 results |
+| [Idealista Agency Scraper](https://apify.com/thescrappa/idealista-agency-scraper) | `/idealista/agency` | $0.50 per 1,000 results |
+| [Idealista Listing Details Scraper](https://apify.com/thescrappa/idealista-listing-scraper) | `/idealista/listing` | $0.50 per 1,000 results |
+| [Idealista Property Search Scraper](https://apify.com/thescrappa/idealista-search-scraper) | `/idealista/search` | $0.30 per 1,000 results |
+| [ImmobilienScout24 Property Details Scraper](https://apify.com/thescrappa/immobilienscout24-property-details-scraper) | `/immobilienscout24/property/{id}` | $0.50 per 1,000 results |
+| [Impressum Contact Data Extractor](https://apify.com/thescrappa/impressum-extractor) | `/web-scraper/impressum` | $0.50 per 1,000 results |
+| [Instagram Hashtag Search Scraper](https://apify.com/thescrappa/instagram-hashtag-search-scraper) | `/instagram/hashtags/search` | $0.30 per 1,000 results |
+| [Instagram Comments Scraper](https://apify.com/thescrappa/instagram-post-comments-scraper) | `/instagram/post/comments` | $0.30 per 1,000 results |
+| [Instagram Tagged Posts Scraper](https://apify.com/thescrappa/instagram-tagged-posts-scraper) | `/instagram/user/tagged-posts` | $0.30 per 1,000 results |
+| [Instagram Trending Reels Scraper](https://apify.com/thescrappa/instagram-trending-reels-scraper) | `/instagram/reels/trending` | $0.30 per 1,000 results |
+| [Instagram User Reels Scraper](https://apify.com/thescrappa/instagram-user-reels-scraper) | `/instagram/user/reels` | $0.30 per 1,000 results |
+| [Kayak Car Rentals Scraper](https://apify.com/thescrappa/kayak-car-rentals-scraper) | `/kayak/cars/search` | $0.30 per 1,000 results |
+| [Kayak Cruises Scraper](https://apify.com/thescrappa/kayak-cruises-scraper) | `/kayak/cruises/sailings` | $0.30 per 1,000 results |
+| [Kayak Explore Cheapest Destinations Scraper](https://apify.com/thescrappa/kayak-explore-destinations-scraper) | `/kayak/explore/destinations` | $0.30 per 1,000 results |
+| [Kayak Flight Price Predictions Scraper](https://apify.com/thescrappa/kayak-flight-price-predictions-scraper) | `/kayak/best-time/flight-price-predictions` | $0.30 per 1,000 results |
+| [Kayak Flights Scraper](https://apify.com/thescrappa/kayak-flights-scraper) | `/kayak/flights/one-way` | $0.30 per 1,000 results |
+| [Kayak Hotel Details Scraper](https://apify.com/thescrappa/kayak-hotel-details-scraper) | `/kayak/stays/property` | $0.50 per 1,000 results |
+| [Kayak Hotel Rates Scraper](https://apify.com/thescrappa/kayak-hotel-rates-scraper) | `/kayak/stays/rates` | $0.30 per 1,000 results |
+| [Kayak Hotel Reviews Scraper](https://apify.com/thescrappa/kayak-hotel-reviews-scraper) | `/kayak/stays/reviews` | $0.30 per 1,000 results |
+| [Kayak Hotels Search Scraper](https://apify.com/thescrappa/kayak-hotels-search-scraper) | `/kayak/stays/search` | $0.30 per 1,000 results |
+| [Kayak Vacation Packages Scraper](https://apify.com/thescrappa/kayak-packages-scraper) | `/kayak/packages/search` | $0.30 per 1,000 results |
+| [Kayak Vacation Rentals Scraper](https://apify.com/thescrappa/kayak-vacation-rentals-scraper) | `/kayak/stays/vacation-rentals` | $0.30 per 1,000 results |
+| [Kununu Company Profile Scraper](https://apify.com/thescrappa/kununu-company-details-scraper) | `/kununu/company-details` | $0.50 per 1,000 results |
+| [Kununu Company Salaries Scraper](https://apify.com/thescrappa/kununu-company-salaries-scraper) | `/kununu/company-salary` | $0.30 per 1,000 results |
+| [Kununu Company Search Scraper](https://apify.com/thescrappa/kununu-company-search-scraper) | `/kununu/search` | $0.30 per 1,000 results |
+| [Kununu Job Details Scraper](https://apify.com/thescrappa/kununu-job-details-scraper) | `/kununu/job` | $0.50 per 1,000 results |
+| [Kununu Salary by Job Title Scraper](https://apify.com/thescrappa/kununu-salary-scraper) | `/kununu/salary` | $0.50 per 1,000 results |
+| [Kununu Top Companies Scraper](https://apify.com/thescrappa/kununu-top-companies-scraper) | `/kununu/top-companies` | $0.30 per 1,000 results |
+| [mobile.de Dealer Inventory Scraper](https://apify.com/thescrappa/mobile-de-dealer-inventory-scraper) | `/mobile-de/v1/dealer-inventory` | $0.30 per 1,000 results |
+| [mobile.de Listing Details Scraper](https://apify.com/thescrappa/mobile-de-listing-scraper) | `/mobile-de/v1/listing` | $0.50 per 1,000 results |
+| [mobile.de Car Search Scraper](https://apify.com/thescrappa/mobile-de-search-scraper) | `/mobile-de/v1/search` | $0.30 per 1,000 results |
+| [Ohne-Makler Listing Details Scraper](https://apify.com/thescrappa/ohne-makler-listing-scraper) | `/ohne-makler/listing` | $0.50 per 1,000 results |
+| [Ohne-Makler Property Prices Scraper](https://apify.com/thescrappa/ohne-makler-property-prices-scraper) | `/ohne-makler/market/immobilienpreise` | $0.50 per 1,000 results |
+| [Ohne-Makler Rent Index Scraper](https://apify.com/thescrappa/ohne-makler-rent-index-scraper) | `/ohne-makler/market/mietspiegel` | $0.50 per 1,000 results |
+| [Ohne-Makler Property Search Scraper](https://apify.com/thescrappa/ohne-makler-search-scraper) | `/ohne-makler/search` | $0.30 per 1,000 results |
+| [Realestate.com.au Agents Scraper](https://apify.com/thescrappa/realestate-com-au-agents-scraper) | `/realestate-com-au/agents` | $0.30 per 1,000 results |
+| [Realestate.com.au Property Details Scraper](https://apify.com/thescrappa/realestate-com-au-property-scraper) | `/realestate-com-au/property` | $0.50 per 1,000 results |
+| [Realestate.com.au Property Search Scraper](https://apify.com/thescrappa/realestate-com-au-search-scraper) | `/realestate-com-au/search` | $0.30 per 1,000 results |
+| [Realestate.com.au Suburb Profile Scraper](https://apify.com/thescrappa/realestate-com-au-suburb-profile-scraper) | `/realestate-com-au/suburb-profile` | $0.50 per 1,000 results |
+| [Semrush Competitors Scraper](https://apify.com/thescrappa/semrush-competitors-scraper) | `/semrush/domain/competitors` | $0.30 per 1,000 results |
+| [Semrush Domain Overview Scraper](https://apify.com/thescrappa/semrush-domain-overview-scraper) | `/semrush/domain/overview` | $0.50 per 1,000 results |
+| [Semrush Keyword Suggestions Scraper](https://apify.com/thescrappa/semrush-keyword-suggestions-scraper) | `/semrush/suggest` | $0.30 per 1,000 results |
+| [Semrush Sensor Winners & Losers Scraper](https://apify.com/thescrappa/semrush-sensor-movers-scraper) | `/semrush/sensor/movers` | $0.30 per 1,000 results |
+| [Semrush Trending Websites Scraper](https://apify.com/thescrappa/semrush-trending-websites-scraper) | `/semrush/trending` | $0.30 per 1,000 results |
+| [Semrush Website Traffic Scraper](https://apify.com/thescrappa/semrush-website-traffic-scraper) | `/semrush/website/traffic` | $0.50 per 1,000 results |
+| [TikTok Collection Videos Scraper](https://apify.com/thescrappa/tiktok-collection-posts-scraper) | `/tiktok/collections/posts` | $0.30 per 1,000 results |
+| [TikTok Music Details Scraper](https://apify.com/thescrappa/tiktok-music-details-scraper) | `/tiktok/music/details` | $0.50 per 1,000 results |
+| [TikTok Playlist Videos Scraper](https://apify.com/thescrappa/tiktok-playlist-posts-scraper) | `/tiktok/playlists/posts` | $0.30 per 1,000 results |
+| [TikTok Trending Feed Scraper](https://apify.com/thescrappa/tiktok-trending-feed-scraper) | `/tiktok/feed/list` | $0.30 per 1,000 results |
+| [TikTok User Search Scraper](https://apify.com/thescrappa/tiktok-user-search-scraper) | `/tiktok/user/search` | $0.30 per 1,000 results |
+| [Trusted Shops Category Shops Scraper](https://apify.com/thescrappa/trustedshops-category-shops-scraper) | `/trustedshops/category-shops` | $0.30 per 1,000 results |
+| [WLW Supplier Search Scraper](https://apify.com/thescrappa/wlw-supplier-search-scraper) | `/wlw/search` | $0.30 per 1,000 results |
+
 ## API Key
 
 All actors require a Scrappa API key. Get yours at [https://scrappa.co](https://scrappa.co).

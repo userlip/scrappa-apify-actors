@@ -3,7 +3,24 @@
 Checked 2026-09-30 against `https://scrappa.co/api/docs/openapi.json` (318 paths).
 
 - 106 live Actors already cover the main data endpoints (see README inventory).
-- `docs/endpoint-actor-catalog.json` lists the 87 data endpoints that get a new Actor. Each entry was probed live against production Scrappa with the listed `test_params`.
+- `docs/endpoint-actor-catalog.json` lists the 87 data endpoints that were candidates for a new Actor. Each entry was probed live against production Scrappa with the listed `test_params`.
+- Result (2026-10-02): 81 new Actors were generated, live-verified on Apify and queued for publication (see the README table). Together with the 106 existing Actors, Scrappa now has 187 Apify Actors.
+
+## Catalog endpoints that did not ship
+
+| Endpoint | Evidence | Next step |
+|---|---|---|
+| `/google/play/product/reviews` | Returned an empty `reviews` array for every tested app and parameter combination, including `all_reviews` | Fix review extraction in Scrappa, then add the spec |
+| `/immowelt/property` | Live probes did not return usable listing data | Re-test after the Immowelt endpoint is fixed |
+| `/vinted/similar-items` | Live probes did not return usable rows | Re-test after the Vinted endpoint is fixed |
+| `/tiktok/user/favorites` | HTTP 200 with zero videos for public accounts | Only ship if a reliable public example exists |
+| `/tiktok/user/story` | Stories expire, so no prefill can return rows every day for Apify QA | Not suitable for a Store Actor |
+| `/instagram/audio/reels` | No reliably discoverable public audio IDs; probes returned `found: false` | Re-test with a known audio ID |
+
+## Known upstream reliability issues
+
+- `/google/lens` is blocked by Google on roughly half of the calls (HTTP 503 `GOOGLE_LENS_BLOCKED`); the generated Actor retries for about a minute.
+- The private Actors `youtube-api-get-channel-shorts`, `youtube-api-get-channel-livestreams`, `youtube-api-channel-podcasts` and `youtube-api-playlists` return no rows because the YouTube backend does not currently return those video types; they stay private.
 
 ## Endpoints intentionally without their own Actor
 
