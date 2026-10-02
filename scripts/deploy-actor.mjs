@@ -36,11 +36,18 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function api(method, p, body) {
   for (let attempt = 0; attempt < 6; attempt += 1) {
-    const res = await fetch(`${API}${p}${p.includes('?') ? '&' : '?'}token=${TOKEN}`, {
-      method,
-      headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
+    let res;
+    try {
+      res = await fetch(`${API}${p}${p.includes('?') ? '&' : '?'}token=${TOKEN}`, {
+        method,
+        headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+    } catch (error) {
+      // Transient network errors ("fetch failed") are retried like 5xx responses.
+      await sleep(5000 * (attempt + 1));
+      continue;
+    }
     if (res.status === 402 || res.status === 429 || res.status >= 500) {
       await sleep(5000 * (attempt + 1));
       continue;
