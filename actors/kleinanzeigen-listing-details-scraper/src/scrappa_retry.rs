@@ -167,7 +167,7 @@ where
 
     for attempt in 0..max_attempts {
         let remaining = deadline.saturating_duration_since(Instant::now());
-        if remaining.is_zero() {
+        if remaining.is_zero() && attempt > 0 {
             return match (last_response, last_error) {
                 (Some(response), _) => Ok(response),
                 (_, Some(error)) => Err(error),
@@ -175,7 +175,8 @@ where
             };
         }
 
-        match send(remaining.min(REQUEST_TIMEOUT)).await {
+        // A first attempt with an already exhausted budget ends in a normal timeout error.
+        match send(remaining.min(REQUEST_TIMEOUT).max(Duration::from_millis(1))).await {
             Ok(mut response) => {
                 let retry_for_invalid_json = response.invalid_json_error.is_some();
                 let retry_for_status =
