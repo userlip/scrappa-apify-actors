@@ -543,6 +543,7 @@ impl Storage {
         let mut stable_prefix = None;
         // Once any rows of this chunk were seen, a full re-post could duplicate them.
         let mut saw_rows = false;
+        let mut largest_prefix = 0;
 
         loop {
             if Instant::now() >= stop_checking_at {
@@ -573,6 +574,10 @@ impl Storage {
                     return Ok(verification);
                 }
                 DatasetVerification::Prefix(count) => {
+                    if count < largest_prefix {
+                        return Ok(DatasetVerification::Mismatch);
+                    }
+                    largest_prefix = count;
                     saw_rows = true;
                     stable_prefix = (previous_prefix == Some(count)).then_some(count);
                     previous_prefix = Some(count);
@@ -2494,13 +2499,17 @@ mod tests {
     use std::{
         io::{Read, Write},
         net::{TcpListener, TcpStream},
-        sync::{Arc, Mutex},
+        sync::{
+            Arc, Mutex,
+            atomic::{AtomicBool, Ordering},
+        },
         thread,
     };
 
     struct MockApifyServer {
         base: Url,
         requests: Arc<Mutex<Vec<String>>>,
+        shutdown: Arc<AtomicBool>,
         handle: Option<thread::JoinHandle<()>>,
     }
 
@@ -2511,12 +2520,17 @@ mod tests {
             let address = listener.local_addr().unwrap();
             let requests = Arc::new(Mutex::new(Vec::new()));
             let captured = Arc::clone(&requests);
+            let shutdown = Arc::new(AtomicBool::new(false));
+            let stop_requested = Arc::clone(&shutdown);
             let handle = thread::spawn(move || {
                 for (status, body) in responses {
                     let deadline = std::time::Instant::now() + Duration::from_secs(5);
-                    let (mut stream, _) = loop {
+                    let connection = loop {
+                        if stop_requested.load(Ordering::Acquire) {
+                            break None;
+                        }
                         match listener.accept() {
-                            Ok(connection) => break connection,
+                            Ok(connection) => break Some(connection),
                             Err(error)
                                 if error.kind() == std::io::ErrorKind::WouldBlock
                                     && std::time::Instant::now() < deadline =>
@@ -2525,6 +2539,9 @@ mod tests {
                             }
                             Err(error) => panic!("mock server accept failed: {error}"),
                         }
+                    };
+                    let Some((mut stream, _)) = connection else {
+                        break;
                     };
                     let request = read_mock_request(&mut stream);
                     captured.lock().unwrap().push(request);
@@ -2546,11 +2563,13 @@ mod tests {
             Self {
                 base: Url::parse(&format!("http://{address}")).unwrap(),
                 requests,
+                shutdown,
                 handle: Some(handle),
             }
         }
 
         fn finish(mut self) -> Vec<String> {
+            self.shutdown.store(true, Ordering::Release);
             self.handle.take().unwrap().join().unwrap();
             self.requests.lock().unwrap().clone()
         }
@@ -3090,8 +3109,33 @@ mod tests {
         let result = push_test_chunk(&storage, &items).await;
         assert!(result.is_err());
 
-        // Read the captured requests directly: the spare response stays unused on success.
-        let requests = server.requests.lock().unwrap().clone();
+        let requests = server.finish();
+        let posts = requests
+            .iter()
+            .filter(|request| request_method(request) == "POST")
+            .count();
+        assert_eq!(posts, 1);
+    }
+
+    #[tokio::test]
+    async fn never_reposts_rows_after_the_verified_prefix_shrinks() {
+        let items = vec![
+            json!({"id":"one"}),
+            json!({"id":"two"}),
+            json!({"id":"three"}),
+        ];
+        let server = MockApifyServer::start(vec![
+            (502, "{}".to_owned()),
+            (200, "[{\"id\":\"one\"},{\"id\":\"two\"}]".to_owned()),
+            (200, "[{\"id\":\"one\"}]".to_owned()),
+            (201, "{}".to_owned()),
+        ]);
+        let storage = test_storage(server.base.clone());
+
+        let result = push_test_chunk(&storage, &items).await;
+        assert!(result.is_err());
+
+        let requests = server.finish();
         let posts = requests
             .iter()
             .filter(|request| request_method(request) == "POST")

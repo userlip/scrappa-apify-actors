@@ -473,6 +473,7 @@ async fn verify_dataset_chunk(
     let mut stable_prefix = None;
     // Once any rows of this chunk were seen, a full re-post could duplicate them.
     let mut saw_rows = false;
+    let mut largest_prefix = 0;
 
     loop {
         if Instant::now() >= verify_until {
@@ -523,6 +524,10 @@ async fn verify_dataset_chunk(
                 return Ok(DatasetVerification::Complete(response));
             }
             DatasetVerificationResult::Prefix(count) => {
+                if count < largest_prefix {
+                    return Ok(DatasetVerification::Mismatch);
+                }
+                largest_prefix = count;
                 saw_rows = true;
                 stable_prefix = (previous_prefix == Some(count)).then_some(count);
                 previous_prefix = Some(count);
@@ -833,7 +838,10 @@ mod tests {
     use std::{
         io::{Read, Write},
         net::{TcpListener, TcpStream},
-        sync::{Arc, Mutex},
+        sync::{
+            Arc, Mutex,
+            atomic::{AtomicBool, Ordering},
+        },
         thread,
     };
 
@@ -848,18 +856,40 @@ mod tests {
     struct MockServer {
         base: String,
         requests: Arc<Mutex<Vec<String>>>,
+        shutdown: Arc<AtomicBool>,
         handle: Option<thread::JoinHandle<()>>,
     }
 
     impl MockServer {
         fn start(responses: Vec<MockResponse>) -> Self {
             let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            listener.set_nonblocking(true).unwrap();
             let address = listener.local_addr().unwrap();
             let requests = Arc::new(Mutex::new(Vec::new()));
             let captured = requests.clone();
+            let shutdown = Arc::new(AtomicBool::new(false));
+            let stop_requested = Arc::clone(&shutdown);
             let handle = thread::spawn(move || {
                 for response in responses {
-                    let (mut stream, _) = listener.accept().unwrap();
+                    let deadline = std::time::Instant::now() + Duration::from_secs(5);
+                    let connection = loop {
+                        if stop_requested.load(Ordering::Acquire) {
+                            break None;
+                        }
+                        match listener.accept() {
+                            Ok(connection) => break Some(connection),
+                            Err(error)
+                                if error.kind() == std::io::ErrorKind::WouldBlock
+                                    && std::time::Instant::now() < deadline =>
+                            {
+                                thread::sleep(Duration::from_millis(5));
+                            }
+                            Err(error) => panic!("mock server accept failed: {error}"),
+                        }
+                    };
+                    let Some((mut stream, _)) = connection else {
+                        break;
+                    };
                     let request = read_request(&mut stream);
                     captured.lock().unwrap().push(request);
                     let reason = match response.status {
@@ -886,6 +916,7 @@ mod tests {
             Self {
                 base: format!("http://{address}"),
                 requests,
+                shutdown,
                 handle: Some(handle),
             }
         }
@@ -895,6 +926,7 @@ mod tests {
         }
 
         fn finish(mut self) -> Vec<String> {
+            self.shutdown.store(true, Ordering::Release);
             self.handle.take().unwrap().join().unwrap();
             self.requests()
         }
@@ -1066,8 +1098,27 @@ mod tests {
             .send_apify_with_retry()
             .await;
         assert!(result.is_err());
-        // requests() instead of finish(): the spare response stays unused on success.
-        assert_eq!(method_count(&server.requests(), "POST"), 1);
+        let requests = server.finish();
+        assert_eq!(method_count(&requests, "POST"), 1);
+    }
+
+    #[tokio::test]
+    async fn never_reposts_rows_after_the_verified_prefix_shrinks() {
+        let server = MockServer::start(vec![
+            response(502, json!({})),
+            response(200, json!([{"id":1},{"id":2}])),
+            response(200, json!([{"id":1}])),
+            response(201, json!({})),
+        ]);
+        let result = Client::new()
+            .post(format!("{}/v2/datasets/dataset-8/items", server.base))
+            .json(&json!([{"id":1},{"id":2},{"id":3}]))
+            .send_apify_with_retry()
+            .await;
+        assert!(result.is_err());
+        let requests = server.finish();
+        assert_eq!(method_count(&requests, "POST"), 1);
+        assert_eq!(method_count(&requests, "GET"), 2);
     }
 
     #[tokio::test]
