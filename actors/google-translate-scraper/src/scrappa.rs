@@ -109,6 +109,8 @@ impl ScrappaClient {
             .header("X-API-Key", &self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
+            // Keep this client's 30 s per-attempt limit; a request timeout overrides the shared 45 s cap.
+            .timeout(Duration::from_millis(self.timeout_ms))
             .send_scrappa_with_retry("Scrappa API request")
             .await
             .map_err(|error| self.map_request_error(error))?;

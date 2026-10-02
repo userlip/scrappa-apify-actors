@@ -852,14 +852,20 @@ mod tests {
 
     #[tokio::test]
     async fn returns_scrappa_http_errors() {
-        let server = MockServer::start(vec![
-            response(200, r#"{"id":"UC1"}"#),
-            response(429, r#"{"error":"rate limited"}"#),
-        ]);
+        let mut responses = vec![response(200, r#"{"id":"UC1"}"#)];
+        responses.extend(
+            std::iter::repeat_with(|| response(429, r#"{"error":"rate limited"}"#))
+                .take(crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS),
+        );
+        let server = MockServer::start(responses);
         let error = run_actor(&Client::new(), &config(&server))
             .await
             .unwrap_err();
         assert!(error.to_string().contains("429 Too Many Requests"));
         assert!(error.to_string().contains("rate limited"));
+        assert_eq!(
+            server.requests().len(),
+            1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 }

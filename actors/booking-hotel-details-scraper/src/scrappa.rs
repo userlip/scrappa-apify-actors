@@ -1,12 +1,10 @@
 use crate::scrappa_retry::ScrappaRetryExt;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 
 use reqwest::{Client, StatusCode, Url};
 use serde_json::{Map, Value};
-use tokio::time::sleep;
 
 pub const SCRAPPA_REQUEST_TIMEOUT_MS: u64 = 90_000;
-pub const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 const SCRAPPA_USER_AGENT: &str = "thescrappa-booking-hotel-details-scraper/1.0";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -39,14 +37,6 @@ impl std::fmt::Display for ScrappaError {
 impl std::error::Error for ScrappaError {}
 
 impl ScrappaError {
-    pub fn is_retryable(&self) -> bool {
-        match self {
-            Self::Timeout | Self::Network(_) => true,
-            Self::Api { status, .. } => matches!(*status, 429 | 500 | 502 | 503 | 504),
-            Self::InvalidJson(_) => false,
-        }
-    }
-
     pub fn is_actor_level_failure(&self) -> bool {
         matches!(
             self,
@@ -67,7 +57,7 @@ pub struct ScrappaClient {
     http: Client,
     base_url: String,
     api_key: String,
-    retry_delay_override: Option<Duration>,
+    request_timeout: Duration,
 }
 
 impl ScrappaClient {
@@ -76,16 +66,10 @@ impl ScrappaClient {
             api_key,
             base_url,
             Duration::from_millis(SCRAPPA_REQUEST_TIMEOUT_MS),
-            None,
         )
     }
 
-    fn build(
-        api_key: String,
-        base_url: String,
-        timeout: Duration,
-        retry_delay_override: Option<Duration>,
-    ) -> Result<Self, String> {
+    fn build(api_key: String, base_url: String, timeout: Duration) -> Result<Self, String> {
         let http = Client::builder()
             .timeout(timeout)
             .build()
@@ -94,7 +78,7 @@ impl ScrappaClient {
             http,
             base_url,
             api_key,
-            retry_delay_override,
+            request_timeout: timeout,
         })
     }
 
@@ -103,29 +87,7 @@ impl ScrappaClient {
         endpoint: &str,
         params: &Map<String, Value>,
     ) -> Result<Value, ScrappaError> {
-        let mut last_error = None;
-        for attempt in 1..=SCRAPPA_MAX_ATTEMPTS {
-            match self.send(endpoint, params).await {
-                Ok(response) => return Ok(response),
-                Err(error) => {
-                    if attempt == SCRAPPA_MAX_ATTEMPTS || !error.is_retryable() {
-                        return Err(error);
-                    }
-                    let delay_ms = retry_delay_ms(attempt, random_jitter_ms());
-                    eprintln!(
-                        "Scrappa API request failed ({error}). Retrying attempt {}/{SCRAPPA_MAX_ATTEMPTS} in {delay_ms}ms.",
-                        attempt + 1
-                    );
-                    sleep(
-                        self.retry_delay_override
-                            .unwrap_or(Duration::from_millis(delay_ms)),
-                    )
-                    .await;
-                    last_error = Some(error);
-                }
-            }
-        }
-        Err(last_error.unwrap_or_else(|| ScrappaError::Network("unknown request failure".into())))
+        self.send(endpoint, params).await
     }
 
     async fn send(
@@ -155,6 +117,7 @@ impl ScrappaClient {
         let response = self
             .http
             .get(url)
+            .timeout(self.request_timeout)
             .header("X-API-Key", self.api_key.as_str())
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, SCRAPPA_USER_AGENT)
@@ -172,18 +135,6 @@ impl ScrappaClient {
         let body = response.text().await.map_err(map_request_error)?;
         serde_json::from_str(&body).map_err(|error| ScrappaError::InvalidJson(error.to_string()))
     }
-}
-
-pub fn retry_delay_ms(failed_attempt: usize, jitter_ms: u64) -> u64 {
-    let exponential = 1000_u64.saturating_mul(2_u64.saturating_pow(failed_attempt.min(32) as u32));
-    exponential.saturating_add(jitter_ms).min(10_000)
-}
-
-fn random_jitter_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|duration| duration.subsec_micros() as u64 % 1000)
-        .unwrap_or(0)
 }
 
 fn map_request_error(error: reqwest::Error) -> ScrappaError {
@@ -362,22 +313,7 @@ mod tests {
     }
 
     #[test]
-    fn calculates_retry_backoff_and_classifies_error_types() {
-        assert_eq!(retry_delay_ms(1, 0), 2000);
-        assert_eq!(retry_delay_ms(2, 500), 4500);
-        assert_eq!(retry_delay_ms(20, 0), 10_000);
-        assert!(ScrappaError::Timeout.is_retryable());
-        assert!(ScrappaError::Network("offline".into()).is_retryable());
-        assert!(ScrappaError::Api {
-            status: 429,
-            message: "limited".into()
-        }
-        .is_retryable());
-        assert!(!ScrappaError::Api {
-            status: 422,
-            message: "invalid".into()
-        }
-        .is_retryable());
+    fn classifies_actor_level_failures() {
         assert!(ScrappaError::Api {
             status: 401,
             message: "unauthorized".into()
@@ -392,7 +328,6 @@ mod tests {
             "test-key".into(),
             server.base_url.clone(),
             Duration::from_secs(1),
-            Some(Duration::ZERO),
         )
         .unwrap();
         let params = serde_json::from_value(json!({
@@ -426,13 +361,8 @@ mod tests {
             (503, "{\"message\":\"busy\"}".into()),
             (200, "{\"ok\":true}".into()),
         ]);
-        let client = ScrappaClient::build(
-            "key".into(),
-            server.base_url,
-            Duration::from_secs(1),
-            Some(Duration::ZERO),
-        )
-        .unwrap();
+        let client =
+            ScrappaClient::build("key".into(), server.base_url, Duration::from_secs(1)).unwrap();
         let params = Map::new();
         assert_eq!(
             client.get("/booking/hotel", &params).await.unwrap(),
@@ -453,13 +383,8 @@ mod tests {
             422,
             "{\"message\":\"Invalid request\",\"errors\":{\"slug\":[\"required\"]}}".into(),
         )]);
-        let client = ScrappaClient::build(
-            "key".into(),
-            server.base_url,
-            Duration::from_secs(1),
-            Some(Duration::ZERO),
-        )
-        .unwrap();
+        let client =
+            ScrappaClient::build("key".into(), server.base_url, Duration::from_secs(1)).unwrap();
         assert_eq!(
             client
                 .get("/booking/hotel", &params)
@@ -477,18 +402,13 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn retries_timeouts_and_stops_after_three_attempts() {
+    async fn retries_timeouts_within_the_seven_attempt_budget() {
         let server = MockServer::start_with_delays(vec![
             (200, "{\"ok\":true}".into(), Duration::from_millis(100)),
             (200, "{\"ok\":true}".into(), Duration::ZERO),
         ]);
-        let client = ScrappaClient::build(
-            "key".into(),
-            server.base_url,
-            Duration::from_millis(30),
-            Some(Duration::ZERO),
-        )
-        .unwrap();
+        let client =
+            ScrappaClient::build("key".into(), server.base_url, Duration::from_millis(5)).unwrap();
         assert_eq!(
             client.get("/booking/hotel", &Map::new()).await.unwrap(),
             json!({"ok": true})
@@ -510,20 +430,15 @@ mod tests {
                 "{\"ok\":true}".into(),
                 Duration::from_millis(100)
             );
-            SCRAPPA_MAX_ATTEMPTS
+            crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
         ]);
-        let client = ScrappaClient::build(
-            "key".into(),
-            server.base_url,
-            Duration::from_millis(30),
-            Some(Duration::ZERO),
-        )
-        .unwrap();
+        let client =
+            ScrappaClient::build("key".into(), server.base_url, Duration::from_millis(5)).unwrap();
         assert!(matches!(
             client.get("/booking/hotel", &Map::new()).await.unwrap_err(),
             ScrappaError::Timeout
         ));
-        for _ in 0..SCRAPPA_MAX_ATTEMPTS {
+        for _ in 0..crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS {
             assert!(server
                 .request
                 .recv()

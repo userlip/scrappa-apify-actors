@@ -7,8 +7,7 @@ use serde_json::Value;
 use url::Url;
 
 pub const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
-pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-pub const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
+pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const USER_AGENT: &str = "thescrappa-google-finance-markets-scraper/1.0";
 
 #[derive(Debug)]
@@ -20,17 +19,6 @@ pub enum ScrappaError {
 }
 
 impl ScrappaError {
-    pub fn is_retryable(&self) -> bool {
-        match self {
-            Self::Timeout { .. } => true,
-            Self::Http { status, .. } => {
-                matches!(status.as_u16(), 429 | 500 | 502 | 503 | 504)
-            }
-            Self::Transport(error) => error.is_timeout() || error.is_connect() || error.is_body(),
-            Self::InvalidJson(_) => false,
-        }
-    }
-
     pub fn is_timeout(&self) -> bool {
         matches!(self, Self::Timeout { .. })
     }
@@ -81,44 +69,8 @@ impl ScrappaClient {
         &self,
         endpoint: &str,
         params: &serde_json::Map<String, Value>,
-        attempts: u32,
     ) -> Result<T, ScrappaError> {
-        self.get_with_retry_delay(endpoint, params, attempts, |attempt| {
-            Duration::from_millis(get_retry_delay_ms(attempt, retry_jitter_ms()))
-        })
-        .await
-    }
-
-    async fn get_with_retry_delay<T: DeserializeOwned>(
-        &self,
-        endpoint: &str,
-        params: &serde_json::Map<String, Value>,
-        attempts: u32,
-        mut retry_delay: impl FnMut(u32) -> Duration,
-    ) -> Result<T, ScrappaError> {
-        let attempts = attempts.max(1);
-        let mut last_error = None;
-        for attempt in 1..=attempts {
-            match self.send::<T>(endpoint, params).await {
-                Ok(response) => return Ok(response),
-                Err(error) => {
-                    let retryable = error.is_retryable();
-                    if attempt >= attempts || !retryable {
-                        return Err(error);
-                    }
-                    let delay = retry_delay(attempt);
-                    eprintln!(
-                        "Scrappa API request failed ({}). Retrying attempt {}/{attempts} in {}ms.",
-                        error,
-                        attempt + 1,
-                        delay.as_millis()
-                    );
-                    last_error = Some(error);
-                    tokio::time::sleep(delay).await;
-                }
-            }
-        }
-        Err(last_error.expect("at least one attempt is always made"))
+        self.send::<T>(endpoint, params).await
     }
 
     async fn send<T: DeserializeOwned>(
@@ -130,6 +82,7 @@ impl ScrappaClient {
         let response = self
             .http
             .get(url)
+            .timeout(self.timeout)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)
             .header("X-API-Key", &self.api_key)
@@ -162,21 +115,6 @@ pub fn build_request_url(
         }
     }
     url
-}
-
-pub fn get_retry_delay_ms(failed_attempt: u32, jitter_ms: u64) -> u64 {
-    let backoff = 1000u64.saturating_mul(2u64.saturating_pow(failed_attempt));
-    backoff.saturating_add(jitter_ms).min(10_000)
-}
-
-fn retry_jitter_ms() -> u64 {
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .subsec_nanos() as u64
-        % 1000
 }
 
 fn classify_transport_error(error: reqwest::Error, timeout: Duration) -> ScrappaError {
@@ -308,35 +246,6 @@ mod tests {
         assert_eq!(MARKET_TRENDS.len(), 7);
     }
 
-    #[test]
-    fn retry_delay_has_exponential_backoff_jitter_and_a_cap() {
-        assert_eq!(get_retry_delay_ms(1, 0), 2000);
-        assert_eq!(get_retry_delay_ms(1, 999), 2999);
-        assert_eq!(get_retry_delay_ms(20, 500), 10_000);
-    }
-
-    #[test]
-    fn classifies_retryable_http_failures() {
-        for status in [429, 500, 502, 503, 504] {
-            let error = ScrappaError::Http {
-                status: StatusCode::from_u16(status).unwrap(),
-                message: "temporary".to_owned(),
-            };
-            assert!(error.is_retryable(), "status {status}");
-        }
-        for status in [400, 401, 403, 404, 422] {
-            let error = ScrappaError::Http {
-                status: StatusCode::from_u16(status).unwrap(),
-                message: "permanent".to_owned(),
-            };
-            assert!(!error.is_retryable(), "status {status}");
-        }
-        assert!(ScrappaError::Timeout {
-            timeout: Duration::from_secs(60)
-        }
-        .is_retryable());
-    }
-
     #[tokio::test]
     async fn sends_expected_headers_and_retries_retryable_statuses() {
         let server = MockServer::start(vec![
@@ -351,12 +260,7 @@ mod tests {
         .unwrap();
         let params = json!({ "trend": "gainers" });
         let response: Value = client
-            .get_with_retry_delay(
-                "/google-finance/markets",
-                params.as_object().unwrap(),
-                3,
-                |_| Duration::ZERO,
-            )
+            .get("/google-finance/markets", params.as_object().unwrap())
             .await
             .unwrap();
         assert_eq!(response, json!({ "ok": true }));
@@ -389,7 +293,7 @@ mod tests {
         )
         .unwrap();
         let error = client
-            .get::<Value>("/google-finance/markets", &serde_json::Map::new(), 3)
+            .get::<Value>("/google-finance/markets", &serde_json::Map::new())
             .await
             .unwrap_err();
         assert_eq!(
@@ -412,7 +316,7 @@ mod tests {
         )
         .unwrap();
         let error = client
-            .get::<Value>("/google-finance/markets", &serde_json::Map::new(), 1)
+            .get::<Value>("/google-finance/markets", &serde_json::Map::new())
             .await
             .unwrap_err();
         assert!(error.is_timeout());

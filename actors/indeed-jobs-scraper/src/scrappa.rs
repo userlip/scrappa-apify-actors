@@ -2,16 +2,10 @@ use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::Result;
 use reqwest::{Client, Response, StatusCode};
 use serde_json::Value;
-use std::{
-    error::Error,
-    fmt,
-    time::{Duration, SystemTime, UNIX_EPOCH},
-};
-use tokio::time::sleep;
+use std::{error::Error, fmt, time::Duration};
 use url::Url;
 
-pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const MAX_ATTEMPTS: u32 = 1;
+pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 
 #[derive(Debug)]
 pub enum ScrappaError {
@@ -50,39 +44,12 @@ pub async fn get_jobs_response(
     params: &[(String, Value)],
 ) -> Result<Value> {
     let url = crate::indeed::build_jobs_url(base_url, params)?;
-    get_with_retry(client, &url, api_key, MAX_ATTEMPTS, REQUEST_TIMEOUT)
+    fetch_jobs(client, &url, api_key, REQUEST_TIMEOUT)
         .await
         .map_err(Into::into)
 }
 
-async fn get_with_retry(
-    client: &Client,
-    url: &Url,
-    api_key: &str,
-    attempts: u32,
-    timeout: Duration,
-) -> std::result::Result<Value, ScrappaError> {
-    let attempts = attempts.max(1);
-    for attempt in 1..=attempts {
-        match send_once(client, url, api_key, timeout).await {
-            Ok(response) => return Ok(response),
-            Err(error) if attempt < attempts && is_retryable(&error) => {
-                let delay = retry_delay(attempt, random_jitter_ms());
-                eprintln!(
-                    "Scrappa API request failed ({error}). Retrying attempt {}/{attempts} in {}ms.",
-                    attempt + 1,
-                    delay.as_millis()
-                );
-                sleep(delay).await;
-            }
-            Err(error) => return Err(error),
-        }
-    }
-
-    unreachable!("the retry loop always returns or fails")
-}
-
-async fn send_once(
+async fn fetch_jobs(
     client: &Client,
     url: &Url,
     api_key: &str,
@@ -170,34 +137,6 @@ fn error_message(status: StatusCode, body: &str) -> String {
         .chars()
         .take(500)
         .collect()
-}
-
-fn is_retryable(error: &ScrappaError) -> bool {
-    match error {
-        ScrappaError::Timeout => true,
-        ScrappaError::Http { status, .. } => matches!(
-            *status,
-            StatusCode::TOO_MANY_REQUESTS
-                | StatusCode::INTERNAL_SERVER_ERROR
-                | StatusCode::BAD_GATEWAY
-                | StatusCode::SERVICE_UNAVAILABLE
-                | StatusCode::GATEWAY_TIMEOUT
-        ),
-        ScrappaError::Transport(_) | ScrappaError::InvalidJson(_) => false,
-    }
-}
-
-fn retry_delay(failed_attempt: u32, jitter_ms: u64) -> Duration {
-    let exponential_ms = 1_000_u64.saturating_mul(2_u64.saturating_pow(failed_attempt));
-    Duration::from_millis(exponential_ms.saturating_add(jitter_ms).min(10_000))
-}
-
-fn random_jitter_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .subsec_millis()
-        .into()
 }
 
 pub fn timeout_message() -> String {
@@ -318,31 +257,6 @@ mod tests {
     }
 
     #[test]
-    fn retry_delay_matches_the_original_backoff() {
-        assert_eq!(retry_delay(1, 125), Duration::from_millis(2_125));
-        assert_eq!(retry_delay(2, 999), Duration::from_millis(4_999));
-        assert_eq!(retry_delay(9, 999), Duration::from_millis(10_000));
-    }
-
-    #[test]
-    fn retries_only_the_configured_status_codes_and_timeouts() {
-        for code in [429, 500, 502, 503, 504] {
-            assert!(is_retryable(&ScrappaError::Http {
-                status: StatusCode::from_u16(code).unwrap(),
-                message: String::new()
-            }));
-        }
-        assert!(!is_retryable(&ScrappaError::Http {
-            status: StatusCode::BAD_REQUEST,
-            message: String::new()
-        }));
-        assert!(!is_retryable(&ScrappaError::Transport(
-            "network error".to_owned()
-        )));
-        assert!(is_retryable(&ScrappaError::Timeout));
-    }
-
-    #[test]
     fn parses_scrappa_validation_errors_and_bounds_plain_text() {
         assert_eq!(
             error_message(
@@ -369,7 +283,7 @@ mod tests {
         ]);
         let client = Client::new();
         let url = server.base_url.join("/indeed/jobs").unwrap();
-        let result = get_with_retry(&client, &url, "test-key", 2, Duration::from_secs(1))
+        let result = fetch_jobs(&client, &url, "test-key", Duration::from_secs(1))
             .await
             .unwrap();
         assert_eq!(result, serde_json::json!({"data":{"jobs":[]}}));
@@ -386,16 +300,15 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn timeout_is_retried_but_non_retryable_http_errors_are_not() {
+    async fn retries_503_then_fails_fast_on_a_non_retryable_http_error() {
         let timeout_server = MockServer::start(vec![
             (503, r#"{"message":"Unavailable"}"#),
             (200, r#"{"jobs":[]}"#),
         ]);
-        let result = get_with_retry(
+        let result = fetch_jobs(
             &Client::new(),
             &timeout_server.base_url,
             "test-key",
-            2,
             Duration::from_secs(1),
         )
         .await
@@ -404,11 +317,10 @@ mod tests {
         assert_eq!(timeout_server.finish().len(), 2);
 
         let bad_request_server = MockServer::start(vec![(400, r#"{"message":"Bad query"}"#)]);
-        let error = get_with_retry(
+        let error = fetch_jobs(
             &Client::new(),
             &bad_request_server.base_url,
             "test-key",
-            3,
             Duration::from_secs(1),
         )
         .await
@@ -417,11 +329,30 @@ mod tests {
         assert_eq!(bad_request_server.finish().len(), 1);
     }
 
+    #[tokio::test]
+    async fn retries_slow_responses_and_preserves_the_actor_timeout_error() {
+        let attempts = crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS;
+        let responses = vec![(200, r#"{"jobs":[]}"#); attempts];
+        let delays = vec![Duration::from_millis(100); attempts];
+        let server = MockServer::start_with_delays(responses, delays);
+        let error = fetch_jobs(
+            &Client::new(),
+            &server.base_url,
+            "test-key",
+            Duration::from_millis(20),
+        )
+        .await
+        .unwrap_err();
+
+        assert!(matches!(error, ScrappaError::Timeout));
+        assert_eq!(server.finish().len(), attempts);
+    }
+
     #[test]
     fn timeout_message_keeps_the_actor_guidance() {
         assert_eq!(
             timeout_message(),
-            "Scrappa API request timed out after 60000ms. The Indeed Jobs request exceeded the 60s Scrappa API timeout. Try again or refine the query."
+            "Scrappa API request timed out after 45000ms. The Indeed Jobs request exceeded the 45s Scrappa API timeout. Try again or refine the query."
         );
     }
 }

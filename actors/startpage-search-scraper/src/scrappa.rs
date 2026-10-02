@@ -4,7 +4,7 @@ use reqwest::{Client, StatusCode, Url};
 use serde_json::{Map, Value};
 use std::time::Duration;
 
-pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 
 pub struct ScrappaClient {
     client: Client,
@@ -156,7 +156,7 @@ mod tests {
 
     #[test]
     fn applies_the_existing_upstream_deadline_without_application_retries() {
-        assert_eq!(REQUEST_TIMEOUT, Duration::from_secs(60));
+        assert_eq!(REQUEST_TIMEOUT, Duration::from_secs(45));
     }
 
     #[test]

@@ -283,7 +283,7 @@ fn formats_timeout_message_with_the_actor_specific_guidance() {
     let message = actor_error_message(&anyhow::Error::new(ScrappaTimeoutError));
     assert_eq!(
             message,
-            "Scrappa API request timed out after 60000ms. The Google Trends interest request exceeded the 60s Scrappa API timeout. Try a shorter time range, a more specific keyword, or run the request again."
+        "Scrappa API request timed out after 45000ms. The Google Trends interest retries exceeded the 90s Scrappa API budget. Try a shorter time range, a more specific keyword, or run the request again."
         );
 }
 

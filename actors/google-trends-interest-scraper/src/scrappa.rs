@@ -13,7 +13,7 @@ use url::Url;
 use crate::{config::Config, input::InterestParams};
 
 pub const SCRAPPA_ENDPOINT: &str = "/google-trends/interest";
-pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 pub const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 pub const SCRAPPA_USER_AGENT: &str = "thescrappa-google-trends-interest-scraper/1.0";
 

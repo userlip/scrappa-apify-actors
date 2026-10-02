@@ -585,11 +585,13 @@ async fn stores_output_for_empty_results_without_pagination_or_dataset_writes() 
 }
 
 #[tokio::test]
-async fn does_not_retry_scrappa_failures_and_does_not_write_partial_output() {
-    let server = MockServer::start(vec![
-        mock_response(200, r#"{"profile":"@tiktok"}"#),
-        mock_response(503, r#"{"message":"upstream unavailable"}"#),
-    ]);
+async fn retries_scrappa_failures_and_does_not_write_partial_output() {
+    let mut responses = vec![mock_response(200, r#"{"profile":"@tiktok"}"#)];
+    responses.extend(
+        std::iter::repeat_with(|| mock_response(503, r#"{"message":"upstream unavailable"}"#))
+            .take(crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS),
+    );
+    let server = MockServer::start(responses);
 
     let error = run_actor(&config(&server), client()).await.unwrap_err();
     assert_eq!(
@@ -597,7 +599,10 @@ async fn does_not_retry_scrappa_failures_and_does_not_write_partial_output() {
         "Scrappa API error (503): upstream unavailable"
     );
     let requests = server.requests();
-    assert_eq!(requests.len(), 2);
+    assert_eq!(
+        requests.len(),
+        1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+    );
     assert_eq!(request_parts(&requests[1]).0, "GET");
 }
 

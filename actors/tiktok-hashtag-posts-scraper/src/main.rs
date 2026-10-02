@@ -9,9 +9,7 @@ mod tiktok_response;
 use anyhow::{bail, Result};
 use apify::{endpoint_url, get_input, push_dataset_items, put_output, ActorConfig, DatasetBudget};
 use input::{build_hashtag_posts_params, TikTokHashtagPostsParams};
-use scrappa::{
-    fetch_scrappa_response, resolve_challenge, validate_scrappa_code, SCRAPPA_REQUEST_TIMEOUT,
-};
+use scrappa::{fetch_scrappa_response, resolve_challenge, validate_scrappa_code};
 use serde_json::{json, Value};
 use tiktok_response::{enrich_post, extract_pagination, extract_posts, js_truthy};
 
@@ -113,8 +111,8 @@ fn failure_message(error: &anyhow::Error) -> String {
     let message = format!("{error:#}");
     if message.contains("timed out") {
         format!(
-            "{message}. The TikTok hashtag posts request exceeded the {}s Scrappa API timeout. Try a more specific hashtag or run the request again.",
-            SCRAPPA_REQUEST_TIMEOUT.as_secs()
+            "{message}. The TikTok hashtag posts retries exceeded the {}s Scrappa API budget. Try a more specific hashtag or run the request again.",
+            crate::scrappa_retry::ENTRY_TIME_BUDGET.as_secs()
         )
     } else {
         message

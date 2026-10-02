@@ -844,7 +844,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn malformed_scrappa_json_falls_back_to_an_empty_post_page() {
+    async fn malformed_scrappa_json_retries_then_fails() {
         let mut responses = vec![
             response(200, r#"{"id":"UC123"}"#),
             response(200, "not-json"),
@@ -853,8 +853,9 @@ mod tests {
         let server = MockServer::start(responses);
         let config = test_config(server.base_url.clone());
 
-        run_actor(&Client::new(), &config).await.unwrap();
+        let error = run_actor(&Client::new(), &config).await.unwrap_err();
 
+        assert!(error.to_string().contains("error decoding response body"));
         assert_eq!(server.requests().len(), 8);
     }
 

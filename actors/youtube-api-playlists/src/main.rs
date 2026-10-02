@@ -842,10 +842,12 @@ mod tests {
 
     #[tokio::test]
     async fn upstream_failure_is_returned_without_dataset_write() {
-        let server = MockServer::start(vec![
-            response(200, r#"{"q":"music"}"#),
-            response(429, r#"{"error":"rate limited"}"#),
-        ]);
+        let mut responses = vec![response(200, r#"{"q":"music"}"#)];
+        responses.extend(
+            std::iter::repeat_with(|| response(429, r#"{"error":"rate limited"}"#))
+                .take(crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS),
+        );
+        let server = MockServer::start(responses);
         let config = test_config(&server.base_url);
         let client = Client::builder()
             .timeout(Duration::from_secs(2))
@@ -855,6 +857,9 @@ mod tests {
         assert!(error
             .to_string()
             .contains("Scrappa API request failed with 429 Too Many Requests"));
-        assert_eq!(server.requests().len(), 2);
+        assert_eq!(
+            server.requests().len(),
+            1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 }

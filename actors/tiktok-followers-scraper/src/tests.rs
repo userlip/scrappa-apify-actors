@@ -602,11 +602,21 @@ async fn reports_nonzero_scrappa_codes_and_does_not_resolve_missing_ids() {
 }
 
 #[tokio::test]
-async fn reports_upstream_http_errors_without_retrying() {
-    let server = MockServer::start(vec![response(
+async fn reports_upstream_http_errors_after_retrying() {
+    let mut responses = vec![response(
         429,
         r#"{"message":"rate limited","errors":{"profile":["try later"]}}"#,
-    )]);
+    )];
+    responses.extend(
+        std::iter::repeat_with(|| {
+            response(
+                429,
+                r#"{"message":"rate limited","errors":{"profile":["try later"]}}"#,
+            )
+        })
+        .take(crate::scrappa_retry::MAX_SCRAPPA_RETRIES),
+    );
+    let server = MockServer::start(responses);
     let mut scrappa_base_url = server.base_url.clone();
     scrappa_base_url.set_path("/api");
     let config = test_config(&server.base_url, &scrappa_base_url);
@@ -623,7 +633,10 @@ async fn reports_upstream_http_errors_without_retrying() {
         error.to_string(),
         "Scrappa API error (429): rate limited - profile: try later"
     );
-    assert_eq!(server.requests().len(), 1);
+    assert_eq!(
+        server.requests().len(),
+        crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+    );
 }
 
 #[tokio::test]

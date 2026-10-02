@@ -10,7 +10,7 @@ use crate::{
     config::Config,
     input::build_interest_params,
     response::build_timeline_dataset_items,
-    scrappa::{fetch_interest, ScrappaTimeoutError, SCRAPPA_REQUEST_TIMEOUT},
+    scrappa::{fetch_interest, ScrappaTimeoutError},
 };
 
 pub async fn run_actor(client: &Client, config: &Config) -> Result<()> {
@@ -85,9 +85,9 @@ pub async fn run_actor(client: &Client, config: &Config) -> Result<()> {
 pub fn actor_error_message(error: &anyhow::Error) -> String {
     if error.downcast_ref::<ScrappaTimeoutError>().is_some() {
         format!(
-            "{}. The Google Trends interest request exceeded the {}s Scrappa API timeout. Try a shorter time range, a more specific keyword, or run the request again.",
+            "{}. The Google Trends interest retries exceeded the {}s Scrappa API budget. Try a shorter time range, a more specific keyword, or run the request again.",
             error,
-            SCRAPPA_REQUEST_TIMEOUT.as_secs()
+            crate::scrappa_retry::ENTRY_TIME_BUDGET.as_secs()
         )
     } else {
         error.to_string()

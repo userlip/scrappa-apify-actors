@@ -11,7 +11,7 @@ use reqwest::Response;
 use serde_json::Value;
 use std::time::Duration;
 
-pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 
 fn scrappa_request_error(error: reqwest::Error) -> anyhow::Error {
     if error.is_timeout() || error.to_string().contains("aborted") {

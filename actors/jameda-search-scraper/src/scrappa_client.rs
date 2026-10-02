@@ -201,6 +201,7 @@ impl ScrappaClient {
         let response = self
             .http
             .get(url.clone())
+            .timeout(std::time::Duration::from_millis(self.request_timeout_ms))
             .header("X-API-Key", &self.api_key)
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, "thescrappa-jameda-search-scraper/1.0")

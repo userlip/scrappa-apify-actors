@@ -23,7 +23,8 @@ mod tests {
 
     #[test]
     fn keeps_scrappa_retries_and_completion_within_actor_timeout() {
-        let request_maximum_ms = JOBS_REQUEST_BUDGET_MS;
+        let request_maximum_ms = crate::scrappa_retry::ENTRY_TIME_BUDGET.as_millis() as u64;
+        assert_eq!(request_maximum_ms, JOBS_REQUEST_BUDGET_MS);
         assert_eq!(request_maximum_ms + ACTOR_COMPLETION_RESERVE_MS, 120_000);
         assert!(request_maximum_ms + ACTOR_COMPLETION_RESERVE_MS < ACTOR_TIMEOUT_MS);
 

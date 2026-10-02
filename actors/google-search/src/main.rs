@@ -8,7 +8,7 @@ use url::Url;
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
-const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const SEARCH_PARAMETERS: [&str; 15] = [
     "query",
@@ -593,8 +593,8 @@ fn actor_error_message(error: &anyhow::Error) -> String {
     let message = error.to_string();
     if message.contains("timed out") {
         format!(
-            "{message}. The Google Search request exceeded the {}s Scrappa API timeout. Try a smaller amount or run the query again.",
-            SCRAPPA_REQUEST_TIMEOUT.as_secs()
+            "{message}. The Google Search retries exceeded the {}s Scrappa API budget. Try a smaller amount or run the query again.",
+            crate::scrappa_retry::ENTRY_TIME_BUDGET.as_secs()
         )
     } else {
         message
@@ -1118,10 +1118,13 @@ mod tests {
         let error = fetch_google_search(&actor_http_client(), &config, &sample_input(), timeout)
             .await
             .unwrap_err();
-        assert!(error
-            .to_string()
-            .contains("Scrappa API request timed out after 20ms"));
-        assert!(actor_error_message(&error).contains("Google Search request exceeded the 60s"));
+        assert!(
+            error
+                .to_string()
+                .contains("Scrappa API request timed out after 20ms"),
+            "{error:#}"
+        );
+        assert!(actor_error_message(&error).contains("Google Search retries exceeded the 90s"));
         assert_eq!(scrappa.finish().len(), 1);
     }
 

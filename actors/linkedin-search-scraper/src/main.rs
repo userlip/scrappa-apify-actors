@@ -371,7 +371,7 @@ async fn charge_search_result(
 }
 
 fn is_retryable_charge_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 429 | 500 | 502 | 503 | 504)
+    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
 }
 
 async fn put_output(client: &Client, config: &ActorConfig, output: &Value) -> Result<()> {

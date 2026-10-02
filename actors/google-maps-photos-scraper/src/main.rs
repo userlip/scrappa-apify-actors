@@ -1467,12 +1467,15 @@ mod tests {
     #[tokio::test]
     async fn non_input_scrappa_errors_fail_without_writing_output() {
         let input = json!({ "business_id": "0x123:0x456" });
-        let server = MockServer::start(vec![
+        let mut responses = vec![
             mock_response(200, input.to_string()),
             mock_response(503, "upstream unavailable"),
-            mock_response(503, "upstream unavailable"),
-            mock_response(503, "upstream unavailable"),
-        ]);
+        ];
+        responses.extend(
+            std::iter::repeat_with(|| mock_response(503, "upstream unavailable"))
+                .take(crate::scrappa_retry::MAX_SCRAPPA_RETRIES),
+        );
+        let server = MockServer::start(responses);
         let config = config(&server.base_url);
         let client = reqwest::Client::builder()
             .timeout(APIFY_REQUEST_TIMEOUT)
@@ -1481,6 +1484,9 @@ mod tests {
 
         let error = run_actor(&client, &config).await.unwrap_err();
         assert!(error.to_string().contains("Scrappa API error (503)"));
-        assert_eq!(server.requests().len(), 4);
+        assert_eq!(
+            server.requests().len(),
+            1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 }

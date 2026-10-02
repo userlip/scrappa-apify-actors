@@ -61,6 +61,7 @@ impl ScrappaClient {
         let response = self
             .http
             .get(url.clone())
+            .timeout(crate::scrappa_retry::REQUEST_TIMEOUT)
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .send_scrappa_with_retry("Scrappa API request")

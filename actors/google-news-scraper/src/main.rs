@@ -9,7 +9,7 @@ use url::Url;
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
-const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const TOKEN_FIELDS: [&str; 5] = [
     "topic_token",
     "kgmid",

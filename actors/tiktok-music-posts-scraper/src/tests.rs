@@ -450,14 +450,23 @@ async fn exact_budget_exhaustion_stops_before_requesting_another_music_id() {
 }
 
 #[tokio::test]
-async fn scrappa_error_fails_without_dataset_or_output_writes_or_retries() {
-    let responses = vec![
+async fn scrappa_error_fails_without_dataset_or_output_writes_after_retries() {
+    let mut responses = vec![
         input_response(r#"{"music_id":"7001"}"#),
         (
             "503 Service Unavailable".to_owned(),
             r#"{"message":"Try again later","errors":{"music_id":["busy"]}}"#.to_owned(),
         ),
     ];
+    responses.extend(
+        std::iter::repeat_with(|| {
+            (
+                "503 Service Unavailable".to_owned(),
+                r#"{"message":"Try again later","errors":{"music_id":["busy"]}}"#.to_owned(),
+            )
+        })
+        .take(crate::scrappa_retry::MAX_SCRAPPA_RETRIES),
+    );
     let (address, server) = start_mock_server(responses);
     let config = request_config(address);
     let client = Client::builder()
@@ -470,7 +479,10 @@ async fn scrappa_error_fails_without_dataset_or_output_writes_or_retries() {
     assert!(error
         .to_string()
         .contains("Scrappa API error (503): Try again later - music_id: busy"));
-    assert_eq!(requests.len(), 2);
+    assert_eq!(
+        requests.len(),
+        1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+    );
 }
 
 #[tokio::test]

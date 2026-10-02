@@ -18,7 +18,7 @@ use request_params::{
     DetailsPlan, build_details_plan, describe_request, get_discovery_query,
     plan_discovered_listings,
 };
-use scrappa::{MAX_DETAIL_ATTEMPTS, ScrappaClient};
+use scrappa::ScrappaClient;
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
@@ -91,14 +91,13 @@ async fn run() -> Result<()> {
     let (plan, is_discovery) = build_plan(&input, &scrappa).await?;
 
     println!("Fetching {}", describe_request(&plan));
-    let detail_attempts = if is_discovery { 1 } else { MAX_DETAIL_ATTEMPTS };
     let scrappa_ref = &scrappa;
     let result = process_listings(
         &mut apify,
         &plan.listings,
         |ad_id| {
             let client = scrappa_ref;
-            async move { client.listing_detail(&ad_id, detail_attempts).await }
+            async move { client.listing_detail(&ad_id, is_discovery).await }
         },
         if is_discovery { Some(1) } else { None },
     )

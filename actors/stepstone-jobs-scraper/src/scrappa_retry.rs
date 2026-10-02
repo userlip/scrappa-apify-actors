@@ -10,27 +10,40 @@ use reqwest::{
 };
 use serde_json::Value;
 
-const REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
-pub(crate) const ENTRY_TIME_BUDGET: Duration = Duration::from_secs(90);
-const MAX_RETRY_BACKOFF: Duration = Duration::from_secs(15);
-const MAX_SCRAPPA_RETRIES: usize = 6;
-const MAX_SCRAPPA_ATTEMPTS: usize = MAX_SCRAPPA_RETRIES + 1;
+pub(crate) const REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
+pub(crate) const ENTRY_TIME_BUDGET: Duration =
+    Duration::from_millis(crate::runtime_config::JOBS_REQUEST_BUDGET_MS);
+pub(crate) const MAX_RETRY_BACKOFF: Duration = Duration::from_secs(15);
+pub(crate) const MAX_SCRAPPA_RETRIES: usize = 6;
+pub(crate) const MAX_SCRAPPA_ATTEMPTS: usize = MAX_SCRAPPA_RETRIES + 1;
 const REQUEST_ATTEMPTS: usize = MAX_SCRAPPA_ATTEMPTS;
 
 type RetryFuture = Pin<Box<dyn Future<Output = reqwest::Result<Response>> + Send>>;
 
 pub(crate) trait ScrappaRetryExt {
     fn send_scrappa_with_retry(self, operation: &'static str) -> RetryFuture;
+    fn send_scrappa_with_retry_until(
+        self,
+        operation: &'static str,
+        deadline: Instant,
+    ) -> RetryFuture;
 }
 
 impl ScrappaRetryExt for RequestBuilder {
     fn send_scrappa_with_retry(self, operation: &'static str) -> RetryFuture {
+        self.send_scrappa_with_retry_until(operation, Instant::now() + ENTRY_TIME_BUDGET)
+    }
+
+    fn send_scrappa_with_retry_until(
+        self,
+        operation: &'static str,
+        deadline: Instant,
+    ) -> RetryFuture {
         Box::pin(async move {
             let (client, request) = self.build_split();
             let request = request?;
             let request_timeout = request.timeout().copied();
             let expects_json = expects_json(&request);
-            let deadline = Instant::now() + ENTRY_TIME_BUDGET;
             retry_with(
                 operation,
                 deadline,
@@ -40,51 +53,41 @@ impl ScrappaRetryExt for RequestBuilder {
                         .try_clone()
                         .expect("Scrappa API requests must be replayable");
                     let timeout = remaining.min(REQUEST_TIMEOUT);
-                    if let Some(request_timeout) = request_timeout {
-                        *request.timeout_mut() = Some(timeout.min(request_timeout));
-                    }
+                    *request.timeout_mut() =
+                        Some(request_timeout.map_or(timeout, |configured| timeout.min(configured)));
                     let client = client.clone();
                     async move {
-                        let attempt = async move {
-                            let response = client.execute(request).await?;
-                            let status = response.status();
-                            let headers = response.headers().clone();
-                            let retry_after = parse_retry_after_header(&headers);
-                            let body = response.bytes().await?;
-                            let valid_json = !expects_json
-                                || !status.is_success()
-                                || serde_json::from_slice::<Value>(&body).is_ok();
-                            let response = response_with_body(status, headers, body.to_vec());
-
-                            Ok::<_, reqwest::Error>(Attempt {
-                                value: response,
-                                status,
-                                retry_after,
-                                valid_json,
-                            })
-                        };
-                        match tokio::time::timeout(timeout, attempt).await {
-                            Ok(response) => response,
-                            Err(_) => {
-                                let mut headers = HeaderMap::new();
-                                headers.insert(
-                                    header::CONTENT_TYPE,
-                                    reqwest::header::HeaderValue::from_static("application/json"),
-                                );
-                                let status = StatusCode::GATEWAY_TIMEOUT;
-                                let response = response_with_body(
-                                    status,
-                                    headers,
-                                    br#"{"message":"Scrappa API request timed out"}"#.to_vec(),
-                                );
-                                Ok(Attempt {
-                                    value: response,
-                                    status,
-                                    retry_after: None,
-                                    valid_json: true,
-                                })
+                        let response = client.execute(request).await?;
+                        let status = response.status();
+                        let headers = response.headers().clone();
+                        let retry_after = parse_retry_after_header(&headers);
+                        let body = response.bytes().await?;
+                        let json_body = serde_json::from_slice::<Value>(&body).ok();
+                        let invalid_json_error = if expects_json
+                            && status.is_success()
+                            && json_body.is_none()
+                        {
+                            let response =
+                                response_with_body(status, headers.clone(), body.to_vec());
+                            match response.json::<Value>().await {
+                                Err(error) => Some(error),
+                                Ok(_) => unreachable!("body was already verified as invalid JSON"),
                             }
-                        }
+                        } else {
+                            None
+                        };
+                        let retryable_response =
+                            json_body.as_ref().and_then(|body| body.get("retryable"))
+                                != Some(&Value::Bool(false));
+                        let response = response_with_body(status, headers, body.to_vec());
+
+                        Ok(Attempt {
+                            value: response,
+                            status,
+                            retry_after,
+                            retryable_response,
+                            invalid_json_error,
+                        })
                     }
                 },
                 retry_wait,
@@ -119,11 +122,12 @@ async fn retry_wait(delay: Duration) {
 }
 
 #[derive(Debug)]
-struct Attempt<T> {
+struct Attempt<T, E> {
     value: T,
     status: StatusCode,
     retry_after: Option<Duration>,
-    valid_json: bool,
+    retryable_response: bool,
+    invalid_json_error: Option<E>,
 }
 
 trait RetryableTransportError {
@@ -135,7 +139,10 @@ impl RetryableTransportError for reqwest::Error {
         if self.is_timeout() {
             return Some("timeout");
         }
-        if self.is_connect() || self.is_body() {
+        if self.is_decode() {
+            return Some("invalid JSON");
+        }
+        if self.is_connect() || self.is_body() || self.is_request() {
             return Some("connection");
         }
         None
@@ -152,7 +159,7 @@ async fn retry_with<T, E, Send, SendFuture, Wait, WaitFuture>(
 where
     E: RetryableTransportError,
     Send: FnMut(Duration) -> SendFuture,
-    SendFuture: Future<Output = Result<Attempt<T>, E>>,
+    SendFuture: Future<Output = Result<Attempt<T, E>, E>>,
     Wait: FnMut(Duration) -> WaitFuture,
     WaitFuture: Future<Output = ()>,
 {
@@ -161,7 +168,7 @@ where
 
     for attempt in 0..max_attempts {
         let remaining = deadline.saturating_duration_since(Instant::now());
-        if remaining.is_zero() {
+        if remaining.is_zero() && attempt > 0 {
             return match (last_response, last_error) {
                 (Some(response), _) => Ok(response),
                 (_, Some(error)) => Err(error),
@@ -169,19 +176,29 @@ where
             };
         }
 
-        match send(remaining.min(REQUEST_TIMEOUT)).await {
-            Ok(response) => {
-                let retry_for_status = should_retry_scrappa(response.status);
-                let retry_for_invalid_json = response.status.is_success() && !response.valid_json;
-                if !(retry_for_status || retry_for_invalid_json) || attempt + 1 == max_attempts {
-                    return Ok(response.value);
+        // A first attempt with an already exhausted budget ends in a normal timeout error.
+        match send(remaining.min(REQUEST_TIMEOUT).max(Duration::from_millis(1))).await {
+            Ok(mut response) => {
+                let retry_for_invalid_json = response.invalid_json_error.is_some();
+                let retry_for_status =
+                    response.retryable_response && should_retry_scrappa(response.status);
+                let retry = retry_for_status || retry_for_invalid_json;
+                if !retry || attempt + 1 == max_attempts {
+                    return match response.invalid_json_error.take() {
+                        Some(error) => Err(error),
+                        None => Ok(response.value),
+                    };
                 }
 
+                let remaining = deadline.saturating_duration_since(Instant::now());
                 let delay = retry_delay(attempt)
                     .max(response.retry_after.unwrap_or_default())
                     .min(MAX_RETRY_BACKOFF);
-                if delay >= deadline.saturating_duration_since(Instant::now()) {
-                    return Ok(response.value);
+                if delay >= remaining {
+                    return match response.invalid_json_error.take() {
+                        Some(error) => Err(error),
+                        None => Ok(response.value),
+                    };
                 }
 
                 if retry_for_invalid_json {
@@ -190,22 +207,21 @@ where
                         response.status,
                         delay.as_millis()
                     );
+                    last_response = None;
+                    last_error = response.invalid_json_error.take();
                 } else {
                     eprintln!(
                         "{operation} returned HTTP {}; retrying after {}ms",
                         response.status,
                         delay.as_millis()
                     );
+                    last_response = Some(response.value);
+                    last_error = None;
                 }
-                last_response = Some(response.value);
-                last_error = None;
                 wait(delay).await;
             }
             Err(error) => {
                 let Some(reason) = error.retry_reason() else {
-                    if let Some(response) = last_response.take() {
-                        return Ok(response);
-                    }
                     if last_error
                         .as_ref()
                         .is_some_and(|previous| previous.retry_reason() == Some("timeout"))
@@ -215,12 +231,11 @@ where
                     return Err(error);
                 };
                 if attempt + 1 == max_attempts {
-                    if let Some(response) = last_response.take() {
-                        return Ok(response);
-                    }
-                    if last_error.as_ref().is_some_and(|previous| {
-                        previous.retry_reason() == Some("timeout") && reason != "timeout"
-                    }) {
+                    if reason != "timeout"
+                        && last_error
+                            .as_ref()
+                            .is_some_and(|previous| previous.retry_reason() == Some("timeout"))
+                    {
                         return Err(last_error.take().unwrap());
                     }
                     return Err(error);
@@ -228,12 +243,11 @@ where
 
                 let delay = retry_delay(attempt);
                 if delay >= remaining {
-                    if let Some(response) = last_response.take() {
-                        return Ok(response);
-                    }
-                    if last_error.as_ref().is_some_and(|previous| {
-                        previous.retry_reason() == Some("timeout") && reason != "timeout"
-                    }) {
+                    if reason != "timeout"
+                        && last_error
+                            .as_ref()
+                            .is_some_and(|previous| previous.retry_reason() == Some("timeout"))
+                    {
                         return Err(last_error.take().unwrap());
                     }
                     return Err(error);
@@ -242,10 +256,11 @@ where
                     "{operation} status unavailable ({reason} error); retrying after {}ms",
                     delay.as_millis()
                 );
-                let preserve_timeout = last_error.as_ref().is_none_or(|previous| {
+                last_response = None;
+                let replace_error = last_error.as_ref().is_none_or(|previous| {
                     previous.retry_reason() != Some("timeout") || reason == "timeout"
                 });
-                if preserve_timeout {
+                if replace_error {
                     last_error = Some(error);
                 }
                 wait(delay).await;
@@ -337,12 +352,47 @@ mod tests {
         }
     }
 
-    fn attempt(status: StatusCode, valid_json: bool) -> Attempt<StatusCode> {
+    #[derive(Debug)]
+    struct MockInvalidJsonError;
+
+    impl RetryableTransportError for MockInvalidJsonError {
+        fn retry_reason(&self) -> Option<&'static str> {
+            Some("invalid JSON")
+        }
+    }
+
+    #[derive(Debug)]
+    enum MockMixedError {
+        Timeout,
+        Connection,
+    }
+
+    impl RetryableTransportError for MockMixedError {
+        fn retry_reason(&self) -> Option<&'static str> {
+            Some(match self {
+                Self::Timeout => "timeout",
+                Self::Connection => "connection",
+            })
+        }
+    }
+
+    fn attempt<E>(status: StatusCode, retryable_response: bool) -> Attempt<StatusCode, E> {
         Attempt {
             value: status,
             status,
             retry_after: None,
-            valid_json,
+            retryable_response,
+            invalid_json_error: None,
+        }
+    }
+
+    fn invalid_json_attempt(status: StatusCode) -> Attempt<StatusCode, MockInvalidJsonError> {
+        Attempt {
+            value: status,
+            status,
+            retry_after: None,
+            retryable_response: true,
+            invalid_json_error: Some(MockInvalidJsonError),
         }
     }
 
@@ -380,7 +430,7 @@ mod tests {
             MAX_SCRAPPA_ATTEMPTS,
             |_| {
                 requests.set(requests.get() + 1);
-                ready(Ok::<_, MockError>(attempt(StatusCode::BAD_REQUEST, false)))
+                ready(Ok::<_, MockError>(attempt(StatusCode::BAD_REQUEST, true)))
             },
             |_| ready(()),
         )
@@ -392,10 +442,33 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn honors_an_explicit_non_retryable_response_flag() {
+        let requests = Cell::new(0);
+        let response = retry_with(
+            "test request",
+            Instant::now() + Duration::from_secs(90),
+            MAX_SCRAPPA_ATTEMPTS,
+            |_| {
+                requests.set(requests.get() + 1);
+                ready(Ok::<_, MockError>(attempt(
+                    StatusCode::SERVICE_UNAVAILABLE,
+                    false,
+                )))
+            },
+            |_| ready(()),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(response, StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(requests.get(), 1);
+    }
+
+    #[tokio::test]
     async fn retries_successful_response_with_invalid_json() {
         let requests = Cell::new(0);
         let mut responses = VecDeque::from([
-            attempt(StatusCode::OK, false),
+            invalid_json_attempt(StatusCode::OK),
             attempt(StatusCode::OK, true),
         ]);
 
@@ -405,7 +478,9 @@ mod tests {
             MAX_SCRAPPA_ATTEMPTS,
             |_| {
                 requests.set(requests.get() + 1);
-                ready(Ok::<_, MockError>(responses.pop_front().unwrap()))
+                ready(Ok::<_, MockInvalidJsonError>(
+                    responses.pop_front().unwrap(),
+                ))
             },
             |_| ready(()),
         )
@@ -414,6 +489,44 @@ mod tests {
 
         assert_eq!(response, StatusCode::OK);
         assert_eq!(requests.get(), 2);
+    }
+
+    #[tokio::test]
+    async fn returns_an_error_after_the_last_invalid_json_response() {
+        let requests = Cell::new(0);
+        let mut delays = Vec::new();
+
+        let error = retry_with(
+            "test request",
+            Instant::now() + Duration::from_secs(90),
+            MAX_SCRAPPA_ATTEMPTS,
+            |_| {
+                requests.set(requests.get() + 1);
+                ready(Ok::<_, MockInvalidJsonError>(invalid_json_attempt(
+                    StatusCode::OK,
+                )))
+            },
+            |delay| {
+                delays.push(delay);
+                ready(())
+            },
+        )
+        .await
+        .unwrap_err();
+
+        assert!(matches!(error, MockInvalidJsonError));
+        assert_eq!(requests.get(), MAX_SCRAPPA_ATTEMPTS);
+        assert_eq!(
+            delays,
+            vec![
+                Duration::from_secs(1),
+                Duration::from_secs(2),
+                Duration::from_secs(4),
+                Duration::from_secs(8),
+                Duration::from_secs(15),
+                Duration::from_secs(15),
+            ]
+        );
     }
 
     #[tokio::test]
@@ -465,7 +578,7 @@ mod tests {
             MAX_SCRAPPA_ATTEMPTS,
             |_| {
                 requests.set(requests.get() + 1);
-                ready(Err::<Attempt<StatusCode>, _>(MockError))
+                ready(Err::<Attempt<StatusCode, MockError>, _>(MockError))
             },
             |_| ready(()),
         )
@@ -486,7 +599,9 @@ mod tests {
             MAX_SCRAPPA_ATTEMPTS,
             |_| {
                 requests.set(requests.get() + 1);
-                ready(Err::<Attempt<StatusCode>, _>(MockTimeoutError))
+                ready(Err::<Attempt<StatusCode, MockTimeoutError>, _>(
+                    MockTimeoutError,
+                ))
             },
             |_| ready(()),
         )
@@ -495,6 +610,34 @@ mod tests {
 
         assert!(matches!(error, MockTimeoutError));
         assert_eq!(requests.get(), MAX_SCRAPPA_ATTEMPTS);
+    }
+
+    #[tokio::test]
+    async fn keeps_timeout_classification_when_later_retries_cannot_connect() {
+        let requests = Cell::new(0);
+
+        let error = retry_with(
+            "test request",
+            Instant::now() + Duration::from_secs(90),
+            2,
+            |_| {
+                let attempt = requests.get();
+                requests.set(attempt + 1);
+                ready(Err::<Attempt<StatusCode, MockMixedError>, _>(
+                    if attempt == 0 {
+                        MockMixedError::Timeout
+                    } else {
+                        MockMixedError::Connection
+                    },
+                ))
+            },
+            |_| ready(()),
+        )
+        .await
+        .unwrap_err();
+
+        assert!(matches!(error, MockMixedError::Timeout));
+        assert_eq!(requests.get(), 2);
     }
 
     #[test]
@@ -536,7 +679,8 @@ mod tests {
                 value: StatusCode::SERVICE_UNAVAILABLE,
                 status: StatusCode::SERVICE_UNAVAILABLE,
                 retry_after: Some(Duration::from_secs(30)),
-                valid_json: true,
+                retryable_response: true,
+                invalid_json_error: None,
             },
             attempt(StatusCode::OK, true),
         ]);

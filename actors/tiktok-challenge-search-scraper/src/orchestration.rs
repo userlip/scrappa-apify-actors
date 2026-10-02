@@ -2,7 +2,7 @@ use anyhow::{anyhow, Result};
 use serde_json::{json, Value};
 
 use crate::{
-    apify_client::{ActorClient, SCRAPPA_REQUEST_TIMEOUT},
+    apify_client::ActorClient,
     challenges::{
         build_search_requests, extract_challenges, format_lookup, normalized_challenge,
         validate_scrappa_response, SearchRequest,
@@ -134,8 +134,8 @@ pub fn actor_error_message(error: &anyhow::Error) -> String {
     let message = error.to_string();
     if message.contains("timed out") {
         format!(
-            "{message}. The TikTok challenge search request exceeded the {}s Scrappa API timeout. Try a more specific keyword or run the request again.",
-            SCRAPPA_REQUEST_TIMEOUT.as_secs()
+            "{message}. The TikTok challenge search retries exceeded the {}s Scrappa API budget. Try a more specific keyword or run the request again.",
+            crate::scrappa_retry::ENTRY_TIME_BUDGET.as_secs()
         )
     } else {
         message
@@ -151,7 +151,7 @@ mod tests {
         let error = anyhow::anyhow!("Scrappa API request timed out after 60000ms");
         assert_eq!(
             actor_error_message(&error),
-            "Scrappa API request timed out after 60000ms. The TikTok challenge search request exceeded the 60s Scrappa API timeout. Try a more specific keyword or run the request again."
+            "Scrappa API request timed out after 60000ms. The TikTok challenge search retries exceeded the 90s Scrappa API budget. Try a more specific keyword or run the request again."
         );
     }
 }
