@@ -1,0 +1,49 @@
+{
+  "title": "Semrush Website Traffic Scraper",
+  "description": "Get Semrush-style domain estimates for visits, rankings, engagement, devices, and countries. Batch websites in one run to compare traffic profiles.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "domains"
+  ],
+  "properties": {
+    "domains": {
+      "title": "Domains",
+      "type": "array",
+      "description": "Website domains to check for Semrush traffic estimates.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "domain": "notion.so"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "domain"
+        ],
+        "properties": {
+          "domain": {
+            "title": "Domain",
+            "type": "string",
+            "pattern": "^(?=.{1,253}$)[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$",
+            "maxLength": 253,
+            "description": "Domain sent to the source search.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

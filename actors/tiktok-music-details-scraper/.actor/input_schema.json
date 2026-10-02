@@ -1,0 +1,48 @@
+{
+  "title": "TikTok Music Details Scraper",
+  "description": "Look up TikTok sound titles, authors, durations, covers, and linked video counts. Batch music URLs to build audio research datasets.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "urls"
+  ],
+  "properties": {
+    "urls": {
+      "title": "TikTok sound URLs",
+      "type": "array",
+      "description": "Public TikTok music URLs to look up.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "url": "https://www.tiktok.com/music/original-sound-6689804660171082501"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "title": "TikTok Music URL",
+            "type": "string",
+            "maxLength": 500,
+            "description": "TikTok Music URL sent to the source search.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

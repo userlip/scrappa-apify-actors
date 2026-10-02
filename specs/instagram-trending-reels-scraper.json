@@ -1,0 +1,234 @@
+{
+  "slug": "instagram-trending-reels-scraper",
+  "title": "Instagram Trending Reels Scraper",
+  "description": "Capture trending public Instagram Reels with captions, likes, comments, author handles, and video links. Each run saves a snapshot of the global feed.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "endpoint": "/instagram/reels/trending",
+  "openapiPath": "/instagram/reels/trending",
+  "mode": "list",
+  "batch": {
+    "field": "feeds",
+    "valueField": "feed",
+    "apiParam": "",
+    "pathParam": null,
+    "title": "Trending feed",
+    "description": "Use one entry to request Instagram’s global public trending Reels feed.",
+    "valueDescription": "Fixed label for the global trending Reels snapshot."
+  },
+  "parameters": [],
+  "resultPointer": "/reels",
+  "flattenPointers": {
+    "author_id": "/author/id",
+    "author_username": "/author/username",
+    "author_verified": "/author/is_verified"
+  },
+  "enrichment": {
+    "field": "input_feed"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "feeds": [
+      {
+        "feed": "trending"
+      }
+    ],
+    "maxResults": 10
+  },
+  "testParams": {},
+  "fixture": {
+    "success": true,
+    "reels": [
+      {
+        "id": "1801234567890123456",
+        "shortcode": "CSTtrendReel52",
+        "media_type": "Video",
+        "caption": "A quiet walk along the coast at golden hour.",
+        "taken_at": "2025-09-18T14:32:11Z",
+        "taken_at_timestamp": 1758205931,
+        "like_count": 18400,
+        "comment_count": 420,
+        "play_count": 96800,
+        "has_audio": true,
+        "video_url": "https://cdn.instagram.com/media/coast-walk.mp4",
+        "thumbnail_url": "https://cdn.instagram.com/media/coast-walk-cover.jpg",
+        "author": {
+          "id": "584700123456794",
+          "username": "coastline.creator",
+          "profile_pic_url": "https://cdn.instagram.com/profiles/coastline-creator.jpg",
+          "is_verified": false
+        },
+        "permalink": "https://www.instagram.com/reel/CSTtrendReel52/"
+      }
+    ],
+    "reels_count": 8,
+    "more_available": true,
+    "next_max_id": null
+  },
+  "tableFields": [
+    {
+      "name": "shortcode",
+      "label": "Shortcode",
+      "format": "text"
+    },
+    {
+      "name": "author_username",
+      "label": "Author Username",
+      "format": "text"
+    },
+    {
+      "name": "caption",
+      "label": "Caption",
+      "format": "text"
+    },
+    {
+      "name": "like_count",
+      "label": "Like Count",
+      "format": "number"
+    },
+    {
+      "name": "comment_count",
+      "label": "Comment Count",
+      "format": "number"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Instagram Trending Reels Scraper | Video Feed",
+    "seoDescription": "Get Instagram trending Reels with captions, likes, comments, author handles, and video links. Capture the current public feed and export ranked posts.",
+    "intro": "Capture Instagram’s public trending Reels selection with captions, engagement counts, author handles, and video links. Each run records a current snapshot of the global feed.",
+    "useCases": [
+      "Social teams can review currently surfaced public Reels for creative patterns.",
+      "Researchers can archive trending captions, creators, and engagement counts.",
+      "Content strategists can compare trending video topics across repeated runs."
+    ],
+    "howToUse": [
+      "Keep one `trending` entry in `feeds` to request the global feed.",
+      "Set `maxResults` to cap the number of Reel rows saved.",
+      "Schedule repeated runs if you want to compare public feed snapshots."
+    ],
+    "faqs": [
+      {
+        "question": "Can I choose a country or hashtag?",
+        "answer": "No. This source feed returns the global trending selection and does not accept a region or search phrase."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "instagram-user-reels-scraper",
+        "title": "Instagram User Reels Scraper"
+      },
+      {
+        "slug": "instagram-user-posts-cheapest-0-20-1000-results",
+        "title": "Instagram User Posts Scraper"
+      },
+      {
+        "slug": "tiktok-trending-feed-scraper",
+        "title": "TikTok Trending Feed Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Instagram media identifier for the trending Reel."
+      },
+      {
+        "name": "shortcode",
+        "type": "String",
+        "description": "Short code used in the public Reel URL."
+      },
+      {
+        "name": "media_type",
+        "type": "String",
+        "description": "Instagram format label for this trending item."
+      },
+      {
+        "name": "caption",
+        "type": "String",
+        "description": "Caption text displayed with the Reel."
+      },
+      {
+        "name": "taken_at",
+        "type": "String",
+        "description": "ISO 8601 time when the Reel was posted, when reported."
+      },
+      {
+        "name": "taken_at_timestamp",
+        "type": "Integer",
+        "description": "Unix timestamp when the Reel was posted."
+      },
+      {
+        "name": "like_count",
+        "type": "Integer",
+        "description": "Number of likes reported for the Reel."
+      },
+      {
+        "name": "comment_count",
+        "type": "Integer",
+        "description": "Number of comments reported for the Reel."
+      },
+      {
+        "name": "play_count",
+        "type": "Integer or null",
+        "description": "Number of video plays reported for the Reel, when available."
+      },
+      {
+        "name": "has_audio",
+        "type": "Boolean",
+        "description": "True when Instagram reports audio on the Reel."
+      },
+      {
+        "name": "video_url",
+        "type": "String",
+        "description": "URL of the Reel video asset, when available."
+      },
+      {
+        "name": "thumbnail_url",
+        "type": "String",
+        "description": "URL of the Reel preview image."
+      },
+      {
+        "name": "author",
+        "type": "Object",
+        "description": "Public profile details for the account that posted the Reel."
+      },
+      {
+        "name": "permalink",
+        "type": "String",
+        "description": "Public Instagram URL for the Reel."
+      },
+      {
+        "name": "author_id",
+        "type": "String",
+        "description": "Instagram identifier for the posting account."
+      },
+      {
+        "name": "author_username",
+        "type": "String",
+        "description": "Public Instagram handle of the posting account."
+      },
+      {
+        "name": "author_verified",
+        "type": "String",
+        "description": "True when Instagram marks the posting account as verified."
+      },
+      {
+        "name": "input_feed",
+        "type": "String",
+        "description": "Fixed feed label used to identify this global trending snapshot."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

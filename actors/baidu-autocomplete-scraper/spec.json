@@ -1,0 +1,206 @@
+{
+  "slug": "baidu-autocomplete-scraper",
+  "title": "Baidu Autocomplete Scraper",
+  "description": "Expand Baidu search phrases into autocomplete suggestions with position, phrase text, and match details. Batch seed terms to compare localized keyword ideas.",
+  "categories": [
+    "SEO_TOOLS",
+    "DEVELOPER_TOOLS"
+  ],
+  "endpoint": "/baidu/autocomplete",
+  "openapiPath": "/baidu/autocomplete",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Search queries",
+    "description": "Seed phrases to expand with Baidu autocomplete.",
+    "valueDescription": "Phrase submitted for these autocomplete suggestions."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Search Query",
+      "schema": {
+        "type": "string",
+        "maxLength": 500,
+        "description": "Search Query sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/suggestions",
+  "fallbackResultPointers": [
+    "/provider_response/g"
+  ],
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "iphone"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "query": "iphone"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "baidu",
+      "query": "iphone"
+    },
+    "search_information": {
+      "query_displayed": "iphone",
+      "suggestion_count": 10
+    },
+    "suggestions": [
+      {
+        "position": 1,
+        "query": "iphone 17",
+        "value": "iphone 17",
+        "type": "suggestion",
+        "is_direct": false,
+        "sa": "s_1",
+        "q": "iphone 17",
+        "no_ai_sug": false
+      }
+    ],
+    "provider_response": {
+      "q": "iphone",
+      "p": false,
+      "g": [
+        {
+          "type": "sug",
+          "sa": "s_1",
+          "q": "iphone 17",
+          "no_ai_sug": false
+        }
+      ],
+      "slid": "slider-18",
+      "queryid": "query-901"
+    },
+    "response_time_ms": 192
+  },
+  "tableFields": [
+    {
+      "name": "position",
+      "label": "Position",
+      "format": "number"
+    },
+    {
+      "name": "value",
+      "label": "Suggested Phrase",
+      "format": "text"
+    },
+    {
+      "name": "type",
+      "label": "Type",
+      "format": "text"
+    },
+    {
+      "name": "is_direct",
+      "label": "Direct Match",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Baidu Autocomplete Scraper | Keyword Ideas",
+    "seoDescription": "Find Baidu autocomplete phrases with suggestion text, match type, and position. Batch seed queries to explore Chinese search demand and export keywords.",
+    "intro": "Expand seed phrases into Baidu autocomplete suggestions with rank, suggestion text, and source markers. Batch searches to compare related keyword ideas across topics.",
+    "useCases": [
+      "SEO teams can discover related phrases people enter in Baidu search.",
+      "Product teams can map localized wording around products and services.",
+      "Content planners can compare autocomplete suggestions across multiple seeds."
+    ],
+    "howToUse": [
+      "Add one seed phrase to `queries` for each lookup.",
+      "Set `maxResults` to limit the number of suggestion rows saved.",
+      "Review each suggestion with its source phrase and rank."
+    ],
+    "faqs": [
+      {
+        "question": "Are suggestions translated to English?",
+        "answer": "No. Baidu returns suggestions in the language and market associated with the query."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "baidu-search-scraper",
+        "title": "Baidu Search Scraper"
+      },
+      {
+        "slug": "google-trends-autocomplete-scraper",
+        "title": "Google Trends Autocomplete Scraper"
+      },
+      {
+        "slug": "google-maps-autocomplete-scraper",
+        "title": "Google Maps Autocomplete Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Rank of this suggestion in Baidu autocomplete results."
+      },
+      {
+        "name": "query",
+        "type": "String",
+        "description": "Query text returned for the suggestion entry."
+      },
+      {
+        "name": "value",
+        "type": "String",
+        "description": "Suggested search phrase users may enter next."
+      },
+      {
+        "name": "type",
+        "type": "String",
+        "description": "Baidu suggestion type label."
+      },
+      {
+        "name": "is_direct",
+        "type": "Boolean",
+        "description": "True when Baidu marks the phrase as a direct query match."
+      },
+      {
+        "name": "sa",
+        "type": "String",
+        "description": "Baidu source marker associated with the suggestion."
+      },
+      {
+        "name": "q",
+        "type": "String",
+        "description": "Normalized suggestion query text returned by Baidu."
+      },
+      {
+        "name": "no_ai_sug",
+        "type": "Boolean",
+        "description": "True when Baidu marks the phrase as excluded from AI suggestions."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Baidu seed phrase submitted to retrieve autocomplete suggestions."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

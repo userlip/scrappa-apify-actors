@@ -1,0 +1,270 @@
+{
+  "slug": "baidu-images-scraper",
+  "title": "Baidu Images Scraper",
+  "description": "Get Baidu image results with titles, source pages, original links, previews, and dimensions. Search several phrases in one run to compare visual results.",
+  "categories": [
+    "SEO_TOOLS",
+    "DEVELOPER_TOOLS"
+  ],
+  "endpoint": "/baidu/images",
+  "openapiPath": "/baidu/images",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Search queries",
+    "description": "Baidu phrases to search for image results.",
+    "valueDescription": "Search phrase used for this image search."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Search Query",
+      "schema": {
+        "type": "string",
+        "maxLength": 500,
+        "description": "Search Query sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/images_results",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "panda"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "query": "panda"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "baidu",
+      "query": "panda",
+      "page": 1,
+      "limit": 10
+    },
+    "images_results": [
+      {
+        "position": 1,
+        "title": "Red panda resting in a bamboo grove",
+        "title_highlighted_words": [
+          "panda"
+        ],
+        "link": "https://wildlifejournal.org/red-panda",
+        "original": "https://images.wildlife-journal.org/red-panda-full.jpg",
+        "thumbnail": "https://images.wildlife-journal.org/red-panda-small.jpg",
+        "thumbnail_middle": "https://images.wildlife-journal.org/red-panda-medium.jpg",
+        "source": "Wildlife Journal",
+        "source_domain": "wildlifejournal.org",
+        "original_width": 2400,
+        "original_height": 1600,
+        "file_type": "jpg",
+        "date": "2025-04-16",
+        "is_gif": false
+      }
+    ],
+    "search_information": {
+      "query_displayed": "panda",
+      "total_results": 125000,
+      "formatted_total_results": "125,000",
+      "results_on_page": 10,
+      "page": 1,
+      "limit": 10
+    },
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "results_on_page": 10,
+      "total_results": 125000,
+      "has_more": true,
+      "next_page": 2
+    },
+    "images": [
+      {
+        "position": 1,
+        "title": "Red panda resting in a bamboo grove",
+        "title_highlighted_words": [
+          "panda"
+        ],
+        "link": "https://wildlifejournal.org/red-panda",
+        "original": "https://images.wildlife-journal.org/red-panda-full.jpg",
+        "thumbnail": "https://images.wildlife-journal.org/red-panda-small.jpg",
+        "thumbnail_middle": "https://images.wildlife-journal.org/red-panda-medium.jpg",
+        "source": "Wildlife Journal",
+        "source_domain": "wildlifejournal.org",
+        "original_width": 2400,
+        "original_height": 1600,
+        "file_type": "jpg",
+        "date": "2025-04-16",
+        "is_gif": false
+      }
+    ],
+    "provider_response": {
+      "data": []
+    },
+    "response_time_ms": 438
+  },
+  "tableFields": [
+    {
+      "name": "position",
+      "label": "Position",
+      "format": "number"
+    },
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "source_domain",
+      "label": "Source Domain",
+      "format": "text"
+    },
+    {
+      "name": "original",
+      "label": "Original Image",
+      "format": "link"
+    },
+    {
+      "name": "thumbnail",
+      "label": "Thumbnail",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Baidu Images Scraper | Image Search Results",
+    "seoDescription": "Scrape Baidu Images for titles, source sites, original links, previews, and dimensions. Batch queries to compare visual results and export image data.",
+    "intro": "Find Baidu image results with titles, source pages, original image links, preview URLs, and dimensions. Search several phrases in one run to build visual reference datasets.",
+    "useCases": [
+      "Visual researchers can compare image sources and dimensions across search phrases.",
+      "Content teams can find source pages and image URLs for topic research.",
+      "Market analysts can track how visual results vary across Baidu queries."
+    ],
+    "howToUse": [
+      "Add one search phrase to `queries` for each image search.",
+      "Set `maxResults` to cap saved image rows for the run.",
+      "Use the original and preview URLs to review source images."
+    ],
+    "faqs": [
+      {
+        "question": "Does the Actor download the image files?",
+        "answer": "No. It saves the result metadata and image URLs reported by Baidu."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "baidu-search-scraper",
+        "title": "Baidu Search Scraper"
+      },
+      {
+        "slug": "google-images-scraper",
+        "title": "Google Images Scraper"
+      },
+      {
+        "slug": "google-search",
+        "title": "Google Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Rank of this image in Baidu results, starting at one."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Baidu result title associated with the image page."
+      },
+      {
+        "name": "title_highlighted_words",
+        "type": "Array<String>",
+        "description": "Words Baidu highlights in the image title."
+      },
+      {
+        "name": "link",
+        "type": "String",
+        "description": "Page URL where Baidu found or displays the image."
+      },
+      {
+        "name": "original",
+        "type": "String",
+        "description": "Direct URL reported for the original image file."
+      },
+      {
+        "name": "thumbnail",
+        "type": "String",
+        "description": "URL of the small image preview in search results."
+      },
+      {
+        "name": "thumbnail_middle",
+        "type": "String",
+        "description": "URL of the medium image preview when available."
+      },
+      {
+        "name": "source",
+        "type": "String",
+        "description": "Publisher name associated with the image result."
+      },
+      {
+        "name": "source_domain",
+        "type": "String",
+        "description": "Host name of the source page, without a protocol."
+      },
+      {
+        "name": "original_width",
+        "type": "Integer",
+        "description": "Reported width of the original image in pixels."
+      },
+      {
+        "name": "original_height",
+        "type": "Integer",
+        "description": "Reported height of the original image in pixels."
+      },
+      {
+        "name": "file_type",
+        "type": "String",
+        "description": "File extension or format reported for the original image."
+      },
+      {
+        "name": "date",
+        "type": "String",
+        "description": "Date string Baidu associates with the image result; formatting varies by source."
+      },
+      {
+        "name": "is_gif",
+        "type": "Boolean",
+        "description": "True when Baidu identifies the result as an animated GIF."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Baidu search phrase submitted to retrieve this image result."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

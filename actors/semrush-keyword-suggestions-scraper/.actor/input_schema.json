@@ -1,0 +1,49 @@
+{
+  "title": "Semrush Keyword Suggestions Scraper",
+  "description": "Expand seed keywords into Semrush suggestion phrases. Batch multiple queries to build topic lists for SEO briefs and content research.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Seed keywords",
+      "type": "array",
+      "description": "Keywords to expand with Semrush suggestions.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "q": "notion"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "q"
+        ],
+        "properties": {
+          "q": {
+            "title": "Search Query",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Search Query sent to the source search.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "title": "Instagram Tagged Posts Scraper",
+  "description": "Find public Instagram posts that tag an account, with captions, engagement, author profiles, and links. Batch usernames and page through available posts.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "usernames"
+  ],
+  "properties": {
+    "usernames": {
+      "title": "Instagram usernames",
+      "type": "array",
+      "description": "Public Instagram usernames whose tagged posts you want to retrieve.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "username": "nasa"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "username"
+        ],
+        "properties": {
+          "username": {
+            "title": "Instagram Username",
+            "type": "string",
+            "pattern": "^@?[a-zA-Z0-9._]+$",
+            "minLength": 1,
+            "maxLength": 30,
+            "description": "Instagram Username sent to the source search.",
+            "editor": "textfield"
+          },
+          "user_id": {
+            "title": "TikTok User ID",
+            "type": "string",
+            "pattern": "^\\d+$",
+            "maxLength": 30,
+            "description": "TikTok User ID sent to the source search.",
+            "editor": "textfield"
+          },
+          "max_id": {
+            "title": "Next Page Cursor",
+            "type": "string",
+            "maxLength": 255,
+            "description": "Next Page Cursor sent to the source search.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "user_id": {
+      "title": "TikTok User ID",
+      "type": "string",
+      "pattern": "^\\d+$",
+      "maxLength": 30,
+      "description": "TikTok User ID sent to the source search.",
+      "editor": "textfield"
+    },
+    "max_id": {
+      "title": "Next Page Cursor",
+      "type": "string",
+      "maxLength": 255,
+      "description": "Next Page Cursor sent to the source search.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 1
+    }
+  }
+}

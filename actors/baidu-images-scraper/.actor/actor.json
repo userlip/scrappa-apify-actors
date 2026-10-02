@@ -1,0 +1,65 @@
+{
+  "actorSpecification": 1,
+  "name": "baidu-images-scraper",
+  "title": "Baidu Images Scraper",
+  "description": "Get Baidu image results with titles, source pages, original links, previews, and dimensions. Search several phrases in one run to compare visual results.",
+  "categories": [
+    "SEO_TOOLS",
+    "DEVELOPER_TOOLS"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "position",
+              "title",
+              "source_domain",
+              "original",
+              "thumbnail"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": {
+                "label": "Position",
+                "format": "number"
+              },
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "source_domain": {
+                "label": "Source Domain",
+                "format": "text"
+              },
+              "original": {
+                "label": "Original Image",
+                "format": "link"
+              },
+              "thumbnail": {
+                "label": "Thumbnail",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

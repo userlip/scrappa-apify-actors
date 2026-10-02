@@ -1,0 +1,8 @@
+{
+  "feeds": [
+    {
+      "feed": "trending"
+    }
+  ],
+  "maxResults": 10
+}

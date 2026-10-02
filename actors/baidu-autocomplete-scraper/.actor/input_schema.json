@@ -1,0 +1,48 @@
+{
+  "title": "Baidu Autocomplete Scraper",
+  "description": "Expand Baidu search phrases into autocomplete suggestions with position, phrase text, and match details. Batch seed terms to compare localized keyword ideas.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Search queries",
+      "type": "array",
+      "description": "Seed phrases to expand with Baidu autocomplete.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "query": "iphone"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "title": "Search Query",
+            "type": "string",
+            "maxLength": 500,
+            "description": "Search Query sent to the source search.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

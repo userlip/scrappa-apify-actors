@@ -1,0 +1,417 @@
+{
+  "slug": "tiktok-trending-feed-scraper",
+  "title": "TikTok Trending Feed Scraper",
+  "description": "Get TikTok trending videos with creator profiles, captions, plays, likes, shares, and sound details. Choose a region to capture its public feed.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "endpoint": "/tiktok/feed/list",
+  "openapiPath": "/tiktok/feed/list",
+  "mode": "list",
+  "batch": {
+    "field": "regions",
+    "valueField": "region",
+    "apiParam": "region",
+    "pathParam": null,
+    "title": "Regions",
+    "description": "TikTok market codes for the trending video feed.",
+    "valueDescription": "Region code used to choose the trending feed."
+  },
+  "parameters": [
+    {
+      "input": "region",
+      "apiParam": "region",
+      "location": "query",
+      "required": true,
+      "title": "Region",
+      "schema": {
+        "type": "string",
+        "maxLength": 10,
+        "description": "Region sent to the source search."
+      }
+    },
+    {
+      "input": "count",
+      "apiParam": "count",
+      "location": "query",
+      "required": false,
+      "title": "Results Per Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20,
+        "description": "Results Per Page sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/data",
+  "flattenPointers": {
+    "author_id": "/author/id",
+    "author_username": "/author/unique_id",
+    "author_nickname": "/author/nickname",
+    "author_avatar": "/author/avatar",
+    "music_title": "/music_info/title",
+    "music_author": "/music_info/author"
+  },
+  "dedupePointer": "/aweme_id",
+  "enrichment": {
+    "field": "input_region"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "regions": [
+      {
+        "region": "GB"
+      }
+    ],
+    "count": 10,
+    "maxResults": 20
+  },
+  "testParams": {
+    "region": "US"
+  },
+  "fixture": {
+    "code": 0,
+    "msg": "success",
+    "processed_time": 0.6,
+    "data": [
+      {
+        "aweme_id": "7419000123456789012",
+        "video_id": "7419000123456789012",
+        "region": "GB",
+        "title": "A simple guide to crisp sourdough at home",
+        "content_desc": [
+          "fresh sourdough",
+          "home baking"
+        ],
+        "cover": "https://p16-sign.tiktokcdn.com/obj/tos-useast5-p-0068/loaf-cover.jpeg",
+        "ai_dynamic_cover": "https://p16-sign.tiktokcdn.com/obj/tos-useast5-p-0068/loaf-dynamic.jpeg",
+        "origin_cover": "https://p16-sign.tiktokcdn.com/obj/tos-useast5-p-0068/loaf-origin.jpeg",
+        "duration": 36,
+        "play": "https://v16-webapp.tiktok.com/video/loaf-play.mp4",
+        "wmplay": "https://v16-webapp.tiktok.com/video/loaf-watermarked.mp4",
+        "size": 4821032,
+        "wm_size": 4938200,
+        "music": "7418000123456789012",
+        "play_count": 128000,
+        "digg_count": 9800,
+        "comment_count": 310,
+        "share_count": 740,
+        "download_count": 210,
+        "collect_count": 1400,
+        "create_time": 1758205931,
+        "anchors": null,
+        "anchors_extras": "[]",
+        "is_ad": false,
+        "commerce_info": {
+          "auction_ad_invited": false,
+          "with_comment_filter_words": false,
+          "adv_promotable": false,
+          "branded_content_type": 0,
+          "organic_log_extra": "{}",
+          "is_diversion_ad": 0
+        },
+        "commercial_video_info": "organic",
+        "item_comment_settings": 0,
+        "mentioned_users": "[]",
+        "author": {
+          "id": "7123456789012345678",
+          "unique_id": "harborbakehouse",
+          "nickname": "Harbor Bakehouse",
+          "avatar": "https://p16-sign.tiktokcdn.com/tos-maliva-avt-0068/harborbakehouse.jpeg"
+        },
+        "is_nff_or_nr": false,
+        "is_top": 0,
+        "music_info": {
+          "id": "7418000123456789012",
+          "title": "Warm Morning",
+          "play": "https://www.tiktok.com/music/warm-morning-7418000123456789012",
+          "cover": "https://p16-sign.tiktokcdn.com/music/warm-morning.jpeg",
+          "author": "North Pier Audio",
+          "original": false,
+          "duration": 42,
+          "album": "Morning Light"
+        },
+        "images": [
+          "https://p16-sign.tiktokcdn.com/obj/loaf-step-one.jpeg",
+          "https://p16-sign.tiktokcdn.com/obj/loaf-step-two.jpeg"
+        ]
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "aweme_id",
+      "label": "Video ID",
+      "format": "text"
+    },
+    {
+      "name": "author_username",
+      "label": "Author Username",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "play_count",
+      "label": "Play Count",
+      "format": "number"
+    },
+    {
+      "name": "digg_count",
+      "label": "Like Count",
+      "format": "number"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "TikTok Trending Feed Scraper | Popular Videos",
+    "seoDescription": "Get TikTok trending videos with creators, captions, plays, likes, shares, and sound details. Choose a region to capture its public feed for research.",
+    "intro": "Capture TikTok’s public trending feed for a selected market with video captions, creator profiles, engagement totals, and sound information. Each row represents a trending post.",
+    "useCases": [
+      "Social analysts can review public videos gaining reach in a selected market.",
+      "Content teams can compare trending captions, sounds, and engagement.",
+      "Researchers can save regional TikTok feed snapshots for later analysis."
+    ],
+    "howToUse": [
+      "Add a TikTok region code such as `GB` to `regions`.",
+      "Optionally set `count` to request up to 20 feed items.",
+      "Use `maxResults` to limit the number of video rows saved."
+    ],
+    "faqs": [
+      {
+        "question": "Why does the US feed sometimes fail?",
+        "answer": "Feed availability can vary by market and source response. Choose another supported region if a market is temporarily unavailable."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "tiktok-search-scraper",
+        "title": "TikTok Search Scraper"
+      },
+      {
+        "slug": "tiktok-hashtag-posts-scraper",
+        "title": "TikTok Hashtag Posts Scraper"
+      },
+      {
+        "slug": "instagram-trending-reels-scraper",
+        "title": "Instagram Trending Reels Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "aweme_id",
+        "type": "String",
+        "description": "TikTok identifier for the video post."
+      },
+      {
+        "name": "video_id",
+        "type": "String",
+        "description": "Alternate video identifier returned with the post."
+      },
+      {
+        "name": "region",
+        "type": "String",
+        "description": "Market code associated with the feed result."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Short description or caption attached to the video."
+      },
+      {
+        "name": "content_desc",
+        "type": "Array<String>",
+        "description": "Content phrases associated with the post."
+      },
+      {
+        "name": "cover",
+        "type": "String",
+        "description": "URL of the default video cover image."
+      },
+      {
+        "name": "ai_dynamic_cover",
+        "type": "String",
+        "description": "URL of the animated or dynamic cover when supplied."
+      },
+      {
+        "name": "origin_cover",
+        "type": "String",
+        "description": "URL of the original cover image."
+      },
+      {
+        "name": "duration",
+        "type": "Integer",
+        "description": "Video length in seconds."
+      },
+      {
+        "name": "play",
+        "type": "String",
+        "description": "Playback reference returned for the video."
+      },
+      {
+        "name": "wmplay",
+        "type": "String",
+        "description": "Playback reference for a watermarked version, when supplied."
+      },
+      {
+        "name": "size",
+        "type": "Integer",
+        "description": "Reported size of the video media asset in bytes."
+      },
+      {
+        "name": "wm_size",
+        "type": "Integer",
+        "description": "Reported size of the watermarked media asset in bytes."
+      },
+      {
+        "name": "music",
+        "type": "String",
+        "description": "Music identifier or reference attached to the post."
+      },
+      {
+        "name": "play_count",
+        "type": "Integer",
+        "description": "Number of plays reported for the video."
+      },
+      {
+        "name": "digg_count",
+        "type": "Integer",
+        "description": "Number of likes reported for the video."
+      },
+      {
+        "name": "comment_count",
+        "type": "Integer",
+        "description": "Number of comments reported for the video."
+      },
+      {
+        "name": "share_count",
+        "type": "Integer",
+        "description": "Number of shares reported for the video."
+      },
+      {
+        "name": "download_count",
+        "type": "Integer",
+        "description": "Number of downloads reported for the video."
+      },
+      {
+        "name": "collect_count",
+        "type": "Integer",
+        "description": "Number of saves reported for the video."
+      },
+      {
+        "name": "create_time",
+        "type": "Integer",
+        "description": "Unix timestamp when the video was published."
+      },
+      {
+        "name": "anchors",
+        "type": "Object or null",
+        "description": "Commercial anchor data, or null when none is supplied."
+      },
+      {
+        "name": "anchors_extras",
+        "type": "String",
+        "description": "Serialized metadata for commercial anchors."
+      },
+      {
+        "name": "is_ad",
+        "type": "Boolean",
+        "description": "True when TikTok marks the post as an advertisement."
+      },
+      {
+        "name": "commerce_info",
+        "type": "Object or null",
+        "description": "Commerce and promotion flags, or null when none are supplied."
+      },
+      {
+        "name": "commercial_video_info",
+        "type": "String",
+        "description": "Commercial status information for the post."
+      },
+      {
+        "name": "item_comment_settings",
+        "type": "Integer",
+        "description": "Numeric comment-setting code returned for the video."
+      },
+      {
+        "name": "mentioned_users",
+        "type": "String",
+        "description": "Serialized user mentions attached to the video."
+      },
+      {
+        "name": "author",
+        "type": "Object",
+        "description": "Public TikTok profile details for the video author."
+      },
+      {
+        "name": "is_nff_or_nr",
+        "type": "Boolean or null",
+        "description": "TikTok content status flag, or null when not supplied."
+      },
+      {
+        "name": "is_top",
+        "type": "Integer",
+        "description": "Numeric flag indicating whether the video is pinned or top-ranked."
+      },
+      {
+        "name": "music_info",
+        "type": "Object",
+        "description": "Sound title, author, duration, and cover details for the video."
+      },
+      {
+        "name": "images",
+        "type": "Array<String>",
+        "description": "Image URLs associated with photo or carousel content."
+      },
+      {
+        "name": "author_id",
+        "type": "String",
+        "description": "TikTok profile identifier for the author."
+      },
+      {
+        "name": "author_username",
+        "type": "String",
+        "description": "Public TikTok handle of the video author."
+      },
+      {
+        "name": "author_nickname",
+        "type": "String",
+        "description": "Display name on the TikTok profile."
+      },
+      {
+        "name": "author_avatar",
+        "type": "String",
+        "description": "Public TikTok profile image URL."
+      },
+      {
+        "name": "music_title",
+        "type": "String",
+        "description": "Sound title associated with the TikTok video."
+      },
+      {
+        "name": "music_author",
+        "type": "String",
+        "description": "Sound creator name when music details are returned."
+      },
+      {
+        "name": "input_region",
+        "type": "String",
+        "description": "TikTok market code used to select trending videos."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

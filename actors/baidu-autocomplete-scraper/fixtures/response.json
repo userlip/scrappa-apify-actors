@@ -1,0 +1,37 @@
+{
+  "search_parameters": {
+    "engine": "baidu",
+    "query": "iphone"
+  },
+  "search_information": {
+    "query_displayed": "iphone",
+    "suggestion_count": 10
+  },
+  "suggestions": [
+    {
+      "position": 1,
+      "query": "iphone 17",
+      "value": "iphone 17",
+      "type": "suggestion",
+      "is_direct": false,
+      "sa": "s_1",
+      "q": "iphone 17",
+      "no_ai_sug": false
+    }
+  ],
+  "provider_response": {
+    "q": "iphone",
+    "p": false,
+    "g": [
+      {
+        "type": "sug",
+        "sa": "s_1",
+        "q": "iphone 17",
+        "no_ai_sug": false
+      }
+    ],
+    "slid": "slider-18",
+    "queryid": "query-901"
+  },
+  "response_time_ms": 192
+}

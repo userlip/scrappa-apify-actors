@@ -1,0 +1,73 @@
+{
+  "search_parameters": {
+    "engine": "semrush",
+    "domain": "notion.so"
+  },
+  "covered": true,
+  "domain": "notion.so",
+  "country": "us",
+  "categories": [
+    {
+      "slug": "business-and-industry",
+      "name": "Business and Industry"
+    }
+  ],
+  "actual_date": "2025-09-01",
+  "ranks": {
+    "global": 1250,
+    "country": {
+      "value": 88,
+      "name": "United States",
+      "database": "us",
+      "slug": "us"
+    },
+    "category": {
+      "database": "us"
+    }
+  },
+  "authority_score": 71,
+  "visits": 8120000,
+  "engagement": {
+    "pages_per_visit": 3.8,
+    "avg_visit_duration_seconds": 185,
+    "bounce_rate": 0.42
+  },
+  "visits_history": [
+    {
+      "date": "2025-07-01",
+      "visits": 7900000
+    },
+    {
+      "date": "2025-08-01",
+      "visits": 8030000
+    },
+    {
+      "date": "2025-09-01",
+      "visits": 8120000
+    }
+  ],
+  "device_history": [
+    {
+      "date": "2025-09-01",
+      "visits": 8120000,
+      "desktop_visits": 4872000,
+      "mobile_visits": 3248000
+    },
+    {
+      "date": "2025-08-01",
+      "visits": 8030000,
+      "desktop_visits": 4818000,
+      "mobile_visits": 3212000
+    }
+  ],
+  "traffic_by_country": [
+    {
+      "country": "US",
+      "country_name": "United States",
+      "traffic": 3400000,
+      "traffic_share": 0.42,
+      "desktop_share": 0.52,
+      "mobile_share": 0.48
+    }
+  ]
+}
