@@ -7,5 +7,6 @@
     "buildTag": "latest",
     "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
     "input": "./input_schema.json",
+    "output": "./output_schema.json",
     "dockerfile": "./Dockerfile"
 }

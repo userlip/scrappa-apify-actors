@@ -1,0 +1,13 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "TikTok User Posts Scraper output",
+  "description": "Results saved by TikTok User Posts Scraper, one dataset item per result.",
+  "properties": {
+    "results": {
+      "type": "string",
+      "title": "Results",
+      "description": "All results from this run in the default dataset.",
+      "template": "{{links.apiDefaultDatasetUrl}}/items"
+    }
+  }
+}

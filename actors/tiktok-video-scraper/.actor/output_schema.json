@@ -1,0 +1,13 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "TikTok Video Details Scraper output",
+  "description": "Results saved by TikTok Video Details Scraper, one dataset item per result.",
+  "properties": {
+    "results": {
+      "type": "string",
+      "title": "Results",
+      "description": "All results from this run in the default dataset.",
+      "template": "{{links.apiDefaultDatasetUrl}}/items"
+    }
+  }
+}

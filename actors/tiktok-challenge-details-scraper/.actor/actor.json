@@ -4,7 +4,7 @@
   "title": "TikTok Hashtag Details Scraper",
   "description": "Look up TikTok hashtag challenges with names, descriptions and participant counts. Submit multiple challenge names in one run to retrieve records for each target.",
   "version": "1.0", "buildTag": "latest",
-  "input": "./input_schema.json", "dockerfile": "./Dockerfile",
+  "input": "./input_schema.json", "output": "./output_schema.json", "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
   "resources": { "memoryMbytes": 128 },
   "defaultRunOptions": { "timeoutSecs": 120 },
