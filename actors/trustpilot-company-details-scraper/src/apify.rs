@@ -3,13 +3,11 @@ use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::{json, Value};
 use std::{collections::HashMap, env, error::Error, fmt, time::Duration};
-use tokio::time::sleep;
 
 pub const COMPANY_DETAIL_RESULT_EVENT: &str = "company-detail-result";
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const APIFY_HTTP_TIMEOUT: Duration = Duration::from_secs(60);
-const APIFY_MAX_ATTEMPTS: usize = 3;
 
 #[derive(Clone)]
 pub struct ApifyClient {
@@ -370,10 +368,6 @@ fn required_env(name: &str) -> Result<String> {
         .ok_or_else(|| anyhow!("Required environment variable {name} is missing"))
 }
 
-fn retryable_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
-}
-
 fn charge_limit_message(saved_count: usize) -> String {
     format!(
         "Charge limit reached after saving {saved_count} of 1 Trustpilot company detail results."
@@ -648,10 +642,10 @@ mod tests {
             .contains("Failed to store item in the default dataset"));
         assert!(budget.can_charge_next_item().unwrap());
         let requests = server.finish();
-        assert_eq!(requests.len(), 2);
+        assert_eq!(requests.len(), 3);
         assert!(requests[0].starts_with("POST /v2/datasets/test-dataset/items HTTP/1.1"));
-        assert!(requests[1]
-            .starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1 HTTP/1.1"));
+        assert!(requests[1..].iter().all(|request| request
+            .starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1 HTTP/1.1")));
         assert_eq!(
             request_body(&requests[0]),
             json!([{"company_domain":"example.com"}])

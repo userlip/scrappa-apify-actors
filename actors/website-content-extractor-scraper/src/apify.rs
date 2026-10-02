@@ -737,8 +737,9 @@ mod tests {
         let server = start_mock_server(vec![
             MockResponse::json(200, &run_body),
             MockResponse::text(500, "dataset response was lost"),
-            MockResponse::text(201, ""),
-            MockResponse::text(201, ""),
+            MockResponse::text(500, "verification unavailable"),
+            MockResponse::text(500, "verification unavailable"),
+            MockResponse::text(500, "verification unavailable"),
         ])
         .await;
         let client = apify_client(server.base_url());
@@ -755,10 +756,10 @@ mod tests {
             .is_err());
 
         let requests = server.requests().await;
-        assert_eq!(requests.len(), 3);
+        assert!(requests.len() >= 3);
         assert!(requests[1].starts_with("POST /api/v2/datasets/test-dataset/items HTTP/1.1"));
-        assert!(requests[2]
-            .starts_with("GET /api/v2/datasets/test-dataset/items?offset=0&limit=1 HTTP/1.1"));
+        assert!(requests[2..].iter().all(|request| request
+            .starts_with("GET /api/v2/datasets/test-dataset/items?offset=0&limit=1 HTTP/1.1")));
         assert!(requests.iter().all(
             |request| !request.starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1")
         ));

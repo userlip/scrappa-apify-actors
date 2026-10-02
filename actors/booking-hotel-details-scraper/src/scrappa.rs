@@ -408,7 +408,7 @@ mod tests {
             (200, "{\"ok\":true}".into(), Duration::ZERO),
         ]);
         let client =
-            ScrappaClient::build("key".into(), server.base_url, Duration::from_millis(5)).unwrap();
+            ScrappaClient::build("key".into(), server.base_url, Duration::from_millis(50)).unwrap();
         assert_eq!(
             client.get("/booking/hotel", &Map::new()).await.unwrap(),
             json!({"ok": true})

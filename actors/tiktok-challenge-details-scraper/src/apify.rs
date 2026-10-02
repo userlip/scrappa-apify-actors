@@ -1,14 +1,13 @@
 use crate::apify_retry::ApifyRetryExt;
-use std::{collections::BTreeMap, time::Duration};
+use std::collections::BTreeMap;
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, RequestBuilder, Response, StatusCode};
 use serde_json::{json, Value};
-use tokio::time::sleep;
 use url::Url;
 
 use crate::config::{
-    ActorConfig, APIFY_MAX_RETRIES, APIFY_REQUEST_TIMEOUT, CHALLENGE_DETAIL_CHARGE_EVENT,
+    ActorConfig, APIFY_REQUEST_TIMEOUT, CHALLENGE_DETAIL_CHARGE_EVENT,
     DEFAULT_DATASET_ITEM_EVENT, OUTPUT_KEY,
 };
 

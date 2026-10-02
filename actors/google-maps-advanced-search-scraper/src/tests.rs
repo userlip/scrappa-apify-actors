@@ -437,7 +437,17 @@ async fn dataset_writes_verify_ambiguous_failures_without_reposting() {
             .push_dataset_items(&[json!({"id":"only-once"})])
             .await
             .is_err());
-        assert_eq!(server.requests().len(), 2);
+        let requests = server.requests();
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|request| request.starts_with("POST /v2/datasets/test-dataset/items "))
+                .count(),
+            1
+        );
+        assert!(requests.iter().any(|request| {
+            request.starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1 ")
+        }));
     }
 }
 

@@ -207,8 +207,7 @@ async fn run_actor() -> Result<()> {
             assert_successful_response(&response, &request.url)?;
             let ad =
                 extract_single_tiktok_ad_record(response.get("data"), &request.url, |warning| {
-                    let _ = warning;
-                    eprintln!("Scrappa returned unexpected TikTok ad records");
+                    eprintln!("Warning: {warning}");
                 })?;
             let row = success_item(ad.as_ref(), request, &response, request_index);
             apify.push_dataset_item(&row).await?;
@@ -228,7 +227,7 @@ async fn run_actor() -> Result<()> {
             }
             Err(error) => {
                 let message = format!("{error:#}");
-                eprintln!("TikTok ad lookup failed; saving an error item");
+                eprintln!("TikTok ad lookup failed; saving an error item: {message}");
                 apify
                     .push_dataset_item(&failure_item(request, request_index, message))
                     .await

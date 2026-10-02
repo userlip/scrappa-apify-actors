@@ -12,8 +12,6 @@ const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: usize = 8;
-const APIFY_RETRY_BASE_DELAY: Duration = Duration::from_millis(500);
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 
 struct ActorConfig {
@@ -151,42 +149,27 @@ async fn response_json(response: Response, operation: &str) -> Result<Value> {
         .with_context(|| format!("{operation} returned invalid JSON"))
 }
 
-async fn send_apify_request(
-    build_request: impl FnMut() -> RequestBuilder,
-) -> std::result::Result<Response, reqwest::Error> {
-    send_request_with_retries(
-        build_request,
-        APIFY_REQUEST_TIMEOUT,
-        APIFY_MAX_RETRIES,
-        APIFY_RETRY_BASE_DELAY,
-    )
-    .await
+async fn send_apify_request(build_request: impl FnMut() -> RequestBuilder) -> Result<Response> {
+    send_request_with_retries(build_request, APIFY_REQUEST_TIMEOUT).await
 }
 
 async fn send_apify_request_once(
     build_request: impl FnOnce() -> RequestBuilder,
-) -> std::result::Result<Response, reqwest::Error> {
-    build_request()
+) -> Result<Response> {
+    Ok(build_request()
         .timeout(APIFY_REQUEST_TIMEOUT)
         .send_apify_with_retry()
-        .await
+        .await?)
 }
 
 async fn send_request_with_retries(
     mut build_request: impl FnMut() -> RequestBuilder,
     timeout: Duration,
-    max_retries: usize,
-    initial_retry_delay: Duration,
-) -> std::result::Result<Response, reqwest::Error> {
-    let _ = (max_retries, initial_retry_delay);
-    build_request()
+) -> Result<Response> {
+    Ok(build_request()
         .timeout(timeout)
         .send_apify_with_retry()
-        .await
-}
-
-fn retry_delay(initial_delay: Duration, retries: usize) -> Duration {
-    initial_delay.saturating_mul(2_u32.saturating_pow(retries as u32))
+        .await?)
 }
 
 async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {

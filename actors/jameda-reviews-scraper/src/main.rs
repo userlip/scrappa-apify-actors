@@ -91,7 +91,9 @@ async fn run_actor(config: ActorConfig) -> Result<()> {
             status_message = Some(format!(
                 "Charge limit reached before fetching Jameda reviews for {doctor_url}; {saved_reviews} review(s) were saved."
             ));
-            println!("Charge limit reached before fetching the remaining Jameda reviews");
+            println!(
+                "Charge limit reached before fetching the remaining Jameda reviews; {saved_reviews} review(s) saved"
+            );
             break;
         }
 
@@ -128,7 +130,7 @@ async fn run_actor(config: ActorConfig) -> Result<()> {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
-                eprintln!("Failed to fetch Jameda reviews");
+                eprintln!("Failed to fetch Jameda reviews: {message}");
             }
         }
     }

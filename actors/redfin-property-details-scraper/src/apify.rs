@@ -12,7 +12,6 @@ use crate::{
 };
 
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const APIFY_MAX_RETRIES: usize = 2;
 
 pub(crate) struct ApifyClient {
     http: Client,
@@ -55,7 +54,6 @@ impl ApifyClient {
                         .header(header::ACCEPT, "application/json")
                 },
                 "run pricing request",
-                false,
             )
             .await?;
         response_json(response, "run pricing request").await
@@ -78,7 +76,6 @@ impl ApifyClient {
                         .header(header::ACCEPT, "application/json")
                 },
                 "input retrieval",
-                false,
             )
             .await?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -120,7 +117,6 @@ impl ApifyClient {
                         .json(&json!({ "eventName": event_name, "count": count }))
                 },
                 "charge event request",
-                true,
             )
             .await?;
         require_apify_success(response, "charge event request").await?;
@@ -145,7 +141,6 @@ impl ApifyClient {
                         .json(output)
                 },
                 "OUTPUT record publication",
-                false,
             )
             .await?;
         require_apify_success(response, "OUTPUT record publication").await?;
@@ -172,16 +167,10 @@ impl ApifyClient {
         Ok(())
     }
 
-    async fn send_with_retries<F>(
-        &self,
-        make_request: F,
-        operation: &str,
-        retry_network_errors: bool,
-    ) -> Result<Response>
+    async fn send_with_retries<F>(&self, make_request: F, operation: &str) -> Result<Response>
     where
         F: Fn() -> RequestBuilder,
     {
-        let _ = retry_network_errors;
         make_request()
             .send_apify_with_retry()
             .await

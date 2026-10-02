@@ -337,23 +337,26 @@ async fn writes_dataset_and_full_output_for_non_ppe_runs() {
         ("200 OK", NON_PPE_RUN),
         ("200 OK", input),
         ("200 OK", TIMELINE_RESPONSE),
+        ("200 OK", r#"{"data":{"itemCount":0}}"#),
+        ("200 OK", "[]"),
+        ("200 OK", "[]"),
         ("201 Created", ""),
         ("201 Created", ""),
     ]);
     let config = test_config(base_url, "scrappa-test-key");
     run_actor(&Client::new(), &config).await.unwrap();
     let requests = server.join().unwrap();
-    assert_eq!(requests.len(), 5);
-    assert!(requests[3]
+    assert_eq!(requests.len(), 8);
+    assert!(requests[6]
         .to_ascii_lowercase()
         .starts_with("post /v2/datasets/dataset-id/items"));
-    let rows = request_body(&requests[3]);
+    let rows = request_body(&requests[6]);
     assert_eq!(rows.as_array().unwrap().len(), 2);
-    assert!(requests[4]
+    assert!(requests[7]
         .to_ascii_lowercase()
         .starts_with("put /v2/key-value-stores/store-id/records/output"));
     assert_eq!(
-        request_body(&requests[4]),
+        request_body(&requests[7]),
         serde_json::from_str::<Value>(TIMELINE_RESPONSE).unwrap()
     );
     assert!(requests
@@ -369,6 +372,9 @@ async fn charges_ppe_results_with_the_named_event_and_stores_output() {
         ("200 OK", Box::leak(run.into_boxed_str())),
         ("200 OK", input),
         ("200 OK", TIMELINE_RESPONSE),
+        ("200 OK", r#"{"data":{"itemCount":0}}"#),
+        ("200 OK", "[]"),
+        ("200 OK", "[]"),
         ("201 Created", ""),
         ("201 Created", "{}"),
         ("201 Created", ""),
@@ -376,8 +382,8 @@ async fn charges_ppe_results_with_the_named_event_and_stores_output() {
     let config = test_config(base_url, "scrappa-test-key");
     run_actor(&Client::new(), &config).await.unwrap();
     let requests = server.join().unwrap();
-    assert_eq!(requests.len(), 6);
-    let charge_request = &requests[4];
+    assert_eq!(requests.len(), 9);
+    let charge_request = &requests[7];
     assert!(charge_request
         .to_ascii_lowercase()
         .starts_with("post /v2/actor-runs/run-id/charge"));
@@ -388,7 +394,7 @@ async fn charges_ppe_results_with_the_named_event_and_stores_output() {
         request_body(charge_request),
         json!({ "eventName": "timeline-point", "count": 2 })
     );
-    assert!(requests[5]
+    assert!(requests[8]
         .to_ascii_lowercase()
         .starts_with("put /v2/key-value-stores/store-id/records/output"));
 }
@@ -401,6 +407,9 @@ async fn marks_one_of_three_ppe_rows_as_partial() {
         ("200 OK", Box::leak(run.into_boxed_str())),
         ("200 OK", input),
         ("200 OK", THREE_POINT_RESPONSE),
+        ("200 OK", r#"{"data":{"itemCount":0}}"#),
+        ("200 OK", "[]"),
+        ("200 OK", "[]"),
         ("201 Created", ""),
         ("201 Created", "{}"),
         ("200 OK", "{}"),
@@ -408,13 +417,13 @@ async fn marks_one_of_three_ppe_rows_as_partial() {
     let config = test_config(base_url, "scrappa-test-key");
     run_actor(&Client::new(), &config).await.unwrap();
     let requests = server.join().unwrap();
-    assert_eq!(requests.len(), 6);
-    assert_eq!(request_body(&requests[3]).as_array().unwrap().len(), 1);
-    assert_eq!(request_body(&requests[4])["count"], 1);
-    assert!(requests[5]
+    assert_eq!(requests.len(), 9);
+    assert_eq!(request_body(&requests[6]).as_array().unwrap().len(), 1);
+    assert_eq!(request_body(&requests[7])["count"], 1);
+    assert!(requests[8]
         .to_ascii_lowercase()
         .starts_with("put /v2/actor-runs/run-id "));
-    let status = request_body(&requests[5]);
+    let status = request_body(&requests[8]);
     assert_eq!(
         status["statusMessage"],
         "Charge limit reached before saving all Google Trends timeline points."
@@ -433,6 +442,9 @@ async fn marks_two_of_three_ppe_rows_as_partial() {
         ("200 OK", Box::leak(run.into_boxed_str())),
         ("200 OK", input),
         ("200 OK", THREE_POINT_RESPONSE),
+        ("200 OK", r#"{"data":{"itemCount":0}}"#),
+        ("200 OK", "[]"),
+        ("200 OK", "[]"),
         ("201 Created", ""),
         ("201 Created", "{}"),
         ("200 OK", "{}"),
@@ -440,13 +452,13 @@ async fn marks_two_of_three_ppe_rows_as_partial() {
     let config = test_config(base_url, "scrappa-test-key");
     run_actor(&Client::new(), &config).await.unwrap();
     let requests = server.join().unwrap();
-    assert_eq!(requests.len(), 6);
-    assert_eq!(request_body(&requests[3]).as_array().unwrap().len(), 2);
-    assert_eq!(request_body(&requests[4])["count"], 2);
-    assert!(requests[5]
+    assert_eq!(requests.len(), 9);
+    assert_eq!(request_body(&requests[6]).as_array().unwrap().len(), 2);
+    assert_eq!(request_body(&requests[7])["count"], 2);
+    assert!(requests[8]
         .to_ascii_lowercase()
         .starts_with("put /v2/actor-runs/run-id "));
-    let status = request_body(&requests[5]);
+    let status = request_body(&requests[8]);
     assert_eq!(
         status["statusMessage"],
         "Charge limit reached before saving all Google Trends timeline points."
@@ -465,6 +477,9 @@ async fn writes_full_output_when_all_ppe_rows_are_free() {
         ("200 OK", Box::leak(run.into_boxed_str())),
         ("200 OK", input),
         ("200 OK", THREE_POINT_RESPONSE),
+        ("200 OK", r#"{"data":{"itemCount":0}}"#),
+        ("200 OK", "[]"),
+        ("200 OK", "[]"),
         ("201 Created", ""),
         ("201 Created", "{}"),
         ("201 Created", ""),
@@ -472,17 +487,17 @@ async fn writes_full_output_when_all_ppe_rows_are_free() {
     let config = test_config(base_url, "scrappa-test-key");
     run_actor(&Client::new(), &config).await.unwrap();
     let requests = server.join().unwrap();
-    assert_eq!(requests.len(), 6);
-    assert_eq!(request_body(&requests[3]).as_array().unwrap().len(), 3);
+    assert_eq!(requests.len(), 9);
+    assert_eq!(request_body(&requests[6]).as_array().unwrap().len(), 3);
     assert_eq!(
-        request_body(&requests[4]),
+        request_body(&requests[7]),
         json!({ "eventName": "timeline-point", "count": 3 })
     );
-    assert!(requests[5]
+    assert!(requests[8]
         .to_ascii_lowercase()
         .starts_with("put /v2/key-value-stores/store-id/records/output"));
     assert_eq!(
-        request_body(&requests[5]),
+        request_body(&requests[8]),
         serde_json::from_str::<Value>(THREE_POINT_RESPONSE).unwrap()
     );
 }

@@ -12,8 +12,6 @@ use crate::{
     runner::{LocationWriter, SaveResult},
 };
 
-const APIFY_MAX_RETRIES: usize = 2;
-const APIFY_RETRY_BASE: Duration = Duration::from_secs(1);
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 const CHARGE_EVENT: &str = "location-result";
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
@@ -296,7 +294,6 @@ impl ApifyClient {
             .send_with_retry(
                 || self.authorized(self.http.get(url.clone())),
                 "INPUT request",
-                true,
             )
             .await?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -317,7 +314,6 @@ impl ApifyClient {
             .send_with_retry(
                 || self.authorized(self.http.put(url.clone()).json(locations)),
                 "OUTPUT record publication",
-                true,
             )
             .await?;
         require_apify_success(response, "OUTPUT record publication").await
@@ -330,7 +326,6 @@ impl ApifyClient {
             .send_with_retry(
                 || self.authorized(self.http.patch(url.clone()).json(&payload)),
                 "run status update",
-                true,
             )
             .await?;
         require_apify_success(response, "run status update").await
@@ -342,7 +337,6 @@ impl ApifyClient {
             .send_with_retry(
                 || self.authorized(self.http.get(url.clone())),
                 "run pricing request",
-                true,
             )
             .await?;
         response_json(response, "run pricing request").await
@@ -354,7 +348,6 @@ impl ApifyClient {
             .send_with_retry(
                 || self.authorized(self.http.get(url.clone())),
                 "dataset item-count request",
-                true,
             )
             .await?;
         let dataset = response_json(response, "dataset item-count request").await?;
@@ -374,16 +367,10 @@ impl ApifyClient {
             .header(header::ACCEPT, "application/json")
     }
 
-    async fn send_with_retry<F>(
-        &self,
-        request: F,
-        operation: &str,
-        retryable_method: bool,
-    ) -> Result<Response>
+    async fn send_with_retry<F>(&self, request: F, operation: &str) -> Result<Response>
     where
         F: Fn() -> RequestBuilder,
     {
-        let _ = retryable_method;
         request()
             .send_apify_with_retry()
             .await
@@ -396,7 +383,6 @@ impl ApifyClient {
             .send_with_retry(
                 || self.authorized(self.http.post(url.clone()).json(items)),
                 "dataset item publication",
-                false,
             )
             .await?;
         require_apify_success(response, "dataset item publication").await
@@ -421,7 +407,6 @@ impl ApifyClient {
                         .header("idempotency-key", &idempotency_key)
                 },
                 "location-result charge",
-                true,
             )
             .await?;
         require_apify_success(response, "location-result charge").await
@@ -486,29 +471,6 @@ async fn require_apify_success(response: Response, operation: &str) -> Result<()
         status.as_u16(),
         body.trim()
     );
-}
-
-fn is_retryable_transport(error: &reqwest::Error) -> bool {
-    error.is_timeout() || error.is_connect()
-}
-
-fn retry_delay(retry_count: usize) -> Duration {
-    APIFY_RETRY_BASE.saturating_mul((retry_count + 1) as u32)
-}
-
-fn response_retry_delay(response: &Response, retry_count: usize) -> Option<Duration> {
-    let status = response.status();
-    let retryable = status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error();
-    if !retryable {
-        return None;
-    }
-    response
-        .headers()
-        .get(header::RETRY_AFTER)
-        .and_then(|value| value.to_str().ok())
-        .and_then(|value| value.parse::<u64>().ok())
-        .map(Duration::from_secs)
-        .or_else(|| Some(retry_delay(retry_count)))
 }
 
 #[cfg(test)]
@@ -921,28 +883,37 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn verifies_a_transient_dataset_write_before_stopping() {
+    async fn retries_a_transient_dataset_write_after_verifying_no_rows() {
         let calls = Arc::new(Mutex::new(Vec::<MockRequest>::new()));
         let handler_calls = calls.clone();
         let server = MockServer::start(move |request| {
             let mut calls = handler_calls.lock().unwrap();
             calls.push(request);
-            if calls.len() == 1 {
-                MockResponse::json(503, json!({ "message": "Unavailable" }))
-            } else {
-                MockResponse::json(201, json!({}))
+            match calls.last().unwrap().method.as_str() {
+                "POST" if calls.len() == 1 => {
+                    MockResponse::json(503, json!({ "message": "Unavailable" }))
+                }
+                "GET" => MockResponse::json(200, json!([])),
+                "POST" => MockResponse::json(201, json!({})),
+                method => panic!("unexpected mock method: {method}"),
             }
         });
         let mut client = ApifyClient::new(config(&server.base_url(""))).unwrap();
         client.budget = ChargeBudget::default();
 
-        let error = client
+        let saved = client
             .save_locations(&[json!({ "geocode": "1" })])
             .await
-            .unwrap_err();
-        assert!(error
-            .to_string()
-            .contains("dataset item publication failed"));
-        assert_eq!(calls.lock().unwrap().len(), 2);
+            .unwrap();
+        assert_eq!(saved.saved_count, 1);
+        let calls = calls.lock().unwrap();
+        assert_eq!(calls.len(), 3);
+        assert_eq!(calls[0].method, "POST");
+        assert_eq!(calls[1].method, "GET");
+        assert_eq!(
+            calls[1].path,
+            "/v2/datasets/dataset-1/items?offset=0&limit=1"
+        );
+        assert_eq!(calls[2].method, "POST");
     }
 }

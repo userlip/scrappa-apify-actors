@@ -5,7 +5,6 @@ use serde_json::{json, Value};
 use std::{env, time::Duration};
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
-const APIFY_MAX_RETRIES: usize = 2;
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 pub struct ApifyClient {
@@ -219,38 +218,6 @@ async fn require_success(response: Response, operation: &str) -> Result<Response
     let status = response.status();
     let body = response.text().await.unwrap_or_default();
     bail!("Apify {operation} failed ({}): {body}", status.as_u16());
-}
-
-fn can_retry_transport(method: &Method, error: &reqwest::Error, retry_count: usize) -> bool {
-    matches!(*method, Method::GET | Method::PUT)
-        && retry_count < APIFY_MAX_RETRIES
-        && (error.is_connect() || error.is_timeout())
-}
-
-fn apify_retry_delay_for_status(
-    method: &Method,
-    status: StatusCode,
-    retry_count: usize,
-) -> Option<Duration> {
-    if !matches!(*method, Method::GET | Method::PUT)
-        || retry_count >= APIFY_MAX_RETRIES
-        || !matches!(
-            status,
-            StatusCode::TOO_MANY_REQUESTS
-                | StatusCode::INTERNAL_SERVER_ERROR
-                | StatusCode::BAD_GATEWAY
-                | StatusCode::SERVICE_UNAVAILABLE
-                | StatusCode::GATEWAY_TIMEOUT
-                | StatusCode::REQUEST_TIMEOUT
-        )
-    {
-        return None;
-    }
-    Some(apify_retry_delay(retry_count))
-}
-
-fn apify_retry_delay(retry_count: usize) -> Duration {
-    Duration::from_secs(1_u64 << retry_count.min(3))
 }
 
 fn required_env(name: &str) -> Result<String> {

@@ -316,7 +316,6 @@ async fn charge_search_result(
     client: &Client,
     config: &ActorConfig,
     charge_index: usize,
-    retry_policy: RetryPolicy,
 ) -> Result<()> {
     let url = apify_url(
         &config.apify_api_base_url,
@@ -326,7 +325,6 @@ async fn charge_search_result(
         "{}-{SEARCH_CHARGE_EVENT}-{charge_index}",
         config.actor_run_id
     );
-    let _ = retry_policy;
     let response = client
         .post(url)
         .bearer_auth(&config.apify_token)
@@ -338,10 +336,6 @@ async fn charge_search_result(
     require_apify_success(response, "result charge")
         .await
         .map(|_| ())
-}
-
-fn is_retryable_charge_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
 }
 
 async fn put_output(client: &Client, config: &ActorConfig, output: &Value) -> Result<()> {
@@ -492,7 +486,7 @@ async fn run_actor(
             }
             saved_results += 1;
             if budget.is_pay_per_event && budget.has_custom_charge_event() {
-                charge_search_result(client, config, saved_results, retry_policy).await?;
+                charge_search_result(client, config, saved_results).await?;
                 budget.record_custom_charge();
             }
         }

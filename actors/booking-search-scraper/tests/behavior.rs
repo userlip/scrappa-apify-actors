@@ -622,6 +622,9 @@ async fn paid_batch_writes_results_in_order_and_charges_named_event() {
             200,
             &run_response(json!(10.0), json!({"apify-actor-start":1})),
         ),
+        mock_response(200, r#"{"data":{"itemCount":0}}"#),
+        mock_response(200, "[]"),
+        mock_response(200, "[]"),
         mock_response(201, "{}"),
         mock_response(201, "{}"),
         mock_response(200, r#"{"results":[{"name":"Berlin A"}]}"#),
@@ -632,6 +635,9 @@ async fn paid_batch_writes_results_in_order_and_charges_named_event() {
                 json!({"apify-actor-start":1,"booking-result":2,"apify-default-dataset-item":2}),
             ),
         ),
+        mock_response(200, r#"{"data":{"itemCount":0}}"#),
+        mock_response(200, "[]"),
+        mock_response(200, "[]"),
         mock_response(201, "{}"),
         mock_response(201, "{}"),
     ]);
@@ -639,32 +645,32 @@ async fn paid_batch_writes_results_in_order_and_charges_named_event() {
     run_actor(&http_client(), &config).await.unwrap();
 
     let requests = server.requests();
-    assert_eq!(requests.len(), 9);
+    assert_eq!(requests.len(), 12);
     assert!(has_header(
         &requests[0],
         "Authorization",
         "Bearer test-token"
     ));
-    assert_eq!(request_parts(&requests[3]).0, "POST");
-    let first_dataset: Value = serde_json::from_str(request_parts(&requests[3]).2).unwrap();
+    assert_eq!(request_parts(&requests[6]).0, "POST");
+    let first_dataset: Value = serde_json::from_str(request_parts(&requests[6]).2).unwrap();
     assert_eq!(first_dataset[0]["name"], "Paris A");
     assert_eq!(first_dataset[1]["name"], "Paris B");
     assert_eq!(first_dataset[0]["request_search_index"], 0);
-    let first_charge: Value = serde_json::from_str(request_parts(&requests[4]).2).unwrap();
+    let first_charge: Value = serde_json::from_str(request_parts(&requests[7]).2).unwrap();
     assert_eq!(
         first_charge,
         json!({"eventName":"booking-result", "count":2})
     );
     assert!(has_header(
-        &requests[4],
+        &requests[7],
         "idempotency-key",
         "test-run-booking-result-0"
     ));
-    let second_dataset: Value = serde_json::from_str(request_parts(&requests[7]).2).unwrap();
+    let second_dataset: Value = serde_json::from_str(request_parts(&requests[10]).2).unwrap();
     assert_eq!(second_dataset[0]["name"], "Berlin A");
     assert_eq!(second_dataset[0]["request_search_index"], 1);
     assert_eq!(
-        request_parts(&requests[5]).1.split('?').next(),
+        request_parts(&requests[8]).1.split('?').next(),
         Some("/api/booking/search")
     );
 }
@@ -681,6 +687,9 @@ async fn non_pay_per_event_runs_write_every_result_without_a_custom_charge() {
             200,
             r#"{"data":{"pricingInfo":{"pricingModel":"PRICE_PER_RESULT"}}}"#,
         ),
+        mock_response(200, r#"{"data":{"itemCount":0}}"#),
+        mock_response(200, "[]"),
+        mock_response(200, "[]"),
         mock_response(201, "{}"),
     ]);
     let config = config(&server);
@@ -688,8 +697,8 @@ async fn non_pay_per_event_runs_write_every_result_without_a_custom_charge() {
     run_actor(&http_client(), &config).await.unwrap();
 
     let requests = server.requests();
-    assert_eq!(requests.len(), 4);
-    let saved: Value = serde_json::from_str(request_parts(&requests[3]).2).unwrap();
+    assert_eq!(requests.len(), 7);
+    let saved: Value = serde_json::from_str(request_parts(&requests[6]).2).unwrap();
     assert_eq!(saved.as_array().unwrap().len(), 2);
     assert_eq!(saved[0]["name"], "One");
     assert_eq!(saved[1]["name"], "Two");
@@ -708,6 +717,9 @@ async fn budget_limit_saves_only_affordable_prefix_then_exits_with_status() {
             200,
             &run_response(json!(0.02205), json!({"apify-actor-start":1})),
         ),
+        mock_response(200, r#"{"data":{"itemCount":0}}"#),
+        mock_response(200, "[]"),
+        mock_response(200, "[]"),
         mock_response(201, "{}"),
         mock_response(201, "{}"),
         mock_response(200, "{}"),
@@ -716,13 +728,13 @@ async fn budget_limit_saves_only_affordable_prefix_then_exits_with_status() {
     run_actor(&http_client(), &config).await.unwrap();
 
     let requests = server.requests();
-    assert_eq!(requests.len(), 6);
-    let dataset: Value = serde_json::from_str(request_parts(&requests[3]).2).unwrap();
+    assert_eq!(requests.len(), 9);
+    let dataset: Value = serde_json::from_str(request_parts(&requests[6]).2).unwrap();
     assert_eq!(dataset.as_array().unwrap().len(), 2);
-    let charge: Value = serde_json::from_str(request_parts(&requests[4]).2).unwrap();
+    let charge: Value = serde_json::from_str(request_parts(&requests[7]).2).unwrap();
     assert_eq!(charge["count"], 2);
-    assert_eq!(request_parts(&requests[5]).0, "PUT");
-    let status: Value = serde_json::from_str(request_parts(&requests[5]).2).unwrap();
+    assert_eq!(request_parts(&requests[8]).0, "PUT");
+    let status: Value = serde_json::from_str(request_parts(&requests[8]).2).unwrap();
     assert_eq!(status["isStatusMessageTerminal"], true);
     assert!(status["statusMessage"].as_str().unwrap().contains("2 of 3"));
 }

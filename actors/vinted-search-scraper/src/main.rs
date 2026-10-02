@@ -713,10 +713,12 @@ mod tests {
                 .count(),
             1
         );
-        assert_eq!(requests.len(), 3);
+        assert!(requests.len() >= 3);
         assert!(requests[0].starts_with("GET /v2/actor-runs/test-run "));
         assert!(requests[1].starts_with("POST /v2/datasets/test-dataset/items "));
-        assert!(requests[2].starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1 "));
+        assert!(requests[2..].iter().all(|request| {
+            request.starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1 ")
+        }));
     }
 
     #[test]

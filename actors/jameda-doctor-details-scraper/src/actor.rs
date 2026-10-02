@@ -66,7 +66,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
-                eprintln!("Failed to recover Jameda doctor details");
+                eprintln!("Failed to recover Jameda doctor details: {message}");
                 break;
             }
         }
@@ -90,7 +90,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
-                eprintln!("Failed to fetch Jameda doctor details");
+                eprintln!("Failed to fetch Jameda doctor details: {message}");
                 continue;
             }
         };
@@ -114,7 +114,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
-                eprintln!("Failed to save Jameda doctor details");
+                eprintln!("Failed to save Jameda doctor details: {message}");
                 break;
             }
         }

@@ -177,7 +177,7 @@ pub(crate) async fn run(
                     let api_error = error
                         .downcast_ref::<ScrappaApiError>()
                         .expect("404 Scrappa error must retain its API error type");
-                    eprintln!("Job detail scraping returned a per-item failure");
+                    eprintln!("Job detail scraping returned a per-item failure: {api_error}");
                     build_failure_item(
                         &api_error.to_string(),
                         Some(api_error.status),
@@ -188,7 +188,13 @@ pub(crate) async fn run(
                 Err(error) => return Err(error),
             }
         } else {
-            eprintln!("Skipping an invalid LinkedIn job URL");
+            eprintln!(
+                "Skipping an invalid LinkedIn job URL: {}",
+                request
+                    .validation_error
+                    .as_deref()
+                    .unwrap_or("invalid input")
+            );
             build_failure_item(
                 request
                     .validation_error

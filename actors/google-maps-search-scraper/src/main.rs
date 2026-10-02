@@ -6,16 +6,12 @@ use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, RequestBuilder, Response, StatusCode};
 use serde_json::{json, Value};
 use std::{env, time::Duration};
-use tokio::time::sleep;
 use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const APIFY_MAX_RETRIES: u32 = 8;
-const APIFY_MIN_RETRY_DELAY: Duration = Duration::from_millis(500);
-const APIFY_MAX_RETRY_DELAY: Duration = Duration::from_secs(30);
 const SCRAPPA_USER_AGENT: &str = "thescrappa-google-maps-search-scraper/1.0";
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const MAX_DATASET_REQUEST_BYTES: usize = 5_000_000;
@@ -423,21 +419,6 @@ where
         .send_apify_with_retry()
         .await
         .with_context(|| format!("{operation} failed"))
-}
-
-fn is_retryable_apify_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn is_retryable_apify_network_error(error: &reqwest::Error) -> bool {
-    error.is_timeout() || error.is_connect() || error.is_request()
-}
-
-fn apify_retry_delay(retry_number: u32) -> Duration {
-    let multiplier = 1_u32.checked_shl(retry_number).unwrap_or(u32::MAX);
-    APIFY_MIN_RETRY_DELAY
-        .saturating_mul(multiplier)
-        .min(APIFY_MAX_RETRY_DELAY)
 }
 
 async fn apify_json(response: Response, operation: &str) -> Result<Value> {

@@ -1,4 +1,3 @@
-mod apify_retry;
 use kleinanzeigen_search_scraper::{actor_failure_message, run_actor, ApifyClient, Config};
 use reqwest::Client;
 

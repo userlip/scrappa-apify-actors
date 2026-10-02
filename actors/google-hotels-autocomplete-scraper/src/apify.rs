@@ -12,7 +12,6 @@ pub const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 pub const RESULT_CHARGE_EVENT: &str = "hotel-suggestion-result";
 const DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const APIFY_MAX_ATTEMPTS: u8 = 3;
 const DATASET_POST_MAX_BYTES: usize = 4 * 1024 * 1024;
 
 #[derive(Debug)]
@@ -352,10 +351,6 @@ impl ApifyClient {
             .await
             .map_err(|error| anyhow!("Apify API request failed: {error}"))
     }
-}
-
-fn is_retryable_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 425 | 429 | 500 | 502 | 503 | 504)
 }
 
 async fn response_json(response: Response, operation: &str) -> Result<Value> {

@@ -85,7 +85,7 @@ async fn run_actor(http: &Client, config: &ActorConfig) -> Result<()> {
             }
             Err(error) => {
                 let message = format!("{error:#}");
-                eprintln!("TikTok video lookup failed; saving an error item");
+                eprintln!("TikTok video lookup failed; saving an error item: {message}");
                 lookups_failed += 1;
                 dataset_item(None, &request.url, hd, None, request_index, Some(message))
             }

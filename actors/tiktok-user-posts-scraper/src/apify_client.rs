@@ -7,8 +7,6 @@ use url::Url;
 
 pub(crate) const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: u32 = 2;
-const APIFY_RETRY_DELAY: Duration = Duration::from_millis(250);
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 
 pub(crate) fn endpoint_url(base_url: &Url, segments: &[&str]) -> Result<Url> {
@@ -116,18 +114,6 @@ impl ApifyClient {
         successful_response(response, "write OUTPUT").await?;
         Ok(())
     }
-}
-
-fn is_retryable_method(method: &Method) -> bool {
-    matches!(method.as_str(), "GET" | "PUT")
-}
-
-fn is_retryable_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn is_retryable_request(error: &reqwest::Error) -> bool {
-    error.is_timeout() || error.is_connect() || error.is_request()
 }
 
 async fn successful_response(response: Response, operation: &str) -> Result<Response> {

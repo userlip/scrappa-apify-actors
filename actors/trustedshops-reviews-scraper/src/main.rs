@@ -1,4 +1,3 @@
-mod apify_retry;
 use anyhow::{Result, anyhow};
 use serde_json::{Map, Value, json};
 use std::{env, process};

@@ -12,7 +12,6 @@ use crate::charging::{
 };
 
 static CHARGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
-const MAX_CHARGE_ATTEMPTS: u32 = 3;
 
 pub struct ApifyClient {
     client: Client,
@@ -254,20 +253,6 @@ fn charge_limit_message(saved_count: usize, requested_count: usize) -> String {
     format!(
         "Charge limit reached after saving {saved_count} of {requested_count} TrustedShops shop profile results."
     )
-}
-
-fn retryable_charge_status(status: StatusCode) -> bool {
-    status == StatusCode::REQUEST_TIMEOUT
-        || status == StatusCode::TOO_MANY_REQUESTS
-        || status.is_server_error()
-}
-
-fn retryable_charge_transport(error: &reqwest::Error) -> bool {
-    error.is_timeout() || error.is_connect() || error.is_request()
-}
-
-fn charge_retry_delay(failed_attempt: u32) -> Duration {
-    Duration::from_millis(u64::from(failed_attempt) * 250)
 }
 
 async fn successful_response(response: Response, operation: &str) -> Result<Response> {

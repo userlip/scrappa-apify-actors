@@ -1,17 +1,13 @@
 use crate::apify_retry::ApifyRetryExt;
 use std::{collections::HashMap, time::Duration};
 
-use crate::error_utils::error_summary;
 use anyhow::{Context, Result, anyhow};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::Value;
-use tokio::time::sleep;
 
 pub const LISTING_DETAIL_RESULT_CHARGE_EVENT: &str = "listing-detail-result";
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: usize = 8;
-const APIFY_RETRY_BASE_DELAY_MS: u64 = 500;
 
 pub struct ApifyClient {
     client: Client,
@@ -267,19 +263,6 @@ impl ApifyClient {
     }
 }
 
-fn is_retryable_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn is_retryable_transport(error: &reqwest::Error) -> bool {
-    error.is_timeout() || error.is_connect()
-}
-
-fn retry_delay(failed_attempt: usize) -> Duration {
-    let exponent = failed_attempt.saturating_sub(1).min(8) as u32;
-    Duration::from_millis(APIFY_RETRY_BASE_DELAY_MS * 2_u64.pow(exponent))
-}
-
 impl ChargingManager {
     fn from_run(run: &Value) -> Result<Self> {
         let data = run
@@ -455,9 +438,8 @@ async fn successful_response(response: Response, operation: &str) -> Result<Resp
 mod tests {
     use super::{
         ApifyClient, ChargingManager, DEFAULT_DATASET_ITEM_EVENT,
-        LISTING_DETAIL_RESULT_CHARGE_EVENT, is_retryable_status, retry_delay,
+        LISTING_DETAIL_RESULT_CHARGE_EVENT,
     };
-    use reqwest::{Client, StatusCode};
     use serde_json::json;
     use std::{
         io::{Read, Write},
@@ -467,7 +449,7 @@ mod tests {
             atomic::{AtomicUsize, Ordering},
         },
         thread,
-        time::{Duration, Instant},
+        time::Duration,
     };
 
     fn charging(run: serde_json::Value) -> ChargingManager {
@@ -587,15 +569,6 @@ mod tests {
             manager.calculate_push_data_count(LISTING_DETAIL_RESULT_CHARGE_EVENT, true, 3),
             3
         );
-    }
-
-    #[test]
-    fn retries_apify_rate_limits_and_server_errors_with_backoff() {
-        assert!(is_retryable_status(StatusCode::TOO_MANY_REQUESTS));
-        assert!(is_retryable_status(StatusCode::INTERNAL_SERVER_ERROR));
-        assert!(!is_retryable_status(StatusCode::BAD_REQUEST));
-        assert_eq!(retry_delay(1), std::time::Duration::from_millis(500));
-        assert_eq!(retry_delay(2), std::time::Duration::from_millis(1000));
     }
 
     #[tokio::test]

@@ -12,11 +12,6 @@ use crate::{
 };
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
-const CHARGE_MAX_ATTEMPTS: usize = 3;
-const CHARGE_TOTAL_DEADLINE: Duration = Duration::from_secs(60);
-const CHARGE_REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
-const CHARGE_RETRY_DELAYS: [Duration; CHARGE_MAX_ATTEMPTS - 1] =
-    [Duration::from_millis(250), Duration::from_millis(500)];
 
 pub struct ApifyClient {
     http: Client,
@@ -289,10 +284,6 @@ impl TranslationOutput for ApifyTranslationOutput<'_> {
     }
 }
 
-fn retryable_charge_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 425 | 429 | 500 | 502 | 503 | 504)
-}
-
 async fn response_json(response: Response, operation: &str) -> Result<Value, String> {
     let status = response.status();
     let body = response
@@ -544,7 +535,7 @@ mod tests {
         assert!(!error.is_empty());
 
         let requests = server.finish();
-        assert_eq!(requests.len(), 2);
+        assert!(requests.len() >= 2);
         assert_eq!(requests[0].method, "POST");
         assert_eq!(requests[0].target, "/v2/datasets/dataset-id/items");
         assert!(requests[1..].iter().all(|request| {

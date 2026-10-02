@@ -156,7 +156,13 @@ async fn run_actor(
     for request in requests {
         let result = match request.normalized_url.as_deref() {
             None => {
-                println!("Skipping an invalid LinkedIn company URL");
+                println!(
+                    "Skipping an invalid LinkedIn company URL: {}",
+                    request
+                        .validation_error
+                        .as_deref()
+                        .unwrap_or("invalid input")
+                );
                 build_failure_item(
                     request
                         .validation_error
@@ -187,7 +193,7 @@ async fn run_actor(
                         message,
                     }) => {
                         let error = format!("Scrappa API error (404): {message}");
-                        eprintln!("Company scraping returned a per-item failure");
+                        eprintln!("Company scraping returned a per-item failure: {error}");
                         build_failure_item(
                             &error,
                             "scrappa_api_error",

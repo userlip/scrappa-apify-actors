@@ -342,10 +342,12 @@ async fn fetch_transcript(client: &Client, config: &ActorConfig, input: &Value) 
             return match response.json().await {
                 Ok(data) => Ok(data),
                 Err(error) if error.is_timeout() => Err(anyhow!(
-                    "Scrappa API returned an invalid JSON response: operation aborted"
+                    "Scrappa API returned an invalid JSON response: {}",
+                    error.without_url()
                 )),
                 Err(error) => Err(anyhow!(
-                    "Scrappa API returned an invalid JSON response: {error}"
+                    "Scrappa API returned an invalid JSON response: {}",
+                    error.without_url()
                 )),
             };
         }

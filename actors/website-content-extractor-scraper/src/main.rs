@@ -1,4 +1,3 @@
-mod apify_retry;
 use std::{env, process::ExitCode, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -98,14 +97,14 @@ async fn run() -> Result<()> {
             ResponseType::Json => match client.scrape_json(&params).await {
                 Ok(response) => build_json_dataset_item(&response, request, &params),
                 Err(error) => {
-                    eprintln!("Scrappa Web Scraper API returned a per-URL failure");
+                    eprintln!("Scrappa Web Scraper API returned a per-URL failure: {error}");
                     build_failure_dataset_item(&error, request, &params)
                 }
             },
             ResponseType::Markdown => match client.scrape_markdown(&params).await {
                 Ok(markdown) => build_markdown_dataset_item(&markdown, request, &params),
                 Err(error) => {
-                    eprintln!("Scrappa Web Scraper API returned a per-URL failure");
+                    eprintln!("Scrappa Web Scraper API returned a per-URL failure: {error}");
                     build_failure_dataset_item(&error, request, &params)
                 }
             },

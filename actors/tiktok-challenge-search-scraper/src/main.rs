@@ -1,4 +1,3 @@
-mod apify_retry;
 use tiktok_challenge_search_scraper::{actor_error_message, run_actor, ActorClient, ActorConfig};
 
 #[tokio::main]

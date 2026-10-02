@@ -11,8 +11,6 @@ const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const PRICE_POINT_EVENT: &str = "price-point";
 const DEFAULT_DATASET_EVENT: &str = "apify-default-dataset-item";
-const APIFY_API_MAX_RETRIES: u32 = 8;
-const APIFY_API_RETRY_BASE_DELAY: Duration = Duration::from_millis(500);
 
 #[derive(Clone)]
 pub struct ActorConfig {
@@ -47,24 +45,15 @@ impl ActorConfig {
 pub struct ActorApi {
     config: ActorConfig,
     http: Client,
-    retry_base_delay: Duration,
 }
 
 impl ActorApi {
     pub fn new(config: ActorConfig) -> Result<Self> {
-        Self::with_retry_base_delay(config, APIFY_API_RETRY_BASE_DELAY)
-    }
-
-    fn with_retry_base_delay(config: ActorConfig, retry_base_delay: Duration) -> Result<Self> {
         let http = Client::builder()
             .timeout(Duration::from_secs(30))
             .build()
             .context("Failed to initialize Apify API client")?;
-        Ok(Self {
-            config,
-            http,
-            retry_base_delay,
-        })
+        Ok(Self { config, http })
     }
 
     pub async fn get_input(&self) -> Result<Value> {
@@ -191,18 +180,10 @@ impl ActorApi {
     where
         F: FnMut() -> RequestBuilder,
     {
-        let _ = self;
         build_request()
             .send_apify_with_retry()
             .await
             .with_context(|| format!("{operation} failed"))
-    }
-
-    fn retry_delay(&self, retry_number: u32) -> Duration {
-        let multiplier = 1_u32 << retry_number.min(7);
-        self.retry_base_delay
-            .saturating_mul(multiplier)
-            .min(Duration::from_secs(60))
     }
 
     fn key_value_record_url(&self, key: &str) -> Result<Url> {
@@ -347,14 +328,6 @@ fn event_price(events: &serde_json::Map<String, Value>, name: &str) -> Result<Op
     Ok(Some(price))
 }
 
-fn is_retryable_status(status: reqwest::StatusCode) -> bool {
-    status.as_u16() == 429 || status.is_server_error()
-}
-
-fn is_retryable_transport_error(error: &reqwest::Error) -> bool {
-    error.is_connect() || error.is_timeout() || error.is_body() || error.is_request()
-}
-
 fn round_to_six_decimals(value: f64) -> f64 {
     (value * 1_000_000.0).round() / 1_000_000.0
 }
@@ -417,8 +390,6 @@ async fn ensure_success(response: Response, operation: &str) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use std::time::Duration;
-
     use serde_json::{json, Value};
     use tokio::{
         io::{AsyncReadExt, AsyncWriteExt},
@@ -428,20 +399,17 @@ mod tests {
 
     use super::{ActorApi, ActorConfig, PpeBudget};
 
-    fn actor_api(server_address: std::net::SocketAddr, retry_delay: Duration) -> ActorApi {
-        ActorApi::with_retry_base_delay(
-            ActorConfig {
-                apify_api_base_url: Url::parse(&format!("http://{server_address}")).unwrap(),
-                scrappa_api_base_url: Url::parse("https://scrappa.test/api").unwrap(),
-                scrappa_api_key: Some("scrappa-key".to_owned()),
-                apify_token: "apify-token".to_owned(),
-                default_key_value_store_id: "store-id".to_owned(),
-                default_dataset_id: "dataset-id".to_owned(),
-                actor_run_id: "run-id".to_owned(),
-                input_key: "INPUT".to_owned(),
-            },
-            retry_delay,
-        )
+    fn actor_api(server_address: std::net::SocketAddr) -> ActorApi {
+        ActorApi::new(ActorConfig {
+            apify_api_base_url: Url::parse(&format!("http://{server_address}")).unwrap(),
+            scrappa_api_base_url: Url::parse("https://scrappa.test/api").unwrap(),
+            scrappa_api_key: Some("scrappa-key".to_owned()),
+            apify_token: "apify-token".to_owned(),
+            default_key_value_store_id: "store-id".to_owned(),
+            default_dataset_id: "dataset-id".to_owned(),
+            actor_run_id: "run-id".to_owned(),
+            input_key: "INPUT".to_owned(),
+        })
         .unwrap()
     }
 
@@ -529,7 +497,7 @@ mod tests {
             write_http_response(&mut stream, 200, "{}").await;
         });
 
-        let api = actor_api(address, Duration::ZERO);
+        let api = actor_api(address);
         let items = (0..5)
             .map(|index| json!({"position": index + 1}))
             .collect::<Vec<_>>();
@@ -589,7 +557,7 @@ mod tests {
             write_http_response(&mut stream, 200, "{}").await;
         });
 
-        let api = actor_api(address, Duration::ZERO);
+        let api = actor_api(address);
         let result = api
             .push_dataset_items(&[json!({"symbol": "AAPL", "date": 1})])
             .await
@@ -634,7 +602,7 @@ mod tests {
             write_http_response(&mut stream, 201, "{}").await;
         });
 
-        let api = actor_api(address, Duration::ZERO);
+        let api = actor_api(address);
         let result = api
             .push_dataset_items(&[json!({"symbol": "AAPL"})])
             .await
@@ -658,7 +626,7 @@ mod tests {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let items = [json!({"symbol": "AAPL", "date": 1})];
-        let api = actor_api(address, Duration::ZERO);
+        let api = actor_api(address);
         let write = tokio::spawn(async move { api.push_dataset_items(&items).await });
 
         let (mut stream, _) = listener.accept().await.unwrap();

@@ -12,19 +12,7 @@ use url::Url;
 use crate::config::{endpoint_url, Config};
 
 pub(crate) const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const MAX_APIFY_REQUEST_ATTEMPTS: usize = 3;
 const DATASET_BATCH_MAX_BYTES: usize = 4_500_000;
-
-fn transient_apify_status(status: StatusCode) -> bool {
-    status == StatusCode::REQUEST_TIMEOUT
-        || status == StatusCode::TOO_EARLY
-        || status == StatusCode::TOO_MANY_REQUESTS
-        || status.is_server_error()
-}
-
-fn apify_retry_delay(attempt: usize) -> Duration {
-    Duration::from_millis(200 * 2_u64.pow((attempt.saturating_sub(1)) as u32))
-}
 
 async fn send_apify_with_retries<F>(make_request: F, operation: &str) -> Result<Response>
 where

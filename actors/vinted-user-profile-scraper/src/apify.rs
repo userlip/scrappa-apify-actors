@@ -8,7 +8,7 @@ use url::Url;
 
 use crate::{
     request_params::VintedUserProfileRequest,
-    runtime_budget::{retry_delay_ms, APIFY_MAX_ATTEMPTS, APIFY_REQUEST_TIMEOUT_MS},
+    runtime_budget::APIFY_REQUEST_TIMEOUT_MS,
 };
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
@@ -329,10 +329,6 @@ impl ApifyClient {
         require_success(response, "run status update").await?;
         Ok(())
     }
-}
-
-fn retryable_apify_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
 }
 
 async fn require_success(response: Response, operation: &str) -> Result<Response> {

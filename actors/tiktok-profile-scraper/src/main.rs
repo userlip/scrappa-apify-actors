@@ -13,9 +13,6 @@ const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: usize = 8;
-const APIFY_MIN_RETRY_DELAY: Duration = Duration::from_millis(500);
-const APIFY_MAX_RETRY_DELAY: Duration = Duration::from_secs(30);
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 
 #[derive(Debug)]
@@ -580,7 +577,7 @@ impl ApifyClient {
             ],
         )?;
         let response = self
-            .send_request(Method::GET, url, None, "input retrieval", true)
+            .send_request(Method::GET, url, None, "input retrieval")
             .await?;
         if response.status() == StatusCode::NOT_FOUND {
             return Ok(None);
@@ -596,7 +593,7 @@ impl ApifyClient {
     async fn get_run(&self) -> Result<Value> {
         let url = endpoint_url(&self.base_url, &["v2", "actor-runs", &self.actor_run_id])?;
         let response = self
-            .send_request(Method::GET, url, None, "run pricing request", true)
+            .send_request(Method::GET, url, None, "run pricing request")
             .await?;
         let response = require_apify_success(response, "run pricing request").await?;
         response
@@ -611,13 +608,7 @@ impl ApifyClient {
             &["v2", "datasets", &self.default_dataset_id, "items"],
         )?;
         let response = self
-            .send_request(
-                Method::POST,
-                url,
-                Some(item),
-                "dataset item publication",
-                false,
-            )
+            .send_request(Method::POST, url, Some(item), "dataset item publication")
             .await?;
         require_apify_success(response, "dataset item publication").await?;
         Ok(())
@@ -635,13 +626,7 @@ impl ApifyClient {
             ],
         )?;
         let response = self
-            .send_request(
-                Method::PUT,
-                url,
-                Some(value),
-                "key-value-store publication",
-                true,
-            )
+            .send_request(Method::PUT, url, Some(value), "key-value-store publication")
             .await?;
         require_apify_success(response, "key-value-store publication").await?;
         Ok(())
@@ -653,7 +638,6 @@ impl ApifyClient {
         url: Url,
         body: Option<&Value>,
         operation: &str,
-        retry_timeouts: bool,
     ) -> Result<Response> {
         let mut request = self
             .http
@@ -664,30 +648,11 @@ impl ApifyClient {
         if let Some(body) = body {
             request = request.json(body);
         }
-        let _ = retry_timeouts;
         request
             .send_apify_with_retry()
             .await
             .with_context(|| format!("Apify {operation} request failed"))
     }
-}
-
-fn should_retry_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn should_retry_transport_error(error: &reqwest::Error, retry_timeouts: bool) -> bool {
-    if error.is_timeout() {
-        return retry_timeouts;
-    }
-    error.is_connect() || error.is_request() || error.is_body()
-}
-
-fn apify_retry_delay(retry_count: usize) -> Duration {
-    let multiplier = 1_u32.checked_shl(retry_count as u32).unwrap_or(u32::MAX);
-    APIFY_MIN_RETRY_DELAY
-        .saturating_mul(multiplier)
-        .min(APIFY_MAX_RETRY_DELAY)
 }
 
 async fn require_apify_success(response: Response, operation: &str) -> Result<Response> {

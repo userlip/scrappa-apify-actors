@@ -486,12 +486,14 @@ async fn dataset_append_is_not_reposted_after_unverifiable_lost_response() {
         .filter(|request| request_parts(request).0 == "POST")
         .count();
     assert_eq!(dataset_writes, 1);
-    assert_eq!(requests.len(), 5);
-    assert_eq!(request_parts(&requests[4]).0, "GET");
-    assert_eq!(
-        request_parts(&requests[4]).1,
-        "/v2/datasets/test-dataset/items?offset=0&limit=1"
-    );
+    assert_eq!(requests.len(), 6);
+    for request in &requests[4..] {
+        assert_eq!(request_parts(request).0, "GET");
+        assert_eq!(
+            request_parts(request).1,
+            "/v2/datasets/test-dataset/items?offset=0&limit=1"
+        );
+    }
 }
 
 #[tokio::test]

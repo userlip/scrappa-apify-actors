@@ -9,9 +9,6 @@ use crate::billing::ChargingManager;
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: usize = 8;
-const APIFY_MAX_ATTEMPTS: usize = APIFY_MAX_RETRIES + 1;
-const APIFY_RETRY_BASE_DELAY_MS: u64 = 500;
 
 #[derive(Debug, Clone)]
 pub struct ApifyClient {
@@ -262,19 +259,6 @@ fn env_or_default(name: &str, default: &str) -> String {
         .unwrap_or_else(|| default.to_owned())
 }
 
-fn is_retryable_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn is_retryable_request_error(error: &reqwest::Error) -> bool {
-    error.is_timeout() || error.is_connect()
-}
-
-fn apify_retry_delay(failed_attempt: usize) -> Duration {
-    let multiplier = 2_u64.saturating_pow(failed_attempt.saturating_sub(1) as u32);
-    Duration::from_millis(APIFY_RETRY_BASE_DELAY_MS.saturating_mul(multiplier))
-}
-
 fn required_env(name: &str) -> Result<String> {
     env::var(name)
         .ok()
@@ -331,12 +315,10 @@ mod tests {
         time::Duration,
     };
 
+    use super::ApifyClient;
     use anyhow::Result;
     use reqwest::Client;
-    use reqwest::StatusCode;
     use serde_json::{json, Value};
-
-    use super::{apify_retry_delay, is_retryable_status, ApifyClient};
 
     enum FirstDatasetResponse {
         ServerError,
@@ -503,21 +485,6 @@ mod tests {
         )
         .unwrap();
         stream.write_all(&body).unwrap();
-    }
-
-    #[test]
-    fn retries_rate_limits_and_server_errors_only() {
-        assert!(is_retryable_status(StatusCode::TOO_MANY_REQUESTS));
-        assert!(is_retryable_status(StatusCode::INTERNAL_SERVER_ERROR));
-        assert!(!is_retryable_status(StatusCode::REQUEST_TIMEOUT));
-        assert!(!is_retryable_status(StatusCode::NOT_FOUND));
-    }
-
-    #[test]
-    fn uses_apify_client_exponential_retry_delays() {
-        assert_eq!(apify_retry_delay(1).as_millis(), 500);
-        assert_eq!(apify_retry_delay(2).as_millis(), 1_000);
-        assert_eq!(apify_retry_delay(8).as_millis(), 64_000);
     }
 
     #[tokio::test]

@@ -769,7 +769,7 @@ async fn run() -> Result<()> {
                 .validation_error
                 .as_deref()
                 .unwrap_or("Invalid LinkedIn profile URL");
-            eprintln!("Skipping an invalid LinkedIn profile URL");
+            eprintln!("Skipping an invalid LinkedIn profile URL: {message}");
             results.push(build_failure_item(message, None, &request.input_url, None));
             continue;
         };
@@ -788,7 +788,7 @@ async fn run() -> Result<()> {
                 let api_error = error
                     .downcast_ref::<ScrappaApiError>()
                     .expect("404 Scrappa error must retain its API error type");
-                eprintln!("Profile scraping returned a per-item failure");
+                eprintln!("Profile scraping returned a per-item failure: {api_error}");
                 build_failure_item(
                     &api_error.to_string(),
                     Some(api_error.status),

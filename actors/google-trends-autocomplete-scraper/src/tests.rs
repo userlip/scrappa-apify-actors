@@ -588,17 +588,21 @@ async fn actor_does_not_charge_or_retry_when_dataset_write_fails() {
     assert!(error.to_string().contains("Apify dataset write failed"));
 
     let requests = server.finish();
-    assert_eq!(requests.len(), 5);
-    assert_eq!(
-        request_target(&requests[3]),
-        "/v2/datasets/dataset-id/items"
+    let dataset_write = requests
+        .iter()
+        .position(|request| request.method == "POST")
+        .unwrap();
+    assert!(
+        requests[dataset_write..]
+            .iter()
+            .filter(|request| request.method == "POST")
+            .count()
+            == 1
     );
-    assert_eq!(requests[3].method, "POST");
-    assert_eq!(requests[4].method, "GET");
-    assert_eq!(
-        requests[4].target,
-        "/v2/datasets/dataset-id/items?offset=0&limit=2"
-    );
+    assert!(requests[dataset_write + 1..].iter().all(|request| {
+        request.method == "GET"
+            && request.target == "/v2/datasets/dataset-id/items?offset=0&limit=2"
+    }));
     assert!(requests
         .iter()
         .all(|request| request.target != "/v2/actor-runs/test-run/charge"));

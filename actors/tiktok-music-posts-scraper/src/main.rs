@@ -12,8 +12,6 @@ const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: usize = 8;
-const APIFY_RETRY_BASE_DELAY: Duration = Duration::from_millis(500);
 const MAX_SAFE_INTEGER: f64 = 9_007_199_254_740_991.0;
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 
@@ -489,11 +487,6 @@ async fn response_json(response: Response, operation: &str) -> Result<Value> {
         .json()
         .await
         .with_context(|| format!("{operation} returned invalid JSON"))
-}
-
-fn apify_retry_delay(retry: usize) -> Duration {
-    let multiplier = 1_u32 << retry.saturating_sub(1).min(7);
-    APIFY_RETRY_BASE_DELAY * multiplier
 }
 
 async fn send_apify_request<F>(mut build_request: F, operation: &str) -> Result<Response>

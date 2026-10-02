@@ -5,8 +5,6 @@ use serde_json::Value;
 use std::time::Duration;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const MAX_RETRIES: usize = 8;
-const FIRST_RETRY_DELAY: Duration = Duration::from_millis(500);
 
 pub struct ApifyClient {
     client: Client,
@@ -140,14 +138,6 @@ impl ApifyClient {
     }
 }
 
-fn retryable_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn retry_delay(retry_count: usize) -> Duration {
-    FIRST_RETRY_DELAY.saturating_mul(2_u32.saturating_pow(retry_count as u32))
-}
-
 fn affordable_dataset_items(run: &Value) -> Result<usize> {
     let data = run
         .get("data")
@@ -242,11 +232,9 @@ async fn successful_response(response: Response, operation: &str) -> Result<Resp
 
 #[cfg(test)]
 mod tests {
-    use super::{affordable_dataset_items, retry_delay, retryable_status, ApifyClient};
+    use super::{affordable_dataset_items, ApifyClient};
     use crate::test_support::{MockResponse, MockServer};
-    use reqwest::StatusCode;
     use serde_json::{json, Value};
-    use std::time::Duration;
 
     fn pay_per_event_run(max_charge: Option<Value>, charged_events: Value) -> Value {
         let mut data = json!({
@@ -300,15 +288,6 @@ mod tests {
             json!({"apify-default-dataset-item": 1, "apify-actor-start": 1}),
         );
         assert_eq!(affordable_dataset_items(&run).unwrap(), 1);
-    }
-
-    #[test]
-    fn retries_only_transient_apify_statuses_with_exponential_backoff() {
-        assert!(retryable_status(StatusCode::TOO_MANY_REQUESTS));
-        assert!(retryable_status(StatusCode::SERVICE_UNAVAILABLE));
-        assert!(!retryable_status(StatusCode::BAD_REQUEST));
-        assert_eq!(retry_delay(0), Duration::from_millis(500));
-        assert_eq!(retry_delay(1), Duration::from_secs(1));
     }
 
     #[tokio::test]
