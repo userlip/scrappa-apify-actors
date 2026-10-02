@@ -150,33 +150,29 @@
           "bags": {
             "title": "Bags",
             "type": "integer",
-            "enum": [
-              "0"
-            ],
             "nullable": true,
-            "description": "Carry-on bag count. Only 0 is currently supported. Accepted values: 0.",
-            "editor": "select"
+            "description": "Carry-on bag count. Only 0 is currently supported. Accepted values: 0. Allowed values: 0.",
+            "editor": "number",
+            "minimum": 0,
+            "maximum": 0
           },
           "api_version": {
             "title": "Api Version",
             "type": "integer",
-            "enum": [
-              "2"
-            ],
-            "description": "Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2.",
-            "editor": "select"
+            "description": "Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2. Allowed values: 2.",
+            "editor": "number",
+            "minimum": 2,
+            "maximum": 2
           },
           "from_date": {
             "title": "From Date",
             "type": "string",
-            "format": "date",
             "description": "Start of date range in Y-m-d format When omitted, the start date is set to 30 days from today.",
             "editor": "textfield"
           },
           "to_date": {
             "title": "To Date",
             "type": "string",
-            "format": "date",
             "description": "End of date range in Y-m-d format When omitted, the end date is set to seven days after the start date.",
             "editor": "textfield"
           },
@@ -308,33 +304,29 @@
     "bags": {
       "title": "Bags",
       "type": "integer",
-      "enum": [
-        "0"
-      ],
       "nullable": true,
-      "description": "Carry-on bag count. Only 0 is currently supported. Accepted values: 0.",
-      "editor": "select"
+      "description": "Carry-on bag count. Only 0 is currently supported. Accepted values: 0. Allowed values: 0.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 0
     },
     "api_version": {
       "title": "Api Version",
       "type": "integer",
-      "enum": [
-        "2"
-      ],
-      "description": "Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2.",
-      "editor": "select"
+      "description": "Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2. Allowed values: 2.",
+      "editor": "number",
+      "minimum": 2,
+      "maximum": 2
     },
     "from_date": {
       "title": "From Date",
       "type": "string",
-      "format": "date",
       "description": "Start of date range in Y-m-d format When omitted, the start date is set to 30 days from today.",
       "editor": "textfield"
     },
     "to_date": {
       "title": "To Date",
       "type": "string",
-      "format": "date",
       "description": "End of date range in Y-m-d format When omitted, the end date is set to seven days after the start date.",
       "editor": "textfield"
     },

@@ -61,8 +61,8 @@ Compare Google Flights’ cheapest starting option for each route and date range
 | `routes[].gl` | string | No | Country/region code \(e.g., us, de, gb\) |
 | `routes[].currency` | string | No | Currency code for prices \(e.g., USD, EUR, GBP\) |
 | `routes[].outbound_times` | string | No | Outbound time window as comma-separated hours, e.g. "6,18" for departures between 06:00 and 18:00. Two further values narrow the arrival window. |
-| `routes[].bags` | integer | No | Carry-on bag count. Only 0 is currently supported. Accepted values: 0. |
-| `routes[].api_version` | integer | No | Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2. |
+| `routes[].bags` | integer | No | Carry-on bag count. Only 0 is currently supported. Accepted values: 0. Allowed values: 0. |
+| `routes[].api_version` | integer | No | Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2. Allowed values: 2. |
 | `routes[].from_date` | string | No | Start of date range in Y-m-d format When omitted, the start date is set to 30 days from today. |
 | `routes[].to_date` | string | No | End of date range in Y-m-d format When omitted, the end date is set to seven days after the start date. |
 | `routes[].trip_duration` | integer | No | Duration of trip in days \(1-30, default: 7\) |
@@ -78,8 +78,8 @@ Compare Google Flights’ cheapest starting option for each route and date range
 | `gl` | string | No | Country/region code \(e.g., us, de, gb\) |
 | `currency` | string | No | Currency code for prices \(e.g., USD, EUR, GBP\) |
 | `outbound_times` | string | No | Outbound time window as comma-separated hours, e.g. "6,18" for departures between 06:00 and 18:00. Two further values narrow the arrival window. |
-| `bags` | integer | No | Carry-on bag count. Only 0 is currently supported. Accepted values: 0. |
-| `api_version` | integer | No | Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2. |
+| `bags` | integer | No | Carry-on bag count. Only 0 is currently supported. Accepted values: 0. Allowed values: 0. |
+| `api_version` | integer | No | Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2. Allowed values: 2. |
 | `from_date` | string | No | Start of date range in Y-m-d format When omitted, the start date is set to 30 days from today. |
 | `to_date` | string | No | End of date range in Y-m-d format When omitted, the end date is set to seven days after the start date. |
 | `trip_duration` | integer | No | Duration of trip in days \(1-30, default: 7\) |

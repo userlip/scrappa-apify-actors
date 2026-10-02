@@ -35,14 +35,12 @@
           "pickup_date": {
             "title": "Pickup Date",
             "type": "string",
-            "format": "date",
             "description": "Rental car pickup date in YYYY-MM-DD format. When omitted, pickup is set to 30 days from today.",
             "editor": "textfield"
           },
           "dropoff_date": {
             "title": "Dropoff Date",
             "type": "string",
-            "format": "date",
             "description": "Rental car drop-off date in YYYY-MM-DD format after pickup. When omitted, drop-off is set to four days after pickup.",
             "editor": "textfield"
           },
@@ -88,14 +86,12 @@
     "pickup_date": {
       "title": "Pickup Date",
       "type": "string",
-      "format": "date",
       "description": "Rental car pickup date in YYYY-MM-DD format. When omitted, pickup is set to 30 days from today.",
       "editor": "textfield"
     },
     "dropoff_date": {
       "title": "Dropoff Date",
       "type": "string",
-      "format": "date",
       "description": "Rental car drop-off date in YYYY-MM-DD format after pickup. When omitted, drop-off is set to four days after pickup.",
       "editor": "textfield"
     },

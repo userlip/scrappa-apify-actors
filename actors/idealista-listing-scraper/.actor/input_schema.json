@@ -57,14 +57,12 @@
           "from_date": {
             "title": "From date",
             "type": "string",
-            "format": "date",
             "description": "",
             "editor": "textfield"
           },
           "to_date": {
             "title": "To date",
             "type": "string",
-            "format": "date",
             "description": "",
             "editor": "textfield"
           },
@@ -136,14 +134,12 @@
     "from_date": {
       "title": "From date",
       "type": "string",
-      "format": "date",
       "description": "",
       "editor": "textfield"
     },
     "to_date": {
       "title": "To date",
       "type": "string",
-      "format": "date",
       "description": "",
       "editor": "textfield"
     },

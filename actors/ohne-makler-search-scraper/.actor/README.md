@@ -69,7 +69,7 @@ Search Ohne-Makler by German city, postal code, county, or state. Collect listin
 | `locations[].price_max` | integer | No | Maximum price in EUR. |
 | `locations[].area_min` | integer | No | Minimum living area in m². |
 | `locations[].area_max` | integer | No | Maximum living area in m². |
-| `locations[].radius` | integer | No | Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis \(non-billable 422 radius\_requires\_city\). |
+| `locations[].radius` | integer | No | Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis \(non-billable 422 radius\_requires\_city\). Allowed values: 0, 10, 25, 50, 100. |
 | `type` | string | No | Property type slug: wohnung, haus, grundstueck, zimmer, buero, einzelhandel, gastronomie, lagerhalle, landwirtschaftliches-objekt, wohnen-auf-zeit, gewerbliche-freizeitimmobilie, zinshaus-rendite, sonstiges, immobilie. Required unless q is used. |
 | `transaction` | string | No | kaufen \(buy\) or mieten \(rent\). Required unless q is used. |
 | `state` | string | No | Bundesland URL slug \(transliterated umlauts, e.g. baden-wurttemberg\). Omit for a Germany-wide class. |
@@ -80,7 +80,7 @@ Search Ohne-Makler by German city, postal code, county, or state. Collect listin
 | `price_max` | integer | No | Maximum price in EUR. |
 | `area_min` | integer | No | Minimum living area in m². |
 | `area_max` | integer | No | Maximum living area in m². |
-| `radius` | integer | No | Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis \(non-billable 422 radius\_requires\_city\). |
+| `radius` | integer | No | Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis \(non-billable 422 radius\_requires\_city\). Allowed values: 0, 10, 25, 50, 100. |
 | `maxResults` | integer | No | Maximum dataset items to save across this entire run. |
 | `maxPages` | integer | No | Maximum pages to request for each batch entry. |
 

@@ -46,7 +46,7 @@ Track the domains with the largest Semrush Sensor movements by database and cate
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `categories` | Array\<object\> | Yes | Semrush Sensor category IDs to check for ranking movers. |
-| `categories[].category` | integer | Yes per entry | Category sent to the source search. |
+| `categories[].category` | integer | Yes per entry | Category sent to the source search. Allowed values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25. |
 | `categories[].db` | string | No | Database sent to the source search. |
 | `categories[].date` | string | No | Date sent to the source search. When omitted, the Sensor report date defaults to today. |
 | `db` | string | Yes | Database sent to the source search. |

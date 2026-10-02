@@ -29,7 +29,6 @@
             "title": "URL",
             "type": "string",
             "pattern": "^https:\\/\\/www\\.realestate\\.com\\.au\\/(?:sold\\/)?property-[a-z0-9%+.-]+-\\d+(?:\\?.*)?$",
-            "format": "uri",
             "description": "Full realestate.com.au property URL.",
             "editor": "textfield"
           }

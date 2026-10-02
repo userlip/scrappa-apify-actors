@@ -46,14 +46,12 @@
           "checkin": {
             "title": "Checkin",
             "type": "string",
-            "format": "date",
             "description": "Hotel check-in date in YYYY-MM-DD format. When omitted, check-in is set to 30 days from today.",
             "editor": "textfield"
           },
           "checkout": {
             "title": "Checkout",
             "type": "string",
-            "format": "date",
             "description": "Hotel check-out date in YYYY-MM-DD format, after check-in. When omitted, check-out is set to two days after check-in.",
             "editor": "textfield"
           },
@@ -110,14 +108,12 @@
     "checkin": {
       "title": "Checkin",
       "type": "string",
-      "format": "date",
       "description": "Hotel check-in date in YYYY-MM-DD format. When omitted, check-in is set to 30 days from today.",
       "editor": "textfield"
     },
     "checkout": {
       "title": "Checkout",
       "type": "string",
-      "format": "date",
       "description": "Hotel check-out date in YYYY-MM-DD format, after check-in. When omitted, check-out is set to two days after check-in.",
       "editor": "textfield"
     },

@@ -78,14 +78,11 @@
           "scisbd": {
             "title": "Scisbd",
             "type": "integer",
-            "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions.",
-            "enum": [
-              0,
-              1,
-              2
-            ],
+            "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions. Allowed values: 0, 1, 2.",
             "default": 0,
-            "editor": "select"
+            "editor": "number",
+            "minimum": 0,
+            "maximum": 2
           },
           "cites": {
             "title": "Cites",
@@ -149,14 +146,11 @@
     "scisbd": {
       "title": "Scisbd",
       "type": "integer",
-      "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions.",
-      "enum": [
-        0,
-        1,
-        2
-      ],
+      "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions. Allowed values: 0, 1, 2.",
       "default": 0,
-      "editor": "select"
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 2
     },
     "cites": {
       "title": "Cites",

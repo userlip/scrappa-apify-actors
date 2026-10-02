@@ -130,15 +130,10 @@
           "radius": {
             "title": "Radius",
             "type": "integer",
-            "enum": [
-              "0",
-              "10",
-              "25",
-              "50",
-              "100"
-            ],
-            "description": "Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis (non-billable 422 radius_requires_city).",
-            "editor": "select"
+            "description": "Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis (non-billable 422 radius_requires_city). Allowed values: 0, 10, 25, 50, 100.",
+            "editor": "number",
+            "minimum": 0,
+            "maximum": 100
           }
         }
       }
@@ -244,15 +239,10 @@
     "radius": {
       "title": "Radius",
       "type": "integer",
-      "enum": [
-        "0",
-        "10",
-        "25",
-        "50",
-        "100"
-      ],
-      "description": "Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis (non-billable 422 radius_requires_city).",
-      "editor": "select"
+      "description": "Umkreis in km: 0, 10, 25, 50, or 100. Applies when q resolves to a city, or with state + city. Postal codes, Kreise, and states have no Umkreis (non-billable 422 radius_requires_city). Allowed values: 0, 10, 25, 50, 100.",
+      "editor": "number",
+      "minimum": 0,
+      "maximum": 100
     },
     "maxResults": {
       "title": "Maximum Results",

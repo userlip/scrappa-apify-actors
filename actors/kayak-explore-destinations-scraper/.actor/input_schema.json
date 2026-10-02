@@ -39,28 +39,24 @@
           "departure_from": {
             "title": "Departure From",
             "type": "string",
-            "format": "date",
             "description": "First outbound date in the destination exploration window. When omitted, the departure window starts 30 days from today.",
             "editor": "textfield"
           },
           "departure_to": {
             "title": "Departure To",
             "type": "string",
-            "format": "date",
             "description": "Last outbound date in the destination exploration window. When omitted, the departure window ends seven days after it starts.",
             "editor": "textfield"
           },
           "return_from": {
             "title": "Return From",
             "type": "string",
-            "format": "date",
             "description": "First possible return date in the destination exploration window. When omitted, the return window starts seven days after the first departure date.",
             "editor": "textfield"
           },
           "return_to": {
             "title": "Return To",
             "type": "string",
-            "format": "date",
             "description": "Last possible return date in the destination exploration window. When omitted, the return window ends seven days after it starts.",
             "editor": "textfield"
           },
@@ -126,28 +122,24 @@
     "departure_from": {
       "title": "Departure From",
       "type": "string",
-      "format": "date",
       "description": "First outbound date in the destination exploration window. When omitted, the departure window starts 30 days from today.",
       "editor": "textfield"
     },
     "departure_to": {
       "title": "Departure To",
       "type": "string",
-      "format": "date",
       "description": "Last outbound date in the destination exploration window. When omitted, the departure window ends seven days after it starts.",
       "editor": "textfield"
     },
     "return_from": {
       "title": "Return From",
       "type": "string",
-      "format": "date",
       "description": "First possible return date in the destination exploration window. When omitted, the return window starts seven days after the first departure date.",
       "editor": "textfield"
     },
     "return_to": {
       "title": "Return To",
       "type": "string",
-      "format": "date",
       "description": "Last possible return date in the destination exploration window. When omitted, the return window ends seven days after it starts.",
       "editor": "textfield"
     },

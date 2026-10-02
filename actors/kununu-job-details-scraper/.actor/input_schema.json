@@ -28,7 +28,6 @@
           "url": {
             "title": "Url",
             "type": "string",
-            "format": "uri",
             "pattern": "^https?:\\/\\/(www\\.)?kununu\\.com\\/(job-postings\\/[^\\/]+\\/|[a-z]{2}\\/job\\/).+$",
             "description": "Public source page URL used to retrieve this record.",
             "editor": "textfield"

@@ -28,7 +28,6 @@
           "url": {
             "title": "Url",
             "type": "string",
-            "format": "uri",
             "maxLength": 4096,
             "nullable": true,
             "description": "Public source page URL used to retrieve this record.",
@@ -56,7 +55,6 @@
           "checkin": {
             "title": "Checkin",
             "type": "string",
-            "format": "date",
             "nullable": true,
             "description": "Hotel check-in date in YYYY-MM-DD format.",
             "editor": "textfield"
@@ -64,7 +62,6 @@
           "checkout": {
             "title": "Checkout",
             "type": "string",
-            "format": "date",
             "nullable": true,
             "description": "Hotel check-out date in YYYY-MM-DD format, after check-in.",
             "editor": "textfield"
@@ -138,7 +135,6 @@
     "checkin": {
       "title": "Checkin",
       "type": "string",
-      "format": "date",
       "nullable": true,
       "description": "Hotel check-in date in YYYY-MM-DD format.",
       "editor": "textfield"
@@ -146,7 +142,6 @@
     "checkout": {
       "title": "Checkout",
       "type": "string",
-      "format": "date",
       "nullable": true,
       "description": "Hotel check-out date in YYYY-MM-DD format, after check-in.",
       "editor": "textfield"

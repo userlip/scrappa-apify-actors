@@ -28,7 +28,6 @@
           "url": {
             "title": "Url",
             "type": "string",
-            "format": "uri",
             "maxLength": 4096,
             "nullable": true,
             "description": "Public source page URL used to retrieve this record.",

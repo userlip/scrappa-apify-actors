@@ -29,7 +29,6 @@
             "title": "URL",
             "type": "string",
             "pattern": "^https:\\/\\/www\\.realestate\\.com\\.au\\/(?!property-|find-agent|agent\\/|agency\\/)",
-            "format": "uri",
             "description": "Full realestate.com.au suburb or market profile URL.",
             "editor": "textfield"
           }

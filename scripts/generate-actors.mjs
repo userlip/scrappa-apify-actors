@@ -84,12 +84,34 @@ function propertySchema(parameter, spec) {
     if (pattern === undefined) delete schema.pattern;
     else schema.pattern = pattern;
   }
-  return {
+  return apifyProperty({
     title: parameter.title ?? parameter.input,
     ...schema,
     description: descriptions.join(' '),
     editor: parameter.editor ?? editorFor(parameter.schema?.type),
-  };
+  });
+}
+
+// Apify's input schema is stricter than OpenAPI: no `format`, numeric fields
+// use the number editor and cannot be enums inside batch items, and string
+// enums need the select editor. Applied to every generated property; a
+// property that is valid at the top level stays valid inside batch items.
+export function apifyProperty(property) {
+  const result = { ...property };
+  delete result.format;
+  if (result.type === 'integer' || result.type === 'number') {
+    if (result.enum) {
+      const values = result.enum.join(', ');
+      result.description = [result.description, `Allowed values: ${values}.`].filter(Boolean).join(' ');
+      if (result.minimum === undefined) result.minimum = Math.min(...result.enum);
+      if (result.maximum === undefined) result.maximum = Math.max(...result.enum);
+      delete result.enum;
+      delete result.enumTitles;
+    }
+    if (!['number', 'hidden'].includes(result.editor)) result.editor = 'number';
+  }
+  if (result.type === 'string' && result.enum && !['select', 'hidden'].includes(result.editor)) result.editor = 'select';
+  return result;
 }
 
 function editorFor(type) {

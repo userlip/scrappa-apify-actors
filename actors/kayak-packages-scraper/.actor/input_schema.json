@@ -44,14 +44,12 @@
           "departure_date": {
             "title": "Departure Date",
             "type": "string",
-            "format": "date",
             "description": "Outbound travel date in YYYY-MM-DD format. When omitted, departure is set to 30 days from today.",
             "editor": "textfield"
           },
           "return_date": {
             "title": "Return Date",
             "type": "string",
-            "format": "date",
             "description": "Return travel date in YYYY-MM-DD format after departure. When omitted, return is set to four days after departure.",
             "editor": "textfield"
           },
@@ -115,14 +113,12 @@
     "departure_date": {
       "title": "Departure Date",
       "type": "string",
-      "format": "date",
       "description": "Outbound travel date in YYYY-MM-DD format. When omitted, departure is set to 30 days from today.",
       "editor": "textfield"
     },
     "return_date": {
       "title": "Return Date",
       "type": "string",
-      "format": "date",
       "description": "Return travel date in YYYY-MM-DD format after departure. When omitted, return is set to four days after departure.",
       "editor": "textfield"
     },

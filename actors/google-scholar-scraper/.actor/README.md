@@ -51,7 +51,7 @@ Collect ranked Scholar results for research topics. Rows include paper titles, r
 | `queries[].num` | integer | No | Results per request from 1 to 20. Defaults to 10. |
 | `queries[].as_ylo` | integer | No | Earliest publication year to include. |
 | `queries[].as_yhi` | integer | No | Latest publication year to include. |
-| `queries[].scisbd` | integer | No | 0 for relevance, 1 for recent abstracts, or 2 for all recent additions. |
+| `queries[].scisbd` | integer | No | 0 for relevance, 1 for recent abstracts, or 2 for all recent additions. Allowed values: 0, 1, 2. |
 | `queries[].cites` | string | No | Numeric publication ID for a cited-by search. May be combined with q. |
 | `queries[].cluster` | string | No | Numeric publication ID for an all-versions search. Must be used alone. |
 | `hl` | string | No | Two-letter interface language, optionally with a region. Defaults to en. |
@@ -59,7 +59,7 @@ Collect ranked Scholar results for research topics. Rows include paper titles, r
 | `num` | integer | No | Results per request from 1 to 20. Defaults to 10. |
 | `as_ylo` | integer | No | Earliest publication year to include. |
 | `as_yhi` | integer | No | Latest publication year to include. |
-| `scisbd` | integer | No | 0 for relevance, 1 for recent abstracts, or 2 for all recent additions. |
+| `scisbd` | integer | No | 0 for relevance, 1 for recent abstracts, or 2 for all recent additions. Allowed values: 0, 1, 2. |
 | `cites` | string | No | Numeric publication ID for a cited-by search. May be combined with q. |
 | `cluster` | string | No | Numeric publication ID for an all-versions search. Must be used alone. |
 | `maxResults` | integer | No | Maximum dataset items to save across this entire run. |

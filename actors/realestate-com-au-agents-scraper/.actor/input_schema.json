@@ -38,7 +38,6 @@
             "title": "URL",
             "type": "string",
             "pattern": "^https:\\/\\/www\\.realestate\\.com\\.au\\/find-agent",
-            "format": "uri",
             "description": "Full realestate.com.au find-agent URL.",
             "editor": "textfield"
           },
@@ -57,7 +56,6 @@
       "title": "URL",
       "type": "string",
       "pattern": "^https:\\/\\/www\\.realestate\\.com\\.au\\/find-agent",
-      "format": "uri",
       "description": "Full realestate.com.au find-agent URL.",
       "editor": "textfield"
     },

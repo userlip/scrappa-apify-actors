@@ -11,6 +11,7 @@ on:
       - 'scripts/generate-actors.mjs'
       - 'scripts/validate-store-copy.mjs'
       - 'scripts/validate-prefill.mjs'
+      - 'scripts/validate-input-schemas.mjs'
       - 'docs/generated-actors.md'
       - 'README.md'
       - '.github/workflows/actor-tests.yml'
@@ -23,6 +24,7 @@ on:
       - 'scripts/generate-actors.mjs'
       - 'scripts/validate-store-copy.mjs'
       - 'scripts/validate-prefill.mjs'
+      - 'scripts/validate-input-schemas.mjs'
       - 'docs/generated-actors.md'
       - 'README.md'
       - '.github/workflows/actor-tests.yml'
@@ -251,3 +253,8 @@ jobs:
 
       - name: Validate prefilled inputs against input schemas
         run: node scripts/validate-prefill.mjs actors/*
+
+      - name: Validate input schemas with Apify's validator
+        run: |
+          npm install --no-save --no-package-lock @apify/input_schema@4.0.5 ajv@8.20.0
+          node scripts/validate-input-schemas.mjs

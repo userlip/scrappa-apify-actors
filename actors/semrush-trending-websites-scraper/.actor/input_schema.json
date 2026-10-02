@@ -271,7 +271,7 @@
               "zw"
             ],
             "description": "Country sent to the source search.",
-            "editor": "textfield"
+            "editor": "select"
           },
           "category": {
             "title": "Category",
@@ -390,7 +390,7 @@
               "all"
             ],
             "description": "Category sent to the source search.",
-            "editor": "textfield"
+            "editor": "select"
           }
         }
       }
@@ -512,7 +512,7 @@
         "all"
       ],
       "description": "Category sent to the source search.",
-      "editor": "textfield"
+      "editor": "select"
     },
     "maxResults": {
       "title": "Maximum Results",
