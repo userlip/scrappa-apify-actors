@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Response, StatusCode};
 use serde_json::{Map, Value};
@@ -48,7 +49,7 @@ impl ApifyClient {
         ])?;
         let response = self
             .request(self.http.get(url))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -69,7 +70,7 @@ impl ApifyClient {
         let url = self.resource_url(&["actor-runs", &self.actor_run_id])?;
         let response = self
             .request(self.http.get(url))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run: Value = successful_response(response, "Apify run pricing request")
@@ -88,7 +89,7 @@ impl ApifyClient {
             let response = self
                 .request(self.http.post(url))
                 .json(&batch)
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Apify dataset write request failed")?;
             successful_response(response, "store Google Jobs dataset items").await?;
@@ -107,7 +108,7 @@ impl ApifyClient {
         let response = self
             .request(self.http.put(url))
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT request failed")?;
         successful_response(response, "write Google Jobs OUTPUT").await?;

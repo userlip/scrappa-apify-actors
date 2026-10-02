@@ -483,7 +483,7 @@ async fn scrappa_auth_failure_stops_before_dataset_and_output_writes() {
 }
 
 #[tokio::test]
-async fn apify_get_pricing_retries_but_dataset_post_does_not() {
+async fn apify_get_pricing_and_dataset_verification_retry_safely() {
     let upstream = serde_json::json!({"posts":[{"id":"post-1"}]});
     let server = MockServer::start(vec![
         input_response(r#"{"username":"natgeo"}"#),
@@ -497,10 +497,15 @@ async fn apify_get_pricing_retries_but_dataset_post_does_not() {
     let error = run_actor(&client(), &config).await.unwrap_err();
     assert!(error.to_string().contains("Apify dataset write failed"));
     let requests = server.requests();
-    assert_eq!(requests.len(), 5);
+    assert_eq!(requests.len(), 6);
     assert_eq!(request_parts(&requests[2]).1, "/api/v2/actor-runs/test-run");
     assert_eq!(request_parts(&requests[3]).1, "/api/v2/actor-runs/test-run");
     assert_eq!(request_parts(&requests[4]).0, "POST");
+    assert_eq!(request_parts(&requests[5]).0, "GET");
+    assert_eq!(
+        request_parts(&requests[5]).1,
+        "/api/v2/datasets/test-dataset/items?offset=0&limit=1"
+    );
     assert_eq!(
         requests
             .iter()

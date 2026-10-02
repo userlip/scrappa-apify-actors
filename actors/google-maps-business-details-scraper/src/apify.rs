@@ -1,16 +1,14 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::time::Duration;
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, RequestBuilder, Response, StatusCode};
 use serde_json::Value;
-use tokio::time::sleep;
 use url::Url;
 
 use crate::config::{endpoint_url, Config};
 
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
-const APIFY_MAX_RETRIES: usize = 8;
-const APIFY_RETRY_BASE_DELAY: Duration = Duration::from_millis(500);
 pub const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
 
 #[derive(Default)]
@@ -37,29 +35,10 @@ impl<'a> ApifyClient<'a> {
     where
         F: FnMut() -> RequestBuilder,
     {
-        let mut retry_count = 0;
-        loop {
-            let response = match build_request().send().await {
-                Ok(response) => response,
-                Err(error) => {
-                    let Some(delay) = apify_transport_retry_delay(&error, retry_count) else {
-                        return Err(error)
-                            .with_context(|| format!("Apify {operation} request failed"));
-                    };
-                    sleep(delay).await;
-                    retry_count += 1;
-                    continue;
-                }
-            };
-            if let Some(delay) = apify_retry_delay(response.status(), retry_count) {
-                drop(response);
-                sleep(delay).await;
-                retry_count += 1;
-                continue;
-            }
-
-            return Ok(response);
-        }
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} request failed"))
     }
 
     pub async fn get_input(&self) -> Result<Option<Value>> {
@@ -255,28 +234,6 @@ pub fn affordable_dataset_items(
         .count())
 }
 
-pub fn apify_retry_delay(status: StatusCode, retry_count: usize) -> Option<Duration> {
-    if retry_count >= APIFY_MAX_RETRIES
-        || (status != StatusCode::TOO_MANY_REQUESTS && !status.is_server_error())
-    {
-        return None;
-    }
-
-    Some(apify_retry_backoff(retry_count))
-}
-
-fn apify_transport_retry_delay(error: &reqwest::Error, retry_count: usize) -> Option<Duration> {
-    if error.is_builder() || retry_count >= APIFY_MAX_RETRIES {
-        return None;
-    }
-
-    Some(apify_retry_backoff(retry_count))
-}
-
-fn apify_retry_backoff(retry_count: usize) -> Duration {
-    APIFY_RETRY_BASE_DELAY * 2_u32.pow(retry_count as u32)
-}
-
 async fn response_json(response: Response, operation: &str) -> Result<Value> {
     let status = response.status();
     let body = response
@@ -329,7 +286,7 @@ mod tests {
     use url::Url;
 
     use super::{
-        affordable_dataset_items, apify_retry_delay, apify_transport_retry_delay, ApifyClient,
+        affordable_dataset_items, ApifyClient,
         DatasetBudget, APIFY_REQUEST_TIMEOUT, DATASET_ITEM_EVENT,
     };
     use crate::config::Config;
@@ -422,40 +379,8 @@ mod tests {
     }
 
     #[test]
-    fn retries_apify_requests_for_transient_responses_with_exponential_backoff() {
-        assert_eq!(
-            apify_retry_delay(reqwest::StatusCode::TOO_MANY_REQUESTS, 0),
-            Some(std::time::Duration::from_millis(500))
-        );
-        assert_eq!(
-            apify_retry_delay(reqwest::StatusCode::INTERNAL_SERVER_ERROR, 1),
-            Some(std::time::Duration::from_secs(1))
-        );
-        assert_eq!(
-            apify_retry_delay(reqwest::StatusCode::SERVICE_UNAVAILABLE, 7),
-            Some(std::time::Duration::from_secs(64))
-        );
-        assert_eq!(
-            apify_retry_delay(reqwest::StatusCode::SERVICE_UNAVAILABLE, 8),
-            None
-        );
-        assert_eq!(apify_retry_delay(reqwest::StatusCode::BAD_REQUEST, 0), None);
-    }
-
-    #[test]
     fn apify_api_requests_keep_the_sdk_deadline() {
         assert_eq!(APIFY_REQUEST_TIMEOUT, std::time::Duration::from_secs(360));
-    }
-
-    #[test]
-    fn does_not_retry_invalid_apify_request_builds() {
-        let timeout = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_millis(1))
-            .build()
-            .unwrap();
-        let builder_error = timeout.get("not a url").build().unwrap_err();
-
-        assert_eq!(apify_transport_retry_delay(&builder_error, 0), None);
     }
 
     async fn mock_api_responses(responses: Vec<Option<u16>>) -> (Url, JoinHandle<Vec<Vec<u8>>>) {

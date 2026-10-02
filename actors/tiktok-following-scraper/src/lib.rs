@@ -1,5 +1,6 @@
 mod actor;
 mod apify;
+mod apify_retry;
 mod input;
 mod scrappa;
 mod scrappa_retry;

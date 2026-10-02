@@ -430,18 +430,6 @@ fn counts_prior_dataset_and_custom_event_charges_toward_the_ppe_limit() {
 }
 
 #[test]
-fn keeps_apify_retries_bounded_to_transient_failures_and_skips_dataset_timeouts() {
-    assert!(should_retry_status(StatusCode::TOO_MANY_REQUESTS));
-    assert!(should_retry_status(StatusCode::SERVICE_UNAVAILABLE));
-    assert!(!should_retry_status(StatusCode::BAD_REQUEST));
-    assert_eq!(apify_retry_delay(0), Duration::from_millis(500));
-    assert_eq!(apify_retry_delay(1), Duration::from_secs(1));
-    assert_eq!(apify_retry_delay(7), APIFY_MAX_RETRY_DELAY);
-    assert_eq!(SCRAPPA_REQUEST_TIMEOUT, Duration::from_secs(60));
-    assert_eq!(APIFY_MAX_RETRIES, 8);
-}
-
-#[test]
 fn formats_scrappa_errors_like_the_typescript_client() {
     assert_eq!(
         scrappa_error_message(

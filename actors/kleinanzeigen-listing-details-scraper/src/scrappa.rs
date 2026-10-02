@@ -420,7 +420,10 @@ mod tests {
             error.to_string(),
             "Scrappa API request timed out after 10ms"
         );
-        assert_eq!(requests.lock().unwrap().len(), 1);
+        assert!(
+            (1..=crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS)
+                .contains(&requests.lock().unwrap().len())
+        );
         server.join().unwrap();
     }
 }

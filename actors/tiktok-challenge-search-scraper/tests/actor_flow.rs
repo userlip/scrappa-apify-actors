@@ -72,7 +72,16 @@ impl MockServer {
                 if request_sender.send(request.clone()).is_err() {
                     break;
                 }
-                let response = handler(&request);
+                let (_, target, _, _) = request_parts(&request);
+                let response = match target {
+                    "/v2/datasets/test-dataset?fields=itemCount" => {
+                        MockResponse::json(200, json!({"data":{"itemCount":0}}))
+                    }
+                    "/v2/datasets/test-dataset/items?offset=0&limit=500" => {
+                        MockResponse::json(200, json!([]))
+                    }
+                    _ => handler(&request),
+                };
                 if response.disconnect {
                     drop(stream);
                     continue;

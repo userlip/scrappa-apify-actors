@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod batch_runner;
 mod request_params;
 mod response_utils;

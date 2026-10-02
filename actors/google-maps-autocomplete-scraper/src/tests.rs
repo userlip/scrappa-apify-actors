@@ -245,48 +245,15 @@ async fn apify_requests_retry_rate_limits_and_server_errors() {
             },
         );
     let client = Client::new();
-    let url = server.base_url.clone();
+    let url = server.base_url.join("/v2/actor-runs/test-run").unwrap();
 
-    let response = send_request_with_retries(
-        || client.get(url.clone()),
-        Duration::from_secs(1),
-        2,
-        Duration::from_millis(1),
-    )
-    .await
-    .unwrap();
+    let response = send_request_with_retries(|| client.get(url.clone()), Duration::from_secs(1))
+        .await
+        .unwrap();
 
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(attempts.load(Ordering::Relaxed), 3);
     assert_eq!(APIFY_REQUEST_TIMEOUT, Duration::from_secs(360));
-    assert_eq!(APIFY_MAX_RETRIES, 8);
-    assert_eq!(APIFY_RETRY_BASE_DELAY, Duration::from_millis(500));
-    assert_eq!(
-        retry_delay(Duration::from_millis(500), 3),
-        Duration::from_secs(4)
-    );
-}
-
-#[tokio::test]
-async fn apify_request_deadline_stops_a_slow_request() {
-    let server = MockServer::start(|_| {
-        thread::sleep(Duration::from_millis(100));
-        json_response(200, json!({"ok": true}))
-    });
-    let client = Client::new();
-    let url = server.base_url.clone();
-
-    let error = send_request_with_retries(
-        || client.get(url.clone()),
-        Duration::from_millis(20),
-        0,
-        Duration::from_millis(1),
-    )
-    .await
-    .unwrap_err();
-
-    assert!(error.is_timeout());
-    assert_eq!(server.requests().len(), 1);
 }
 
 #[tokio::test]

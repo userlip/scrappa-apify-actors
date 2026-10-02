@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -214,7 +216,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -357,7 +359,7 @@ async fn run_dataset_capacity(
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -455,7 +457,10 @@ async fn push_dataset_items(
     } else {
         request.json(items)
     };
-    let response = request.send().await.context("Apify dataset write failed")?;
+    let response = request
+        .send_apify_with_retry()
+        .await
+        .context("Apify dataset write failed")?;
     let status = response.status();
     if !status.is_success() {
         let reason = status.canonical_reason().unwrap_or("Unknown status");
@@ -489,7 +494,7 @@ async fn run_actor_with_retry_delay(
         &config.scrappa_api_base_url,
         DateTime::<Utc>::from(std::time::SystemTime::now()),
     )?;
-    println!("Fetching from: {}", request.url);
+    println!("Fetching data from Scrappa API");
 
     let data = fetch_search_results(client, config, &request.url, retry_base_delay).await?;
     let results = response_results(&data)?;
@@ -507,7 +512,7 @@ async fn run_actor_with_retry_delay(
     );
 
     if let Some(continuation) = continuation_token(&data) {
-        println!("Continuation token available for next page: {continuation}");
+        println!("Continuation token available for next page");
     }
     Ok(())
 }
@@ -1022,20 +1027,28 @@ mod tests {
     #[tokio::test]
     async fn missing_or_unavailable_pricing_fails_before_dataset_post() {
         let rows = two_search_rows();
-        for pricing in [
-            response(500, "pricing unavailable"),
-            response(200, r#"{"data":{}}"#),
+        for (pricing, expected_requests) in [
+            (
+                vec![
+                    response(500, "pricing unavailable"),
+                    response(500, "pricing unavailable"),
+                    response(500, "pricing unavailable"),
+                ],
+                5,
+            ),
+            (vec![response(200, r#"{"data":{}}"#)], 3),
         ] {
-            let server = MockServer::start(vec![
+            let mut responses = vec![
                 response(200, r#"{"q":"test query"}"#),
                 response(200, &json!({"results": rows.clone()}).to_string()),
-                pricing,
-            ]);
+            ];
+            responses.extend(pricing);
+            let server = MockServer::start(responses);
             assert!(run_actor(&client(), &mock_config(&server.base_url))
                 .await
                 .is_err());
             let requests = server.requests();
-            assert_eq!(requests.len(), 3);
+            assert_eq!(requests.len(), expected_requests);
             assert!(requests
                 .iter()
                 .all(|request| !request.starts_with("POST /v2/datasets/")));
@@ -1112,7 +1125,7 @@ mod tests {
             .await
             .unwrap_err();
         assert!(error.to_string().contains("Apify dataset write failed"));
-        assert_eq!(server.requests().len(), 4);
+        assert_eq!(server.requests().len(), 5);
     }
 
     #[tokio::test]

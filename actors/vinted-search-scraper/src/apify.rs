@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::collections::HashMap;
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -48,7 +49,7 @@ impl ApifyClient {
         let url = self.resource_url(&["key-value-stores", store_id, "records", input_key])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -62,7 +63,7 @@ impl ApifyClient {
         let response = self
             .request(Method::PUT, url)
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         ensure_success(response, "write OUTPUT").await
@@ -72,7 +73,7 @@ impl ApifyClient {
         let url = self.resource_url(&["actor-runs", actor_run_id])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = response_json(response, "run pricing request").await?;
@@ -96,7 +97,7 @@ impl ApifyClient {
                 "eventName": event_name,
                 "count": count,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify item-result charge request failed")?;
         ensure_success(response, "charge item-result events").await
@@ -110,7 +111,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "store dataset items").await
@@ -130,7 +131,7 @@ impl ApifyClient {
                 "statusMessage": status_message,
                 "isStatusMessageTerminal": is_terminal,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run status update failed")?;
         ensure_success(response, "update run status message").await

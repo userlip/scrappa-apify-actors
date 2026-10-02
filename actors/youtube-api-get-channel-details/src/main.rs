@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -130,7 +132,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -196,7 +198,10 @@ async fn push_dataset_data(
         Some(rows) => request.json(&rows[..row_count]),
         None => request.json(data),
     };
-    let response = request.send().await.context("Apify dataset write failed")?;
+    let response = request
+        .send_apify_with_retry()
+        .await
+        .context("Apify dataset write failed")?;
     let status = response.status();
     if !status.is_success() {
         let reason = status.canonical_reason().unwrap_or("Unknown status");
@@ -224,7 +229,7 @@ async fn run_dataset_capacity(client: &Client, config: &ActorConfig) -> Result<u
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -322,7 +327,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     for id in ids {
         let result = async {
             let url = build_channel_details_url(&id, &config.scrappa_api_base_url)?;
-            println!("Fetching from: {url}");
+            println!("Fetching data from Scrappa API");
             let data = fetch_channel_details(client, &url, &config.scrappa_api_key).await?;
             if !data.is_array() && !data.is_object() {
                 bail!("Scrappa API response must be an object or array");
@@ -820,7 +825,8 @@ mod tests {
             .is_err());
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
         assert_eq!(request_parts(&requests[3]).0, "POST");
+        assert!(request_parts(&requests[4]).1.starts_with("/v2/datasets/"));
     }
 }

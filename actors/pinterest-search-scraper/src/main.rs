@@ -1,5 +1,6 @@
 mod api_url;
 mod apify_client;
+mod apify_retry;
 mod charging;
 mod pinterest_input;
 mod pinterest_response;

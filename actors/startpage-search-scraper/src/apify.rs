@@ -1,12 +1,10 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::Value;
 use std::time::Duration;
-use tokio::time::sleep;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const MAX_RETRIES: usize = 8;
-const INITIAL_RETRY_DELAY: Duration = Duration::from_millis(500);
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 
 #[derive(Debug, Default)]
@@ -65,36 +63,10 @@ impl ApifyClient {
     where
         F: Fn() -> RequestBuilder,
     {
-        for attempt in 0..=MAX_RETRIES {
-            match request().send().await {
-                Ok(response) if should_retry_status(response.status()) && attempt < MAX_RETRIES => {
-                    let delay = retry_delay(attempt);
-                    eprintln!(
-                        "Apify {operation} returned {}; retrying ({}/{MAX_RETRIES}) after {}ms",
-                        response.status(),
-                        attempt + 1,
-                        delay.as_millis()
-                    );
-                    sleep(delay).await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error) if !error.is_builder() && attempt < MAX_RETRIES => {
-                    let delay = retry_delay(attempt);
-                    eprintln!(
-                        "Apify {operation} request failed; retrying ({}/{MAX_RETRIES}) after {}ms: {error}",
-                        attempt + 1,
-                        delay.as_millis()
-                    );
-                    sleep(delay).await;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| {
-                        format!("Apify {operation} request failed after {attempt} retries")
-                    });
-                }
-            }
-        }
-        unreachable!("the retry loop always returns or continues")
+        request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} request failed"))
     }
 
     pub async fn get_input(&self, store_id: &str, input_key: &str) -> Result<Option<Value>> {
@@ -161,21 +133,13 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to store items in the default dataset")?;
         successful_response(response, "store dataset items").await?;
         budget.remaining_items -= items.len();
         Ok(items.len())
     }
-}
-
-fn should_retry_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn retry_delay(attempt: usize) -> Duration {
-    INITIAL_RETRY_DELAY * 2_u32.saturating_pow(attempt as u32)
 }
 
 fn affordable_dataset_items(run: &Value, requested: usize) -> Result<DatasetBudget> {
@@ -377,12 +341,5 @@ mod tests {
                 .to_string()
                 .contains("not configured for pay-per-event")
         );
-    }
-
-    #[test]
-    fn retry_policy_matches_the_apify_sdk_backoff_window() {
-        assert_eq!(MAX_RETRIES, 8);
-        assert_eq!(retry_delay(0), Duration::from_millis(500));
-        assert_eq!(retry_delay(1), Duration::from_secs(1));
     }
 }

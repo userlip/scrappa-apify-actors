@@ -442,7 +442,7 @@ fn apify_retries_only_bounded_transient_responses() {
 }
 
 #[tokio::test]
-async fn charge_retries_reuse_idempotency_key_and_dataset_posts_are_not_retried() {
+async fn charge_retries_reuse_idempotency_key_and_dataset_failures_verify_before_stopping() {
     let (base, charge_server) = start_response_sequence(vec![503, 200]).await;
     let http = Client::builder().timeout(REQUEST_TIMEOUT).build().unwrap();
     let config = mock_config(&base);
@@ -461,7 +461,7 @@ async fn charge_retries_reuse_idempotency_key_and_dataset_posts_are_not_retried(
             && request_text(request).contains("idempotency-key: test-run-job-result-4")
     }));
 
-    let (base, dataset_server) = start_response_sequence(vec![503]).await;
+    let (base, dataset_server) = start_response_sequence(vec![503, 500]).await;
     let http = Client::builder().timeout(REQUEST_TIMEOUT).build().unwrap();
     let config = mock_config(&base);
     let apify = ApifyClient::new(http, &config.apify);
@@ -471,8 +471,12 @@ async fn charge_retries_reuse_idempotency_key_and_dataset_posts_are_not_retried(
         .unwrap_err();
     assert!(error
         .to_string()
-        .contains("Apify dataset item publication failed (503)"));
-    assert_eq!(dataset_server.await.unwrap().len(), 1);
+        .contains("Failed to publish dataset item to Apify API"));
+    let requests = dataset_server.await.unwrap();
+    assert_eq!(requests.len(), 2);
+    assert!(request_line(&requests[0]).starts_with("POST /v2/datasets/test-dataset/items "));
+    assert!(request_line(&requests[1])
+        .starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1 "));
 }
 
 #[tokio::test]

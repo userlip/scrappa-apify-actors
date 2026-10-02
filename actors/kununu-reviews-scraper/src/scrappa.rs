@@ -384,17 +384,30 @@ mod tests {
     #[tokio::test]
     async fn request_timeout_is_classified_as_the_scrappa_timeout_error() {
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        listener.set_nonblocking(true).unwrap();
         let address = listener.local_addr().unwrap();
         let server_thread = std::thread::spawn(move || {
-            let (mut stream, _) = listener.accept().unwrap();
+            let deadline = std::time::Instant::now() + Duration::from_secs(2);
+            let (mut stream, _) = loop {
+                match listener.accept() {
+                    Ok(connection) => break connection,
+                    Err(error)
+                        if error.kind() == std::io::ErrorKind::WouldBlock
+                            && std::time::Instant::now() < deadline =>
+                    {
+                        std::thread::sleep(Duration::from_millis(5));
+                    }
+                    Err(error) => panic!("mock server failed to accept request: {error}"),
+                }
+            };
             let _ = read_timeout_request(&mut stream);
-            std::thread::sleep(Duration::from_millis(100));
+            std::thread::sleep(Duration::from_millis(300));
         });
         let client = ScrappaClient::with_timeouts(
             "test-api-key".into(),
             format!("http://{address}"),
             Duration::from_secs(1),
-            Duration::from_millis(10),
+            Duration::from_millis(100),
         )
         .unwrap();
         let error = client.get(&Map::new()).await.unwrap_err();

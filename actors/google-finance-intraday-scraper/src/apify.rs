@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -66,7 +67,7 @@ async fn update_terminal_status_message(
             "statusMessage": status_message,
             "isStatusMessageTerminal": true,
         }))
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run status update failed")?;
     ensure_success(response, "Apify run status update").await
@@ -129,7 +130,7 @@ impl<'a> ApifyClient<'a> {
             .get(url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -154,7 +155,7 @@ impl<'a> ApifyClient<'a> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         ensure_success(response, "Apify OUTPUT write").await
@@ -188,7 +189,7 @@ impl<'a> ApifyClient<'a> {
             .get(run_url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = response_json(run_response, "Apify run pricing request").await?;
@@ -242,7 +243,7 @@ impl<'a> ApifyClient<'a> {
                 "eventName": INTRADAY_PRICE_POINT_CHARGE_EVENT,
                 "count": count,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify intraday price point charge request failed")?;
         ensure_success(response, "Apify intraday price point charge request").await?;
@@ -258,7 +259,7 @@ impl<'a> ApifyClient<'a> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await
@@ -384,6 +385,11 @@ mod tests {
                 "Service Unavailable",
                 r#"{"error":"temporary dataset failure"}"#.to_owned(),
             ),
+            (
+                500,
+                "Internal Server Error",
+                r#"{"error":"verification unavailable"}"#.to_owned(),
+            ),
         ]);
         let http = Client::new();
         let config = test_apify_config(api_base_url);
@@ -395,16 +401,18 @@ mod tests {
             Err(error) => error,
         };
 
-        assert!(error
-            .to_string()
-            .contains("Apify dataset write failed with 503 Service Unavailable"));
+        assert!(error.to_string().contains("Apify dataset write failed"));
         assert_eq!(apify.charge_budget.confirmed_point_charges(), 0);
         let requests = server.join().unwrap();
-        assert_eq!(requests.len(), 2);
+        assert_eq!(requests.len(), 3);
         assert_eq!(request_path(&requests[0]), "/v2/actor-runs/test-run");
         assert_eq!(
             request_path(&requests[1]),
             "/v2/datasets/test-dataset/items"
+        );
+        assert_eq!(
+            request_path(&requests[2]),
+            "/v2/datasets/test-dataset/items?offset=0&limit=2"
         );
     }
 

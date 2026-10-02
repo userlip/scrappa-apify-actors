@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod charging;
 mod request_params;
 mod response_utils;

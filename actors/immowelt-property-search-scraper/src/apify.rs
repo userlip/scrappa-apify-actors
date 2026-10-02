@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::{json, Value};
@@ -76,7 +77,7 @@ impl ApifyClient {
     pub async fn get_input(&self, store_id: &str, input_key: &str) -> Result<Option<Value>> {
         let response = self
             .request(Method::GET, self.record_url(store_id, input_key)?)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -122,7 +123,7 @@ impl ApifyClient {
         let response = self
             .request(Method::PUT, self.record_url(store_id, "OUTPUT")?)
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT request failed")?;
         successful_response(response, "write OUTPUT").await?;
@@ -137,7 +138,7 @@ impl ApifyClient {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run status update failed")?;
         successful_response(response, "set run status message").await?;
@@ -147,7 +148,7 @@ impl ApifyClient {
     async fn get_run(&self, run_id: &str) -> Result<Value> {
         let response = self
             .request(Method::GET, self.resource_url(&["actor-runs", run_id])?)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         successful_response(response, "read run pricing")
@@ -166,7 +167,7 @@ impl ApifyClient {
             )
             .header("idempotency-key", idempotency_key)
             .json(&json!({"eventName": event_name, "count": count}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify property-result charge request failed")?;
         successful_response(response, "charge property-result events").await?;
@@ -180,7 +181,7 @@ impl ApifyClient {
                 self.resource_url(&["datasets", dataset_id, "items"])?,
             )
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         successful_response(response, "write dataset items").await?;

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Method, Response, StatusCode, Url};
 use serde_json::{json, Value};
@@ -51,7 +52,7 @@ impl ApifyClient {
                 Method::GET,
                 self.resource_url(&["key-value-stores", store_id, "records", input_key])?,
             )
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to retrieve actor input from Apify API")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -68,7 +69,7 @@ impl ApifyClient {
     pub async fn event_capacity(&self, run_id: &str, event_name: &str) -> Result<Option<usize>> {
         let response = self
             .request(Method::GET, self.resource_url(&["actor-runs", run_id])?)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = successful_response(response, "run pricing request")
@@ -94,30 +95,15 @@ impl ApifyClient {
             return Ok(());
         }
         let url = self.resource_url(&["actor-runs", run_id, "charge"])?;
-        for attempt in 0..3 {
-            let response = self
-                .request(Method::POST, url.clone())
-                .header("idempotency-key", idempotency_key)
-                .json(&json!({ "eventName": event_name, "count": count }))
-                .send()
-                .await;
-
-            match response {
-                Ok(response) if response.status().is_success() => return Ok(()),
-                Ok(response) if is_retryable_apify_status(response.status()) && attempt < 2 => {
-                    tokio::time::sleep(Duration::from_millis(500 * (attempt + 1) as u64)).await;
-                }
-                Ok(response) => {
-                    successful_response(response, "charge Jameda review results").await?;
-                    return Ok(());
-                }
-                Err(error) if (error.is_timeout() || error.is_connect()) && attempt < 2 => {
-                    tokio::time::sleep(Duration::from_millis(500 * (attempt + 1) as u64)).await;
-                }
-                Err(error) => return Err(error).context("Apify charge request failed"),
-            }
-        }
-        unreachable!("the charge retry loop either succeeds or returns an error")
+        let response = self
+            .request(Method::POST, url)
+            .header("idempotency-key", idempotency_key)
+            .json(&json!({ "eventName": event_name, "count": count }))
+            .send_apify_with_retry()
+            .await
+            .context("Apify charge request failed")?;
+        successful_response(response, "charge Jameda review results").await?;
+        Ok(())
     }
 
     pub async fn push_dataset_items(&self, dataset_id: &str, items: &[Value]) -> Result<()> {
@@ -130,7 +116,7 @@ impl ApifyClient {
                 self.resource_url(&["datasets", dataset_id, "items"])?,
             )
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset items to Apify API")?;
         successful_response(response, "dataset item publication").await?;
@@ -144,7 +130,7 @@ impl ApifyClient {
                 self.resource_url(&["key-value-stores", store_id, "records", "OUTPUT"])?,
             )
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to write OUTPUT to the default key-value store")?;
         successful_response(response, "OUTPUT record publication").await?;
@@ -155,16 +141,12 @@ impl ApifyClient {
         let response = self
             .request(Method::PUT, self.resource_url(&["actor-runs", run_id])?)
             .json(&json!({ "runId": run_id, "statusMessage": status_message }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to set Actor run status message")?;
         successful_response(response, "set Actor run status message").await?;
         Ok(())
     }
-}
-
-fn is_retryable_apify_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 429 | 500 | 502 | 503 | 504)
 }
 
 pub fn chargeable_event_capacity(

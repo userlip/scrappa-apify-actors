@@ -8,7 +8,7 @@ use crate::apify::{
 };
 use crate::doctor_details::{
     build_dataset_item, build_doctor_details_params, build_doctor_details_plan,
-    build_output_summary, describe_request, InputFailure,
+    build_output_summary, InputFailure,
 };
 use crate::scrappa::{ScrappaClient, SCRAPPA_API_DEFAULT};
 
@@ -24,8 +24,8 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
         .ok_or_else(|| anyhow!("Input is required"))?;
     let plan = build_doctor_details_plan(&input)?;
     println!(
-        "Fetching Jameda doctor details for {}",
-        describe_request(&plan.doctor_urls)
+        "Fetching Jameda doctor details for {} requested profile(s)",
+        plan.doctor_urls.len()
     );
 
     let scrappa = ScrappaClient::new(
@@ -39,13 +39,17 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
     let mut fatal_result_error = false;
 
     for (index, doctor_url) in plan.doctor_urls.iter().enumerate() {
-        println!("Fetching Jameda doctor details for {doctor_url}");
+        println!(
+            "Fetching Jameda doctor details for profile {}/{}",
+            index + 1,
+            plan.doctor_urls.len()
+        );
 
         match resume_charged_item(apify, &mut pricing, index + 1, doctor_url).await {
             Ok(Some(result)) => {
                 saved_profiles += result.saved_count;
                 println!(
-                    "Recovered {} Jameda doctor profile result(s) for {doctor_url}",
+                    "Recovered {} Jameda doctor profile result(s)",
                     result.saved_count
                 );
                 if result.status_message.is_some() {
@@ -62,7 +66,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
-                eprintln!("Failed to recover Jameda doctor details for {doctor_url}: {message}");
+                eprintln!("Failed to recover Jameda doctor details: {message}");
                 break;
             }
         }
@@ -86,7 +90,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
-                eprintln!("Failed to fetch Jameda doctor details for {doctor_url}: {message}");
+                eprintln!("Failed to fetch Jameda doctor details: {message}");
                 continue;
             }
         };
@@ -95,7 +99,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
             Ok(result) => {
                 saved_profiles += result.saved_count;
                 println!(
-                    "Saved {} Jameda doctor profile result(s) for {doctor_url}",
+                    "Saved {} Jameda doctor profile result(s)",
                     result.saved_count
                 );
                 if result.status_message.is_some() {
@@ -110,7 +114,7 @@ async fn run_actor(apify: &ApifyClient, api_key: &str) -> Result<RunOutcome> {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
-                eprintln!("Failed to save Jameda doctor details for {doctor_url}: {message}");
+                eprintln!("Failed to save Jameda doctor details: {message}");
                 break;
             }
         }

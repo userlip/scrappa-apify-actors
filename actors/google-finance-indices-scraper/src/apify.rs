@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{collections::BTreeMap, env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -159,7 +160,7 @@ impl ApifyClient {
             .request(method, url)
             .bearer_auth(&self.config.apify_token)
             .header(reqwest::header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify API request failed")
     }
@@ -181,7 +182,7 @@ impl ApifyClient {
             .bearer_auth(&self.config.apify_token)
             .header(reqwest::header::ACCEPT, "application/json")
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await?;
@@ -207,7 +208,7 @@ impl ApifyClient {
                 format!("{}:index-result:{result_id}", self.config.actor_run_id),
             )
             .json(&json!({ "eventName": INDEX_RESULT_CHARGE_EVENT, "count": 1 }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify index-result charge request failed")?;
         ensure_success(response, "Apify index-result charge").await?;

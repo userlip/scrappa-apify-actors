@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod params;
 mod response;
 mod scrappa;

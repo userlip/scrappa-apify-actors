@@ -1,4 +1,5 @@
 pub mod apify;
+mod apify_retry;
 pub mod booking;
 pub mod pricing;
 pub mod scrappa;

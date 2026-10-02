@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -187,7 +189,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -247,7 +249,7 @@ async fn run_dataset_capacity(
         .get(url)
         .timeout(REQUEST_TIMEOUT)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -341,7 +343,7 @@ async fn push_dataset_items(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(items)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     let status = response.status();
@@ -364,7 +366,7 @@ async fn push_dataset_items(
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let input = get_input(client, config).await?;
     let (url, category) = build_trending_url(&input, &config.scrappa_api_base_url)?;
-    println!("Fetching from: {url}");
+    println!("Fetching data from Scrappa API");
 
     let data = fetch_trending(client, &url).await?;
     let videos = trending_videos_to_dataset_items(&data);
@@ -377,10 +379,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     );
 
     if let Some(token) = continuation_token(&data).filter(|token| js_truthy(token)) {
-        println!(
-            "Continuation token available for next page: {}",
-            js_string(token)
-        );
+        println!("Continuation token available for next page");
     }
     Ok(())
 }

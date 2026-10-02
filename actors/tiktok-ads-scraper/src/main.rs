@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod normalize;
 mod request_params;
 mod scrappa;
@@ -8,10 +9,7 @@ mod urls;
 use anyhow::{anyhow, bail, Context, Result};
 use apify::ApifyClient;
 use normalize::{extract_single_tiktok_ad_record, normalize_tiktok_ad_record};
-use request_params::{
-    extract_tiktok_ad_id, resolve_tiktok_ad_requests, safe_format_tiktok_ad_lookup_for_log,
-    TikTokAdLookup,
-};
+use request_params::{extract_tiktok_ad_id, resolve_tiktok_ad_requests, TikTokAdLookup};
 use reqwest::Client;
 use scrappa::ScrappaClient;
 use serde_json::{json, Map, Value};
@@ -204,11 +202,7 @@ async fn run_actor() -> Result<()> {
             if let Some(message) = &request.validation_error {
                 bail!("{message}");
             }
-            let display_url = safe_format_tiktok_ad_lookup_for_log(&request.url);
-            println!(
-                "Fetching TikTok ad {request_index}/{}: {display_url}",
-                requests.len()
-            );
+            println!("Fetching TikTok ad {request_index}/{}", requests.len());
             let response = scrappa.get_ad(&request.url).await?;
             assert_successful_response(&response, &request.url)?;
             let ad =
@@ -229,17 +223,11 @@ async fn run_actor() -> Result<()> {
             }
             Ok(false) => {
                 dataset_items += 1;
-                println!(
-                    "No ad details found for: {}",
-                    safe_format_tiktok_ad_lookup_for_log(&request.url)
-                );
+                println!("No TikTok ad details found for the requested item");
             }
             Err(error) => {
                 let message = format!("{error:#}");
-                eprintln!(
-                    "TikTok ad lookup failed for {}: {message}",
-                    safe_format_tiktok_ad_lookup_for_log(&request.url)
-                );
+                eprintln!("TikTok ad lookup failed; saving an error item: {message}");
                 apify
                     .push_dataset_item(&failure_item(request, request_index, message))
                     .await

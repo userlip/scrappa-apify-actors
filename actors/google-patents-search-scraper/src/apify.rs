@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Response};
 use serde_json::{json, Value};
@@ -88,7 +89,7 @@ impl<'a> ApifyClient<'a> {
             .get(url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == reqwest::StatusCode::NOT_FOUND {
@@ -115,7 +116,7 @@ impl<'a> ApifyClient<'a> {
             .get(run_url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = response_json(response, "Apify run pricing request").await?;
@@ -137,7 +138,7 @@ impl<'a> ApifyClient<'a> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(affordable_items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await?;
@@ -162,7 +163,7 @@ impl<'a> ApifyClient<'a> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         ensure_success(response, "Apify OUTPUT write").await
@@ -182,7 +183,7 @@ impl<'a> ApifyClient<'a> {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify status message request failed")?;
         ensure_success(response, "Apify status message request").await

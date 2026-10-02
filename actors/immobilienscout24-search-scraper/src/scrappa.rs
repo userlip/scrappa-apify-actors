@@ -81,7 +81,7 @@ impl ScrappaClient {
                 query.append_pair(&key, &value);
             }
         }
-        eprintln!("[Scrappa] GET {url}");
+        eprintln!("Sending request to Scrappa API");
         let response = self
             .http
             .get(url)

@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -359,7 +361,7 @@ impl ApifyClient {
                 .get(url.clone())
                 .bearer_auth(&self.token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Apify INPUT request failed")?;
             if response.status() == StatusCode::NOT_FOUND {
@@ -384,7 +386,7 @@ impl ApifyClient {
                 .get(url.clone())
                 .bearer_auth(&self.token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Apify run pricing request failed")?;
             if let Some(delay) = apify_retry_delay("GET", response.status(), retry_count) {
@@ -424,7 +426,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(&items[..allowed])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         require_apify_success(response, "dataset write").await?;

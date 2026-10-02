@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::time::Duration;
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -31,7 +32,7 @@ impl ApifyClient {
                 Method::GET,
                 self.resource_url(&["key-value-stores", store_id, "records", record_key])?,
             )
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to fetch Actor input from the default key-value store")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -57,7 +58,7 @@ impl ApifyClient {
                 self.resource_url(&["key-value-stores", store_id, "records", "OUTPUT"])?,
             )
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to write OUTPUT to the default key-value store")?;
         successful_response(response, "write OUTPUT to the default key-value store").await?;
@@ -70,7 +71,7 @@ impl ApifyClient {
                 Method::GET,
                 self.resource_url(&["actor-runs", actor_run_id])?,
             )
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = successful_response(response, "fetch Actor run pricing")
@@ -97,7 +98,7 @@ impl ApifyClient {
                 self.resource_url(&["datasets", dataset_id, "items"])?,
             )
             .json(&items[..count])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to store image results in the default dataset")?;
         successful_response(response, "store image results in the default dataset").await?;

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Method, Response, StatusCode};
 use serde_json::{json, Value};
@@ -98,7 +99,7 @@ impl ApifyClient {
         ])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -117,7 +118,7 @@ impl ApifyClient {
         let url = self.endpoint(&["actor-runs", &self.config.actor_run_id])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let response = successful_response(response, "Apify run pricing request").await?;
@@ -135,7 +136,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         successful_response(response, "Apify dataset write").await?;
@@ -176,7 +177,7 @@ impl ApifyClient {
                 "eventName": DOCTOR_RESULT_CHARGE_EVENT,
                 "count": decision.charged_count
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify result charge request failed")?;
         successful_response(response, "Apify result charge request").await?;
@@ -198,7 +199,7 @@ impl ApifyClient {
         let response = self
             .request(Method::PUT, url)
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         successful_response(response, "Apify OUTPUT write").await?;
@@ -214,7 +215,7 @@ impl ApifyClient {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify terminal status update failed")?;
         successful_response(response, "Apify terminal status update").await?;

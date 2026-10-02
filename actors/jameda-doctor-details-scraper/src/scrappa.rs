@@ -170,7 +170,7 @@ impl ScrappaClient {
                 }
             } else {
                 ScrappaError {
-                    message: error.to_string(),
+                    message: error.without_url().to_string(),
                     retryable: false,
                 }
             }

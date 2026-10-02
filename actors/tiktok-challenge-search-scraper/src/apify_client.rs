@@ -1,13 +1,13 @@
+use crate::apify_retry::ApifyRetryExt;
 use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
-use reqwest::{Method, Response, StatusCode};
+use reqwest::{Method, Response};
 use serde_json::{json, Value};
 use std::{
     env,
     sync::atomic::{AtomicU64, Ordering},
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
-use tokio::time::sleep;
 use url::Url;
 
 use crate::challenges::{js_string, SearchRequest};
@@ -16,17 +16,8 @@ const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: usize = 8;
-const APIFY_MIN_RETRY_DELAY: Duration = Duration::from_millis(500);
 const APIFY_CHARGE_IDEMPOTENCY_HEADER: &str = "idempotency-key";
 static CHARGE_IDEMPOTENCY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
-
-#[derive(Clone, Copy)]
-enum ApifyRetryPolicy<'a> {
-    Safe,
-    WithIdempotencyKey(&'a str),
-    Never,
-}
 
 fn charge_idempotency_key(run_id: &str, event_name: &str) -> String {
     let timestamp = SystemTime::now()
@@ -121,55 +112,24 @@ impl ActorClient {
         url: Url,
         body: Option<&Value>,
         operation: &str,
-        retry_policy: ApifyRetryPolicy<'_>,
+        idempotency_key: Option<&str>,
     ) -> Result<Response> {
-        let max_retries = match retry_policy {
-            ApifyRetryPolicy::Never => 0,
-            ApifyRetryPolicy::Safe | ApifyRetryPolicy::WithIdempotencyKey(_) => APIFY_MAX_RETRIES,
-        };
-        for attempt in 0..=max_retries {
-            let mut request = self
-                .apify_http
-                .request(method.clone(), url.clone())
-                .bearer_auth(&self.config.apify_token)
-                .header(reqwest::header::ACCEPT, "application/json")
-                .timeout(APIFY_REQUEST_TIMEOUT);
-            if let ApifyRetryPolicy::WithIdempotencyKey(key) = retry_policy {
-                request = request.header(APIFY_CHARGE_IDEMPOTENCY_HEADER, key);
-            }
-            if let Some(body) = body {
-                request = request.json(body);
-            }
-
-            match request.send().await {
-                Ok(response) if response.status().is_success() => {
-                    return Ok(response);
-                }
-                Ok(response) if is_retryable_status(response.status()) && attempt < max_retries => {
-                    eprintln!(
-                        "Apify API request for {operation} failed with {}; retrying ({}/{max_retries})",
-                        response.status(),
-                        attempt + 1
-                    );
-                }
-                Ok(response) => return Err(apify_response_error(response, operation).await),
-                Err(error) if attempt < max_retries => {
-                    eprintln!(
-                        "Apify API request for {operation} failed: {error}; retrying ({}/{max_retries})",
-                        attempt + 1
-                    );
-                }
-                Err(error) => {
-                    return Err(anyhow!(
-                        "Apify API request failed while trying to {operation}: {error}"
-                    ));
-                }
-            }
-
-            sleep(apify_retry_delay(attempt)).await;
+        let mut request = self
+            .apify_http
+            .request(method, url)
+            .bearer_auth(&self.config.apify_token)
+            .header(reqwest::header::ACCEPT, "application/json")
+            .timeout(APIFY_REQUEST_TIMEOUT);
+        if let Some(key) = idempotency_key {
+            request = request.header(APIFY_CHARGE_IDEMPOTENCY_HEADER, key);
         }
-
-        unreachable!("the retry loop returns after its final attempt")
+        if let Some(body) = body {
+            request = request.json(body);
+        }
+        request
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify API request failed while trying to {operation}"))
     }
 
     async fn apify_json(
@@ -178,10 +138,10 @@ impl ActorClient {
         url: Url,
         body: Option<&Value>,
         operation: &str,
-        retry_policy: ApifyRetryPolicy<'_>,
+        idempotency_key: Option<&str>,
     ) -> Result<Value> {
         let response = self
-            .send_apify_json(method, url, body, operation, retry_policy)
+            .send_apify_json(method, url, body, operation, idempotency_key)
             .await?;
         response.json().await.with_context(|| {
             format!("Apify API response while trying to {operation} is not valid JSON")
@@ -200,13 +160,7 @@ impl ActorClient {
             ],
         )?;
         let response = self
-            .send_apify_json(
-                Method::GET,
-                url,
-                None,
-                "fetch Actor input",
-                ApifyRetryPolicy::Safe,
-            )
+            .send_apify_json(Method::GET, url, None, "fetch Actor input", None)
             .await;
         let response = match response {
             Ok(response) => response,
@@ -225,14 +179,8 @@ impl ActorClient {
             &self.config.apify_api_base_url,
             &["v2", "actor-runs", &self.config.actor_run_id],
         )?;
-        self.apify_json(
-            Method::GET,
-            url,
-            None,
-            "fetch Actor run pricing",
-            ApifyRetryPolicy::Safe,
-        )
-        .await
+        self.apify_json(Method::GET, url, None, "fetch Actor run pricing", None)
+            .await
     }
 
     pub(crate) async fn store_dataset_items(&self, items: &[Value]) -> Result<()> {
@@ -248,7 +196,7 @@ impl ActorClient {
             url,
             Some(&json!(items)),
             "store dataset items",
-            ApifyRetryPolicy::Never,
+            None,
         )
         .await?;
         Ok(())
@@ -268,7 +216,7 @@ impl ActorClient {
             url,
             Some(&json!({ "eventName": event_name, "count": count })),
             "charge Actor run events",
-            ApifyRetryPolicy::WithIdempotencyKey(&idempotency_key),
+            Some(&idempotency_key),
         )
         .await?;
         Ok(())
@@ -285,14 +233,8 @@ impl ActorClient {
                 "OUTPUT",
             ],
         )?;
-        self.send_apify_json(
-            Method::PUT,
-            url,
-            Some(output),
-            "write OUTPUT",
-            ApifyRetryPolicy::Safe,
-        )
-        .await?;
+        self.send_apify_json(Method::PUT, url, Some(output), "write OUTPUT", None)
+            .await?;
         Ok(())
     }
 
@@ -359,28 +301,6 @@ impl ActorClient {
             }
         })
     }
-}
-
-fn is_retryable_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn apify_retry_delay(attempt: usize) -> Duration {
-    APIFY_MIN_RETRY_DELAY.saturating_mul(2_u32.saturating_pow(attempt.min(16) as u32))
-}
-
-async fn apify_response_error(response: Response, operation: &str) -> anyhow::Error {
-    let status = response.status();
-    let body = response.text().await.unwrap_or_default();
-    let detail = if body.trim().is_empty() {
-        format!("HTTP {}", status.as_u16())
-    } else {
-        body
-    };
-    anyhow!(
-        "Apify API error ({}) while trying to {operation}: {detail}",
-        status.as_u16()
-    )
 }
 
 fn scrappa_error_message(body: &str, fallback: &str) -> String {

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use reqwest::{Client, Method, RequestBuilder, StatusCode};
 use serde_json::Value;
 use std::path::PathBuf;
@@ -67,7 +68,7 @@ impl ApifyRuntime {
         })?;
         let response = self
             .api_request(Method::GET, &format!("actor-runs/{run_id}"))?
-            .send()
+            .send_apify_with_retry()
             .await
             .map_err(|error| format!("Could not read Apify Actor run: {error}"))?;
         let body = successful_response(response, "Could not read Apify Actor run").await?;
@@ -87,7 +88,7 @@ impl ApifyRuntime {
                         self.config.default_key_value_store_id
                     ),
                 )?
-                .send()
+                .send_apify_with_retry()
                 .await
                 .map_err(|error| format!("Could not read Actor input: {error}"))?;
             if response.status() == StatusCode::NOT_FOUND {
@@ -130,7 +131,7 @@ impl ApifyRuntime {
                     &format!("datasets/{}/items", self.config.default_dataset_id),
                 )?
                 .json(item)
-                .send()
+                .send_apify_with_retry()
                 .await
                 .map_err(|error| format!("Could not write Actor dataset item: {error}"))?;
             successful_response(response, "Could not write Actor dataset item").await?;
@@ -151,7 +152,7 @@ impl ApifyRuntime {
                     ),
                 )?
                 .json(output)
-                .send()
+                .send_apify_with_retry()
                 .await
                 .map_err(|error| format!("Could not write Actor OUTPUT: {error}"))?;
             successful_response(response, "Could not write Actor OUTPUT").await?;
@@ -187,7 +188,7 @@ impl ApifyRuntime {
             .api_request(Method::POST, &format!("actor-runs/{run_id}/charge"))?
             .header("idempotency-key", idempotency_key)
             .json(&serde_json::json!({ "eventName": event_name, "count": count }))
-            .send()
+            .send_apify_with_retry()
             .await
             .map_err(|error| format!("Could not charge Actor event '{event_name}': {error}"))?;
         successful_response(
@@ -210,7 +211,7 @@ impl ApifyRuntime {
             .api_request(Method::PUT, &format!("actor-runs/{run_id}"))?
             .timeout(Duration::from_secs(1))
             .json(&serde_json::json!({ "statusMessage": message, "isStatusMessageTerminal": true }))
-            .send()
+            .send_apify_with_retry()
             .await
             .map_err(|error| format!("Could not set Actor status message: {error}"))?;
         successful_response(response, "Could not set Actor status message").await?;

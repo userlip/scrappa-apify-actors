@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use std::{env, error::Error, fmt, time::Duration};
@@ -268,7 +270,7 @@ impl ApifyClient<'_> {
             .get(url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -285,7 +287,7 @@ impl ApifyClient<'_> {
             .get(url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         PricingState::from_run(&response_json(response, "Apify run pricing request").await?)
@@ -302,7 +304,7 @@ impl ApifyClient<'_> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await
@@ -329,7 +331,7 @@ impl ApifyClient<'_> {
                 "eventName": SUGGESTION_RESULT_CHARGE_EVENT,
                 "count": count,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify suggestion result charge request failed")?;
         ensure_success(response, "Apify suggestion result charge request").await
@@ -348,7 +350,7 @@ impl ApifyClient<'_> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         ensure_success(response, "Apify OUTPUT write").await
@@ -367,7 +369,7 @@ impl ApifyClient<'_> {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify status message request failed")?;
         ensure_success(response, "Apify status message request").await

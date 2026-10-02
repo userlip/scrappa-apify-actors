@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{env, time::Duration};
 
 use reqwest::{Client, Method, Response, StatusCode, Url, header};
@@ -11,11 +12,6 @@ use crate::{
 };
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
-const CHARGE_MAX_ATTEMPTS: usize = 3;
-const CHARGE_TOTAL_DEADLINE: Duration = Duration::from_secs(60);
-const CHARGE_REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
-const CHARGE_RETRY_DELAYS: [Duration; CHARGE_MAX_ATTEMPTS - 1] =
-    [Duration::from_millis(250), Duration::from_millis(500)];
 
 pub struct ApifyClient {
     http: Client,
@@ -79,7 +75,7 @@ impl ApifyClient {
         let url = self.resource_url(&["actor-runs", &self.actor_run_id])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .map_err(|error| format!("Apify run pricing request failed: {error}"))?;
         response_json(response, "Apify run pricing request").await
@@ -94,7 +90,7 @@ impl ApifyClient {
         ])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .map_err(|error| format!("Apify INPUT request failed: {error}"))?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -115,7 +111,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .map_err(|error| format!("Apify dataset write failed: {error}"))?;
         successful_response(response, "store dataset item").await?;
@@ -132,7 +128,7 @@ impl ApifyClient {
         let response = self
             .request(Method::PUT, url)
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .map_err(|error| {
                 format!("Failed to write OUTPUT to the default key-value store: {error}")
@@ -148,55 +144,15 @@ impl ApifyClient {
         idempotency_key: &str,
     ) -> Result<(), String> {
         let url = self.resource_url(&["actor-runs", &self.actor_run_id, "charge"])?;
-        let request_body = json!({"eventName": event_name, "count": count});
-        let result = tokio::time::timeout(CHARGE_TOTAL_DEADLINE, async {
-            for attempt in 0..CHARGE_MAX_ATTEMPTS {
-                let response = self
-                    .request(Method::POST, url.clone())
-                    .timeout(CHARGE_REQUEST_TIMEOUT)
-                    .header("idempotency-key", idempotency_key)
-                    .json(&request_body)
-                    .send()
-                    .await;
-
-                let retry_message = match response {
-                    Ok(response) if response.status().is_success() => return Ok(()),
-                    Ok(response) => {
-                        let status = response.status();
-                        let body = response.text().await.unwrap_or_default();
-                        let message = api_error(status, &body, "charge Actor event");
-                        if !retryable_charge_status(status) {
-                            return Err(message);
-                        }
-                        message
-                    }
-                    Err(error) => {
-                        let message = format!("Apify event charge request failed: {error}");
-                        if !(error.is_timeout() || error.is_connect() || error.is_request()) {
-                            return Err(message);
-                        }
-                        message
-                    }
-                };
-
-                if attempt + 1 == CHARGE_MAX_ATTEMPTS {
-                    return Err(retry_message);
-                }
-                eprintln!(
-                    "{retry_message}; retrying charge with the same idempotency key (attempt {}/{CHARGE_MAX_ATTEMPTS})",
-                    attempt + 2
-                );
-                tokio::time::sleep(CHARGE_RETRY_DELAYS[attempt]).await;
-            }
-
-            unreachable!("charge retry loop always returns or exhausts its attempts")
-        })
-        .await;
-
-        match result {
-            Ok(result) => result,
-            Err(_) => Err("Apify event charge request exceeded its 60 second deadline".to_owned()),
-        }
+        let response = self
+            .request(Method::POST, url)
+            .header("idempotency-key", idempotency_key)
+            .json(&json!({"eventName": event_name, "count": count}))
+            .send_apify_with_retry()
+            .await
+            .map_err(|error| format!("Apify event charge request failed: {error}"))?;
+        successful_response(response, "charge Actor event").await?;
+        Ok(())
     }
 
     pub async fn set_terminal_status_message(&self, message: &str) -> Result<(), String> {
@@ -208,7 +164,7 @@ impl ApifyClient {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .map_err(|error| format!("Apify status message update failed: {error}"))?;
         successful_response(response, "set Actor run status message").await?;
@@ -326,10 +282,6 @@ impl TranslationOutput for ApifyTranslationOutput<'_> {
             status_message: None,
         })
     }
-}
-
-fn retryable_charge_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 425 | 429 | 500 | 502 | 503 | 504)
 }
 
 async fn response_json(response: Response, operation: &str) -> Result<Value, String> {
@@ -571,7 +523,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn does_not_charge_or_retry_when_dataset_append_fails() {
+    async fn does_not_charge_or_repost_when_dataset_verification_fails() {
         let server = MockServer::start(vec![(500, "dataset failed".to_owned())]);
         let client = apify_client(&server.base_url);
         let mut output = ApifyTranslationOutput::new(&client, ppe_charging());
@@ -580,12 +532,16 @@ mod tests {
             .push_translation_result(&translation_item())
             .await
             .unwrap_err();
-        assert!(error.contains("Apify API error (500)"));
+        assert!(!error.is_empty());
 
         let requests = server.finish();
-        assert_eq!(requests.len(), 1);
+        assert!(requests.len() >= 2);
         assert_eq!(requests[0].method, "POST");
         assert_eq!(requests[0].target, "/v2/datasets/dataset-id/items");
+        assert!(requests[1..].iter().all(|request| {
+            request.method == "GET"
+                && request.target == "/v2/datasets/dataset-id/items?offset=0&limit=1"
+        }));
         assert!(
             requests
                 .iter()

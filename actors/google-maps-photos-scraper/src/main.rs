@@ -1,10 +1,12 @@
+mod apify_retry;
+use crate::apify_retry::ApifyRetryExt;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod business_id;
 mod scrappa_retry;
 
 use anyhow::{anyhow, bail, Context, Result};
 use business_id::{get_business_id_requests, BusinessIdRequest};
-use reqwest::{header, Method, RequestBuilder, Response, StatusCode};
+use reqwest::{header, RequestBuilder, Response, StatusCode};
 use serde_json::{json, Map, Value};
 use std::{env, error::Error as StdError, fmt, time::Duration};
 use tokio::{time::sleep, time::timeout};
@@ -17,8 +19,6 @@ const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
 const SCRAPPA_RETRY_DELAY: Duration = Duration::from_millis(500);
 const ACTOR_TIMEOUT: Duration = Duration::from_secs(720);
-const APIFY_MAX_RETRIES: u8 = 8;
-const APIFY_INITIAL_RETRY_DELAY: Duration = Duration::from_millis(500);
 const MAX_DATASET_REQUEST_BYTES: usize = 9 * 1024 * 1024;
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 
@@ -91,51 +91,12 @@ fn endpoint_url(base_url: &Url, segments: &[&str]) -> Result<Url> {
     Ok(url)
 }
 
-fn apify_retry_delay(retry_number: u8) -> Duration {
-    APIFY_INITIAL_RETRY_DELAY * 2_u32.pow(u32::from(retry_number.saturating_sub(1)))
-}
-
-fn retryable_apify_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-async fn send_apify_request(client: &reqwest::Client, request: RequestBuilder) -> Result<Response> {
-    let request = request
-        .build()
-        .context("Could not build Apify API request")?;
-    let retryable_method = request.method() == Method::GET || request.method() == Method::PUT;
-    let mut last_error = None;
-
-    for attempt in 0..=APIFY_MAX_RETRIES {
-        let request = request
-            .try_clone()
-            .ok_or_else(|| anyhow!("Apify API request body could not be retried"))?;
-        match client.execute(request).await {
-            Ok(response)
-                if retryable_method
-                    && retryable_apify_status(response.status())
-                    && attempt < APIFY_MAX_RETRIES =>
-            {
-                drop(response);
-                sleep(apify_retry_delay(attempt + 1)).await;
-            }
-            Ok(response) => return Ok(response),
-            Err(error)
-                if retryable_method
-                    && (error.is_connect() || error.is_timeout())
-                    && attempt < APIFY_MAX_RETRIES =>
-            {
-                last_error = Some(error);
-                sleep(apify_retry_delay(attempt + 1)).await;
-            }
-            Err(error) => return Err(error).context("Apify API request failed"),
-        }
-    }
-
-    let error = last_error
-        .map(anyhow::Error::from)
-        .unwrap_or_else(|| anyhow!("Apify API request failed after retries"));
-    Err(error).context("Apify API request failed after retries")
+async fn send_apify_request(request: RequestBuilder) -> Result<Response> {
+    request
+        .timeout(APIFY_REQUEST_TIMEOUT)
+        .send_apify_with_retry()
+        .await
+        .context("Apify API request failed")
 }
 
 async fn response_json(response: Response, operation: &str) -> Result<Value> {
@@ -189,7 +150,6 @@ async fn get_input(client: &reqwest::Client, config: &ActorConfig) -> Result<Opt
         ],
     )?;
     let response = send_apify_request(
-        client,
         client
             .get(url)
             .bearer_auth(&config.apify_token)
@@ -314,7 +274,6 @@ async fn run_dataset_capacity(
         &["v2", "actor-runs", &config.actor_run_id],
     )?;
     let response = send_apify_request(
-        client,
         client
             .get(url)
             .bearer_auth(&config.apify_token)
@@ -397,7 +356,6 @@ async fn push_dataset_items(
 
     for chunk in chunks {
         let response = send_apify_request(
-            client,
             client
                 .post(url.clone())
                 .bearer_auth(&config.apify_token)
@@ -435,7 +393,6 @@ async fn set_output_value(
         ],
     )?;
     let response = send_apify_request(
-        client,
         client
             .put(url)
             .bearer_auth(&config.apify_token)
@@ -1175,17 +1132,6 @@ mod tests {
     }
 
     #[test]
-    fn apify_retries_match_the_client_default_backoff() {
-        assert_eq!(APIFY_MAX_RETRIES, 8);
-        assert_eq!(apify_retry_delay(1), Duration::from_millis(500));
-        assert_eq!(apify_retry_delay(2), Duration::from_secs(1));
-        assert_eq!(apify_retry_delay(3), Duration::from_secs(2));
-        assert!(retryable_apify_status(StatusCode::TOO_MANY_REQUESTS));
-        assert!(retryable_apify_status(StatusCode::INTERNAL_SERVER_ERROR));
-        assert!(!retryable_apify_status(StatusCode::BAD_REQUEST));
-    }
-
-    #[test]
     fn maps_request_keeps_cache_query_compatibility() {
         let base_url = Url::parse("https://scrappa.example/api").unwrap();
         let without_cache = build_photos_url(
@@ -1310,7 +1256,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn apify_safe_methods_retry_but_dataset_post_and_permanent_scrappa_errors_do_not() {
+    async fn apify_dataset_post_verifies_before_retry_and_safe_methods_retry() {
         let server = MockServer::start(vec![
             mock_response(500, "temporary"),
             mock_response(200, "{\"ok\":true}"),
@@ -1319,30 +1265,61 @@ mod tests {
             .timeout(APIFY_REQUEST_TIMEOUT)
             .build()
             .unwrap();
-        let request = client.get(server.base_url.join("retry").unwrap());
-        let response = send_apify_request(&client, request).await.unwrap();
+        let request = client.get(
+            server
+                .base_url
+                .join("v2/key-value-stores/store-id/records/INPUT")
+                .unwrap(),
+        );
+        let response = send_apify_request(request).await.unwrap();
         assert!(response.status().is_success());
         assert_eq!(server.requests().len(), 2);
 
+        let written_rows = "[{\"photo_id\":\"one\"}]";
         let post_server = MockServer::start(vec![
-            mock_response(500, "temporary after possible append"),
-            mock_response(201, ""),
+            mock_response(502, "temporary after possible append"),
+            mock_response(200, written_rows),
+            mock_response(200, written_rows),
         ]);
         let post_request = client
-            .post(post_server.base_url.join("dataset/items").unwrap())
+            .post(
+                post_server
+                    .base_url
+                    .join("v2/datasets/dataset-id/items")
+                    .unwrap(),
+            )
             .json(&json!([{ "photo_id": "one" }]));
-        let response = send_apify_request(&client, post_request).await.unwrap();
-        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
-        assert_eq!(post_server.requests().len(), 1);
+        let response = send_apify_request(post_request).await.unwrap();
+        assert!(response.status().is_success());
+        let post_requests = post_server.requests();
+        assert_eq!(
+            post_requests
+                .iter()
+                .filter(|request| request.starts_with("POST /v2/datasets/dataset-id/items "))
+                .count(),
+            1
+        );
+        assert_eq!(
+            post_requests
+                .iter()
+                .filter(|request| request.starts_with("GET /v2/datasets/dataset-id/items?"))
+                .count(),
+            2
+        );
 
         let put_server = MockServer::start(vec![
             mock_response(500, "temporary"),
             mock_response(201, ""),
         ]);
         let put_request = client
-            .put(put_server.base_url.join("records/OUTPUT").unwrap())
+            .put(
+                put_server
+                    .base_url
+                    .join("v2/key-value-stores/store-id/records/OUTPUT")
+                    .unwrap(),
+            )
             .json(&json!({ "photos": [] }));
-        let response = send_apify_request(&client, put_request).await.unwrap();
+        let response = send_apify_request(put_request).await.unwrap();
         assert_eq!(response.status(), StatusCode::CREATED);
         assert_eq!(put_server.requests().len(), 2);
 
@@ -1386,11 +1363,12 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn dataset_append_transient_failure_is_not_retried() {
+    async fn dataset_append_retries_only_after_verification_finds_no_rows() {
         let run = pricing_run(1.0, json!({ "apify-actor-start": 1 }));
         let server = MockServer::start(vec![
             mock_response(200, run.to_string()),
-            mock_response(500, "append may already have succeeded"),
+            mock_response(502, "append was not stored"),
+            mock_response(200, "[]"),
             mock_response(201, ""),
         ]);
         let config = config(&server.base_url);
@@ -1407,10 +1385,12 @@ mod tests {
         )
         .await;
 
-        assert!(result.is_err());
+        assert!(result.is_ok());
         let requests = server.requests();
-        assert_eq!(requests.len(), 2);
+        assert_eq!(requests.len(), 4);
         assert!(requests[1].starts_with("POST /v2/datasets/dataset-id/items "));
+        assert!(requests[2].starts_with("GET /v2/datasets/dataset-id/items?offset=0&limit=1 "));
+        assert!(requests[3].starts_with("POST /v2/datasets/dataset-id/items "));
     }
 
     #[tokio::test]

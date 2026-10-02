@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -169,7 +171,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     if response.status() == StatusCode::NOT_FOUND {
@@ -190,7 +192,7 @@ async fn run_dataset_capacity(
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -310,7 +312,7 @@ fn retry_after_from_response(response: &Response) -> Option<u64> {
 async fn fetch_transcript(client: &Client, config: &ActorConfig, input: &Value) -> Result<Value> {
     let url = transcript_url(input, &config.scrappa_api_base_url)?;
     for attempt in 1..=MAX_ATTEMPTS {
-        println!("Fetching from: {url}");
+        println!("Fetching data from Scrappa API");
         let response = client
             .get(url.clone())
             .header("X-API-Key", config.scrappa_api_key.as_str())
@@ -340,10 +342,12 @@ async fn fetch_transcript(client: &Client, config: &ActorConfig, input: &Value) 
             return match response.json().await {
                 Ok(data) => Ok(data),
                 Err(error) if error.is_timeout() => Err(anyhow!(
-                    "Scrappa API returned an invalid JSON response for {url}: operation aborted"
+                    "Scrappa API returned an invalid JSON response: {}",
+                    error.without_url()
                 )),
                 Err(error) => Err(anyhow!(
-                    "Scrappa API returned an invalid JSON response for {url}: {error}"
+                    "Scrappa API returned an invalid JSON response: {}",
+                    error.without_url()
                 )),
             };
         }
@@ -422,7 +426,7 @@ async fn push_dataset_rows(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(rows)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     checked_response(response, "Apify dataset write").await?;
@@ -470,7 +474,7 @@ async fn set_output(client: &Client, config: &ActorConfig, data: &Value) -> Resu
         .put(url)
         .bearer_auth(&config.apify_token)
         .json(data)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify OUTPUT write failed")?;
     checked_response(response, "Apify OUTPUT write").await?;

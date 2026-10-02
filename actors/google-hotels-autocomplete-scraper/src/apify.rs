@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response, StatusCode};
 use serde_json::{json, Value};
@@ -11,7 +12,6 @@ pub const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 pub const RESULT_CHARGE_EVENT: &str = "hotel-suggestion-result";
 const DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const APIFY_MAX_ATTEMPTS: u8 = 3;
 const DATASET_POST_MAX_BYTES: usize = 4 * 1024 * 1024;
 
 #[derive(Debug)]
@@ -344,44 +344,13 @@ impl ApifyClient {
     where
         F: FnMut() -> reqwest::RequestBuilder,
     {
-        for attempt in 1..=APIFY_MAX_ATTEMPTS {
-            let response = request()
-                .bearer_auth(&self.token)
-                .timeout(APIFY_REQUEST_TIMEOUT)
-                .send()
-                .await;
-            match response {
-                Ok(response)
-                    if response.status().is_success()
-                        || !is_retryable_status(response.status())
-                        || attempt == APIFY_MAX_ATTEMPTS =>
-                {
-                    return Ok(response);
-                }
-                Ok(_) => {}
-                Err(error)
-                    if attempt < APIFY_MAX_ATTEMPTS
-                        && (error.is_timeout() || error.is_connect() || error.is_request()) =>
-                {
-                    eprintln!(
-                        "Apify API request failed: {error}; retrying attempt {}/{}",
-                        attempt + 1,
-                        APIFY_MAX_ATTEMPTS
-                    );
-                }
-                Err(error) => return Err(anyhow!("Apify API request failed: {error}")),
-            }
-            if attempt < APIFY_MAX_ATTEMPTS {
-                let delay = Duration::from_secs(u64::from(attempt));
-                tokio::time::sleep(delay).await;
-            }
-        }
-        Err(anyhow!("Apify API request failed after retries"))
+        request()
+            .bearer_auth(&self.token)
+            .timeout(APIFY_REQUEST_TIMEOUT)
+            .send_apify_with_retry()
+            .await
+            .map_err(|error| anyhow!("Apify API request failed: {error}"))
     }
-}
-
-fn is_retryable_status(status: StatusCode) -> bool {
-    matches!(status.as_u16(), 408 | 425 | 429 | 500 | 502 | 503 | 504)
 }
 
 async fn response_json(response: Response, operation: &str) -> Result<Value> {

@@ -169,7 +169,7 @@ pub(crate) async fn run(
         .and_then(|input| input.get("maximum_cache_age"));
     for (request_index, request) in urls.iter().enumerate() {
         let result = if let Some(normalized_url) = request.normalized_url.as_deref() {
-            println!("Fetching LinkedIn job details: {normalized_url}");
+            println!("Fetching LinkedIn job details");
             let params = build_job_params(normalized_url, use_cache, maximum_cache_age);
             match scrappa.get_job(&params).await {
                 Ok(response) => build_success_item(response, &request.input_url, normalized_url)?,
@@ -177,9 +177,7 @@ pub(crate) async fn run(
                     let api_error = error
                         .downcast_ref::<ScrappaApiError>()
                         .expect("404 Scrappa error must retain its API error type");
-                    eprintln!(
-                        "Job detail scraping returned a per-item failure for {normalized_url}: {api_error}"
-                    );
+                    eprintln!("Job detail scraping returned a per-item failure: {api_error}");
                     build_failure_item(
                         &api_error.to_string(),
                         Some(api_error.status),
@@ -190,7 +188,13 @@ pub(crate) async fn run(
                 Err(error) => return Err(error),
             }
         } else {
-            eprintln!("Invalid LinkedIn job URL: \"{}\"", request.input_url);
+            eprintln!(
+                "Skipping an invalid LinkedIn job URL: {}",
+                request
+                    .validation_error
+                    .as_deref()
+                    .unwrap_or("invalid input")
+            );
             build_failure_item(
                 request
                     .validation_error

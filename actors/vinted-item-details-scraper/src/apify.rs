@@ -1,10 +1,10 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Method, Response, StatusCode, Url};
 use serde_json::{json, Value};
 use std::{env, time::Duration};
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
-const APIFY_MAX_RETRIES: usize = 2;
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 pub struct ApifyClient {
@@ -101,7 +101,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset item to Apify API")?;
         require_success(response, "dataset item publication").await?;
@@ -125,7 +125,7 @@ impl ApifyClient {
             .header(header::ACCEPT, "application/json")
             .header("idempotency-key", idempotency_key)
             .json(&json!({"eventName": event_name, "count": count}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run event charge request failed")?;
         require_success(response, "event charge").await?;
@@ -182,39 +182,18 @@ impl ApifyClient {
         body: Option<Value>,
         operation: &str,
     ) -> Result<Response> {
-        let mut retry_count = 0;
-        loop {
-            let mut request = self
-                .http
-                .request(method.clone(), url.clone())
-                .bearer_auth(&self.token)
-                .header(header::ACCEPT, "application/json");
-            if let Some(body) = &body {
-                request = request.json(body);
-            }
-
-            let response = match request.send().await {
-                Ok(response) => response,
-                Err(error) if can_retry_transport(&method, &error, retry_count) => {
-                    tokio::time::sleep(apify_retry_delay(retry_count)).await;
-                    retry_count += 1;
-                    continue;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify {operation} failed"));
-                }
-            };
-
-            if let Some(delay) =
-                apify_retry_delay_for_status(&method, response.status(), retry_count)
-            {
-                drop(response);
-                tokio::time::sleep(delay).await;
-                retry_count += 1;
-                continue;
-            }
-            return Ok(response);
+        let mut request = self
+            .http
+            .request(method, url)
+            .bearer_auth(&self.token)
+            .header(header::ACCEPT, "application/json");
+        if let Some(body) = body {
+            request = request.json(&body);
         }
+        request
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} failed"))
     }
 
     fn endpoint(&self, segments: &[&str]) -> Result<Url> {
@@ -239,38 +218,6 @@ async fn require_success(response: Response, operation: &str) -> Result<Response
     let status = response.status();
     let body = response.text().await.unwrap_or_default();
     bail!("Apify {operation} failed ({}): {body}", status.as_u16());
-}
-
-fn can_retry_transport(method: &Method, error: &reqwest::Error, retry_count: usize) -> bool {
-    matches!(*method, Method::GET | Method::PUT)
-        && retry_count < APIFY_MAX_RETRIES
-        && (error.is_connect() || error.is_timeout())
-}
-
-fn apify_retry_delay_for_status(
-    method: &Method,
-    status: StatusCode,
-    retry_count: usize,
-) -> Option<Duration> {
-    if !matches!(*method, Method::GET | Method::PUT)
-        || retry_count >= APIFY_MAX_RETRIES
-        || !matches!(
-            status,
-            StatusCode::TOO_MANY_REQUESTS
-                | StatusCode::INTERNAL_SERVER_ERROR
-                | StatusCode::BAD_GATEWAY
-                | StatusCode::SERVICE_UNAVAILABLE
-                | StatusCode::GATEWAY_TIMEOUT
-                | StatusCode::REQUEST_TIMEOUT
-        )
-    {
-        return None;
-    }
-    Some(apify_retry_delay(retry_count))
-}
-
-fn apify_retry_delay(retry_count: usize) -> Duration {
-    Duration::from_secs(1_u64 << retry_count.min(3))
 }
 
 fn required_env(name: &str) -> Result<String> {

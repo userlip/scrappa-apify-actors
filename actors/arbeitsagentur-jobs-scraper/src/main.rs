@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod scrappa;
 mod scrappa_retry;
 #[cfg(test)]

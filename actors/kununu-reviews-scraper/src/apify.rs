@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::{Value, json};
@@ -120,7 +121,7 @@ impl ApifyClient {
         operation: &str,
     ) -> Result<Response> {
         self.request(&method, &url, body.as_ref(), idempotency_key.as_deref())
-            .send()
+            .send_apify_with_retry()
             .await
             .with_context(|| format!("Apify API {operation} failed"))
     }
@@ -133,38 +134,10 @@ impl ApifyClient {
         idempotency_key: Option<String>,
         operation: &str,
     ) -> Result<Response> {
-        for retry in 0..=APIFY_MAX_RETRIES {
-            match self
-                .request(&method, &url, body.as_ref(), idempotency_key.as_deref())
-                .send()
-                .await
-            {
-                Ok(response)
-                    if is_retryable_status(response.status()) && retry < APIFY_MAX_RETRIES =>
-                {
-                    eprintln!(
-                        "Apify API {operation} returned HTTP {}; retrying ({}/{})",
-                        response.status(),
-                        retry + 1,
-                        APIFY_MAX_RETRIES
-                    );
-                    tokio::time::sleep(retry_delay(retry)).await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error) if retry < APIFY_MAX_RETRIES => {
-                    eprintln!(
-                        "Apify API {operation} failed: {error}; retrying ({}/{})",
-                        retry + 1,
-                        APIFY_MAX_RETRIES
-                    );
-                    tokio::time::sleep(retry_delay(retry)).await;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify API {operation} failed"));
-                }
-            }
-        }
-        unreachable!("the Apify retry loop always returns or fails")
+        self.request(&method, &url, body.as_ref(), idempotency_key.as_deref())
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify API {operation} failed"))
     }
 
     async fn response_json(response: Response, operation: &str) -> Result<Value> {
@@ -684,7 +657,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn dataset_post_does_not_retry_a_transient_failure() {
+    async fn dataset_post_verifies_a_transient_failure_before_stopping() {
         let server = MockServer::start(vec![
             response(503, json!({"error":"temporary"})),
             response(201, json!({})),
@@ -694,28 +667,35 @@ mod tests {
             .push_dataset_items(&[json!({"review_id":"r1"})])
             .await
             .unwrap_err();
-        assert!(error.to_string().contains("Apify API error (503)"));
-        assert_eq!(server.requests().len(), 1);
+        assert!(error.to_string().contains("Apify API dataset write failed"));
+        let requests = server.requests();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(
+            request_parts(&requests[1]).1,
+            "/v2/datasets/test-dataset/items?offset=0&limit=1"
+        );
     }
 
     #[tokio::test]
-    async fn charge_post_does_not_retry_a_transient_failure() {
+    async fn charge_post_retries_a_transient_failure() {
         let server = MockServer::start(vec![
             response(503, json!({"error":"temporary"})),
             response(200, json!({})),
         ]);
         let client = ApifyClient::new(config(server.base_url.clone())).unwrap();
-        let error = client.charge_event("review-result", 1).await.unwrap_err();
-
-        assert!(error.to_string().contains("event charge"));
+        client.charge_event("review-result", 1).await.unwrap();
         let requests = server.requests();
-        assert_eq!(requests.len(), 1);
+        assert_eq!(requests.len(), 2);
         assert_eq!(
             request_parts(&requests[0]).1,
             "/v2/actor-runs/test-run/charge"
         );
         assert_eq!(request_parts(&requests[0]).0, "POST");
         assert!(header(&requests[0], "Idempotency-Key").is_some());
+        assert_eq!(
+            header(&requests[0], "Idempotency-Key"),
+            header(&requests[1], "Idempotency-Key")
+        );
     }
 
     #[tokio::test]

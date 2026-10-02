@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -143,7 +145,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -206,7 +208,7 @@ async fn run_dataset_budget(client: &Client, config: &ActorConfig) -> Result<Dat
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -314,9 +316,12 @@ async fn push_dataset_items(
     )?;
     let request = client.post(url).bearer_auth(&config.apify_token);
     let response = if let Some(items) = videos.as_array() {
-        request.json(&items[..rows_to_save]).send().await
+        request
+            .json(&items[..rows_to_save])
+            .send_apify_with_retry()
+            .await
     } else {
-        request.json(videos).send().await
+        request.json(videos).send_apify_with_retry().await
     }
     .context("Apify dataset write failed")?;
     let status = response.status();
@@ -340,7 +345,7 @@ async fn push_dataset_items(
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let input = get_input(client, config).await?;
     let url = build_related_videos_url(&input, &config.scrappa_api_base_url)?;
-    println!("Fetching from: {url}");
+    println!("Fetching data from Scrappa API");
 
     let response_data = fetch_related_videos(client, &url).await?;
     let videos = related_videos(&response_data);
@@ -359,7 +364,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
         .and_then(Value::as_str)
         .filter(|continuation| !continuation.is_empty())
     {
-        println!("Continuation token available for next page: {continuation}");
+        println!("Continuation token available for next page");
     }
     Ok(())
 }

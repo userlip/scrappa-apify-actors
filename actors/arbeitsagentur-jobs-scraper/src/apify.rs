@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::time::Duration;
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -53,7 +54,7 @@ impl ApifyClient {
                 .get(url.clone())
                 .bearer_auth(&self.token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Failed to retrieve actor input from Apify API")?;
 
@@ -94,7 +95,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(affordable_items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset item to Apify API")?;
         require_apify_success(response, "dataset item publication").await?;
@@ -110,7 +111,7 @@ impl ApifyClient {
                 .get(url.clone())
                 .bearer_auth(&self.token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Apify run pricing request failed")?;
             if let Some(delay) = apify_retry_delay("GET", response.status(), retry_count) {
@@ -144,7 +145,7 @@ impl ApifyClient {
                 .bearer_auth(&self.token)
                 .header(header::ACCEPT, "application/json")
                 .json(value)
-                .send()
+                .send_apify_with_retry()
                 .await
                 .with_context(|| format!("Failed to write {key} record to Apify API"))?;
 

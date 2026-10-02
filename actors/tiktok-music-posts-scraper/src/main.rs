@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -10,8 +12,6 @@ const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: usize = 8;
-const APIFY_RETRY_BASE_DELAY: Duration = Duration::from_millis(500);
 const MAX_SAFE_INTEGER: f64 = 9_007_199_254_740_991.0;
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 
@@ -489,48 +489,14 @@ async fn response_json(response: Response, operation: &str) -> Result<Value> {
         .with_context(|| format!("{operation} returned invalid JSON"))
 }
 
-fn apify_retry_delay(retry: usize) -> Duration {
-    let multiplier = 1_u32 << retry.saturating_sub(1).min(7);
-    APIFY_RETRY_BASE_DELAY * multiplier
-}
-
 async fn send_apify_request<F>(mut build_request: F, operation: &str) -> Result<Response>
 where
     F: FnMut() -> RequestBuilder,
 {
-    let mut retries = 0;
-    loop {
-        match build_request().send().await {
-            Ok(response)
-                if retries < APIFY_MAX_RETRIES
-                    && (response.status() == StatusCode::TOO_MANY_REQUESTS
-                        || response.status().is_server_error()) =>
-            {
-                let status = response.status();
-                retries += 1;
-                let delay = apify_retry_delay(retries);
-                eprintln!(
-                    "{operation} returned HTTP {status}; retrying attempt {retries}/{APIFY_MAX_RETRIES} in {}ms.",
-                    delay.as_millis()
-                );
-                drop(response);
-                tokio::time::sleep(delay).await;
-            }
-            Ok(response) => return Ok(response),
-            Err(error) if retries < APIFY_MAX_RETRIES => {
-                retries += 1;
-                let delay = apify_retry_delay(retries);
-                eprintln!(
-                    "{operation} request failed: {error}; retrying attempt {retries}/{APIFY_MAX_RETRIES} in {}ms.",
-                    delay.as_millis()
-                );
-                tokio::time::sleep(delay).await;
-            }
-            Err(error) => {
-                return Err(error).with_context(|| format!("{operation} request failed"));
-            }
-        }
-    }
+    build_request()
+        .send_apify_with_retry()
+        .await
+        .with_context(|| format!("{operation} request failed"))
 }
 
 async fn ensure_success(response: Response, operation: &str) -> Result<()> {
@@ -739,7 +705,7 @@ async fn push_dataset_items(
             .post(url)
             .bearer_auth(&config.apify_token)
             .json(&rows[..saved_count])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write request failed")?;
         ensure_success(response, "Apify dataset write").await?;

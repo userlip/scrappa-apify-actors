@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -140,7 +142,7 @@ async fn run_dataset_budget(client: &Client, config: &ActorConfig) -> Result<Dat
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     DatasetBudget::from_run(&response_json(response, "Apify run pricing request").await?)
@@ -222,7 +224,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -411,7 +413,7 @@ async fn collect_filtered_channel_videos(
     for _ in 0..MAX_FILTER_SCAN_PAGES {
         let url =
             build_channel_livestreams_url(&config.scrappa_api_base_url, id, sort, &continuation)?;
-        println!("Fetching from: {url}");
+        println!("Fetching data from Scrappa API");
         let response = fetch_scrappa_page(client, config, url).await?;
         if let Some(page_videos) = response.get("videos").and_then(Value::as_array) {
             videos.extend(
@@ -463,7 +465,7 @@ async fn push_dataset_items(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(&videos[..saved])
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     ensure_success(response, "Apify dataset write").await?;
@@ -488,10 +490,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
             videos.len(),
         );
         if js_truthy(&continuation) {
-            println!(
-                "Continuation token available for next page: {}",
-                js_string(&continuation)
-            );
+            println!("Continuation token available for next page");
         }
     }
     Ok(())
@@ -951,12 +950,12 @@ mod tests {
 
         let error = run_actor(&Client::new(), &config).await.unwrap_err();
 
-        assert!(error
-            .to_string()
-            .contains("Apify dataset write failed with 500"));
+        assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
         assert!(request_target(&requests[3]).starts_with("/v2/datasets/test-dataset/items"));
+        assert!(request_target(&requests[4])
+            .starts_with("/v2/datasets/test-dataset/items?offset=0&limit=2"));
     }
 
     #[tokio::test]

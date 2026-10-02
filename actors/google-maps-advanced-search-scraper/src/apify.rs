@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{
     sync::atomic::{AtomicU64, Ordering},
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -11,40 +12,17 @@ use url::Url;
 use crate::config::{endpoint_url, Config};
 
 pub(crate) const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const MAX_APIFY_REQUEST_ATTEMPTS: usize = 3;
 const DATASET_BATCH_MAX_BYTES: usize = 4_500_000;
-
-fn transient_apify_status(status: StatusCode) -> bool {
-    status == StatusCode::REQUEST_TIMEOUT
-        || status == StatusCode::TOO_EARLY
-        || status == StatusCode::TOO_MANY_REQUESTS
-        || status.is_server_error()
-}
-
-fn apify_retry_delay(attempt: usize) -> Duration {
-    Duration::from_millis(200 * 2_u64.pow((attempt.saturating_sub(1)) as u32))
-}
 
 async fn send_apify_with_retries<F>(make_request: F, operation: &str) -> Result<Response>
 where
     F: Fn() -> RequestBuilder,
 {
-    for attempt in 1..=MAX_APIFY_REQUEST_ATTEMPTS {
-        match make_request().timeout(APIFY_REQUEST_TIMEOUT).send().await {
-            Ok(response)
-                if transient_apify_status(response.status())
-                    && attempt < MAX_APIFY_REQUEST_ATTEMPTS =>
-            {
-                tokio::time::sleep(apify_retry_delay(attempt)).await;
-            }
-            Ok(response) => return Ok(response),
-            Err(_) if attempt < MAX_APIFY_REQUEST_ATTEMPTS => {
-                tokio::time::sleep(apify_retry_delay(attempt)).await;
-            }
-            Err(error) => return Err(anyhow!("{operation} failed: {error}")),
-        }
-    }
-    unreachable!("retry loop always returns a response or error")
+    make_request()
+        .timeout(APIFY_REQUEST_TIMEOUT)
+        .send_apify_with_retry()
+        .await
+        .with_context(|| format!("{operation} failed"))
 }
 
 async fn response_json(response: Response, operation: &str) -> Result<Value> {
@@ -182,7 +160,7 @@ impl<'a> ApifyClient<'a> {
                 .header(header::ACCEPT, "application/json")
                 .json(&batch)
                 .timeout(APIFY_REQUEST_TIMEOUT)
-                .send()
+                .send_apify_with_retry()
                 .await
                 .map_err(|error| anyhow!("Apify dataset write failed: {error}"))?;
             ensure_success(response, "Apify dataset write").await?;

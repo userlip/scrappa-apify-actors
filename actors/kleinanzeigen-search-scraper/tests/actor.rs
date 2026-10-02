@@ -13,6 +13,9 @@ async fn non_ppe_run_preserves_pagination_auth_and_dataset_kv_output() {
         flat_pricing(),
         listing_response(2),
         flat_pricing(),
+        MockResponse::json(200, json!({"data":{"itemCount":0}})),
+        MockResponse::json(200, json!([])),
+        MockResponse::json(200, json!([])),
         MockResponse::json(201, json!({})),
         MockResponse::json(200, json!({})),
     ])
@@ -50,7 +53,15 @@ async fn non_ppe_run_preserves_pagination_auth_and_dataset_kv_output() {
     assert!(query.contains(&("query".to_owned(), "iphone case".to_owned())));
     assert!(query.contains(&("page".to_owned(), "3".to_owned())));
     assert!(query.contains(&("location".to_owned(), "Berlin".to_owned())));
-    let dataset = requests_to(&requests, "/v2/datasets/test-dataset/items");
+    let dataset = requests
+        .iter()
+        .filter(|request| {
+            request.method == "POST"
+                && request
+                    .target
+                    .starts_with("/v2/datasets/test-dataset/items")
+        })
+        .collect::<Vec<_>>();
     assert_eq!(dataset.len(), 1);
     let rows = serde_json::from_str::<Value>(&dataset[0].body).unwrap();
     assert_eq!(rows.as_array().unwrap().len(), 2);
@@ -82,6 +93,9 @@ async fn ppe_writes_affordable_rows_then_retries_transient_charge_with_same_key(
         ppe_pricing(0.25, 0),
         listing_response(3),
         ppe_pricing(0.25, 0),
+        MockResponse::json(200, json!({"data":{"itemCount":0}})),
+        MockResponse::json(200, json!([])),
+        MockResponse::json(200, json!([])),
         MockResponse::json(201, json!({})),
         MockResponse::text(503, "temporarily unavailable"),
         MockResponse::json(201, json!({})),
@@ -132,13 +146,22 @@ async fn ppe_writes_affordable_rows_then_retries_transient_charge_with_same_key(
     let dataset_position = requests
         .iter()
         .position(|request| {
-            request
-                .target
-                .starts_with("/v2/datasets/test-dataset/items")
+            request.method == "POST"
+                && request
+                    .target
+                    .starts_with("/v2/datasets/test-dataset/items")
         })
         .unwrap();
     assert!(dataset_position < charge_position);
-    let dataset = requests_to(&requests, "/v2/datasets/test-dataset/items");
+    let dataset = requests
+        .iter()
+        .filter(|request| {
+            request.method == "POST"
+                && request
+                    .target
+                    .starts_with("/v2/datasets/test-dataset/items")
+        })
+        .collect::<Vec<_>>();
     assert_eq!(
         serde_json::from_str::<Value>(&dataset[0].body)
             .unwrap()
@@ -209,7 +232,15 @@ async fn retries_transient_scrappa_errors_but_auth_errors_fail_without_output() 
     assert_eq!(scrappa.len(), 2);
     assert_eq!(scrappa[0].target, scrappa[1].target);
     assert_eq!(
-        requests_to(&requests, "/v2/datasets/test-dataset/items").len(),
+        requests
+            .iter()
+            .filter(|request| {
+                request.method == "POST"
+                    && request
+                        .target
+                        .starts_with("/v2/datasets/test-dataset/items")
+            })
+            .count(),
         0
     );
 
@@ -248,18 +279,25 @@ async fn dataset_failure_does_not_charge_or_write_output() {
         ppe_pricing(1.0, 0),
         listing_response(1),
         ppe_pricing(1.0, 0),
-        MockResponse::text(500, "dataset unavailable"),
+        MockResponse::json(200, json!({"data":{"itemCount":0}})),
+        MockResponse::json(200, json!([])),
+        MockResponse::json(200, json!([])),
+        MockResponse::text(400, "dataset unavailable"),
     ])
     .await;
     let config = test_config(&server.base_url);
     let error = run_actor(&Client::new(), &config).await.unwrap_err();
-    assert!(error
-        .to_string()
-        .contains("Apify dataset write failed with 500"));
+    assert!(error.to_string().contains("Apify dataset write failed"));
     let requests = server.finish();
     assert!(requests_to(&requests, "/v2/actor-runs/test-run/charge").is_empty());
     assert_eq!(
-        requests_to(&requests, "/v2/datasets/test-dataset/items").len(),
+        requests
+            .iter()
+            .filter(|request| {
+                request.method == "POST"
+                    && request.target.starts_with("/v2/datasets/test-dataset/items")
+            })
+            .count(),
         1
     );
     assert!(requests_to(&requests, "/v2/key-value-stores/test-store/records/OUTPUT").is_empty());

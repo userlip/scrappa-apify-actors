@@ -1,3 +1,4 @@
+mod apify_retry;
 mod scrappa_retry;
 use std::{env, process::ExitCode};
 

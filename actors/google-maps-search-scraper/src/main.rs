@@ -1,19 +1,17 @@
+use crate::apify_retry::ApifyRetryExt;
 use crate::scrappa_retry::ScrappaRetryExt;
+mod apify_retry;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, RequestBuilder, Response, StatusCode};
 use serde_json::{json, Value};
 use std::{env, time::Duration};
-use tokio::time::sleep;
 use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const APIFY_MAX_RETRIES: u32 = 8;
-const APIFY_MIN_RETRY_DELAY: Duration = Duration::from_millis(500);
-const APIFY_MAX_RETRY_DELAY: Duration = Duration::from_secs(30);
 const SCRAPPA_USER_AGENT: &str = "thescrappa-google-maps-search-scraper/1.0";
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const MAX_DATASET_REQUEST_BYTES: usize = 5_000_000;
@@ -322,7 +320,7 @@ async fn fetch_scrappa_endpoint(
 ) -> Result<Value> {
     let url = request_url(&config.scrappa_api_base_url, endpoint, params)?;
     if debug {
-        println!("[Scrappa] GET {url}");
+        println!("Sending request to Scrappa API");
     }
 
     let response = client
@@ -417,39 +415,10 @@ async fn send_apify_request<F>(build_request: F, operation: &str) -> Result<Resp
 where
     F: Fn() -> RequestBuilder,
 {
-    for attempt in 0..=APIFY_MAX_RETRIES {
-        match build_request().send().await {
-            Ok(response)
-                if is_retryable_apify_status(response.status()) && attempt < APIFY_MAX_RETRIES =>
-            {
-                sleep(apify_retry_delay(attempt)).await;
-            }
-            Ok(response) => return Ok(response),
-            Err(error)
-                if attempt < APIFY_MAX_RETRIES && is_retryable_apify_network_error(&error) =>
-            {
-                sleep(apify_retry_delay(attempt)).await;
-            }
-            Err(error) => return Err(error).with_context(|| format!("{operation} failed")),
-        }
-    }
-
-    unreachable!("the final Apify attempt returns its response or error")
-}
-
-fn is_retryable_apify_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn is_retryable_apify_network_error(error: &reqwest::Error) -> bool {
-    error.is_timeout() || error.is_connect() || error.is_request()
-}
-
-fn apify_retry_delay(retry_number: u32) -> Duration {
-    let multiplier = 1_u32.checked_shl(retry_number).unwrap_or(u32::MAX);
-    APIFY_MIN_RETRY_DELAY
-        .saturating_mul(multiplier)
-        .min(APIFY_MAX_RETRY_DELAY)
+    build_request()
+        .send_apify_with_retry()
+        .await
+        .with_context(|| format!("{operation} failed"))
 }
 
 async fn apify_json(response: Response, operation: &str) -> Result<Value> {
@@ -693,7 +662,7 @@ async fn push_dataset_items(
             .bearer_auth(&config.apify_token)
             .timeout(config.apify_request_timeout)
             .json(chunk)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         apify_write(response, "Apify dataset write").await?;

@@ -1,13 +1,13 @@
-use std::{collections::BTreeMap, time::Duration};
+use crate::apify_retry::ApifyRetryExt;
+use std::collections::BTreeMap;
 
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, RequestBuilder, Response, StatusCode};
 use serde_json::{json, Value};
-use tokio::time::sleep;
 use url::Url;
 
 use crate::config::{
-    ActorConfig, APIFY_MAX_RETRIES, APIFY_REQUEST_TIMEOUT, CHALLENGE_DETAIL_CHARGE_EVENT,
+    ActorConfig, APIFY_REQUEST_TIMEOUT, CHALLENGE_DETAIL_CHARGE_EVENT,
     DEFAULT_DATASET_ITEM_EVENT, OUTPUT_KEY,
 };
 
@@ -197,32 +197,10 @@ impl ApifyClient {
     where
         F: FnMut() -> RequestBuilder,
     {
-        for attempt in 0..=APIFY_MAX_RETRIES {
-            match build_request().send().await {
-                Ok(response)
-                    if attempt < APIFY_MAX_RETRIES
-                        && (response.status() == StatusCode::TOO_MANY_REQUESTS
-                            || response.status().is_server_error()) =>
-                {
-                    sleep(Duration::from_millis(
-                        (500_u64 << attempt.min(6)).min(30_000),
-                    ))
-                    .await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error)
-                    if attempt < APIFY_MAX_RETRIES
-                        && (error.is_connect() || error.is_timeout() || error.is_request()) =>
-                {
-                    sleep(Duration::from_millis(
-                        (500_u64 << attempt.min(6)).min(30_000),
-                    ))
-                    .await;
-                }
-                Err(error) => return Err(error).with_context(|| format!("{operation} failed")),
-            }
-        }
-        unreachable!("the retry loop returns after its final attempt")
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("{operation} failed"))
     }
 
     async fn successful_response(&self, response: Response, operation: &str) -> Result<Response> {

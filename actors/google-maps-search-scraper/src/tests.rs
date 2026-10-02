@@ -465,7 +465,7 @@ async fn dataset_payloads_are_chunked_below_the_api_limit_in_input_order() {
 }
 
 #[tokio::test]
-async fn dataset_append_is_not_retried_after_a_lost_response() {
+async fn dataset_append_is_not_reposted_after_unverifiable_lost_response() {
     let server = MockServer::start(vec![
         response(200, r#"{"query":"pizza"}"#),
         response(200, r#"{"items":[{"name":"Example"}]}"#),
@@ -486,7 +486,14 @@ async fn dataset_append_is_not_retried_after_a_lost_response() {
         .filter(|request| request_parts(request).0 == "POST")
         .count();
     assert_eq!(dataset_writes, 1);
-    assert_eq!(requests.len(), 4);
+    assert_eq!(requests.len(), 6);
+    for request in &requests[4..] {
+        assert_eq!(request_parts(request).0, "GET");
+        assert_eq!(
+            request_parts(request).1,
+            "/v2/datasets/test-dataset/items?offset=0&limit=1"
+        );
+    }
 }
 
 #[tokio::test]

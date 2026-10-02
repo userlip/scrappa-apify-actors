@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -10,8 +11,6 @@ const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 const PRICE_POINT_EVENT: &str = "price-point";
 const DEFAULT_DATASET_EVENT: &str = "apify-default-dataset-item";
-const APIFY_API_MAX_RETRIES: u32 = 8;
-const APIFY_API_RETRY_BASE_DELAY: Duration = Duration::from_millis(500);
 
 #[derive(Clone)]
 pub struct ActorConfig {
@@ -46,24 +45,15 @@ impl ActorConfig {
 pub struct ActorApi {
     config: ActorConfig,
     http: Client,
-    retry_base_delay: Duration,
 }
 
 impl ActorApi {
     pub fn new(config: ActorConfig) -> Result<Self> {
-        Self::with_retry_base_delay(config, APIFY_API_RETRY_BASE_DELAY)
-    }
-
-    fn with_retry_base_delay(config: ActorConfig, retry_base_delay: Duration) -> Result<Self> {
         let http = Client::builder()
             .timeout(Duration::from_secs(30))
             .build()
             .context("Failed to initialize Apify API client")?;
-        Ok(Self {
-            config,
-            http,
-            retry_base_delay,
-        })
+        Ok(Self { config, http })
     }
 
     pub async fn get_input(&self) -> Result<Value> {
@@ -148,7 +138,7 @@ impl ActorApi {
             .post(url)
             .bearer_auth(&self.config.apify_token)
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await
@@ -190,43 +180,10 @@ impl ActorApi {
     where
         F: FnMut() -> RequestBuilder,
     {
-        for attempt in 0..=APIFY_API_MAX_RETRIES {
-            match build_request().send().await {
-                Ok(response)
-                    if attempt < APIFY_API_MAX_RETRIES
-                        && is_retryable_status(response.status()) =>
-                {
-                    let delay = self.retry_delay(attempt);
-                    eprintln!(
-                        "{operation} failed with HTTP {}; retrying in {}ms.",
-                        response.status().as_u16(),
-                        delay.as_millis()
-                    );
-                    tokio::time::sleep(delay).await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error)
-                    if attempt < APIFY_API_MAX_RETRIES && is_retryable_transport_error(&error) =>
-                {
-                    let delay = self.retry_delay(attempt);
-                    eprintln!(
-                        "{operation} failed ({error}); retrying in {}ms.",
-                        delay.as_millis()
-                    );
-                    tokio::time::sleep(delay).await;
-                }
-                Err(error) => return Err(error).with_context(|| format!("{operation} failed")),
-            }
-        }
-
-        unreachable!("retry loop returns after its final attempt")
-    }
-
-    fn retry_delay(&self, retry_number: u32) -> Duration {
-        let multiplier = 1_u32 << retry_number.min(7);
-        self.retry_base_delay
-            .saturating_mul(multiplier)
-            .min(Duration::from_secs(60))
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("{operation} failed"))
     }
 
     fn key_value_record_url(&self, key: &str) -> Result<Url> {
@@ -371,14 +328,6 @@ fn event_price(events: &serde_json::Map<String, Value>, name: &str) -> Result<Op
     Ok(Some(price))
 }
 
-fn is_retryable_status(status: reqwest::StatusCode) -> bool {
-    status.as_u16() == 429 || status.is_server_error()
-}
-
-fn is_retryable_transport_error(error: &reqwest::Error) -> bool {
-    error.is_connect() || error.is_timeout() || error.is_body() || error.is_request()
-}
-
 fn round_to_six_decimals(value: f64) -> f64 {
     (value * 1_000_000.0).round() / 1_000_000.0
 }
@@ -441,8 +390,6 @@ async fn ensure_success(response: Response, operation: &str) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use std::time::Duration;
-
     use serde_json::{json, Value};
     use tokio::{
         io::{AsyncReadExt, AsyncWriteExt},
@@ -452,20 +399,17 @@ mod tests {
 
     use super::{ActorApi, ActorConfig, PpeBudget};
 
-    fn actor_api(server_address: std::net::SocketAddr, retry_delay: Duration) -> ActorApi {
-        ActorApi::with_retry_base_delay(
-            ActorConfig {
-                apify_api_base_url: Url::parse(&format!("http://{server_address}")).unwrap(),
-                scrappa_api_base_url: Url::parse("https://scrappa.test/api").unwrap(),
-                scrappa_api_key: Some("scrappa-key".to_owned()),
-                apify_token: "apify-token".to_owned(),
-                default_key_value_store_id: "store-id".to_owned(),
-                default_dataset_id: "dataset-id".to_owned(),
-                actor_run_id: "run-id".to_owned(),
-                input_key: "INPUT".to_owned(),
-            },
-            retry_delay,
-        )
+    fn actor_api(server_address: std::net::SocketAddr) -> ActorApi {
+        ActorApi::new(ActorConfig {
+            apify_api_base_url: Url::parse(&format!("http://{server_address}")).unwrap(),
+            scrappa_api_base_url: Url::parse("https://scrappa.test/api").unwrap(),
+            scrappa_api_key: Some("scrappa-key".to_owned()),
+            apify_token: "apify-token".to_owned(),
+            default_key_value_store_id: "store-id".to_owned(),
+            default_dataset_id: "dataset-id".to_owned(),
+            actor_run_id: "run-id".to_owned(),
+            input_key: "INPUT".to_owned(),
+        })
         .unwrap()
     }
 
@@ -553,7 +497,7 @@ mod tests {
             write_http_response(&mut stream, 200, "{}").await;
         });
 
-        let api = actor_api(address, Duration::ZERO);
+        let api = actor_api(address);
         let items = (0..5)
             .map(|index| json!({"position": index + 1}))
             .collect::<Vec<_>>();
@@ -613,7 +557,7 @@ mod tests {
             write_http_response(&mut stream, 200, "{}").await;
         });
 
-        let api = actor_api(address, Duration::ZERO);
+        let api = actor_api(address);
         let result = api
             .push_dataset_items(&[json!({"symbol": "AAPL", "date": 1})])
             .await
@@ -658,7 +602,7 @@ mod tests {
             write_http_response(&mut stream, 201, "{}").await;
         });
 
-        let api = actor_api(address, Duration::ZERO);
+        let api = actor_api(address);
         let result = api
             .push_dataset_items(&[json!({"symbol": "AAPL"})])
             .await
@@ -682,8 +626,8 @@ mod tests {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let items = [json!({"symbol": "AAPL", "date": 1})];
-        let api = actor_api(address, Duration::ZERO);
-        let mut write = tokio::spawn(async move { api.push_dataset_items(&items).await });
+        let api = actor_api(address);
+        let write = tokio::spawn(async move { api.push_dataset_items(&items).await });
 
         let (mut stream, _) = listener.accept().await.unwrap();
         let _ = read_http_request(&mut stream).await;
@@ -697,35 +641,40 @@ mod tests {
         let (mut stream, _) = listener.accept().await.unwrap();
         let (headers, body) = read_http_request(&mut stream).await;
         assert!(headers.starts_with("POST /v2/datasets/dataset-id/items "));
-        let mut persisted_rows = serde_json::from_slice::<Vec<Value>>(&body).unwrap();
+        let persisted_rows = serde_json::from_slice::<Vec<Value>>(&body).unwrap();
+        eprintln!("test persisted row count {}", persisted_rows.len());
         if let Some(status) = response_status {
             write_http_response(&mut stream, status, "temporary error").await;
         } else {
             drop(stream);
         }
 
-        let retried = tokio::select! {
-            result = &mut write => {
-                assert!(
-                    result.unwrap().is_err(),
-                    "an ambiguous append failure must remain an error"
-                );
-                false
-            }
-            retry = listener.accept() => {
-                let (mut stream, _) = retry.unwrap();
-                let (_, body) = read_http_request(&mut stream).await;
-                persisted_rows.extend(serde_json::from_slice::<Vec<Value>>(&body).unwrap());
-                write_http_response(&mut stream, 201, "{}").await;
-                true
-            }
-        };
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let (headers, _) = read_http_request(&mut stream).await;
+        let target = headers.split_whitespace().nth(1).unwrap_or_default();
+        assert_eq!(
+            target.split('?').next().unwrap_or_default(),
+            "/v2/datasets/dataset-id/items"
+        );
+        write_http_response(
+            &mut stream,
+            200,
+            &serde_json::to_string(&persisted_rows).unwrap(),
+        )
+        .await;
+        drop(stream);
 
-        if retried {
-            write.await.unwrap().unwrap();
-        }
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let (headers, _) = read_http_request(&mut stream).await;
+        let target = headers.split_whitespace().nth(1).unwrap_or_default();
+        assert_eq!(
+            target.split('?').next().unwrap_or_default(),
+            "/v2/datasets/dataset-id/items"
+        );
+        write_http_response(&mut stream, 200, "{}").await;
+        drop(stream);
 
-        assert!(!retried, "an ambiguous append must not be replayed");
+        assert!(write.await.unwrap().is_ok());
         assert_eq!(persisted_rows.len(), 1, "the batch was persisted only once");
     }
 

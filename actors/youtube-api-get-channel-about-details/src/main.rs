@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -255,7 +257,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -273,7 +275,7 @@ async fn run_dataset_capacity(
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -349,7 +351,7 @@ async fn fetch_channel_about_details(
     id: &str,
 ) -> Result<Value> {
     let url = build_channel_about_details_url(id, &config.scrappa_api_base_url);
-    println!("Fetching from: {url}");
+    println!("Fetching data from Scrappa API");
     let response = client
         .get(url)
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
@@ -390,7 +392,7 @@ async fn push_dataset_data(client: &Client, config: &ActorConfig, data: &Value) 
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(data)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     let status = response.status();
@@ -953,18 +955,18 @@ mod tests {
             response(200, &pricing),
             response(200, r#"{"id":"UC1"}"#),
             response(500, "dataset failure"),
+            response(500, "verification unavailable"),
         ]);
         let mut scrappa_base = server.base_url.clone();
         scrappa_base.set_path("/api/youtube/channel");
         let error = run_actor(&client(), &config(&server.base_url, &scrappa_base))
             .await
             .unwrap_err();
-        assert!(error
-            .to_string()
-            .contains("Apify dataset write failed with 500"));
+        assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
         assert_eq!(request_parts(&requests[3]).0, "POST");
+        assert_eq!(request_parts(&requests[4]).0, "GET");
     }
 
     #[tokio::test]

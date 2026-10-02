@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -161,7 +163,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -211,7 +213,7 @@ async fn run_dataset_capacity(client: &Client, config: &ActorConfig) -> Result<u
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -321,8 +323,8 @@ async fn push_dataset_items(
     )?;
     let request = client.post(url).bearer_auth(&config.apify_token);
     let response = match posts.as_array() {
-        Some(posts) => request.json(&posts[..saved]).send().await,
-        None => request.json(posts).send().await,
+        Some(posts) => request.json(&posts[..saved]).send_apify_with_retry().await,
+        None => request.json(posts).send_apify_with_retry().await,
     }
     .context("Apify dataset write failed")?;
     let status = response.status();
@@ -357,7 +359,7 @@ fn js_length(value: &Value) -> Option<String> {
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let input = get_input(client, config).await?;
     let url = build_channel_community_url(&input, &config.scrappa_api_base_url)?;
-    println!("Fetching from: {url}");
+    println!("Fetching data from Scrappa API");
 
     let response_data = fetch_channel_community(client, &url).await?;
     let posts = response_data
@@ -380,10 +382,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
         .get("continuation")
         .filter(|continuation| js_truthy(continuation))
     {
-        println!(
-            "Continuation token available for next page: {}",
-            js_string(continuation)
-        );
+        println!("Continuation token available for next page");
     }
     Ok(())
 }
@@ -823,8 +822,8 @@ mod tests {
         .await
         .unwrap_err();
 
-        assert!(error.to_string().contains("dataset write failed with 500"));
-        assert_eq!(server.requests().len(), 2);
+        assert!(error.to_string().contains("Apify dataset write failed"));
+        assert_eq!(server.requests().len(), 3);
         assert_eq!(budget.saved_rows, 0);
         assert_eq!(budget.remaining_rows, Some(1));
     }

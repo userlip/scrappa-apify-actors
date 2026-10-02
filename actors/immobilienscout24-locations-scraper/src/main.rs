@@ -1,4 +1,5 @@
 mod apify_client;
+mod apify_retry;
 mod config;
 mod fallback_locations;
 mod input;

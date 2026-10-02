@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -137,7 +139,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -151,7 +153,7 @@ async fn run_dataset_capacity(client: &Client, config: &ActorConfig) -> Result<u
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify actor run request failed")?;
     let run_response = response_json(response, "Apify actor run request").await?;
@@ -248,7 +250,7 @@ fn scrappa_request_error(error: reqwest::Error) -> anyhow::Error {
 
 async fn fetch_chapters(client: &Client, config: &ActorConfig, id: &str) -> Result<Value> {
     let url = build_video_chapters_url(id, &config.scrappa_api_base_url)?;
-    println!("Fetching from: {url}");
+    println!("Fetching data from Scrappa API");
 
     let request = async {
         let response = client
@@ -315,7 +317,7 @@ async fn push_dataset_row(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(&row)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     let status = response.status();

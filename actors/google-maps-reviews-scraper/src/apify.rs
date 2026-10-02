@@ -1,11 +1,10 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::Value;
 use std::time::Duration;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const MAX_RETRIES: usize = 8;
-const FIRST_RETRY_DELAY: Duration = Duration::from_millis(500);
 
 pub struct ApifyClient {
     client: Client,
@@ -63,26 +62,10 @@ impl ApifyClient {
     where
         F: FnMut() -> RequestBuilder,
     {
-        let mut retry_count = 0;
-        loop {
-            match build_request().send().await {
-                Ok(response)
-                    if retryable_status(response.status()) && retry_count < MAX_RETRIES =>
-                {
-                    drop(response);
-                    tokio::time::sleep(retry_delay(retry_count)).await;
-                    retry_count += 1;
-                }
-                Ok(response) => return Ok(response),
-                Err(_) if retry_count < MAX_RETRIES => {
-                    tokio::time::sleep(retry_delay(retry_count)).await;
-                    retry_count += 1;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify {operation} failed"))
-                }
-            }
-        }
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} failed"))
     }
 
     pub async fn get_input(&self) -> Result<Option<Value>> {
@@ -130,7 +113,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(&items[..count])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset item publication failed")?;
         successful_response(response, "dataset item publication").await?;
@@ -153,14 +136,6 @@ impl ApifyClient {
         successful_response(response, "OUTPUT publication").await?;
         Ok(())
     }
-}
-
-fn retryable_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn retry_delay(retry_count: usize) -> Duration {
-    FIRST_RETRY_DELAY.saturating_mul(2_u32.saturating_pow(retry_count as u32))
 }
 
 fn affordable_dataset_items(run: &Value) -> Result<usize> {
@@ -257,11 +232,9 @@ async fn successful_response(response: Response, operation: &str) -> Result<Resp
 
 #[cfg(test)]
 mod tests {
-    use super::{affordable_dataset_items, retry_delay, retryable_status, ApifyClient};
+    use super::{affordable_dataset_items, ApifyClient};
     use crate::test_support::{MockResponse, MockServer};
-    use reqwest::StatusCode;
     use serde_json::{json, Value};
-    use std::time::Duration;
 
     fn pay_per_event_run(max_charge: Option<Value>, charged_events: Value) -> Value {
         let mut data = json!({
@@ -317,15 +290,6 @@ mod tests {
         assert_eq!(affordable_dataset_items(&run).unwrap(), 1);
     }
 
-    #[test]
-    fn retries_only_transient_apify_statuses_with_exponential_backoff() {
-        assert!(retryable_status(StatusCode::TOO_MANY_REQUESTS));
-        assert!(retryable_status(StatusCode::SERVICE_UNAVAILABLE));
-        assert!(!retryable_status(StatusCode::BAD_REQUEST));
-        assert_eq!(retry_delay(0), Duration::from_millis(500));
-        assert_eq!(retry_delay(1), Duration::from_secs(1));
-    }
-
     #[tokio::test]
     async fn reads_input_with_bearer_auth_and_treats_missing_input_as_empty() {
         let server =
@@ -366,7 +330,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn does_not_retry_dataset_post_after_the_response_is_lost() {
+    async fn verifies_a_lost_dataset_response_before_stopping() {
         let server = MockServer::start(vec![
             MockResponse::disconnect(),
             MockResponse::json(201, json!({})),
@@ -379,7 +343,7 @@ mod tests {
             .is_err());
         assert_eq!(remaining, 1);
         let requests = server.requests();
-        assert_eq!(requests.len(), 1);
+        assert_eq!(requests.len(), 2);
         assert!(requests[0].starts_with("POST /v2/datasets/test-dataset/items "));
         assert!(requests[0].ends_with("[{\"review_id\":\"r1\"}]"));
     }

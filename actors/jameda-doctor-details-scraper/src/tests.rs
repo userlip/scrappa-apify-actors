@@ -760,6 +760,7 @@ async fn recovery_finds_a_row_after_ambiguous_dataset_failure_without_duplicatin
         (503, r#"{"error":"write response lost"}"#.to_owned()),
         (200, json!([item]).to_string()),
         (201, "{}".to_owned()),
+        (201, "{}".to_owned()),
     ])
     .await;
     let apify = mock_apify_client(base_url);
@@ -786,7 +787,7 @@ async fn recovery_finds_a_row_after_ambiguous_dataset_failure_without_duplicatin
             .count(),
         1
     );
-    assert_eq!(requests.len(), 9);
+    assert_eq!(requests.len(), 10);
     assert!(requests[3]
         .head
         .starts_with("POST /v2/actor-runs/test-run/charge HTTP/1.1"));
@@ -795,7 +796,10 @@ async fn recovery_finds_a_row_after_ambiguous_dataset_failure_without_duplicatin
         .starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
     assert!(requests[7]
         .head
-        .starts_with("GET /v2/datasets/dataset/items?format=json&clean=true&limit=1000 HTTP/1.1"));
+        .starts_with("GET /v2/datasets/dataset/items?offset=0&limit=1 HTTP/1.1"));
+    assert!(requests[8]
+        .head
+        .starts_with("GET /v2/datasets/dataset/items?offset=0&limit=1 HTTP/1.1"));
     assert_eq!(
         serde_json::from_str::<Value>(&requests[4].body).unwrap()["status"],
         "charged"
@@ -805,7 +809,7 @@ async fn recovery_finds_a_row_after_ambiguous_dataset_failure_without_duplicatin
         "publishing"
     );
     assert_eq!(
-        serde_json::from_str::<Value>(&requests[8].body).unwrap()["status"],
+        serde_json::from_str::<Value>(&requests[9].body).unwrap()["status"],
         "saved"
     );
 }

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{bail, Context, Result};
 use reqwest::{header, Client, Response};
 use serde_json::{json, Value};
@@ -70,7 +71,7 @@ impl ApifyClient<'_> {
             .timeout(APIFY_REQUEST_TIMEOUT)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         response_json(response, "Apify INPUT request").await
@@ -84,7 +85,7 @@ impl ApifyClient<'_> {
             .timeout(APIFY_REQUEST_TIMEOUT)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         response_json(response, "Apify run pricing request").await
@@ -102,7 +103,7 @@ impl ApifyClient<'_> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await
@@ -126,7 +127,7 @@ impl ApifyClient<'_> {
             .header(header::ACCEPT, "application/json")
             .header("idempotency-key", idempotency_key)
             .json(&json!({"eventName": event_name, "count": count}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify finance search charge request failed")?;
         ensure_success(response, "Apify finance search charge request").await
@@ -145,7 +146,7 @@ impl ApifyClient<'_> {
                 "statusMessage": status_message,
                 "isStatusMessageTerminal": true,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run status update failed")?;
         ensure_success(response, "Apify run status update").await

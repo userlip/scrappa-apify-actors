@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{collections::HashMap, env};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -63,7 +64,7 @@ impl ApifyClient {
             .get(url)
             .bearer_auth(&self.config.token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -195,7 +196,7 @@ impl ApifyClient {
             .bearer_auth(&self.config.token)
             .header(header::ACCEPT, "application/json")
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         require_apify_success(response, "OUTPUT write").await?;
@@ -214,7 +215,7 @@ impl ApifyClient {
             .bearer_auth(&self.config.token)
             .header(header::ACCEPT, "application/json")
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         require_apify_success(response, "dataset write").await?;
@@ -230,7 +231,7 @@ impl ApifyClient {
             .header(header::ACCEPT, "application/json")
             .header("idempotency-key", idempotency_key)
             .json(&json!({"eventName": event_name, "count": 1}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify charge request failed")?;
         require_apify_success(response, "charge request").await?;
@@ -244,7 +245,7 @@ impl ApifyClient {
             .get(url)
             .bearer_auth(&self.config.token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         require_apify_success(response, "run pricing request")
@@ -736,8 +737,9 @@ mod tests {
         let server = start_mock_server(vec![
             MockResponse::json(200, &run_body),
             MockResponse::text(500, "dataset response was lost"),
-            MockResponse::text(201, ""),
-            MockResponse::text(201, ""),
+            MockResponse::text(500, "verification unavailable"),
+            MockResponse::text(500, "verification unavailable"),
+            MockResponse::text(500, "verification unavailable"),
         ])
         .await;
         let client = apify_client(server.base_url());
@@ -754,8 +756,10 @@ mod tests {
             .is_err());
 
         let requests = server.requests().await;
-        assert_eq!(requests.len(), 2);
+        assert!(requests.len() >= 3);
         assert!(requests[1].starts_with("POST /api/v2/datasets/test-dataset/items HTTP/1.1"));
+        assert!(requests[2..].iter().all(|request| request
+            .starts_with("GET /api/v2/datasets/test-dataset/items?offset=0&limit=1 HTTP/1.1")));
         assert!(requests.iter().all(
             |request| !request.starts_with("POST /api/v2/actor-runs/test-run/charge HTTP/1.1")
         ));

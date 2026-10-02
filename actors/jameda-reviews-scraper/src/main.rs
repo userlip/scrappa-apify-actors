@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod request_params;
 mod response_utils;
 mod scrappa;
@@ -6,9 +7,7 @@ mod scrappa_retry;
 
 use anyhow::{anyhow, Context, Result};
 use apify::ApifyClient;
-use request_params::{
-    build_request_params, build_request_plan, describe_request, DoctorUrlFailure,
-};
+use request_params::{build_request_params, build_request_plan, DoctorUrlFailure};
 use response_utils::{build_output_summary, build_review_dataset_item, get_reviews};
 use serde_json::{json, Map, Value};
 use std::{env, process};
@@ -71,7 +70,10 @@ async fn run_actor(config: ActorConfig) -> Result<()> {
         .filter(|input| !input.is_null())
         .ok_or_else(|| anyhow!("Input is required"))?;
     let plan = build_request_plan(&apply_input_defaults(input)).map_err(anyhow::Error::msg)?;
-    println!("Fetching Jameda reviews for {}", describe_request(&plan));
+    println!(
+        "Fetching Jameda reviews for {} doctor(s)",
+        plan.doctor_urls.len()
+    );
 
     let scrappa = scrappa::ScrappaClient::new(
         config.scrappa_api_key.clone(),
@@ -89,12 +91,18 @@ async fn run_actor(config: ActorConfig) -> Result<()> {
             status_message = Some(format!(
                 "Charge limit reached before fetching Jameda reviews for {doctor_url}; {saved_reviews} review(s) were saved."
             ));
-            println!("{}", status_message.as_deref().unwrap_or_default());
+            println!(
+                "Charge limit reached before fetching the remaining Jameda reviews; {saved_reviews} review(s) saved"
+            );
             break;
         }
 
         let params = build_request_params(&plan, doctor_url);
-        println!("Fetching Jameda reviews for {doctor_url}");
+        println!(
+            "Fetching Jameda reviews for doctor {}/{}",
+            doctor_index + 1,
+            plan.doctor_urls.len()
+        );
 
         let result = process_doctor(
             &apify,
@@ -110,7 +118,7 @@ async fn run_actor(config: ActorConfig) -> Result<()> {
         match result {
             Ok((found_count, saved_count, limit_message)) => {
                 saved_reviews += saved_count;
-                println!("Found {found_count} Jameda review result(s) for {doctor_url}; saved {saved_count}");
+                println!("Found {found_count} Jameda review result(s); saved {saved_count}");
                 if limit_message.is_some() {
                     status_message = limit_message;
                     break;
@@ -122,7 +130,7 @@ async fn run_actor(config: ActorConfig) -> Result<()> {
                     doctor_url: doctor_url.clone(),
                     error: message.clone(),
                 });
-                eprintln!("Failed to fetch Jameda reviews for {doctor_url}: {message}");
+                eprintln!("Failed to fetch Jameda reviews: {message}");
             }
         }
     }

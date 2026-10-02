@@ -1,5 +1,6 @@
 mod actor;
 mod apify;
+mod apify_retry;
 mod config;
 mod input;
 mod response;

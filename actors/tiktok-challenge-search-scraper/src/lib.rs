@@ -1,4 +1,5 @@
 mod apify_client;
+mod apify_retry;
 mod challenges;
 mod charge_budget;
 mod orchestration;

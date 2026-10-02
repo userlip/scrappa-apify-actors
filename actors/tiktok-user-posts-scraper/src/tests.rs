@@ -230,7 +230,9 @@ async fn retries_transient_get_failures_twice_with_short_backoff() {
 
     assert_eq!(accepted_requests, 3, "initial attempt plus two retries");
     assert!(elapsed < Duration::from_secs(2), "retry wait was too long");
-    assert!(error.to_string().contains("Apify API error (503)"));
+    assert!(error
+        .to_string()
+        .contains("Apify run pricing request failed"));
 }
 
 #[tokio::test]
@@ -295,6 +297,8 @@ async fn does_not_retry_dataset_post_when_the_accepted_request_loses_its_acknowl
 
         let deadline = Instant::now() + Duration::from_millis(700);
         let mut accepted_requests = 1;
+        let mut verification_request = String::new();
+        let mut repeated_posts = 0;
         while Instant::now() < deadline {
             match listener.accept() {
                 Ok((mut retry, _)) => {
@@ -302,7 +306,10 @@ async fn does_not_retry_dataset_post_when_the_accepted_request_loses_its_acknowl
                     retry
                         .set_read_timeout(Some(Duration::from_secs(2)))
                         .unwrap();
-                    let _ = read_request(&mut retry);
+                    verification_request = read_request(&mut retry);
+                    if verification_request.starts_with("POST ") {
+                        repeated_posts += 1;
+                    }
                 }
                 Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
                     thread::sleep(Duration::from_millis(5));
@@ -310,7 +317,12 @@ async fn does_not_retry_dataset_post_when_the_accepted_request_loses_its_acknowl
                 Err(error) => panic!("mock server failed while checking retries: {error}"),
             }
         }
-        (accepted_requests, request)
+        (
+            accepted_requests,
+            repeated_posts,
+            request,
+            verification_request,
+        )
     });
 
     let base_url = url::Url::parse(&format!("http://{address}/")).unwrap();
@@ -323,10 +335,14 @@ async fn does_not_retry_dataset_post_when_the_accepted_request_loses_its_acknowl
     .expect("dataset request should fail promptly after the lost acknowledgment");
     assert!(result.is_err());
 
-    let (accepted_requests, request) = tokio::task::spawn_blocking(move || server.join().unwrap())
-        .await
-        .unwrap();
-    assert_eq!(accepted_requests, 1, "POST must not be retried");
+    let (accepted_requests, repeated_posts, request, verification_request) =
+        tokio::task::spawn_blocking(move || server.join().unwrap())
+            .await
+            .unwrap();
+    assert!(accepted_requests >= 2);
+    assert_eq!(repeated_posts, 0, "only readback GETs may follow the POST");
     assert!(request.starts_with("POST /v2/datasets/dataset-id/items HTTP/1.1"));
     assert!(request.contains(r#"{"aweme_id":"one"}"#));
+    assert!(verification_request
+        .starts_with("GET /v2/datasets/dataset-id/items?offset=0&limit=1 HTTP/1.1"));
 }

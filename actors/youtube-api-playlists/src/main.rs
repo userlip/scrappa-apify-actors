@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -154,7 +156,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -215,7 +217,7 @@ async fn run_dataset_capacity(
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -313,10 +315,10 @@ async fn push_dataset_items(client: &Client, config: &ActorConfig, items: &Value
     let response = if let Some(items) = items.as_array() {
         request
             .json(&items[..items.len().min(capacity)])
-            .send()
+            .send_apify_with_retry()
             .await
     } else {
-        request.json(items).send().await
+        request.json(items).send_apify_with_retry().await
     }
     .context("Apify dataset write failed")?;
     let status = response.status();
@@ -351,7 +353,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     );
 
     if let Some(continuation) = continuation_token(&data) {
-        println!("Continuation token available for next page: {continuation}");
+        println!("Continuation token available for next page");
     }
     Ok(())
 }
@@ -830,13 +832,14 @@ mod tests {
             response(200, r#"{"results":[{"id":"first"}]}"#),
             pricing_response(1.0, 0, 0),
             response(500, "storage unavailable"),
+            response(500, "verification unavailable"),
         ]);
         let error = run_actor(&test_client(), &test_config(&server.base_url))
             .await
             .unwrap_err();
-        assert!(error.to_string().contains("storage unavailable"));
+        assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
         assert!(requests[3].starts_with("POST /v2/datasets/test-dataset/items HTTP/1.1"));
     }
 

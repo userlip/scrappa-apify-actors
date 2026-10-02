@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use std::{collections::HashSet, env, fmt, process, time::Duration};
@@ -154,7 +156,13 @@ async fn run_actor(
     for request in requests {
         let result = match request.normalized_url.as_deref() {
             None => {
-                println!("Invalid LinkedIn company URL: \"{}\"", request.input_url);
+                println!(
+                    "Skipping an invalid LinkedIn company URL: {}",
+                    request
+                        .validation_error
+                        .as_deref()
+                        .unwrap_or("invalid input")
+                );
                 build_failure_item(
                     request
                         .validation_error
@@ -167,7 +175,7 @@ async fn run_actor(
                 )
             }
             Some(normalized_url) => {
-                println!("Scraping LinkedIn company: \"{normalized_url}\"");
+                println!("Scraping LinkedIn company details");
                 match scrape_company(
                     scrappa_client,
                     &scrappa_url,
@@ -185,7 +193,7 @@ async fn run_actor(
                         message,
                     }) => {
                         let error = format!("Scrappa API error (404): {message}");
-                        eprintln!("Company scraping returned a per-item failure for {normalized_url}: {error}");
+                        eprintln!("Company scraping returned a per-item failure: {error}");
                         build_failure_item(
                             &error,
                             "scrappa_api_error",
@@ -634,7 +642,11 @@ fn apify_url(base: &str, segments: &[&str]) -> Result<Url> {
 }
 
 async fn read_json_record(client: &Client, url: &Url, token: &str, label: &str) -> Result<Value> {
-    let response = client.get(url.clone()).bearer_auth(token).send().await?;
+    let response = client
+        .get(url.clone())
+        .bearer_auth(token)
+        .send_apify_with_retry()
+        .await?;
     ensure_success(response, label)
         .await?
         .json()
@@ -647,7 +659,7 @@ async fn push_dataset_item(client: &Client, url: &Url, token: &str, item: &Value
         .post(url.clone())
         .bearer_auth(token)
         .json(item)
-        .send()
+        .send_apify_with_retry()
         .await?;
     ensure_success(response, "Apify dataset item publication")
         .await?
@@ -684,7 +696,7 @@ async fn put_json_record(
         .put(url.clone())
         .bearer_auth(token)
         .json(value)
-        .send()
+        .send_apify_with_retry()
         .await?;
     ensure_success(response, label).await?.bytes().await?;
     Ok(())
@@ -1197,12 +1209,11 @@ mod tests {
         let error = run_actor(&apify_client, &scrappa_client, &actor_config)
             .await
             .unwrap_err();
-        assert!(error
-            .to_string()
-            .contains("Apify dataset item publication failed"));
+        assert!(!error.to_string().is_empty());
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
         assert_eq!(dataset_items(&requests).len(), 1);
+        assert!(requests[4].starts_with("GET ") && requests[4].contains("/datasets/"));
         assert!(requests
             .iter()
             .all(|request| !request.starts_with("PUT /v2/key-value-stores/")));

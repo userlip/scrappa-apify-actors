@@ -1,16 +1,13 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{collections::HashMap, time::Duration};
 
-use crate::error_utils::error_summary;
 use anyhow::{Context, Result, anyhow};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::Value;
-use tokio::time::sleep;
 
 pub const LISTING_DETAIL_RESULT_CHARGE_EVENT: &str = "listing-detail-result";
 const DEFAULT_DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-const APIFY_MAX_RETRIES: usize = 8;
-const APIFY_RETRY_BASE_DELAY_MS: u64 = 500;
 
 pub struct ApifyClient {
     client: Client,
@@ -218,7 +215,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify API dataset item publication failed")?;
         successful_response(response, "dataset item publication").await?;
@@ -259,53 +256,11 @@ impl ApifyClient {
     where
         F: FnMut() -> RequestBuilder,
     {
-        for attempt in 1..=APIFY_MAX_RETRIES + 1 {
-            match build_request().send().await {
-                Ok(response)
-                    if is_retryable_status(response.status()) && attempt <= APIFY_MAX_RETRIES =>
-                {
-                    let status = response.status();
-                    drop(response);
-                    let delay = retry_delay(attempt);
-                    eprintln!(
-                        "Apify API {operation} returned HTTP {}. Retrying attempt {}/{APIFY_MAX_RETRIES} in {}ms.",
-                        status.as_u16(),
-                        attempt + 1,
-                        delay.as_millis(),
-                    );
-                    sleep(delay).await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error) if is_retryable_transport(&error) && attempt <= APIFY_MAX_RETRIES => {
-                    let delay = retry_delay(attempt);
-                    eprintln!(
-                        "Apify API {operation} failed ({}). Retrying attempt {}/{APIFY_MAX_RETRIES} in {}ms.",
-                        error_summary(&error.to_string()),
-                        attempt + 1,
-                        delay.as_millis(),
-                    );
-                    sleep(delay).await;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify API {operation} failed"));
-                }
-            }
-        }
-        unreachable!("the Apify retry loop always returns or fails")
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify API {operation} failed"))
     }
-}
-
-fn is_retryable_status(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-fn is_retryable_transport(error: &reqwest::Error) -> bool {
-    error.is_timeout() || error.is_connect()
-}
-
-fn retry_delay(failed_attempt: usize) -> Duration {
-    let exponent = failed_attempt.saturating_sub(1).min(8) as u32;
-    Duration::from_millis(APIFY_RETRY_BASE_DELAY_MS * 2_u64.pow(exponent))
 }
 
 impl ChargingManager {
@@ -483,9 +438,8 @@ async fn successful_response(response: Response, operation: &str) -> Result<Resp
 mod tests {
     use super::{
         ApifyClient, ChargingManager, DEFAULT_DATASET_ITEM_EVENT,
-        LISTING_DETAIL_RESULT_CHARGE_EVENT, is_retryable_status, retry_delay,
+        LISTING_DETAIL_RESULT_CHARGE_EVENT,
     };
-    use reqwest::{Client, StatusCode};
     use serde_json::json;
     use std::{
         io::{Read, Write},
@@ -495,7 +449,7 @@ mod tests {
             atomic::{AtomicUsize, Ordering},
         },
         thread,
-        time::{Duration, Instant},
+        time::Duration,
     };
 
     fn charging(run: serde_json::Value) -> ChargingManager {
@@ -617,38 +571,27 @@ mod tests {
         );
     }
 
-    #[test]
-    fn retries_apify_rate_limits_and_server_errors_with_backoff() {
-        assert!(is_retryable_status(StatusCode::TOO_MANY_REQUESTS));
-        assert!(is_retryable_status(StatusCode::INTERNAL_SERVER_ERROR));
-        assert!(!is_retryable_status(StatusCode::BAD_REQUEST));
-        assert_eq!(retry_delay(1), std::time::Duration::from_millis(500));
-        assert_eq!(retry_delay(2), std::time::Duration::from_millis(1000));
-    }
-
     #[tokio::test]
-    async fn does_not_retry_dataset_post_after_response_timeout() {
+    async fn retries_dataset_post_only_after_verification_finds_no_rows() {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         listener.set_nonblocking(true).unwrap();
         let address = listener.local_addr().unwrap();
         let received = Arc::new(AtomicUsize::new(0));
         let server_received = Arc::clone(&received);
         let server = thread::spawn(move || {
-            let deadline = Instant::now() + Duration::from_millis(800);
-            while Instant::now() < deadline {
+            let mut attempt = 0;
+            while attempt < 3 {
                 match listener.accept() {
                     Ok((mut stream, _)) => {
                         read_request(&mut stream);
-                        let attempt = server_received.fetch_add(1, Ordering::SeqCst);
-                        if attempt == 0 {
-                            thread::sleep(Duration::from_millis(120));
-                        }
-                        let _ = stream.write_all(
-                            b"HTTP/1.1 201 Created\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
-                        );
-                        if attempt > 0 {
-                            break;
-                        }
+                        server_received.fetch_add(1, Ordering::SeqCst);
+                        let response = match attempt {
+                            0 => b"HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\nConnection: close\r\n\r\n" as &[u8],
+                            1 => b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n[]",
+                            _ => b"HTTP/1.1 201 Created\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                        };
+                        let _ = stream.write_all(response);
+                        attempt += 1;
                     }
                     Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
                         thread::sleep(Duration::from_millis(10));
@@ -667,11 +610,6 @@ mod tests {
             "INPUT".into(),
         )
         .unwrap();
-        apify.client = Client::builder()
-            .timeout(Duration::from_millis(40))
-            .build()
-            .unwrap();
-
         let result = apify
             .push_data(
                 &json!({"id": "listing-1"}),
@@ -681,11 +619,8 @@ mod tests {
             .await;
         server.join().unwrap();
 
-        assert!(
-            result.is_err(),
-            "the ambiguous timed-out write must be reported"
-        );
-        assert_eq!(received.load(Ordering::SeqCst), 1);
+        assert!(result.is_ok());
+        assert_eq!(received.load(Ordering::SeqCst), 3);
     }
 
     fn read_request(stream: &mut TcpStream) {

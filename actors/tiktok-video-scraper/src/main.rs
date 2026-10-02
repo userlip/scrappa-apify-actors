@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod scrappa_retry;
 mod tiktok_video;
 
@@ -10,8 +11,8 @@ use apify::{ActorConfig, ApifyClient, DatasetBudget};
 use reqwest::Client;
 use serde_json::{json, Value};
 use tiktok_video::{
-    assert_successful_response, dataset_item, extract_video, format_video_lookup_for_log, js_trim,
-    js_truthy, resolve_video_requests, ScrappaClient,
+    assert_successful_response, dataset_item, extract_video, js_truthy, resolve_video_requests,
+    ScrappaClient,
 };
 
 async fn run_actor(http: &Client, config: &ActorConfig) -> Result<()> {
@@ -50,15 +51,10 @@ async fn run_actor(http: &Client, config: &ActorConfig) -> Result<()> {
         }
 
         let request_index = index + 1;
-        let formatted_url = format_video_lookup_for_log(&request.url)
-            .unwrap_or_else(|_| js_trim(&request.url).to_owned());
         let lookup_result = match &request.validation_error {
             Some(message) => Err(anyhow!(message.clone())),
             None => {
-                println!(
-                    "Fetching TikTok video {request_index}/{}: {formatted_url}",
-                    requests.len()
-                );
+                println!("Fetching TikTok video {request_index}/{}", requests.len());
                 scrappa
                     .get_video(&request.url, hd)
                     .await
@@ -76,7 +72,7 @@ async fn run_actor(http: &Client, config: &ActorConfig) -> Result<()> {
                     videos_found += 1;
                     println!("Found 1 TikTok video record");
                 } else {
-                    println!("No video details found for: {formatted_url}");
+                    println!("No video details found for the requested item");
                 }
                 dataset_item(
                     video,
@@ -89,7 +85,7 @@ async fn run_actor(http: &Client, config: &ActorConfig) -> Result<()> {
             }
             Err(error) => {
                 let message = format!("{error:#}");
-                eprintln!("TikTok video lookup failed for {formatted_url}: {message}");
+                eprintln!("TikTok video lookup failed; saving an error item: {message}");
                 lookups_failed += 1;
                 dataset_item(None, &request.url, hd, None, request_index, Some(message))
             }

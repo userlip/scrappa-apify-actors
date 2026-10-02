@@ -1,4 +1,7 @@
-use crate::ports::{PushResult, ResultsSink};
+use crate::{
+    apify_retry::ApifyRetryExt,
+    ports::{PushResult, ResultsSink},
+};
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Request, RequestBuilder, Response, StatusCode};
 use serde_json::{json, Value};
@@ -139,8 +142,7 @@ impl ApifyClient {
             .post(url)
             .bearer_auth(&self.config.apify_token)
             .json(rows);
-        self.send_unit_request_once(request, "Apify dataset write")
-            .await
+        self.send_unit_request(request, "Apify dataset write").await
     }
 
     async fn charge_event(&self, event_name: &str, idempotency_key: &str) -> Result<()> {
@@ -208,46 +210,10 @@ impl ApifyClient {
     }
 
     async fn send_unit_request(&self, request: RequestBuilder, operation: &str) -> Result<()> {
-        let request = request
-            .build()
-            .with_context(|| format!("{operation} could not be built"))?;
-
-        for attempt in 0..=self.retry_policy.retries {
-            let response = match self
-                .client
-                .execute(clone_request(&request, operation)?)
-                .await
-            {
-                Ok(response) => response,
-                Err(error) if is_retryable_error(&error) && attempt < self.retry_policy.retries => {
-                    self.wait_before_retry(attempt).await;
-                    continue;
-                }
-                Err(error) => return Err(anyhow!("{operation} failed: {error}")),
-            };
-
-            if is_retryable_status(response.status()) && attempt < self.retry_policy.retries {
-                self.wait_before_retry(attempt).await;
-                continue;
-            }
-            if !response.status().is_success() {
-                return Err(response_error(response, operation).await);
-            }
-            return Ok(());
-        }
-
-        unreachable!("the Apify request loop always returns or fails")
-    }
-
-    async fn send_unit_request_once(&self, request: RequestBuilder, operation: &str) -> Result<()> {
-        let request = request
-            .build()
-            .with_context(|| format!("{operation} could not be built"))?;
-        let response = self
-            .client
-            .execute(request)
+        let response = request
+            .send_apify_with_retry()
             .await
-            .map_err(|error| anyhow!("{operation} failed: {error}"))?;
+            .with_context(|| format!("{operation} failed"))?;
         if !response.status().is_success() {
             return Err(response_error(response, operation).await);
         }

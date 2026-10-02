@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 #[cfg(test)]
 use std::time::Duration;
 
@@ -58,7 +59,7 @@ impl ApifyClient {
             .get(url)
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status().as_u16() == 404 {
@@ -109,7 +110,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         ensure_success(response, "Apify OUTPUT write").await
@@ -127,7 +128,7 @@ impl ApifyClient {
                 "statusMessage": status_message,
                 "isStatusMessageTerminal": true
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run status update failed")?;
         ensure_success(response, "Apify run status update").await
@@ -140,7 +141,7 @@ impl ApifyClient {
             .get(url)
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         response_json(response, "Apify run pricing request").await
@@ -156,7 +157,7 @@ impl ApifyClient {
             .header(header::ACCEPT, "application/json")
             .header("idempotency-key", idempotency_key)
             .json(&json!({ "eventName": event_name, "count": count }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify event charge request failed")?;
         ensure_success(response, "Apify event charge").await
@@ -170,7 +171,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{
     collections::HashMap,
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -66,7 +67,7 @@ pub async fn get_input(client: &Client, config: &Config) -> Result<Value> {
         .get(url)
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     if response.status() == StatusCode::NOT_FOUND {
@@ -84,7 +85,7 @@ pub async fn get_actor_run(client: &Client, config: &Config) -> Result<Value> {
         .get(url)
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify actor run pricing request failed")?;
     response_json(response, "Apify actor run pricing request").await
@@ -288,7 +289,7 @@ pub async fn push_dataset_items(client: &Client, config: &Config, items: &[Value
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
         .json(items)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     ensure_success(response, "Apify dataset write").await
@@ -321,7 +322,7 @@ pub async fn charge_timeline_points(client: &Client, config: &Config, count: usi
             "eventName": TIMELINE_POINT_CHARGE_EVENT,
             "count": count,
         }))
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify timeline-point charge request failed")?;
     ensure_success(response, "Apify timeline-point charge request").await
@@ -343,7 +344,7 @@ pub async fn put_output(client: &Client, config: &Config, output: &Value) -> Res
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
         .json(output)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify OUTPUT write failed")?;
     ensure_success(response, "Apify OUTPUT write").await
@@ -368,7 +369,7 @@ pub async fn put_terminal_status_message(
             "statusMessage": status_message,
             "isStatusMessageTerminal": true,
         }))
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify status-message update failed")?;
     ensure_success(response, "Apify status-message update").await

@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -106,7 +108,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -124,7 +126,7 @@ async fn run_dataset_capacity(
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -248,7 +250,10 @@ async fn push_dataset_data(client: &Client, config: &ActorConfig, data: &Value) 
         Some(items) => request.json(&items[..limit]),
         None => request.json(data),
     };
-    let response = request.send().await.context("Apify dataset write failed")?;
+    let response = request
+        .send_apify_with_retry()
+        .await
+        .context("Apify dataset write failed")?;
     let status = response.status();
     if !status.is_success() {
         let reason = status.canonical_reason().unwrap_or("Unknown status");
@@ -301,7 +306,7 @@ fn js_string(value: &Value) -> String {
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let input = get_input(client, config).await?;
     let url = build_video_details_url(&input, &config.scrappa_api_base_url)?;
-    println!("Fetching from: {url}");
+    println!("Fetching data from Scrappa API");
 
     let data = fetch_video_details(client, &url).await?;
     let saved_count = push_dataset_data(client, config, &data).await?;
@@ -316,10 +321,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     );
 
     if let Some(continuation) = data.get("continuation").filter(|value| js_truthy(value)) {
-        println!(
-            "Continuation token available for next page: {}",
-            js_string(continuation)
-        );
+        println!("Continuation token available for next page");
     }
 
     Ok(())
@@ -707,13 +709,17 @@ mod tests {
             response(200, r#"{"id":"video-one"}"#),
             response(200, r#"[{"videoId":"video-one"}]"#),
             response(500, "pricing unavailable"),
+            response(500, "pricing unavailable"),
+            response(500, "pricing unavailable"),
         ]);
         let error = run_actor(&client(), &config(&pricing_error.base_url))
             .await
             .unwrap_err();
-        assert!(error.to_string().contains("500 Internal Server Error"));
+        assert!(error
+            .to_string()
+            .contains("Apify run pricing request failed"));
         let requests = pricing_error.requests();
-        assert_eq!(requests.len(), 3);
+        assert_eq!(requests.len(), 5);
         assert!(requests
             .iter()
             .all(|request| !request.starts_with("POST /v2/datasets/")));
@@ -723,14 +729,16 @@ mod tests {
             response(200, r#"[{"videoId":"video-one"}]"#),
             pricing_response(1.0, serde_json::json!({})),
             response(500, "storage unavailable"),
+            response(500, "verification unavailable"),
         ]);
         let error = run_actor(&client(), &config(&storage_error.base_url))
             .await
             .unwrap_err();
-        assert!(error.to_string().contains("500 Internal Server Error"));
+        assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = storage_error.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
         assert!(requests[3].starts_with("POST /v2/datasets/test-dataset/items"));
+        assert!(requests[4].starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1"));
     }
 
     #[tokio::test]
