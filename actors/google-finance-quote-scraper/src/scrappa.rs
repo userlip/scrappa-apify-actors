@@ -2,11 +2,7 @@ use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{Context, Result, anyhow};
 use reqwest::{Client, Response, StatusCode, Url};
 use serde_json::{Map, Value};
-use std::{
-    error::Error,
-    fmt,
-    time::{Duration, SystemTime, UNIX_EPOCH},
-};
+use std::{error::Error, fmt, time::Duration};
 
 pub const REQUEST_TIMEOUT: Duration = Duration::from_millis(25_000);
 const USER_AGENT: &str = "thescrappa-google-finance-quote-scraper/1.0";
@@ -63,8 +59,6 @@ pub struct ScrappaClient {
     base_url: Url,
     api_key: String,
     timeout: Duration,
-    #[cfg(test)]
-    retry_delay_override: Option<Duration>,
 }
 
 impl ScrappaClient {
@@ -77,8 +71,6 @@ impl ScrappaClient {
             base_url: Url::parse(base_url).context("SCRAPPA_API_BASE_URL must be a valid URL")?,
             api_key,
             timeout,
-            #[cfg(test)]
-            retry_delay_override: None,
         })
     }
 
@@ -88,25 +80,7 @@ impl ScrappaClient {
         params: &Map<String, Value>,
         _attempts: usize,
     ) -> Result<Value> {
-        let attempts = 1;
-        for attempt in 1..=attempts {
-            match self.send_get(endpoint, params).await {
-                Ok(response) => return Ok(response),
-                Err(error) if attempt < attempts && is_retryable_scrappa_error(&error) => {
-                    let delay = self.retry_delay(attempt);
-                    eprintln!(
-                        "Scrappa API request failed ({}). Retrying attempt {}/{attempts} in {}ms.",
-                        error,
-                        attempt + 1,
-                        delay.as_millis()
-                    );
-                    tokio::time::sleep(delay).await;
-                }
-                Err(error) => return Err(error),
-            }
-        }
-
-        unreachable!("the retry loop always returns its last response")
+        self.send_get(endpoint, params).await
     }
 
     async fn send_get(&self, endpoint: &str, params: &Map<String, Value>) -> Result<Value> {
@@ -123,6 +97,7 @@ impl ScrappaClient {
         let response = self
             .http
             .get(url)
+            .timeout(self.timeout)
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)
             .header("X-API-Key", &self.api_key)
@@ -154,25 +129,6 @@ impl ScrappaClient {
             .pop_if_empty()
             .extend(segments);
         Ok(url)
-    }
-
-    fn retry_delay(&self, failed_attempt: usize) -> Duration {
-        #[cfg(test)]
-        if let Some(delay) = self.retry_delay_override {
-            return delay;
-        }
-
-        let jitter = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .subsec_millis() as u64;
-        Duration::from_millis(get_retry_delay_ms(failed_attempt, jitter))
-    }
-
-    #[cfg(test)]
-    fn without_retry_wait(mut self) -> Self {
-        self.retry_delay_override = Some(Duration::ZERO);
-        self
     }
 }
 
@@ -272,38 +228,9 @@ fn is_truthy(value: &Value) -> bool {
     }
 }
 
-pub fn get_retry_delay_ms(failed_attempt: usize, jitter_ms: u64) -> u64 {
-    let exponent = failed_attempt.min(20) as u32;
-    let base = 1_000_u64.saturating_mul(2_u64.saturating_pow(exponent));
-    base.saturating_add(jitter_ms).min(10_000)
-}
-
-pub fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
-    if error.downcast_ref::<ScrappaTimeoutError>().is_some() {
-        return true;
-    }
-    if let Some(error) = error.downcast_ref::<ScrappaHttpError>() {
-        return matches!(error.status, 429 | 500 | 502 | 503 | 504);
-    }
-
-    let Some(status) = error
-        .to_string()
-        .strip_prefix("Scrappa API error (")
-        .and_then(|message| message.split_once("):").map(|(status, _)| status))
-        .and_then(|status| status.parse::<u16>().ok())
-    else {
-        return false;
-    };
-    matches!(status, 429 | 500 | 502 | 503 | 504)
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{
-        ScrappaClient, ScrappaHttpError, ScrappaTimeoutError, get_retry_delay_ms,
-        is_retryable_scrappa_error,
-    };
-    use anyhow::anyhow;
+    use super::{ScrappaClient, ScrappaHttpError, ScrappaTimeoutError};
     use serde_json::{Map, json};
     use std::{
         io::{Read, Write},
@@ -385,6 +312,13 @@ mod tests {
         }
 
         fn requests(&self) -> Vec<String> {
+            self.requests.try_iter().collect()
+        }
+
+        fn finish(mut self) -> Vec<String> {
+            if let Some(thread) = self.thread.take() {
+                thread.join().unwrap();
+            }
             self.requests.try_iter().collect()
         }
     }
@@ -483,8 +417,7 @@ mod tests {
         ]);
         let client =
             ScrappaClient::new("test-key".into(), &server.base_url, Duration::from_secs(1))
-                .unwrap()
-                .without_retry_wait();
+                .unwrap();
 
         let result = client
             .get(
@@ -512,8 +445,7 @@ mod tests {
         ]);
         let client =
             ScrappaClient::new("test-key".into(), &server.base_url, Duration::from_secs(1))
-                .unwrap()
-                .without_retry_wait();
+                .unwrap();
         let params: Map<String, serde_json::Value> = json!({
             "symbol": "MSFT",
             "period_type": "quarterly",
@@ -561,8 +493,7 @@ mod tests {
         )]);
         let client =
             ScrappaClient::new("test-key".into(), &server.base_url, Duration::from_secs(1))
-                .unwrap()
-                .without_retry_wait();
+                .unwrap();
 
         let error = client
             .get("/google-finance/quote", &Map::new(), 3)
@@ -579,9 +510,15 @@ mod tests {
 
     #[tokio::test]
     async fn maps_a_slow_request_to_the_scrappa_timeout_error() {
-        let mut slow_response = response(200, r#"{"ok":true}"#);
-        slow_response.delay = Duration::from_millis(100);
-        let server = MockServer::start(vec![slow_response]);
+        let server = MockServer::start(
+            (0..crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS)
+                .map(|_| {
+                    let mut slow_response = response(200, r#"{"ok":true}"#);
+                    slow_response.delay = Duration::from_millis(100);
+                    slow_response
+                })
+                .collect(),
+        );
         let client = ScrappaClient::new(
             "test-key".into(),
             &server.base_url,
@@ -594,26 +531,9 @@ mod tests {
             .await
             .unwrap_err();
         assert!(error.downcast_ref::<ScrappaTimeoutError>().is_some());
-        assert_eq!(server.requests().len(), 1);
-    }
-
-    #[test]
-    fn classifies_only_the_expected_retry_conditions_and_bounds_backoff() {
-        assert!(is_retryable_scrappa_error(
-            &ScrappaTimeoutError::new(Duration::from_secs(1)).into()
-        ));
-        assert!(is_retryable_scrappa_error(
-            &ScrappaHttpError::new(503, "Service unavailable".into()).into()
-        ));
-        assert!(!is_retryable_scrappa_error(
-            &ScrappaHttpError::new(422, "Invalid request".into()).into()
-        ));
-        assert!(is_retryable_scrappa_error(&anyhow!(
-            "Scrappa API error (429): Rate limited"
-        )));
-        assert!(!is_retryable_scrappa_error(&anyhow!("connection refused")));
-        assert_eq!(get_retry_delay_ms(1, 0), 2_000);
-        assert_eq!(get_retry_delay_ms(2, 500), 4_500);
-        assert_eq!(get_retry_delay_ms(20, 0), 10_000);
+        assert_eq!(
+            server.finish().len(),
+            crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 }

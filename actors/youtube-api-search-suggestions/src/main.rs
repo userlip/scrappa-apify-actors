@@ -903,16 +903,21 @@ mod tests {
         assert!(error.to_string().contains("500 Internal Server Error"));
         assert_eq!(dataset_failure.requests().len(), 4);
 
-        let upstream_failure = MockServer::start(vec![
-            response(200, r#"{"q":"video"}"#),
-            response(500, "upstream unavailable"),
-        ]);
+        let mut upstream_responses = vec![response(200, r#"{"q":"video"}"#)];
+        upstream_responses.extend(
+            std::iter::repeat_with(|| response(500, "upstream unavailable"))
+                .take(crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS),
+        );
+        let upstream_failure = MockServer::start(upstream_responses);
         let error = run_actor(&client(), &config(&upstream_failure.base_url))
             .await
             .unwrap_err();
         assert!(error
             .to_string()
             .contains("Scrappa API request failed with 500 Internal Server Error"));
-        assert_eq!(upstream_failure.requests().len(), 2);
+        assert_eq!(
+            upstream_failure.requests().len(),
+            1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 }

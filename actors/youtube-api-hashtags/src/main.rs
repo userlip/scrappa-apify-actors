@@ -1003,10 +1003,15 @@ mod tests {
 
     #[tokio::test]
     async fn propagates_scrappa_http_errors_without_dataset_output() {
-        let (server_url, server) = mock_server(vec![
+        let mut responses = vec![
             ("200 OK", r#"{"hashtag":"rust"}"#),
             ("503 Service Unavailable", "upstream unavailable"),
-        ]);
+        ];
+        responses.extend(
+            std::iter::repeat_with(|| ("503 Service Unavailable", "upstream unavailable"))
+                .take(crate::scrappa_retry::MAX_SCRAPPA_RETRIES),
+        );
+        let (server_url, server) = mock_server(responses);
         let error = run_actor(&Client::new(), &test_config(server_url))
             .await
             .unwrap_err();
@@ -1014,6 +1019,9 @@ mod tests {
             error.to_string(),
             "Scrappa API request failed with 503 Service Unavailable: upstream unavailable"
         );
-        assert_eq!(server.join().unwrap().len(), 2);
+        assert_eq!(
+            server.join().unwrap().len(),
+            1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 }

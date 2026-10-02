@@ -149,8 +149,8 @@ pub(crate) fn profile_url(base_url: &Url, unique_id: &str) -> Result<Url> {
 fn scrappa_request_error(error: reqwest::Error) -> anyhow::Error {
     if error.is_timeout() || error.to_string().contains("aborted") {
         anyhow!(
-            "Scrappa API request timed out after {}s",
-            REQUEST_TIMEOUT.as_secs()
+            "Scrappa API request timed out after {}s retry budget",
+            ENTRY_TIME_BUDGET.as_secs()
         )
     } else {
         anyhow::Error::new(error)
@@ -229,8 +229,8 @@ pub(crate) async fn fetch_scrappa_json(client: &Client, url: &Url, api_key: &str
 
     timeout(ENTRY_TIME_BUDGET, request).await.map_err(|_| {
         anyhow!(
-            "Scrappa API request timed out after {}s",
-            REQUEST_TIMEOUT.as_secs()
+            "Scrappa API request timed out after {}s retry budget",
+            ENTRY_TIME_BUDGET.as_secs()
         )
     })?
 }

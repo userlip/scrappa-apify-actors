@@ -9,7 +9,7 @@ use url::Url;
 
 use crate::request_params::js_string;
 
-pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+pub const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const SCRAPPA_REQUEST_ATTEMPTS: u8 = 1;
 const RETRYABLE_STATUS_CODES: [u16; 5] = [429, 500, 502, 503, 504];
 
@@ -186,7 +186,7 @@ fn retry_delay_ms(failed_attempt: u8, random_value: f64) -> u64 {
 }
 
 pub fn actor_error_message(message: &str) -> String {
-    if message.contains("Scrappa API request timed out after 60000ms") {
+    if message.contains("Scrappa API request timed out after 45000ms") {
         format!(
             "{message}. The Google Patents request exceeded the {}s Scrappa API timeout. Try a more specific query or run the request again.",
             SCRAPPA_REQUEST_TIMEOUT.as_secs()
@@ -237,8 +237,8 @@ mod tests {
             "plain text"
         );
         assert_eq!(
-            actor_error_message("Scrappa API request timed out after 60000ms"),
-            "Scrappa API request timed out after 60000ms. The Google Patents request exceeded the 60s Scrappa API timeout. Try a more specific query or run the request again."
+            actor_error_message("Scrappa API request timed out after 45000ms"),
+            "Scrappa API request timed out after 45000ms. The Google Patents request exceeded the 45s Scrappa API timeout. Try a more specific query or run the request again."
         );
     }
 

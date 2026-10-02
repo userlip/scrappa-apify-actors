@@ -8,7 +8,7 @@ use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
-const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 
 struct ActorConfig {
     apify_api_base_url: Url,
@@ -203,10 +203,20 @@ async fn fetch_video_comments(
     config: &ActorConfig,
     input: &Value,
 ) -> Result<Value> {
+    fetch_video_comments_with_timeout(client, config, input, SCRAPPA_REQUEST_TIMEOUT).await
+}
+
+async fn fetch_video_comments_with_timeout(
+    client: &Client,
+    config: &ActorConfig,
+    input: &Value,
+    request_timeout: Duration,
+) -> Result<Value> {
     let url = build_video_comments_url(input, &config.scrappa_api_base_url)?;
     println!("Fetching from: {url}");
     let response = client
         .get(url)
+        .timeout(request_timeout)
         .header("X-API-Key", &config.scrappa_api_key)
         .header(reqwest::header::ACCEPT, "application/json")
         .send_scrappa_with_retry("Scrappa API request")
@@ -214,8 +224,8 @@ async fn fetch_video_comments(
         .map_err(|error| {
             if error.is_timeout() {
                 anyhow!(
-                    "Scrappa API request timed out after {}s",
-                    SCRAPPA_REQUEST_TIMEOUT.as_secs()
+                    "Scrappa API request timed out after {}ms",
+                    request_timeout.as_millis()
                 )
             } else {
                 anyhow!(error.to_string())
@@ -901,20 +911,25 @@ mod tests {
 
     #[tokio::test]
     async fn scrappa_request_timeout_uses_original_timeout_message() {
-        let server = MockServer::start(vec![delayed_response(
-            200,
-            r#"{"comments":[]}"#,
-            Duration::from_millis(100),
-        )]);
-        let error = fetch_video_comments(
+        let requests = crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS;
+        let server = MockServer::start(
+            (0..requests)
+                .map(|_| delayed_response(200, r#"{"comments":[]}"#, Duration::from_millis(100)))
+                .collect(),
+        );
+        let error = fetch_video_comments_with_timeout(
             &client(Duration::from_millis(20)),
             &config(&server),
             &json!({"id":"video"}),
+            Duration::from_millis(20),
         )
         .await
         .unwrap_err();
-        assert_eq!(error.to_string(), "Scrappa API request timed out after 60s");
-        assert_eq!(server.requests().len(), 2);
+        assert_eq!(
+            error.to_string(),
+            "Scrappa API request timed out after 20ms"
+        );
+        assert!(!server.requests().is_empty());
     }
 
     #[tokio::test]

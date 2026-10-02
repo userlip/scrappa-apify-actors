@@ -48,10 +48,11 @@ mod tests {
         // INPUT, run pricing, dataset write, then charge plus OUTPUT or terminal status.
         const MAX_APIFY_REQUESTS_PER_RUN: u64 = 5;
 
-        let related = SCRAPPA_REQUEST_BUDGET_MS;
+        let related = crate::scrappa_retry::ENTRY_TIME_BUDGET.as_millis() as u64;
         let apify = APIFY_REQUEST_TIMEOUT_MS.saturating_mul(MAX_APIFY_REQUESTS_PER_RUN);
-        let autocomplete = SCRAPPA_REQUEST_BUDGET_MS;
+        let autocomplete = crate::scrappa_retry::ENTRY_TIME_BUDGET.as_millis() as u64;
 
+        assert_eq!(related, SCRAPPA_REQUEST_BUDGET_MS);
         assert_eq!(related, 90_000);
         assert_eq!(apify, 150_000);
         assert_eq!(autocomplete, 90_000);

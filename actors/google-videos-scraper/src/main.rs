@@ -9,9 +9,7 @@ use url::Url;
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
-const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_RETRY_DELAYS: [Duration; 2] = [Duration::from_secs(1), Duration::from_secs(2)];
-const TRANSIENT_SCRAPPA_STATUSES: [u16; 5] = [429, 500, 502, 503, 504];
+const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const MAX_QUERIES_PER_RUN: usize = 10;
 const REQUEST_ENRICHMENT_FIELDS: [&str; 13] = [
@@ -387,21 +385,6 @@ fn scrappa_request_error(error: reqwest::Error, timeout: Duration) -> anyhow::Er
     }
 }
 
-fn is_retryable_scrappa_error(error: &anyhow::Error) -> bool {
-    if error
-        .downcast_ref::<ScrappaApiError>()
-        .is_some_and(|error| TRANSIENT_SCRAPPA_STATUSES.contains(&error.status))
-    {
-        return true;
-    }
-    if error.downcast_ref::<ScrappaTimeoutError>().is_some() {
-        return true;
-    }
-    error
-        .downcast_ref::<reqwest::Error>()
-        .is_some_and(|error| error.is_connect() || error.is_body())
-}
-
 fn scrappa_error(status: u16, body: &str) -> ScrappaApiError {
     let Ok(data) = serde_json::from_str::<Value>(body) else {
         return ScrappaApiError {
@@ -490,7 +473,6 @@ struct ScrappaClient<'a> {
     http: &'a Client,
     config: &'a Config,
     request_timeout: Duration,
-    retry_delays: &'a [Duration],
 }
 
 impl ScrappaClient<'_> {
@@ -500,23 +482,7 @@ impl ScrappaClient<'_> {
             url.query_pairs_mut().append_pair(key, &js_string(value));
         }
 
-        let max_attempts = 1;
-        for attempt in 1..=max_attempts {
-            let result = self.request_once(&url).await;
-            match result {
-                Ok(response) => return Ok(response),
-                Err(error) if attempt < max_attempts && is_retryable_scrappa_error(&error) => {
-                    eprintln!(
-                        "Transient Scrappa API failure; retrying attempt {}/{}",
-                        attempt + 1,
-                        max_attempts
-                    );
-                    tokio::time::sleep(self.retry_delays[attempt - 1]).await;
-                }
-                Err(error) => return Err(error),
-            }
-        }
-        unreachable!("at least one Scrappa request attempt is configured")
+        self.request_once(&url).await
     }
 
     async fn request_once(&self, url: &Url) -> Result<Value> {
@@ -856,8 +822,8 @@ fn actor_error_message(error: &anyhow::Error) -> String {
     let message = error.to_string();
     if message.contains("timed out") {
         format!(
-            "{message}. The Google Videos request exceeded the {}s Scrappa API timeout. Try a more specific query or run the request again.",
-            SCRAPPA_REQUEST_TIMEOUT.as_secs()
+            "{message}. The Google Videos retries exceeded the {}s Scrappa API budget. Try a more specific query or run the request again.",
+            crate::scrappa_retry::ENTRY_TIME_BUDGET.as_secs()
         )
     } else {
         message
@@ -881,7 +847,6 @@ async fn run_actor(http: &Client, config: &Config) -> Result<Option<String>> {
         http,
         config,
         request_timeout: SCRAPPA_REQUEST_TIMEOUT,
-        retry_delays: &SCRAPPA_RETRY_DELAYS,
     };
     let keep_raw_response = param_list.len() == 1;
     let mut single_response = None;
@@ -1554,7 +1519,6 @@ mod tests {
             http: &Client::new(),
             config: &config,
             request_timeout: Duration::from_secs(1),
-            retry_delays: &[Duration::ZERO, Duration::ZERO],
         };
         let params = build_google_videos_param_list(&json!({"q": "espresso"}))
             .unwrap()
@@ -1577,7 +1541,6 @@ mod tests {
             http: &Client::new(),
             config: &config,
             request_timeout: Duration::from_secs(1),
-            retry_delays: &[Duration::ZERO, Duration::ZERO],
         };
         let params = build_google_videos_param_list(&json!({"q": "coffee"}))
             .unwrap()
@@ -1592,30 +1555,23 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn scrappa_timeout_covers_the_response_body_and_uses_three_total_attempts() {
-        let server = MockServer::start(vec![
-            delayed_response(
-                200,
-                json!({"video_results": []}),
-                Duration::from_millis(120),
-            ),
-            delayed_response(
-                200,
-                json!({"video_results": []}),
-                Duration::from_millis(120),
-            ),
-            delayed_response(
-                200,
-                json!({"video_results": []}),
-                Duration::from_millis(120),
-            ),
-        ]);
+    async fn scrappa_timeout_covers_the_response_body_and_uses_seven_total_attempts() {
+        let server = MockServer::start(
+            (0..crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS)
+                .map(|_| {
+                    delayed_response(
+                        200,
+                        json!({"video_results": []}),
+                        Duration::from_millis(120),
+                    )
+                })
+                .collect(),
+        );
         let config = test_config(&server.base_url);
         let client = ScrappaClient {
             http: &Client::new(),
             config: &config,
             request_timeout: Duration::from_millis(30),
-            retry_delays: &[Duration::ZERO, Duration::ZERO],
         };
         let params = build_google_videos_param_list(&json!({"q": "coffee"}))
             .unwrap()
@@ -1623,7 +1579,10 @@ mod tests {
 
         let error = client.get_google_videos(&params).await.unwrap_err();
         assert!(error.to_string().contains("timed out after 30ms"));
-        assert_eq!(server.finish().len(), 3);
+        assert_eq!(
+            server.finish().len(),
+            crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 
     #[tokio::test]

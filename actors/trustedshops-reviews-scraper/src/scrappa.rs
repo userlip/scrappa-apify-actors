@@ -18,6 +18,7 @@ pub struct ScrappaClient {
     client: Client,
     base_url: String,
     api_key: String,
+    timeout: Duration,
     attempts: usize,
     retry_base_delay_ms: u64,
     retry_jitter_ms: u64,
@@ -102,6 +103,7 @@ impl ScrappaClient {
             client,
             base_url,
             api_key,
+            timeout,
             attempts: attempts.max(1),
             retry_base_delay_ms,
             retry_jitter_ms,
@@ -163,6 +165,7 @@ impl ScrappaClient {
         let response = self
             .client
             .get(url)
+            .timeout(self.timeout)
             .header("X-API-Key", self.api_key.as_str())
             .header(reqwest::header::ACCEPT, "application/json")
             .header(reqwest::header::USER_AGENT, USER_AGENT)

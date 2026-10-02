@@ -30,6 +30,13 @@ impl MockResponse {
             body: body.to_string(),
         }
     }
+
+    fn raw(status: u16, body: impl Into<String>) -> Self {
+        Self {
+            status,
+            body: body.into(),
+        }
+    }
 }
 
 struct MockServer {
@@ -515,4 +522,19 @@ async fn authentication_failure_fails_without_writing_the_current_batch() {
         .requests()
         .iter()
         .all(|request| !(request.method == "POST" && request.path.ends_with("/items"))));
+}
+
+#[tokio::test]
+async fn invalid_success_json_is_retried_and_never_saved_as_a_profile() {
+    let scrappa = MockServer::start(|_| MockResponse::raw(200, "<html>upstream error</html>"));
+    let client = ScrappaClient::new(
+        Client::new(),
+        api_base(&scrappa.base_url),
+        "scrappa-test-key".to_owned(),
+    );
+
+    let error = client.fetch_user("broken").await.unwrap_err();
+
+    assert!(error.to_string().contains("Scrappa API request failed"));
+    assert_eq!(scrappa.requests().len(), 7);
 }

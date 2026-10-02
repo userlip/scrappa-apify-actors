@@ -1,19 +1,17 @@
-use crate::scrappa_retry::ScrappaRetryExt;
+use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 use std::time::Duration;
 
 use anyhow::{anyhow, Result};
-use rand::Rng;
 use reqwest::{Client, StatusCode, Url};
 use serde_json::Value;
 
 pub const REQUEST_TIMEOUT_MS: u64 = 120_000;
-pub const REQUEST_ATTEMPTS: usize = 1;
-const RETRYABLE_STATUSES: [u16; 5] = [429, 500, 502, 503, 504];
 
 pub struct ScrappaClient {
     client: Client,
     api_key: String,
     base_url: Url,
+    timeout: Duration,
 }
 
 impl ScrappaClient {
@@ -34,47 +32,14 @@ impl ScrappaClient {
             api_key: api_key.into(),
             base_url: Url::parse(&base_url)
                 .map_err(|error| anyhow!("Scrappa API base URL must be valid: {error}"))?,
+            timeout: Duration::from_millis(timeout_ms),
         })
     }
 
     pub async fn get(&self, endpoint: &str, params: &Value) -> Result<Value> {
-        self.get_with_retry_delay(endpoint, params, retry_delay)
+        self.request_once(endpoint, params)
             .await
-    }
-
-    async fn get_with_retry_delay<F>(
-        &self,
-        endpoint: &str,
-        params: &Value,
-        mut delay: F,
-    ) -> Result<Value>
-    where
-        F: FnMut(usize) -> Duration,
-    {
-        let mut last_error = None;
-        for attempt in 1..=REQUEST_ATTEMPTS {
-            match self.request_once(endpoint, params).await {
-                Ok(response) => return Ok(response),
-                Err(error) => {
-                    if attempt >= REQUEST_ATTEMPTS || !error.retryable() {
-                        return Err(anyhow!(error));
-                    }
-                    let wait = delay(attempt);
-                    eprintln!(
-                        "Scrappa API request failed ({}). Retrying attempt {}/{} in {}ms.",
-                        error,
-                        attempt + 1,
-                        REQUEST_ATTEMPTS,
-                        wait.as_millis()
-                    );
-                    tokio::time::sleep(wait).await;
-                    last_error = Some(error);
-                }
-            }
-        }
-        Err(anyhow!(
-            last_error.expect("at least one request attempt is made")
-        ))
+            .map_err(anyhow::Error::new)
     }
 
     async fn request_once(
@@ -97,6 +62,7 @@ impl ScrappaClient {
         let response = self
             .client
             .get(url)
+            .timeout(self.timeout)
             .header("X-API-Key", &self.api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .send_scrappa_with_retry("Scrappa API request")
@@ -105,7 +71,10 @@ impl ScrappaClient {
                 if error.is_timeout() {
                     ScrappaError::new(
                         ScrappaErrorKind::Timeout,
-                        format!("Scrappa API request timed out after {REQUEST_TIMEOUT_MS}ms"),
+                        format!(
+                            "Scrappa API retry budget expired after {}ms",
+                            ENTRY_TIME_BUDGET.as_millis()
+                        ),
                     )
                 } else {
                     ScrappaError::new(
@@ -147,19 +116,14 @@ fn response_read_error(error: reqwest::Error, message: &str) -> ScrappaError {
     if error.is_timeout() {
         ScrappaError::new(
             ScrappaErrorKind::Timeout,
-            format!("Scrappa API request timed out after {REQUEST_TIMEOUT_MS}ms"),
+            format!(
+                "Scrappa API retry budget expired after {}ms",
+                ENTRY_TIME_BUDGET.as_millis()
+            ),
         )
     } else {
         ScrappaError::new(ScrappaErrorKind::Other, format!("{message}: {error}"))
     }
-}
-
-fn retry_delay(failed_attempt: usize) -> Duration {
-    let base = 1_000_u64
-        .saturating_mul(2_u64.saturating_pow(failed_attempt as u32))
-        .min(10_000);
-    let jitter = rand::rng().random_range(0..1_000_u64);
-    Duration::from_millis((base + jitter).min(10_000))
 }
 
 fn json_string(value: &Value) -> String {
@@ -231,14 +195,6 @@ impl ScrappaError {
     fn new(kind: ScrappaErrorKind, message: String) -> Self {
         Self { kind, message }
     }
-
-    fn retryable(&self) -> bool {
-        match self.kind {
-            ScrappaErrorKind::Timeout | ScrappaErrorKind::Connection => true,
-            ScrappaErrorKind::Http(status) => RETRYABLE_STATUSES.contains(&status),
-            ScrappaErrorKind::Other => false,
-        }
-    }
 }
 
 impl std::fmt::Display for ScrappaError {
@@ -275,10 +231,9 @@ mod tests {
         .unwrap();
 
         let response = client
-            .get_with_retry_delay(
+            .get(
                 "/images",
                 &json!({"q":"coffee product photography", "page":2}),
-                |_| Duration::ZERO,
             )
             .await
             .unwrap();
@@ -311,7 +266,7 @@ mod tests {
         .unwrap();
 
         let error = client
-            .get_with_retry_delay("/images", &json!({"q":"invalid"}), |_| Duration::ZERO)
+            .get("/images", &json!({"q":"invalid"}))
             .await
             .unwrap_err();
 
@@ -323,8 +278,7 @@ mod tests {
     }
 
     #[test]
-    fn keeps_the_original_per_request_deadline_and_attempt_count() {
+    fn keeps_the_configured_client_timeout_for_the_retry_helper_to_cap() {
         assert_eq!(REQUEST_TIMEOUT_MS, 120_000);
-        assert_eq!(REQUEST_ATTEMPTS, 1);
     }
 }

@@ -675,17 +675,22 @@ mod tests {
 
     #[tokio::test]
     async fn reports_scrappa_http_errors_without_writing_dataset_rows() {
-        let server = MockServer::start(vec![
-            response(200, r#"{"id":"playlist-id"}"#),
-            response(429, r#"{"error":"rate limited"}"#),
-        ]);
+        let mut responses = vec![response(200, r#"{"id":"playlist-id"}"#)];
+        responses.extend(
+            std::iter::repeat_with(|| response(429, r#"{"error":"rate limited"}"#))
+                .take(crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS),
+        );
+        let server = MockServer::start(responses);
         let error = run_actor(&client(), &config(&server.base_url))
             .await
             .unwrap_err();
         assert!(
             format!("{error:#}").contains("Scrappa API request failed with 429 Too Many Requests")
         );
-        assert_eq!(server.requests().len(), 2);
+        assert_eq!(
+            server.requests().len(),
+            1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 
     #[tokio::test]

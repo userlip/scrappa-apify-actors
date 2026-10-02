@@ -18,10 +18,7 @@ use url::Url;
 use crate::{
     input::{build_google_finance_markets_params, describe_google_finance_markets_request},
     response::{build_markets_dataset_items, build_markets_result_counts},
-    scrappa::{
-        ScrappaClient, ScrappaError, SCRAPPA_API_DEFAULT, SCRAPPA_MAX_ATTEMPTS,
-        SCRAPPA_REQUEST_TIMEOUT,
-    },
+    scrappa::{ScrappaClient, ScrappaError, SCRAPPA_API_DEFAULT, SCRAPPA_REQUEST_TIMEOUT},
 };
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
@@ -102,9 +99,7 @@ async fn run_actor() -> Result<()> {
         SCRAPPA_REQUEST_TIMEOUT,
     )
     .context("Failed to initialize Scrappa API client")?;
-    let response: Value = scrappa
-        .get("/google-finance/markets", &params, SCRAPPA_MAX_ATTEMPTS)
-        .await?;
+    let response: Value = scrappa.get("/google-finance/markets", &params).await?;
     let dataset_items = build_markets_dataset_items(&response, &params);
 
     if !dataset_items.is_empty() {
@@ -155,8 +150,8 @@ fn actor_error_message(error: &anyhow::Error) -> String {
         .is_some_and(ScrappaError::is_timeout)
     {
         format!(
-            "{message}. The Google Finance markets request exceeded the {}s Scrappa API timeout. Narrow the request with trend/index_market, or run it again.",
-            SCRAPPA_REQUEST_TIMEOUT.as_secs()
+            "{message}. The Google Finance markets retries exceeded the {}s Scrappa API budget. Narrow the request with trend/index_market, or run it again.",
+            crate::scrappa_retry::ENTRY_TIME_BUDGET.as_secs()
         )
     } else {
         message
@@ -179,11 +174,11 @@ mod tests {
     #[test]
     fn adds_the_existing_timeout_guidance_to_scrappa_deadlines() {
         let error = anyhow::Error::new(ScrappaError::Timeout {
-            timeout: Duration::from_secs(60),
+            timeout: Duration::from_secs(45),
         });
         assert_eq!(
             actor_error_message(&error),
-            "Scrappa API request timed out after 60000ms. The Google Finance markets request exceeded the 60s Scrappa API timeout. Narrow the request with trend/index_market, or run it again."
+            "Scrappa API request timed out after 45000ms. The Google Finance markets retries exceeded the 90s Scrappa API budget. Narrow the request with trend/index_market, or run it again."
         );
     }
 }

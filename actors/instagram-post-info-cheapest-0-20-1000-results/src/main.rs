@@ -1,4 +1,4 @@
-use crate::scrappa_retry::ScrappaRetryExt;
+use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 mod scrappa_retry;
 use std::{env, process::ExitCode, time::Duration};
 
@@ -10,7 +10,7 @@ use url::Url;
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
-const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+const REQUEST_TIMEOUT: Duration = ENTRY_TIME_BUDGET;
 const RETRY_DELAYS: [Duration; 2] = [Duration::from_secs(5), Duration::from_secs(15)];
 const APIFY_MAX_RETRIES: usize = 2;
 const INPUT_KEY_DEFAULT: &str = "INPUT";
@@ -750,7 +750,7 @@ impl ScrappaClient {
             .header("X-API-Key", self.api_key.as_str())
             .header(header::ACCEPT, "application/json")
             .timeout(remaining)
-            .send_scrappa_with_retry("Scrappa API request")
+            .send_scrappa_with_retry_until("Scrappa API request", deadline.into())
             .await
             .map_err(|error| {
                 let timed_out = error.is_timeout();
@@ -829,17 +829,18 @@ async fn request_with_retry_policy(
     timeout: Duration,
 ) -> std::result::Result<Value, ScrappaError> {
     let mut saw_rate_limit = false;
+    let deadline = Instant::now() + timeout;
 
     for attempt in 0..=delays.len() {
-        let deadline = Instant::now() + timeout;
         let result = timeout_at(deadline, client.fetch_post(request, deadline))
             .await
             .unwrap_or_else(|_| Err(ScrappaError::timed_out()));
         match result {
             Ok(data) => return Ok(data),
             Err(error) => {
-                let last_attempt = true;
-                let retry_reason = if error.is_transient() {
+                let last_attempt = attempt == delays.len();
+                let is_api_error = error.kind == ScrappaErrorKind::ApiBody;
+                let retry_reason = if is_api_error && error.is_transient() {
                     if error.is_rate_limit() {
                         saw_rate_limit = true;
                     }
@@ -854,6 +855,9 @@ async fn request_with_retry_policy(
                 };
 
                 let delay = delays[attempt];
+                if delay >= deadline.saturating_duration_since(Instant::now()) {
+                    return Err(error);
+                }
                 let status = error
                     .response_status()
                     .map(|status| format!(" ({status})"))

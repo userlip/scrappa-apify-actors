@@ -869,8 +869,11 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn scrappa_http_errors_fail_without_retrying() {
-        let server = MockServer::start(vec![response(429, r#"{"error":"limited"}"#)]);
+    async fn scrappa_http_errors_fail_after_retrying() {
+        let responses = std::iter::repeat_with(|| response(429, r#"{"error":"limited"}"#))
+            .take(crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS)
+            .collect();
+        let server = MockServer::start(responses);
         let error = fetch_related_videos(&client(), &server.base_url)
             .await
             .unwrap_err();
@@ -878,6 +881,9 @@ mod tests {
             error.to_string(),
             "Scrappa API request failed with 429 Too Many Requests"
         );
-        assert_eq!(server.requests().len(), 1);
+        assert_eq!(
+            server.requests().len(),
+            crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 }

@@ -23,7 +23,7 @@ fn js_string(value: &Value) -> String {
     }
 }
 
-pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 const ACTOR_USER_AGENT: &str = "thescrappa-google-finance-intraday-scraper/1.0";
 
@@ -376,7 +376,7 @@ mod tests {
             "Scrappa API error (422): Invalid request - symbol: The stock symbol is required."
         );
         assert!(is_retryable_scrappa_error(
-            &ScrappaTimeoutError { timeout_ms: 60_000 }.into()
+            &ScrappaTimeoutError { timeout_ms: 45_000 }.into()
         ));
         assert!(is_retryable_scrappa_error(
             &scrappa_api_error(StatusCode::TOO_MANY_REQUESTS, "rate limited").into()

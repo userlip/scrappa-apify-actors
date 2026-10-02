@@ -364,10 +364,20 @@ fn affordable_result_count_accounts_for_every_priced_event() {
 
 #[tokio::test]
 async fn scrappa_http_errors_keep_structured_details_after_retrying() {
-    let server = MockServer::start(vec![response(
+    let mut responses = vec![response(
         503,
         r#"{"message":"upstream busy","errors":{"query":["try later"]}}"#,
-    )]);
+    )];
+    responses.extend(
+        std::iter::repeat_with(|| {
+            response(
+                503,
+                r#"{"message":"upstream busy","errors":{"query":["try later"]}}"#,
+            )
+        })
+        .take(crate::scrappa_retry::MAX_SCRAPPA_RETRIES),
+    );
+    let server = MockServer::start(responses);
     let config = config(&server);
     let error = fetch_search(&client(APIFY_REQUEST_TIMEOUT), &config, &test_input())
         .await
@@ -376,7 +386,10 @@ async fn scrappa_http_errors_keep_structured_details_after_retrying() {
         error.to_string(),
         "Scrappa API error (503): upstream busy - query: try later"
     );
-    assert_eq!(server.requests().len(), 2);
+    assert_eq!(
+        server.requests().len(),
+        crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+    );
 }
 
 #[tokio::test]

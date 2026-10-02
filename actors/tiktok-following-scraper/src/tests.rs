@@ -543,20 +543,24 @@ async fn stale_run_pricing_does_not_reopen_spent_dataset_capacity() {
 }
 
 #[tokio::test]
-async fn reports_scrappa_http_errors_without_retrying() {
-    let (base_url, server) = mock_server(vec![
-        ("200 OK", r#"{"profile":"107955"}"#),
+async fn retries_scrappa_http_errors_to_the_attempt_limit() {
+    let mut responses = vec![("200 OK", r#"{"profile":"107955"}"#)];
+    responses.extend((0..crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS).map(|_| {
         (
             "429 Too Many Requests",
             r#"{"message":"Slow down","errors":{"profile":["blocked"]}}"#,
-        ),
-    ]);
+        )
+    }));
+    let (base_url, server) = mock_server(responses);
     let config = test_config(base_url, "test-scrappa-key");
     let client = Client::builder().timeout(REQUEST_TIMEOUT).build().unwrap();
 
     let error = run_actor(&client, &config).await.unwrap_err().to_string();
     let requests = server.join().unwrap();
 
-    assert_eq!(requests.len(), 2);
+    assert_eq!(
+        requests.len(),
+        1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+    );
     assert!(error.contains("Scrappa API error (429): Slow down - profile: blocked"));
 }

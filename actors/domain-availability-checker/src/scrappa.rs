@@ -1,11 +1,9 @@
 use crate::scrappa_retry::ScrappaRetryExt;
 use std::{fmt, time::Duration};
 
-use rand::Rng;
 use reqwest::{Client, Response, Url};
 use serde_json::{Map, Value};
 
-const SCRAPPA_MAX_ATTEMPTS: usize = 1;
 const SCRAPPA_RETRYABLE_STATUS_CODES: [u16; 5] = [429, 500, 502, 503, 504];
 
 #[derive(Debug)]
@@ -37,14 +35,6 @@ impl fmt::Display for ScrappaError {
 impl std::error::Error for ScrappaError {}
 
 impl ScrappaError {
-    pub fn is_retryable(&self) -> bool {
-        match self {
-            Self::Http { status, .. } => SCRAPPA_RETRYABLE_STATUS_CODES.contains(status),
-            Self::Network(_) | Self::Timeout { .. } => true,
-            Self::Other(_) => false,
-        }
-    }
-
     pub fn is_service_failure(&self) -> bool {
         match self {
             Self::Timeout { .. } | Self::Network(_) => true,
@@ -77,8 +67,6 @@ pub struct ScrappaClient {
     api_key: String,
     base_url: String,
     timeout: Duration,
-    #[cfg(test)]
-    retry_delay_override: Option<Duration>,
 }
 
 impl ScrappaClient {
@@ -88,8 +76,6 @@ impl ScrappaClient {
             api_key,
             base_url: base_url.trim_end_matches('/').to_owned(),
             timeout,
-            #[cfg(test)]
-            retry_delay_override: None,
         })
     }
 
@@ -98,23 +84,7 @@ impl ScrappaClient {
             .map_err(|error| ScrappaError::Other(format!("Invalid Scrappa API URL: {error}")))?;
         url.query_pairs_mut().append_pair("domain", domain);
 
-        for attempt in 1..=SCRAPPA_MAX_ATTEMPTS {
-            match self.send(&url).await {
-                Ok(response) => return Ok(response),
-                Err(error) if attempt < SCRAPPA_MAX_ATTEMPTS && error.is_retryable() => {
-                    let delay = self.retry_delay(attempt);
-                    eprintln!(
-                        "Scrappa API request failed ({error}). Retrying attempt {}/{SCRAPPA_MAX_ATTEMPTS} in {}ms.",
-                        attempt + 1,
-                        delay.as_millis()
-                    );
-                    tokio::time::sleep(delay).await;
-                }
-                Err(error) => return Err(error),
-            }
-        }
-
-        unreachable!("the retry loop returns on its final attempt")
+        self.send(&url).await
     }
 
     async fn send(&self, url: &Url) -> Result<Value, ScrappaError> {
@@ -189,26 +159,6 @@ impl ScrappaClient {
             timeout_ms: self.timeout.as_millis().min(u64::MAX as u128) as u64,
         }
     }
-
-    fn retry_delay(&self, failed_attempt: usize) -> Duration {
-        #[cfg(test)]
-        if let Some(delay) = self.retry_delay_override {
-            return delay;
-        }
-        let jitter_ms = rand::rng().random_range(0..1000);
-        Duration::from_millis(get_retry_delay_ms(failed_attempt, jitter_ms))
-    }
-
-    #[cfg(test)]
-    fn with_retry_delay(mut self, delay: Duration) -> Self {
-        self.retry_delay_override = Some(delay);
-        self
-    }
-}
-
-pub fn get_retry_delay_ms(failed_attempt: usize, jitter_ms: u64) -> u64 {
-    let base = 1000_u64.saturating_mul(2_u64.saturating_pow(failed_attempt.min(63) as u32));
-    base.saturating_add(jitter_ms).min(10_000)
 }
 
 fn format_json_error(error_data: &Map<String, Value>, fallback: &str) -> String {
@@ -335,8 +285,7 @@ mod tests {
             server.base_url.clone(),
             Duration::from_secs(2),
         )
-        .unwrap()
-        .with_retry_delay(Duration::ZERO);
+        .unwrap();
 
         assert_eq!(
             client.get_availability("example.com").await.unwrap(),
@@ -357,20 +306,17 @@ mod tests {
     }
 
     #[test]
-    fn retries_only_transient_service_errors_with_the_expected_backoff() {
+    fn classifies_transient_service_errors() {
         assert!(ScrappaError::Http {
             status: 429,
             message: "Rate limited".to_owned()
         }
-        .is_retryable());
+        .is_service_failure());
         assert!(!ScrappaError::Http {
             status: 422,
             message: "Invalid request".to_owned()
         }
-        .is_retryable());
-        assert_eq!(get_retry_delay_ms(1, 50), 2050);
-        assert_eq!(get_retry_delay_ms(2, 50), 4050);
-        assert_eq!(get_retry_delay_ms(8, 500), 10_000);
+        .is_service_failure());
     }
 
     #[test]
