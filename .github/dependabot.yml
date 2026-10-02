@@ -44,6 +44,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 0  # 0 disables version updates; security updates still open
     labels:
       - "security"
       - "dependencies"
