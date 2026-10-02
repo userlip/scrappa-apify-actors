@@ -10,7 +10,7 @@ use scrappa::ScrappaClient;
 use serde_json::{json, Value};
 use std::{env, process};
 
-const SCRAPPA_TIMEOUT_MS: u64 = 60_000;
+const SCRAPPA_TIMEOUT_MS: u64 = 45_000;
 const SCRAPPA_REQUEST_ATTEMPTS: usize = 1;
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
@@ -164,10 +164,10 @@ mod tests {
 
     #[test]
     fn timeout_message_keeps_the_search_specific_guidance() {
-        let error = anyhow::Error::new(ScrappaTimeoutError::new(Duration::from_secs(60)));
+        let error = anyhow::Error::new(ScrappaTimeoutError::new(Duration::from_secs(45)));
         assert_eq!(
             actor_error_message(&error),
-            "Scrappa API request timed out after 60000ms. The LinkedIn Jobs Search request exceeded the 60s Scrappa API timeout. Try again or refine the query."
+            "Scrappa API request timed out after 45000ms. The LinkedIn Jobs Search request exceeded the 45s Scrappa API timeout. Try again or refine the query."
         );
     }
 }

@@ -149,6 +149,7 @@ impl ScrappaClient {
         let response = self
             .http
             .get(url.clone())
+            .timeout(std::time::Duration::from_millis(self.timeout_ms))
             .header("X-API-Key", self.api_key.as_str())
             .header(header::ACCEPT, "application/json")
             .header(header::USER_AGENT, USER_AGENT)

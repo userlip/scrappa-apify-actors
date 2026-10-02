@@ -57,6 +57,7 @@ impl ScrappaClient {
         let response = self
             .http
             .get(url)
+            .timeout(self.timeout)
             .header("X-API-Key", self.api_key.as_str())
             .header(header::ACCEPT, "application/json")
             .query(&params)

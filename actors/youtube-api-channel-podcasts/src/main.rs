@@ -872,17 +872,25 @@ mod tests {
 
     #[tokio::test]
     async fn surfaces_scrappa_http_errors() {
-        let (api_base, server) = mock_server(vec![
+        let mut responses = vec![
             (200, json!({"id": "UC1"}).to_string()),
             (503, "upstream unavailable".to_owned()),
-        ]);
+        ];
+        responses.extend(
+            std::iter::repeat_with(|| (503, "upstream unavailable".to_owned()))
+                .take(crate::scrappa_retry::MAX_SCRAPPA_RETRIES),
+        );
+        let (api_base, server) = mock_server(responses);
         let config = test_config(&api_base, "key-store", "dataset");
         let error = run_actor(&Client::new(), &config).await.unwrap_err();
         assert!(error
             .to_string()
             .contains("Scrappa API request failed with 503 Service Unavailable"));
         let requests = server.join().unwrap();
-        assert_eq!(requests.len(), 2);
+        assert_eq!(
+            requests.len(),
+            1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 
     fn test_config(api_base: &str, store_id: &str, dataset_id: &str) -> ActorConfig {

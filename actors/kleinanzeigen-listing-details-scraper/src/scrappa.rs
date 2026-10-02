@@ -11,7 +11,6 @@ use crate::error_utils::error_summary;
 
 pub const DETAIL_REQUEST_TIMEOUT_MS: u64 = 90_000;
 pub const DISCOVERY_REQUEST_TIMEOUT_MS: u64 = 60_000;
-pub const MAX_DETAIL_ATTEMPTS: usize = 1;
 const USER_AGENT: &str = "thescrappa-kleinanzeigen-listing-details-scraper/1.0";
 
 #[derive(Debug)]
@@ -83,12 +82,12 @@ impl ScrappaClient {
         .await
     }
 
-    pub async fn listing_detail(&self, ad_id: &str, attempts: usize) -> Result<Value> {
+    pub async fn listing_detail(&self, ad_id: &str, is_discovery: bool) -> Result<Value> {
         self.get(
             "/kleinanzeigen/details",
             &[("ad_id", ad_id)],
-            attempts,
-            if attempts == 1 {
+            1,
+            if is_discovery {
                 DISCOVERY_REQUEST_TIMEOUT_MS
             } else {
                 DETAIL_REQUEST_TIMEOUT_MS

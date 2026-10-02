@@ -12,6 +12,7 @@ use crate::search::append_search_params;
 
 pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 pub const MAX_ATTEMPTS: usize = 1;
+const APIFY_CHARGE_MAX_ATTEMPTS: usize = 3;
 const MAX_RETRY_DELAY: Duration = Duration::from_secs(10);
 const USER_AGENT: &str = "thescrappa-linkedin-search-scraper/1.0";
 
@@ -79,7 +80,7 @@ pub struct RetryPolicy {
 impl Default for RetryPolicy {
     fn default() -> Self {
         Self {
-            attempts: MAX_ATTEMPTS,
+            attempts: APIFY_CHARGE_MAX_ATTEMPTS,
             base_delay: Duration::from_secs(1),
             max_delay: MAX_RETRY_DELAY,
             jitter_max_ms: 1000,
@@ -138,7 +139,7 @@ impl ScrappaClient {
         retry_policy: RetryPolicy,
     ) -> std::result::Result<Value, ScrappaError> {
         let url = search_url(base_url, input);
-        let attempts = retry_policy.attempts.max(1);
+        let attempts = MAX_ATTEMPTS;
         let mut last_error = None;
 
         for attempt in 1..=attempts {

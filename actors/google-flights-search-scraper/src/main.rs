@@ -18,6 +18,7 @@ use crate::{
         is_retryable_scrappa_error, ScrappaClient, ScrappaTimeoutError, MAX_ATTEMPTS,
         REQUEST_TIMEOUT,
     },
+    scrappa_retry::MAX_SCRAPPA_ATTEMPTS,
 };
 
 const APIFY_API_TIMEOUT_SECS: u64 = 60;
@@ -54,12 +55,12 @@ async fn run() -> Result<()> {
                 &request.params,
                 request.trip_type,
                 &error.to_string(),
-                MAX_ATTEMPTS,
+                MAX_SCRAPPA_ATTEMPTS,
                 search_started_at.elapsed().as_millis(),
             );
             apify.put_output(&unavailable_response).await?;
             let status_message = format!(
-                "Google Flights is temporarily unavailable after {MAX_ATTEMPTS} attempts. No results were saved; retry this run later."
+                "Google Flights is temporarily unavailable after {MAX_SCRAPPA_ATTEMPTS} attempts. No results were saved; retry this run later."
             );
             eprintln!(
                 "{status_message} {}",

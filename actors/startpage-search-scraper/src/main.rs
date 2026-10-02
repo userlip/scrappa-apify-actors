@@ -597,7 +597,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn retries_transient_apify_storage_errors_and_does_not_retry_scrappa_errors() {
+    async fn retries_transient_apify_errors_and_exhausts_scrappa_transient_errors() {
         let input = json!({"queries": [{"query": "privacy tools"}]});
         let (base_url, server) = mock_server(vec![
             (503, "temporarily unavailable".to_owned()),
@@ -619,12 +619,19 @@ mod tests {
                 .starts_with("get /v2/key-value-stores/test-store/records/input")
         );
 
-        let (base_url, server) = mock_server(vec![
-            input_response(json!({"queries": [{"query": "privacy tools"}]})),
-            (503, "upstream unavailable".to_owned()),
-        ]);
+        let mut responses = vec![input_response(
+            json!({"queries": [{"query": "privacy tools"}]}),
+        )];
+        responses.extend(
+            (0..crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS)
+                .map(|_| (503, "upstream unavailable".to_owned())),
+        );
+        let (base_url, server) = mock_server(responses);
         let error = run_actor(&test_config(&base_url)).await.unwrap_err();
         assert!(error.to_string().contains("Scrappa API error (503)"));
-        assert_eq!(server.join().unwrap().len(), 2);
+        assert_eq!(
+            server.join().unwrap().len(),
+            1 + crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 }

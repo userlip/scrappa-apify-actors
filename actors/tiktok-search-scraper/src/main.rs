@@ -8,7 +8,7 @@ use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/tiktok/feed/search";
-const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 
 struct ActorConfig {
     apify_api_base_url: Url,

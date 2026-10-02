@@ -462,10 +462,10 @@ async fn zero_ppe_limit_is_uncapped_and_keeps_raw_output() {
 #[test]
 fn reports_scrappa_timeout_with_the_original_deadline() {
     assert!(
-        failure_message(&anyhow!("Scrappa API request timed out after 60000ms"))
-            .contains("60s Scrappa API timeout")
+        failure_message(&anyhow!("Scrappa API request timed out after 45000ms"))
+            .contains("90s Scrappa API budget")
     );
-    assert_eq!(SCRAPPA_REQUEST_TIMEOUT, Duration::from_secs(60));
+    assert_eq!(SCRAPPA_REQUEST_TIMEOUT, Duration::from_secs(45));
     assert_eq!(APIFY_REQUEST_TIMEOUT, Duration::from_secs(360));
     assert_eq!(APIFY_MAX_RETRIES, 8);
 }
@@ -508,18 +508,21 @@ async fn retries_transient_apify_errors_but_returns_client_errors_directly() {
 }
 
 #[tokio::test]
-async fn returns_scrappa_http_errors_without_retrying() {
+async fn retries_scrappa_http_errors_to_the_attempt_limit() {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     let address = listener.local_addr().unwrap();
     let server = thread::spawn(move || {
-        let (mut stream, _) = listener.accept().unwrap();
-        let request = read_request(&mut stream);
-        mock_response(
-            &mut stream,
-            "503 Service Unavailable",
-            "upstream unavailable",
-        );
-        request
+        let mut requests = Vec::new();
+        for _ in 0..crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS {
+            let (mut stream, _) = listener.accept().unwrap();
+            requests.push(read_request(&mut stream));
+            mock_response(
+                &mut stream,
+                "503 Service Unavailable",
+                "upstream unavailable",
+            );
+        }
+        requests
     });
     let config = request_config(address);
     let error = fetch_scrappa_response(
@@ -531,9 +534,9 @@ async fn returns_scrappa_http_errors_without_retrying() {
     .await
     .unwrap_err();
     assert!(error.to_string().contains("Scrappa API error (503)"));
-    assert!(server
-        .join()
-        .unwrap()
+    let requests = server.join().unwrap();
+    assert_eq!(requests.len(), crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS);
+    assert!(requests[0]
         .method_and_path
         .starts_with("GET /api/tiktok/challenges/posts "));
 }

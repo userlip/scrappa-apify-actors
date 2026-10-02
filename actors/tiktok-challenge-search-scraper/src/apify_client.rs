@@ -14,7 +14,7 @@ use crate::challenges::{js_string, SearchRequest};
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
-pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+pub(crate) const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
 const APIFY_MAX_RETRIES: usize = 8;
 const APIFY_MIN_RETRY_DELAY: Duration = Duration::from_millis(500);

@@ -91,7 +91,7 @@ impl ScrappaClient {
             }
             let timeout = SCRAPPA_TIMEOUT.min(remaining);
 
-            match self.send(url.clone(), timeout).await {
+            match self.send(url.clone(), timeout, deadline).await {
                 Ok(response) => return Ok(response),
                 Err(error) => {
                     let should_retry = attempt < MAX_ATTEMPTS && is_retryable(&error);
@@ -124,7 +124,7 @@ impl ScrappaClient {
         Err(last_error.unwrap_or_else(|| anyhow::Error::new(ScrappaTimeoutError { timeout_ms: 0 })))
     }
 
-    async fn send(&self, url: Url, timeout: Duration) -> Result<Value> {
+    async fn send(&self, url: Url, timeout: Duration, deadline: Instant) -> Result<Value> {
         let response = self
             .http
             .get(url)
@@ -132,7 +132,7 @@ impl ScrappaClient {
             .header(reqwest::header::USER_AGENT, USER_AGENT)
             .header("X-API-Key", &self.api_key)
             .timeout(timeout)
-            .send_scrappa_with_retry("Scrappa API request")
+            .send_scrappa_with_retry_until("Scrappa API request", deadline)
             .await
             .map_err(|error| {
                 if error.is_timeout() {

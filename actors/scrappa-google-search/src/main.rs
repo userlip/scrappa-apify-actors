@@ -5,13 +5,11 @@ use std::{env, time::Duration};
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Response, StatusCode};
 use serde_json::{json, Value};
-use tokio::time::sleep;
 use url::Url;
 
 const APIFY_API_DEFAULT: &str = "https://api.apify.com";
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
-const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
-const SCRAPPA_MAX_ATTEMPTS: u8 = 1;
+const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const SEARCH_PARAMETERS: [&str; 15] = [
     "query",
@@ -200,16 +198,6 @@ enum ScrappaFailure {
 }
 
 impl ScrappaFailure {
-    fn is_retryable(&self) -> bool {
-        match self {
-            Self::Http { status, .. } => {
-                matches!(*status, 429 | 500 | 502 | 503 | 504)
-            }
-            Self::Request(error) => error.is_timeout() || error.is_connect() || error.is_body(),
-            Self::InvalidJson(_) => false,
-        }
-    }
-
     fn into_anyhow(self, timeout: Duration) -> anyhow::Error {
         match self {
             Self::Http { status, message } => anyhow!("Scrappa API error ({status}): {message}"),
@@ -280,46 +268,30 @@ async fn fetch_google_search(
     params: &[(String, String)],
 ) -> Result<Value> {
     let url = build_search_url(&config.scrappa_api_base, params)?;
-    for attempt in 1..=SCRAPPA_MAX_ATTEMPTS {
-        let response = http
-            .get(url.clone())
-            .timeout(config.scrappa_request_timeout)
-            .header("X-API-Key", &config.scrappa_api_key)
-            .header(header::ACCEPT, "application/json")
-            .send_scrappa_with_retry("Scrappa API request")
-            .await
-            .map_err(ScrappaFailure::Request);
-
-        let result = match response {
-            Ok(response) => {
-                let status = response.status();
-                match response.text().await {
-                    Ok(body) if !status.is_success() => Err(ScrappaFailure::Http {
-                        status: status.as_u16(),
-                        message: error_message(status, &body),
-                    }),
-                    Ok(body) => serde_json::from_str(&body)
-                        .map_err(|error| ScrappaFailure::InvalidJson(error.to_string())),
-                    Err(error) => Err(ScrappaFailure::Request(error)),
-                }
-            }
-            Err(error) => Err(error),
-        };
-
-        match result {
-            Ok(response) => return Ok(response),
-            Err(error) if error.is_retryable() && attempt < SCRAPPA_MAX_ATTEMPTS => {
-                eprintln!(
-                    "Transient Scrappa API failure; retrying attempt {}/{}",
-                    attempt + 1,
-                    SCRAPPA_MAX_ATTEMPTS
-                );
-                sleep(Duration::from_secs(u64::from(attempt))).await;
-            }
-            Err(error) => return Err(error.into_anyhow(config.scrappa_request_timeout)),
+    let response = http
+        .get(url)
+        .timeout(config.scrappa_request_timeout)
+        .header("X-API-Key", &config.scrappa_api_key)
+        .header(header::ACCEPT, "application/json")
+        .send_scrappa_with_retry("Scrappa API request")
+        .await
+        .map_err(|error| {
+            ScrappaFailure::Request(error).into_anyhow(config.scrappa_request_timeout)
+        })?;
+    let status = response.status();
+    let body = response.text().await.map_err(|error| {
+        ScrappaFailure::Request(error).into_anyhow(config.scrappa_request_timeout)
+    })?;
+    if !status.is_success() {
+        return Err(ScrappaFailure::Http {
+            status: status.as_u16(),
+            message: error_message(status, &body),
         }
+        .into_anyhow(config.scrappa_request_timeout));
     }
-    unreachable!("the retry loop always returns or fails")
+    serde_json::from_str(&body)
+        .map_err(|error| ScrappaFailure::InvalidJson(error.to_string()))
+        .map_err(|error| error.into_anyhow(config.scrappa_request_timeout))
 }
 
 fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {

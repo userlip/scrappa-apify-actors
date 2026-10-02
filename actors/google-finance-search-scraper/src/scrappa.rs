@@ -4,13 +4,12 @@ use std::{fmt, time::Duration};
 use anyhow::{anyhow, Context, Result};
 use reqwest::{header, Client};
 use serde_json::Value;
-use tokio::time::{sleep, timeout};
+use tokio::time::timeout;
 
 use crate::config::{endpoint_url, Config};
 use crate::input::GoogleFinanceSearchRequest;
 
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const SCRAPPA_MAX_ATTEMPTS: u32 = 1;
 const SCRAPPA_USER_AGENT: &str = "thescrappa-google-finance-search-scraper/1.0";
 
 #[derive(Debug)]
@@ -23,7 +22,11 @@ pub(crate) enum ScrappaFailure {
 impl fmt::Display for ScrappaFailure {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Timeout => write!(formatter, "Scrappa API request timed out after 30000ms"),
+            Self::Timeout => write!(
+                formatter,
+                "Scrappa API retry budget expired after {}ms",
+                ENTRY_TIME_BUDGET.as_millis()
+            ),
             Self::Http { status, details } => {
                 write!(formatter, "Scrappa API error ({status}): {details}")
             }
@@ -50,29 +53,7 @@ pub(crate) struct ScrappaClient<'a> {
 
 impl ScrappaClient<'_> {
     pub(crate) async fn get_search(&self, params: &GoogleFinanceSearchRequest) -> Result<Value> {
-        let mut last_error = None;
-        for failed_attempt in 1..=SCRAPPA_MAX_ATTEMPTS {
-            match self.send_search(params).await {
-                Ok(response) => return Ok(response),
-                Err(error) => {
-                    let retryable = is_retryable_scrappa_error(&error);
-                    if !retryable || failed_attempt == SCRAPPA_MAX_ATTEMPTS {
-                        return Err(error);
-                    }
-                    let delay_ms = get_retry_delay_ms(failed_attempt, retry_jitter_ms());
-                    eprintln!(
-                        "Scrappa API request failed ({}). Retrying attempt {}/{} in {}ms.",
-                        error,
-                        failed_attempt + 1,
-                        SCRAPPA_MAX_ATTEMPTS,
-                        delay_ms
-                    );
-                    sleep(Duration::from_millis(delay_ms)).await;
-                    last_error = Some(error);
-                }
-            }
-        }
-        Err(last_error.expect("at least one Scrappa attempt is made"))
+        self.send_search(params).await
     }
 
     async fn send_search(&self, params: &GoogleFinanceSearchRequest) -> Result<Value> {
@@ -167,22 +148,13 @@ pub(crate) fn describe_transient_failure(error: &anyhow::Error) -> String {
         Some(ScrappaFailure::Http { status, .. }) => {
             format!("Scrappa upstream returned {status} after retries")
         }
-        Some(ScrappaFailure::Timeout) => "Scrappa API request timed out after 30000ms".to_owned(),
+        Some(ScrappaFailure::Timeout) => format!(
+            "Scrappa API retry budget expired after {}ms",
+            ENTRY_TIME_BUDGET.as_millis()
+        ),
         Some(ScrappaFailure::Network(message)) => message.clone(),
         None => error.to_string(),
     }
-}
-
-pub(crate) fn get_retry_delay_ms(failed_attempt: u32, jitter_ms: u64) -> u64 {
-    (1000_u64.saturating_mul(2_u64.saturating_pow(failed_attempt)) + jitter_ms).min(10_000)
-}
-
-fn retry_jitter_ms() -> u64 {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|duration| u64::from(duration.subsec_micros() % 1000))
-        .unwrap_or(0)
 }
 
 pub(crate) fn parse_scrappa_error_body(body: &str, fallback: &str) -> String {

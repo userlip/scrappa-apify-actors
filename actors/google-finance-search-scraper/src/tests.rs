@@ -6,8 +6,8 @@ use crate::{
     input::{build_search_requests, GoogleFinanceSearchRequest, MAX_QUERIES_PER_RUN},
     response::{build_dataset_items, count_search_results},
     scrappa::{
-        get_retry_delay_ms, is_retryable_scrappa_error, looks_like_network_error,
-        parse_scrappa_error_body, ScrappaFailure,
+        is_retryable_scrappa_error, looks_like_network_error, parse_scrappa_error_body,
+        ScrappaFailure,
     },
     status::build_transient_failure_status_message,
 };
@@ -182,8 +182,6 @@ fn retries_only_transient_scrappa_errors_with_bounded_backoff() {
     assert!(!is_retryable_scrappa_error(&not_found));
     assert!(looks_like_network_error("read ECONNRESET"));
     assert!(!looks_like_network_error("invalid JSON response"));
-    assert_eq!(get_retry_delay_ms(1, 0), 2000);
-    assert_eq!(get_retry_delay_ms(20, 500), 10000);
 }
 
 #[test]

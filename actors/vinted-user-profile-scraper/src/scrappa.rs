@@ -132,6 +132,7 @@ impl ScrappaClient {
         let response = self
             .http
             .get(url)
+            .timeout(Duration::from_millis(self.timeout_ms))
             .header(header::ACCEPT, "application/json")
             .header("X-API-Key", &self.api_key)
             .header(header::USER_AGENT, USER_AGENT)
@@ -317,7 +318,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn enforces_a_request_deadline_and_does_not_retry_invalid_json() {
+    async fn enforces_a_request_deadline_and_retries_invalid_json() {
         let (base_url, server) = mock_server(vec![(
             200,
             r#"{"success":true}"#.into(),
@@ -336,13 +337,19 @@ mod tests {
         ));
         let _ = server.join().unwrap();
 
-        let (base_url, server) = mock_server(vec![(200, "not json".into(), Duration::ZERO)]);
+        let invalid_json_responses = (0..crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS)
+            .map(|_| (200, "not json".into(), Duration::ZERO))
+            .collect();
+        let (base_url, server) = mock_server(invalid_json_responses);
         let client = ScrappaClient::new("test-key".into(), Some(&base_url)).unwrap();
         assert!(matches!(
             client.get(&request, 2).await.unwrap_err(),
             ScrappaError::InvalidResponse(_)
         ));
-        assert_eq!(server.join().unwrap().len(), 1);
+        assert_eq!(
+            server.join().unwrap().len(),
+            crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 
     fn mock_server(responses: Vec<(u16, String, Duration)>) -> (String, JoinHandle<Vec<String>>) {
