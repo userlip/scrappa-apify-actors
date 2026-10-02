@@ -1,0 +1,73 @@
+{
+  "title": "Instagram Comments Scraper",
+  "description": "Collect public Instagram comments with text, posting times, likes, and author handles. Add several post shortcodes in one run and page through replies.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "shortcodes"
+  ],
+  "properties": {
+    "shortcodes": {
+      "title": "Instagram posts",
+      "type": "array",
+      "description": "Instagram post shortcodes to retrieve public comments.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "shortcode": "DdVztIfpeKW"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "shortcode"
+        ],
+        "properties": {
+          "shortcode": {
+            "title": "Post Shortcode",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "minLength": 5,
+            "maxLength": 20,
+            "description": "Post Shortcode sent to the source search.",
+            "editor": "textfield"
+          },
+          "max_id": {
+            "title": "Next Page Cursor",
+            "type": "string",
+            "maxLength": 500,
+            "description": "Next Page Cursor sent to the source search.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "max_id": {
+      "title": "Next Page Cursor",
+      "type": "string",
+      "maxLength": 500,
+      "description": "Next Page Cursor sent to the source search.",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 1
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "title": "Instagram Trending Reels Scraper",
+  "description": "Capture trending public Instagram Reels with captions, likes, comments, author handles, and video links. Each run saves a snapshot of the global feed.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "feeds"
+  ],
+  "properties": {
+    "feeds": {
+      "title": "Trending feed",
+      "type": "array",
+      "description": "Use one entry to request Instagram’s global public trending Reels feed.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "feed": "trending"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "feed"
+        ],
+        "properties": {
+          "feed": {
+            "title": "feed",
+            "type": "string",
+            "minLength": 1,
+            "description": "Fixed label for the global trending Reels snapshot.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

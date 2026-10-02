@@ -1,0 +1,269 @@
+{
+  "slug": "semrush-website-traffic-scraper",
+  "title": "Semrush Website Traffic Scraper",
+  "description": "Get Semrush-style domain estimates for visits, rankings, engagement, devices, and countries. Batch websites in one run to compare traffic profiles.",
+  "categories": [
+    "SEO_TOOLS",
+    "MARKETING"
+  ],
+  "endpoint": "/semrush/website/traffic",
+  "openapiPath": "/semrush/website/traffic",
+  "mode": "single",
+  "batch": {
+    "field": "domains",
+    "valueField": "domain",
+    "apiParam": "domain",
+    "pathParam": null,
+    "title": "Domains",
+    "description": "Website domains to check for Semrush traffic estimates.",
+    "valueDescription": "Domain sent for this traffic overview."
+  },
+  "parameters": [
+    {
+      "input": "domain",
+      "apiParam": "domain",
+      "location": "query",
+      "required": true,
+      "title": "Domain",
+      "schema": {
+        "type": "string",
+        "pattern": "^(?=.{1,253}$)[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$",
+        "maxLength": 253,
+        "description": "Domain sent to the source search."
+      }
+    }
+  ],
+  "enrichment": {
+    "field": "input_domain"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "domains": [
+      {
+        "domain": "notion.so"
+      }
+    ],
+    "maxResults": 20
+  },
+  "testParams": {
+    "domain": "notion.so"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "semrush",
+      "domain": "notion.so"
+    },
+    "covered": true,
+    "domain": "notion.so",
+    "country": "us",
+    "categories": [
+      {
+        "slug": "business-and-industry",
+        "name": "Business and Industry"
+      }
+    ],
+    "actual_date": "2025-09-01",
+    "ranks": {
+      "global": 1250,
+      "country": {
+        "value": 88,
+        "name": "United States",
+        "database": "us",
+        "slug": "us"
+      },
+      "category": {
+        "database": "us"
+      }
+    },
+    "authority_score": 71,
+    "visits": 8120000,
+    "engagement": {
+      "pages_per_visit": 3.8,
+      "avg_visit_duration_seconds": 185,
+      "bounce_rate": 0.42
+    },
+    "visits_history": [
+      {
+        "date": "2025-07-01",
+        "visits": 7900000
+      },
+      {
+        "date": "2025-08-01",
+        "visits": 8030000
+      },
+      {
+        "date": "2025-09-01",
+        "visits": 8120000
+      }
+    ],
+    "device_history": [
+      {
+        "date": "2025-09-01",
+        "visits": 8120000,
+        "desktop_visits": 4872000,
+        "mobile_visits": 3248000
+      },
+      {
+        "date": "2025-08-01",
+        "visits": 8030000,
+        "desktop_visits": 4818000,
+        "mobile_visits": 3212000
+      }
+    ],
+    "traffic_by_country": [
+      {
+        "country": "US",
+        "country_name": "United States",
+        "traffic": 3400000,
+        "traffic_share": 0.42,
+        "desktop_share": 0.52,
+        "mobile_share": 0.48
+      }
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "domain",
+      "label": "Domain",
+      "format": "text"
+    },
+    {
+      "name": "visits",
+      "label": "Estimated Visits",
+      "format": "number"
+    },
+    {
+      "name": "authority_score",
+      "label": "Authority Score",
+      "format": "number"
+    },
+    {
+      "name": "engagement",
+      "label": "Engagement",
+      "format": "text"
+    },
+    {
+      "name": "country",
+      "label": "Country",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Semrush Website Traffic Scraper | Domain Visits",
+    "seoDescription": "Check Semrush traffic estimates for domains, including visits, ranks, engagement, device trends, and country shares. Batch sites and export SEO metrics.",
+    "intro": "Check Semrush-style website traffic estimates for a list of domains. Each domain record includes visits, rankings, engagement estimates, device history, and country-level traffic shares.",
+    "useCases": [
+      "SEO consultants can compare estimated visits and authority across competitor domains.",
+      "Marketing analysts can track traffic mix by device and country.",
+      "Lead research teams can add traffic estimates to company qualification lists."
+    ],
+    "howToUse": [
+      "Add each website hostname to `domains` without a URL scheme.",
+      "Use `maxResults` to cap the number of domain records saved.",
+      "Review the country database and snapshot date alongside traffic estimates."
+    ],
+    "faqs": [
+      {
+        "question": "Does one domain create one result?",
+        "answer": "Yes. The Actor saves one full traffic overview record for each domain submitted."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "semrush-domain-overview-scraper",
+        "title": "Semrush Domain Overview Scraper"
+      },
+      {
+        "slug": "semrush-competitors-scraper",
+        "title": "Semrush Competitors Scraper"
+      },
+      {
+        "slug": "similarweb-traffic-analytics-scraper",
+        "title": "Similarweb Traffic Analytics Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "search_parameters",
+        "type": "Object",
+        "description": "Source engine and domain used for the traffic estimate."
+      },
+      {
+        "name": "covered",
+        "type": "Boolean",
+        "description": "True when the domain has traffic coverage in this report."
+      },
+      {
+        "name": "domain",
+        "type": "String",
+        "description": "Website hostname Semrush reports for the overview."
+      },
+      {
+        "name": "country",
+        "type": "String",
+        "description": "Country database used for the current estimate."
+      },
+      {
+        "name": "categories",
+        "type": "Array<Object>",
+        "description": "Industry categories associated with the domain."
+      },
+      {
+        "name": "actual_date",
+        "type": "String",
+        "description": "Date of the traffic snapshot reported by Semrush."
+      },
+      {
+        "name": "ranks",
+        "type": "Object",
+        "description": "Global, country, and category rank information."
+      },
+      {
+        "name": "authority_score",
+        "type": "Integer",
+        "description": "Semrush authority score reported for the domain."
+      },
+      {
+        "name": "visits",
+        "type": "Integer",
+        "description": "Estimated website visits for the reported period."
+      },
+      {
+        "name": "engagement",
+        "type": "Object",
+        "description": "Engagement estimates such as pages per visit, visit duration in seconds, and bounce rate."
+      },
+      {
+        "name": "visits_history",
+        "type": "Array<Object>",
+        "description": "Monthly estimated visit totals across the available history."
+      },
+      {
+        "name": "device_history",
+        "type": "Array<Object>",
+        "description": "Monthly estimated traffic split between desktop and mobile devices."
+      },
+      {
+        "name": "traffic_by_country",
+        "type": "Array<Object>",
+        "description": "Estimated visits and traffic shares for the leading country markets."
+      },
+      {
+        "name": "input_domain",
+        "type": "String",
+        "description": "Website domain submitted for Semrush traffic estimates."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

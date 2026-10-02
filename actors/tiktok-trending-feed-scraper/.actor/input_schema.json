@@ -1,0 +1,64 @@
+{
+  "title": "TikTok Trending Feed Scraper",
+  "description": "Get TikTok trending videos with creator profiles, captions, plays, likes, shares, and sound details. Choose a region to capture its public feed.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "regions"
+  ],
+  "properties": {
+    "regions": {
+      "title": "Regions",
+      "type": "array",
+      "description": "TikTok market codes for the trending video feed.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "region": "GB"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "region"
+        ],
+        "properties": {
+          "region": {
+            "title": "Region",
+            "type": "string",
+            "maxLength": 10,
+            "description": "Region sent to the source search.",
+            "editor": "textfield"
+          },
+          "count": {
+            "title": "Results Per Page",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "description": "Results Per Page sent to the source search.",
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "count": {
+      "title": "Results Per Page",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "description": "Results Per Page sent to the source search.",
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

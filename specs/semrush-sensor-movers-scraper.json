@@ -1,0 +1,292 @@
+{
+  "slug": "semrush-sensor-movers-scraper",
+  "title": "Semrush Sensor Winners & Losers Scraper",
+  "description": "Track Semrush Sensor domains with ranking changes, keyword counts, and new or lost terms. Batch categories and choose a database for daily monitoring.",
+  "categories": [
+    "SEO_TOOLS"
+  ],
+  "endpoint": "/semrush/sensor/movers",
+  "openapiPath": "/semrush/sensor/movers",
+  "mode": "list",
+  "batch": {
+    "field": "categories",
+    "valueField": "category",
+    "apiParam": "category",
+    "pathParam": null,
+    "title": "Sensor categories",
+    "description": "Semrush Sensor category IDs to check for ranking movers.",
+    "valueDescription": "Sensor category ID selected for this movement list."
+  },
+  "parameters": [
+    {
+      "input": "db",
+      "apiParam": "db",
+      "location": "query",
+      "required": true,
+      "title": "Database",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "AU",
+          "CN",
+          "DE",
+          "ES",
+          "FR",
+          "IT",
+          "JP",
+          "UK",
+          "US",
+          "MOBILE-AU",
+          "MOBILE-DE",
+          "MOBILE-ES",
+          "MOBILE-FR",
+          "MOBILE-IT",
+          "MOBILE-JP",
+          "MOBILE-UK",
+          "MOBILE-US"
+        ],
+        "description": "Database sent to the source search."
+      }
+    },
+    {
+      "input": "category",
+      "apiParam": "category",
+      "location": "query",
+      "required": true,
+      "title": "Category",
+      "schema": {
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25
+        ],
+        "description": "Category sent to the source search."
+      }
+    },
+    {
+      "input": "date",
+      "apiParam": "date",
+      "location": "query",
+      "required": false,
+      "title": "Date",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Date sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/domains",
+  "dedupePointer": "/domain",
+  "relativeDateDefaults": [
+    {
+      "input": "date",
+      "base": "today",
+      "offsetDays": 0,
+      "description": "When omitted, the Sensor report date defaults to today."
+    }
+  ],
+  "enrichment": {
+    "field": "input_category"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "categories": [
+      {
+        "category": 1
+      }
+    ],
+    "db": "US",
+    "maxResults": 20
+  },
+  "testParams": {
+    "db": "US",
+    "category": "1",
+    "date": "2026-09-01"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "semrush",
+      "db": "US",
+      "category": 1,
+      "date": "2025-09-01"
+    },
+    "date": "2025-09-01",
+    "db": "US",
+    "category": "1",
+    "domains": [
+      {
+        "domain": "papertrail.io",
+        "diff": 37,
+        "keywords": 18420,
+        "new_keywords": 146,
+        "lost_keywords": 109,
+        "date": "2025-09-01",
+        "category": 1,
+        "diffs": [
+          {
+            "date": 1756684800,
+            "diff": 12
+          },
+          {
+            "date": 1756771200,
+            "diff": 18
+          },
+          {
+            "date": 1756857600,
+            "diff": 24
+          }
+        ]
+      }
+    ],
+    "categories": {
+      "1": {
+        "avg_drop": -2.4,
+        "avg_raise": 3.2
+      }
+    }
+  },
+  "tableFields": [
+    {
+      "name": "domain",
+      "label": "Domain",
+      "format": "text"
+    },
+    {
+      "name": "diff",
+      "label": "Position Change",
+      "format": "number"
+    },
+    {
+      "name": "keywords",
+      "label": "Keywords",
+      "format": "number"
+    },
+    {
+      "name": "new_keywords",
+      "label": "New Keywords",
+      "format": "number"
+    },
+    {
+      "name": "lost_keywords",
+      "label": "Lost Keywords",
+      "format": "number"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Semrush Sensor Movers | Winners and Losers",
+    "seoDescription": "Track Semrush Sensor movers with domain changes, keyword counts, and new or lost terms. Batch categories and select databases for SEO monitoring.",
+    "intro": "Track the domains with the largest Semrush Sensor movements by database and category. Review ranking change totals alongside tracked keyword counts and recent movement history.",
+    "useCases": [
+      "SEO teams can spot domains with sharp visibility changes.",
+      "Site owners can compare new and lost keyword counts by category.",
+      "Analysts can monitor daily movement across desktop and mobile databases."
+    ],
+    "howToUse": [
+      "Choose a Semrush database such as `US` and add category IDs to `categories`.",
+      "Leave `date` empty to use the current report date or provide a specific date.",
+      "Set `maxResults` to cap the number of domain movers saved."
+    ],
+    "faqs": [
+      {
+        "question": "Which date is used by default?",
+        "answer": "When you leave `date` empty, the Actor uses today’s date for the Sensor report."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "semrush-domain-overview-scraper",
+        "title": "Semrush Domain Overview Scraper"
+      },
+      {
+        "slug": "semrush-competitors-scraper",
+        "title": "Semrush Competitors Scraper"
+      },
+      {
+        "slug": "google-trends-interest-scraper",
+        "title": "Google Trends Interest Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "domain",
+        "type": "String",
+        "description": "Website hostname with a notable Sensor movement."
+      },
+      {
+        "name": "diff",
+        "type": "Integer",
+        "description": "Net keyword ranking movement reported for this domain."
+      },
+      {
+        "name": "keywords",
+        "type": "Integer",
+        "description": "Number of tracked keywords in the Sensor report."
+      },
+      {
+        "name": "new_keywords",
+        "type": "Integer",
+        "description": "Tracked keywords newly appearing for the domain."
+      },
+      {
+        "name": "lost_keywords",
+        "type": "Integer",
+        "description": "Tracked keywords no longer appearing for the domain."
+      },
+      {
+        "name": "date",
+        "type": "String",
+        "description": "Report date returned for the selected Sensor market."
+      },
+      {
+        "name": "category",
+        "type": "Integer",
+        "description": "Sensor category identifier associated with the movement list."
+      },
+      {
+        "name": "diffs",
+        "type": "Array<Object>",
+        "description": "Recent numeric movement history with date markers and change values."
+      },
+      {
+        "name": "input_category",
+        "type": "Integer",
+        "description": "Semrush Sensor category selected for this movement list."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

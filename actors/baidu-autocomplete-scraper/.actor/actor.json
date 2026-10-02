@@ -1,0 +1,60 @@
+{
+  "actorSpecification": 1,
+  "name": "baidu-autocomplete-scraper",
+  "title": "Baidu Autocomplete Scraper",
+  "description": "Expand Baidu search phrases into autocomplete suggestions with position, phrase text, and match details. Batch seed terms to compare localized keyword ideas.",
+  "categories": [
+    "SEO_TOOLS",
+    "DEVELOPER_TOOLS"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "position",
+              "value",
+              "type",
+              "is_direct"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "position": {
+                "label": "Position",
+                "format": "number"
+              },
+              "value": {
+                "label": "Suggested Phrase",
+                "format": "text"
+              },
+              "type": {
+                "label": "Type",
+                "format": "text"
+              },
+              "is_direct": {
+                "label": "Direct Match",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

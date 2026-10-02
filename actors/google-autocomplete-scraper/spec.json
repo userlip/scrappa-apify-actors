@@ -1,0 +1,154 @@
+{
+  "slug": "google-autocomplete-scraper",
+  "title": "Google Autocomplete Keyword Scraper",
+  "description": "Get Google autocomplete suggestions with phrases related to each search. Batch seed keywords, choose a language, and export long-tail search ideas.",
+  "categories": [
+    "SEO_TOOLS"
+  ],
+  "endpoint": "/search-light/autocomplete",
+  "openapiPath": "/search-light/autocomplete",
+  "mode": "list",
+  "batch": {
+    "field": "queries",
+    "valueField": "query",
+    "apiParam": "query",
+    "pathParam": null,
+    "title": "Search queries",
+    "description": "Google search phrases to expand with autocomplete.",
+    "valueDescription": "Phrase submitted to Google autocomplete."
+  },
+  "parameters": [
+    {
+      "input": "query",
+      "apiParam": "query",
+      "location": "query",
+      "required": true,
+      "title": "Search Query",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "description": "Search Query sent to the source search."
+      }
+    },
+    {
+      "input": "hl",
+      "apiParam": "hl",
+      "location": "query",
+      "required": false,
+      "title": "Language",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 2,
+        "description": "Language sent to the source search."
+      }
+    },
+    {
+      "input": "limit",
+      "apiParam": "limit",
+      "location": "query",
+      "required": false,
+      "title": "Suggestion Limit",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "description": "Suggestion Limit sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/suggestions",
+  "enrichment": {
+    "field": "input_query"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "queries": [
+      {
+        "query": "best crm"
+      }
+    ],
+    "hl": "en",
+    "limit": 10,
+    "maxResults": 20
+  },
+  "testParams": {
+    "query": "best crm"
+  },
+  "fixture": {
+    "query": "best crm",
+    "suggestions": [
+      "best crm software",
+      "best crm for small business",
+      "best crm free",
+      "best crm for startups",
+      "best crm tools"
+    ]
+  },
+  "tableFields": [
+    {
+      "name": "value",
+      "label": "Suggested Phrase",
+      "format": "text"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Google Autocomplete Scraper | Keyword Ideas",
+    "seoDescription": "Get Google autocomplete phrases for seed queries. Batch keywords, choose a language, and export long-tail search ideas for content and SEO research.",
+    "intro": "Collect Google autocomplete phrases for seed queries and save one row for each suggestion. Add multiple searches and choose a language to compare related wording.",
+    "useCases": [
+      "SEO specialists can find long-tail phrases related to target keywords.",
+      "Writers can discover follow-up questions and wording for article briefs.",
+      "Product marketers can compare search phrasing across topics and languages."
+    ],
+    "howToUse": [
+      "Add each seed phrase to `queries` as a separate item.",
+      "Choose a two-letter language code with `hl` when needed.",
+      "Set `limit` and `maxResults` to bound suggestions and saved rows."
+    ],
+    "faqs": [
+      {
+        "question": "How many suggestions can one query return?",
+        "answer": "Set `limit` from 1 to 10. The source may return fewer suggestions for some phrases."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-trends-autocomplete-scraper",
+        "title": "Google Trends Autocomplete Scraper"
+      },
+      {
+        "slug": "baidu-autocomplete-scraper",
+        "title": "Baidu Autocomplete Scraper"
+      },
+      {
+        "slug": "google-search",
+        "title": "Google Search Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "value",
+        "type": "String",
+        "description": "Autocomplete phrase suggested for the submitted Google query."
+      },
+      {
+        "name": "input_query",
+        "type": "String",
+        "description": "Google seed phrase submitted to retrieve autocomplete suggestions."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

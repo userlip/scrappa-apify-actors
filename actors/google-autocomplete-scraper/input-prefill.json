@@ -1,0 +1,10 @@
+{
+  "queries": [
+    {
+      "query": "best crm"
+    }
+  ],
+  "hl": "en",
+  "limit": 10,
+  "maxResults": 20
+}

@@ -1,0 +1,59 @@
+{
+  "actorSpecification": 1,
+  "name": "instagram-hashtag-search-scraper",
+  "title": "Instagram Hashtag Search Scraper",
+  "description": "Search Instagram hashtags for names, post counts, and display labels. Batch topic phrases to compare hashtag coverage across subjects.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "name",
+              "media_count",
+              "formatted_media_count",
+              "search_result_subtitle"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": {
+                "label": "Hashtag",
+                "format": "text"
+              },
+              "media_count": {
+                "label": "Media Count",
+                "format": "number"
+              },
+              "formatted_media_count": {
+                "label": "Formatted Media Count",
+                "format": "text"
+              },
+              "search_result_subtitle": {
+                "label": "Search Subtitle",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

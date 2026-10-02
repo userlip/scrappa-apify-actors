@@ -1,0 +1,345 @@
+{
+  "slug": "instagram-tagged-posts-scraper",
+  "title": "Instagram Tagged Posts Scraper",
+  "description": "Find public Instagram posts that tag an account, with captions, engagement, author profiles, and links. Batch usernames and page through available posts.",
+  "categories": [
+    "SOCIAL_MEDIA"
+  ],
+  "endpoint": "/instagram/user/tagged-posts",
+  "openapiPath": "/instagram/user/tagged-posts",
+  "mode": "list",
+  "batch": {
+    "field": "usernames",
+    "valueField": "username",
+    "apiParam": "username",
+    "pathParam": null,
+    "title": "Instagram usernames",
+    "description": "Public Instagram usernames whose tagged posts you want to retrieve.",
+    "valueDescription": "Username of the public Instagram account."
+  },
+  "parameters": [
+    {
+      "input": "username",
+      "apiParam": "username",
+      "location": "query",
+      "required": false,
+      "title": "Instagram Username",
+      "schema": {
+        "type": "string",
+        "pattern": "^@?[a-zA-Z0-9._]+$",
+        "minLength": 1,
+        "maxLength": 30,
+        "description": "Instagram Username sent to the source search."
+      }
+    },
+    {
+      "input": "user_id",
+      "apiParam": "user_id",
+      "location": "query",
+      "required": false,
+      "title": "TikTok User ID",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\d+$",
+        "maxLength": 30,
+        "description": "TikTok User ID sent to the source search."
+      }
+    },
+    {
+      "input": "max_id",
+      "apiParam": "max_id",
+      "location": "query",
+      "required": false,
+      "title": "Next Page Cursor",
+      "schema": {
+        "type": "string",
+        "maxLength": 255,
+        "description": "Next Page Cursor sent to the source search."
+      }
+    }
+  ],
+  "resultPointer": "/posts",
+  "flattenPointers": {
+    "author_id": "/author/id",
+    "author_username": "/author/username",
+    "author_verified": "/author/is_verified"
+  },
+  "dedupePointer": "/id",
+  "pagination": {
+    "kind": "cursor",
+    "param": "max_id",
+    "start": "",
+    "nextPointer": "/next_max_id",
+    "hasMorePointer": "/more_available",
+    "maxPages": 5
+  },
+  "enrichment": {
+    "field": "input_username"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "defaultMaxPages": 1,
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "usernames": [
+      {
+        "username": "nasa"
+      }
+    ],
+    "maxResults": 20,
+    "maxPages": 1
+  },
+  "testParams": {
+    "username": "nasa"
+  },
+  "fixture": {
+    "success": true,
+    "found": true,
+    "user_id": "584700123456789",
+    "username": "harbor.bakes",
+    "posts": [
+      {
+        "id": "3930123456789012345",
+        "shortcode": "CSTtaggedPost28",
+        "media_type": "Carousel",
+        "caption": "Weekend market finds and the people who made them.",
+        "hashtags": [
+          "citymarket",
+          "smallbatch"
+        ],
+        "taken_at": "2025-09-18T14:32:11Z",
+        "taken_at_timestamp": 1758205931,
+        "like_count": 913,
+        "comment_count": 27,
+        "play_count": null,
+        "view_count": null,
+        "media": [
+          {
+            "type": "image",
+            "thumbnail_url": "https://cdn.instagram.com/media/market-table.jpg"
+          }
+        ],
+        "location": null,
+        "author": {
+          "id": "584700123456792",
+          "username": "maker.studio",
+          "full_name": "Maker Studio",
+          "profile_pic_url": "https://cdn.instagram.com/profiles/maker-studio.jpg",
+          "is_verified": false
+        },
+        "collaborators": [
+          {
+            "id": "584700123456793",
+            "username": "harbor.bakes"
+          }
+        ],
+        "tagged_users": [
+          {
+            "id": "584700123456789",
+            "username": "harbor.bakes"
+          }
+        ],
+        "is_paid_partnership": false,
+        "product_type": "carousel_container",
+        "permalink": "https://www.instagram.com/p/CSTtaggedPost28/",
+        "accessibility_caption": "A table of handmade ceramics and fresh bread."
+      }
+    ],
+    "posts_count": 45,
+    "more_available": true,
+    "next_max_id": "QVFCcWl0Z1E9"
+  },
+  "tableFields": [
+    {
+      "name": "shortcode",
+      "label": "Shortcode",
+      "format": "text"
+    },
+    {
+      "name": "author_username",
+      "label": "Author Username",
+      "format": "text"
+    },
+    {
+      "name": "caption",
+      "label": "Caption",
+      "format": "text"
+    },
+    {
+      "name": "like_count",
+      "label": "Like Count",
+      "format": "number"
+    },
+    {
+      "name": "permalink",
+      "label": "Post URL",
+      "format": "link"
+    }
+  ],
+  "storeCopy": {
+    "seoTitle": "Instagram Tagged Posts Scraper | Public Mentions",
+    "seoDescription": "Find public Instagram posts tagging an account, with captions, engagement, authors, and links. Batch usernames and page through tagged results.",
+    "intro": "Find public Instagram posts that tag an account and collect captions, engagement, media links, and publisher profiles. Add multiple usernames and follow available result pages.",
+    "useCases": [
+      "Brand teams can monitor public posts that tag a company account.",
+      "Creator managers can review tagged content across several public profiles.",
+      "Researchers can study how accounts appear in public community posts."
+    ],
+    "howToUse": [
+      "Add each public account username to `usernames`.",
+      "Set `maxPages` to limit cursor pagination for each account.",
+      "Export post captions, authors, and links with `maxResults` set to your run cap."
+    ],
+    "faqs": [
+      {
+        "question": "Does this include private posts?",
+        "answer": "No. Results depend on public tagged-post data available from Instagram."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "instagram-user-posts-cheapest-0-20-1000-results",
+        "title": "Instagram User Posts Scraper"
+      },
+      {
+        "slug": "instagram-user-info-cheapest-0-20-1000-results",
+        "title": "Instagram User Info | Cheapest $0.20/1k results"
+      },
+      {
+        "slug": "tiktok-hashtag-posts-scraper",
+        "title": "TikTok Hashtag Posts Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Instagram media identifier for the post where the account is tagged."
+      },
+      {
+        "name": "shortcode",
+        "type": "String",
+        "description": "Short code used in the public Instagram post URL."
+      },
+      {
+        "name": "media_type",
+        "type": "String",
+        "description": "Instagram format label for the tagged post."
+      },
+      {
+        "name": "caption",
+        "type": "String",
+        "description": "Caption text published with the tagged post."
+      },
+      {
+        "name": "hashtags",
+        "type": "Array<String>",
+        "description": "Hashtags extracted from the tagged post caption."
+      },
+      {
+        "name": "taken_at",
+        "type": "String or null",
+        "description": "ISO 8601 posting time when Instagram provides it."
+      },
+      {
+        "name": "taken_at_timestamp",
+        "type": "Integer or null",
+        "description": "Unix posting timestamp when Instagram provides it."
+      },
+      {
+        "name": "like_count",
+        "type": "Integer",
+        "description": "Number of likes reported for the tagged post."
+      },
+      {
+        "name": "comment_count",
+        "type": "Integer",
+        "description": "Number of comments reported for the tagged post."
+      },
+      {
+        "name": "play_count",
+        "type": "Integer or null",
+        "description": "Video play count when the tagged post is a video; otherwise null."
+      },
+      {
+        "name": "view_count",
+        "type": "Integer or null",
+        "description": "Video view count when the tagged post is a video; otherwise null."
+      },
+      {
+        "name": "media",
+        "type": "Array<Object>",
+        "description": "Image or video assets attached to the tagged post."
+      },
+      {
+        "name": "location",
+        "type": "Object or null",
+        "description": "Location attached to the tagged post, or null when none is reported."
+      },
+      {
+        "name": "author",
+        "type": "Object",
+        "description": "Public profile details for the account that published the tagged post."
+      },
+      {
+        "name": "collaborators",
+        "type": "Array<Object>",
+        "description": "Public collaborator profiles attached to the post, when present."
+      },
+      {
+        "name": "tagged_users",
+        "type": "Array<Object>",
+        "description": "Public profile records tagged in the post, when present."
+      },
+      {
+        "name": "is_paid_partnership",
+        "type": "Boolean",
+        "description": "True when Instagram marks the post as a paid partnership."
+      },
+      {
+        "name": "product_type",
+        "type": "String",
+        "description": "Instagram publishing format for the tagged post."
+      },
+      {
+        "name": "permalink",
+        "type": "String",
+        "description": "Public Instagram URL for the tagged post."
+      },
+      {
+        "name": "accessibility_caption",
+        "type": "String or null",
+        "description": "Accessibility description of the media, or null when Instagram has none."
+      },
+      {
+        "name": "author_id",
+        "type": "String",
+        "description": "Instagram identifier for the account that published the post."
+      },
+      {
+        "name": "author_username",
+        "type": "String or null",
+        "description": "Public handle of the account that published the post, when available."
+      },
+      {
+        "name": "author_verified",
+        "type": "String",
+        "description": "True when Instagram marks the posting account as verified."
+      },
+      {
+        "name": "input_username",
+        "type": "String",
+        "description": "Instagram username used to retrieve this account’s posts."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

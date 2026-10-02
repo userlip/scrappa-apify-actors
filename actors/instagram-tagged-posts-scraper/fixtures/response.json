@@ -1,0 +1,57 @@
+{
+  "success": true,
+  "found": true,
+  "user_id": "584700123456789",
+  "username": "harbor.bakes",
+  "posts": [
+    {
+      "id": "3930123456789012345",
+      "shortcode": "CSTtaggedPost28",
+      "media_type": "Carousel",
+      "caption": "Weekend market finds and the people who made them.",
+      "hashtags": [
+        "citymarket",
+        "smallbatch"
+      ],
+      "taken_at": "2025-09-18T14:32:11Z",
+      "taken_at_timestamp": 1758205931,
+      "like_count": 913,
+      "comment_count": 27,
+      "play_count": null,
+      "view_count": null,
+      "media": [
+        {
+          "type": "image",
+          "thumbnail_url": "https://cdn.instagram.com/media/market-table.jpg"
+        }
+      ],
+      "location": null,
+      "author": {
+        "id": "584700123456792",
+        "username": "maker.studio",
+        "full_name": "Maker Studio",
+        "profile_pic_url": "https://cdn.instagram.com/profiles/maker-studio.jpg",
+        "is_verified": false
+      },
+      "collaborators": [
+        {
+          "id": "584700123456793",
+          "username": "harbor.bakes"
+        }
+      ],
+      "tagged_users": [
+        {
+          "id": "584700123456789",
+          "username": "harbor.bakes"
+        }
+      ],
+      "is_paid_partnership": false,
+      "product_type": "carousel_container",
+      "permalink": "https://www.instagram.com/p/CSTtaggedPost28/",
+      "accessibility_caption": "A table of handmade ceramics and fresh bread."
+    }
+  ],
+  "posts_count": 45,
+  "more_available": true,
+  "next_max_id": "QVFCcWl0Z1E9"
+}

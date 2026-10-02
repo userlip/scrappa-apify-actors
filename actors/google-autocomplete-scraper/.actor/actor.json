@@ -1,0 +1,44 @@
+{
+  "actorSpecification": 1,
+  "name": "google-autocomplete-scraper",
+  "title": "Google Autocomplete Keyword Scraper",
+  "description": "Get Google autocomplete suggestions with phrases related to each search. Batch seed keywords, choose a language, and export long-tail search ideas.",
+  "categories": [
+    "SEO_TOOLS"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "value"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "value": {
+                "label": "Suggested Phrase",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
