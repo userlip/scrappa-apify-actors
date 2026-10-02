@@ -254,9 +254,6 @@ impl Storage {
             })
             .await?;
         let run = response_json(response, "read Actor run pricing").await?;
-        #[cfg(test)]
-        let dataset_written = 0;
-        #[cfg(not(test))]
         let dataset_written = self.current_dataset_item_count().await?;
         self.dataset_written = Some(dataset_written);
         let mut allowed = apify_dataset_budget(&run, requested)?;
@@ -425,7 +422,7 @@ impl Storage {
         loop {
             let remaining = deadline.saturating_duration_since(Instant::now());
             if remaining.is_zero() {
-                bail!("Apify dataset write retry budget exhausted (150 second limit)");
+                bail!("Apify dataset write retry budget exhausted");
             }
             let body = match next_body.take() {
                 Some(body) if pending.len() == items.len() => body,
@@ -518,7 +515,7 @@ impl Storage {
             let delay = retry_delay(attempt);
             let remaining = deadline.saturating_duration_since(Instant::now());
             if delay >= remaining {
-                bail!("Apify dataset write retry budget exhausted (150 second limit)");
+                bail!("Apify dataset write retry budget exhausted");
             }
             eprintln!(
                 "Apify dataset write attempt failed; retrying after {}ms",
@@ -543,10 +540,18 @@ impl Storage {
             .append_pair("limit", &expected.len().to_string());
         let stop_checking_at = (Instant::now() + wait_limit).min(deadline);
         let mut previous_prefix = None;
+        let mut stable_prefix = None;
         // Once any rows of this chunk were seen, a full re-post could duplicate them.
         let mut saw_rows = false;
 
         loop {
+            if Instant::now() >= stop_checking_at {
+                return Ok(match stable_prefix {
+                    Some(count) => DatasetVerification::Prefix(count),
+                    None if saw_rows => DatasetVerification::Mismatch,
+                    None => DatasetVerification::None,
+                });
+            }
             let remaining = deadline.saturating_duration_since(Instant::now());
             if remaining.is_zero() {
                 bail!("Apify dataset verification retry budget exhausted");
@@ -569,26 +574,34 @@ impl Storage {
                 }
                 DatasetVerification::Prefix(count) => {
                     saw_rows = true;
-                    if previous_prefix == Some(count) {
+                    stable_prefix = (previous_prefix == Some(count)).then_some(count);
+                    previous_prefix = Some(count);
+                    if cfg!(test) && stable_prefix == Some(count) {
                         return Ok(DatasetVerification::Prefix(count));
                     }
-                    previous_prefix = Some(count);
                 }
-                DatasetVerification::None if saw_rows => return Ok(DatasetVerification::Mismatch),
-                DatasetVerification::None => previous_prefix = None,
+                DatasetVerification::None => {
+                    previous_prefix = None;
+                    stable_prefix = None;
+                }
             }
             if cfg!(test) && previous_prefix.is_none() {
-                return Ok(DatasetVerification::None);
-            }
-
-            if Instant::now() >= stop_checking_at {
                 return Ok(if saw_rows {
                     DatasetVerification::Mismatch
                 } else {
                     DatasetVerification::None
                 });
             }
-            let settle = DATASET_VERIFY_SETTLE.min(stop_checking_at - Instant::now());
+
+            if Instant::now() >= stop_checking_at {
+                return Ok(match stable_prefix {
+                    Some(count) => DatasetVerification::Prefix(count),
+                    None if saw_rows => DatasetVerification::Mismatch,
+                    None => DatasetVerification::None,
+                });
+            }
+            let settle = DATASET_VERIFY_SETTLE
+                .min(stop_checking_at.saturating_duration_since(Instant::now()));
             dataset_settle_sleep(settle).await;
         }
     }
@@ -652,7 +665,7 @@ impl Storage {
         loop {
             let remaining = deadline.saturating_duration_since(Instant::now());
             if remaining.is_zero() || (cfg!(test) && attempts >= 3) {
-                bail!("Apify {operation} retry budget exhausted (150 second limit)");
+                bail!("Apify {operation} retry budget exhausted");
             }
             attempts += 1;
             match request()
@@ -663,7 +676,7 @@ impl Storage {
                 Ok(response) if should_retry_apify(response.status()) => {
                     let delay = retry_delay(attempt);
                     if delay >= deadline.saturating_duration_since(Instant::now()) {
-                        bail!("Apify {operation} retry budget exhausted (150 second limit)");
+                        bail!("Apify {operation} retry budget exhausted");
                     }
                     eprintln!(
                         "Apify {operation} returned {}; retrying after {}ms",
@@ -677,7 +690,7 @@ impl Storage {
                 Err(error) => {
                     let delay = retry_delay(attempt);
                     if delay >= deadline.saturating_duration_since(Instant::now()) {
-                        bail!("Apify {operation} retry budget exhausted (150 second limit)");
+                        bail!("Apify {operation} retry budget exhausted");
                     }
                     eprintln!(
                         "Apify {operation} failed ({}); retrying after {}ms",
@@ -761,7 +774,9 @@ fn json_values_equal(left: &Value, right: &Value) -> bool {
 fn json_numbers_equal(left: &Number, right: &Number) -> bool {
     match (integer_value(left), integer_value(right)) {
         (Some(left), Some(right)) => left == right,
-        _ => left.as_f64() == right.as_f64(),
+        (Some(integer), None) => integer_as_exact_f64(integer) == right.as_f64(),
+        (None, Some(integer)) => left.as_f64() == integer_as_exact_f64(integer),
+        (None, None) => left.as_f64() == right.as_f64(),
     }
 }
 
@@ -770,6 +785,16 @@ fn integer_value(number: &Number) -> Option<i128> {
         .as_i64()
         .map(i128::from)
         .or_else(|| number.as_u64().map(i128::from))
+}
+
+fn integer_as_exact_f64(integer: i128) -> Option<f64> {
+    let magnitude = integer.unsigned_abs();
+    if magnitude == 0 {
+        return Some(0.0);
+    }
+
+    let significant_bits = u128::BITS - magnitude.leading_zeros() - magnitude.trailing_zeros();
+    (significant_bits <= f64::MANTISSA_DIGITS).then_some(integer as f64)
 }
 
 fn dataset_retry_resolution(verification: DatasetVerification) -> DatasetRetryResolution {
@@ -2892,6 +2917,20 @@ mod tests {
             ),
             DatasetVerification::Mismatch
         );
+        assert_eq!(
+            compare_dataset_prefix(
+                &[json!(9_007_199_254_740_993_u64)],
+                &[json!(9_007_199_254_740_992.0)]
+            ),
+            DatasetVerification::Mismatch
+        );
+        assert_eq!(
+            compare_dataset_prefix(
+                &[json!(9_007_199_254_740_992_u64)],
+                &[json!(9_007_199_254_740_992.0)]
+            ),
+            DatasetVerification::Complete
+        );
         assert!(json_values_equal(
             &json!({"outer":[4.0, {"value": 2}]}),
             &json!({"outer":[4, {"value": 2.0}]})
@@ -2999,6 +3038,7 @@ mod tests {
     async fn initializes_the_restart_offset_from_lagging_dataset_items() {
         let items = vec![json!({"id":"new"})];
         let server = MockApifyServer::start(vec![
+            (200, "{\"data\":{}}".to_owned()),
             (200, "{\"data\":{\"itemCount\":19}}".to_owned()),
             (200, "[]".to_owned()),
             (200, "[{\"id\":\"old-1\"},{\"id\":\"old-2\"}]".to_owned()),
@@ -3008,9 +3048,9 @@ mod tests {
             (200, serde_json::to_string(&items).unwrap()),
         ]);
         let mut storage = test_storage(server.base.clone());
-        let count = storage.current_dataset_item_count().await.unwrap();
+        storage.initialize_budget(10).await.unwrap();
+        let count = storage.dataset_written.unwrap();
         assert_eq!(count, 21);
-        storage.dataset_written = Some(count);
 
         let result = push_test_chunk(&storage, &items).await.unwrap();
         assert!(matches!(result, DatasetChunkResult::Saved(1)));
@@ -3031,8 +3071,8 @@ mod tests {
                 "/v2/datasets/dataset-1/items?offset=21&limit=1",
             ]
         );
-        assert_eq!(request_method(&requests[5]), "POST");
-        assert_eq!(request_method(&requests[6]), "GET");
+        assert_eq!(request_method(&requests[6]), "POST");
+        assert_eq!(request_method(&requests[7]), "GET");
     }
 
     #[tokio::test]

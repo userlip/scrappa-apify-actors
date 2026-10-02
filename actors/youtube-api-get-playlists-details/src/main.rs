@@ -811,11 +811,11 @@ mod tests {
             playlist_rows(),
             pricing_response(1.0, 0),
             response(500, "{}"),
-            response(500, "verification unavailable"),
+            response(400, "verification unavailable"),
         ]);
         let error = run_actor(&client(), &config(&server.base_url))
             .await
             .unwrap_err();
-        assert!(format!("{error:#}").contains("500 Internal Server Error"));
+        assert!(format!("{error:#}").contains("400"), "{error:#}");
     }
 }

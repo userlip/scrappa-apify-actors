@@ -278,11 +278,11 @@ async fn retry_dataset_write(builder: RequestBuilder, request: Request) -> Resul
                 .await
                 {
                     Ok(verification) => verification,
-                    Err(_) => {
+                    Err(verification_error) => {
                         if *written != Some(start_offset + saved_prefix + pending.len()) {
                             *written = None;
                         }
-                        return Err(response_error(response));
+                        return Err(verification_error);
                     }
                 };
                 match verification {
@@ -326,11 +326,11 @@ async fn retry_dataset_write(builder: RequestBuilder, request: Request) -> Resul
                 .await
                 {
                     Ok(verification) => verification,
-                    Err(_) => {
+                    Err(verification_error) => {
                         if *written != Some(start_offset + saved_prefix + pending.len()) {
                             *written = None;
                         }
-                        return Err(Error::without_url(error));
+                        return Err(verification_error);
                     }
                 };
                 match verification {
@@ -467,28 +467,29 @@ async fn verify_dataset_chunk(
     written: &mut Option<usize>,
 ) -> Result<DatasetVerification, Error> {
     let started = Instant::now();
+    let verify_until = (started + wait_limit).min(deadline);
     let mut attempt = 0;
     let mut previous_prefix = None;
+    let mut stable_prefix = None;
     // Once any rows of this chunk were seen, a full re-post could duplicate them.
     let mut saw_rows = false;
 
     loop {
-        if started.elapsed() >= wait_limit && attempt > 0 {
-            return Ok(if saw_rows {
-                DatasetVerification::Mismatch
-            } else {
-                DatasetVerification::None
+        if Instant::now() >= verify_until {
+            return Ok(match stable_prefix {
+                Some(count) => DatasetVerification::Prefix(count),
+                None if saw_rows => DatasetVerification::Mismatch,
+                None => DatasetVerification::None,
             });
         }
-        settle_sleep(VERIFY_SETTLE.min(wait_limit.saturating_sub(started.elapsed()))).await;
-        let verify_deadline = (started + wait_limit).min(deadline);
+        settle_sleep(VERIFY_SETTLE.min(verify_until.saturating_duration_since(Instant::now()))).await;
         let rows = match read_dataset_rows(
             client,
             items_url,
             headers,
             offset,
             expected.len(),
-            verify_deadline,
+            verify_until,
         )
         .await
         {
@@ -500,7 +501,9 @@ async fn verify_dataset_chunk(
             {
                 return Err(error.redact_url());
             }
-            Err(_) if started.elapsed() < wait_limit && !test_attempt_limit_reached(attempt) => {
+            Err(_) if Instant::now() < verify_until && !test_attempt_limit_reached(attempt) => {
+                previous_prefix = None;
+                stable_prefix = None;
                 attempt += 1;
                 continue;
             }
@@ -521,26 +524,41 @@ async fn verify_dataset_chunk(
             }
             DatasetVerificationResult::Prefix(count) => {
                 saw_rows = true;
-                if previous_prefix == Some(count) {
+                stable_prefix = (previous_prefix == Some(count)).then_some(count);
+                previous_prefix = Some(count);
+                if cfg!(test) && stable_prefix == Some(count) {
                     return Ok(DatasetVerification::Prefix(count));
                 }
-                previous_prefix = Some(count);
                 attempt += 1;
             }
-            DatasetVerificationResult::None if saw_rows => {
-                return Ok(DatasetVerification::Mismatch);
-            }
-            DatasetVerificationResult::None if cfg!(test) => {
-                return Ok(DatasetVerification::None);
-            }
-            DatasetVerificationResult::None
-                if started.elapsed() < wait_limit && !test_attempt_limit_reached(attempt) =>
-            {
+            DatasetVerificationResult::None => {
                 previous_prefix = None;
-                attempt += 1;
+                stable_prefix = None;
+                if cfg!(test) {
+                    return Ok(if saw_rows {
+                        DatasetVerification::Mismatch
+                    } else {
+                        DatasetVerification::None
+                    });
+                }
+                if Instant::now() < verify_until && !test_attempt_limit_reached(attempt) {
+                    attempt += 1;
+                } else {
+                    return Ok(if saw_rows {
+                        DatasetVerification::Mismatch
+                    } else {
+                        DatasetVerification::None
+                    });
+                }
             }
-            DatasetVerificationResult::None => return Ok(DatasetVerification::None),
             DatasetVerificationResult::Mismatch => return Ok(DatasetVerification::Mismatch),
+        }
+        if Instant::now() >= verify_until {
+            return Ok(match stable_prefix {
+                Some(count) => DatasetVerification::Prefix(count),
+                None if saw_rows => DatasetVerification::Mismatch,
+                None => DatasetVerification::None,
+            });
         }
     }
 }
@@ -598,7 +616,9 @@ fn json_values_equal(left: &Value, right: &Value) -> bool {
 fn json_numbers_equal(left: &Number, right: &Number) -> bool {
     match (integer_value(left), integer_value(right)) {
         (Some(left), Some(right)) => left == right,
-        _ => left.as_f64() == right.as_f64(),
+        (Some(integer), None) => integer_as_exact_f64(integer) == right.as_f64(),
+        (None, Some(integer)) => left.as_f64() == integer_as_exact_f64(integer),
+        (None, None) => left.as_f64() == right.as_f64(),
     }
 }
 
@@ -607,6 +627,16 @@ fn integer_value(number: &Number) -> Option<i128> {
         .as_i64()
         .map(i128::from)
         .or_else(|| number.as_u64().map(i128::from))
+}
+
+fn integer_as_exact_f64(integer: i128) -> Option<f64> {
+    let magnitude = integer.unsigned_abs();
+    if magnitude == 0 {
+        return Some(0.0);
+    }
+
+    let significant_bits = u128::BITS - magnitude.leading_zeros() - magnitude.trailing_zeros();
+    (significant_bits <= f64::MANTISSA_DIGITS).then_some(integer as f64)
 }
 
 async fn read_dataset_rows(
@@ -1080,14 +1110,14 @@ mod tests {
     async fn does_not_repost_when_dataset_verification_cannot_complete() {
         let server = MockServer::start(vec![
             response(502, json!({})),
-            response(500, json!({"error":"verification unavailable"})),
+            response(400, json!({"error":"verification unavailable"})),
         ]);
         let error = Client::new()
             .post(format!("{}/v2/datasets/dataset-5/items", server.base))
             .json(&json!([{"id":1}]))
             .send_apify_with_retry()
             .await;
-        assert_eq!(error.unwrap_err().status(), Some(StatusCode::BAD_GATEWAY));
+        assert_eq!(error.unwrap_err().status(), Some(StatusCode::BAD_REQUEST));
         let progress_key = format!(
             "{}{}",
             Url::parse(&format!("{}/v2/datasets/dataset-5/items", server.base))
@@ -1107,7 +1137,7 @@ mod tests {
         let server = MockServer::start(vec![
             response(502, json!({})),
             response(200, json!([{"id":1}])),
-            response(500, json!({"error":"follow-up verification unavailable"})),
+            response(400, json!({"error":"follow-up verification unavailable"})),
             response(502, json!({})),
             response(200, json!([{"id":2}])),
             response(200, json!([{"id":2}])),
@@ -1118,7 +1148,7 @@ mod tests {
             .json(&json!([{"id":1}]))
             .send_apify_with_retry()
             .await;
-        assert_eq!(first.unwrap_err().status(), Some(StatusCode::BAD_GATEWAY));
+        assert_eq!(first.unwrap_err().status(), Some(StatusCode::BAD_REQUEST));
 
         let second = Client::new()
             .post(&url)
@@ -1205,6 +1235,14 @@ mod tests {
         assert!(!json_values_equal(
             &json!(9_007_199_254_740_992_u64),
             &json!(9_007_199_254_740_993_u64)
+        ));
+        assert!(json_values_equal(
+            &json!(9_007_199_254_740_992_u64),
+            &json!(9_007_199_254_740_992.0)
+        ));
+        assert!(!json_values_equal(
+            &json!(9_007_199_254_740_993_u64),
+            &json!(9_007_199_254_740_992.0)
         ));
         assert!(json_values_equal(
             &json!({"nested":[4.0, {"value": 2}]}),
