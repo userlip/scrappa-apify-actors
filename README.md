@@ -6,12 +6,11 @@ Apify Actors for [Scrappa](https://scrappa.co) APIs - Google Search, Maps, YouTu
 
 ```
 scrappa-apify-actors/
-├── actors/           # Individual Apify actors
-│   ├── google-search/
-│   ├── google-maps-business-details-scraper/
-│   └── ...
-├── shared/           # Shared Scrappa client library
-└── package.json      # Workspace root
+├── actors/      # One self-contained Rust crate per Apify Actor
+├── specs/       # Specs for generated endpoint Actors
+├── templates/   # Shared Rust template used by the generator
+├── scripts/     # Generator, deploy, validation and audit scripts (Node, no dependencies)
+└── docs/        # Store copy guide, coverage, metadata
 ```
 
 ## Setup
@@ -36,13 +35,13 @@ Use the actor's focused Cargo tests or its documented Docker smoke fixture. Live
 Public actors must have active `pricingInfo` or `currentPricingInfo` once scheduled paid pricing takes effect. Run the live Apify pricing audit with an organization token:
 
 ```bash
-APIFY_TOKEN=... pnpm audit:pricing
+APIFY_TOKEN=... npm run audit:pricing
 ```
 
 For an exact activation checkpoint, pass the verification timestamp:
 
 ```bash
-APIFY_TOKEN=... pnpm audit:pricing --now 2026-05-17T15:00:00.000Z
+APIFY_TOKEN=... npm run audit:pricing --now 2026-05-17T15:00:00.000Z
 ```
 
 The audit exits with code `1` when a public actor has due paid `pricingInfos` but no active paid evidence in `pricingInfo` or `currentPricingInfo`, or when a public actor has no paid `pricingInfos`.
@@ -52,13 +51,13 @@ The audit exits with code `1` when a public actor has due paid `pricingInfos` bu
 Run the live health audit with a configured Apify organization token:
 
 ```bash
-APIFY_TOKEN=... pnpm audit:health
+APIFY_TOKEN=... npm run audit:health
 ```
 
 For machine-readable triage output, use:
 
 ```bash
-APIFY_TOKEN=... pnpm audit:health --json
+APIFY_TOKEN=... npm run audit:health --json
 ```
 
 The health audit fetches visible Apify actors, then strictly scopes reports to public TheScrappa-owned actors where `userId` is `8683TqwnXHrQ46FhH` or `username` is `thescrappa`. Public actors that are visible to the token but are not owned by TheScrappa, or that have unknown ownership fields, are reported as exclusions instead of being included in run/build/notice health. This prevents accessible store actors such as Apify-owned actors from creating false Scrappa alarms. Do not commit raw Apify tokens.
@@ -68,13 +67,13 @@ The health audit fetches visible Apify actors, then strictly scopes reports to p
 Public actors that call Scrappa APIs must have `SCRAPPA_API_KEY` configured as a secret on their default Actor version. The secret audit resolves the default version from Apify `defaultRunOptions.build` and the available version `buildTag` values before checking env vars, so legacy `0.0` Actors and newer `1.0` Actors are both checked correctly:
 
 ```bash
-APIFY_TOKEN=... pnpm audit:secrets
+APIFY_TOKEN=... npm run audit:secrets
 ```
 
 For machine-readable evidence, use:
 
 ```bash
-APIFY_TOKEN=... pnpm audit:secrets --json --include-present
+APIFY_TOKEN=... npm run audit:secrets --json --include-present
 ```
 
 ### Verifying live actor source parity
@@ -82,13 +81,13 @@ APIFY_TOKEN=... pnpm audit:secrets --json --include-present
 Before deployment work, compare the live TheScrappa Apify inventory against local actor sources:
 
 ```bash
-APIFY_TOKEN=... pnpm verify:live-actors
+APIFY_TOKEN=... npm run verify:live-actors
 ```
 
 To import live `SOURCE_FILES` for actors that are missing locally without overwriting existing actor directories, run:
 
 ```bash
-APIFY_TOKEN=... pnpm import:live-actors
+APIFY_TOKEN=... npm run import:live-actors
 ```
 
 ### Creating a new actor
