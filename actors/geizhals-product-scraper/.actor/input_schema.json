@@ -16,7 +16,7 @@
       "maxItems": 100,
       "prefill": [
         {
-          "product_id": "3103639"
+          "product_id": 3103639
         }
       ],
       "items": {
@@ -95,7 +95,8 @@
         "uk"
       ],
       "description": "Market code: de, at, eu, pl, or uk. Defaults to de.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "de"
     },
     "lang": {
       "title": "Language",
@@ -105,7 +106,8 @@
         "en"
       ],
       "description": "Response language: de or en. Defaults to de.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "de"
     },
     "offers": {
       "title": "Offers",
@@ -113,25 +115,29 @@
       "minimum": 1,
       "maximum": 100,
       "description": "Maximum number of merchant offers to include (1-100). Defaults to 20.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 2
     },
     "merchant_details": {
       "title": "Merchant Details",
       "type": "boolean",
       "description": "Include merchant/shop details on offers. Defaults to true.",
-      "editor": "checkbox"
+      "editor": "checkbox",
+      "prefill": false
     },
     "reviews": {
       "title": "Reviews",
       "type": "boolean",
       "description": "Include test reviews and review details. Defaults to true.",
-      "editor": "checkbox"
+      "editor": "checkbox",
+      "prefill": false
     },
     "videos": {
       "title": "Videos",
       "type": "boolean",
       "description": "Include product videos. Defaults to true.",
-      "editor": "checkbox"
+      "editor": "checkbox",
+      "prefill": false
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -140,7 +146,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 1
     }
   }
 }

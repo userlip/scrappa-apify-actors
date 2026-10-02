@@ -131,7 +131,7 @@
             "title": "Locale",
             "type": "string",
             "description": "Language locale such as en-US.",
-            "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+            "pattern": "^[a-z]{2}(?:-[A-Za-z]{2})?$",
             "default": "en-US",
             "editor": "textfield"
           },
@@ -253,7 +253,7 @@
       "title": "Locale",
       "type": "string",
       "description": "Language locale such as en-US.",
-      "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+      "pattern": "^[a-z]{2}(?:-[A-Za-z]{2})?$",
       "default": "en-US",
       "editor": "textfield"
     },
@@ -288,7 +288,8 @@
         "One way",
         "Round trip"
       ],
-      "default": "one-way"
+      "default": "one-way",
+      "prefill": "one-way"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -297,7 +298,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 20
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -306,7 +308,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 5,
-      "default": 2
+      "default": 2,
+      "prefill": 2
     }
   }
 }

@@ -30,7 +30,7 @@
             "type": "string",
             "minLength": 2,
             "maxLength": 120,
-            "pattern": "^[a-z0-9,+ -]+$",
+            "pattern": "^[A-Za-z0-9,+ -]+$",
             "description": "Location slug or text such as sydney-nsw-2000. Required unless url is supplied.",
             "editor": "textfield"
           },
@@ -67,7 +67,8 @@
       "minimum": 1,
       "maximum": 200,
       "description": "Page number for find-agent pagination.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -76,7 +77,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 5
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -85,7 +87,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 2
+      "default": 2,
+      "prefill": 1
     }
   }
 }

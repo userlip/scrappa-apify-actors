@@ -80,11 +80,11 @@
             "type": "integer",
             "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions.",
             "enum": [
-              "0",
-              "1",
-              "2"
+              0,
+              1,
+              2
             ],
-            "default": "0",
+            "default": 0,
             "editor": "select"
           },
           "cites": {
@@ -151,11 +151,11 @@
       "type": "integer",
       "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions.",
       "enum": [
-        "0",
-        "1",
-        "2"
+        0,
+        1,
+        2
       ],
-      "default": "0",
+      "default": 0,
       "editor": "select"
     },
     "cites": {
@@ -179,7 +179,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 20
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -188,7 +189,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 2
+      "default": 2,
+      "prefill": 2
     }
   }
 }

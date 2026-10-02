@@ -163,7 +163,8 @@
         "immobilie"
       ],
       "description": "Property type slug: wohnung, haus, grundstueck, zimmer, buero, einzelhandel, gastronomie, lagerhalle, landwirtschaftliches-objekt, wohnen-auf-zeit, gewerbliche-freizeitimmobilie, zinshaus-rendite, sonstiges, immobilie. Required unless q is used.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "wohnung"
     },
     "transaction": {
       "title": "Transaction",
@@ -173,7 +174,8 @@
         "mieten"
       ],
       "description": "kaufen (buy) or mieten (rent). Required unless q is used.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "mieten"
     },
     "state": {
       "title": "State",
@@ -196,7 +198,8 @@
       "type": "integer",
       "minimum": 1,
       "description": "1-based result page. Beyond the last page returns a non-billable 404.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "sort": {
       "title": "Sort order",
@@ -258,7 +261,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 5
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -267,7 +271,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 2
+      "default": 2,
+      "prefill": 1
     }
   }
 }

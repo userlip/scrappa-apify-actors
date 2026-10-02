@@ -105,11 +105,11 @@
         "type": "integer",
         "description": "0 for relevance, 1 for recent abstracts, or 2 for all recent additions.",
         "enum": [
-          "0",
-          "1",
-          "2"
+          0,
+          1,
+          2
         ],
-        "default": "0"
+        "default": 0
       },
       "editor": "select"
     },

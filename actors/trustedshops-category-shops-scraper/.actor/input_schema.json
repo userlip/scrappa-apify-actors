@@ -69,7 +69,8 @@
       "minimum": 0,
       "maximum": 500,
       "description": "Page number for pagination (0-500). Default: 0",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 0
     },
     "market": {
       "title": "Market",
@@ -88,7 +89,8 @@
         "PRT"
       ],
       "description": "Market code filter (DEU, GBR, AUT, CHE, NLD, ESP, ITA, FRA, BEL, POL, PRT). Default: DEU",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "DEU"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -97,7 +99,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 5
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -106,7 +109,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 20,
-      "default": 2
+      "default": 2,
+      "prefill": 1
     }
   }
 }

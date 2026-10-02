@@ -104,7 +104,8 @@
         "hotel"
       ],
       "description": "Type of KAYAK location identifier, such as a city, airport, or hotel. Accepted values: city, airport, hotel.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "city"
     },
     "checkin": {
       "title": "Checkin",
@@ -126,7 +127,8 @@
       "minimum": 1,
       "maximum": 9,
       "description": "Number of adult travelers included in the search.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 2
     },
     "rooms": {
       "title": "Rooms",
@@ -134,7 +136,8 @@
       "minimum": 1,
       "maximum": 8,
       "description": "Number of hotel rooms requested.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "child_age": {
       "title": "Child age",
@@ -153,7 +156,8 @@
         "review_a"
       ],
       "description": "Sort order for returned search results. Accepted values: rank_a, price_a, review_a.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "rank_a"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -162,7 +166,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     }
   }
 }

@@ -208,7 +208,8 @@
       "maximum": 9,
       "nullable": true,
       "description": "Number of adult travelers included in the search.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "children": {
       "title": "Children",
@@ -248,7 +249,8 @@
       ],
       "nullable": true,
       "description": "Cabin class: economy, premium_economy, business, or first (default: economy) Accepted values: economy, premium_economy, business, first.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "economy"
     },
     "exclude_basic": {
       "title": "Exclude Basic",
@@ -352,7 +354,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     }
   }
 }

@@ -130,14 +130,16 @@
         "sold"
       ],
       "description": "Listing channel: buy, rent, or sold.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "buy"
     },
     "page": {
       "title": "Page",
       "type": "integer",
       "minimum": 1,
       "description": "Page number.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "sort": {
       "title": "Sort order",
@@ -213,7 +215,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 5
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -222,7 +225,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 2
+      "default": 2,
+      "prefill": 1
     }
   }
 }

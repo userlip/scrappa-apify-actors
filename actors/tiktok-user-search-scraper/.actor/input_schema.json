@@ -59,7 +59,8 @@
       "minimum": 1,
       "maximum": 50,
       "default": 10,
-      "editor": "number"
+      "editor": "number",
+      "prefill": 10
     },
     "cursor": {
       "title": "Cursor",
@@ -67,7 +68,8 @@
       "description": "Pagination cursor from the previous response. Pass this value with the same `keywords` query when `hasMore` is true.",
       "maxLength": 100,
       "default": "0",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "0"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -76,7 +78,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 20
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -85,7 +88,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 5,
-      "default": 2
+      "default": 2,
+      "prefill": 2
     }
   }
 }

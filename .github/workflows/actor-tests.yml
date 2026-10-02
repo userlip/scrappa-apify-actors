@@ -10,6 +10,7 @@ on:
       - 'templates/**'
       - 'scripts/generate-actors.mjs'
       - 'scripts/validate-store-copy.mjs'
+      - 'scripts/validate-prefill.mjs'
       - 'docs/generated-actors.md'
       - 'README.md'
       - '.github/workflows/actor-tests.yml'
@@ -21,6 +22,7 @@ on:
       - 'templates/**'
       - 'scripts/generate-actors.mjs'
       - 'scripts/validate-store-copy.mjs'
+      - 'scripts/validate-prefill.mjs'
       - 'docs/generated-actors.md'
       - 'README.md'
       - '.github/workflows/actor-tests.yml'
@@ -246,3 +248,6 @@ jobs:
 
       - name: Validate generated Store copy
         run: node scripts/validate-store-copy.mjs
+
+      - name: Validate prefilled inputs against input schemas
+        run: node scripts/validate-prefill.mjs actors/*

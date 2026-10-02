@@ -16,7 +16,7 @@
       "maxItems": 100,
       "prefill": [
         {
-          "product_id": "4612031183"
+          "product_id": 4612031183
         }
       ],
       "items": {
@@ -100,7 +100,8 @@
       "minimum": 1,
       "maximum": 100,
       "description": "1-based page number. Defaults to 1.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "page_size": {
       "title": "Page size",
@@ -108,7 +109,8 @@
       "minimum": 1,
       "maximum": 50,
       "description": "Offers per page. Defaults to 20, maximum 50.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 5
     },
     "sort": {
       "title": "Sort order",
@@ -144,7 +146,8 @@
       "title": "All pages",
       "type": "boolean",
       "description": "Set true to exhaust every expected offer page.",
-      "editor": "checkbox"
+      "editor": "checkbox",
+      "prefill": false
     },
     "offer_conditions": {
       "title": "Offer Conditions",
@@ -160,7 +163,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 5
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -169,7 +173,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 2
+      "default": 2,
+      "prefill": 1
     }
   }
 }

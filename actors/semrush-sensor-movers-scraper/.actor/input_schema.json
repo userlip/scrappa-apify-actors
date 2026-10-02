@@ -117,7 +117,8 @@
         "MOBILE-US"
       ],
       "description": "Database sent to the source search.",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "US"
     },
     "date": {
       "title": "Date",
@@ -133,7 +134,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 20
     }
   }
 }

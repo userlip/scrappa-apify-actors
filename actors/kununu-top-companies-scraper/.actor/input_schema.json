@@ -84,7 +84,8 @@
       "maximum": 100,
       "nullable": true,
       "description": "One-based result page to request.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "sort": {
       "title": "Sort",
@@ -94,7 +95,8 @@
       ],
       "nullable": true,
       "description": "Sort order for returned search results. Accepted values: number-reviews-desc.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "number-reviews-desc"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -103,7 +105,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -112,7 +115,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 50,
-      "default": 1
+      "default": 1,
+      "prefill": 1
     }
   }
 }

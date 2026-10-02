@@ -80,7 +80,8 @@
       "maximum": 100,
       "nullable": true,
       "description": "Maximum number of company matches requested for this search page.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 10
     },
     "offset": {
       "title": "Offset",
@@ -99,7 +100,8 @@
         "ch"
       ],
       "description": "One Kununu country code used to filter search matches. The code is sent as one countries[] value.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "de"
     },
     "industry": {
       "title": "Industry",
@@ -117,7 +119,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -126,7 +129,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 20,
-      "default": 1
+      "default": 1,
+      "prefill": 1
     }
   }
 }

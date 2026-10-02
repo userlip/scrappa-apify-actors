@@ -186,7 +186,8 @@
       "maxLength": 10,
       "nullable": true,
       "description": "Interface language code (e.g. en, de).",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "en"
     },
     "gl": {
       "title": "Gl",
@@ -195,7 +196,8 @@
       "maxLength": 2,
       "nullable": true,
       "description": "Country code for the storefront (2 letters, e.g. us, de).",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "us"
     },
     "store": {
       "title": "Store",
@@ -209,7 +211,8 @@
       ],
       "nullable": true,
       "description": "Google Play store vertical: apps, movies, tv, books, or audiobooks. Accepted values: apps, movies, tv, books, audiobooks.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "apps"
     },
     "season_id": {
       "title": "Season Id",
@@ -294,7 +297,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     }
   }
 }

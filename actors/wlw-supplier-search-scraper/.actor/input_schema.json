@@ -151,7 +151,8 @@
       "type": "integer",
       "minimum": 1,
       "description": "Page number (default: 1)",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "per_page": {
       "title": "Results per page",
@@ -159,7 +160,8 @@
       "minimum": 1,
       "maximum": 50,
       "description": "Results per page (1-50, default: 15)",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 5
     },
     "country": {
       "title": "Country",
@@ -170,7 +172,8 @@
         "CH"
       ],
       "description": "Country code: DE (Germany), AT (Austria), CH (Switzerland). Default: DE",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "DE"
     },
     "countries": {
       "title": "Countries",
@@ -254,7 +257,8 @@
       "minLength": 2,
       "maxLength": 2,
       "description": "Language code (default: de)",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "de"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -263,7 +267,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 5
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -272,7 +277,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 2
+      "default": 2,
+      "prefill": 1
     }
   }
 }

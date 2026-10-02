@@ -138,14 +138,16 @@
         "car"
       ],
       "description": "Vehicle type. v1 supports car.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "car"
     },
     "offset": {
       "title": "Offset",
       "type": "integer",
       "minimum": 0,
       "description": "Zero-based result offset. Defaults to 0.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 0
     },
     "limit": {
       "title": "Limit",
@@ -153,7 +155,8 @@
       "minimum": 1,
       "maximum": 20,
       "description": "Listings to return, from 1 to 20.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 5
     },
     "price_min": {
       "title": "Price Min",
@@ -224,7 +227,8 @@
         "price_desc"
       ],
       "description": "relevance, price_asc, or price_desc.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "relevance"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -233,7 +237,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 5
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -242,7 +247,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 2
+      "default": 2,
+      "prefill": 1
     }
   }
 }

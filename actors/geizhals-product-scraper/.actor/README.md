@@ -36,7 +36,7 @@ Look up Geizhals products by ID and retrieve the product record, merchant offers
 {
   "product_ids": [
     {
-      "product_id": "3103639"
+      "product_id": 3103639
     }
   ],
   "loc": "de",
@@ -195,7 +195,7 @@ Look up Geizhals products by ID and retrieve the product record, merchant offers
   "best_price": 549,
   "offer_count": 12,
   "product_url": "Verified source detail",
-  "input_product_id": "3103639",
+  "input_product_id": 3103639,
   "scraped_at": "2026-10-01T12:00:00Z"
 }
 ```

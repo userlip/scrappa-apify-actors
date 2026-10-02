@@ -107,7 +107,8 @@
         "uk"
       ],
       "description": "Market code: de, at, eu, pl, or uk. Defaults to de.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "de"
     },
     "lang": {
       "title": "Language",
@@ -117,7 +118,8 @@
         "en"
       ],
       "description": "Response language: de or en. Defaults to de.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "de"
     },
     "page": {
       "title": "Page",
@@ -125,7 +127,8 @@
       "minimum": 1,
       "maximum": 1000,
       "description": "1-based page number. Defaults to 1.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "pagesize": {
       "title": "Pagesize",
@@ -133,7 +136,8 @@
       "minimum": 1,
       "maximum": 1000,
       "description": "Results per page, between 1 and 1000. Defaults to 10.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 5
     },
     "sort": {
       "title": "Sort order",
@@ -163,7 +167,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 5
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -172,7 +177,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 2
+      "default": 2,
+      "prefill": 1
     }
   }
 }

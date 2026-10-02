@@ -105,7 +105,8 @@
       "minimum": 0,
       "maximum": 23,
       "description": "Local hour when the rental car is collected.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 10
     },
     "dropoff_hour": {
       "title": "Dropoff Hour",
@@ -113,7 +114,8 @@
       "minimum": 0,
       "maximum": 23,
       "description": "Local hour when the rental car is returned.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 10
     },
     "sort": {
       "title": "Sort",
@@ -123,7 +125,8 @@
         "price_a"
       ],
       "description": "Sort order for returned search results. Accepted values: rank_a, price_a.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "rank_a"
     },
     "price_mode": {
       "title": "Price Mode",
@@ -133,7 +136,8 @@
         "daily"
       ],
       "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: total, daily.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "total"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -142,7 +146,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     }
   }
 }

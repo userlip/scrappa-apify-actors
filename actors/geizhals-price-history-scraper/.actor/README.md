@@ -29,7 +29,7 @@ Retrieve Geizhals price-history points for a product ID, including timestamps an
 {
   "product_ids": [
     {
-      "product_id": "3103639"
+      "product_id": 3103639
     }
   ],
   "loc": "de",
@@ -58,7 +58,7 @@ Retrieve Geizhals price-history points for a product ID, including timestamps an
   "timestamp": 1790086400,
   "price": 549,
   "marker": 8,
-  "input_product_id": "3103639",
+  "input_product_id": 3103639,
   "scraped_at": "2026-10-01T12:00:00Z"
 }
 ```

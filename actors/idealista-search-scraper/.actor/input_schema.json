@@ -272,7 +272,8 @@
         "pt",
         "fr"
       ],
-      "editor": "select"
+      "editor": "select",
+      "prefill": "es"
     },
     "operation": {
       "title": "Operation",
@@ -282,7 +283,8 @@
         "sale",
         "rent"
       ],
-      "editor": "select"
+      "editor": "select",
+      "prefill": "sale"
     },
     "property_type": {
       "title": "Property Type",
@@ -302,7 +304,8 @@
         "luxury",
         "lands"
       ],
-      "editor": "select"
+      "editor": "select",
+      "prefill": "homes"
     },
     "center": {
       "title": "Center",
@@ -492,7 +495,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 20
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -501,7 +505,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 2
+      "default": 2,
+      "prefill": 2
     }
   }
 }

@@ -85,7 +85,8 @@
         "podcasts"
       ],
       "default": "apps",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "apps"
     },
     "country": {
       "title": "Country",
@@ -94,7 +95,8 @@
       "minLength": 2,
       "maxLength": 2,
       "default": "us",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "us"
     },
     "limit": {
       "title": "Limit",
@@ -103,7 +105,8 @@
       "minimum": 1,
       "maximum": 200,
       "default": 20,
-      "editor": "number"
+      "editor": "number",
+      "prefill": 10
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -112,7 +115,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 20
     }
   }
 }

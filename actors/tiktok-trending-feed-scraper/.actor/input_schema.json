@@ -49,7 +49,8 @@
       "minimum": 1,
       "maximum": 20,
       "description": "Results Per Page sent to the source search.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 10
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -58,7 +59,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 20
     }
   }
 }

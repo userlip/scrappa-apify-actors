@@ -16,7 +16,7 @@
       "maxItems": 100,
       "prefill": [
         {
-          "product_id": "3103639"
+          "product_id": 3103639
         }
       ],
       "items": {
@@ -62,7 +62,8 @@
       "minimum": 1,
       "maximum": 3650,
       "description": "History window in days. Defaults to 31. Maximum 3650.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 7
     },
     "loc": {
       "title": "Market",
@@ -75,7 +76,8 @@
         "uk"
       ],
       "description": "Market code: de, at, eu, pl, or uk. Defaults to de.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "de"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -84,7 +86,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     }
   }
 }

@@ -69,7 +69,7 @@ Collect merchant offers for a Billiger.de product, including shop names, prices,
 {
   "product_ids": [
     {
-      "product_id": "4612031183"
+      "product_id": 4612031183
     }
   ],
   "page": 1,
@@ -172,7 +172,7 @@ Collect merchant offers for a Billiger.de product, including shop names, prices,
   "image_url": "https://cdn.northstar.invalid/images/aurora-front.webp",
   "has_image": true,
   "shop_data": null,
-  "input_product_id": "4612031183",
+  "input_product_id": 4612031183,
   "scraped_at": "2026-10-01T12:00:00Z"
 }
 ```

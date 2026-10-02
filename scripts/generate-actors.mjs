@@ -60,6 +60,16 @@ function conditionalDescription(parameter, spec) {
     : '';
 }
 
+// Scrappa's OpenAPI comes from PHP and can use delimited patterns such as
+// `#^https?://...#i`. Apify validates with JavaScript regexes without flags, so
+// strip the delimiters and drop patterns that rely on flags.
+export function jsPattern(pattern) {
+  if (typeof pattern !== 'string') return pattern;
+  const delimited = /^([#\/~@%])([\s\S]*)\1([a-z]*)$/.exec(pattern);
+  if (!delimited) return pattern;
+  return delimited[3] ? undefined : delimited[2];
+}
+
 function propertySchema(parameter, spec) {
   const descriptions = [
     parameter.schema?.description,
@@ -68,9 +78,15 @@ function propertySchema(parameter, spec) {
       .filter((rule) => rule.input === parameter.input)
       .map((rule) => rule.description),
   ].filter(Boolean);
+  const schema = { ...parameter.schema };
+  if ('pattern' in schema) {
+    const pattern = jsPattern(schema.pattern);
+    if (pattern === undefined) delete schema.pattern;
+    else schema.pattern = pattern;
+  }
   return {
     title: parameter.title ?? parameter.input,
-    ...parameter.schema,
+    ...schema,
     description: descriptions.join(' '),
     editor: parameter.editor ?? editorFor(parameter.schema?.type),
   };
@@ -162,6 +178,12 @@ function inputSchema(spec) {
       maximum: spec.pagination.maxPages,
       default: spec.defaultMaxPages,
     };
+  }
+
+  // Every top-level prefill value from the spec must reach the Apify form, not
+  // only the batch list; Apify's daily QA run uses exactly these values.
+  for (const [name, value] of Object.entries(spec.prefill ?? {})) {
+    if (name !== spec.batch.field && properties[name]) properties[name].prefill = value;
   }
 
   const required = [spec.batch.field];

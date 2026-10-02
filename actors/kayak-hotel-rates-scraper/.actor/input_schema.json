@@ -103,7 +103,8 @@
       "minimum": 1,
       "maximum": 9,
       "description": "Number of adult travelers included in the search.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 2
     },
     "rooms": {
       "title": "Rooms",
@@ -111,7 +112,8 @@
       "minimum": 1,
       "maximum": 8,
       "description": "Number of hotel rooms requested.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "child_age": {
       "title": "Child age",
@@ -129,7 +131,8 @@
         "nightly"
       ],
       "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: total, nightly.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "total"
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -138,7 +141,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     }
   }
 }

@@ -186,7 +186,7 @@
       "schema": {
         "type": "string",
         "description": "Language locale such as en-US.",
-        "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+        "pattern": "^[a-z]{2}(?:-[A-Za-z]{2})?$",
         "default": "en-US"
       }
     },

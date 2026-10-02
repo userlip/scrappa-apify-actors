@@ -42,7 +42,7 @@
         "type": "string",
         "minLength": 2,
         "maxLength": 120,
-        "pattern": "^[a-z0-9,+ -]+$",
+        "pattern": "^[A-Za-z0-9,+ -]+$",
         "description": "Location slug or text such as sydney-nsw-2000. Required unless url is supplied."
       }
     },

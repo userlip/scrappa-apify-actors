@@ -110,7 +110,8 @@
       "minimum": 1,
       "maximum": 60,
       "description": "Minimum number of nights for returned cruise sailings.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 3
     },
     "adults": {
       "title": "Adults",
@@ -118,7 +119,8 @@
       "minimum": 1,
       "maximum": 9,
       "description": "Number of adult travelers included in the search.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 2
     },
     "children": {
       "title": "Children",
@@ -134,7 +136,8 @@
       "minimum": 1,
       "maximum": 100,
       "description": "One-based result page to request.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "sort": {
       "title": "Sort",
@@ -146,7 +149,8 @@
         "departuredate"
       ],
       "description": "Sort order for returned search results. Accepted values: recommended, price, duration, departuredate.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "recommended"
     },
     "sort_order": {
       "title": "Sort Order",
@@ -156,7 +160,8 @@
         "desc"
       ],
       "description": "Direction used for the selected result sort. Accepted values: asc, desc.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "asc"
     },
     "include_deals": {
       "title": "Include Deals",
@@ -177,7 +182,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     }
   }
 }

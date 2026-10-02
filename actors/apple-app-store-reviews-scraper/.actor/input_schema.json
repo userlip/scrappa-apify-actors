@@ -130,7 +130,8 @@
       ],
       "nullable": true,
       "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts Accepted values: apps, mac, books, audiobooks, movies, tv, music, podcasts.",
-      "editor": "select"
+      "editor": "select",
+      "prefill": "apps"
     },
     "country": {
       "title": "Country",
@@ -139,7 +140,8 @@
       "maxLength": 2,
       "nullable": true,
       "description": "Kununu country market code, such as de, at, or ch.",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "us"
     },
     "season_id": {
       "title": "Season Id",
@@ -182,7 +184,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 10
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -191,7 +194,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 10,
-      "default": 1
+      "default": 1,
+      "prefill": 1
     }
   }
 }

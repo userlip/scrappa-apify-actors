@@ -58,7 +58,8 @@
       "minLength": 2,
       "maxLength": 2,
       "description": "Language sent to the source search.",
-      "editor": "textfield"
+      "editor": "textfield",
+      "prefill": "en"
     },
     "limit": {
       "title": "Suggestion Limit",
@@ -66,7 +67,8 @@
       "minimum": 1,
       "maximum": 10,
       "description": "Suggestion Limit sent to the source search.",
-      "editor": "number"
+      "editor": "number",
+      "prefill": 10
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -75,7 +77,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 20
     }
   }
 }

@@ -60,7 +60,8 @@
       "minimum": 1,
       "maximum": 50,
       "default": 10,
-      "editor": "number"
+      "editor": "number",
+      "prefill": 10
     },
     "page": {
       "title": "Page",
@@ -69,7 +70,8 @@
       "minimum": 1,
       "maximum": 100,
       "default": 1,
-      "editor": "number"
+      "editor": "number",
+      "prefill": 1
     },
     "maxResults": {
       "title": "Maximum Results",
@@ -78,7 +80,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 1000,
-      "default": 100
+      "default": 100,
+      "prefill": 20
     },
     "maxPages": {
       "title": "Maximum Pages",
@@ -87,7 +90,8 @@
       "editor": "number",
       "minimum": 1,
       "maximum": 5,
-      "default": 2
+      "default": 2,
+      "prefill": 2
     }
   }
 }
