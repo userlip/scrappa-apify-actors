@@ -3,12 +3,14 @@
 
 version: 2
 updates:
-  # PHP/Composer dependencies - security updates only
-  - package-ecosystem: "composer"
-    directory: "/"
+  # Rust crates of all Actors - security updates only, grouped into one PR
+  - package-ecosystem: "cargo"
+    directories:
+      - "/actors/*"
+      - "/templates/*"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - "security"
       - "dependencies"
