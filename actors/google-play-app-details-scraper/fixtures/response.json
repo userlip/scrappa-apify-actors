@@ -1,0 +1,68 @@
+{
+  "search_parameters": {
+    "engine": "google_play",
+    "product_id": "com.northstar.trailnotes",
+    "id": "com.northstar.trailnotes",
+    "store": "apps",
+    "hl": "en",
+    "gl": "us"
+  },
+  "app": {
+    "app_id": "com.northstar.trailnotes",
+    "title": "Trail Notes: Hiking Planner",
+    "developer": "Northstar Mobile, Inc.",
+    "url": "https://play.google.com/store/apps/details?id=com.northstar.trailnotes"
+  },
+  "product_info": {
+    "title": "Trail Notes: Hiking Planner",
+    "authors": [
+      {
+        "name": "Northstar Mobile, Inc.",
+        "link": "https://play.google.com/store/apps/developer?id=Northstar+Mobile"
+      }
+    ],
+    "rating": 4.7,
+    "reviews": 18420,
+    "downloads": "1M+",
+    "thumbnail": "https://play-lh.googleusercontent.com/trail-notes-icon",
+    "product_id": "com.northstar.trailnotes",
+    "link": "https://play.google.com/store/apps/details?id=com.northstar.trailnotes"
+  },
+  "media": {
+    "images": [
+      "https://play-lh.googleusercontent.com/trail-notes-screen-1"
+    ]
+  },
+  "about_this_app": {
+    "snippet": "Offline trail maps, route planning, and field notes for day hikes.",
+    "updated_on": "Sep 18, 2026",
+    "downloads": "1M+",
+    "offered_by": "Northstar Mobile, Inc.",
+    "permissions": [
+      {
+        "type": "Location",
+        "details": [
+          "Approximate location for nearby trail suggestions"
+        ]
+      }
+    ]
+  },
+  "categories": [
+    {
+      "name": "Maps & Navigation",
+      "link": "https://play.google.com/store/apps/category/MAPS_AND_NAVIGATION",
+      "category_id": "MAPS_AND_NAVIGATION"
+    }
+  ],
+  "updated_on": "2026-09-18",
+  "ratings": [
+    {
+      "stars": 5,
+      "count": 12400
+    },
+    {
+      "stars": 4,
+      "count": 3900
+    }
+  ]
+}

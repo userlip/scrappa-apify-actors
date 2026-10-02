@@ -1,0 +1,371 @@
+{
+  "slug": "kayak-packages-scraper",
+  "title": "Kayak Vacation Packages Scraper",
+  "description": "Find Kayak flight-and-hotel packages with destination, fare, lodging details, provider, and booking link. Batch origin-destination pairs and choose future travel dates.",
+  "endpoint": "/kayak/packages/search",
+  "openapiPath": "/kayak/packages/search",
+  "mode": "list",
+  "batch": {
+    "field": "package_searches",
+    "valueField": "destination",
+    "apiParam": "destination",
+    "pathParam": null,
+    "title": "Package destinations",
+    "description": "Package destinations and origin airports to search together.",
+    "itemRequired": [
+      "origin"
+    ],
+    "enrichBatchItem": true,
+    "valueDescription": "Destination used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "destination",
+      "apiParam": "destination",
+      "location": "query",
+      "required": true,
+      "title": "Destination",
+      "schema": {
+        "type": "string",
+        "pattern": "^Z\\d+$",
+        "description": "KAYAK destination code for the vacation-package search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "origin",
+      "apiParam": "origin",
+      "location": "query",
+      "required": true,
+      "title": "Origin",
+      "schema": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$",
+        "description": "Origin airport code for the route or destination search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "departure_date",
+      "apiParam": "departure_date",
+      "location": "query",
+      "required": false,
+      "title": "Departure Date",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Outbound travel date in YYYY-MM-DD format."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "return_date",
+      "apiParam": "return_date",
+      "location": "query",
+      "required": false,
+      "title": "Return Date",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Return travel date in YYYY-MM-DD format after departure."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "adults",
+      "apiParam": "adults",
+      "location": "query",
+      "required": false,
+      "title": "Adults",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9,
+        "description": "Number of adult travelers included in the search."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "child_ages",
+      "apiParam": "child_ages[]",
+      "location": "query",
+      "required": false,
+      "title": "Child Ages",
+      "schema": {
+        "type": "array",
+        "maxItems": 8,
+        "items": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 17
+        },
+        "description": "Ages of children included in the stay, when applicable."
+      },
+      "editor": "json"
+    },
+    {
+      "input": "duration",
+      "apiParam": "duration",
+      "location": "query",
+      "required": false,
+      "title": "Duration",
+      "schema": {
+        "type": "string",
+        "pattern": "^(?:\\d+|(?:-1|\\d+),(?:-1|\\d+))$",
+        "description": "Requested trip duration in days."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "price_mode",
+      "apiParam": "price_mode",
+      "location": "query",
+      "required": false,
+      "title": "Price Mode",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "perperson",
+          "total"
+        ],
+        "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: perperson, total."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "rank_a",
+          "price_a"
+        ],
+        "description": "Sort order for returned search results. Accepted values: rank_a, price_a."
+      },
+      "editor": "select"
+    }
+  ],
+  "resultPointer": "/data/results",
+  "fallbackResultPointers": [
+    "/data/source_data/kayak/results"
+  ],
+  "dedupePointer": "/resultId",
+  "enrichment": {
+    "field": "input_package_search"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "relativeDateDefaults": [
+    {
+      "input": "departure_date",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, departure is set to 30 days from today."
+    },
+    {
+      "input": "return_date",
+      "base": "departure_date",
+      "offsetDays": 4,
+      "description": "When omitted, return is set to four days after departure."
+    }
+  ],
+  "prefill": {
+    "package_searches": [
+      {
+        "destination": "Z35107",
+        "origin": "ICT"
+      }
+    ],
+    "adults": 2,
+    "duration": "4",
+    "price_mode": "perperson",
+    "sort": "rank_a",
+    "maxResults": 10
+  },
+  "testParams": {
+    "destination": "Z35107",
+    "origin": "ICT",
+    "departure_date": "2026-11-14",
+    "return_date": "2026-11-18"
+  },
+  "fixture": {
+    "success": true,
+    "operation": "vacation-packages",
+    "data": {
+      "results": [
+        {
+          "resultId": "package-90117",
+          "localizedHeadline": "Four nights in Las Vegas",
+          "localizedDescription": "Flight and hotel bundle near the Strip",
+          "price": "$389",
+          "totalPrice": "$778",
+          "providerName": "Expedia",
+          "providerCode": "expedia",
+          "clickUrl": "https://www.kayak.com/packages/ICT-LAS/2026-10-31/2026-11-04",
+          "flightLegs": [
+            {
+              "originAirport": "ICT",
+              "destinationAirport": "LAS",
+              "airline": "Southwest Airlines"
+            }
+          ],
+          "hotelData": {
+            "name": "Desert Palm Resort",
+            "nights": 4
+          },
+          "isAd": false
+        }
+      ],
+      "provenance": {
+        "provider": "kayak",
+        "freshness": "live"
+      }
+    },
+    "meta": {
+      "freshness": "live",
+      "duration_ms": 1140,
+      "attempts": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "resultId",
+      "label": "Result ID",
+      "format": "text"
+    },
+    {
+      "name": "localizedHeadline",
+      "label": "Package headline",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "text"
+    },
+    {
+      "name": "providerName",
+      "label": "Provider name",
+      "format": "text"
+    },
+    {
+      "name": "clickUrl",
+      "label": "Booking link",
+      "format": "link"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Vacation Packages | Flight & Hotel Deals",
+    "seoDescription": "Search Kayak vacation packages by origin, destination, and dates. Export flight details, hotel information, provider names, prices, and booking links.",
+    "intro": "Search Kayak for flight-and-hotel packages with trip summaries, flight legs, lodging details, providers, prices, and booking links. Batch route pairs for future dates.",
+    "useCases": [
+      "Travel planners can compare bundled flight and hotel offers.",
+      "Travel agencies can shortlist packages for several airport pairs.",
+      "Fare analysts can track bundle prices alongside standalone trips."
+    ],
+    "howToUse": [
+      "Add a destination and origin airport to each entry in `package_searches`.",
+      "Set departure and return dates or use the relative date defaults.",
+      "Choose passenger count, duration, price mode, and sorting options."
+    ],
+    "faqs": [
+      {
+        "question": "Is the displayed package price per person or for the full group?",
+        "answer": "That depends on `price_mode`. Choose `perperson` or `total` to request the corresponding KAYAK price display."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kayak-flights-scraper",
+        "title": "Kayak Flights Scraper"
+      },
+      {
+        "slug": "kayak-hotels-search-scraper",
+        "title": "Kayak Hotels Search Scraper"
+      },
+      {
+        "slug": "kayak-vacation-rentals-scraper",
+        "title": "Kayak Vacation Rentals Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "resultId",
+        "type": "String",
+        "description": "KAYAK identifier for the flight-and-hotel package result."
+      },
+      {
+        "name": "localizedHeadline",
+        "type": "String",
+        "description": "Localized package heading shown in the search results."
+      },
+      {
+        "name": "localizedDescription",
+        "type": "String",
+        "description": "Short summary of the bundled flight and lodging offer."
+      },
+      {
+        "name": "price",
+        "type": "String",
+        "description": "Localized package price label in the requested price mode."
+      },
+      {
+        "name": "totalPrice",
+        "type": "String",
+        "description": "Localized total price for the package offer."
+      },
+      {
+        "name": "providerName",
+        "type": "String",
+        "description": "Travel provider shown for the package booking."
+      },
+      {
+        "name": "providerCode",
+        "type": "String",
+        "description": "Code identifying the travel provider."
+      },
+      {
+        "name": "clickUrl",
+        "type": "String",
+        "description": "KAYAK or provider click-through URL for the package."
+      },
+      {
+        "name": "flightLegs",
+        "type": "Array<Object>",
+        "description": "Flight segments included in the package offer."
+      },
+      {
+        "name": "hotelData",
+        "type": "Object",
+        "description": "Hotel identity and stay length included in the bundle."
+      },
+      {
+        "name": "isAd",
+        "type": "Boolean",
+        "description": "True when KAYAK marks the package as an advertisement."
+      },
+      {
+        "name": "input_package_search",
+        "type": "Object",
+        "description": "Origin airport and destination supplied for this package search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

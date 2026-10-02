@@ -1,0 +1,152 @@
+{
+  "slug": "arbeitsagentur-job-details-scraper",
+  "title": "Arbeitsagentur Job Details Scraper",
+  "description": "Fetch public Arbeitsagentur vacancy details by reference number, including role, employer, work schedule, pay, contract terms, and location. Batch job IDs for vacancy research.",
+  "endpoint": "/arbeitsagentur/job",
+  "openapiPath": "/arbeitsagentur/job",
+  "mode": "single",
+  "batch": {
+    "field": "job_refs",
+    "valueField": "refnr",
+    "apiParam": "refnr",
+    "pathParam": null,
+    "title": "Job reference numbers",
+    "description": "Arbeitsagentur reference numbers for individual public job listings.",
+    "valueDescription": "Refnr used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "refnr",
+      "apiParam": "refnr",
+      "location": "query",
+      "required": true,
+      "title": "Refnr",
+      "schema": {
+        "type": "string",
+        "maxLength": 200,
+        "description": "Arbeitsagentur reference number that identifies a public vacancy."
+      },
+      "editor": "textfield"
+    }
+  ],
+  "resultPointer": null,
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_refnr"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "job_refs": [
+      {
+        "refnr": "12016-10005410012-S"
+      }
+    ],
+    "maxResults": 10
+  },
+  "testParams": {
+    "refnr": "12016-10005410012-S"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "stellenangebotsTitel": "Senior Data Analyst (m/w/d)",
+      "stellenangebotsBeschreibung": "Analyze operational data, build clear reporting, and collaborate with product and engineering teams.",
+      "arbeitszeitVollzeit": true,
+      "eintrittszeitraum": "Nach Vereinbarung",
+      "verguetungsangabe": "58.000 bis 72.000 EUR jährlich",
+      "artDerVerguetung": "Jahresgehalt",
+      "festgehalt": true,
+      "vertragsdauer": "Unbefristet",
+      "datumErsteVeroeffentlichung": "2026-09-12",
+      "aenderungsdatum": "2026-09-25",
+      "firma": "Nordstern Energie GmbH",
+      "referenznummer": "12016-10005410012-S",
+      "stellenlokationen": [
+        {
+          "ort": "Berlin",
+          "land": "Deutschland",
+          "plz": "10115"
+        }
+      ]
+    }
+  },
+  "tableFields": [
+    {
+      "name": "success",
+      "label": "Success",
+      "format": "text"
+    },
+    {
+      "name": "data",
+      "label": "Job details",
+      "format": "text"
+    }
+  ],
+  "categories": [
+    "JOBS",
+    "LEAD_GENERATION"
+  ],
+  "storeCopy": {
+    "seoTitle": "Arbeitsagentur Job Details | Vacancy Data",
+    "seoDescription": "Scrape Arbeitsagentur job details by reference number. Export role, employer, pay, contract terms, work schedule, and locations to compare vacancies.",
+    "intro": "Retrieve public German Federal Employment Agency vacancy details by job reference number. Collect role descriptions, employer details, pay information, contract terms, and work locations.",
+    "useCases": [
+      "Recruiters can review public vacancy requirements and employment conditions.",
+      "Labor-market analysts can compare salary and contract details across job listings.",
+      "Job platforms can enrich vacancy records with structured employer and location data."
+    ],
+    "howToUse": [
+      "Add one Arbeitsagentur reference number to each entry in `job_refs`.",
+      "Set the result cap for the number of vacancy records to save.",
+      "Export the structured job details for your recruiting or labor-market workflow."
+    ],
+    "faqs": [
+      {
+        "question": "Where can I get a reference number?",
+        "answer": "Use Arbeitsagentur Jobs Scraper to find active listings and copy each result reference number into this Actor."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "arbeitsagentur-jobs-scraper",
+        "title": "Arbeitsagentur Jobs Scraper"
+      },
+      {
+        "slug": "kununu-job-details-scraper",
+        "title": "Kununu Job Details Scraper"
+      },
+      {
+        "slug": "kununu-jobs-scraper",
+        "title": "Kununu Jobs Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when the requested vacancy record was retrieved successfully."
+      },
+      {
+        "name": "data",
+        "type": "Object",
+        "description": "Arbeitsagentur vacancy details including role, employer, pay, contract, publication, and location data."
+      },
+      {
+        "name": "input_refnr",
+        "type": "String",
+        "description": "Arbeitsagentur job reference number used for this vacancy lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

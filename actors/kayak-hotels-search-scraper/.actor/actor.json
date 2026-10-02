@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-hotels-search-scraper",
+  "title": "Kayak Hotels Search Scraper",
+  "description": "Search Kayak hotel listings with names, star levels, review scores, amenities, provider prices, and property links. Batch location IDs and compare future stays.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "resultId",
+              "localizedHotelName",
+              "stars",
+              "rating",
+              "detailsUrl"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "resultId": {
+                "label": "Result ID",
+                "format": "text"
+              },
+              "localizedHotelName": {
+                "label": "Hotel name",
+                "format": "text"
+              },
+              "stars": {
+                "label": "Stars",
+                "format": "number"
+              },
+              "rating": {
+                "label": "Rating",
+                "format": "text"
+              },
+              "detailsUrl": {
+                "label": "Details URL",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "search_parameters": {
+    "engine": "app_store",
+    "store": "apps",
+    "chart": "top-free",
+    "country": "us",
+    "limit": 50
+  },
+  "chart": {
+    "type": "top-free",
+    "requested": "top-free",
+    "items": [
+      {
+        "position": 1,
+        "id": "com.northstar.trailnotes",
+        "title": "Trail Notes: Hiking Planner",
+        "artist": "Northstar Mobile, Inc.",
+        "url": "https://apps.apple.com/us/app/trail-notes-hiking-planner/id1234567890",
+        "artwork": "https://is1-ssl.mzstatic.com/image/thumb/app-icon/512x512bb.jpg",
+        "genres": [
+          "Navigation"
+        ]
+      }
+    ]
+  }
+}

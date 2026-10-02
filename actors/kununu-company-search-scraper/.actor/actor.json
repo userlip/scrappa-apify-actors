@@ -1,0 +1,70 @@
+{
+  "actorSpecification": 1,
+  "name": "kununu-company-search-scraper",
+  "title": "Kununu Company Search Scraper",
+  "description": "Search Kununu company profiles with names, slugs, locations, industry IDs, ratings, review counts, and links. Batch keywords and page through employer matches.",
+  "categories": [
+    "JOBS",
+    "LEAD_GENERATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "name",
+              "slug",
+              "industry",
+              "ratings",
+              "reviewCount",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": {
+                "label": "Company",
+                "format": "text"
+              },
+              "slug": {
+                "label": "Company slug",
+                "format": "text"
+              },
+              "industry": {
+                "label": "Industry ID",
+                "format": "number"
+              },
+              "ratings": {
+                "label": "Ratings",
+                "format": "text"
+              },
+              "reviewCount": {
+                "label": "Review count",
+                "format": "number"
+              },
+              "url": {
+                "label": "Kununu URL",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

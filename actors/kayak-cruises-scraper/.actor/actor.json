@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-cruises-scraper",
+  "title": "Kayak Cruises Scraper",
+  "description": "Browse Kayak cruise sailings with ship, departure port, trip length, itinerary, fare, currency, and region. Batch ocean or river product types and sort offers.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "id",
+              "name",
+              "ship",
+              "departurePort",
+              "nights",
+              "price"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": {
+                "label": "Sailing ID",
+                "format": "text"
+              },
+              "name": {
+                "label": "Cruise",
+                "format": "text"
+              },
+              "ship": {
+                "label": "Ship",
+                "format": "text"
+              },
+              "departurePort": {
+                "label": "Departure port",
+                "format": "text"
+              },
+              "nights": {
+                "label": "Nights",
+                "format": "number"
+              },
+              "price": {
+                "label": "Price",
+                "format": "currency"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

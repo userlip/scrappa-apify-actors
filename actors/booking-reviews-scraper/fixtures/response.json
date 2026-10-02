@@ -1,0 +1,41 @@
+{
+  "success": true,
+  "data": {
+    "title": "Adlon Kempinski Berlin",
+    "canonical_url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+    "reviews": [
+      {
+        "review_id": "review-884210",
+        "rating": "9.2",
+        "title": "A comfortable city stay",
+        "text": "The room was quiet, the staff were attentive, and the location made museums easy to reach.",
+        "positive_text": "Helpful staff and a calm room.",
+        "negative_text": "Breakfast service was busy before 9 am.",
+        "author": "Jordan Lee",
+        "traveler_type": "Couple",
+        "stay_date": "September 2026",
+        "created_at": "2026-09-18",
+        "language": "en-us"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "offset": 0,
+      "returned": 10,
+      "total_reviews": 286,
+      "has_next_page": true
+    },
+    "parsed": true
+  },
+  "meta": {
+    "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+    "duration_ms": 710,
+    "scraped_at": "2026-09-28T14:22:00Z",
+    "cached": true,
+    "booking_pool_attempts": 1,
+    "booking_pool_stages": [
+      "review-list"
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "success": true,
+  "operation": "vacation-rentals",
+  "data": {
+    "results": [
+      {
+        "resultId": "rental-7054-221",
+        "resultType": "vacation-rental",
+        "localizedHotelName": "Cedar House Seattle",
+        "stars": 4,
+        "hid": 8051221,
+        "geolocation": {
+          "point": {
+            "lat": 47.608,
+            "lng": -122.336
+          },
+          "localizedCity": "Seattle"
+        },
+        "rating": {
+          "score": 9.1,
+          "reviewCount": 126,
+          "localizedRatingCategory": "Wonderful"
+        },
+        "detailsUrl": "https://www.kayak.com/Seattle-Vacation-Rentals.7054.rental.ksp",
+        "url": "https://www.kayak.com/homes/cedar-house-seattle",
+        "providers": [
+          {
+            "localizedProviderName": "Vrbo",
+            "providerCode": "vrbo",
+            "totalPrice": {
+              "price": 642,
+              "currency": "USD"
+            }
+          }
+        ],
+        "amenities": [
+          {
+            "code": "kitchen",
+            "localizedName": "Kitchen"
+          },
+          {
+            "code": "wifi",
+            "localizedName": "Wi-Fi"
+          }
+        ]
+      }
+    ],
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "duration_ms": 1170,
+    "attempts": 1
+  }
+}

@@ -1,0 +1,330 @@
+{
+  "slug": "kayak-car-rentals-scraper",
+  "title": "Kayak Car Rentals Scraper",
+  "description": "Compare Kayak rental cars with provider, company, vehicle description, quoted price, and booking link. Batch pickup locations and set future collection and return dates.",
+  "endpoint": "/kayak/cars/search",
+  "openapiPath": "/kayak/cars/search",
+  "mode": "list",
+  "batch": {
+    "field": "pickup_locations",
+    "valueField": "pickup",
+    "apiParam": "pickup",
+    "pathParam": null,
+    "title": "Pickup locations",
+    "description": "Airport or city pickup codes for KAYAK rental-car searches.",
+    "valueDescription": "Pickup used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "pickup",
+      "apiParam": "pickup",
+      "location": "query",
+      "required": true,
+      "title": "Pickup",
+      "schema": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$",
+        "description": "Airport or city code where the rental car is collected."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "pickup_date",
+      "apiParam": "pickup_date",
+      "location": "query",
+      "required": false,
+      "title": "Pickup Date",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Rental car pickup date in YYYY-MM-DD format."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "dropoff_date",
+      "apiParam": "dropoff_date",
+      "location": "query",
+      "required": false,
+      "title": "Dropoff Date",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Rental car drop-off date in YYYY-MM-DD format after pickup."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "pickup_hour",
+      "apiParam": "pickup_hour",
+      "location": "query",
+      "required": false,
+      "title": "Pickup Hour",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 23,
+        "description": "Local hour when the rental car is collected."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "dropoff_hour",
+      "apiParam": "dropoff_hour",
+      "location": "query",
+      "required": false,
+      "title": "Dropoff Hour",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 23,
+        "description": "Local hour when the rental car is returned."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "rank_a",
+          "price_a"
+        ],
+        "description": "Sort order for returned search results. Accepted values: rank_a, price_a."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "price_mode",
+      "apiParam": "price_mode",
+      "location": "query",
+      "required": false,
+      "title": "Price Mode",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "total",
+          "daily"
+        ],
+        "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: total, daily."
+      },
+      "editor": "select"
+    }
+  ],
+  "resultPointer": "/data/results",
+  "fallbackResultPointers": [
+    "/data/source_data/kayak/combinedResults"
+  ],
+  "dedupePointer": "/resultId",
+  "enrichment": {
+    "field": "input_pickup"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "relativeDateDefaults": [
+    {
+      "input": "pickup_date",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, pickup is set to 30 days from today."
+    },
+    {
+      "input": "dropoff_date",
+      "base": "pickup_date",
+      "offsetDays": 4,
+      "description": "When omitted, drop-off is set to four days after pickup."
+    }
+  ],
+  "prefill": {
+    "pickup_locations": [
+      {
+        "pickup": "LAS"
+      }
+    ],
+    "pickup_hour": 10,
+    "dropoff_hour": 10,
+    "sort": "rank_a",
+    "price_mode": "total",
+    "maxResults": 10
+  },
+  "testParams": {
+    "pickup": "LAS",
+    "pickup_date": "2026-11-14",
+    "dropoff_date": "2026-11-18"
+  },
+  "fixture": {
+    "success": true,
+    "operation": "car-rental-search",
+    "data": {
+      "results": [
+        {
+          "resultId": "car-280551",
+          "providerCode": "hertz",
+          "providerName": "Hertz",
+          "companyName": "Hertz",
+          "title": "Compact SUV",
+          "description": "Compact SUV, unlimited mileage",
+          "price": "$248",
+          "priceData": {
+            "amount": 248,
+            "currency": "USD",
+            "period": "total"
+          },
+          "clickUrlTemplate": "https://www.kayak.com/cars/LAS/2026-10-31/2026-11-04?provider=hertz",
+          "isAd": false,
+          "rank": 1
+        }
+      ],
+      "provenance": {
+        "provider": "kayak",
+        "freshness": "live"
+      }
+    },
+    "meta": {
+      "freshness": "live",
+      "duration_ms": 980,
+      "attempts": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "resultId",
+      "label": "Result ID",
+      "format": "text"
+    },
+    {
+      "name": "companyName",
+      "label": "Rental company",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "Vehicle",
+      "format": "text"
+    },
+    {
+      "name": "price",
+      "label": "Quoted price",
+      "format": "text"
+    },
+    {
+      "name": "clickUrlTemplate",
+      "label": "Booking link",
+      "format": "link"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Car Rentals | Rental Prices",
+    "seoDescription": "Search Kayak rental cars by pickup location and dates. Export providers, vehicle names, quoted prices, and booking links to compare car-hire options.",
+    "intro": "Search Kayak car rentals by pickup location and travel dates. Collect provider names, vehicle descriptions, quoted prices, and booking links for comparison.",
+    "useCases": [
+      "Travel planners can compare rental-car options for airport pickups.",
+      "Car-hire analysts can monitor quoted totals and providers across locations.",
+      "Travel agencies can shortlist vehicles for future itineraries."
+    ],
+    "howToUse": [
+      "Add an airport or city pickup code to each entry in `pickup_locations`.",
+      "Set pickup and drop-off dates or use the relative date defaults.",
+      "Choose pickup times, sorting, and total or daily price display."
+    ],
+    "faqs": [
+      {
+        "question": "Can pickup and drop-off times be specified?",
+        "answer": "Yes. Use `pickup_hour` and `dropoff_hour` with hour values supported by KAYAK."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kayak-flights-scraper",
+        "title": "Kayak Flights Scraper"
+      },
+      {
+        "slug": "kayak-hotels-search-scraper",
+        "title": "Kayak Hotels Search Scraper"
+      },
+      {
+        "slug": "kayak-vacation-rentals-scraper",
+        "title": "Kayak Vacation Rentals Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "resultId",
+        "type": "String",
+        "description": "KAYAK identifier for this car-rental offer."
+      },
+      {
+        "name": "providerCode",
+        "type": "String",
+        "description": "Code identifying the rental provider."
+      },
+      {
+        "name": "providerName",
+        "type": "String",
+        "description": "Rental provider name displayed in the offer."
+      },
+      {
+        "name": "companyName",
+        "type": "String",
+        "description": "Car-hire company associated with the vehicle offer."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Vehicle or rental offer title shown by KAYAK."
+      },
+      {
+        "name": "description",
+        "type": "String",
+        "description": "Short vehicle or rental-condition description."
+      },
+      {
+        "name": "price",
+        "type": "String",
+        "description": "Localized price label for the offer."
+      },
+      {
+        "name": "priceData",
+        "type": "Object",
+        "description": "Numeric amount, currency, and period used for the quoted price."
+      },
+      {
+        "name": "clickUrlTemplate",
+        "type": "String",
+        "description": "KAYAK click-through URL template for the rental offer."
+      },
+      {
+        "name": "isAd",
+        "type": "Boolean",
+        "description": "True when KAYAK marks the result as an advertisement."
+      },
+      {
+        "name": "rank",
+        "type": "Integer",
+        "description": "Position of the offer in the returned search results."
+      },
+      {
+        "name": "input_pickup",
+        "type": "String",
+        "description": "Pickup location code submitted for the rental-car search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

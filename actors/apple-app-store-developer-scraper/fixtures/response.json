@@ -1,0 +1,35 @@
+{
+  "search_parameters": {
+    "engine": "app_store",
+    "artist_id": "284882218",
+    "country": "us"
+  },
+  "developer": {
+    "id": "284882218",
+    "name": "Northstar Mobile, Inc.",
+    "url": "https://apps.apple.com/developer/northstar-mobile/id284882218"
+  },
+  "apps": [
+    {
+      "id": "1234567890",
+      "type": "apps",
+      "title": "Trail Notes: Hiking Planner",
+      "artist": "Northstar Mobile, Inc.",
+      "artist_id": "284882218",
+      "url": "https://apps.apple.com/us/app/trail-notes-hiking-planner/id1234567890",
+      "artwork": "https://is1-ssl.mzstatic.com/image/thumb/app-icon/512x512bb.jpg",
+      "genres": [
+        "Navigation"
+      ],
+      "price": 0,
+      "formatted_price": "Free",
+      "currency": "USD",
+      "rating": 4.7,
+      "rating_count": 18420,
+      "release_date": "2023-05-18",
+      "version": "4.8.1",
+      "content_rating": "4+",
+      "seller": "Northstar Mobile, Inc."
+    }
+  ]
+}

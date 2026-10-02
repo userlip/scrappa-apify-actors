@@ -1,0 +1,186 @@
+{
+  "title": "Kayak Vacation Packages Scraper",
+  "description": "Find Kayak flight-and-hotel packages with destination, fare, lodging details, provider, and booking link. Batch origin-destination pairs and choose future travel dates.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "package_searches"
+  ],
+  "properties": {
+    "package_searches": {
+      "title": "Package destinations",
+      "type": "array",
+      "description": "Package destinations and origin airports to search together.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "destination": "Z35107",
+          "origin": "ICT"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "destination",
+          "origin"
+        ],
+        "properties": {
+          "destination": {
+            "title": "Destination",
+            "type": "string",
+            "pattern": "^Z\\d+$",
+            "description": "KAYAK destination code for the vacation-package search.",
+            "editor": "textfield"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "Origin airport code for the route or destination search.",
+            "editor": "textfield"
+          },
+          "departure_date": {
+            "title": "Departure Date",
+            "type": "string",
+            "format": "date",
+            "description": "Outbound travel date in YYYY-MM-DD format. When omitted, departure is set to 30 days from today.",
+            "editor": "textfield"
+          },
+          "return_date": {
+            "title": "Return Date",
+            "type": "string",
+            "format": "date",
+            "description": "Return travel date in YYYY-MM-DD format after departure. When omitted, return is set to four days after departure.",
+            "editor": "textfield"
+          },
+          "adults": {
+            "title": "Adults",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9,
+            "description": "Number of adult travelers included in the search.",
+            "editor": "number"
+          },
+          "child_ages": {
+            "title": "Child Ages",
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 17
+            },
+            "description": "Ages of children included in the stay, when applicable.",
+            "editor": "json"
+          },
+          "duration": {
+            "title": "Duration",
+            "type": "string",
+            "pattern": "^(?:\\d+|(?:-1|\\d+),(?:-1|\\d+))$",
+            "description": "Requested trip duration in days.",
+            "editor": "textfield"
+          },
+          "price_mode": {
+            "title": "Price Mode",
+            "type": "string",
+            "enum": [
+              "perperson",
+              "total"
+            ],
+            "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: perperson, total.",
+            "editor": "select"
+          },
+          "sort": {
+            "title": "Sort",
+            "type": "string",
+            "enum": [
+              "rank_a",
+              "price_a"
+            ],
+            "description": "Sort order for returned search results. Accepted values: rank_a, price_a.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "origin": {
+      "title": "Origin",
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "Origin airport code for the route or destination search.",
+      "editor": "textfield"
+    },
+    "departure_date": {
+      "title": "Departure Date",
+      "type": "string",
+      "format": "date",
+      "description": "Outbound travel date in YYYY-MM-DD format. When omitted, departure is set to 30 days from today.",
+      "editor": "textfield"
+    },
+    "return_date": {
+      "title": "Return Date",
+      "type": "string",
+      "format": "date",
+      "description": "Return travel date in YYYY-MM-DD format after departure. When omitted, return is set to four days after departure.",
+      "editor": "textfield"
+    },
+    "adults": {
+      "title": "Adults",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9,
+      "description": "Number of adult travelers included in the search.",
+      "editor": "number"
+    },
+    "child_ages": {
+      "title": "Child Ages",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 17
+      },
+      "description": "Ages of children included in the stay, when applicable.",
+      "editor": "json"
+    },
+    "duration": {
+      "title": "Duration",
+      "type": "string",
+      "pattern": "^(?:\\d+|(?:-1|\\d+),(?:-1|\\d+))$",
+      "description": "Requested trip duration in days.",
+      "editor": "textfield"
+    },
+    "price_mode": {
+      "title": "Price Mode",
+      "type": "string",
+      "enum": [
+        "perperson",
+        "total"
+      ],
+      "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: perperson, total.",
+      "editor": "select"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "enum": [
+        "rank_a",
+        "price_a"
+      ],
+      "description": "Sort order for returned search results. Accepted values: rank_a, price_a.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "actorSpecification": 1,
+  "name": "arbeitsagentur-job-details-scraper",
+  "title": "Arbeitsagentur Job Details Scraper",
+  "description": "Fetch public Arbeitsagentur vacancy details by reference number, including role, employer, work schedule, pay, contract terms, and location. Batch job IDs for vacancy research.",
+  "categories": [
+    "JOBS",
+    "LEAD_GENERATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "success",
+              "data"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": {
+                "label": "Success",
+                "format": "text"
+              },
+              "data": {
+                "label": "Job details",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

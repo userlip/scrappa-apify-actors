@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-packages-scraper",
+  "title": "Kayak Vacation Packages Scraper",
+  "description": "Find Kayak flight-and-hotel packages with destination, fare, lodging details, provider, and booking link. Batch origin-destination pairs and choose future travel dates.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "resultId",
+              "localizedHeadline",
+              "price",
+              "providerName",
+              "clickUrl"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "resultId": {
+                "label": "Result ID",
+                "format": "text"
+              },
+              "localizedHeadline": {
+                "label": "Package headline",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "text"
+              },
+              "providerName": {
+                "label": "Provider name",
+                "format": "text"
+              },
+              "clickUrl": {
+                "label": "Booking link",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "actorSpecification": 1,
+  "name": "booking-facilities-scraper",
+  "title": "Booking.com Hotel Facilities Scraper",
+  "description": "Collect Booking.com hotel facilities such as Wi-Fi, pools, fitness options, and restaurants with the property name and page URL. Batch hotels for amenity research.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "success",
+              "data",
+              "meta"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": {
+                "label": "Success",
+                "format": "text"
+              },
+              "data": {
+                "label": "Facilities",
+                "format": "text"
+              },
+              "meta": {
+                "label": "Fetch metadata",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

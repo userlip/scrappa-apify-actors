@@ -1,0 +1,220 @@
+{
+  "title": "Kayak Explore Cheapest Destinations Scraper",
+  "description": "Explore Kayak flight destinations from an origin airport with city, country, date window, airline, stops, duration, and fare-search link. Batch origins and set a map area.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "origins",
+    "north_east_lat",
+    "north_east_lng",
+    "south_west_lat",
+    "south_west_lng"
+  ],
+  "properties": {
+    "origins": {
+      "title": "Origin airports",
+      "type": "array",
+      "description": "Origin airports whose lowest available destinations you want to explore.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "origin": "ICT"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "origin"
+        ],
+        "properties": {
+          "origin": {
+            "title": "Origin",
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "Origin airport code for the route or destination search.",
+            "editor": "textfield"
+          },
+          "departure_from": {
+            "title": "Departure From",
+            "type": "string",
+            "format": "date",
+            "description": "First outbound date in the destination exploration window. When omitted, the departure window starts 30 days from today.",
+            "editor": "textfield"
+          },
+          "departure_to": {
+            "title": "Departure To",
+            "type": "string",
+            "format": "date",
+            "description": "Last outbound date in the destination exploration window. When omitted, the departure window ends seven days after it starts.",
+            "editor": "textfield"
+          },
+          "return_from": {
+            "title": "Return From",
+            "type": "string",
+            "format": "date",
+            "description": "First possible return date in the destination exploration window. When omitted, the return window starts seven days after the first departure date.",
+            "editor": "textfield"
+          },
+          "return_to": {
+            "title": "Return To",
+            "type": "string",
+            "format": "date",
+            "description": "Last possible return date in the destination exploration window. When omitted, the return window ends seven days after it starts.",
+            "editor": "textfield"
+          },
+          "min_days": {
+            "title": "Min Days",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60,
+            "description": "Minimum trip length in days for destination suggestions.",
+            "editor": "number"
+          },
+          "max_days": {
+            "title": "Max Days",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 180,
+            "description": "Maximum trip length in days for destination suggestions.",
+            "editor": "number"
+          },
+          "stops": {
+            "title": "Stops",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3,
+            "description": "Maximum flight stop count for destination suggestions.",
+            "editor": "number"
+          },
+          "north_east_lat": {
+            "title": "North East Lat",
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Northern latitude of the northeast corner of the destination map area.",
+            "editor": "number"
+          },
+          "north_east_lng": {
+            "title": "North East Lng",
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Eastern longitude of the northeast corner of the destination map area.",
+            "editor": "number"
+          },
+          "south_west_lat": {
+            "title": "South West Lat",
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Southern latitude of the southwest corner of the destination map area.",
+            "editor": "number"
+          },
+          "south_west_lng": {
+            "title": "South West Lng",
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Western longitude of the southwest corner of the destination map area.",
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "departure_from": {
+      "title": "Departure From",
+      "type": "string",
+      "format": "date",
+      "description": "First outbound date in the destination exploration window. When omitted, the departure window starts 30 days from today.",
+      "editor": "textfield"
+    },
+    "departure_to": {
+      "title": "Departure To",
+      "type": "string",
+      "format": "date",
+      "description": "Last outbound date in the destination exploration window. When omitted, the departure window ends seven days after it starts.",
+      "editor": "textfield"
+    },
+    "return_from": {
+      "title": "Return From",
+      "type": "string",
+      "format": "date",
+      "description": "First possible return date in the destination exploration window. When omitted, the return window starts seven days after the first departure date.",
+      "editor": "textfield"
+    },
+    "return_to": {
+      "title": "Return To",
+      "type": "string",
+      "format": "date",
+      "description": "Last possible return date in the destination exploration window. When omitted, the return window ends seven days after it starts.",
+      "editor": "textfield"
+    },
+    "min_days": {
+      "title": "Min Days",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60,
+      "description": "Minimum trip length in days for destination suggestions.",
+      "editor": "number"
+    },
+    "max_days": {
+      "title": "Max Days",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 180,
+      "description": "Maximum trip length in days for destination suggestions.",
+      "editor": "number"
+    },
+    "stops": {
+      "title": "Stops",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Maximum flight stop count for destination suggestions.",
+      "editor": "number"
+    },
+    "north_east_lat": {
+      "title": "North East Lat",
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90,
+      "description": "Northern latitude of the northeast corner of the destination map area.",
+      "editor": "number"
+    },
+    "north_east_lng": {
+      "title": "North East Lng",
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180,
+      "description": "Eastern longitude of the northeast corner of the destination map area.",
+      "editor": "number"
+    },
+    "south_west_lat": {
+      "title": "South West Lat",
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90,
+      "description": "Southern latitude of the southwest corner of the destination map area.",
+      "editor": "number"
+    },
+    "south_west_lng": {
+      "title": "South West Lng",
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180,
+      "description": "Western longitude of the southwest corner of the destination map area.",
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

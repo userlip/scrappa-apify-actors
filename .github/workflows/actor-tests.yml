@@ -38,7 +38,11 @@ jobs:
       matrix:
         actor:
           - actors/apple-app-store-app-details-scraper
+          - actors/apple-app-store-charts-scraper
+          - actors/apple-app-store-developer-scraper
+          - actors/apple-app-store-reviews-scraper
           - actors/apple-app-store-search-scraper
+          - actors/arbeitsagentur-job-details-scraper
           - actors/arbeitsagentur-jobs-scraper
           - actors/baidu-autocomplete-scraper
           - actors/baidu-images-scraper
@@ -47,13 +51,20 @@ jobs:
           - actors/billiger-offers-scraper
           - actors/billiger-search-scraper
           - actors/bing-search-scraper
+          - actors/booking-facilities-scraper
           - actors/booking-hotel-details-scraper
+          - actors/booking-photos-scraper
+          - actors/booking-prices-scraper
+          - actors/booking-review-scores-scraper
+          - actors/booking-reviews-scraper
+          - actors/booking-rooms-scraper
           - actors/booking-search-scraper
           - actors/brave-search-scraper
           - actors/domain-availability-checker
           - actors/geizhals-price-history-scraper
           - actors/geizhals-product-scraper
           - actors/geizhals-search-scraper
+          - actors/google-ai-overview-scraper
           - actors/google-autocomplete-scraper
           - actors/google-finance-historical-prices-scraper
           - actors/google-finance-indices-scraper
@@ -61,11 +72,11 @@ jobs:
           - actors/google-finance-markets-scraper
           - actors/google-finance-quote-scraper
           - actors/google-finance-search-scraper
+          - actors/google-flights-date-range-scraper
           - actors/google-flights-search-scraper
           - actors/google-hotels-autocomplete-scraper
           - actors/google-hotels-search-scraper
           - actors/google-images-scraper
-          - actors/google-ai-overview-scraper
           - actors/google-jobs-scraper
           - actors/google-lens-scraper
           - actors/google-maps-advanced-search-scraper
@@ -78,6 +89,7 @@ jobs:
           - actors/google-news-scraper
           - actors/google-patents-details-scraper
           - actors/google-patents-search-scraper
+          - actors/google-play-app-details-scraper
           - actors/google-scholar-scraper
           - actors/google-search
           - actors/google-shopping-scraper
@@ -90,8 +102,8 @@ jobs:
           - actors/idealista-listing-scraper
           - actors/idealista-search-scraper
           - actors/immobilienscout24-locations-scraper
-          - actors/immobilienscout24-property-details-scraper
           - actors/immobilienscout24-price-insights-scraper
+          - actors/immobilienscout24-property-details-scraper
           - actors/immobilienscout24-search-scraper
           - actors/immowelt-property-search-scraper
           - actors/impressum-extractor
@@ -107,11 +119,27 @@ jobs:
           - actors/jameda-doctor-details-scraper
           - actors/jameda-reviews-scraper
           - actors/jameda-search-scraper
+          - actors/kayak-car-rentals-scraper
+          - actors/kayak-cruises-scraper
+          - actors/kayak-explore-destinations-scraper
+          - actors/kayak-flight-price-predictions-scraper
           - actors/kayak-flights-scraper
+          - actors/kayak-hotel-details-scraper
+          - actors/kayak-hotel-rates-scraper
+          - actors/kayak-hotel-reviews-scraper
+          - actors/kayak-hotels-search-scraper
+          - actors/kayak-packages-scraper
+          - actors/kayak-vacation-rentals-scraper
           - actors/kleinanzeigen-listing-details-scraper
           - actors/kleinanzeigen-search-scraper
+          - actors/kununu-company-details-scraper
+          - actors/kununu-company-salaries-scraper
+          - actors/kununu-company-search-scraper
+          - actors/kununu-job-details-scraper
           - actors/kununu-jobs-scraper
           - actors/kununu-reviews-scraper
+          - actors/kununu-salary-scraper
+          - actors/kununu-top-companies-scraper
           - actors/linkedin-company-scraper
           - actors/linkedin-job-details-scraper
           - actors/linkedin-jobs-search-scraper

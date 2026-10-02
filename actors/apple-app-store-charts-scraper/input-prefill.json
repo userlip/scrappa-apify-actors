@@ -1,0 +1,11 @@
+{
+  "charts": [
+    {
+      "chart": "top-free"
+    }
+  ],
+  "store": "apps",
+  "country": "us",
+  "limit": 50,
+  "maxResults": 10
+}

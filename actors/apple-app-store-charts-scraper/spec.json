@@ -1,0 +1,274 @@
+{
+  "slug": "apple-app-store-charts-scraper",
+  "title": "Apple App Store Top Charts Scraper",
+  "description": "Get Apple App Store chart rankings with position, app title, developer, product ID, genre, and listing URL. Batch chart types or storefronts to compare app visibility.",
+  "endpoint": "/apple/app-store/charts",
+  "openapiPath": "/apple/app-store/charts",
+  "mode": "list",
+  "batch": {
+    "field": "charts",
+    "valueField": "chart",
+    "apiParam": "chart",
+    "pathParam": null,
+    "title": "Chart types",
+    "description": "Apple chart types to retrieve for the selected storefront and store.",
+    "valueDescription": "Chart used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "store",
+      "apiParam": "store",
+      "location": "query",
+      "required": false,
+      "title": "Store",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "apps",
+          "mac",
+          "books",
+          "audiobooks",
+          "movies",
+          "tv",
+          "music",
+          "podcasts"
+        ],
+        "nullable": true,
+        "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts Accepted values: apps, mac, books, audiobooks, movies, tv, music, podcasts."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "chart",
+      "apiParam": "chart",
+      "location": "query",
+      "required": false,
+      "title": "Chart",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "top-free",
+          "top-paid",
+          "top-grossing",
+          "most-played",
+          "top-subscriber",
+          "top-episodes"
+        ],
+        "nullable": true,
+        "description": "Chart type: top-free, top-paid, top-grossing, most-played, top-subscriber, or top-episodes. Music serves most-played albums, podcasts serve top shows; the response echoes requested and served chart types Accepted values: top-free, top-paid, top-grossing, most-played, top-subscriber, top-episodes."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "genre",
+      "apiParam": "genre",
+      "location": "query",
+      "required": false,
+      "title": "Genre",
+      "schema": {
+        "type": "string",
+        "maxLength": 100,
+        "nullable": true,
+        "description": "Apple genre id, passed through to the charts feeds as-is"
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 2,
+        "nullable": true,
+        "description": "Kununu country market code, such as de, at, or ch."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "limit",
+      "apiParam": "limit",
+      "location": "query",
+      "required": false,
+      "title": "Limit",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "nullable": true,
+        "description": "Maximum number of company matches requested for this search page."
+      },
+      "editor": "number"
+    }
+  ],
+  "resultPointer": "/chart/items",
+  "fallbackResultPointers": [],
+  "dedupePointer": "/id",
+  "enrichment": {
+    "field": "input_chart"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "charts": [
+      {
+        "chart": "top-free"
+      }
+    ],
+    "store": "apps",
+    "country": "us",
+    "limit": 50,
+    "maxResults": 10
+  },
+  "testParams": {
+    "chart": "top-free",
+    "country": "us"
+  },
+  "fixture": {
+    "search_parameters": {
+      "engine": "app_store",
+      "store": "apps",
+      "chart": "top-free",
+      "country": "us",
+      "limit": 50
+    },
+    "chart": {
+      "type": "top-free",
+      "requested": "top-free",
+      "items": [
+        {
+          "position": 1,
+          "id": "com.northstar.trailnotes",
+          "title": "Trail Notes: Hiking Planner",
+          "artist": "Northstar Mobile, Inc.",
+          "url": "https://apps.apple.com/us/app/trail-notes-hiking-planner/id1234567890",
+          "artwork": "https://is1-ssl.mzstatic.com/image/thumb/app-icon/512x512bb.jpg",
+          "genres": [
+            "Navigation"
+          ]
+        }
+      ]
+    }
+  },
+  "tableFields": [
+    {
+      "name": "position",
+      "label": "Rank",
+      "format": "number"
+    },
+    {
+      "name": "title",
+      "label": "App",
+      "format": "text"
+    },
+    {
+      "name": "artist",
+      "label": "Developer",
+      "format": "text"
+    },
+    {
+      "name": "id",
+      "label": "Product ID",
+      "format": "text"
+    },
+    {
+      "name": "url",
+      "label": "App Store URL",
+      "format": "link"
+    }
+  ],
+  "categories": [
+    "ECOMMERCE",
+    "MARKETING"
+  ],
+  "storeCopy": {
+    "seoTitle": "Apple App Store Charts | Top Apps",
+    "seoDescription": "Scrape Apple App Store charts by country and chart type. Export app rankings, developer names, product IDs, genres, and listing links for market tracking.",
+    "intro": "Retrieve public Apple App Store chart entries with rank, app name, developer, product ID, genre, and listing URL. Compare chart types across storefront countries in one run.",
+    "useCases": [
+      "App publishers can monitor rankings for free, paid, or grossing charts.",
+      "Mobile analysts can compare app visibility between storefront countries.",
+      "Investors can track public chart movement across competing app categories."
+    ],
+    "howToUse": [
+      "Add one chart type per entry in `charts`.",
+      "Select the Apple store vertical and storefront country.",
+      "Use the result limit to focus on the ranks you need."
+    ],
+    "faqs": [
+      {
+        "question": "Which chart types are available?",
+        "answer": "Values include top-free, top-paid, top-grossing, most-played, top-subscriber, and top-episodes. Availability depends on the selected store."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "apple-app-store-search-scraper",
+        "title": "Apple App Store Search Scraper"
+      },
+      {
+        "slug": "apple-app-store-app-details-scraper",
+        "title": "Apple App Store App Details Scraper"
+      },
+      {
+        "slug": "apple-app-store-developer-scraper",
+        "title": "Apple App Store Developer Apps Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "position",
+        "type": "Integer",
+        "description": "Rank of the app in the selected Apple storefront chart."
+      },
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Apple product identifier for the ranked app."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Title displayed by the source for this record."
+      },
+      {
+        "name": "artist",
+        "type": "String",
+        "description": "Artist value associated with this apple app store top charts record."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public source or listing URL associated with this record."
+      },
+      {
+        "name": "artwork",
+        "type": "String",
+        "description": "Artwork value associated with this apple app store top charts record."
+      },
+      {
+        "name": "genres",
+        "type": "Array<String>",
+        "description": "Apple genre labels associated with the app."
+      },
+      {
+        "name": "input_chart",
+        "type": "String",
+        "description": "Apple chart type requested for this storefront."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

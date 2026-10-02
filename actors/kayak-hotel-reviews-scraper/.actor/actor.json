@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-hotel-reviews-scraper",
+  "title": "Kayak Hotel Reviews Scraper",
+  "description": "Collect Kayak hotel review summaries with scores, positive and negative comments, review source, author, and date label. Batch hotel IDs and sort guest feedback.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "id",
+              "score",
+              "localizedRatingCategory",
+              "localizedMonthYear",
+              "siteName"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": {
+                "label": "Review ID",
+                "format": "text"
+              },
+              "score": {
+                "label": "Score",
+                "format": "number"
+              },
+              "localizedRatingCategory": {
+                "label": "Rating category",
+                "format": "text"
+              },
+              "localizedMonthYear": {
+                "label": "Review date",
+                "format": "text"
+              },
+              "siteName": {
+                "label": "Review source",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,388 @@
+{
+  "slug": "kayak-vacation-rentals-scraper",
+  "title": "Kayak Vacation Rentals Scraper",
+  "description": "Search Kayak vacation rentals with property names, ratings, amenities, provider prices, and listing links. Batch rental paths and location IDs for future stays.",
+  "endpoint": "/kayak/stays/vacation-rentals",
+  "openapiPath": "/kayak/stays/vacation-rentals",
+  "mode": "list",
+  "batch": {
+    "field": "rentals",
+    "valueField": "path",
+    "apiParam": "path",
+    "pathParam": null,
+    "title": "Vacation rental searches",
+    "description": "KAYAK vacation-rental paths and their location IDs.",
+    "itemRequired": [
+      "location_id"
+    ],
+    "enrichBatchItem": true,
+    "valueDescription": "Path used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "path",
+      "apiParam": "path",
+      "location": "query",
+      "required": true,
+      "title": "Path",
+      "schema": {
+        "type": "string",
+        "maxLength": 300,
+        "pattern": "^\\/[A-Za-z0-9,._\\/-]+$",
+        "description": "KAYAK property path copied from a hotel or rental search URL."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "location_id",
+      "apiParam": "location_id",
+      "location": "query",
+      "required": true,
+      "title": "Location Id",
+      "schema": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]{1,40}$",
+        "description": "KAYAK location identifier for the city, airport, or property search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "location_type",
+      "apiParam": "location_type",
+      "location": "query",
+      "required": false,
+      "title": "Location Type",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "city"
+        ],
+        "description": "Type of KAYAK location identifier, such as a city, airport, or hotel. Accepted values: city."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "checkin",
+      "apiParam": "checkin",
+      "location": "query",
+      "required": false,
+      "title": "Checkin",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Hotel check-in date in YYYY-MM-DD format."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "checkout",
+      "apiParam": "checkout",
+      "location": "query",
+      "required": false,
+      "title": "Checkout",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Hotel check-out date in YYYY-MM-DD format, after check-in."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "adults",
+      "apiParam": "adults",
+      "location": "query",
+      "required": false,
+      "title": "Adults",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9,
+        "description": "Number of adult travelers included in the search."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "rooms",
+      "apiParam": "rooms",
+      "location": "query",
+      "required": false,
+      "title": "Rooms",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 8,
+        "description": "Number of hotel rooms requested."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "child_age",
+      "apiParam": "child_ages[]",
+      "location": "query",
+      "required": false,
+      "title": "Child age",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 17,
+        "description": "Age of one child in the hotel search, from 0 to 17."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "rank_a",
+          "price_a",
+          "review_a"
+        ],
+        "description": "Sort order for returned search results. Accepted values: rank_a, price_a, review_a."
+      },
+      "editor": "select"
+    }
+  ],
+  "resultPointer": "/data/results",
+  "fallbackResultPointers": [
+    "/data/source_data/kayak/live/results"
+  ],
+  "dedupePointer": "/resultId",
+  "enrichment": {
+    "field": "input_rental_search"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "relativeDateDefaults": [
+    {
+      "input": "checkin",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, check-in is set to 30 days from today."
+    },
+    {
+      "input": "checkout",
+      "base": "checkin",
+      "offsetDays": 2,
+      "description": "When omitted, check-out is set to two days after check-in."
+    }
+  ],
+  "prefill": {
+    "rentals": [
+      {
+        "path": "/Seattle-Vacation-Rentals.7054.rental.ksp",
+        "location_id": "7054"
+      }
+    ],
+    "location_type": "city",
+    "adults": 2,
+    "rooms": 1,
+    "sort": "rank_a",
+    "maxResults": 10
+  },
+  "testParams": {
+    "path": "/Seattle-Vacation-Rentals.7054.rental.ksp",
+    "location_id": "7054",
+    "checkin": "2026-11-14",
+    "checkout": "2026-11-16"
+  },
+  "fixture": {
+    "success": true,
+    "operation": "vacation-rentals",
+    "data": {
+      "results": [
+        {
+          "resultId": "rental-7054-221",
+          "resultType": "vacation-rental",
+          "localizedHotelName": "Cedar House Seattle",
+          "stars": 4,
+          "hid": 8051221,
+          "geolocation": {
+            "point": {
+              "lat": 47.608,
+              "lng": -122.336
+            },
+            "localizedCity": "Seattle"
+          },
+          "rating": {
+            "score": 9.1,
+            "reviewCount": 126,
+            "localizedRatingCategory": "Wonderful"
+          },
+          "detailsUrl": "https://www.kayak.com/Seattle-Vacation-Rentals.7054.rental.ksp",
+          "url": "https://www.kayak.com/homes/cedar-house-seattle",
+          "providers": [
+            {
+              "localizedProviderName": "Vrbo",
+              "providerCode": "vrbo",
+              "totalPrice": {
+                "price": 642,
+                "currency": "USD"
+              }
+            }
+          ],
+          "amenities": [
+            {
+              "code": "kitchen",
+              "localizedName": "Kitchen"
+            },
+            {
+              "code": "wifi",
+              "localizedName": "Wi-Fi"
+            }
+          ]
+        }
+      ],
+      "provenance": {
+        "provider": "kayak",
+        "freshness": "live"
+      }
+    },
+    "meta": {
+      "freshness": "live",
+      "duration_ms": 1170,
+      "attempts": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "resultId",
+      "label": "Result ID",
+      "format": "text"
+    },
+    {
+      "name": "localizedHotelName",
+      "label": "Hotel name",
+      "format": "text"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "text"
+    },
+    {
+      "name": "providers",
+      "label": "Booking providers",
+      "format": "text"
+    },
+    {
+      "name": "detailsUrl",
+      "label": "KAYAK URL",
+      "format": "link"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Vacation Rentals | Rental Search",
+    "seoDescription": "Search Kayak vacation rentals by location and travel dates. Export rental names, ratings, amenities, provider prices, and links to compare places to stay.",
+    "intro": "Search Kayak vacation rentals by property path and location ID with names, ratings, amenities, provider prices, and links. Omitted dates default to a future two-night visit.",
+    "useCases": [
+      "Travel planners can compare vacation rental options for a destination.",
+      "Rental analysts can track property ratings, amenities, and quoted totals.",
+      "Property managers can benchmark public rental inventory by market."
+    ],
+    "howToUse": [
+      "Add a KAYAK rental path and matching location ID to each entry in `rentals`.",
+      "Set stay dates or use the relative date defaults.",
+      "Limit saved listings with `maxResults` and export the property rows."
+    ],
+    "faqs": [
+      {
+        "question": "Where do I find a rental location ID?",
+        "answer": "Copy the location code from a KAYAK vacation rental search URL or reuse the ID returned for that market."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kayak-hotels-search-scraper",
+        "title": "Kayak Hotels Search Scraper"
+      },
+      {
+        "slug": "kayak-hotel-rates-scraper",
+        "title": "Kayak Hotel Rates Scraper"
+      },
+      {
+        "slug": "kayak-flights-scraper",
+        "title": "Kayak Flights Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "resultId",
+        "type": "String",
+        "description": "KAYAK identifier for the vacation-rental search result."
+      },
+      {
+        "name": "resultType",
+        "type": "String",
+        "description": "ResultType value associated with this kayak vacation rentals record."
+      },
+      {
+        "name": "localizedHotelName",
+        "type": "String",
+        "description": "Rental or property name shown in the selected KAYAK locale."
+      },
+      {
+        "name": "stars",
+        "type": "Integer",
+        "description": "Stars value associated with this kayak vacation rentals record."
+      },
+      {
+        "name": "hid",
+        "type": "Integer",
+        "description": "Hid value associated with this kayak vacation rentals record."
+      },
+      {
+        "name": "geolocation",
+        "type": "Object",
+        "description": "Rental coordinates and localized city returned by KAYAK."
+      },
+      {
+        "name": "rating",
+        "type": "Object",
+        "description": "Guest score, rating label, and review total for the property."
+      },
+      {
+        "name": "detailsUrl",
+        "type": "String",
+        "description": "DetailsUrl value associated with this kayak vacation rentals record."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public source or listing URL associated with this record."
+      },
+      {
+        "name": "providers",
+        "type": "Array<Object>",
+        "description": "Booking providers and quoted total prices for this rental."
+      },
+      {
+        "name": "amenities",
+        "type": "Array<Object>",
+        "description": "Amenity codes and labels reported for the property."
+      },
+      {
+        "name": "input_rental_search",
+        "type": "Object",
+        "description": "KAYAK rental path and location ID supplied for this search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

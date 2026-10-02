@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "data": {
+    "comments": {
+      "comments": [
+        {
+          "text": "Salary bands are reviewed each year.",
+          "score": 4,
+          "factor": "Compensation",
+          "review": {
+            "uuid": "salary-review-1092",
+            "type": "employee",
+            "createdAt": "2026-08-18T10:00:00Z",
+            "position": "Software Engineer"
+          }
+        }
+      ],
+      "limit": 6
+    },
+    "compensation": {
+      "industryComparison": 0.12,
+      "scoreRounded": 4,
+      "score": 4.1,
+      "reviewsCount": 670
+    },
+    "currentSort": "salary-highest",
+    "ranges": [
+      {
+        "jobRoleTitleId": 5521,
+        "jobRoleTitle": "Software Engineer",
+        "jobRoleTitleSlug": "software-engineer",
+        "profileRangeMin": 56000,
+        "profileRangeMax": 94000,
+        "profileMedian": 73500,
+        "profileAverage": 74800,
+        "profileNumberOfEntries": 82,
+        "isClaimed": false,
+        "isHighlighted": true
+      }
+    ],
+    "rangesStats": {
+      "highestPaid": {
+        "jobTitle": "Engineering Director",
+        "jobTitleAverage": 132000
+      },
+      "lowestPaid": {
+        "jobTitle": "Office Assistant",
+        "jobTitleAverage": 39000
+      }
+    },
+    "totalCount": 20,
+    "caveat": "Salary amounts reflect employee-submitted information."
+  },
+  "meta": {
+    "company_slug": "sap",
+    "country": "de",
+    "duration_ms": 1180,
+    "cached": true,
+    "cached_at": "2026-09-28T14:20:00Z"
+  }
+}

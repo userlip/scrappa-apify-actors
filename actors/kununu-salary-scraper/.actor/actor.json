@@ -1,0 +1,54 @@
+{
+  "actorSpecification": 1,
+  "name": "kununu-salary-scraper",
+  "title": "Kununu Salary by Job Title Scraper",
+  "description": "Get Kununu salary statistics by job title and country, including average pay, ranges, city comparisons, experience groups, and related roles. Batch titles for research.",
+  "categories": [
+    "JOBS"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "success",
+              "data",
+              "meta"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "success": {
+                "label": "Success",
+                "format": "text"
+              },
+              "data": {
+                "label": "Salary statistics",
+                "format": "text"
+              },
+              "meta": {
+                "label": "Search resolution",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

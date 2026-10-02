@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "booking-rooms-scraper",
+  "title": "Booking.com Rooms & Rates Scraper",
+  "description": "Find Booking.com room options with room names, quoted prices, occupancy, bed setup, and availability. Batch hotel URLs, choose travel dates, and compare stays.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "name",
+              "price",
+              "occupancy",
+              "beds",
+              "available"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": {
+                "label": "Room",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "text"
+              },
+              "occupancy": {
+                "label": "Occupancy",
+                "format": "text"
+              },
+              "beds": {
+                "label": "Beds",
+                "format": "text"
+              },
+              "available": {
+                "label": "Available",
+                "format": "text"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

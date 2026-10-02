@@ -1,0 +1,70 @@
+{
+  "actorSpecification": 1,
+  "name": "apple-app-store-developer-scraper",
+  "title": "Apple App Store Developer Apps Scraper",
+  "description": "List public Apple App Store apps by developer ID with names, genres, prices, ratings, versions, and listing links. Batch developer accounts to map publisher catalogs.",
+  "categories": [
+    "ECOMMERCE",
+    "MARKETING"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "id",
+              "title",
+              "price",
+              "rating",
+              "rating_count",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": {
+                "label": "Product ID",
+                "format": "text"
+              },
+              "title": {
+                "label": "App",
+                "format": "text"
+              },
+              "price": {
+                "label": "Price",
+                "format": "number"
+              },
+              "rating": {
+                "label": "Rating",
+                "format": "number"
+              },
+              "rating_count": {
+                "label": "Rating count",
+                "format": "number"
+              },
+              "url": {
+                "label": "App Store URL",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

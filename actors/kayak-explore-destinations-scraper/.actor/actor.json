@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-explore-destinations-scraper",
+  "title": "Kayak Explore Cheapest Destinations Scraper",
+  "description": "Explore Kayak flight destinations from an origin airport with city, country, date window, airline, stops, duration, and fare-search link. Batch origins and set a map area.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "city",
+              "country",
+              "dateDepart",
+              "dateReturn",
+              "airline",
+              "clickoutUrl"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "city": {
+                "label": "Destination",
+                "format": "text"
+              },
+              "country": {
+                "label": "Country",
+                "format": "text"
+              },
+              "dateDepart": {
+                "label": "Departure date",
+                "format": "date"
+              },
+              "dateReturn": {
+                "label": "Return date",
+                "format": "date"
+              },
+              "airline": {
+                "label": "Airline",
+                "format": "text"
+              },
+              "clickoutUrl": {
+                "label": "Flight link",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

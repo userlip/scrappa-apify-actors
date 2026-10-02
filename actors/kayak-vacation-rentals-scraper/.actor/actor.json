@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "kayak-vacation-rentals-scraper",
+  "title": "Kayak Vacation Rentals Scraper",
+  "description": "Search Kayak vacation rentals with property names, ratings, amenities, provider prices, and listing links. Batch rental paths and location IDs for future stays.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "resultId",
+              "localizedHotelName",
+              "rating",
+              "providers",
+              "detailsUrl"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "resultId": {
+                "label": "Result ID",
+                "format": "text"
+              },
+              "localizedHotelName": {
+                "label": "Hotel name",
+                "format": "text"
+              },
+              "rating": {
+                "label": "Rating",
+                "format": "text"
+              },
+              "providers": {
+                "label": "Booking providers",
+                "format": "text"
+              },
+              "detailsUrl": {
+                "label": "KAYAK URL",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

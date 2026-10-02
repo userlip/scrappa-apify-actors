@@ -1,0 +1,13 @@
+{
+  "sailing_types": [
+    {
+      "product_type": "ocean"
+    }
+  ],
+  "min_nights": 3,
+  "adults": 2,
+  "page": 1,
+  "sort": "recommended",
+  "sort_order": "asc",
+  "maxResults": 10
+}

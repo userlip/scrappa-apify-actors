@@ -1,0 +1,13 @@
+{
+  "origins": [
+    {
+      "origin": "ICT"
+    }
+  ],
+  "north_east_lat": 70,
+  "north_east_lng": -50,
+  "south_west_lat": 15,
+  "south_west_lng": -170,
+  "stops": 1,
+  "maxResults": 10
+}

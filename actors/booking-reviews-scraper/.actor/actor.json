@@ -1,0 +1,64 @@
+{
+  "actorSpecification": 1,
+  "name": "booking-reviews-scraper",
+  "title": "Booking.com Reviews Scraper",
+  "description": "Collect Booking.com guest reviews with scores, titles, comments, reviewer names, stay dates, and languages. Batch hotel URLs and page through public feedback.",
+  "categories": [
+    "TRAVEL"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "review_id",
+              "rating",
+              "title",
+              "author",
+              "created_at"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "review_id": {
+                "label": "Review ID",
+                "format": "text"
+              },
+              "rating": {
+                "label": "Rating",
+                "format": "text"
+              },
+              "title": {
+                "label": "Review title",
+                "format": "text"
+              },
+              "author": {
+                "label": "Reviewer",
+                "format": "text"
+              },
+              "created_at": {
+                "label": "Created at",
+                "format": "date"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

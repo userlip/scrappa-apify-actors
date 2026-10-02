@@ -1,0 +1,132 @@
+{
+  "title": "Kununu Company Search Scraper",
+  "description": "Search Kununu company profiles with names, slugs, locations, industry IDs, ratings, review counts, and links. Batch keywords and page through employer matches.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "queries"
+  ],
+  "properties": {
+    "queries": {
+      "title": "Company search queries",
+      "type": "array",
+      "description": "Company names or keywords to search across public Kununu employer profiles.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "query": "sap"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Company name or keyword used to search Kununu employer profiles.",
+            "editor": "textfield"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "nullable": true,
+            "description": "Maximum number of company matches requested for this search page.",
+            "editor": "number"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Number of company matches to skip before returning the next page.",
+            "editor": "number"
+          },
+          "country_filter": {
+            "title": "Country filter",
+            "type": "string",
+            "enum": [
+              "de",
+              "at",
+              "ch"
+            ],
+            "description": "One Kununu country code used to filter search matches. The code is sent as one countries[] value.",
+            "editor": "select"
+          },
+          "industry": {
+            "title": "Industry",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 44,
+            "nullable": true,
+            "description": "Numeric Kununu industry identifier used to narrow a company search.",
+            "editor": "number"
+          }
+        }
+      }
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "nullable": true,
+      "description": "Maximum number of company matches requested for this search page.",
+      "editor": "number"
+    },
+    "offset": {
+      "title": "Offset",
+      "type": "integer",
+      "minimum": 0,
+      "nullable": true,
+      "description": "Number of company matches to skip before returning the next page.",
+      "editor": "number"
+    },
+    "country_filter": {
+      "title": "Country filter",
+      "type": "string",
+      "enum": [
+        "de",
+        "at",
+        "ch"
+      ],
+      "description": "One Kununu country code used to filter search matches. The code is sent as one countries[] value.",
+      "editor": "select"
+    },
+    "industry": {
+      "title": "Industry",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 44,
+      "nullable": true,
+      "description": "Numeric Kununu industry identifier used to narrow a company search.",
+      "editor": "number"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "maxPages": {
+      "title": "Maximum Pages",
+      "type": "integer",
+      "description": "Maximum pages to request for each batch entry.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 1
+    }
+  }
+}

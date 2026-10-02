@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "operation": "hotel-reviews",
+  "data": {
+    "results": [
+      {
+        "id": "kayak-review-22091",
+        "localizedMonthYear": "September 2026",
+        "score": 4.5,
+        "localizedRatingCategory": "Excellent",
+        "positiveComment": "Comfortable room and convenient access to the city.",
+        "negativeComment": "The lobby was crowded in the afternoon.",
+        "author": "Casey Morgan",
+        "siteLink": "https://www.tripadvisor.com/Hotel_Review-Riverview_Seattle",
+        "siteName": "Tripadvisor",
+        "siteLogo": "https://kayak.com/images/tripadvisor.svg",
+        "internal": false,
+        "localizedScore": "4.5/5"
+      }
+    ],
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "duration_ms": 760,
+    "attempts": 1
+  }
+}

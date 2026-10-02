@@ -1,0 +1,48 @@
+{
+  "title": "Arbeitsagentur Job Details Scraper",
+  "description": "Fetch public Arbeitsagentur vacancy details by reference number, including role, employer, work schedule, pay, contract terms, and location. Batch job IDs for vacancy research.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "job_refs"
+  ],
+  "properties": {
+    "job_refs": {
+      "title": "Job reference numbers",
+      "type": "array",
+      "description": "Arbeitsagentur reference numbers for individual public job listings.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "refnr": "12016-10005410012-S"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "refnr"
+        ],
+        "properties": {
+          "refnr": {
+            "title": "Refnr",
+            "type": "string",
+            "maxLength": 200,
+            "description": "Arbeitsagentur reference number that identifies a public vacancy.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

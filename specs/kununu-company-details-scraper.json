@@ -1,0 +1,240 @@
+{
+  "slug": "kununu-company-details-scraper",
+  "title": "Kununu Company Profile Scraper",
+  "description": "Get Kununu company profiles with employer identity, location, industry, overall score, recommendations, review totals, and website. Batch company slugs by country.",
+  "endpoint": "/kununu/company-details",
+  "openapiPath": "/kununu/company-details",
+  "mode": "single",
+  "batch": {
+    "field": "companies",
+    "valueField": "company_slug",
+    "apiParam": "company_slug",
+    "pathParam": null,
+    "title": "Company slugs",
+    "description": "Kununu company profile slugs to retrieve.",
+    "valueDescription": "Company Slug used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": true,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "at",
+          "ch"
+        ],
+        "description": "Kununu country market code, such as de, at, or ch. Accepted values: de, at, ch."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "company_slug",
+      "apiParam": "company_slug",
+      "location": "query",
+      "required": true,
+      "title": "Company Slug",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "pattern": "^[a-z0-9\\-]+$",
+        "description": "Company slug from the public Kununu employer profile URL."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "slug",
+      "apiParam": "slug",
+      "location": "query",
+      "required": false,
+      "title": "Slug",
+      "schema": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "nullable": true,
+        "description": "Alias for company_slug, for chaining from the search endpoint."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "countryCode",
+      "apiParam": "countryCode",
+      "location": "query",
+      "required": false,
+      "title": "CountryCode",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "de",
+          "at",
+          "ch"
+        ],
+        "nullable": true,
+        "description": "Alias for country (de, at, ch). Accepted values: de, at, ch."
+      },
+      "editor": "select"
+    }
+  ],
+  "resultPointer": null,
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_company_slug"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0005,
+  "timeoutSecs": 300,
+  "prefill": {
+    "companies": [
+      {
+        "company_slug": "sap"
+      }
+    ],
+    "country": "de",
+    "maxResults": 10
+  },
+  "testParams": {
+    "country": "de",
+    "company_slug": "sap"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "basic_info": {
+        "name": "SAP SE",
+        "uuid": "0b4f44e3-65a8-4f3a-b435-7c66e5d555c4",
+        "slug": "sap-se",
+        "city": "Walldorf",
+        "country": "de",
+        "industry": 12,
+        "employer_segment": "Large enterprise",
+        "url": "https://www.kununu.com/de/sap-se",
+        "website": "https://www.sap.com"
+      },
+      "ratings": {
+        "overall_score": 4.1,
+        "rounded_score": 4,
+        "recommendation_rate": 82,
+        "total_reviews": 23840,
+        "employee_reviews": 20600,
+        "applicant_reviews": 3240,
+        "reviews_with_text": 15200,
+        "reviews_with_response": 4170,
+        "response_time_days": 18,
+        "industry_average_score": 3.8
+      },
+      "structured_data": {
+        "organization": {
+          "@type": "Organization",
+          "name": "SAP SE",
+          "url": "https://www.sap.com",
+          "sameAs": [
+            "https://www.kununu.com/de/sap-se"
+          ]
+        }
+      },
+      "metadata": {
+        "title": "SAP SE Reviews and Ratings",
+        "canonical_url": "https://www.kununu.com/de/sap-se"
+      }
+    },
+    "meta": {
+      "url": "https://www.kununu.com/de/sap-se",
+      "duration_ms": 1020,
+      "scraped_at": "2026-09-28T14:20:00Z",
+      "cached": true
+    }
+  },
+  "tableFields": [
+    {
+      "name": "success",
+      "label": "Success",
+      "format": "text"
+    },
+    {
+      "name": "data",
+      "label": "Company profile",
+      "format": "text"
+    },
+    {
+      "name": "meta",
+      "label": "Fetch metadata",
+      "format": "text"
+    }
+  ],
+  "categories": [
+    "JOBS",
+    "LEAD_GENERATION"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kununu Company Profile | Employer Ratings",
+    "seoDescription": "Scrape Kununu company profiles by slug and country. Export employer details, locations, industry, overall scores, recommendation rates, and review totals.",
+    "intro": "Retrieve Kununu employer profiles with company identity, location, industry, ratings, recommendation rates, and review totals. Batch company slugs with a selected country.",
+    "useCases": [
+      "Recruiters can review employer ratings and profile information.",
+      "Workplace researchers can compare recommendation and review totals.",
+      "B2B analysts can enrich employer records with location and industry context."
+    ],
+    "howToUse": [
+      "Add a Kununu company slug to each entry in `companies`.",
+      "Choose the profile country, such as Germany, Austria, or Switzerland.",
+      "Read employer details and ratings from the returned profile object."
+    ],
+    "faqs": [
+      {
+        "question": "How do I find a company slug?",
+        "answer": "Search with Kununu Company Search Scraper and copy the slug from its profile URL or result."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kununu-company-search-scraper",
+        "title": "Kununu Company Search Scraper"
+      },
+      {
+        "slug": "kununu-company-salaries-scraper",
+        "title": "Kununu Company Salaries Scraper"
+      },
+      {
+        "slug": "kununu-top-companies-scraper",
+        "title": "Kununu Top Companies Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "success",
+        "type": "Boolean",
+        "description": "True when Kununu returned a parsed company profile."
+      },
+      {
+        "name": "data",
+        "type": "Object",
+        "description": "Company identity, ratings, organization metadata, and profile information."
+      },
+      {
+        "name": "meta",
+        "type": "Object",
+        "description": "Profile URL, fetch timing, and cache status."
+      },
+      {
+        "name": "input_company_slug",
+        "type": "String",
+        "description": "Kununu employer profile slug used for this lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

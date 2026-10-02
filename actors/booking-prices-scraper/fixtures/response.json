@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "data": {
+    "title": "Hotels in Berlin",
+    "canonical_url": "https://www.booking.com/searchresults.html?ss=Berlin",
+    "prices": [
+      {
+        "name": "The Linden Berlin",
+        "url": "https://www.booking.com/hotel/de/the-linden-berlin.html",
+        "price": "€246",
+        "review_score": "9.1",
+        "location": "Mitte, Berlin",
+        "image": "https://cf.bstatic.com/xdata/images/hotel/square60/berlin-linden.jpg"
+      }
+    ],
+    "total_prices": 25,
+    "parsed": true
+  },
+  "meta": {
+    "url": "https://www.booking.com/searchresults.html?ss=Berlin",
+    "duration_ms": 880,
+    "scraped_at": "2026-09-28T14:22:00Z",
+    "cached": true,
+    "booking_source": "search-results",
+    "booking_pool_stages": [
+      "destination-search",
+      "price-cards"
+    ]
+  }
+}

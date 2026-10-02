@@ -1,0 +1,481 @@
+{
+  "slug": "google-flights-date-range-scraper",
+  "title": "Google Flights Cheapest Dates Scraper",
+  "description": "Find Google Flights’ cheapest date-range option for airport routes with price, airline, stops, duration, and itinerary legs. Batch routes and choose a future search window.",
+  "endpoint": "/flights/v2/date-range",
+  "openapiPath": "/flights/v2/date-range",
+  "mode": "list",
+  "batch": {
+    "field": "routes",
+    "valueField": "origin",
+    "apiParam": "origin",
+    "pathParam": null,
+    "title": "Airport routes",
+    "description": "Origin and destination airport codes to compare for the same date range.",
+    "itemRequired": [
+      "destination"
+    ],
+    "enrichBatchItem": true,
+    "valueDescription": "Origin used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "origin",
+      "apiParam": "origin",
+      "location": "query",
+      "required": true,
+      "title": "Origin",
+      "schema": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "pattern": "^[a-zA-Z]{3}$",
+        "description": "Origin airport code for the route or destination search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "destination",
+      "apiParam": "destination",
+      "location": "query",
+      "required": true,
+      "title": "Destination",
+      "schema": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "pattern": "^[a-zA-Z]{3}$",
+        "description": "KAYAK destination code for the vacation-package search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "adults",
+      "apiParam": "adults",
+      "location": "query",
+      "required": false,
+      "title": "Adults",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9,
+        "nullable": true,
+        "description": "Number of adult travelers included in the search."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "children",
+      "apiParam": "children",
+      "location": "query",
+      "required": false,
+      "title": "Children",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9,
+        "nullable": true,
+        "description": "Number of children traveling on the cruise search."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "infants_in_seat",
+      "apiParam": "infants_in_seat",
+      "location": "query",
+      "required": false,
+      "title": "Infants In Seat",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9,
+        "nullable": true,
+        "description": "Number of infants in seat (0-9, default: 0)"
+      },
+      "editor": "number"
+    },
+    {
+      "input": "infants_on_lap",
+      "apiParam": "infants_on_lap",
+      "location": "query",
+      "required": false,
+      "title": "Infants On Lap",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9,
+        "nullable": true,
+        "description": "Number of infants on lap (0-9, default: 0)"
+      },
+      "editor": "number"
+    },
+    {
+      "input": "cabin_class",
+      "apiParam": "cabin_class",
+      "location": "query",
+      "required": false,
+      "title": "Cabin Class",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "economy",
+          "premium_economy",
+          "business",
+          "first"
+        ],
+        "nullable": true,
+        "description": "Cabin class: economy, premium_economy, business, or first (default: economy) Accepted values: economy, premium_economy, business, first."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "exclude_basic",
+      "apiParam": "exclude_basic",
+      "location": "query",
+      "required": false,
+      "title": "Exclude Basic",
+      "schema": {
+        "type": "boolean",
+        "nullable": true,
+        "description": "Exclude basic economy fares when searching in economy class (default: false)"
+      },
+      "editor": "checkbox"
+    },
+    {
+      "input": "max_stops",
+      "apiParam": "max_stops",
+      "location": "query",
+      "required": false,
+      "title": "Max Stops",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "any",
+          "nonstop",
+          "one_or_fewer",
+          "two_or_fewer"
+        ],
+        "nullable": true,
+        "description": "Maximum stops: any, nonstop, one_or_fewer, or two_or_fewer (default: any) Accepted values: any, nonstop, one_or_fewer, two_or_fewer."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "hl",
+      "apiParam": "hl",
+      "location": "query",
+      "required": false,
+      "title": "Hl",
+      "schema": {
+        "type": "string",
+        "pattern": "^[a-zA-Z]{2}(-[a-zA-Z]{2})?$",
+        "nullable": true,
+        "description": "Language code (e.g., en, de, en-US)"
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "gl",
+      "apiParam": "gl",
+      "location": "query",
+      "required": false,
+      "title": "Gl",
+      "schema": {
+        "type": "string",
+        "pattern": "^[a-zA-Z]{2}$",
+        "nullable": true,
+        "description": "Country/region code (e.g., us, de, gb)"
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "currency",
+      "apiParam": "currency",
+      "location": "query",
+      "required": false,
+      "title": "Currency",
+      "schema": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "nullable": true,
+        "description": "Currency code for prices (e.g., USD, EUR, GBP)"
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "outbound_times",
+      "apiParam": "outbound_times",
+      "location": "query",
+      "required": false,
+      "title": "Outbound Times",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\s*(?:[01]?\\d|2[0-3])\\s*,\\s*(?:[01]?\\d|2[0-3])\\s*(?:,\\s*(?:[01]?\\d|2[0-3])\\s*,\\s*(?:[01]?\\d|2[0-3])\\s*)?$",
+        "nullable": true,
+        "description": "Outbound time window as comma-separated hours, e.g. \"6,18\" for departures between 06:00 and 18:00. Two further values narrow the arrival window."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "bags",
+      "apiParam": "bags",
+      "location": "query",
+      "required": false,
+      "title": "Bags",
+      "schema": {
+        "type": "integer",
+        "enum": [
+          "0"
+        ],
+        "nullable": true,
+        "description": "Carry-on bag count. Only 0 is currently supported. Accepted values: 0."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "api_version",
+      "apiParam": "api_version",
+      "location": "query",
+      "required": false,
+      "title": "Api Version",
+      "schema": {
+        "type": "integer",
+        "enum": [
+          "2"
+        ],
+        "description": "Value accepted by the Google Flights Cheapest Dates Scraper search. Accepted values: 2."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "from_date",
+      "apiParam": "from_date",
+      "location": "query",
+      "required": false,
+      "title": "From Date",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Start of date range in Y-m-d format"
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "to_date",
+      "apiParam": "to_date",
+      "location": "query",
+      "required": false,
+      "title": "To Date",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "End of date range in Y-m-d format"
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "trip_duration",
+      "apiParam": "trip_duration",
+      "location": "query",
+      "required": false,
+      "title": "Trip Duration",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30,
+        "nullable": true,
+        "description": "Duration of trip in days (1-30, default: 7)"
+      },
+      "editor": "number"
+    }
+  ],
+  "resultPointer": "/date_price_combinations",
+  "fallbackResultPointers": [],
+  "enrichment": {
+    "field": "input_route"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "relativeDateDefaults": [
+    {
+      "input": "from_date",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, the start date is set to 30 days from today."
+    },
+    {
+      "input": "to_date",
+      "base": "from_date",
+      "offsetDays": 7,
+      "description": "When omitted, the end date is set to seven days after the start date."
+    }
+  ],
+  "prefill": {
+    "routes": [
+      {
+        "origin": "JFK",
+        "destination": "LAX"
+      }
+    ],
+    "adults": 1,
+    "cabin_class": "economy",
+    "maxResults": 10
+  },
+  "testParams": {
+    "origin": "JFK",
+    "destination": "LAX",
+    "from_date": "2026-11-01",
+    "to_date": "2026-11-14"
+  },
+  "fixture": {
+    "date_price_combinations": [
+      {
+        "price": 245,
+        "currency": "USD",
+        "total_duration_minutes": 356,
+        "stops": 0,
+        "airline_name": "JetBlue",
+        "departure_date": "2026-10-31",
+        "return_date": "2026-11-07",
+        "legs": [
+          {
+            "departure_airport": "JFK",
+            "arrival_airport": "LAX",
+            "departure_time": "2026-10-31T08:15:00-04:00",
+            "arrival_time": "2026-10-31T11:11:00-07:00",
+            "airline_name": "JetBlue",
+            "flight_number": "B6123"
+          }
+        ]
+      }
+    ],
+    "search_metadata": {
+      "origin": "JFK",
+      "destination": "LAX",
+      "status": "success"
+    }
+  },
+  "tableFields": [
+    {
+      "name": "price",
+      "label": "Price",
+      "format": "number"
+    },
+    {
+      "name": "airline_name",
+      "label": "Airline name",
+      "format": "text"
+    },
+    {
+      "name": "departure_date",
+      "label": "Departure date",
+      "format": "date"
+    },
+    {
+      "name": "return_date",
+      "label": "Return date",
+      "format": "date"
+    },
+    {
+      "name": "stops",
+      "label": "Stops",
+      "format": "number"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Google Flights Cheapest Dates | Fare Calendar",
+    "seoDescription": "Compare Google Flights prices for airport routes and date ranges. Export low fare options with airline, stops, duration, and travel dates for planning.",
+    "intro": "Compare Google Flights’ cheapest starting option for each route and date range, with price, airline, stops, duration, and itinerary legs. Dates default to a future search window.",
+    "useCases": [
+      "Travel planners can compare lowest starting fares across airport pairs.",
+      "Fare analysts can watch route prices before choosing departure windows.",
+      "Travel agencies can collect first-look itinerary options for client routes."
+    ],
+    "howToUse": [
+      "Add origin and destination airport codes to each entry in `routes`.",
+      "Set start and end dates or use the relative date defaults.",
+      "Choose passenger and cabin settings, then export the itinerary rows."
+    ],
+    "faqs": [
+      {
+        "question": "Does the Actor return every date in the selected range?",
+        "answer": "This version returns the cheapest starting option for the start date. Request the next departure date separately to continue a date-range search."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "google-flights-search-scraper",
+        "title": "Google Flights Scraper"
+      },
+      {
+        "slug": "kayak-flights-scraper",
+        "title": "Kayak Flights Scraper"
+      },
+      {
+        "slug": "kayak-flight-price-predictions-scraper",
+        "title": "Kayak Flight Price Predictions Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "price",
+        "type": "Integer",
+        "description": "Quoted price in the currency shown by the source."
+      },
+      {
+        "name": "currency",
+        "type": "String",
+        "description": "Three-letter currency code for the quoted amount."
+      },
+      {
+        "name": "total_duration_minutes",
+        "type": "Integer",
+        "description": "Total Duration Minutes value associated with this google flights cheapest dates record."
+      },
+      {
+        "name": "stops",
+        "type": "Integer",
+        "description": "Stops value associated with this google flights cheapest dates record."
+      },
+      {
+        "name": "airline_name",
+        "type": "String",
+        "description": "Airline Name value associated with this google flights cheapest dates record."
+      },
+      {
+        "name": "departure_date",
+        "type": "String",
+        "description": "Departure Date value associated with this google flights cheapest dates record."
+      },
+      {
+        "name": "return_date",
+        "type": "String",
+        "description": "Return Date value associated with this google flights cheapest dates record."
+      },
+      {
+        "name": "legs",
+        "type": "Array<Object>",
+        "description": "Legs value associated with this google flights cheapest dates record."
+      },
+      {
+        "name": "input_route",
+        "type": "Object",
+        "description": "Origin and destination airport codes supplied for this route lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

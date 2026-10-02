@@ -1,0 +1,322 @@
+{
+  "slug": "apple-app-store-reviews-scraper",
+  "title": "Apple App Store Reviews Scraper",
+  "description": "Export Apple App Store reviews with star ratings, titles, review text, author names, and dates. Batch app IDs, choose a storefront, and page through customer feedback.",
+  "endpoint": "/apple/app-store/product/reviews",
+  "openapiPath": "/apple/app-store/product/reviews",
+  "mode": "list",
+  "batch": {
+    "field": "apps",
+    "valueField": "product_id",
+    "apiParam": "product_id",
+    "pathParam": null,
+    "title": "App Store product IDs",
+    "description": "Apple App Store product IDs to collect public customer reviews for.",
+    "valueDescription": "Product Id used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "id",
+      "apiParam": "id",
+      "location": "query",
+      "required": false,
+      "title": "Id",
+      "schema": {
+        "type": "string",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$",
+        "nullable": true,
+        "description": "Value accepted by the Apple App Store Reviews Scraper search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "product_id",
+      "apiParam": "product_id",
+      "location": "query",
+      "required": false,
+      "title": "Product Id",
+      "schema": {
+        "type": "string",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$",
+        "nullable": true,
+        "description": "Apple product id (numeric adam id)"
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "store",
+      "apiParam": "store",
+      "location": "query",
+      "required": false,
+      "title": "Store",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "apps",
+          "mac",
+          "books",
+          "audiobooks",
+          "movies",
+          "tv",
+          "music",
+          "podcasts"
+        ],
+        "nullable": true,
+        "description": "Store vertical: apps, mac, books, audiobooks, movies, tv, music, or podcasts Accepted values: apps, mac, books, audiobooks, movies, tv, music, podcasts."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 2,
+        "nullable": true,
+        "description": "Kununu country market code, such as de, at, or ch."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "season_id",
+      "apiParam": "season_id",
+      "location": "query",
+      "required": false,
+      "title": "Season Id",
+      "schema": {
+        "type": "string",
+        "maxLength": 255,
+        "pattern": "^[A-Za-z0-9._-]+$",
+        "nullable": true,
+        "description": "TV season id; returns the season product instead of the show."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "num",
+      "apiParam": "num",
+      "location": "query",
+      "required": false,
+      "title": "Num",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50,
+        "nullable": true,
+        "description": "Requested review result count per page"
+      },
+      "editor": "number"
+    },
+    {
+      "input": "offset",
+      "apiParam": "offset",
+      "location": "query",
+      "required": false,
+      "title": "Offset",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "nullable": true,
+        "description": "Number of company matches to skip before returning the next page."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "next_page_token",
+      "apiParam": "next_page_token",
+      "location": "query",
+      "required": false,
+      "title": "Next Page Token",
+      "schema": {
+        "type": "string",
+        "maxLength": 100,
+        "nullable": true,
+        "description": "Review pagination token from a previous response"
+      },
+      "editor": "textfield"
+    }
+  ],
+  "resultPointer": "/reviews",
+  "fallbackResultPointers": [],
+  "pagination": {
+    "kind": "page",
+    "param": "offset",
+    "start": 0,
+    "step": 20,
+    "nextPointer": "/reviews_pagination/next_offset",
+    "endPointer": "/reviews_pagination/end_of_history",
+    "maxPages": 10
+  },
+  "defaultMaxPages": 1,
+  "dedupePointer": "/id",
+  "enrichment": {
+    "field": "input_product_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "apps": [
+      {
+        "product_id": "1232780281"
+      }
+    ],
+    "country": "us",
+    "store": "apps",
+    "maxResults": 10,
+    "maxPages": 1
+  },
+  "testParams": {
+    "product_id": "1232780281",
+    "country": "us"
+  },
+  "fixture": {
+    "search_parameters": {
+      "product_id": "1232780281",
+      "country": "us",
+      "store": "apps",
+      "engine": "app_store"
+    },
+    "reviews": [
+      {
+        "id": "1846739204",
+        "title": "A reliable trail companion",
+        "author": "Maya Chen",
+        "rating": 5,
+        "text": "Clear maps and useful offline guidance made this a dependable part of weekend hikes.",
+        "date": "2026-09-24T10:15:00-07:00",
+        "is_edited": false
+      }
+    ],
+    "reviews_pagination": {
+      "offset": 0,
+      "limit": 20,
+      "next_offset": 20,
+      "next_page_token": "eyJvZmZzZXQiOjIwfQ",
+      "end_of_history": false
+    }
+  },
+  "tableFields": [
+    {
+      "name": "id",
+      "label": "Review ID",
+      "format": "text"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "number"
+    },
+    {
+      "name": "title",
+      "label": "Title",
+      "format": "text"
+    },
+    {
+      "name": "author",
+      "label": "Reviewer",
+      "format": "text"
+    },
+    {
+      "name": "date",
+      "label": "Date",
+      "format": "date"
+    }
+  ],
+  "categories": [
+    "ECOMMERCE",
+    "MARKETING"
+  ],
+  "storeCopy": {
+    "seoTitle": "Apple App Store Reviews | Ratings & Comments",
+    "seoDescription": "Scrape Apple App Store reviews by app ID. Export ratings, reviewer names, titles, comments, and dates to compare feedback across storefront countries.",
+    "intro": "Collect public Apple App Store reviews with ratings, titles, author names, comments, and posting dates. Search several app IDs in one run and page through the review history.",
+    "useCases": [
+      "App publishers can monitor recent customer feedback across product versions.",
+      "Product analysts can compare rating distributions and review themes between apps.",
+      "Market researchers can track public sentiment for competing mobile products."
+    ],
+    "howToUse": [
+      "Add one Apple product ID per entry in `apps`.",
+      "Choose a storefront country and store type, then set review filters if needed.",
+      "Set `maxPages` and `maxResults` to bound the review collection."
+    ],
+    "faqs": [
+      {
+        "question": "Where do I find an Apple product ID?",
+        "answer": "Copy the numeric ID from an App Store listing URL, or use Apple App Store Search Scraper to find a product first."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "apple-app-store-app-details-scraper",
+        "title": "Apple App Store App Details Scraper"
+      },
+      {
+        "slug": "apple-app-store-search-scraper",
+        "title": "Apple App Store Search Scraper"
+      },
+      {
+        "slug": "apple-app-store-charts-scraper",
+        "title": "Apple App Store Top Charts Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "type": "String",
+        "description": "Stable source identifier for this record."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Title displayed by the source for this record."
+      },
+      {
+        "name": "author",
+        "type": "String",
+        "description": "Public display name supplied by the source."
+      },
+      {
+        "name": "rating",
+        "type": "Integer",
+        "description": "Rating value reported by the source."
+      },
+      {
+        "name": "text",
+        "type": "String",
+        "description": "Text value associated with this apple app store reviews record."
+      },
+      {
+        "name": "date",
+        "type": "String",
+        "description": "Date value associated with this apple app store reviews record."
+      },
+      {
+        "name": "is_edited",
+        "type": "Boolean",
+        "description": "Is Edited value associated with this apple app store reviews record."
+      },
+      {
+        "name": "input_product_id",
+        "type": "String",
+        "description": "Apple or Google Play product identifier supplied for this lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

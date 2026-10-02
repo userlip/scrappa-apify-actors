@@ -1,0 +1,292 @@
+{
+  "slug": "kayak-hotel-rates-scraper",
+  "title": "Kayak Hotel Rates Scraper",
+  "description": "Compare Kayak hotel rate groups with room descriptions, booking providers, total prices, and click-through links. Batch hotel IDs and choose future stay dates.",
+  "endpoint": "/kayak/stays/rates",
+  "openapiPath": "/kayak/stays/rates",
+  "mode": "list",
+  "batch": {
+    "field": "hotels",
+    "valueField": "hotel_id",
+    "apiParam": "hotel_id",
+    "pathParam": null,
+    "title": "KAYAK hotel IDs",
+    "description": "KAYAK hotel identifiers whose provider rates you want to compare.",
+    "valueDescription": "Hotel Id used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "hotel_id",
+      "apiParam": "hotel_id",
+      "location": "query",
+      "required": true,
+      "title": "Hotel Id",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "KAYAK hotel identifier used to retrieve property rates or reviews."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "checkin",
+      "apiParam": "checkin",
+      "location": "query",
+      "required": false,
+      "title": "Checkin",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Hotel check-in date in YYYY-MM-DD format."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "checkout",
+      "apiParam": "checkout",
+      "location": "query",
+      "required": false,
+      "title": "Checkout",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Hotel check-out date in YYYY-MM-DD format, after check-in."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "adults",
+      "apiParam": "adults",
+      "location": "query",
+      "required": false,
+      "title": "Adults",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9,
+        "description": "Number of adult travelers included in the search."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "rooms",
+      "apiParam": "rooms",
+      "location": "query",
+      "required": false,
+      "title": "Rooms",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 8,
+        "description": "Number of hotel rooms requested."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "child_age",
+      "apiParam": "child_ages[]",
+      "location": "query",
+      "required": false,
+      "title": "Child age",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 17,
+        "description": "Age of one child in the hotel search, from 0 to 17."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "price_mode",
+      "apiParam": "price_mode",
+      "location": "query",
+      "required": false,
+      "title": "Price Mode",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "total",
+          "nightly"
+        ],
+        "description": "Whether quoted prices are shown as totals or per-night or per-person values. Accepted values: total, nightly."
+      },
+      "editor": "select"
+    }
+  ],
+  "resultPointer": "/data/results",
+  "fallbackResultPointers": [
+    "/data/source_data/kayak/groups"
+  ],
+  "enrichment": {
+    "field": "input_hotel_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "relativeDateDefaults": [
+    {
+      "input": "checkin",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, check-in is set to 30 days from today."
+    },
+    {
+      "input": "checkout",
+      "base": "checkin",
+      "offsetDays": 2,
+      "description": "When omitted, check-out is set to two days after check-in."
+    }
+  ],
+  "prefill": {
+    "hotels": [
+      {
+        "hotel_id": 15297
+      }
+    ],
+    "adults": 2,
+    "rooms": 1,
+    "price_mode": "total",
+    "maxResults": 10
+  },
+  "testParams": {
+    "hotel_id": "15297",
+    "checkin": "2026-11-14",
+    "checkout": "2026-11-16"
+  },
+  "fixture": {
+    "success": true,
+    "operation": "hotel-rates",
+    "data": {
+      "results": [
+        {
+          "localizedTitle": "Standard room offers",
+          "numToDisplay": 1,
+          "rows": [
+            {
+              "localizedDescription": "Queen room, 2 guests",
+              "bookingOptions": [
+                {
+                  "price": {
+                    "price": 318,
+                    "currency": "USD",
+                    "localizedPrice": "$318"
+                  },
+                  "totalPrice": {
+                    "price": 318,
+                    "currency": "USD",
+                    "localizedPrice": "$318"
+                  },
+                  "rateType": "standard",
+                  "localizedProviderName": "Booking.com",
+                  "providerCode": "booking",
+                  "afterclickUrl": {
+                    "url": "https://www.booking.com/hotel/us/park-mgm.html",
+                    "urlType": "booking"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "search_state": {
+        "search_id": "stay-rates-15820"
+      },
+      "provenance": {
+        "provider": "kayak",
+        "freshness": "live"
+      }
+    },
+    "meta": {
+      "freshness": "live",
+      "duration_ms": 920,
+      "attempts": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "localizedTitle",
+      "label": "Rate group",
+      "format": "text"
+    },
+    {
+      "name": "rows",
+      "label": "Room offers",
+      "format": "text"
+    },
+    {
+      "name": "numToDisplay",
+      "label": "Offer count",
+      "format": "number"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Hotel Rates | Compare Prices",
+    "seoDescription": "Compare Kayak hotel rates by hotel ID and travel dates. Export room groups, providers, total prices, and booking links before choosing a stay.",
+    "intro": "Compare provider rate groups for KAYAK hotel IDs with room descriptions, total prices, and booking links. Omitted stay dates default to a future two-night visit.",
+    "useCases": [
+      "Travel planners can compare room offers and booking providers for a hotel.",
+      "Rate analysts can monitor total prices across future travel dates.",
+      "Hospitality teams can track provider availability for selected properties."
+    ],
+    "howToUse": [
+      "Add a KAYAK hotel ID to each entry in `hotels`.",
+      "Set stay dates and guest options or use the relative date defaults.",
+      "Review rate groups and provider booking links in the dataset."
+    ],
+    "faqs": [
+      {
+        "question": "How do I get a KAYAK hotel ID?",
+        "answer": "Use Kayak Hotels Search Scraper and copy the `hid` value from a property result."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kayak-hotels-search-scraper",
+        "title": "Kayak Hotels Search Scraper"
+      },
+      {
+        "slug": "kayak-hotel-details-scraper",
+        "title": "Kayak Hotel Details Scraper"
+      },
+      {
+        "slug": "kayak-hotel-reviews-scraper",
+        "title": "Kayak Hotel Reviews Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "localizedTitle",
+        "type": "String",
+        "description": "Localized heading for a group of room or provider rates."
+      },
+      {
+        "name": "numToDisplay",
+        "type": "Integer",
+        "description": "Number of rate rows KAYAK marks for display in this group."
+      },
+      {
+        "name": "rows",
+        "type": "Array<Object>",
+        "description": "Room descriptions and their provider booking options."
+      },
+      {
+        "name": "input_hotel_id",
+        "type": "Integer",
+        "description": "KAYAK hotel identifier submitted for this lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

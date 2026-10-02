@@ -1,0 +1,181 @@
+{
+  "title": "Kayak Vacation Rentals Scraper",
+  "description": "Search Kayak vacation rentals with property names, ratings, amenities, provider prices, and listing links. Batch rental paths and location IDs for future stays.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "rentals"
+  ],
+  "properties": {
+    "rentals": {
+      "title": "Vacation rental searches",
+      "type": "array",
+      "description": "KAYAK vacation-rental paths and their location IDs.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "path": "/Seattle-Vacation-Rentals.7054.rental.ksp",
+          "location_id": "7054"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "location_id"
+        ],
+        "properties": {
+          "path": {
+            "title": "Path",
+            "type": "string",
+            "maxLength": 300,
+            "pattern": "^\\/[A-Za-z0-9,._\\/-]+$",
+            "description": "KAYAK property path copied from a hotel or rental search URL.",
+            "editor": "textfield"
+          },
+          "location_id": {
+            "title": "Location Id",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,40}$",
+            "description": "KAYAK location identifier for the city, airport, or property search.",
+            "editor": "textfield"
+          },
+          "location_type": {
+            "title": "Location Type",
+            "type": "string",
+            "enum": [
+              "city"
+            ],
+            "description": "Type of KAYAK location identifier, such as a city, airport, or hotel. Accepted values: city.",
+            "editor": "select"
+          },
+          "checkin": {
+            "title": "Checkin",
+            "type": "string",
+            "format": "date",
+            "description": "Hotel check-in date in YYYY-MM-DD format. When omitted, check-in is set to 30 days from today.",
+            "editor": "textfield"
+          },
+          "checkout": {
+            "title": "Checkout",
+            "type": "string",
+            "format": "date",
+            "description": "Hotel check-out date in YYYY-MM-DD format, after check-in. When omitted, check-out is set to two days after check-in.",
+            "editor": "textfield"
+          },
+          "adults": {
+            "title": "Adults",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9,
+            "description": "Number of adult travelers included in the search.",
+            "editor": "number"
+          },
+          "rooms": {
+            "title": "Rooms",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "description": "Number of hotel rooms requested.",
+            "editor": "number"
+          },
+          "child_age": {
+            "title": "Child age",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 17,
+            "description": "Age of one child in the hotel search, from 0 to 17.",
+            "editor": "number"
+          },
+          "sort": {
+            "title": "Sort",
+            "type": "string",
+            "enum": [
+              "rank_a",
+              "price_a",
+              "review_a"
+            ],
+            "description": "Sort order for returned search results. Accepted values: rank_a, price_a, review_a.",
+            "editor": "select"
+          }
+        }
+      }
+    },
+    "location_id": {
+      "title": "Location Id",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,40}$",
+      "description": "KAYAK location identifier for the city, airport, or property search.",
+      "editor": "textfield"
+    },
+    "location_type": {
+      "title": "Location Type",
+      "type": "string",
+      "enum": [
+        "city"
+      ],
+      "description": "Type of KAYAK location identifier, such as a city, airport, or hotel. Accepted values: city.",
+      "editor": "select"
+    },
+    "checkin": {
+      "title": "Checkin",
+      "type": "string",
+      "format": "date",
+      "description": "Hotel check-in date in YYYY-MM-DD format. When omitted, check-in is set to 30 days from today.",
+      "editor": "textfield"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "type": "string",
+      "format": "date",
+      "description": "Hotel check-out date in YYYY-MM-DD format, after check-in. When omitted, check-out is set to two days after check-in.",
+      "editor": "textfield"
+    },
+    "adults": {
+      "title": "Adults",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9,
+      "description": "Number of adult travelers included in the search.",
+      "editor": "number"
+    },
+    "rooms": {
+      "title": "Rooms",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8,
+      "description": "Number of hotel rooms requested.",
+      "editor": "number"
+    },
+    "child_age": {
+      "title": "Child age",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 17,
+      "description": "Age of one child in the hotel search, from 0 to 17.",
+      "editor": "number"
+    },
+    "sort": {
+      "title": "Sort",
+      "type": "string",
+      "enum": [
+        "rank_a",
+        "price_a",
+        "review_a"
+      ],
+      "description": "Sort order for returned search results. Accepted values: rank_a, price_a, review_a.",
+      "editor": "select"
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

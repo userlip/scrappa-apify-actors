@@ -1,0 +1,34 @@
+{
+  "success": true,
+  "operation": "car-rental-search",
+  "data": {
+    "results": [
+      {
+        "resultId": "car-280551",
+        "providerCode": "hertz",
+        "providerName": "Hertz",
+        "companyName": "Hertz",
+        "title": "Compact SUV",
+        "description": "Compact SUV, unlimited mileage",
+        "price": "$248",
+        "priceData": {
+          "amount": 248,
+          "currency": "USD",
+          "period": "total"
+        },
+        "clickUrlTemplate": "https://www.kayak.com/cars/LAS/2026-10-31/2026-11-04?provider=hertz",
+        "isAd": false,
+        "rank": 1
+      }
+    ],
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "duration_ms": 980,
+    "attempts": 1
+  }
+}

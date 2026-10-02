@@ -1,0 +1,374 @@
+{
+  "slug": "kayak-hotels-search-scraper",
+  "title": "Kayak Hotels Search Scraper",
+  "description": "Search Kayak hotel listings with names, star levels, review scores, amenities, provider prices, and property links. Batch location IDs and compare future stays.",
+  "endpoint": "/kayak/stays/search",
+  "openapiPath": "/kayak/stays/search",
+  "mode": "list",
+  "batch": {
+    "field": "locations",
+    "valueField": "location_id",
+    "apiParam": "location_id",
+    "pathParam": null,
+    "title": "KAYAK location IDs",
+    "description": "City, airport, or property location IDs to search for hotel offers.",
+    "valueDescription": "Location Id used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "location_id",
+      "apiParam": "location_id",
+      "location": "query",
+      "required": true,
+      "title": "Location Id",
+      "schema": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_-]{1,40}$",
+        "description": "KAYAK location identifier for the city, airport, or property search."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "location_type",
+      "apiParam": "location_type",
+      "location": "query",
+      "required": false,
+      "title": "Location Type",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "city",
+          "airport",
+          "hotel"
+        ],
+        "description": "Type of KAYAK location identifier, such as a city, airport, or hotel. Accepted values: city, airport, hotel."
+      },
+      "editor": "select"
+    },
+    {
+      "input": "checkin",
+      "apiParam": "checkin",
+      "location": "query",
+      "required": false,
+      "title": "Checkin",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Hotel check-in date in YYYY-MM-DD format."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "checkout",
+      "apiParam": "checkout",
+      "location": "query",
+      "required": false,
+      "title": "Checkout",
+      "schema": {
+        "type": "string",
+        "format": "date",
+        "description": "Hotel check-out date in YYYY-MM-DD format, after check-in."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "adults",
+      "apiParam": "adults",
+      "location": "query",
+      "required": false,
+      "title": "Adults",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9,
+        "description": "Number of adult travelers included in the search."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "rooms",
+      "apiParam": "rooms",
+      "location": "query",
+      "required": false,
+      "title": "Rooms",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 8,
+        "description": "Number of hotel rooms requested."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "child_age",
+      "apiParam": "child_ages[]",
+      "location": "query",
+      "required": false,
+      "title": "Child age",
+      "schema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 17,
+        "description": "Age of one child in the hotel search, from 0 to 17."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "rank_a",
+          "price_a",
+          "review_a"
+        ],
+        "description": "Sort order for returned search results. Accepted values: rank_a, price_a, review_a."
+      },
+      "editor": "select"
+    }
+  ],
+  "resultPointer": "/data/results",
+  "fallbackResultPointers": [
+    "/data/source_data/kayak/results"
+  ],
+  "dedupePointer": "/resultId",
+  "enrichment": {
+    "field": "input_location_id"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "relativeDateDefaults": [
+    {
+      "input": "checkin",
+      "base": "today",
+      "offsetDays": 30,
+      "description": "When omitted, check-in is set to 30 days from today."
+    },
+    {
+      "input": "checkout",
+      "base": "checkin",
+      "offsetDays": 2,
+      "description": "When omitted, check-out is set to two days after check-in."
+    }
+  ],
+  "prefill": {
+    "locations": [
+      {
+        "location_id": "15830"
+      }
+    ],
+    "location_type": "city",
+    "adults": 2,
+    "rooms": 1,
+    "sort": "rank_a",
+    "maxResults": 10
+  },
+  "testParams": {
+    "location_id": "15830",
+    "checkin": "2026-11-14",
+    "checkout": "2026-11-16"
+  },
+  "fixture": {
+    "success": true,
+    "operation": "hotel-search",
+    "data": {
+      "results": [
+        {
+          "resultId": "hotel-15830-1042",
+          "resultType": "hotel",
+          "localizedHotelName": "Park MGM Las Vegas",
+          "stars": 4,
+          "hid": 15297,
+          "geolocation": {
+            "point": {
+              "lat": 36.103,
+              "lng": -115.169
+            },
+            "localizedCity": "Las Vegas"
+          },
+          "rating": {
+            "score": 8.7,
+            "reviewCount": 8420,
+            "localizedRatingCategory": "Excellent"
+          },
+          "detailsUrl": "https://www.kayak.com/Las-Vegas-Hotels-Park-MGM-Las-Vegas.15297.ksp",
+          "url": "https://www.kayak.com/hotels/park-mgm-las-vegas",
+          "providers": [
+            {
+              "localizedProviderName": "Booking.com",
+              "providerCode": "booking",
+              "totalPrice": {
+                "price": 318,
+                "currency": "USD"
+              }
+            }
+          ],
+          "amenities": [
+            {
+              "code": "pool",
+              "localizedName": "Pool"
+            },
+            {
+              "code": "wifi",
+              "localizedName": "Wi-Fi"
+            }
+          ]
+        }
+      ],
+      "search_state": {
+        "search_id": "stay-search-8812",
+        "status": "complete"
+      },
+      "provenance": {
+        "provider": "kayak",
+        "freshness": "live"
+      }
+    },
+    "meta": {
+      "freshness": "live",
+      "duration_ms": 1320,
+      "attempts": 1
+    }
+  },
+  "tableFields": [
+    {
+      "name": "resultId",
+      "label": "Result ID",
+      "format": "text"
+    },
+    {
+      "name": "localizedHotelName",
+      "label": "Hotel name",
+      "format": "text"
+    },
+    {
+      "name": "stars",
+      "label": "Stars",
+      "format": "number"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "text"
+    },
+    {
+      "name": "detailsUrl",
+      "label": "Details URL",
+      "format": "link"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Kayak Hotels | Hotel Search Results",
+    "seoDescription": "Search Kayak hotels by location and stay dates. Export names, star levels, review scores, amenities, provider prices, and links by destination market.",
+    "intro": "Search Kayak for hotel listings with names, star levels, review scores, amenities, provider prices, and property links. Batch location IDs for future stays.",
+    "useCases": [
+      "Travel planners can compare hotel choices and booking providers by destination.",
+      "Hospitality analysts can benchmark ratings, star levels, and amenities.",
+      "Travel agencies can build property shortlists for upcoming trips."
+    ],
+    "howToUse": [
+      "Add a KAYAK location ID to each entry in `locations`.",
+      "Set stay dates and guest options or use the relative date defaults.",
+      "Use `maxResults` to cap saved property offers."
+    ],
+    "faqs": [
+      {
+        "question": "What is a KAYAK location ID?",
+        "answer": "It is the location code used by KAYAK for a city, airport, or property. Copy it from a supported search URL or a previous result."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "kayak-flights-scraper",
+        "title": "Kayak Flights Scraper"
+      },
+      {
+        "slug": "kayak-hotel-rates-scraper",
+        "title": "Kayak Hotel Rates Scraper"
+      },
+      {
+        "slug": "kayak-hotel-details-scraper",
+        "title": "Kayak Hotel Details Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "resultId",
+        "type": "String",
+        "description": "KAYAK identifier for this hotel search result."
+      },
+      {
+        "name": "resultType",
+        "type": "String",
+        "description": "ResultType value associated with this kayak hotels search record."
+      },
+      {
+        "name": "localizedHotelName",
+        "type": "String",
+        "description": "Hotel name shown in the selected KAYAK locale."
+      },
+      {
+        "name": "stars",
+        "type": "Integer",
+        "description": "Stars value associated with this kayak hotels search record."
+      },
+      {
+        "name": "hid",
+        "type": "Integer",
+        "description": "KAYAK hotel identifier used to request property rates or reviews."
+      },
+      {
+        "name": "geolocation",
+        "type": "Object",
+        "description": "Property coordinates and localized city returned by KAYAK."
+      },
+      {
+        "name": "rating",
+        "type": "Object",
+        "description": "Guest score, rating label, and review total displayed for the property."
+      },
+      {
+        "name": "detailsUrl",
+        "type": "String",
+        "description": "DetailsUrl value associated with this kayak hotels search record."
+      },
+      {
+        "name": "url",
+        "type": "String",
+        "description": "Public source or listing URL associated with this record."
+      },
+      {
+        "name": "providers",
+        "type": "Array<Object>",
+        "description": "Booking providers and quoted total prices shown for this hotel."
+      },
+      {
+        "name": "amenities",
+        "type": "Array<Object>",
+        "description": "Amenity codes and labels listed for the property."
+      },
+      {
+        "name": "input_location_id",
+        "type": "String",
+        "description": "KAYAK location identifier submitted for this hotel search."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

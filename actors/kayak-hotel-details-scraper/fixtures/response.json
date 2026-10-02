@@ -1,0 +1,69 @@
+{
+  "success": true,
+  "operation": "hotel-property",
+  "data": {
+    "results": [
+      {
+        "name": "Park MGM Las Vegas",
+        "url": "https://www.kayak.com/Las-Vegas-Hotels-Park-MGM-Las-Vegas.15297.ksp",
+        "description": "A resort hotel on the Las Vegas Strip with dining, pool, and entertainment options.",
+        "telephone": "+1-702-730-7777",
+        "starRating": "4 stars",
+        "aggregateRating": {
+          "ratingValue": "8.7",
+          "bestRating": "10",
+          "ratingCount": "8420",
+          "@type": "AggregateRating"
+        },
+        "priceRange": "$$",
+        "address": {
+          "streetAddress": "3770 S Las Vegas Blvd",
+          "addressLocality": "Las Vegas",
+          "postalCode": "89109",
+          "addressRegion": "Nevada",
+          "addressCountry": "US",
+          "@type": "PostalAddress"
+        },
+        "amenityFeature": [
+          "Pool",
+          "Wi-Fi",
+          "Fitness center"
+        ],
+        "image": "https://images.kayak.com/hotel/park-mgm-main.jpg",
+        "@type": "Hotel",
+        "@context": "https://schema.org"
+      }
+    ],
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    },
+    "source_data": {
+      "kayak": {
+        "hotelId": 15297,
+        "policies": [
+          {
+            "type": "check-in",
+            "title": "Check-in",
+            "dataText": "From 3:00 PM"
+          }
+        ],
+        "amenitiesData": {
+          "topAmenities": [
+            {
+              "code": "pool",
+              "localizedName": "Pool",
+              "icon": "pool"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "exhaustive": true,
+    "duration_ms": 1250,
+    "attempts": 1
+  }
+}

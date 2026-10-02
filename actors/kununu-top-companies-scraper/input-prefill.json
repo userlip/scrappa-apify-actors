@@ -1,0 +1,11 @@
+{
+  "countries": [
+    {
+      "country": "de"
+    }
+  ],
+  "page": 1,
+  "sort": "number-reviews-desc",
+  "maxResults": 10,
+  "maxPages": 1
+}

@@ -1,0 +1,44 @@
+{
+  "success": true,
+  "operation": "cruise-sailings",
+  "data": {
+    "results": [
+      {
+        "id": "sailing-2027-0418-11",
+        "name": "Pacific Coast Discovery",
+        "currency": "USD",
+        "currencySymbol": "$",
+        "ship": "Aurora Skye",
+        "departurePort": "Los Angeles",
+        "nights": 7,
+        "price": 1249,
+        "regularPrice": 1499,
+        "startDateFormatted": "Apr 18, 2027",
+        "endDateFormatted": "Apr 25, 2027",
+        "regionName": "Mexican Riviera",
+        "regionId": "mexican-riviera",
+        "itinerary": [
+          {
+            "day": 1,
+            "port": "Los Angeles"
+          },
+          {
+            "day": 3,
+            "port": "Cabo San Lucas"
+          }
+        ],
+        "score": 94,
+        "productType": "ocean"
+      }
+    ],
+    "provenance": {
+      "provider": "kayak",
+      "freshness": "live"
+    }
+  },
+  "meta": {
+    "freshness": "live",
+    "duration_ms": 960,
+    "attempts": 1
+  }
+}

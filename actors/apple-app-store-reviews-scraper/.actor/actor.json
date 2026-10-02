@@ -1,0 +1,65 @@
+{
+  "actorSpecification": 1,
+  "name": "apple-app-store-reviews-scraper",
+  "title": "Apple App Store Reviews Scraper",
+  "description": "Export Apple App Store reviews with star ratings, titles, review text, author names, and dates. Batch app IDs, choose a storefront, and page through customer feedback.",
+  "categories": [
+    "ECOMMERCE",
+    "MARKETING"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "id",
+              "rating",
+              "title",
+              "author",
+              "date"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "id": {
+                "label": "Review ID",
+                "format": "text"
+              },
+              "rating": {
+                "label": "Rating",
+                "format": "number"
+              },
+              "title": {
+                "label": "Title",
+                "format": "text"
+              },
+              "author": {
+                "label": "Reviewer",
+                "format": "text"
+              },
+              "date": {
+                "label": "Date",
+                "format": "date"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

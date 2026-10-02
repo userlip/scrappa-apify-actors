@@ -1,0 +1,70 @@
+{
+  "actorSpecification": 1,
+  "name": "kununu-top-companies-scraper",
+  "title": "Kununu Top Companies Scraper",
+  "description": "Browse Kununu top-company rankings with employer scores, review totals, recommendations, locations, benefits, and award details. Batch country markets and page through results.",
+  "categories": [
+    "JOBS",
+    "LEAD_GENERATION"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "name",
+              "slug",
+              "score",
+              "totalReviews",
+              "recommendationRate",
+              "url"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "name": {
+                "label": "Company",
+                "format": "text"
+              },
+              "slug": {
+                "label": "Company slug",
+                "format": "text"
+              },
+              "score": {
+                "label": "Score",
+                "format": "text"
+              },
+              "totalReviews": {
+                "label": "Total reviews",
+                "format": "number"
+              },
+              "recommendationRate": {
+                "label": "Recommendation rate",
+                "format": "number"
+              },
+              "url": {
+                "label": "Kununu URL",
+                "format": "link"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

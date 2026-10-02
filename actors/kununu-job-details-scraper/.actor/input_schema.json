@@ -1,0 +1,49 @@
+{
+  "title": "Kununu Job Details Scraper",
+  "description": "Fetch Kununu job postings with title, employer, location, employment type, salary range, application link, and employer rating context. Batch public job URLs.",
+  "type": "object",
+  "schemaVersion": 1,
+  "required": [
+    "jobs"
+  ],
+  "properties": {
+    "jobs": {
+      "title": "Kununu job URLs",
+      "type": "array",
+      "description": "Public Kununu job-posting URLs whose details you want to retrieve.",
+      "editor": "json",
+      "minItems": 1,
+      "maxItems": 100,
+      "prefill": [
+        {
+          "url": "https://www.kununu.com/de/job/4b83063a-0875-4d72-aed0-5dd03c738ec9"
+        }
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?:\\/\\/(www\\.)?kununu\\.com\\/(job-postings\\/[^\\/]+\\/|[a-z]{2}\\/job\\/).+$",
+            "description": "Public source page URL used to retrieve this record.",
+            "editor": "textfield"
+          }
+        }
+      }
+    },
+    "maxResults": {
+      "title": "Maximum Results",
+      "type": "integer",
+      "description": "Maximum dataset items to save across this entire run.",
+      "editor": "number",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  }
+}

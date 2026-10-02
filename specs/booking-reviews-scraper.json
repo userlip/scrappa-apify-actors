@@ -1,0 +1,357 @@
+{
+  "slug": "booking-reviews-scraper",
+  "title": "Booking.com Reviews Scraper",
+  "description": "Collect Booking.com guest reviews with scores, titles, comments, reviewer names, stay dates, and languages. Batch hotel URLs and page through public feedback.",
+  "endpoint": "/booking/reviews",
+  "openapiPath": "/booking/reviews",
+  "mode": "list",
+  "batch": {
+    "field": "hotels",
+    "valueField": "url",
+    "apiParam": "url",
+    "pathParam": null,
+    "title": "Booking.com hotel URLs",
+    "description": "Hotel listing URLs whose public guest reviews you want to collect.",
+    "itemRequired": [
+      "url"
+    ],
+    "valueDescription": "Url used to run this search."
+  },
+  "parameters": [
+    {
+      "input": "url",
+      "apiParam": "url",
+      "location": "query",
+      "required": false,
+      "title": "Url",
+      "schema": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 4096,
+        "pattern": "#^https?://(?:[a-z0-9-]+\\.)*booking\\.com/hotel/#i",
+        "nullable": true,
+        "description": "Public source page URL used to retrieve this record."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "country",
+      "apiParam": "country",
+      "location": "query",
+      "required": false,
+      "title": "Country",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 2,
+        "nullable": true,
+        "description": "Kununu country market code, such as de, at, or ch."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "slug",
+      "apiParam": "slug",
+      "location": "query",
+      "required": false,
+      "title": "Slug",
+      "schema": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 255,
+        "pattern": "^[a-z0-9._-]+(?:\\.html)?$",
+        "nullable": true,
+        "description": "Hotel slug from the Booking.com URL (e.g. ritz-paris). The trailing .html is optional."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "lang",
+      "apiParam": "lang",
+      "location": "query",
+      "required": false,
+      "title": "Lang",
+      "schema": {
+        "type": "string",
+        "maxLength": 10,
+        "nullable": true,
+        "description": "Review language hint (e.g. en-us, de)."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "currency",
+      "apiParam": "currency",
+      "location": "query",
+      "required": false,
+      "title": "Currency",
+      "schema": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "nullable": true,
+        "description": "3-letter currency code (e.g. EUR, USD)."
+      },
+      "editor": "textfield"
+    },
+    {
+      "input": "page",
+      "apiParam": "page",
+      "location": "query",
+      "required": false,
+      "title": "Page",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "nullable": true,
+        "description": "One-based result page to request."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "limit",
+      "apiParam": "limit",
+      "location": "query",
+      "required": false,
+      "title": "Limit",
+      "schema": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 25,
+        "nullable": true,
+        "description": "Maximum number of company matches requested for this search page."
+      },
+      "editor": "number"
+    },
+    {
+      "input": "sort",
+      "apiParam": "sort",
+      "location": "query",
+      "required": false,
+      "title": "Sort",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "recent_desc",
+          "recent_asc",
+          "score_desc",
+          "score_asc"
+        ],
+        "nullable": true,
+        "description": "Sort order for returned search results. Accepted values: recent_desc, recent_asc, score_desc, score_asc."
+      },
+      "editor": "select"
+    }
+  ],
+  "resultPointer": "/data/reviews",
+  "fallbackResultPointers": [],
+  "pagination": {
+    "kind": "page",
+    "param": "page",
+    "start": 1,
+    "step": 1,
+    "hasMorePointer": "/data/pagination/has_next_page",
+    "maxPages": 100
+  },
+  "defaultMaxPages": 1,
+  "dedupePointer": "/review_id",
+  "enrichment": {
+    "field": "input_url"
+  },
+  "maxResults": {
+    "input": "maxResults",
+    "default": 100,
+    "hardLimit": 1000
+  },
+  "priceUsdPerResult": 0.0003,
+  "timeoutSecs": 300,
+  "prefill": {
+    "hotels": [
+      {
+        "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+      }
+    ],
+    "lang": "en-us",
+    "currency": "EUR",
+    "limit": 10,
+    "maxResults": 10,
+    "maxPages": 1
+  },
+  "testParams": {
+    "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html"
+  },
+  "fixture": {
+    "success": true,
+    "data": {
+      "title": "Adlon Kempinski Berlin",
+      "canonical_url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+      "reviews": [
+        {
+          "review_id": "review-884210",
+          "rating": "9.2",
+          "title": "A comfortable city stay",
+          "text": "The room was quiet, the staff were attentive, and the location made museums easy to reach.",
+          "positive_text": "Helpful staff and a calm room.",
+          "negative_text": "Breakfast service was busy before 9 am.",
+          "author": "Jordan Lee",
+          "traveler_type": "Couple",
+          "stay_date": "September 2026",
+          "created_at": "2026-09-18",
+          "language": "en-us"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "offset": 0,
+        "returned": 10,
+        "total_reviews": 286,
+        "has_next_page": true
+      },
+      "parsed": true
+    },
+    "meta": {
+      "url": "https://www.booking.com/hotel/de/adlon-kempinski-berlin.html",
+      "duration_ms": 710,
+      "scraped_at": "2026-09-28T14:22:00Z",
+      "cached": true,
+      "booking_pool_attempts": 1,
+      "booking_pool_stages": [
+        "review-list"
+      ]
+    }
+  },
+  "tableFields": [
+    {
+      "name": "review_id",
+      "label": "Review ID",
+      "format": "text"
+    },
+    {
+      "name": "rating",
+      "label": "Rating",
+      "format": "text"
+    },
+    {
+      "name": "title",
+      "label": "Review title",
+      "format": "text"
+    },
+    {
+      "name": "author",
+      "label": "Reviewer",
+      "format": "text"
+    },
+    {
+      "name": "created_at",
+      "label": "Created at",
+      "format": "date"
+    }
+  ],
+  "categories": [
+    "TRAVEL"
+  ],
+  "storeCopy": {
+    "seoTitle": "Booking.com Reviews | Guest Feedback",
+    "seoDescription": "Scrape Booking.com hotel reviews by property URL. Export ratings, text, stay dates, author names, and languages to compare feedback across hotels.",
+    "intro": "Collect public Booking.com guest reviews with ratings, review text, reviewer names, stay dates, and language labels. Add multiple hotel URLs and page through available reviews.",
+    "useCases": [
+      "Hotel analysts can compare guest feedback and scores across properties.",
+      "Travel businesses can monitor public review themes for destination research.",
+      "Hospitality teams can track recent feedback and identify service patterns."
+    ],
+    "howToUse": [
+      "Add a Booking.com hotel URL to each entry in `hotels`.",
+      "Choose review language, currency, sort order, and page size if needed.",
+      "Set `maxPages` and `maxResults` to cap the review collection."
+    ],
+    "faqs": [
+      {
+        "question": "Can I use a hotel slug instead of a full URL?",
+        "answer": "This Actor accepts hotel URLs in its batch. If you only have a slug and country, open the property page to copy its canonical URL first."
+      }
+    ],
+    "relatedActors": [
+      {
+        "slug": "booking-search-scraper",
+        "title": "Booking.com Search Scraper"
+      },
+      {
+        "slug": "booking-hotel-details-scraper",
+        "title": "Booking.com Hotel Details Scraper"
+      },
+      {
+        "slug": "booking-review-scores-scraper",
+        "title": "Booking.com Review Scores Scraper"
+      }
+    ],
+    "fields": [
+      {
+        "name": "review_id",
+        "type": "String",
+        "description": "Review Id value associated with this booking.com reviews record."
+      },
+      {
+        "name": "rating",
+        "type": "String",
+        "description": "Rating value reported by the source."
+      },
+      {
+        "name": "title",
+        "type": "String",
+        "description": "Title displayed by the source for this record."
+      },
+      {
+        "name": "text",
+        "type": "String",
+        "description": "Text value associated with this booking.com reviews record."
+      },
+      {
+        "name": "positive_text",
+        "type": "String",
+        "description": "Positive Text value associated with this booking.com reviews record."
+      },
+      {
+        "name": "negative_text",
+        "type": "String",
+        "description": "Negative Text value associated with this booking.com reviews record."
+      },
+      {
+        "name": "author",
+        "type": "String",
+        "description": "Public display name supplied by the source."
+      },
+      {
+        "name": "traveler_type",
+        "type": "String",
+        "description": "Traveler Type value associated with this booking.com reviews record."
+      },
+      {
+        "name": "stay_date",
+        "type": "String",
+        "description": "Stay Date value associated with this booking.com reviews record."
+      },
+      {
+        "name": "created_at",
+        "type": "String",
+        "description": "Created At value associated with this booking.com reviews record."
+      },
+      {
+        "name": "language",
+        "type": "String",
+        "description": "Language value associated with this booking.com reviews record."
+      },
+      {
+        "name": "input_url",
+        "type": "String",
+        "description": "Hotel or job page URL supplied for this lookup."
+      },
+      {
+        "name": "scraped_at",
+        "type": "String",
+        "description": "UTC date and time when this record was collected."
+      }
+    ]
+  }
+}

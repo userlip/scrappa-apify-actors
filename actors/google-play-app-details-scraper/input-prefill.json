@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "product_id": "com.spotify.music"
+    }
+  ],
+  "hl": "en",
+  "gl": "us",
+  "store": "apps",
+  "maxResults": 10
+}

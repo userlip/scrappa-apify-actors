@@ -1,0 +1,12 @@
+{
+  "locations": [
+    {
+      "location_id": "15830"
+    }
+  ],
+  "location_type": "city",
+  "adults": 2,
+  "rooms": 1,
+  "sort": "rank_a",
+  "maxResults": 10
+}

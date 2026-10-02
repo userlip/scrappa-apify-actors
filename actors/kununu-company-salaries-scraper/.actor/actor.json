@@ -1,0 +1,69 @@
+{
+  "actorSpecification": 1,
+  "name": "kununu-company-salaries-scraper",
+  "title": "Kununu Company Salaries Scraper",
+  "description": "Collect Kununu salary ranges by employer and country, with job titles, minimums, maximums, medians, averages, and report counts. Batch company slugs for pay comparisons.",
+  "categories": [
+    "JOBS"
+  ],
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "environmentVariables": {
+    "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
+  },
+  "defaultMemoryMbytes": 128,
+  "defaultRunOptions": {
+    "timeoutSecs": 300
+  },
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "results": {
+          "title": "Results",
+          "transformation": {
+            "fields": [
+              "jobRoleTitle",
+              "profileRangeMin",
+              "profileRangeMax",
+              "profileMedian",
+              "profileAverage",
+              "profileNumberOfEntries"
+            ]
+          },
+          "display": {
+            "component": "table",
+            "properties": {
+              "jobRoleTitle": {
+                "label": "Job title",
+                "format": "text"
+              },
+              "profileRangeMin": {
+                "label": "Minimum salary",
+                "format": "number"
+              },
+              "profileRangeMax": {
+                "label": "Maximum salary",
+                "format": "number"
+              },
+              "profileMedian": {
+                "label": "Median salary",
+                "format": "number"
+              },
+              "profileAverage": {
+                "label": "Average salary",
+                "format": "number"
+              },
+              "profileNumberOfEntries": {
+                "label": "Reported entries",
+                "format": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
