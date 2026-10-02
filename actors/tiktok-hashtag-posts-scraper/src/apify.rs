@@ -1,14 +1,12 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::Response;
 use serde_json::Value;
 use std::{env, time::Duration};
-use tokio::time::sleep;
 use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 pub(crate) const APIFY_REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
-pub(crate) const APIFY_MAX_RETRIES: u32 = 8;
-const APIFY_RETRY_DELAY_MS: u64 = 500;
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
 
 pub(crate) struct ActorConfig {
@@ -107,30 +105,11 @@ pub(crate) async fn send_apify_request<F>(operation: &str, build_request: F) -> 
 where
     F: Fn() -> reqwest::RequestBuilder,
 {
-    let mut retries = 0;
-    loop {
-        match build_request().timeout(APIFY_REQUEST_TIMEOUT).send().await {
-            Ok(response)
-                if (response.status().as_u16() == 429 || response.status().is_server_error())
-                    && retries < APIFY_MAX_RETRIES =>
-            {
-                drop(response);
-            }
-            Ok(response) => return Ok(response),
-            Err(error) if retries < APIFY_MAX_RETRIES => {
-                eprintln!("Apify {operation} failed: {error}");
-            }
-            Err(error) => return Err(error).with_context(|| format!("Apify {operation} failed")),
-        }
-
-        let delay = Duration::from_millis(APIFY_RETRY_DELAY_MS * (1_u64 << retries));
-        retries += 1;
-        eprintln!(
-            "Retrying Apify {operation} in {}ms ({retries}/{APIFY_MAX_RETRIES})",
-            delay.as_millis()
-        );
-        sleep(delay).await;
-    }
+    build_request()
+        .timeout(APIFY_REQUEST_TIMEOUT)
+        .send_apify_with_retry()
+        .await
+        .with_context(|| format!("Apify {operation} failed"))
 }
 
 pub(crate) async fn get_input(

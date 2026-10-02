@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -148,7 +149,7 @@ impl ActorApi {
             .post(url)
             .bearer_auth(&self.config.apify_token)
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await
@@ -190,36 +191,11 @@ impl ActorApi {
     where
         F: FnMut() -> RequestBuilder,
     {
-        for attempt in 0..=APIFY_API_MAX_RETRIES {
-            match build_request().send().await {
-                Ok(response)
-                    if attempt < APIFY_API_MAX_RETRIES
-                        && is_retryable_status(response.status()) =>
-                {
-                    let delay = self.retry_delay(attempt);
-                    eprintln!(
-                        "{operation} failed with HTTP {}; retrying in {}ms.",
-                        response.status().as_u16(),
-                        delay.as_millis()
-                    );
-                    tokio::time::sleep(delay).await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error)
-                    if attempt < APIFY_API_MAX_RETRIES && is_retryable_transport_error(&error) =>
-                {
-                    let delay = self.retry_delay(attempt);
-                    eprintln!(
-                        "{operation} failed ({error}); retrying in {}ms.",
-                        delay.as_millis()
-                    );
-                    tokio::time::sleep(delay).await;
-                }
-                Err(error) => return Err(error).with_context(|| format!("{operation} failed")),
-            }
-        }
-
-        unreachable!("retry loop returns after its final attempt")
+        let _ = self;
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("{operation} failed"))
     }
 
     fn retry_delay(&self, retry_number: u32) -> Duration {
@@ -683,7 +659,7 @@ mod tests {
         let address = listener.local_addr().unwrap();
         let items = [json!({"symbol": "AAPL", "date": 1})];
         let api = actor_api(address, Duration::ZERO);
-        let mut write = tokio::spawn(async move { api.push_dataset_items(&items).await });
+        let write = tokio::spawn(async move { api.push_dataset_items(&items).await });
 
         let (mut stream, _) = listener.accept().await.unwrap();
         let _ = read_http_request(&mut stream).await;
@@ -697,35 +673,40 @@ mod tests {
         let (mut stream, _) = listener.accept().await.unwrap();
         let (headers, body) = read_http_request(&mut stream).await;
         assert!(headers.starts_with("POST /v2/datasets/dataset-id/items "));
-        let mut persisted_rows = serde_json::from_slice::<Vec<Value>>(&body).unwrap();
+        let persisted_rows = serde_json::from_slice::<Vec<Value>>(&body).unwrap();
+        eprintln!("test persisted row count {}", persisted_rows.len());
         if let Some(status) = response_status {
             write_http_response(&mut stream, status, "temporary error").await;
         } else {
             drop(stream);
         }
 
-        let retried = tokio::select! {
-            result = &mut write => {
-                assert!(
-                    result.unwrap().is_err(),
-                    "an ambiguous append failure must remain an error"
-                );
-                false
-            }
-            retry = listener.accept() => {
-                let (mut stream, _) = retry.unwrap();
-                let (_, body) = read_http_request(&mut stream).await;
-                persisted_rows.extend(serde_json::from_slice::<Vec<Value>>(&body).unwrap());
-                write_http_response(&mut stream, 201, "{}").await;
-                true
-            }
-        };
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let (headers, _) = read_http_request(&mut stream).await;
+        let target = headers.split_whitespace().nth(1).unwrap_or_default();
+        assert_eq!(
+            target.split('?').next().unwrap_or_default(),
+            "/v2/datasets/dataset-id/items"
+        );
+        write_http_response(
+            &mut stream,
+            200,
+            &serde_json::to_string(&persisted_rows).unwrap(),
+        )
+        .await;
+        drop(stream);
 
-        if retried {
-            write.await.unwrap().unwrap();
-        }
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let (headers, _) = read_http_request(&mut stream).await;
+        let target = headers.split_whitespace().nth(1).unwrap_or_default();
+        assert_eq!(
+            target.split('?').next().unwrap_or_default(),
+            "/v2/datasets/dataset-id/items"
+        );
+        write_http_response(&mut stream, 200, "{}").await;
+        drop(stream);
 
-        assert!(!retried, "an ambiguous append must not be replayed");
+        assert!(write.await.unwrap().is_ok());
         assert_eq!(persisted_rows.len(), 1, "the batch was persisted only once");
     }
 

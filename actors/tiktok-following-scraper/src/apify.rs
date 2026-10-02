@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response};
 use serde_json::Value;
@@ -94,7 +95,7 @@ pub(crate) async fn get_input(client: &Client, config: &ActorConfig) -> Result<O
         .get(url)
         .header(reqwest::header::ACCEPT, "application/json")
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     if response.status() == reqwest::StatusCode::NOT_FOUND {
@@ -140,7 +141,7 @@ async fn run_dataset_capacity(
         .timeout(REQUEST_TIMEOUT)
         .header(reqwest::header::ACCEPT, "application/json")
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -272,7 +273,7 @@ pub(crate) async fn push_dataset_items(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(items)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     ensure_success(response, "Apify dataset write").await?;
@@ -301,7 +302,7 @@ pub(crate) async fn set_output(
         .header(reqwest::header::CONTENT_TYPE, "application/json")
         .bearer_auth(&config.apify_token)
         .body(body)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify OUTPUT write failed")?;
     ensure_success(response, "Apify OUTPUT write").await

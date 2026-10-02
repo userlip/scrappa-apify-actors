@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Response, StatusCode};
 use serde_json::Value;
@@ -129,7 +130,7 @@ impl ApifyClient<'_> {
             .header(header::ACCEPT, "application/json")
             .timeout(APIFY_REQUEST_TIMEOUT)
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         require_apify_success(response, "dataset write").await?;
@@ -149,7 +150,7 @@ pub(crate) async fn apify_get(
             .bearer_auth(token)
             .header(header::ACCEPT, "application/json")
             .timeout(APIFY_REQUEST_TIMEOUT)
-            .send()
+            .send_apify_with_retry()
             .await;
 
         match response {

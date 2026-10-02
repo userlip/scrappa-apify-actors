@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -124,7 +126,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -205,7 +207,7 @@ async fn run_dataset_capacity(
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -293,7 +295,7 @@ async fn push_dataset_items(client: &Client, config: &ActorConfig, videos: &[Val
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(videos)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     let status = response.status();
@@ -316,7 +318,7 @@ async fn push_dataset_items(client: &Client, config: &ActorConfig, videos: &[Val
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let input = get_input(client, config).await?;
     let url = build_batch_videos_url(&input, &config.scrappa_api_base_url)?;
-    println!("Fetching from: {url}");
+    println!("Fetching data from Scrappa API");
 
     let videos = fetch_batch_videos(client, &url).await?;
     push_dataset_items(client, config, &videos).await?;

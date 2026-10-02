@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -42,7 +43,7 @@ impl<'a> ApifyClient<'a> {
         ])?;
         let response = self
             .authenticated(self.http.get(url))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -55,7 +56,7 @@ impl<'a> ApifyClient<'a> {
         let url = self.endpoint(&["v2", "actor-runs", &self.config.actor_run_id])?;
         let response = self
             .authenticated(self.http.get(url))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         response_json(response, "Apify run pricing request").await
@@ -63,40 +64,17 @@ impl<'a> ApifyClient<'a> {
 
     async fn charge_event(&self, count: usize, idempotency_key: &str) -> Result<()> {
         let url = self.endpoint(&["v2", "actor-runs", &self.config.actor_run_id, "charge"])?;
-        for retry in 0..=APIFY_MAX_CHARGE_RETRIES {
-            let response = self
-                .authenticated(self.http.post(url.clone()))
-                .header("idempotency-key", idempotency_key)
-                .json(&json!({
-                    "eventName": LISTING_RESULT_CHARGE_EVENT,
-                    "count": count,
-                }))
-                .send()
-                .await;
-
-            match response {
-                Ok(response) if is_retryable_charge_status(response.status()) => {
-                    if retry == APIFY_MAX_CHARGE_RETRIES {
-                        return ensure_success(response, "Apify listing-result charge").await;
-                    }
-                }
-                Ok(response) => {
-                    return ensure_success(response, "Apify listing-result charge").await;
-                }
-                Err(error) if is_retryable_charge_error(&error) => {
-                    if retry == APIFY_MAX_CHARGE_RETRIES {
-                        return Err(error).context("Apify listing-result charge request failed");
-                    }
-                }
-                Err(error) => {
-                    return Err(error).context("Apify listing-result charge request failed");
-                }
-            }
-
-            tokio::time::sleep(charge_retry_delay(retry)).await;
-        }
-
-        unreachable!("the charge retry loop always returns or retries")
+        let response = self
+            .authenticated(self.http.post(url))
+            .header("idempotency-key", idempotency_key)
+            .json(&json!({
+                "eventName": LISTING_RESULT_CHARGE_EVENT,
+                "count": count,
+            }))
+            .send_apify_with_retry()
+            .await
+            .context("Apify listing-result charge request failed")?;
+        ensure_success(response, "Apify listing-result charge").await
     }
 
     async fn push_dataset_items(&self, items: &[Value]) -> Result<()> {
@@ -107,7 +85,7 @@ impl<'a> ApifyClient<'a> {
         let response = self
             .authenticated(self.http.post(url))
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await
@@ -124,7 +102,7 @@ impl<'a> ApifyClient<'a> {
         let response = self
             .authenticated(self.http.put(url))
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         ensure_success(response, "Apify OUTPUT write").await
@@ -139,7 +117,7 @@ impl<'a> ApifyClient<'a> {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run status update failed")?;
         ensure_success(response, "Apify run status update").await

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, Response, StatusCode};
 use serde_json::{json, Value};
@@ -67,7 +68,7 @@ impl ApifyClient {
         ])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -81,7 +82,7 @@ impl ApifyClient {
         let url = self.endpoint_url(&["actor-runs", &self.actor_run_id])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = response_json(response, "Apify run pricing request").await?;
@@ -105,7 +106,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(&[item])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         successful_response(response, "Apify dataset write").await?;
@@ -135,7 +136,7 @@ impl ApifyClient {
                 "statusMessage": status_message,
                 "isStatusMessageTerminal": true,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run status update failed")?;
         successful_response(response, "Apify run status update").await?;
@@ -155,7 +156,7 @@ impl ApifyClient {
                 "eventName": PRICE_INSIGHT_RESULT_EVENT,
                 "count": 1,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify price-insight-result charge request failed")?;
         successful_response(response, "Apify price-insight-result charge request").await?;

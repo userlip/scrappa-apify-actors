@@ -1011,14 +1011,19 @@ async fn ppe_push_stores_then_charges_each_result_once_with_retry_idempotency() 
 }
 
 #[tokio::test]
-async fn dataset_write_is_not_retried_after_storage_when_the_response_disconnects() {
+async fn dataset_write_after_disconnect_verifies_the_row_without_reposting() {
     let stored_rows = Arc::new(AtomicUsize::new(0));
     let stored_rows_counter = stored_rows.clone();
     let server = MockServer::start(move |request| {
-        assert_eq!(request.path, "/v2/datasets/dataset-test/items");
-        let rows: Value = serde_json::from_slice(&request.body).unwrap();
-        stored_rows_counter.fetch_add(rows.as_array().unwrap().len(), Ordering::SeqCst);
-        (0, String::new())
+        if request.path == "/v2/datasets/dataset-test/items" {
+            let rows: Value = serde_json::from_slice(&request.body).unwrap();
+            stored_rows_counter.fetch_add(rows.as_array().unwrap().len(), Ordering::SeqCst);
+            return (0, String::new());
+        }
+        if request.path == "/v2/datasets/dataset-test/items?offset=0&limit=1" {
+            return (200, r#"[{"video_id":"stored-once"}]"#.to_owned());
+        }
+        panic!("unexpected Apify request: {}", request.path);
     })
     .await;
     let api = ApifyClient::with_retry_policy(
@@ -1031,12 +1036,19 @@ async fn dataset_write_is_not_retried_after_storage_when_the_response_disconnect
     )
     .unwrap();
 
-    assert!(api
-        .push_dataset_items(&[json!({"video_id":"stored-once"})])
+    api.push_dataset_items(&[json!({"video_id":"stored-once"})])
         .await
-        .is_err());
+        .unwrap();
     assert_eq!(stored_rows.load(Ordering::SeqCst), 1);
-    assert_eq!(server.requests().len(), 1);
+    let requests = server.requests();
+    assert_eq!(requests.len(), 3);
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|request| request.method == "POST")
+            .count(),
+        1
+    );
 }
 
 #[tokio::test]

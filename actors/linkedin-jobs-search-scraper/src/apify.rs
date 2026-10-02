@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Response, StatusCode};
 use serde_json::{Map, Value};
@@ -135,7 +136,7 @@ impl ApifyClient {
             request = request.json(&body);
         }
         request
-            .send()
+            .send_apify_with_retry()
             .await
             .with_context(|| format!("Failed to {operation} through Apify API"))
     }

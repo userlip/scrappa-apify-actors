@@ -1,3 +1,4 @@
+mod apify_retry;
 use std::{env, process::ExitCode, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -6,10 +7,7 @@ use url::Url;
 
 use website_content_extractor_scraper::{
     apify::{ApifyClient, ApifyConfig, DatasetWriteResult},
-    input::{
-        build_web_scraper_params, describe_web_scraper_request, get_input_urls, get_response_type,
-        ResponseType,
-    },
+    input::{build_web_scraper_params, get_input_urls, get_response_type, ResponseType},
     response::{
         build_failure_dataset_item, build_json_dataset_item, build_markdown_dataset_item,
         insert_summary_fields,
@@ -91,28 +89,23 @@ async fn run() -> Result<()> {
     for (index, request) in requests.iter().enumerate() {
         let params = build_web_scraper_params(request, input.as_ref(), response_type);
         println!(
-            "Calling Scrappa Web Scraper API ({})",
-            describe_web_scraper_request(&params)
+            "Calling Scrappa Web Scraper API for request {}/{}",
+            index + 1,
+            requests.len()
         );
 
         let item = match response_type {
             ResponseType::Json => match client.scrape_json(&params).await {
                 Ok(response) => build_json_dataset_item(&response, request, &params),
                 Err(error) => {
-                    eprintln!(
-                        "Scrappa Web Scraper API returned a per-URL failure for {}: {}",
-                        request.input_url, error
-                    );
+                    eprintln!("Scrappa Web Scraper API returned a per-URL failure");
                     build_failure_dataset_item(&error, request, &params)
                 }
             },
             ResponseType::Markdown => match client.scrape_markdown(&params).await {
                 Ok(markdown) => build_markdown_dataset_item(&markdown, request, &params),
                 Err(error) => {
-                    eprintln!(
-                        "Scrappa Web Scraper API returned a per-URL failure for {}: {}",
-                        request.input_url, error
-                    );
+                    eprintln!("Scrappa Web Scraper API returned a per-URL failure");
                     build_failure_dataset_item(&error, request, &params)
                 }
             },
@@ -122,10 +115,7 @@ async fn run() -> Result<()> {
             .push_dataset_item(&item, &mut billing, &apify.charge_idempotency_key(index))
             .await?;
         if result == DatasetWriteResult::ChargeLimitReached {
-            println!(
-                "Charge limit reached while saving the website content result: {}",
-                request.input_url
-            );
+            println!("Charge limit reached while saving a website content result");
             break;
         }
 

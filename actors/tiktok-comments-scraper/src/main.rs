@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -392,38 +394,11 @@ async fn send_apify_request(
     build_request: impl Fn() -> reqwest::RequestBuilder,
     operation: &str,
 ) -> Result<Response> {
-    for attempt in 0..=APIFY_MAX_RETRIES {
-        match build_request().timeout(APIFY_REQUEST_TIMEOUT).send().await {
-            Ok(response) => {
-                let status = response.status();
-                if (status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error())
-                    && attempt < APIFY_MAX_RETRIES
-                {
-                    let delay = retry_delay(attempt);
-                    eprintln!(
-                        "Apify {operation} returned {}. Retrying after {}ms.",
-                        status.as_u16(),
-                        delay.as_millis()
-                    );
-                    sleep(delay).await;
-                    continue;
-                }
-                return Ok(response);
-            }
-            Err(error) if attempt < APIFY_MAX_RETRIES => {
-                let delay = retry_delay(attempt);
-                eprintln!(
-                    "Apify {operation} request failed: {error}. Retrying after {}ms.",
-                    delay.as_millis()
-                );
-                sleep(delay).await;
-            }
-            Err(error) => {
-                return Err(error).with_context(|| format!("Apify {operation} request failed"));
-            }
-        }
-    }
-    unreachable!("the retry loop always returns or fails")
+    build_request()
+        .timeout(APIFY_REQUEST_TIMEOUT)
+        .send_apify_with_retry()
+        .await
+        .with_context(|| format!("Apify {operation} request failed"))
 }
 
 fn retry_delay(attempt: u32) -> Duration {
@@ -524,7 +499,7 @@ async fn read_scrappa_error(response: Response) -> Result<String> {
 }
 
 async fn fetch_scrappa_response(client: &Client, url: Url, api_key: &str) -> Result<Value> {
-    println!("[Scrappa] GET {url}");
+    println!("Sending request to Scrappa API");
     let response = client
         .get(url)
         .header("X-API-Key", api_key)
@@ -1616,7 +1591,8 @@ mod tests {
             .build()
             .unwrap();
 
-        let response = send_apify_request(|| client.get(server.base_url.clone()), "test")
+        let url = server.base_url.join("/v2/actor-runs/test-run").unwrap();
+        let response = send_apify_request(|| client.get(url.clone()), "test")
             .await
             .unwrap();
 

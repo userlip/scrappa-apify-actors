@@ -108,17 +108,33 @@ fn start_ambiguous_dataset_write_server() -> (
     let server = thread::spawn(move || {
         let mut requests = Vec::new();
         let mut committed_writes = 0;
+        let mut persisted_rows = Vec::new();
         let mut last_request_at = None;
         loop {
             match listener.accept() {
                 Ok((mut stream, _)) => {
                     let request = read_request(&mut stream);
+                    if request
+                        .method_and_path
+                        .starts_with("GET /v2/datasets/dataset-test/items?")
+                    {
+                        mock_response(
+                            &mut stream,
+                            "200 OK",
+                            &serde_json::to_string(&persisted_rows).unwrap(),
+                        );
+                        requests.push(request);
+                        last_request_at = Some(std::time::Instant::now());
+                        continue;
+                    }
                     assert!(request
                         .method_and_path
                         .starts_with("POST /v2/datasets/dataset-test/items "));
 
                     // Treat each received POST as persisted before sending its response.
                     committed_writes += 1;
+                    persisted_rows
+                        .extend(serde_json::from_str::<Vec<Value>>(&request.body).unwrap());
                     let (status, body) = if committed_writes == 1 {
                         (
                             "503 Service Unavailable",
@@ -513,7 +529,7 @@ async fn dataset_write_error_fails_without_output_write() {
 }
 
 #[tokio::test]
-async fn does_not_retry_a_dataset_write_after_an_ambiguous_server_error() {
+async fn verifies_an_ambiguous_dataset_write_without_reposting() {
     let (address, server) = start_ambiguous_dataset_write_server();
     let config = request_config(address);
     let client = Client::builder()
@@ -529,11 +545,14 @@ async fn does_not_retry_a_dataset_write_after_an_ambiguous_server_error() {
         push_dataset_items(&client, &config, &mut budget, &[json!({ "aweme_id": "1" })]).await;
     let (requests, committed_writes) = server.join().unwrap();
 
-    assert!(result
-        .unwrap_err()
-        .to_string()
-        .contains("Apify dataset write failed"));
-    assert_eq!(requests.len(), 1);
+    assert!(result.is_ok());
+    assert_eq!(requests.len(), 3);
+    assert!(requests[1]
+        .method_and_path
+        .starts_with("GET /v2/datasets/dataset-test/items?offset=0&limit=1 "));
+    assert!(requests[2]
+        .method_and_path
+        .starts_with("GET /v2/datasets/dataset-test/items?offset=0&limit=1 "));
     assert_eq!(committed_writes, 1);
 }
 
@@ -550,7 +569,7 @@ async fn apify_api_retries_server_errors_with_a_rebuilt_request() {
         .timeout(Duration::from_secs(2))
         .build()
         .unwrap();
-    let url = Url::parse(&format!("http://{address}/v2/test")).unwrap();
+    let url = Url::parse(&format!("http://{address}/v2/actor-runs/run-test")).unwrap();
     let response = send_apify_request(|| client.get(url.clone()), "test Apify request")
         .await
         .unwrap();

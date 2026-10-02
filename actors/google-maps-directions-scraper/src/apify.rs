@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{collections::HashMap, env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -66,7 +67,7 @@ impl ApifyClient {
         let url = self.endpoint(&["actor-runs", &self.config.run_id])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         response_json(response, "Apify run pricing request").await
@@ -81,7 +82,7 @@ impl ApifyClient {
         ])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to retrieve Actor input from the default key-value store")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -97,7 +98,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(&json!([item]))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset item to Apify")?;
         successful_response(response, "dataset item publication").await?;
@@ -110,7 +111,7 @@ impl ApifyClient {
             .request(Method::POST, url)
             .header("idempotency-key", idempotency_key)
             .json(&json!({ "eventName": ROUTE_RESULT_EVENT, "count": 1 }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify route-result charge request failed")?;
         successful_response(response, "route-result charge").await?;
@@ -125,7 +126,7 @@ impl ApifyClient {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify status message update failed")?;
         successful_response(response, "status message update").await?;

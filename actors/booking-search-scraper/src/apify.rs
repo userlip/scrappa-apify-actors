@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response, StatusCode};
 use serde_json::{json, Value};
@@ -121,7 +122,7 @@ pub(crate) async fn get_input(client: &Client, config: &ActorConfig) -> Result<O
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     if response.status() == StatusCode::NOT_FOUND {
@@ -140,7 +141,7 @@ pub(crate) async fn get_run_info(client: &Client, config: &ActorConfig) -> Resul
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     response_json(response, "Apify run pricing request").await
@@ -180,7 +181,7 @@ pub(crate) async fn push_dataset_items(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(items)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     ensure_apify_success(response, "Apify dataset write").await
@@ -208,7 +209,7 @@ pub(crate) async fn charge_event(
         .bearer_auth(&config.apify_token)
         .header("idempotency-key", idempotency_key)
         .json(&json!({ "eventName": BOOKING_RESULT_CHARGE_EVENT, "count": count }))
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify event charge request failed")?;
     ensure_apify_success(response, "Apify event charge request").await
@@ -231,7 +232,7 @@ pub(crate) async fn set_status_message(
             "statusMessage": message,
             "isStatusMessageTerminal": true
         }))
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run status update failed")?;
     ensure_apify_success(response, "Apify run status update").await

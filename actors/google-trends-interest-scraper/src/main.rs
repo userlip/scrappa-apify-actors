@@ -1,3 +1,4 @@
+mod apify_retry;
 use google_trends_interest_scraper::{
     apify::put_terminal_status_message,
     config::Config,

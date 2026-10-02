@@ -528,10 +528,11 @@ async fn run_preserves_the_prefill_request_and_outputs_budgeted_rows_and_raw_res
 }
 
 #[tokio::test]
-async fn dataset_publisher_checks_pricing_and_does_not_retry_append_posts() {
+async fn dataset_publisher_verifies_failed_append_before_stopping() {
     let (base_url, server) = start_mock_server(vec![
         MockResponse::json(200, mock_priced_run(0.0003, json!({}))),
         MockResponse::json(503, json!({"message": "Unavailable"})),
+        MockResponse::json(500, json!({"message": "verification unavailable"})),
     ])
     .await;
     let config = config(base_url, SCRAPPA_API_DEFAULT.to_owned());
@@ -541,11 +542,13 @@ async fn dataset_publisher_checks_pricing_and_does_not_retry_append_posts() {
     let error = apify.push_dataset_items(&rows).await.unwrap_err();
     assert!(error
         .to_string()
-        .contains("Apify dataset item publication failed (503)"));
+        .contains("Failed to publish dataset item to Apify API"));
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 2);
+    assert_eq!(requests.len(), 3);
     assert!(request_line(&requests[1]).starts_with("POST /v2/datasets/dataset/items HTTP/1.1"));
     assert_eq!(request_body(&requests[1]), json!([{"title": "first"}]));
+    assert!(request_line(&requests[2])
+        .starts_with("GET /v2/datasets/dataset/items?offset=0&limit=1 HTTP/1.1"));
 }
 
 #[tokio::test]

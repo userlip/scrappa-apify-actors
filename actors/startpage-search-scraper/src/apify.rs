@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::Value;
@@ -65,36 +66,10 @@ impl ApifyClient {
     where
         F: Fn() -> RequestBuilder,
     {
-        for attempt in 0..=MAX_RETRIES {
-            match request().send().await {
-                Ok(response) if should_retry_status(response.status()) && attempt < MAX_RETRIES => {
-                    let delay = retry_delay(attempt);
-                    eprintln!(
-                        "Apify {operation} returned {}; retrying ({}/{MAX_RETRIES}) after {}ms",
-                        response.status(),
-                        attempt + 1,
-                        delay.as_millis()
-                    );
-                    sleep(delay).await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error) if !error.is_builder() && attempt < MAX_RETRIES => {
-                    let delay = retry_delay(attempt);
-                    eprintln!(
-                        "Apify {operation} request failed; retrying ({}/{MAX_RETRIES}) after {}ms: {error}",
-                        attempt + 1,
-                        delay.as_millis()
-                    );
-                    sleep(delay).await;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| {
-                        format!("Apify {operation} request failed after {attempt} retries")
-                    });
-                }
-            }
-        }
-        unreachable!("the retry loop always returns or continues")
+        request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} request failed"))
     }
 
     pub async fn get_input(&self, store_id: &str, input_key: &str) -> Result<Option<Value>> {
@@ -161,7 +136,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to store items in the default dataset")?;
         successful_response(response, "store dataset items").await?;

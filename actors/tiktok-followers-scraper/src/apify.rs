@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response};
 use serde_json::Value;
@@ -52,7 +53,7 @@ pub(super) async fn get_input(client: &Client, config: &ActorConfig) -> Result<V
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -66,7 +67,7 @@ pub(super) async fn get_run(client: &Client, config: &ActorConfig) -> Result<Val
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     response_json(response, "Apify run pricing request").await
@@ -84,7 +85,7 @@ pub(super) async fn push_dataset_data(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(items)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     let status = response.status();
@@ -123,7 +124,7 @@ pub(super) async fn store_output(
         .put(url)
         .bearer_auth(&config.apify_token)
         .json(output)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify OUTPUT storage write failed")?;
     let status = response.status();

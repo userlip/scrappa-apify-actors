@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{
     env,
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -85,7 +86,7 @@ impl ApifyClient {
             .get(url)
             .bearer_auth(&self.config.api_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == reqwest::StatusCode::NOT_FOUND
@@ -153,7 +154,7 @@ impl ApifyClient {
             .bearer_auth(&self.config.api_token)
             .header(header::ACCEPT, "application/json")
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         ensure_success(response, "Apify OUTPUT write").await
@@ -174,7 +175,7 @@ impl ApifyClient {
                 "statusMessage": status_message,
                 "isStatusMessageTerminal": true
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run status message update failed")?;
         ensure_success(response, "Apify run status message update").await
@@ -190,7 +191,7 @@ impl ApifyClient {
             .get(url)
             .bearer_auth(&self.config.api_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         response_json(response, "Apify run pricing request").await
@@ -213,7 +214,7 @@ impl ApifyClient {
             .header(header::ACCEPT, "application/json")
             .header("idempotency-key", idempotency_key)
             .json(&json!({"eventName": event_name, "count": count}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify event charge request failed")?;
         ensure_success(response, "Apify event charge").await
@@ -230,7 +231,7 @@ impl ApifyClient {
             .bearer_auth(&self.config.api_token)
             .header(header::ACCEPT, "application/json")
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await
@@ -608,15 +609,12 @@ mod tests {
             .await
             .unwrap_err();
 
-        assert!(
-            error
-                .to_string()
-                .contains("Apify dataset write failed with 503")
-        );
+        assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 2);
+        assert_eq!(requests.len(), 3);
         assert!(requests[0].starts_with("GET /v2/actor-runs/test-run "));
         assert!(requests[1].starts_with("POST /v2/datasets/test-dataset/items "));
+        assert!(requests[2].starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1 "));
         assert!(requests.iter().all(|request| !request.contains("/charge ")));
     }
 }

@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod config;
 mod input;
 mod response;
@@ -671,7 +672,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn failed_dataset_write_does_not_charge_or_retry_the_append() {
+    async fn failed_dataset_write_stops_when_verification_is_unavailable() {
         let server = MockServer::start_with_handler(|request| {
             if request.starts_with("GET /v2/actor-runs/test-run ") {
                 mock_response(200, ppe_run_response(1.0, json!({"apify-actor-start": 1})))
@@ -679,6 +680,11 @@ mod tests {
                 MockResponse {
                     status: 503,
                     body: json!({"error": "dataset unavailable"}).to_string(),
+                }
+            } else if request.starts_with("GET /v2/datasets/test-dataset/items?offset=") {
+                MockResponse {
+                    status: 500,
+                    body: json!({"error": "verification unavailable"}).to_string(),
                 }
             } else if request.starts_with("POST /v2/actor-runs/test-run/charge ") {
                 mock_response(201, json!({}))
@@ -695,7 +701,7 @@ mod tests {
         let result = push_charged_items(&apify, &config, &mut budget, &items, 1).await;
 
         let error = result.err().unwrap().to_string();
-        assert!(error.contains("store dataset items"), "{error}");
+        assert!(error.contains("dataset write failed"), "{error}");
         let requests = server.requests();
         assert!(requests
             .iter()
@@ -707,9 +713,10 @@ mod tests {
                 .count(),
             1
         );
-        assert_eq!(requests.len(), 2);
+        assert_eq!(requests.len(), 3);
         assert!(requests[0].starts_with("GET /v2/actor-runs/test-run "));
         assert!(requests[1].starts_with("POST /v2/datasets/test-dataset/items "));
+        assert!(requests[2].starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1 "));
     }
 
     #[test]

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{collections::HashMap, env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -382,32 +383,11 @@ impl ApifyClient {
     where
         F: Fn() -> RequestBuilder,
     {
-        for retry_count in 0..=APIFY_MAX_RETRIES {
-            let response = match request().send().await {
-                Ok(response) => response,
-                Err(error)
-                    if retryable_method
-                        && retry_count < APIFY_MAX_RETRIES
-                        && is_retryable_transport(&error) =>
-                {
-                    tokio::time::sleep(retry_delay(retry_count)).await;
-                    continue;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify {operation} failed"))
-                }
-            };
-
-            if retryable_method && retry_count < APIFY_MAX_RETRIES {
-                if let Some(delay) = response_retry_delay(&response, retry_count) {
-                    drop(response);
-                    tokio::time::sleep(delay).await;
-                    continue;
-                }
-            }
-            return Ok(response);
-        }
-        unreachable!("the Apify retry loop returns on its final attempt")
+        let _ = retryable_method;
+        request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} failed"))
     }
 
     async fn push_dataset_items(&self, items: &[Value]) -> Result<()> {
@@ -941,7 +921,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn fails_a_transient_dataset_write_without_retrying_it() {
+    async fn verifies_a_transient_dataset_write_before_stopping() {
         let calls = Arc::new(Mutex::new(Vec::<MockRequest>::new()));
         let handler_calls = calls.clone();
         let server = MockServer::start(move |request| {
@@ -962,7 +942,7 @@ mod tests {
             .unwrap_err();
         assert!(error
             .to_string()
-            .contains("dataset item publication failed (503)"));
-        assert_eq!(calls.lock().unwrap().len(), 1);
+            .contains("dataset item publication failed"));
+        assert_eq!(calls.lock().unwrap().len(), 2);
     }
 }

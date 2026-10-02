@@ -89,7 +89,7 @@ pub(crate) async fn fetch_scrappa_response(
             query_pairs.append_pair(key, value);
         }
     }
-    println!("[Scrappa] GET {url}");
+    println!("Sending request to Scrappa API");
     let response = client
         .get(url)
         .header("X-API-Key", &config.scrappa_api_key)

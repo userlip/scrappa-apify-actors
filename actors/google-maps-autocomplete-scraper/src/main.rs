@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -164,7 +166,10 @@ async fn send_apify_request(
 async fn send_apify_request_once(
     build_request: impl FnOnce() -> RequestBuilder,
 ) -> std::result::Result<Response, reqwest::Error> {
-    build_request().timeout(APIFY_REQUEST_TIMEOUT).send().await
+    build_request()
+        .timeout(APIFY_REQUEST_TIMEOUT)
+        .send_apify_with_retry()
+        .await
 }
 
 async fn send_request_with_retries(
@@ -173,30 +178,11 @@ async fn send_request_with_retries(
     max_retries: usize,
     initial_retry_delay: Duration,
 ) -> std::result::Result<Response, reqwest::Error> {
-    let mut retries = 0;
-    loop {
-        let response = match build_request().timeout(timeout).send().await {
-            Ok(response) => response,
-            Err(_) if retries < max_retries => {
-                tokio::time::sleep(retry_delay(initial_retry_delay, retries)).await;
-                retries += 1;
-                continue;
-            }
-            Err(error) => return Err(error),
-        };
-
-        if retries < max_retries
-            && (response.status() == StatusCode::TOO_MANY_REQUESTS
-                || response.status().is_server_error())
-        {
-            drop(response);
-            tokio::time::sleep(retry_delay(initial_retry_delay, retries)).await;
-            retries += 1;
-            continue;
-        }
-
-        return Ok(response);
-    }
+    let _ = (max_retries, initial_retry_delay);
+    build_request()
+        .timeout(timeout)
+        .send_apify_with_retry()
+        .await
 }
 
 fn retry_delay(initial_delay: Duration, retries: usize) -> Duration {

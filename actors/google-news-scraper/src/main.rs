@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use std::{collections::HashSet, env, time::Duration};
@@ -244,7 +246,7 @@ impl ApifyClient<'_> {
             .get(url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         response_json(response, "Apify INPUT request").await
@@ -265,7 +267,7 @@ impl ApifyClient<'_> {
             .get(run_url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = response_json(run_response, "Apify run pricing request").await?;
@@ -287,7 +289,7 @@ impl ApifyClient<'_> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await?;
@@ -309,7 +311,7 @@ impl ApifyClient<'_> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         ensure_success(response, "Apify OUTPUT write").await
@@ -1212,15 +1214,17 @@ mod tests {
             mock_response(200, json!({"news_results": [{"title": "First"}]})),
             pricing_response(1.0, 0),
             mock_response(503, json!({"message": "storage unavailable"})),
+            mock_response(500, json!({"message": "verification unavailable"})),
         ]);
         let config = test_config(&server.base_url);
         let error = run_actor(&Client::new(), &config).await.unwrap_err();
-        assert!(error.to_string().contains("503"));
+        assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = server.finish();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
         assert_eq!(requests[2].method, "GET");
         assert_eq!(requests[2].target, run_request());
         assert_eq!(requests[3].method, "POST");
+        assert_eq!(requests[4].method, "GET");
     }
 
     #[tokio::test]

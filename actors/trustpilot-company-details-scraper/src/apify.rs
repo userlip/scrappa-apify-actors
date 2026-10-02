@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::{json, Value};
@@ -115,38 +116,10 @@ impl ApifyClient {
     where
         F: FnMut() -> RequestBuilder,
     {
-        for attempt in 1..=APIFY_MAX_ATTEMPTS {
-            match request().send().await {
-                Ok(response)
-                    if attempt < APIFY_MAX_ATTEMPTS && retryable_status(response.status()) =>
-                {
-                    let status = response.status();
-                    let _ = response.bytes().await;
-                    let delay_ms = 250 * 2_u64.pow((attempt - 1) as u32);
-                    eprintln!(
-                        "Apify {operation} request failed with HTTP {status}. Retrying attempt {}/{APIFY_MAX_ATTEMPTS} in {delay_ms}ms.",
-                        attempt + 1
-                    );
-                    sleep(Duration::from_millis(delay_ms)).await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error)
-                    if attempt < APIFY_MAX_ATTEMPTS
-                        && (error.is_timeout() || error.is_connect()) =>
-                {
-                    let delay_ms = 250 * 2_u64.pow((attempt - 1) as u32);
-                    eprintln!(
-                        "Apify {operation} request failed ({error}). Retrying attempt {}/{APIFY_MAX_ATTEMPTS} in {delay_ms}ms.",
-                        attempt + 1
-                    );
-                    sleep(Duration::from_millis(delay_ms)).await;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify {operation} request failed"));
-                }
-            }
-        }
-        unreachable!("the retry loop always returns on its final attempt")
+        request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} request failed"))
     }
 
     pub async fn get_input(&self) -> Result<Option<Value>> {
@@ -219,7 +192,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(&[item])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to store item in the default dataset")?;
         successful_response(response, "store item in the default dataset").await?;
@@ -648,7 +621,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn does_not_charge_or_replay_a_failed_dataset_append() {
+    async fn verifies_a_failed_dataset_append_without_charging() {
         let server = MockServer::start(
             3,
             Duration::from_millis(1_500),
@@ -670,11 +643,15 @@ mod tests {
             .await
             .unwrap_err();
 
-        assert!(error.to_string().contains("503"));
+        assert!(error
+            .to_string()
+            .contains("Failed to store item in the default dataset"));
         assert!(budget.can_charge_next_item().unwrap());
         let requests = server.finish();
-        assert_eq!(requests.len(), 1);
+        assert_eq!(requests.len(), 2);
         assert!(requests[0].starts_with("POST /v2/datasets/test-dataset/items HTTP/1.1"));
+        assert!(requests[1]
+            .starts_with("GET /v2/datasets/test-dataset/items?offset=0&limit=1 HTTP/1.1"));
         assert_eq!(
             request_body(&requests[0]),
             json!([{"company_domain":"example.com"}])

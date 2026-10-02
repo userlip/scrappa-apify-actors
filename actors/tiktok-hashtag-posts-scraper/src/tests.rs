@@ -1,8 +1,5 @@
 use crate::{
-    apify::{
-        affordable_dataset_items, send_apify_request, ActorConfig, APIFY_MAX_RETRIES,
-        APIFY_REQUEST_TIMEOUT,
-    },
+    apify::{affordable_dataset_items, send_apify_request, ActorConfig, APIFY_REQUEST_TIMEOUT},
     failure_message,
     input::{build_hashtag_posts_params, TikTokHashtagPostsParams},
     run_actor,
@@ -467,7 +464,6 @@ fn reports_scrappa_timeout_with_the_original_deadline() {
     );
     assert_eq!(SCRAPPA_REQUEST_TIMEOUT, Duration::from_secs(45));
     assert_eq!(APIFY_REQUEST_TIMEOUT, Duration::from_secs(360));
-    assert_eq!(APIFY_MAX_RETRIES, 8);
 }
 
 #[tokio::test]
@@ -484,7 +480,7 @@ async fn retries_transient_apify_errors_but_returns_client_errors_directly() {
         requests
     });
     let client = reqwest::Client::new();
-    let url = format!("http://{address}/transient");
+    let url = format!("http://{address}/v2/actor-runs/run-1");
     let response = send_apify_request("test request", || client.get(&url))
         .await
         .unwrap();
@@ -499,7 +495,7 @@ async fn retries_transient_apify_errors_but_returns_client_errors_directly() {
         mock_response(&mut stream, "400 Bad Request", "{} ");
         request
     });
-    let url = format!("http://{address}/permanent");
+    let url = format!("http://{address}/v2/actor-runs/run-1");
     let response = send_apify_request("test request", || client.get(&url))
         .await
         .unwrap();

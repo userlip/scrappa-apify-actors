@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, Response, StatusCode};
 use serde_json::Value;
@@ -50,39 +51,18 @@ impl ApifyClient {
         body: Option<&Value>,
         operation: &str,
     ) -> Result<Response> {
-        let retryable_method = is_retryable_method(&method);
-        for attempt in 0..=APIFY_MAX_RETRIES {
-            let mut request = self
-                .client
-                .request(method.clone(), url.clone())
-                .bearer_auth(&self.token)
-                .header(reqwest::header::ACCEPT, "application/json");
-            if let Some(body) = body {
-                request = request.json(body);
-            }
-
-            match request.send().await {
-                Ok(response)
-                    if retryable_method
-                        && is_retryable_status(response.status())
-                        && attempt < APIFY_MAX_RETRIES =>
-                {
-                    eprintln!("{operation} returned {}; retrying", response.status());
-                }
-                Ok(response) => return Ok(response),
-                Err(error)
-                    if retryable_method
-                        && is_retryable_request(&error)
-                        && attempt < APIFY_MAX_RETRIES =>
-                {
-                    eprintln!("{operation} failed; retrying: {error}");
-                }
-                Err(error) => return Err(anyhow!("{operation} failed: {error}")),
-            }
-
-            tokio::time::sleep(APIFY_RETRY_DELAY * 2_u32.pow(attempt)).await;
+        let mut request = self
+            .client
+            .request(method, url)
+            .bearer_auth(&self.token)
+            .header(reqwest::header::ACCEPT, "application/json");
+        if let Some(body) = body {
+            request = request.json(body);
         }
-        unreachable!("the final Apify request attempt always returns or fails")
+        request
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("{operation} failed"))
     }
 
     pub(crate) async fn get_run(&self, actor_run_id: &str) -> Result<Value> {

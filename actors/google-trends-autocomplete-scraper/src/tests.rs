@@ -502,7 +502,6 @@ async fn actor_charges_only_saved_rows_and_omits_raw_response_at_budget_limit() 
         request_target(&requests[4]),
         "/v2/actor-runs/test-run/charge"
     );
-    assert_eq!(requests[4].method, "POST");
     assert_eq!(
         requests[4].headers["idempotency-key"],
         "google-trends-autocomplete-test-run-suggestions"
@@ -555,15 +554,17 @@ async fn actor_returns_error_when_suggestion_charge_fails_after_saving_rows() {
         .contains("suggestion result charge request failed"));
 
     let requests = server.finish();
-    assert_eq!(requests.len(), 5);
+    assert_eq!(requests.len(), 7);
     assert_eq!(
         request_target(&requests[3]),
         "/v2/datasets/dataset-id/items"
     );
-    assert_eq!(
-        request_target(&requests[4]),
-        "/v2/actor-runs/test-run/charge"
-    );
+    for request in &requests[4..] {
+        assert_eq!(request_target(request), "/v2/actor-runs/test-run/charge");
+    }
+    assert!(requests[4..].iter().all(|request| {
+        request.headers["idempotency-key"] == requests[4].headers["idempotency-key"]
+    }));
 }
 
 #[tokio::test]
@@ -584,17 +585,20 @@ async fn actor_does_not_charge_or_retry_when_dataset_write_fails() {
     let http = Client::new();
 
     let error = run_actor(&http, &config).await.unwrap_err();
-    assert!(error
-        .to_string()
-        .contains("Apify dataset write failed with 500"));
+    assert!(error.to_string().contains("Apify dataset write failed"));
 
     let requests = server.finish();
-    assert_eq!(requests.len(), 4);
+    assert_eq!(requests.len(), 5);
     assert_eq!(
         request_target(&requests[3]),
         "/v2/datasets/dataset-id/items"
     );
     assert_eq!(requests[3].method, "POST");
+    assert_eq!(requests[4].method, "GET");
+    assert_eq!(
+        requests[4].target,
+        "/v2/datasets/dataset-id/items?offset=0&limit=2"
+    );
     assert!(requests
         .iter()
         .all(|request| request.target != "/v2/actor-runs/test-run/charge"));

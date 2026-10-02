@@ -424,7 +424,7 @@ async fn apify_storage_reads_retry_transient_server_errors() {
 }
 
 #[tokio::test]
-async fn dataset_writes_do_not_retry_ambiguous_or_transient_failures() {
+async fn dataset_writes_verify_ambiguous_failures_without_reposting() {
     for responses in [
         vec![lost_response(), response(201, "{}")],
         vec![response(503, "temporary"), response(201, "{}")],
@@ -437,7 +437,7 @@ async fn dataset_writes_do_not_retry_ambiguous_or_transient_failures() {
             .push_dataset_items(&[json!({"id":"only-once"})])
             .await
             .is_err());
-        assert_eq!(server.requests().len(), 1);
+        assert_eq!(server.requests().len(), 2);
     }
 }
 

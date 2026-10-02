@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -209,7 +211,7 @@ impl ApifyClient<'_> {
             .get(url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == reqwest::StatusCode::NOT_FOUND {
@@ -233,7 +235,7 @@ impl ApifyClient<'_> {
             .get(url)
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = response_json(response, "Apify run pricing request").await?;
@@ -280,7 +282,7 @@ impl ApifyClient<'_> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_success(response, "Apify dataset write").await?;
@@ -301,7 +303,7 @@ impl ApifyClient<'_> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         ensure_success(response, "Apify OUTPUT write").await
@@ -1207,13 +1209,19 @@ mod tests {
             mock_response(200, input),
             mock_response(200, ppe_run(1.0, json!({}))),
             mock_response(500, json!({"error": {"message": "dataset unavailable"}})),
+            mock_response(
+                500,
+                json!({"error": {"message": "verification unavailable"}}),
+            ),
         ]);
         let scrappa = MockServer::start(vec![mock_response(200, sample_response())]);
         let config = test_config(&apify.base_url, &scrappa.base_url);
 
         let error = run_actor(&actor_http_client(), &config).await.unwrap_err();
-        assert!(error.to_string().contains("dataset unavailable"));
-        assert_eq!(apify.finish().len(), 3);
+        assert!(error.to_string().contains("Apify dataset write failed"));
+        let requests = apify.finish();
+        assert_eq!(requests.len(), 4);
+        assert_eq!(requests[3].method, "GET");
         assert_eq!(scrappa.finish().len(), 1);
     }
 }

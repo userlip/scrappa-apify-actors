@@ -253,9 +253,7 @@ async fn dataset_failure_does_not_charge_or_write_output() {
     .await;
     let config = test_config(&server.base_url);
     let error = run_actor(&Client::new(), &config).await.unwrap_err();
-    assert!(error
-        .to_string()
-        .contains("Apify dataset write failed with 500"));
+    assert!(error.to_string().contains("Apify dataset write failed"));
     let requests = server.finish();
     assert!(requests_to(&requests, "/v2/actor-runs/test-run/charge").is_empty());
     assert_eq!(

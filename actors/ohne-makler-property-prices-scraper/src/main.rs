@@ -16,10 +16,12 @@ const DEFAULT_SCRAPPA_URL: &str = "https://scrappa.co/api";
 const DEFAULT_APIFY_URL: &str = "https://api.apify.com";
 const DATASET_ITEM_EVENT: &str = "apify-default-dataset-item";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
+const APIFY_RETRY_BUDGET: Duration = Duration::from_secs(150);
+const DATASET_VERIFY_SETTLE: Duration = Duration::from_secs(2);
+const DATASET_VERIFY_MAX_WAIT: Duration = Duration::from_secs(10);
 const ENTRY_TIME_BUDGET: Duration = Duration::from_secs(100);
 const MAX_RETRY_BACKOFF: Duration = Duration::from_secs(15);
 const MAX_SCRAPPA_RETRIES: usize = 7;
-const MAX_APIFY_RETRIES: usize = 8;
 const MAX_BATCH_SIZE: usize = 100;
 const MAX_DATASET_PUSH_ITEMS: usize = 500;
 const MAX_DATASET_PUSH_BYTES: usize = 5 * 1024 * 1024;
@@ -141,6 +143,7 @@ struct Storage {
     input_key: String,
     remaining_items: usize,
     local_next_item: usize,
+    dataset_written: Option<usize>,
 }
 
 impl Storage {
@@ -183,6 +186,7 @@ impl Storage {
                 input_key: "INPUT".to_owned(),
                 remaining_items: usize::MAX,
                 local_next_item,
+                dataset_written: Some(local_next_item),
             });
         }
 
@@ -200,6 +204,7 @@ impl Storage {
                 .unwrap_or_else(|| "INPUT".to_owned()),
             remaining_items: usize::MAX,
             local_next_item: 0,
+            dataset_written: None,
         })
     }
 
@@ -245,6 +250,8 @@ impl Storage {
             })
             .await?;
         let run = response_json(response, "read Actor run pricing").await?;
+        let dataset_written = self.current_dataset_item_count().await?;
+        self.dataset_written = Some(dataset_written);
         let mut allowed = apify_dataset_budget(&run, requested)?;
 
         if let Some(max_paid_items) = configured_paid_item_limit()? {
@@ -258,7 +265,7 @@ impl Storage {
                     &run,
                     max_paid_items,
                     pricing_model,
-                    Some(self.current_dataset_item_count().await?),
+                    Some(dataset_written),
                 )?
             } else {
                 remaining_paid_items_for_model(&run, max_paid_items, pricing_model, None)?
@@ -300,20 +307,21 @@ impl Storage {
             let url = self.api_url(&["v2", "datasets", dataset_id, "items"])?;
             let chunks = dataset_item_chunks(&items[..count])?;
             let mut saved = 0;
-            for (body, chunk_count) in chunks {
-                let response = self
-                    .authorized(Method::POST, url.clone())
-                    .header(reqwest::header::CONTENT_TYPE, "application/json")
-                    .body(body)
-                    .send()
-                    .await
-                    .context("Could not write items to the Apify dataset")?;
-                if !response.status().is_success() {
-                    let status = response.status();
-                    let body = response.text().await.unwrap_or_default();
-                    if charge_limit_response(status, &body) {
+            for chunk in chunks {
+                let written = self.dataset_written.unwrap_or_default();
+                match self
+                    .push_dataset_chunk(&url, &chunk.items, &chunk.body, written)
+                    .await?
+                {
+                    DatasetChunkResult::Saved(chunk_saved) => {
+                        saved += chunk_saved;
+                        self.dataset_written = Some(written + chunk_saved);
+                    }
+                    DatasetChunkResult::ChargeLimited(chunk_saved) => {
+                        saved += chunk_saved;
+                        self.dataset_written = Some(written + chunk_saved);
                         eprintln!(
-                            "Apify stopped accepting dataset items (HTTP {status}); ending the run without retrying the push"
+                            "Apify stopped accepting dataset items; ending the run without retrying the charge-limited push"
                         );
                         self.remaining_items = self.remaining_items.saturating_sub(saved);
                         return Ok(PushResult {
@@ -321,9 +329,7 @@ impl Storage {
                             charge_limited: true,
                         });
                     }
-                    bail!("Apify returned HTTP {status} while writing dataset items");
                 }
-                saved += chunk_count;
             }
             self.remaining_items -= saved;
             return Ok(PushResult {
@@ -343,12 +349,190 @@ impl Storage {
             })
             .await?;
         let dataset = response_json(response, "read dataset item count").await?;
-        dataset
+        let mut count = dataset
             .pointer("/data/itemCount")
             .or_else(|| dataset.get("itemCount"))
             .and_then(Value::as_u64)
             .map(|count| count as usize)
-            .ok_or_else(|| anyhow!("Apify dataset response did not include itemCount"))
+            .ok_or_else(|| anyhow!("Apify dataset response did not include itemCount"))?;
+        let mut checked_empty_at: Option<Instant> = None;
+        loop {
+            let mut items_url = self.api_url(&["v2", "datasets", dataset_id, "items"])?;
+            items_url
+                .query_pairs_mut()
+                .append_pair("offset", &count.to_string())
+                .append_pair("limit", "500");
+            let response = self
+                .send_apify_with_retry("dataset item count verification", || {
+                    self.authorized(Method::GET, items_url.clone())
+                })
+                .await?;
+            let items = response_json(response, "read dataset items at run start")
+                .await?
+                .as_array()
+                .cloned()
+                .ok_or_else(|| anyhow!("Apify dataset items response was not an array"))?;
+            if items.is_empty() {
+                if checked_empty_at
+                    .is_none_or(|checked_at| checked_at.elapsed() < DATASET_VERIFY_SETTLE)
+                {
+                    checked_empty_at.get_or_insert_with(Instant::now);
+                    apify_retry_sleep(DATASET_VERIFY_SETTLE).await;
+                    continue;
+                }
+                return Ok(count);
+            }
+            count += items.len();
+            checked_empty_at = None;
+        }
+    }
+
+    async fn push_dataset_chunk(
+        &self,
+        url: &Url,
+        items: &[Value],
+        initial_body: &[u8],
+        offset: usize,
+    ) -> Result<DatasetChunkResult> {
+        let deadline = Instant::now() + APIFY_RETRY_BUDGET;
+        let mut pending = items.to_vec();
+        let mut next_body = Some(initial_body.to_vec());
+        let mut saved_prefix = 0;
+        let mut attempt = 0;
+
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                bail!("Apify dataset write exhausted its 150 second retry budget");
+            }
+            let body = match next_body.take() {
+                Some(body) if pending.len() == items.len() => body,
+                _ => serde_json::to_vec(&pending).context("Could not encode dataset items")?,
+            };
+            let response = self
+                .authorized(Method::POST, url.clone())
+                .header(reqwest::header::CONTENT_TYPE, "application/json")
+                .timeout(remaining.min(REQUEST_TIMEOUT))
+                .body(body)
+                .send()
+                .await;
+
+            match response {
+                Ok(response) if response.status().is_success() => {
+                    return Ok(DatasetChunkResult::Saved(saved_prefix + pending.len()));
+                }
+                Ok(response) => {
+                    let status = response.status();
+                    let response_body = response.text().await.unwrap_or_default();
+                    if charge_limit_response(status, &response_body) {
+                        return Ok(DatasetChunkResult::ChargeLimited(saved_prefix));
+                    }
+                    if status != StatusCode::TOO_MANY_REQUESTS && !should_retry_apify(status) {
+                        bail!("Apify returned HTTP {status} while writing dataset items");
+                    }
+
+                    if status != StatusCode::TOO_MANY_REQUESTS {
+                        match dataset_retry_resolution(
+                            self.verify_dataset_chunk(offset + saved_prefix, &pending, deadline)
+                                .await?,
+                        ) {
+                            DatasetRetryResolution::AlreadyWritten => {
+                                return Ok(DatasetChunkResult::Saved(saved_prefix + pending.len()));
+                            }
+                            DatasetRetryResolution::RetryRemainder(prefix) => {
+                                saved_prefix += prefix;
+                                pending.drain(..prefix);
+                            }
+                            DatasetRetryResolution::RetryFull => {}
+                            DatasetRetryResolution::Mismatch => {
+                                bail!("Apify dataset contents did not match the ambiguous write");
+                            }
+                        }
+                    }
+                }
+                Err(error) => {
+                    let definitely_not_sent = error.is_connect() && !error.is_timeout();
+                    if !definitely_not_sent {
+                        match dataset_retry_resolution(
+                            self.verify_dataset_chunk(offset + saved_prefix, &pending, deadline)
+                                .await?,
+                        ) {
+                            DatasetRetryResolution::AlreadyWritten => {
+                                return Ok(DatasetChunkResult::Saved(saved_prefix + pending.len()));
+                            }
+                            DatasetRetryResolution::RetryRemainder(prefix) => {
+                                saved_prefix += prefix;
+                                pending.drain(..prefix);
+                            }
+                            DatasetRetryResolution::RetryFull => {}
+                            DatasetRetryResolution::Mismatch => {
+                                bail!("Apify dataset contents did not match the ambiguous write");
+                            }
+                        }
+                    }
+                }
+            }
+
+            if pending.is_empty() {
+                return Ok(DatasetChunkResult::Saved(saved_prefix));
+            }
+            let delay = retry_delay(attempt);
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if delay >= remaining {
+                bail!("Apify dataset write exhausted its 150 second retry budget");
+            }
+            eprintln!(
+                "Apify dataset write attempt failed; retrying after {}ms",
+                delay.as_millis()
+            );
+            apify_retry_sleep(delay).await;
+            attempt += 1;
+        }
+    }
+
+    async fn verify_dataset_chunk(
+        &self,
+        offset: usize,
+        expected: &[Value],
+        deadline: Instant,
+    ) -> Result<DatasetVerification> {
+        let dataset_id = self.dataset_id.as_deref().unwrap_or_default();
+        let mut url = self.api_url(&["v2", "datasets", dataset_id, "items"])?;
+        url.query_pairs_mut()
+            .append_pair("offset", &offset.to_string())
+            .append_pair("limit", &expected.len().to_string());
+        let stop_checking_at = (Instant::now() + DATASET_VERIFY_MAX_WAIT).min(deadline);
+
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                bail!("Apify dataset verification exhausted its retry budget");
+            }
+            let response = self
+                .send_apify_with_retry_until(
+                    "dataset item verification",
+                    || self.authorized(Method::GET, url.clone()),
+                    stop_checking_at,
+                )
+                .await?;
+            let rows = response
+                .json::<Vec<Value>>()
+                .await
+                .context("Apify dataset verification response was invalid")?;
+            let verification = compare_dataset_prefix(expected, &rows);
+            if verification != DatasetVerification::None {
+                return Ok(verification);
+            }
+            if cfg!(test) {
+                return Ok(DatasetVerification::None);
+            }
+
+            if Instant::now() >= stop_checking_at {
+                return Ok(DatasetVerification::None);
+            }
+            let settle = DATASET_VERIFY_SETTLE.min(stop_checking_at - Instant::now());
+            apify_retry_sleep(settle).await;
+        }
     }
 
     async fn set_status_message(&self, message: &str) -> Result<()> {
@@ -388,41 +572,125 @@ impl Storage {
     where
         F: FnMut() -> RequestBuilder,
     {
-        for attempt in 0..=MAX_APIFY_RETRIES {
-            match request().send().await {
-                Ok(response)
-                    if should_retry_apify(response.status()) && attempt < MAX_APIFY_RETRIES =>
-                {
+        self.send_apify_with_retry_until(
+            operation,
+            &mut request,
+            Instant::now() + APIFY_RETRY_BUDGET,
+        )
+        .await
+    }
+
+    async fn send_apify_with_retry_until<F>(
+        &self,
+        operation: &str,
+        mut request: F,
+        deadline: Instant,
+    ) -> Result<Response>
+    where
+        F: FnMut() -> RequestBuilder,
+    {
+        let mut attempt = 0;
+        let mut attempts = 0;
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() || (cfg!(test) && attempts >= 3) {
+                bail!("Apify {operation} exhausted its 150 second retry budget");
+            }
+            attempts += 1;
+            match request()
+                .timeout(remaining.min(REQUEST_TIMEOUT))
+                .send()
+                .await
+            {
+                Ok(response) if should_retry_apify(response.status()) => {
                     let delay = retry_delay(attempt);
+                    if delay >= deadline.saturating_duration_since(Instant::now()) {
+                        bail!("Apify {operation} exhausted its 150 second retry budget");
+                    }
                     eprintln!(
                         "Apify {operation} returned {}; retrying after {}ms",
                         response.status(),
                         delay.as_millis()
                     );
-                    sleep(delay).await;
+                    apify_retry_sleep(delay).await;
+                    attempt += 1;
                 }
                 Ok(response) => return Ok(response),
-                Err(_) if attempt < MAX_APIFY_RETRIES => {
+                Err(_) => {
                     let delay = retry_delay(attempt);
+                    if delay >= deadline.saturating_duration_since(Instant::now()) {
+                        bail!("Apify {operation} exhausted its 150 second retry budget");
+                    }
                     eprintln!(
                         "Apify {operation} failed; retrying after {}ms",
                         delay.as_millis()
                     );
-                    sleep(delay).await;
-                }
-                Err(error) => {
-                    return Err(error)
-                        .with_context(|| format!("Apify {operation} failed after retries"));
+                    apify_retry_sleep(delay).await;
+                    attempt += 1;
                 }
             }
         }
-        bail!("Apify {operation} request exhausted its retry loop")
     }
 }
 
-fn dataset_item_chunks(items: &[Value]) -> Result<Vec<(Vec<u8>, usize)>> {
+#[derive(Debug, PartialEq, Eq)]
+enum DatasetVerification {
+    Complete,
+    Prefix(usize),
+    None,
+    Mismatch,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum DatasetRetryResolution {
+    AlreadyWritten,
+    RetryFull,
+    RetryRemainder(usize),
+    Mismatch,
+}
+
+enum DatasetChunkResult {
+    Saved(usize),
+    ChargeLimited(usize),
+}
+
+fn compare_dataset_prefix(expected: &[Value], actual: &[Value]) -> DatasetVerification {
+    if actual.len() > expected.len() {
+        return DatasetVerification::Mismatch;
+    }
+    if actual
+        .iter()
+        .zip(expected)
+        .any(|(actual, expected)| actual != expected)
+    {
+        return DatasetVerification::Mismatch;
+    }
+    if actual.len() == expected.len() {
+        return DatasetVerification::Complete;
+    }
+    if actual.is_empty() {
+        return DatasetVerification::None;
+    }
+    DatasetVerification::Prefix(actual.len())
+}
+
+fn dataset_retry_resolution(verification: DatasetVerification) -> DatasetRetryResolution {
+    match verification {
+        DatasetVerification::Complete => DatasetRetryResolution::AlreadyWritten,
+        DatasetVerification::Prefix(count) => DatasetRetryResolution::RetryRemainder(count),
+        DatasetVerification::None => DatasetRetryResolution::RetryFull,
+        DatasetVerification::Mismatch => DatasetRetryResolution::Mismatch,
+    }
+}
+
+struct DatasetChunk {
+    body: Vec<u8>,
+    items: Vec<Value>,
+}
+
+fn dataset_item_chunks(items: &[Value]) -> Result<Vec<DatasetChunk>> {
     let mut chunks = Vec::new();
-    let mut current = Vec::<Vec<u8>>::new();
+    let mut current = Vec::<(Vec<u8>, Value)>::new();
     let mut current_bytes = 2_usize;
 
     for item in items {
@@ -435,32 +703,40 @@ fn dataset_item_chunks(items: &[Value]) -> Result<Vec<(Vec<u8>, usize)>> {
             && (current.len() >= MAX_DATASET_PUSH_ITEMS
                 || current_bytes + separator_bytes + encoded.len() > MAX_DATASET_PUSH_BYTES)
         {
-            chunks.push((encode_dataset_chunk(&current), current.len()));
+            chunks.push(encode_dataset_chunk(&current));
             current.clear();
             current_bytes = 2;
         }
         current_bytes += usize::from(!current.is_empty()) + encoded.len();
-        current.push(encoded);
+        current.push((encoded, item.clone()));
     }
 
     if !current.is_empty() {
-        chunks.push((encode_dataset_chunk(&current), current.len()));
+        chunks.push(encode_dataset_chunk(&current));
     }
     Ok(chunks)
 }
 
-fn encode_dataset_chunk(items: &[Vec<u8>]) -> Vec<u8> {
-    let byte_count = items.iter().map(Vec::len).sum::<usize>() + items.len() + 1;
+fn encode_dataset_chunk(items: &[(Vec<u8>, Value)]) -> DatasetChunk {
+    let byte_count = items
+        .iter()
+        .map(|(encoded, _)| encoded.len())
+        .sum::<usize>()
+        + items.len()
+        + 1;
     let mut body = Vec::with_capacity(byte_count);
     body.push(b'[');
-    for (index, item) in items.iter().enumerate() {
+    for (index, (encoded, _)) in items.iter().enumerate() {
         if index > 0 {
             body.push(b',');
         }
-        body.extend_from_slice(item);
+        body.extend_from_slice(encoded);
     }
     body.push(b']');
-    body
+    DatasetChunk {
+        body,
+        items: items.iter().map(|(_, value)| value.clone()).collect(),
+    }
 }
 
 fn charge_limit_response(status: StatusCode, body: &str) -> bool {
@@ -473,6 +749,7 @@ fn charge_limit_response(status: StatusCode, body: &str) -> bool {
         "spending limit",
         "maximum charge",
         "max total charge",
+        "max-total-charge-exceeded",
     ]
     .iter()
     .any(|phrase| body.contains(phrase))
@@ -1827,7 +2104,14 @@ async fn send_scrappa_with_retry(
 }
 
 fn should_retry_apify(status: StatusCode) -> bool {
-    status == StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
+    matches!(
+        status,
+        StatusCode::TOO_MANY_REQUESTS
+            | StatusCode::INTERNAL_SERVER_ERROR
+            | StatusCode::BAD_GATEWAY
+            | StatusCode::SERVICE_UNAVAILABLE
+            | StatusCode::GATEWAY_TIMEOUT
+    )
 }
 
 fn should_retry_scrappa(status: StatusCode) -> bool {
@@ -1888,6 +2172,12 @@ fn status_message(
 fn retry_delay(attempt: usize) -> Duration {
     Duration::from_millis(1_000_u64.saturating_mul(2_u64.saturating_pow(attempt as u32)))
         .min(MAX_RETRY_BACKOFF)
+}
+
+async fn apify_retry_sleep(duration: Duration) {
+    if !cfg!(test) {
+        sleep(duration).await;
+    }
 }
 
 fn parse_retry_after(value: &str) -> Option<Duration> {
@@ -2064,6 +2354,132 @@ async fn main() -> ExitCode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{
+        io::{Read, Write},
+        net::{TcpListener, TcpStream},
+        sync::{Arc, Mutex},
+        thread,
+    };
+
+    struct MockApifyServer {
+        base: Url,
+        requests: Arc<Mutex<Vec<String>>>,
+        handle: Option<thread::JoinHandle<()>>,
+    }
+
+    impl MockApifyServer {
+        fn start(responses: Vec<(u16, String)>) -> Self {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            listener.set_nonblocking(true).unwrap();
+            let address = listener.local_addr().unwrap();
+            let requests = Arc::new(Mutex::new(Vec::new()));
+            let captured = Arc::clone(&requests);
+            let handle = thread::spawn(move || {
+                for (status, body) in responses {
+                    let deadline = std::time::Instant::now() + Duration::from_secs(5);
+                    let (mut stream, _) = loop {
+                        match listener.accept() {
+                            Ok(connection) => break connection,
+                            Err(error)
+                                if error.kind() == std::io::ErrorKind::WouldBlock
+                                    && std::time::Instant::now() < deadline =>
+                            {
+                                thread::sleep(Duration::from_millis(5));
+                            }
+                            Err(error) => panic!("mock server accept failed: {error}"),
+                        }
+                    };
+                    let request = read_mock_request(&mut stream);
+                    captured.lock().unwrap().push(request);
+                    let reason = match status {
+                        200 => "OK",
+                        201 => "Created",
+                        400 => "Bad Request",
+                        502 => "Bad Gateway",
+                        _ => "Mock Response",
+                    };
+                    write!(
+                        stream,
+                        "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                        body.len()
+                    )
+                    .unwrap();
+                }
+            });
+            Self {
+                base: Url::parse(&format!("http://{address}")).unwrap(),
+                requests,
+                handle: Some(handle),
+            }
+        }
+
+        fn finish(mut self) -> Vec<String> {
+            self.handle.take().unwrap().join().unwrap();
+            self.requests.lock().unwrap().clone()
+        }
+    }
+
+    fn read_mock_request(stream: &mut TcpStream) -> String {
+        let mut request = Vec::new();
+        let mut buffer = [0_u8; 1024];
+        loop {
+            let count = stream.read(&mut buffer).unwrap();
+            if count == 0 {
+                break;
+            }
+            request.extend_from_slice(&buffer[..count]);
+            let text = String::from_utf8_lossy(&request);
+            if let Some((headers, body)) = text.split_once("\r\n\r\n") {
+                let body_length = headers
+                    .lines()
+                    .find_map(|line| {
+                        let (name, value) = line.split_once(':')?;
+                        name.eq_ignore_ascii_case("content-length")
+                            .then(|| value.trim().parse::<usize>().ok())
+                            .flatten()
+                    })
+                    .unwrap_or_default();
+                if body.len() >= body_length {
+                    break;
+                }
+            }
+        }
+        String::from_utf8_lossy(&request).into_owned()
+    }
+
+    fn test_storage(base: Url) -> Storage {
+        Storage {
+            http: Client::new(),
+            local_root: None,
+            apify_base: base,
+            token: None,
+            key_value_store_id: None,
+            dataset_id: Some("dataset-1".to_owned()),
+            run_id: Some("run-1".to_owned()),
+            input_key: "INPUT".to_owned(),
+            remaining_items: 10,
+            local_next_item: 0,
+            dataset_written: Some(0),
+        }
+    }
+
+    fn request_method(request: &str) -> &str {
+        request.split_whitespace().next().unwrap()
+    }
+
+    fn request_target(request: &str) -> &str {
+        request.split_whitespace().nth(1).unwrap()
+    }
+
+    fn request_body(request: &str) -> Value {
+        serde_json::from_str(request.split_once("\r\n\r\n").unwrap().1).unwrap()
+    }
+
+    async fn push_test_chunk(storage: &Storage, items: &[Value]) -> Result<DatasetChunkResult> {
+        let url = storage.api_url(&["v2", "datasets", "dataset-1", "items"])?;
+        let body = serde_json::to_vec(items)?;
+        storage.push_dataset_chunk(&url, items, &body, 0).await
+    }
 
     #[test]
     fn compiled_fixture_has_rows_at_the_configured_result_location() {
@@ -2318,16 +2734,145 @@ mod tests {
         let items = (0..501).map(|id| json!({"id": id})).collect::<Vec<_>>();
         let chunks = dataset_item_chunks(&items).unwrap();
         assert_eq!(chunks.len(), 2);
-        assert_eq!(chunks[0].1, 500);
-        assert_eq!(chunks[1].1, 1);
+        assert_eq!(chunks[0].items.len(), 500);
+        assert_eq!(chunks[1].items.len(), 1);
         assert!(
             chunks
                 .iter()
-                .all(|(body, _)| body.len() <= MAX_DATASET_PUSH_BYTES)
+                .all(|chunk| chunk.body.len() <= MAX_DATASET_PUSH_BYTES)
         );
 
         let large_item = json!({"value": "x".repeat(MAX_DATASET_PUSH_BYTES)});
         assert!(dataset_item_chunks(&[large_item]).is_err());
+    }
+
+    #[test]
+    fn resolves_ambiguous_dataset_writes_without_reposting_written_rows() {
+        let items = vec![json!({"id": "one"}), json!({"id": "two"})];
+
+        assert_eq!(
+            dataset_retry_resolution(compare_dataset_prefix(&items, &items)),
+            DatasetRetryResolution::AlreadyWritten
+        );
+        assert_eq!(
+            dataset_retry_resolution(compare_dataset_prefix(&items, &[])),
+            DatasetRetryResolution::RetryFull
+        );
+        assert_eq!(
+            dataset_retry_resolution(compare_dataset_prefix(&items, &items[..1])),
+            DatasetRetryResolution::RetryRemainder(1)
+        );
+        assert_eq!(
+            dataset_retry_resolution(compare_dataset_prefix(
+                &items,
+                &[json!({"id": "different"})]
+            )),
+            DatasetRetryResolution::Mismatch
+        );
+    }
+
+    #[tokio::test]
+    async fn does_not_repost_a_dataset_chunk_that_a_502_already_wrote() {
+        let items = vec![json!({"id":"one"}), json!({"id":"two"})];
+        let server = MockApifyServer::start(vec![
+            (502, "{}".to_owned()),
+            (200, serde_json::to_string(&items).unwrap()),
+        ]);
+        let storage = test_storage(server.base.clone());
+
+        let result = push_test_chunk(&storage, &items).await.unwrap();
+        assert!(matches!(result, DatasetChunkResult::Saved(2)));
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(request_method(&requests[0]), "POST");
+        assert_eq!(request_method(&requests[1]), "GET");
+        assert_eq!(
+            request_target(&requests[1]),
+            "/v2/datasets/dataset-1/items?offset=0&limit=2"
+        );
+    }
+
+    #[tokio::test]
+    async fn reposts_a_dataset_chunk_after_verifying_that_no_rows_were_written() {
+        let items = vec![json!({"id":"one"})];
+        let server = MockApifyServer::start(vec![
+            (502, "{}".to_owned()),
+            (200, "[]".to_owned()),
+            (201, "{}".to_owned()),
+        ]);
+        let storage = test_storage(server.base.clone());
+
+        let result = push_test_chunk(&storage, &items).await.unwrap();
+        assert!(matches!(result, DatasetChunkResult::Saved(1)));
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 3);
+        assert_eq!(request_method(&requests[0]), "POST");
+        assert_eq!(request_method(&requests[1]), "GET");
+        assert_eq!(request_method(&requests[2]), "POST");
+        assert_eq!(request_body(&requests[0]), request_body(&requests[2]));
+    }
+
+    #[tokio::test]
+    async fn pushes_only_the_missing_dataset_suffix_after_a_prefix_write() {
+        let items = vec![json!({"id":"one"}), json!({"id":"two"})];
+        let server = MockApifyServer::start(vec![
+            (502, "{}".to_owned()),
+            (200, "[{\"id\":\"one\"}]".to_owned()),
+            (201, "{}".to_owned()),
+        ]);
+        let storage = test_storage(server.base.clone());
+
+        let result = push_test_chunk(&storage, &items).await.unwrap();
+        assert!(matches!(result, DatasetChunkResult::Saved(2)));
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 3);
+        assert_eq!(request_method(&requests[0]), "POST");
+        assert_eq!(request_method(&requests[1]), "GET");
+        assert_eq!(request_method(&requests[2]), "POST");
+        assert_eq!(
+            request_body(&requests[0]),
+            json!([{"id":"one"},{"id":"two"}])
+        );
+        assert_eq!(request_body(&requests[2]), json!([{"id":"two"}]));
+    }
+
+    #[tokio::test]
+    async fn charge_limit_response_stops_dataset_writes_without_retrying() {
+        let items = vec![json!({"id":"one"})];
+        let server = MockApifyServer::start(vec![(400, "max-total-charge-exceeded".to_owned())]);
+        let storage = test_storage(server.base.clone());
+
+        let result = push_test_chunk(&storage, &items).await.unwrap();
+        assert!(matches!(result, DatasetChunkResult::ChargeLimited(0)));
+
+        let requests = server.finish();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(request_method(&requests[0]), "POST");
+    }
+
+    #[test]
+    fn retries_only_the_configured_apify_transient_statuses() {
+        for status in [
+            StatusCode::TOO_MANY_REQUESTS,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            StatusCode::BAD_GATEWAY,
+            StatusCode::SERVICE_UNAVAILABLE,
+            StatusCode::GATEWAY_TIMEOUT,
+        ] {
+            assert!(should_retry_apify(status));
+        }
+        assert!(!should_retry_apify(StatusCode::BAD_REQUEST));
+        assert!(!should_retry_apify(StatusCode::NOT_FOUND));
+        assert!(!should_retry_apify(StatusCode::NOT_IMPLEMENTED));
+        assert_eq!(retry_delay(0), Duration::from_secs(1));
+        assert_eq!(retry_delay(1), Duration::from_secs(2));
+        assert_eq!(retry_delay(2), Duration::from_secs(4));
+        assert_eq!(retry_delay(3), Duration::from_secs(8));
+        assert_eq!(retry_delay(4), Duration::from_secs(15));
+        assert_eq!(retry_delay(10), Duration::from_secs(15));
     }
 
     #[test]
@@ -2337,6 +2882,10 @@ mod tests {
         assert!(charge_limit_response(
             StatusCode::BAD_REQUEST,
             "maximum charge reached"
+        ));
+        assert!(charge_limit_response(
+            StatusCode::BAD_REQUEST,
+            "max-total-charge-exceeded"
         ));
         assert!(!charge_limit_response(
             StatusCode::BAD_REQUEST,

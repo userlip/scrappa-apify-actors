@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -498,39 +500,10 @@ async fn send_apify_request<F>(mut build_request: F, operation: &str) -> Result<
 where
     F: FnMut() -> RequestBuilder,
 {
-    let mut retries = 0;
-    loop {
-        match build_request().send().await {
-            Ok(response)
-                if retries < APIFY_MAX_RETRIES
-                    && (response.status() == StatusCode::TOO_MANY_REQUESTS
-                        || response.status().is_server_error()) =>
-            {
-                let status = response.status();
-                retries += 1;
-                let delay = apify_retry_delay(retries);
-                eprintln!(
-                    "{operation} returned HTTP {status}; retrying attempt {retries}/{APIFY_MAX_RETRIES} in {}ms.",
-                    delay.as_millis()
-                );
-                drop(response);
-                tokio::time::sleep(delay).await;
-            }
-            Ok(response) => return Ok(response),
-            Err(error) if retries < APIFY_MAX_RETRIES => {
-                retries += 1;
-                let delay = apify_retry_delay(retries);
-                eprintln!(
-                    "{operation} request failed: {error}; retrying attempt {retries}/{APIFY_MAX_RETRIES} in {}ms.",
-                    delay.as_millis()
-                );
-                tokio::time::sleep(delay).await;
-            }
-            Err(error) => {
-                return Err(error).with_context(|| format!("{operation} request failed"));
-            }
-        }
-    }
+    build_request()
+        .send_apify_with_retry()
+        .await
+        .with_context(|| format!("{operation} request failed"))
 }
 
 async fn ensure_success(response: Response, operation: &str) -> Result<()> {
@@ -739,7 +712,7 @@ async fn push_dataset_items(
             .post(url)
             .bearer_auth(&config.apify_token)
             .json(&rows[..saved_count])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write request failed")?;
         ensure_success(response, "Apify dataset write").await?;

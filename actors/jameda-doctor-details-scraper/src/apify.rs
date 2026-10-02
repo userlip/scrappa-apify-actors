@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -113,7 +114,7 @@ impl ApifyClient {
             .bearer_auth(&self.config.token)
             .header(header::ACCEPT, "application/json")
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset item to Apify API")?;
         require_apify_success(response, "dataset item publication").await?;
@@ -151,7 +152,7 @@ impl ApifyClient {
             .bearer_auth(&self.config.token)
             .header(header::ACCEPT, "application/json")
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await;
         let failure = match response {
             Ok(response) if response.status().is_success() => {
@@ -185,41 +186,18 @@ impl ApifyClient {
         // The REST endpoint returns an empty 201 and does not enforce maxTotalChargeUsd;
         // PricingState preflights the combined custom-event and dataset-item cost first.
         let url = self.endpoint(&["v2", "actor-runs", &self.config.run_id, "charge"])?;
-        let mut retry_count = 0;
-        loop {
-            let response = self
-                .http
-                .post(url.clone())
-                .bearer_auth(&self.config.token)
-                .header(header::ACCEPT, "application/json")
-                .header("idempotency-key", idempotency_key)
-                .json(&json!({ "eventName": event_name, "count": 1 }))
-                .send()
-                .await;
-            let response = match response {
-                Ok(response) => response,
-                Err(error) if retry_count < APIFY_MAX_RETRIES => {
-                    let delay = Duration::from_secs((retry_count + 1) as u64);
-                    eprintln!(
-                        "Apify event charge outcome is uncertain ({error}); retrying with the same idempotency key."
-                    );
-                    tokio::time::sleep(delay).await;
-                    retry_count += 1;
-                    continue;
-                }
-                Err(error) => return Err(error).context("Apify event charge request failed"),
-            };
-
-            if let Some(delay) = apify_retry_delay("POST_CHARGE", response.status(), retry_count) {
-                drop(response);
-                tokio::time::sleep(delay).await;
-                retry_count += 1;
-                continue;
-            }
-
-            require_apify_success(response, "event charge").await?;
-            return Ok(());
-        }
+        let response = self
+            .http
+            .post(url)
+            .bearer_auth(&self.config.token)
+            .header(header::ACCEPT, "application/json")
+            .header("idempotency-key", idempotency_key)
+            .json(&json!({ "eventName": event_name, "count": 1 }))
+            .send_apify_with_retry()
+            .await
+            .context("Apify event charge request failed")?;
+        require_apify_success(response, "event charge").await?;
+        Ok(())
     }
 
     pub(crate) async fn put_record(&self, key: &str, value: &Value) -> Result<()> {
@@ -238,7 +216,7 @@ impl ApifyClient {
                 .bearer_auth(&self.config.token)
                 .header(header::ACCEPT, "application/json")
                 .json(value)
-                .send()
+                .send_apify_with_retry()
                 .await
                 .with_context(|| format!("Failed to write {key} record to Apify API"))?;
 
@@ -266,7 +244,7 @@ impl ApifyClient {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to set terminal Actor status message")?;
         require_apify_success(response, "status message update").await?;
@@ -283,7 +261,7 @@ impl ApifyClient {
             let response = request
                 .bearer_auth(&self.config.token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await
                 .with_context(|| format!("Apify {method} request failed"))?;
 
@@ -550,7 +528,7 @@ async fn recover_charged_item(
     if journal_version < 2 {
         if status == "charged" {
             if !apify.dataset_contains_doctor_url(doctor_url).await? {
-                bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
+                bail!("PPE recovery record {journal_key} has no confirmed dataset row; the previous dataset POST will not be retried to avoid duplicates");
             }
             state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
             state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
@@ -563,7 +541,7 @@ async fn recover_charged_item(
             bail!("PPE recovery record {journal_key} has unsupported status {status}");
         }
         if !apify.dataset_contains_doctor_url(doctor_url).await? {
-            bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
+            bail!("PPE recovery record {journal_key} has no confirmed dataset row; the previous dataset POST will not be retried to avoid duplicates");
         }
 
         state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
@@ -571,7 +549,7 @@ async fn recover_charged_item(
             state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
         } else {
             if !state.can_charge_custom_event()? {
-                bail!("Charge limit prevents custom charging of the saved Jameda doctor result for {doctor_url}");
+                bail!("Charge limit prevents custom charging of the saved Jameda doctor result");
             }
             apify
                 .charge_event(SCRAPPA_CHARGE_EVENT, &recovery_idempotency_key)
@@ -601,7 +579,7 @@ async fn recover_charged_item(
         }
         "publishing" => {
             if !apify.dataset_contains_doctor_url(doctor_url).await? {
-                bail!("PPE recovery record {journal_key} has no confirmed dataset row for {doctor_url}; the previous dataset POST will not be retried to avoid duplicates");
+                bail!("PPE recovery record {journal_key} has no confirmed dataset row; the previous dataset POST will not be retried to avoid duplicates");
             }
             state.ensure_event_count_at_least(SCRAPPA_CHARGE_EVENT, baseline_custom + 1);
             state.ensure_event_count_at_least(DEFAULT_DATASET_ITEM_EVENT, baseline_dataset + 1);
@@ -636,7 +614,7 @@ async fn recover_charged_item(
     }
 
     if !state.can_save_dataset_item()? {
-        bail!("Charge limit prevents saving the charged Jameda doctor result for {doctor_url}");
+        bail!("Charge limit prevents saving the charged Jameda doctor result");
     }
     record["status"] = json!("publishing");
     apify.put_record(&journal_key, &record).await?;

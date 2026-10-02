@@ -363,11 +363,11 @@ pub(crate) fn extract_video(data: Option<&Value>, url: &str) -> Option<Value> {
     let data = data.filter(|data| js_truthy(data))?;
     if let Some(videos) = data.as_array() {
         if videos.is_empty() {
-            eprintln!("Warning: Scrappa returned an empty video record array for {url}. Saving a not-found dataset item.");
+            eprintln!("Warning: Scrappa returned an empty video record array. Saving a not-found dataset item.");
             return None;
         }
         if videos.len() > 1 {
-            eprintln!("Warning: Scrappa returned {} video records for {url}. Saving the first record to keep one dataset item per requested URL.", videos.len());
+            eprintln!("Warning: Scrappa returned {} video records. Saving the first record for this requested item.", videos.len());
         }
         return videos.first().filter(|video| js_truthy(video)).cloned();
     }

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use crate::scrappa_retry::ScrappaRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Method, Response, StatusCode};
@@ -123,53 +124,23 @@ impl ActorClient {
         operation: &str,
         retry_policy: ApifyRetryPolicy<'_>,
     ) -> Result<Response> {
-        let max_retries = match retry_policy {
-            ApifyRetryPolicy::Never => 0,
-            ApifyRetryPolicy::Safe | ApifyRetryPolicy::WithIdempotencyKey(_) => APIFY_MAX_RETRIES,
-        };
-        for attempt in 0..=max_retries {
-            let mut request = self
-                .apify_http
-                .request(method.clone(), url.clone())
-                .bearer_auth(&self.config.apify_token)
-                .header(reqwest::header::ACCEPT, "application/json")
-                .timeout(APIFY_REQUEST_TIMEOUT);
-            if let ApifyRetryPolicy::WithIdempotencyKey(key) = retry_policy {
-                request = request.header(APIFY_CHARGE_IDEMPOTENCY_HEADER, key);
-            }
-            if let Some(body) = body {
-                request = request.json(body);
-            }
-
-            match request.send().await {
-                Ok(response) if response.status().is_success() => {
-                    return Ok(response);
-                }
-                Ok(response) if is_retryable_status(response.status()) && attempt < max_retries => {
-                    eprintln!(
-                        "Apify API request for {operation} failed with {}; retrying ({}/{max_retries})",
-                        response.status(),
-                        attempt + 1
-                    );
-                }
-                Ok(response) => return Err(apify_response_error(response, operation).await),
-                Err(error) if attempt < max_retries => {
-                    eprintln!(
-                        "Apify API request for {operation} failed: {error}; retrying ({}/{max_retries})",
-                        attempt + 1
-                    );
-                }
-                Err(error) => {
-                    return Err(anyhow!(
-                        "Apify API request failed while trying to {operation}: {error}"
-                    ));
-                }
-            }
-
-            sleep(apify_retry_delay(attempt)).await;
+        let mut request = self
+            .apify_http
+            .request(method, url)
+            .bearer_auth(&self.config.apify_token)
+            .header(reqwest::header::ACCEPT, "application/json")
+            .timeout(APIFY_REQUEST_TIMEOUT);
+        if let ApifyRetryPolicy::WithIdempotencyKey(key) = retry_policy {
+            request = request.header(APIFY_CHARGE_IDEMPOTENCY_HEADER, key);
         }
-
-        unreachable!("the retry loop returns after its final attempt")
+        if let Some(body) = body {
+            request = request.json(body);
+        }
+        let _ = retry_policy;
+        request
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify API request failed while trying to {operation}"))
     }
 
     async fn apify_json(

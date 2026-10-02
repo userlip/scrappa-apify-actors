@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use std::{collections::HashSet, env, process::ExitCode, time::Duration};
@@ -134,7 +136,7 @@ impl ApifyClient {
                 .get(url.clone())
                 .bearer_auth(&self.token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Failed to retrieve actor input from Apify API")?;
 
@@ -165,7 +167,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset item to Apify API")?;
         require_apify_success(response, "dataset item publication").await?;
@@ -198,7 +200,7 @@ impl ApifyClient {
                 .get(url.clone())
                 .bearer_auth(&self.token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Apify run pricing request failed")?;
             if let Some(delay) = apify_retry_delay("GET", response.status(), retry_count) {
@@ -232,7 +234,7 @@ impl ApifyClient {
                 .bearer_auth(&self.token)
                 .header(header::ACCEPT, "application/json")
                 .json(value)
-                .send()
+                .send_apify_with_retry()
                 .await
                 .with_context(|| format!("Failed to write {key} record to Apify API"))?;
 
@@ -767,12 +769,12 @@ async fn run() -> Result<()> {
                 .validation_error
                 .as_deref()
                 .unwrap_or("Invalid LinkedIn profile URL");
-            eprintln!("Invalid LinkedIn profile URL: \"{}\"", request.input_url);
+            eprintln!("Skipping an invalid LinkedIn profile URL");
             results.push(build_failure_item(message, None, &request.input_url, None));
             continue;
         };
 
-        println!("Fetching LinkedIn profile: {normalized_url}");
+        println!("Fetching LinkedIn profile");
         let result = match scrappa
             .get_profile(normalized_url, use_cache, maximum_cache_age)
             .await
@@ -786,9 +788,7 @@ async fn run() -> Result<()> {
                 let api_error = error
                     .downcast_ref::<ScrappaApiError>()
                     .expect("404 Scrappa error must retain its API error type");
-                eprintln!(
-                    "Profile scraping returned a per-item failure for {normalized_url}: {api_error}"
-                );
+                eprintln!("Profile scraping returned a per-item failure");
                 build_failure_item(
                     &api_error.to_string(),
                     Some(api_error.status),
@@ -1070,6 +1070,7 @@ mod tests {
         let (base_url, server) = start_apify_mock(vec![
             (200, mock_priced_run(4.506432, json!({}))),
             (503, json!("Unavailable")),
+            (500, json!("verification unavailable")),
         ])
         .await;
         let apify = mock_apify_client(base_url);
@@ -1079,10 +1080,12 @@ mod tests {
         let error = apify.push_dataset_items(&items).await.unwrap_err();
         assert!(error
             .to_string()
-            .contains("Apify dataset item publication failed (503)"));
+            .contains("Failed to publish dataset item to Apify API"));
         let requests = server.await.unwrap();
-        assert_eq!(requests.len(), 2);
+        assert_eq!(requests.len(), 3);
         assert!(requests[1].starts_with(b"POST /v2/datasets/dataset/items HTTP/1.1\r\n"));
+        assert!(requests[2]
+            .starts_with(b"GET /v2/datasets/dataset/items?offset=0&limit=1 HTTP/1.1\r\n"));
     }
 
     #[test]
@@ -1283,74 +1286,25 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn dataset_post_failure_surfaces_without_retrying() {
-        use tokio::io::{AsyncReadExt, AsyncWriteExt};
-
-        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-        let address = listener.local_addr().unwrap();
-        let server = tokio::spawn(async move {
-            let (mut stream, _) = listener.accept().await.unwrap();
-            let mut request = Vec::new();
-            let mut chunk = [0; 2048];
-            loop {
-                let read = stream.read(&mut chunk).await.unwrap();
-                if read == 0 {
-                    break;
-                }
-                request.extend_from_slice(&chunk[..read]);
-                let Some(body_start) = request
-                    .windows(4)
-                    .position(|window| window == b"\r\n\r\n")
-                    .map(|position| position + 4)
-                else {
-                    continue;
-                };
-                let headers = std::str::from_utf8(&request[..body_start]).unwrap();
-                let content_length = headers
-                    .lines()
-                    .find_map(|line| {
-                        let (name, value) = line.split_once(':')?;
-                        name.eq_ignore_ascii_case("content-length")
-                            .then(|| value.trim().parse::<usize>().unwrap_or_default())
-                    })
-                    .unwrap_or_default();
-                if request.len() >= body_start + content_length {
-                    break;
-                }
-            }
-            stream
-                .write_all(
-                    b"HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
-                )
-                .await
-                .unwrap();
-            request
-        });
-
-        let config = Config {
-            apify_api_base: format!("http://{address}"),
-            apify_token: "test-token".to_owned(),
-            actor_run_id: "test-run".to_owned(),
-            key_value_store_id: "store".to_owned(),
-            dataset_id: "dataset".to_owned(),
-            input_key: "INPUT".to_owned(),
-            scrappa_api_base: SCRAPPA_API_DEFAULT.to_owned(),
-            scrappa_api_key: "test-key".to_owned(),
-        };
-        let http = Client::builder()
-            .timeout(Duration::from_secs(3))
-            .build()
-            .unwrap();
-        let apify = ApifyClient::new(http, &config);
+    async fn dataset_post_failure_stops_when_verification_is_unavailable() {
+        let (base_url, server) = start_apify_mock(vec![
+            (503, json!("Unavailable")),
+            (500, json!("verification unavailable")),
+        ])
+        .await;
+        let apify = mock_apify_client(base_url);
         let error = apify
             .push_dataset_item(&json!({"success": true}))
             .await
             .unwrap_err();
         assert!(error
             .to_string()
-            .contains("Apify dataset item publication failed (503)"));
-        let request = server.await.unwrap();
-        assert!(request.starts_with(b"POST /v2/datasets/dataset/items HTTP/1.1\r\n"));
+            .contains("Failed to publish dataset item to Apify API"));
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 2);
+        assert!(requests[0].starts_with(b"POST /v2/datasets/dataset/items HTTP/1.1\r\n"));
+        assert!(requests[1]
+            .starts_with(b"GET /v2/datasets/dataset/items?offset=0&limit=1 HTTP/1.1\r\n"));
     }
 
     #[test]

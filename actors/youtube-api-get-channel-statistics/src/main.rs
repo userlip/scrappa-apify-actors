@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -133,7 +135,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -184,7 +186,7 @@ async fn run_dataset_capacity(client: &Client, config: &ActorConfig) -> Result<u
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -288,7 +290,7 @@ async fn push_dataset_items(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(&rows[..saved_items])
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     let status = response.status();
@@ -321,7 +323,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let mut failure_count = 0;
     for id in ids {
         let url = build_channel_statistics_url(&id, &config.scrappa_api_base_url);
-        println!("Fetching from: {url}");
+        println!("Fetching data from Scrappa API");
         match get_channel_statistics(client, &url, &config.scrappa_api_key).await {
             Ok(data) => {
                 match data {
@@ -630,16 +632,15 @@ mod tests {
             response(200, r#"[{"id":"row"}]"#),
             pricing_response(4.506432, 0, 0),
             response(500, "dataset unavailable"),
+            response(500, "verification unavailable"),
         ]);
         let config = config(&server.base_url);
 
         let error = run_actor(&client(), &config).await.unwrap_err();
 
-        assert!(error
-            .to_string()
-            .contains("Apify dataset write failed with 500"));
+        assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
     }
 
     #[tokio::test]

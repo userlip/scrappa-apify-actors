@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod charging;
 mod input;
 mod results;

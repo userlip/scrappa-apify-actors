@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::Value;
@@ -30,7 +31,7 @@ impl ApifyClient {
     pub async fn get_input(&self, store_id: &str, input_key: &str) -> Result<Option<Value>> {
         let response = self
             .request(Method::GET, self.record_url(store_id, input_key)?)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to fetch Actor input from the default key-value store")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -51,7 +52,7 @@ impl ApifyClient {
                 Method::GET,
                 self.resource_url(&["actor-runs", actor_run_id])?,
             )
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let response = successful_response(response, "fetch Actor run pricing").await?;
@@ -71,7 +72,7 @@ impl ApifyClient {
                 self.resource_url(&["datasets", dataset_id, "items"])?,
             )
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to store business results in the default dataset")?;
         successful_response(response, "store dataset items").await?;
@@ -97,7 +98,7 @@ impl ApifyClient {
                 charge_idempotency_key(actor_run_id, event_name),
             )
             .json(&serde_json::json!({"eventName": event_name, "count": count}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify event charge request failed")?;
         successful_response(response, "charge business result events").await?;
@@ -121,7 +122,7 @@ impl ApifyClient {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run status update failed")?;
         successful_response(response, "set terminal status message").await?;
@@ -132,7 +133,7 @@ impl ApifyClient {
         let response = self
             .request(Method::PUT, self.record_url(store_id, "OUTPUT")?)
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to write OUTPUT to the default key-value store")?;
         successful_response(response, "write OUTPUT").await?;

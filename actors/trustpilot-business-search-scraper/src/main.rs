@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod charging;
 mod request_params;
 mod response_utils;
@@ -448,6 +449,16 @@ mod tests {
         Ok(String::from_utf8_lossy(&request).into_owned())
     }
 
+    fn request_header(request: &str, name: &str) -> String {
+        request
+            .lines()
+            .skip(1)
+            .filter_map(|line| line.split_once(':'))
+            .find(|(header, _)| header.eq_ignore_ascii_case(name))
+            .map(|(_, value)| value.trim().to_owned())
+            .unwrap_or_default()
+    }
+
     fn mock_response(status: u16, body: &str) -> MockResponse {
         MockResponse {
             status,
@@ -509,6 +520,8 @@ mod tests {
         let server = MockServer::start(vec![
             mock_response(201, "{}"),
             mock_response(500, "charge failed"),
+            mock_response(500, "charge failed"),
+            mock_response(500, "charge failed"),
         ]);
         let config = test_config(&server.base_url);
         let apify = ApifyClient::new(&server.base_url, config.apify_token.clone()).unwrap();
@@ -521,9 +534,16 @@ mod tests {
                 .is_err()
         );
         let requests = server.requests();
-        assert_eq!(requests.len(), 2);
+        assert_eq!(requests.len(), 4);
         assert!(requests[0].starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1"));
         assert!(requests[1].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[2].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[3].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        let keys = requests[1..]
+            .iter()
+            .map(|request| request_header(request, "idempotency-key"))
+            .collect::<Vec<_>>();
+        assert!(keys.iter().all(|key| !key.is_empty() && key == &keys[0]));
     }
 
     #[tokio::test]
@@ -540,7 +560,10 @@ mod tests {
                 .is_err()
         );
         let requests = server.requests();
-        assert_eq!(requests.len(), 1);
+        assert_eq!(requests.len(), 2);
         assert!(requests[0].starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1"));
+        assert!(
+            requests[1].starts_with("GET /v2/datasets/dataset-1/items?offset=0&limit=1 HTTP/1.1")
+        );
     }
 }

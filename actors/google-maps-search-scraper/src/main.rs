@@ -1,4 +1,6 @@
+use crate::apify_retry::ApifyRetryExt;
 use crate::scrappa_retry::ScrappaRetryExt;
+mod apify_retry;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, RequestBuilder, Response, StatusCode};
@@ -322,7 +324,7 @@ async fn fetch_scrappa_endpoint(
 ) -> Result<Value> {
     let url = request_url(&config.scrappa_api_base_url, endpoint, params)?;
     if debug {
-        println!("[Scrappa] GET {url}");
+        println!("Sending request to Scrappa API");
     }
 
     let response = client
@@ -417,24 +419,10 @@ async fn send_apify_request<F>(build_request: F, operation: &str) -> Result<Resp
 where
     F: Fn() -> RequestBuilder,
 {
-    for attempt in 0..=APIFY_MAX_RETRIES {
-        match build_request().send().await {
-            Ok(response)
-                if is_retryable_apify_status(response.status()) && attempt < APIFY_MAX_RETRIES =>
-            {
-                sleep(apify_retry_delay(attempt)).await;
-            }
-            Ok(response) => return Ok(response),
-            Err(error)
-                if attempt < APIFY_MAX_RETRIES && is_retryable_apify_network_error(&error) =>
-            {
-                sleep(apify_retry_delay(attempt)).await;
-            }
-            Err(error) => return Err(error).with_context(|| format!("{operation} failed")),
-        }
-    }
-
-    unreachable!("the final Apify attempt returns its response or error")
+    build_request()
+        .send_apify_with_retry()
+        .await
+        .with_context(|| format!("{operation} failed"))
 }
 
 fn is_retryable_apify_status(status: StatusCode) -> bool {
@@ -693,7 +681,7 @@ async fn push_dataset_items(
             .bearer_auth(&config.apify_token)
             .timeout(config.apify_request_timeout)
             .json(chunk)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         apify_write(response, "Apify dataset write").await?;

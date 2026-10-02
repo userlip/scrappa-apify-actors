@@ -1,3 +1,4 @@
+mod apify_retry;
 use std::{env, sync::Arc};
 
 use anyhow::{anyhow, bail, Context, Result};

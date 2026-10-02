@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{env, time::Duration};
 
 use anyhow::{anyhow, Context, Result};
@@ -120,7 +121,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset items to Apify API")?;
         require_apify_success(response, "dataset item publication").await?;
@@ -135,7 +136,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset item to Apify API")?;
         require_apify_success(response, "dataset item publication").await?;
@@ -145,36 +146,18 @@ impl ApifyClient {
     pub(crate) async fn charge_event(&self, event_name: &str, idempotency_key: &str) -> Result<()> {
         let url = self.endpoint(&["v2", "actor-runs", &self.actor_run_id, "charge"])?;
         let body = serde_json::json!({"eventName": event_name, "count": 1});
-        let mut retry_count = 0;
-        loop {
-            let response = self
-                .http
-                .post(url.clone())
-                .bearer_auth(&self.token)
-                .header(header::ACCEPT, "application/json")
-                .header("Idempotency-Key", idempotency_key)
-                .json(&body)
-                .send()
-                .await;
-            match response {
-                Ok(response) => {
-                    if apify_retry_delay("POST", response.status(), retry_count).is_some() {
-                        drop(response);
-                        tokio::time::sleep(Duration::from_secs((retry_count + 1) as u64)).await;
-                        retry_count += 1;
-                        continue;
-                    }
-                    require_apify_success(response, "event charge").await?;
-                    return Ok(());
-                }
-                Err(error) if retry_count < MAX_RETRIES => {
-                    eprintln!("Apify event charge request failed ({error}). Retrying.");
-                    tokio::time::sleep(Duration::from_secs((retry_count + 1) as u64)).await;
-                    retry_count += 1;
-                }
-                Err(error) => return Err(error).context("Apify event charge request failed"),
-            }
-        }
+        let response = self
+            .http
+            .post(url)
+            .bearer_auth(&self.token)
+            .header(header::ACCEPT, "application/json")
+            .header("Idempotency-Key", idempotency_key)
+            .json(&body)
+            .send_apify_with_retry()
+            .await
+            .context("Apify event charge request failed")?;
+        require_apify_success(response, "event charge").await?;
+        Ok(())
     }
 
     pub(crate) async fn set_status_message(&self, message: &str) -> Result<()> {
@@ -191,7 +174,7 @@ impl ApifyClient {
             .header(header::ACCEPT, "application/json")
             .timeout(Duration::from_secs(1))
             .json(&body)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify terminal status message request failed")?;
         require_apify_success(response, "terminal status message update").await?;
@@ -206,7 +189,7 @@ impl ApifyClient {
                 .get(url.clone())
                 .bearer_auth(&self.token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await;
             let response = match response {
                 Ok(response) => response,

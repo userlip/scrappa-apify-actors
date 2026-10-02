@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Method, Response, StatusCode, Url};
 use serde_json::{json, Value};
@@ -101,7 +102,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset item to Apify API")?;
         require_success(response, "dataset item publication").await?;
@@ -125,7 +126,7 @@ impl ApifyClient {
             .header(header::ACCEPT, "application/json")
             .header("idempotency-key", idempotency_key)
             .json(&json!({"eventName": event_name, "count": count}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run event charge request failed")?;
         require_success(response, "event charge").await?;
@@ -182,39 +183,18 @@ impl ApifyClient {
         body: Option<Value>,
         operation: &str,
     ) -> Result<Response> {
-        let mut retry_count = 0;
-        loop {
-            let mut request = self
-                .http
-                .request(method.clone(), url.clone())
-                .bearer_auth(&self.token)
-                .header(header::ACCEPT, "application/json");
-            if let Some(body) = &body {
-                request = request.json(body);
-            }
-
-            let response = match request.send().await {
-                Ok(response) => response,
-                Err(error) if can_retry_transport(&method, &error, retry_count) => {
-                    tokio::time::sleep(apify_retry_delay(retry_count)).await;
-                    retry_count += 1;
-                    continue;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify {operation} failed"));
-                }
-            };
-
-            if let Some(delay) =
-                apify_retry_delay_for_status(&method, response.status(), retry_count)
-            {
-                drop(response);
-                tokio::time::sleep(delay).await;
-                retry_count += 1;
-                continue;
-            }
-            return Ok(response);
+        let mut request = self
+            .http
+            .request(method, url)
+            .bearer_auth(&self.token)
+            .header(header::ACCEPT, "application/json");
+        if let Some(body) = body {
+            request = request.json(&body);
         }
+        request
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} failed"))
     }
 
     fn endpoint(&self, segments: &[&str]) -> Result<Url> {

@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -282,7 +284,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -320,7 +322,7 @@ async fn get_actor_run(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     response_json(response, "Apify run pricing request").await
@@ -430,7 +432,7 @@ async fn push_dataset_items(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(&items[..allowed])
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     let status = response.status();
@@ -480,10 +482,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
             result.videos.len()
         );
         if js_truthy(&result.continuation) {
-            println!(
-                "Continuation token available for next page: {}",
-                js_string(&result.continuation)
-            );
+            println!("Continuation token available for next page");
         }
     }
 

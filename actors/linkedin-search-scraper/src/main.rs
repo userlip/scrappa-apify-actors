@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 mod scrappa;
 mod scrappa_retry;
 mod search;
@@ -261,7 +263,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Option<Value
         .get(url)
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     if response.status() == StatusCode::NOT_FOUND {
@@ -283,7 +285,7 @@ async fn get_run_budget(client: &Client, config: &ActorConfig) -> Result<PpeBudg
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = require_apify_success(response, "run pricing request")
@@ -303,7 +305,7 @@ async fn push_dataset_item(client: &Client, config: &ActorConfig, item: &Value) 
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(item)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     require_apify_success(response, "dataset write").await?;
@@ -324,50 +326,18 @@ async fn charge_search_result(
         "{}-{SEARCH_CHARGE_EVENT}-{charge_index}",
         config.actor_run_id
     );
-    let attempts = retry_policy.attempts.max(1);
-
-    for attempt in 1..=attempts {
-        let response = client
-            .post(url.clone())
-            .bearer_auth(&config.apify_token)
-            .header("idempotency-key", idempotency_key.as_str())
-            .json(&json!({"eventName": SEARCH_CHARGE_EVENT, "count": 1}))
-            .send()
-            .await;
-
-        match response {
-            Ok(response) if response.status().is_success() => return Ok(()),
-            Ok(response) => {
-                let status = response.status();
-                if attempt == attempts || !is_retryable_charge_status(status) {
-                    return require_apify_success(response, "result charge")
-                        .await
-                        .map(|_| ());
-                }
-                eprintln!(
-                    "Apify result charge failed with HTTP {}; retrying attempt {}/{}.",
-                    status.as_u16(),
-                    attempt + 1,
-                    attempts
-                );
-            }
-            Err(error) => {
-                let retryable = error.is_timeout() || error.is_connect();
-                if attempt == attempts || !retryable {
-                    return Err(error).context("Apify result charge request failed");
-                }
-                eprintln!(
-                    "Apify result charge request failed ({error}); retrying attempt {}/{}.",
-                    attempt + 1,
-                    attempts
-                );
-            }
-        }
-
-        tokio::time::sleep(retry_policy.delay_after(attempt)).await;
-    }
-
-    unreachable!("at least one charge attempt is made")
+    let _ = retry_policy;
+    let response = client
+        .post(url)
+        .bearer_auth(&config.apify_token)
+        .header("idempotency-key", idempotency_key)
+        .json(&json!({"eventName": SEARCH_CHARGE_EVENT, "count": 1}))
+        .send_apify_with_retry()
+        .await
+        .context("Apify result charge request failed")?;
+    require_apify_success(response, "result charge")
+        .await
+        .map(|_| ())
 }
 
 fn is_retryable_charge_status(status: StatusCode) -> bool {
@@ -398,7 +368,7 @@ async fn put_key_value_record(
         .put(url)
         .bearer_auth(&config.apify_token)
         .json(value)
-        .send()
+        .send_apify_with_retry()
         .await
         .with_context(|| format!("Apify {operation} request failed"))?;
     require_apify_success(response, operation).await?;
@@ -417,7 +387,7 @@ async fn set_terminal_status(client: &Client, config: &ActorConfig, message: &st
             "statusMessage": message,
             "isStatusMessageTerminal": true,
         }))
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify status message request failed")?;
     require_apify_success(response, "status message update").await?;
@@ -920,6 +890,8 @@ mod tests {
             response(200, r#"{"organic_results":[{"position":1,"title":"CTO"}]}"#),
             response(201, "{}"),
             response(500, "charge failed"),
+            response(503, "charge unavailable"),
+            response(500, "charge failed"),
         ]);
         let client = Client::builder()
             .timeout(Duration::from_secs(2))
@@ -942,12 +914,16 @@ mod tests {
 
         assert!(error
             .to_string()
-            .contains("Apify result charge failed with 500"));
+            .contains("Apify result charge request failed"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 5);
+        assert_eq!(requests.len(), 7);
         assert!(requests[3].starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1"));
         assert!(requests[3].contains("\"title\":\"CTO\""));
         assert!(requests[4].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[5].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert!(requests[6].starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1"));
+        assert_eq!(idempotency_key(&requests[4]), idempotency_key(&requests[5]));
+        assert_eq!(idempotency_key(&requests[4]), idempotency_key(&requests[6]));
         assert!(!requests.iter().any(|request| request
             .starts_with("PUT /v2/key-value-stores/store-1/records/OUTPUT HTTP/1.1")));
     }
@@ -981,8 +957,11 @@ mod tests {
 
         assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
         assert!(requests[3].starts_with("POST /v2/datasets/dataset-1/items HTTP/1.1"));
+        assert!(
+            requests[4].starts_with("GET /v2/datasets/dataset-1/items?offset=0&limit=1 HTTP/1.1")
+        );
         assert!(!requests.iter().any(|request| {
             request.starts_with("POST /v2/actor-runs/run-1/charge HTTP/1.1")
                 || request.starts_with("PUT /v2/key-value-stores/store-1/records/OUTPUT HTTP/1.1")

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::{Value, json};
@@ -99,7 +100,7 @@ impl ApifyClient {
         ])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -120,7 +121,7 @@ impl ApifyClient {
         let url = self.resource_url(&["actor-runs", &self.config.run_id])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = successful_response(response, "fetch Actor run pricing")
@@ -137,7 +138,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to store quote item in the default dataset")?;
         successful_response(response, "store quote item").await?;
@@ -153,7 +154,7 @@ impl ApifyClient {
                 format!("{}-google-finance-quote-result", self.config.run_id),
             )
             .json(&json!({"eventName": "quote-result", "count": 1}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify quote-result charge request failed")?;
         successful_response(response, "charge quote-result event").await?;
@@ -170,7 +171,7 @@ impl ApifyClient {
         let response = self
             .request(Method::PUT, url)
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to write OUTPUT to the default key-value store")?;
         successful_response(response, "write OUTPUT").await?;

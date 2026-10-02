@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod batch;
 mod challenge;
 mod config;

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{env, time::Duration};
 
 use anyhow::{anyhow, Context, Result};
@@ -71,42 +72,10 @@ impl ApifyClient {
     where
         F: FnMut() -> reqwest::RequestBuilder,
     {
-        for attempt in 1..=APIFY_MAX_ATTEMPTS {
-            match build_request().send().await {
-                Ok(response)
-                    if is_retryable_status(response.status()) && attempt <= APIFY_MAX_RETRIES =>
-                {
-                    let status = response.status();
-                    drop(response);
-                    let delay = apify_retry_delay(attempt);
-                    eprintln!(
-                        "Apify API request failed with HTTP {status}. Retrying attempt {}/{} in {}ms.",
-                        attempt + 1,
-                        APIFY_MAX_ATTEMPTS,
-                        delay.as_millis()
-                    );
-                    tokio::time::sleep(delay).await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error)
-                    if is_retryable_request_error(&error) && attempt <= APIFY_MAX_RETRIES =>
-                {
-                    let delay = apify_retry_delay(attempt);
-                    eprintln!(
-                        "Apify API request failed ({error}). Retrying attempt {}/{} in {}ms.",
-                        attempt + 1,
-                        APIFY_MAX_ATTEMPTS,
-                        delay.as_millis()
-                    );
-                    tokio::time::sleep(delay).await;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("{operation} failed"));
-                }
-            }
-        }
-
-        unreachable!("the final Apify API retry returns or fails")
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("{operation} failed"))
     }
 
     pub async fn get_input(&self) -> Result<Option<Value>> {
@@ -169,7 +138,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("store a result in the default dataset failed")?;
         require_success(response, "store dataset item").await?;
@@ -226,7 +195,7 @@ impl ApifyClient {
                 "isStatusMessageTerminal": true,
                 "level": level,
             }))
-            .send()
+            .send_apify_with_retry()
             .await;
         match result {
             Ok(response) if response.status().is_success() => {}
@@ -273,7 +242,7 @@ impl ApifyClient {
                 "isStatusMessageTerminal": true,
                 "level": level,
             }))
-            .send()
+            .send_apify_with_retry()
             .await;
         match result {
             Ok(response) if response.status().is_success() => {}
@@ -401,10 +370,21 @@ mod tests {
                             stream
                                 .set_read_timeout(Some(Duration::from_secs(2)))
                                 .unwrap();
-                            let item = read_dataset_item(&mut stream).unwrap();
-                            rows.push(item);
-                            request_count += 1;
+                            let (method, offset, limit, item) =
+                                read_dataset_request(&mut stream).unwrap();
+                            if method == "GET" {
+                                let page = rows
+                                    .iter()
+                                    .skip(offset)
+                                    .take(limit)
+                                    .cloned()
+                                    .collect::<Vec<_>>();
+                                write_json_response(&mut stream, 200, Value::Array(page));
+                                continue;
+                            }
 
+                            rows.push(item.unwrap());
+                            request_count += 1;
                             if request_count == 1 {
                                 match first_response {
                                     FirstDatasetResponse::ServerError => {
@@ -455,10 +435,27 @@ mod tests {
         }
     }
 
-    fn read_dataset_item(stream: &mut TcpStream) -> Result<Value> {
+    fn read_dataset_request(
+        stream: &mut TcpStream,
+    ) -> Result<(String, usize, usize, Option<Value>)> {
         let mut request = BufReader::new(stream);
         let mut line = String::new();
         request.read_line(&mut line)?;
+        let mut parts = line.split_whitespace();
+        let method = parts.next().unwrap_or_default().to_owned();
+        let path = parts.next().unwrap_or_default();
+        let query = path.split_once('?').map(|(_, query)| query).unwrap_or("");
+        let query = url::form_urlencoded::parse(query.as_bytes())
+            .into_owned()
+            .collect::<std::collections::HashMap<_, _>>();
+        let offset = query
+            .get("offset")
+            .and_then(|value| value.parse().ok())
+            .unwrap_or_default();
+        let limit = query
+            .get("limit")
+            .and_then(|value| value.parse().ok())
+            .unwrap_or(usize::MAX);
         let mut body_length = 0;
         loop {
             line.clear();
@@ -475,9 +472,12 @@ mod tests {
             }
         }
 
+        if body_length == 0 {
+            return Ok((method, offset, limit, None));
+        }
         let mut body = vec![0; body_length];
         request.read_exact(&mut body)?;
-        Ok(serde_json::from_slice(&body)?)
+        Ok((method, offset, limit, Some(serde_json::from_slice(&body)?)))
     }
 
     fn write_response(stream: &mut TcpStream, status: u16) {
@@ -491,6 +491,18 @@ mod tests {
             "HTTP/1.1 {status} {reason}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
         )
         .unwrap();
+    }
+
+    fn write_json_response(stream: &mut TcpStream, status: u16, body: Value) {
+        let body = serde_json::to_vec(&body).unwrap();
+        let reason = if status == 200 { "OK" } else { "Mock Response" };
+        write!(
+            stream,
+            "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            body.len()
+        )
+        .unwrap();
+        stream.write_all(&body).unwrap();
     }
 
     #[test]
@@ -509,7 +521,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn does_not_retry_dataset_append_after_server_error() {
+    async fn confirms_dataset_append_after_server_error_without_reposting() {
         let server = MockDatasetServer::start(FirstDatasetResponse::ServerError);
         let item = json!({"hotel": "ritz-paris"});
         let result = client(server.base_url.clone(), Duration::from_secs(2))
@@ -518,11 +530,14 @@ mod tests {
         let rows = server.finish();
 
         assert_eq!(rows, vec![item]);
-        assert!(result.is_err(), "the first 5xx response should be returned");
+        assert!(
+            result.is_ok(),
+            "the verification read should confirm the write"
+        );
     }
 
     #[tokio::test]
-    async fn does_not_retry_dataset_append_after_lost_response() {
+    async fn confirms_dataset_append_after_lost_response_without_reposting() {
         let server = MockDatasetServer::start(FirstDatasetResponse::Lost);
         let item = json!({"hotel": "ritz-paris"});
         let result = client(server.base_url.clone(), Duration::from_millis(25))
@@ -532,8 +547,8 @@ mod tests {
 
         assert_eq!(rows, vec![item]);
         assert!(
-            result.is_err(),
-            "the timed-out append should be returned as an error"
+            result.is_ok(),
+            "the verification read should confirm the write"
         );
     }
 }

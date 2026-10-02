@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -251,7 +253,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -311,7 +313,7 @@ async fn run_dataset_capacity(client: &Client, config: &ActorConfig) -> Result<u
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -410,7 +412,7 @@ async fn push_dataset_items(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(items)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     let status = response.status();
@@ -445,7 +447,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     };
     for id in &ids {
         let url = build_channel_podcasts_url(&input, id, &config.scrappa_api_base_url)?;
-        println!("Fetching from: {url}");
+        println!("Fetching data from Scrappa API");
         let response_data = fetch_scrappa_json(client, config, &url).await?;
         let videos = podcast_videos(&response_data)?;
         let saved = push_dataset_items(client, config, &videos, &mut budget).await?;
@@ -455,10 +457,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
         );
 
         if let Some(token) = continuation_token(&response_data).filter(|token| js_truthy(token)) {
-            println!(
-                "Continuation token available for next page: {}",
-                js_string(token)
-            );
+            println!("Continuation token available for next page");
         }
     }
     Ok(())

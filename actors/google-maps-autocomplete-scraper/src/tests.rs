@@ -245,7 +245,7 @@ async fn apify_requests_retry_rate_limits_and_server_errors() {
             },
         );
     let client = Client::new();
-    let url = server.base_url.clone();
+    let url = server.base_url.join("/v2/actor-runs/test-run").unwrap();
 
     let response = send_request_with_retries(
         || client.get(url.clone()),

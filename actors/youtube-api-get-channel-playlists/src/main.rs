@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -141,7 +143,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -155,7 +157,7 @@ async fn run_dataset_capacity(client: &Client, config: &ActorConfig) -> Result<u
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -291,7 +293,7 @@ async fn push_dataset_items(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(&playlists[..count])
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     let status = response.status();
@@ -351,7 +353,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let mut dataset_budget = DatasetBudget::default();
     for id in ids {
         let url = build_channel_playlists_url(&id, &config.scrappa_api_base_url)?;
-        println!("Fetching from: {url}");
+        println!("Fetching data from Scrappa API");
         let response_data = fetch_playlists(client, config, &url).await?;
         let playlists = response_data
             .get("playlists")
@@ -368,10 +370,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
             .get("continuation")
             .filter(|continuation| js_truthy(continuation))
         {
-            println!(
-                "Continuation token available for next page: {}",
-                js_string(continuation)
-            );
+            println!("Continuation token available for next page");
         }
     }
     Ok(())
@@ -796,13 +795,13 @@ mod tests {
                 serde_json::json!({"apify-default-dataset-item": 0}),
             ),
             response(500, "dataset unavailable"),
+            response(500, "verification unavailable"),
         ]);
         let error = run_actor(&Client::new(), &config(&server))
             .await
             .unwrap_err();
-        assert!(error.to_string().contains("500 Internal Server Error"));
-        assert!(error.to_string().contains("dataset unavailable"));
-        assert_eq!(server.requests().len(), 4);
+        assert!(error.to_string().contains("Apify dataset write failed"));
+        assert_eq!(server.requests().len(), 5);
     }
 
     #[test]

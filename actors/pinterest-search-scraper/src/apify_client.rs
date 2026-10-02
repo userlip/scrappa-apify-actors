@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{
     env,
     sync::atomic::{AtomicU64, Ordering},
@@ -109,32 +110,11 @@ impl ApifyClient {
     where
         F: FnMut() -> RequestBuilder,
     {
-        let mut retry_count = 0;
-        loop {
-            match build_request().timeout(APIFY_REQUEST_TIMEOUT).send().await {
-                Ok(response) => {
-                    if retry_count < APIFY_MAX_RETRIES && retryable_apify_status(response.status())
-                    {
-                        let delay = apify_retry_delay(retry_count);
-                        drop(response);
-                        tokio::time::sleep(delay).await;
-                        retry_count += 1;
-                        continue;
-                    }
-                    return Ok(response);
-                }
-                Err(error)
-                    if retry_count < APIFY_MAX_RETRIES
-                        && (error.is_timeout() || error.is_connect() || error.is_request()) =>
-                {
-                    tokio::time::sleep(apify_retry_delay(retry_count)).await;
-                    retry_count += 1;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify {operation} request failed"));
-                }
-            }
-        }
+        build_request()
+            .timeout(APIFY_REQUEST_TIMEOUT)
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} request failed"))
     }
 
     pub(crate) async fn get_actor_run(&self) -> Result<Value> {

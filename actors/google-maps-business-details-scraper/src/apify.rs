@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::time::Duration;
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -37,29 +38,10 @@ impl<'a> ApifyClient<'a> {
     where
         F: FnMut() -> RequestBuilder,
     {
-        let mut retry_count = 0;
-        loop {
-            let response = match build_request().send().await {
-                Ok(response) => response,
-                Err(error) => {
-                    let Some(delay) = apify_transport_retry_delay(&error, retry_count) else {
-                        return Err(error)
-                            .with_context(|| format!("Apify {operation} request failed"));
-                    };
-                    sleep(delay).await;
-                    retry_count += 1;
-                    continue;
-                }
-            };
-            if let Some(delay) = apify_retry_delay(response.status(), retry_count) {
-                drop(response);
-                sleep(delay).await;
-                retry_count += 1;
-                continue;
-            }
-
-            return Ok(response);
-        }
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} request failed"))
     }
 
     pub async fn get_input(&self) -> Result<Option<Value>> {

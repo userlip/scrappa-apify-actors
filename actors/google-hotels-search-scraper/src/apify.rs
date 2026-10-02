@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{header, Client, Method, Response, StatusCode};
 use serde_json::Value;
@@ -67,7 +68,7 @@ impl ApifyClient {
                 Method::GET,
                 self.resource_url(&["key-value-stores", store_id, "records", input_key])?,
             )
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify INPUT request failed")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -97,7 +98,7 @@ impl ApifyClient {
                 Method::GET,
                 self.resource_url(&["actor-runs", actor_run_id])?,
             )
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run_response = successful_response(run_response, "fetch Actor run pricing").await?;
@@ -122,7 +123,7 @@ impl ApifyClient {
                 self.resource_url(&["datasets", dataset_id, "items"])?,
             )
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         successful_response(response, "store dataset items").await?;
@@ -137,7 +138,7 @@ impl ApifyClient {
                 self.resource_url(&["key-value-stores", store_id, "records", "OUTPUT"])?,
             )
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify OUTPUT write failed")?;
         successful_response(response, "write OUTPUT").await?;

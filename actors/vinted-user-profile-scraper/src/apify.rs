@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -248,7 +249,7 @@ impl ApifyClient {
         ])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to retrieve actor input from Apify API")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -267,7 +268,7 @@ impl ApifyClient {
         let url = self.endpoint(&["actor-runs", &self.actor_run_id])?;
         let response = self
             .request(Method::GET, url)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let response = require_success(response, "run pricing request").await?;
@@ -283,7 +284,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset item to Apify API")?;
         require_success(response, "dataset item publication").await?;
@@ -300,44 +301,21 @@ impl ApifyClient {
             self.actor_run_id, request.index
         );
 
-        for attempt in 0..APIFY_MAX_ATTEMPTS {
-            let response = self
-                .request(Method::POST, url.clone())
-                .header("idempotency-key", &idempotency_key)
-                .json(&json!({
-                    "eventName": VINTED_USER_PROFILE_RESULT_CHARGE_EVENT,
-                    "count": 1
-                }))
-                .send()
-                .await;
+        let response = self
+            .request(Method::POST, url)
+            .header("idempotency-key", idempotency_key)
+            .json(&json!({
+                "eventName": VINTED_USER_PROFILE_RESULT_CHARGE_EVENT,
+                "count": 1
+            }))
+            .send_apify_with_retry()
+            .await
+            .context("Apify profile result charge request failed")?;
 
-            match response {
-                Ok(response) if response.status().is_success() => return Ok(()),
-                Ok(response)
-                    if attempt + 1 < APIFY_MAX_ATTEMPTS
-                        && retryable_apify_status(response.status()) =>
-                {
-                    drop(response);
-                    tokio::time::sleep(Duration::from_millis(retry_delay_ms(attempt))).await;
-                }
-                Ok(response) => {
-                    return Err(apify_error(response, "profile result charge").await);
-                }
-                Err(error)
-                    if attempt + 1 < APIFY_MAX_ATTEMPTS
-                        && (error.is_timeout() || error.is_connect()) =>
-                {
-                    tokio::time::sleep(Duration::from_millis(retry_delay_ms(attempt))).await;
-                }
-                Err(error) => {
-                    return Err(anyhow!(
-                        "Apify profile result charge request failed: {error}"
-                    ));
-                }
-            }
+        if response.status().is_success() {
+            return Ok(());
         }
-
-        unreachable!("at least one Apify charge attempt is configured")
+        Err(apify_error(response, "profile result charge").await)
     }
 
     pub async fn set_status_message(&self, message: &str) -> Result<()> {
@@ -345,7 +323,7 @@ impl ApifyClient {
         let response = self
             .request(Method::PUT, url)
             .json(&json!({"statusMessage": message}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run status update failed")?;
         require_success(response, "run status update").await?;

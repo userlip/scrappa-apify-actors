@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::{Value, json};
@@ -81,7 +82,7 @@ impl ApifyClient {
                     &self.input_key,
                 ])?,
             )
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to fetch Actor input from the default key-value store")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -102,7 +103,7 @@ impl ApifyClient {
                 Method::GET,
                 self.resource_url(&["actor-runs", &self.run_id])?,
             )
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         let run = successful_response(response, "fetch Actor run pricing")
@@ -123,7 +124,7 @@ impl ApifyClient {
                 self.resource_url(&["datasets", &self.dataset_id, "items"])?,
             )
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to store review items in the default dataset")?;
         successful_response(response, "store review items").await?;
@@ -146,7 +147,7 @@ impl ApifyClient {
             )
             .header("idempotency-key", idempotency_key)
             .json(&json!({"eventName": event_name, "count": count}))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify event charge request failed")?;
         successful_response(response, "charge Actor event").await?;
@@ -160,7 +161,7 @@ impl ApifyClient {
                 self.resource_url(&["key-value-stores", &self.store_id, "records", "OUTPUT"])?,
             )
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to write OUTPUT to the default key-value store")?;
         successful_response(response, "write OUTPUT").await?;
@@ -178,7 +179,7 @@ impl ApifyClient {
                 "statusMessage": message,
                 "isStatusMessageTerminal": true,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to set Actor run status message")?;
         successful_response(response, "set Actor run status message").await?;

@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
@@ -94,7 +95,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(item)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to publish dataset item to Apify API")?;
         require_apify_success(response, "dataset item publication").await?;
@@ -164,7 +165,7 @@ impl ApifyClient {
             .bearer_auth(&self.token)
             .header(header::ACCEPT, "application/json")
             .json(&body)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to set Apify run status message")?;
         require_apify_success(response, "status message update").await?;
@@ -180,35 +181,10 @@ impl ApifyClient {
     where
         F: Fn() -> RequestBuilder,
     {
-        let mut retry_count = 0;
-        loop {
-            let response = match make_request().send().await {
-                Ok(response) => response,
-                Err(error)
-                    if retry_network_errors
-                        && retry_count < APIFY_MAX_RETRIES
-                        && (error.is_timeout() || error.is_connect()) =>
-                {
-                    tokio::time::sleep(Duration::from_secs((retry_count + 1) as u64)).await;
-                    retry_count += 1;
-                    continue;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify {operation} failed"));
-                }
-            };
-
-            if retry_count < APIFY_MAX_RETRIES
-                && (response.status() == StatusCode::TOO_MANY_REQUESTS
-                    || response.status().is_server_error())
-            {
-                drop(response);
-                tokio::time::sleep(Duration::from_secs((retry_count + 1) as u64)).await;
-                retry_count += 1;
-                continue;
-            }
-
-            return Ok(response);
-        }
+        let _ = retry_network_errors;
+        make_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} failed"))
     }
 }

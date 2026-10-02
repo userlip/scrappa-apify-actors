@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{collections::BTreeMap, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -197,32 +198,10 @@ impl ApifyClient {
     where
         F: FnMut() -> RequestBuilder,
     {
-        for attempt in 0..=APIFY_MAX_RETRIES {
-            match build_request().send().await {
-                Ok(response)
-                    if attempt < APIFY_MAX_RETRIES
-                        && (response.status() == StatusCode::TOO_MANY_REQUESTS
-                            || response.status().is_server_error()) =>
-                {
-                    sleep(Duration::from_millis(
-                        (500_u64 << attempt.min(6)).min(30_000),
-                    ))
-                    .await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error)
-                    if attempt < APIFY_MAX_RETRIES
-                        && (error.is_connect() || error.is_timeout() || error.is_request()) =>
-                {
-                    sleep(Duration::from_millis(
-                        (500_u64 << attempt.min(6)).min(30_000),
-                    ))
-                    .await;
-                }
-                Err(error) => return Err(error).with_context(|| format!("{operation} failed")),
-            }
-        }
-        unreachable!("the retry loop returns after its final attempt")
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("{operation} failed"))
     }
 
     async fn successful_response(&self, response: Response, operation: &str) -> Result<Response> {

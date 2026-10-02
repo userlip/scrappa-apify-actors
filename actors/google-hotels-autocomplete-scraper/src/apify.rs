@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response, StatusCode};
 use serde_json::{json, Value};
@@ -344,39 +345,12 @@ impl ApifyClient {
     where
         F: FnMut() -> reqwest::RequestBuilder,
     {
-        for attempt in 1..=APIFY_MAX_ATTEMPTS {
-            let response = request()
-                .bearer_auth(&self.token)
-                .timeout(APIFY_REQUEST_TIMEOUT)
-                .send()
-                .await;
-            match response {
-                Ok(response)
-                    if response.status().is_success()
-                        || !is_retryable_status(response.status())
-                        || attempt == APIFY_MAX_ATTEMPTS =>
-                {
-                    return Ok(response);
-                }
-                Ok(_) => {}
-                Err(error)
-                    if attempt < APIFY_MAX_ATTEMPTS
-                        && (error.is_timeout() || error.is_connect() || error.is_request()) =>
-                {
-                    eprintln!(
-                        "Apify API request failed: {error}; retrying attempt {}/{}",
-                        attempt + 1,
-                        APIFY_MAX_ATTEMPTS
-                    );
-                }
-                Err(error) => return Err(anyhow!("Apify API request failed: {error}")),
-            }
-            if attempt < APIFY_MAX_ATTEMPTS {
-                let delay = Duration::from_secs(u64::from(attempt));
-                tokio::time::sleep(delay).await;
-            }
-        }
-        Err(anyhow!("Apify API request failed after retries"))
+        request()
+            .bearer_auth(&self.token)
+            .timeout(APIFY_REQUEST_TIMEOUT)
+            .send_apify_with_retry()
+            .await
+            .map_err(|error| anyhow!("Apify API request failed: {error}"))
     }
 }
 

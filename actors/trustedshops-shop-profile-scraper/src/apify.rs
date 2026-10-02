@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{Context, Result, anyhow, bail};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use serde_json::{Value, json};
@@ -66,7 +67,7 @@ impl ApifyClient {
                 Method::GET,
                 self.resource_url(&["key-value-stores", store_id, "records", input_key])?,
             )
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to fetch Actor input from the default key-value store")?;
         if response.status() == StatusCode::NOT_FOUND {
@@ -89,7 +90,7 @@ impl ApifyClient {
                 self.resource_url(&["key-value-stores", store_id, "records", "OUTPUT"])?,
             )
             .json(output)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to write OUTPUT to the default key-value store")?;
         successful_response(response, "write OUTPUT").await?;
@@ -99,7 +100,7 @@ impl ApifyClient {
     pub async fn get_run(&self, run_id: &str) -> Result<Value> {
         let response = self
             .request(Method::GET, self.resource_url(&["actor-runs", run_id])?)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify run pricing request failed")?;
         successful_response(response, "fetch Actor run pricing")
@@ -183,7 +184,7 @@ impl ApifyClient {
                     .expect("valid run path"),
             )
             .json(&body)
-            .send()
+            .send_apify_with_retry()
             .await;
         match response {
             Ok(response) if response.status().is_success() => {}
@@ -202,7 +203,7 @@ impl ApifyClient {
                 self.resource_url(&["datasets", dataset_id, "items"])?,
             )
             .json(&[item])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Failed to store shop profile in the default dataset")?;
         successful_response(response, "store shop profile in the default dataset").await?;
@@ -221,49 +222,15 @@ impl ApifyClient {
         let url = self.resource_url(&["actor-runs", run_id, "charge"])?;
         let body = json!({"eventName": event_name, "count": count});
 
-        for attempt in 1..=MAX_CHARGE_ATTEMPTS {
-            let response = self
-                .request(Method::POST, url.clone())
-                .header("idempotency-key", &idempotency_key)
-                .json(&body)
-                .send()
-                .await;
-
-            match response {
-                Ok(response) if response.status().is_success() => return Ok(()),
-                Ok(response)
-                    if attempt < MAX_CHARGE_ATTEMPTS
-                        && retryable_charge_status(response.status()) =>
-                {
-                    eprintln!(
-                        "Apify charge request returned HTTP {}; retrying attempt {}/{} with the same idempotency key.",
-                        response.status().as_u16(),
-                        attempt + 1,
-                        MAX_CHARGE_ATTEMPTS,
-                    );
-                }
-                Ok(response) => {
-                    successful_response(response, "charge for a shop profile result").await?;
-                    return Ok(());
-                }
-                Err(error)
-                    if attempt < MAX_CHARGE_ATTEMPTS && retryable_charge_transport(&error) =>
-                {
-                    eprintln!(
-                        "Apify charge request failed ({error}); retrying attempt {}/{} with the same idempotency key.",
-                        attempt + 1,
-                        MAX_CHARGE_ATTEMPTS,
-                    );
-                }
-                Err(error) => {
-                    return Err(error).context("Apify event charge request failed");
-                }
-            }
-
-            tokio::time::sleep(charge_retry_delay(attempt)).await;
-        }
-
-        bail!("Apify event charge request exhausted its retry attempts")
+        let response = self
+            .request(Method::POST, url)
+            .header("idempotency-key", &idempotency_key)
+            .json(&body)
+            .send_apify_with_retry()
+            .await
+            .context("Apify event charge request failed")?;
+        successful_response(response, "charge for a shop profile result").await?;
+        Ok(())
     }
 
     fn request(&self, method: Method, url: Url) -> reqwest::RequestBuilder {

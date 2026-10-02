@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
 use serde_json::Value;
@@ -63,26 +64,10 @@ impl ApifyClient {
     where
         F: FnMut() -> RequestBuilder,
     {
-        let mut retry_count = 0;
-        loop {
-            match build_request().send().await {
-                Ok(response)
-                    if retryable_status(response.status()) && retry_count < MAX_RETRIES =>
-                {
-                    drop(response);
-                    tokio::time::sleep(retry_delay(retry_count)).await;
-                    retry_count += 1;
-                }
-                Ok(response) => return Ok(response),
-                Err(_) if retry_count < MAX_RETRIES => {
-                    tokio::time::sleep(retry_delay(retry_count)).await;
-                    retry_count += 1;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify {operation} failed"))
-                }
-            }
-        }
+        build_request()
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} failed"))
     }
 
     pub async fn get_input(&self) -> Result<Option<Value>> {
@@ -130,7 +115,7 @@ impl ApifyClient {
         let response = self
             .request(Method::POST, url)
             .json(&items[..count])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset item publication failed")?;
         successful_response(response, "dataset item publication").await?;
@@ -366,7 +351,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn does_not_retry_dataset_post_after_the_response_is_lost() {
+    async fn verifies_a_lost_dataset_response_before_stopping() {
         let server = MockServer::start(vec![
             MockResponse::disconnect(),
             MockResponse::json(201, json!({})),
@@ -379,7 +364,7 @@ mod tests {
             .is_err());
         assert_eq!(remaining, 1);
         let requests = server.requests();
-        assert_eq!(requests.len(), 1);
+        assert_eq!(requests.len(), 2);
         assert!(requests[0].starts_with("POST /v2/datasets/test-dataset/items "));
         assert!(requests[0].ends_with("[{\"review_id\":\"r1\"}]"));
     }

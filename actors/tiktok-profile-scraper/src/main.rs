@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use std::{env, process, time::Duration};
@@ -653,48 +655,20 @@ impl ApifyClient {
         operation: &str,
         retry_timeouts: bool,
     ) -> Result<Response> {
-        for retry_count in 0..=APIFY_MAX_RETRIES {
-            let mut request = self
-                .http
-                .request(method.clone(), url.clone())
-                .bearer_auth(&self.token)
-                .header(header::ACCEPT, "application/json")
-                .timeout(APIFY_REQUEST_TIMEOUT);
-            if let Some(body) = body {
-                request = request.json(body);
-            }
-
-            match request.send().await {
-                Ok(response)
-                    if should_retry_status(response.status())
-                        && retry_count < APIFY_MAX_RETRIES =>
-                {
-                    let delay = apify_retry_delay(retry_count);
-                    eprintln!(
-                        "Apify {operation} returned {}; retrying in {}ms (attempt {}/{})",
-                        response.status().as_u16(),
-                        delay.as_millis(),
-                        retry_count + 1,
-                        APIFY_MAX_RETRIES
-                    );
-                    drop(response);
-                    tokio::time::sleep(delay).await;
-                }
-                Ok(response) => return Ok(response),
-                Err(error)
-                    if should_retry_transport_error(&error, retry_timeouts)
-                        && retry_count < APIFY_MAX_RETRIES =>
-                {
-                    let delay = apify_retry_delay(retry_count);
-                    eprintln!("Apify {operation} request failed: {error}; retrying in {}ms (attempt {}/{})", delay.as_millis(), retry_count + 1, APIFY_MAX_RETRIES);
-                    tokio::time::sleep(delay).await;
-                }
-                Err(error) => {
-                    return Err(error).with_context(|| format!("Apify {operation} request failed"));
-                }
-            }
+        let mut request = self
+            .http
+            .request(method, url)
+            .bearer_auth(&self.token)
+            .header(header::ACCEPT, "application/json")
+            .timeout(APIFY_REQUEST_TIMEOUT);
+        if let Some(body) = body {
+            request = request.json(body);
         }
-        unreachable!("retry loop returns after the last attempt")
+        let _ = retry_timeouts;
+        request
+            .send_apify_with_retry()
+            .await
+            .with_context(|| format!("Apify {operation} request failed"))
     }
 }
 

@@ -1,3 +1,4 @@
+mod apify_retry;
 use std::process::ExitCode;
 
 #[tokio::main]

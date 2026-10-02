@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 mod request_params;
 mod response_utils;
 mod scrappa_client;
@@ -247,7 +249,7 @@ async fn get_run(http: &Client, config: &ActorConfig) -> Result<Value> {
         .get(url)
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     response_json(response, "Apify run pricing request").await
@@ -268,7 +270,7 @@ async fn get_input(http: &Client, config: &ActorConfig) -> Result<Option<Value>>
         .get(url)
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     if response.status() == StatusCode::NOT_FOUND {
@@ -317,7 +319,7 @@ async fn put_output(http: &Client, config: &ActorConfig, output: &Value) -> Resu
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
         .json(output)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify OUTPUT write failed")?;
     ensure_apify_success(response, "OUTPUT write").await
@@ -333,7 +335,7 @@ async fn push_dataset_item(http: &Client, config: &ActorConfig, item: &Value) ->
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
         .json(item)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     ensure_apify_success(response, "dataset write").await
@@ -360,7 +362,7 @@ async fn post_charge_event(
         .header(header::ACCEPT, "application/json")
         .header("idempotency-key", idempotency_key)
         .json(&json!({"eventName": event_name, "count": 1}))
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify charge request failed")?;
     ensure_apify_success(response, "charge request").await
@@ -380,7 +382,7 @@ async fn set_status_message(http: &Client, config: &ActorConfig, message: &str) 
             "statusMessage": message,
             "isStatusMessageTerminal": true,
         }))
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify status message request failed")?;
     ensure_apify_success(response, "status message request").await

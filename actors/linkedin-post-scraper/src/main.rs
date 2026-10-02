@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use std::{env, process::ExitCode, time::Duration};
@@ -172,7 +174,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Option<Value
         .get(url)
         .bearer_auth(&config.apify_token)
         .header(header::ACCEPT, "application/json")
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     if response.status() == StatusCode::NOT_FOUND {
@@ -217,7 +219,7 @@ async fn push_dataset_item(client: &Client, config: &ActorConfig, item: &Value) 
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(item)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     require_apify_success(response, "dataset write").await?;
@@ -236,7 +238,7 @@ async fn run_dataset_capacity(
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = require_apify_success(response, "run pricing request")
@@ -340,7 +342,7 @@ async fn put_output(client: &Client, config: &ActorConfig, output: &Value) -> Re
         .put(url)
         .bearer_auth(&config.apify_token)
         .json(output)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify OUTPUT write failed")?;
     require_apify_success(response, "OUTPUT write").await?;
@@ -441,12 +443,12 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
         .filter(|url| !url.is_empty())
         .ok_or_else(|| anyhow!("LinkedIn post URL is required"))?;
 
-    println!("Scraping LinkedIn post: \"{input_url}\"");
+    println!("Scraping LinkedIn post");
     let request_url = build_scrappa_url(&config.scrappa_api_base_url, input_url, &input)?;
     let response = match fetch_scrappa_post(client, config, request_url).await {
         Ok(response) => response,
         Err(error) if is_scrappa_not_found(&error) => {
-            eprintln!("404 Not Found for URL: {input_url}");
+            eprintln!("LinkedIn post was not found");
             let failure = json!({ "success": false, "error": error.to_string(), "url": input_url });
             push_dataset_items(client, config, &[failure]).await?;
             return Ok(());
@@ -458,7 +460,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
         bail!("Scrappa API returned a null response");
     }
     if !response.is_array() && !response.get("success").is_some_and(js_truthy) {
-        eprintln!("API returned success: false for URL: {input_url}");
+        eprintln!("Scrappa returned a failed LinkedIn post result");
     }
     let items = flattened_dataset_items(&response);
     push_dataset_items(client, config, &items).await?;
@@ -972,7 +974,8 @@ mod tests {
             .unwrap_err();
         assert!(error.to_string().contains("dataset write failed"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
+        assert_eq!(requests.len(), 5);
+        assert!(request_target(&requests[4]).contains("/datasets/"));
         assert!(requests
             .iter()
             .all(|request| !request_target(request).contains("/records/OUTPUT")));

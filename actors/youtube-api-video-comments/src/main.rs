@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -137,7 +139,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -174,12 +176,7 @@ fn js_truthy(value: &Value) -> bool {
 fn continuation_log_message(data: &Value) -> Option<String> {
     data.get("continuation")
         .filter(|continuation| js_truthy(continuation))
-        .map(|continuation| {
-            format!(
-                "Continuation token available for next page: {}",
-                js_string(continuation)
-            )
-        })
+        .map(|_| "Continuation token available for next page".to_owned())
 }
 
 fn comments_from_response(data: &Value) -> Option<&Value> {
@@ -213,7 +210,7 @@ async fn fetch_video_comments_with_timeout(
     request_timeout: Duration,
 ) -> Result<Value> {
     let url = build_video_comments_url(input, &config.scrappa_api_base_url)?;
-    println!("Fetching from: {url}");
+    println!("Fetching data from Scrappa API");
     let response = client
         .get(url)
         .timeout(request_timeout)
@@ -258,7 +255,7 @@ async fn run_dataset_capacity(
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -349,8 +346,8 @@ async fn push_dataset_items(
     )?;
     let request = client.post(url).bearer_auth(&config.apify_token);
     let response = match items.as_array() {
-        Some(rows) => request.json(&rows[..limit]).send().await,
-        None => request.json(items).send().await,
+        Some(rows) => request.json(&rows[..limit]).send_apify_with_retry().await,
+        None => request.json(items).send_apify_with_retry().await,
     }
     .context("Apify dataset write failed")?;
     let status = response.status();
@@ -710,7 +707,7 @@ mod tests {
         assert_eq!(comments_from_response(&array), array.get("comments"));
         assert_eq!(
             continuation_log_message(&json!({"continuation":"next-page"})).as_deref(),
-            Some("Continuation token available for next page: next-page")
+            Some("Continuation token available for next page")
         );
         assert_eq!(continuation_log_message(&json!({"continuation":""})), None);
     }

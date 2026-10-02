@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use std::{env, process::ExitCode, time::Duration};
@@ -364,7 +366,7 @@ impl ApifyClient<'_> {
                 .get(url.clone())
                 .bearer_auth(&self.config.apify_token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Apify INPUT request failed")?;
             if response.status() == StatusCode::NOT_FOUND {
@@ -395,7 +397,7 @@ impl ApifyClient<'_> {
             .bearer_auth(&self.config.apify_token)
             .header(header::ACCEPT, "application/json")
             .json(&items[..capacity])
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Apify dataset write failed")?;
         ensure_apify_success(response, "dataset write").await?;
@@ -411,7 +413,7 @@ impl ApifyClient<'_> {
                 .get(url.clone())
                 .bearer_auth(&self.config.apify_token)
                 .header(header::ACCEPT, "application/json")
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Apify run pricing request failed")?;
             if let Some(delay) = apify_retry_delay("GET", response.status(), retry_count) {
@@ -441,7 +443,7 @@ impl ApifyClient<'_> {
                 .bearer_auth(&self.config.apify_token)
                 .header(header::ACCEPT, "application/json")
                 .json(output)
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Apify OUTPUT write failed")?;
             if let Some(delay) = apify_retry_delay("PUT", response.status(), retry_count) {

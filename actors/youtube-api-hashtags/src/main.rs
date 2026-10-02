@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -250,7 +252,7 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     response_json(response, "Apify INPUT request").await
@@ -334,7 +336,7 @@ async fn run_dataset_capacity(
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify run pricing request failed")?;
     let run = response_json(response, "Apify run pricing request").await?;
@@ -446,7 +448,10 @@ async fn push_dataset_results(
             .bearer_auth(&config.apify_token)
             .json(results)
     };
-    let response = request.send().await.context("Apify dataset write failed")?;
+    let response = request
+        .send_apify_with_retry()
+        .await
+        .context("Apify dataset write failed")?;
     let status = response.status();
     if !status.is_success() {
         let reason = status.canonical_reason().unwrap_or("Unknown status");
@@ -472,7 +477,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
         &config.scrappa_api_base_url,
         DateTime::<Utc>::from(SystemTime::now()),
     )?;
-    println!("Fetching from: {url}");
+    println!("Fetching data from Scrappa API");
 
     let data = fetch_hashtag(client, &url, &config.scrappa_api_key).await?;
     let results = hashtag_results(&data)?;
@@ -485,10 +490,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     );
 
     if let Some(token) = continuation_token(&data).filter(|token| js_truthy(token)) {
-        println!(
-            "Continuation token available for next page: {}",
-            js_string(token)
-        );
+        println!("Continuation token available for next page");
     }
     Ok(())
 }
@@ -911,15 +913,17 @@ mod tests {
             ("200 OK", r#"{"hashtag":"rust"}"#),
             ("200 OK", r#"{"results":[{"id":"one"}]}"#),
             ("503 Service Unavailable", "pricing unavailable"),
+            ("503 Service Unavailable", "pricing unavailable"),
+            ("503 Service Unavailable", "pricing unavailable"),
         ]);
         let error = run_actor(&Client::new(), &test_config(server_url))
             .await
             .unwrap_err();
         assert!(error
             .to_string()
-            .contains("Apify run pricing request failed with 503"));
+            .contains("Apify run pricing request failed"));
         let requests = server.join().unwrap();
-        assert_eq!(requests.len(), 3);
+        assert_eq!(requests.len(), 5);
         assert!(requests.iter().all(|request| !request
             .to_ascii_lowercase()
             .starts_with("post /v2/datasets/")));
@@ -936,9 +940,7 @@ mod tests {
         let error = run_actor(&Client::new(), &test_config(server_url))
             .await
             .unwrap_err();
-        assert!(error
-            .to_string()
-            .contains("Apify dataset write failed with 503"));
+        assert!(error.to_string().contains("Apify dataset write failed"));
         let requests = server.join().unwrap();
         assert_eq!(requests.len(), 4);
         assert!(requests[3]

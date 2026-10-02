@@ -1,3 +1,4 @@
+use crate::apify_retry::ApifyRetryExt;
 use std::{collections::HashMap, env, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -67,7 +68,7 @@ impl ApifyClient {
             .client
             .get(url)
             .bearer_auth(&self.config.apify_token)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Could not read Apify INPUT")?;
 
@@ -110,7 +111,7 @@ impl ApifyClient {
             .post(url)
             .bearer_auth(&self.config.apify_token)
             .json(items)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Could not publish Apify dataset items")?;
         ensure_success(response, "Apify dataset item publication")
@@ -143,7 +144,7 @@ impl ApifyClient {
                 "eventName": event_name,
                 "count": count,
             }))
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Could not charge Apify event")?;
         ensure_success(response, "Apify event charge")
@@ -169,7 +170,7 @@ impl ApifyClient {
                 "isStatusMessageTerminal": true,
             }))
             .timeout(STATUS_MESSAGE_TIMEOUT)
-            .send()
+            .send_apify_with_retry()
             .await
             .context("Could not set Apify Actor status message")?;
         ensure_success(response, "Apify Actor status message update")
@@ -211,7 +212,7 @@ pub async fn set_failure_status_message_from_env(message: &str) -> Result<()> {
             "statusMessage": message,
             "isStatusMessageTerminal": true,
         }))
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Could not set Apify Actor failure status message")?;
     ensure_success(response, "Apify Actor failure status message update")
@@ -393,7 +394,11 @@ fn apify_url(base: &str, segments: &[&str]) -> Result<Url> {
 }
 
 async fn read_json_record(client: &Client, url: &Url, token: &str, label: &str) -> Result<Value> {
-    let response = client.get(url.clone()).bearer_auth(token).send().await?;
+    let response = client
+        .get(url.clone())
+        .bearer_auth(token)
+        .send_apify_with_retry()
+        .await?;
     ensure_success(response, label)
         .await?
         .json()

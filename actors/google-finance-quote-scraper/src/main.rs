@@ -1,4 +1,5 @@
 mod apify;
+mod apify_retry;
 mod quote_fetch;
 mod request_params;
 mod response_utils;

@@ -1,3 +1,5 @@
+use crate::apify_retry::ApifyRetryExt;
+mod apify_retry;
 use crate::scrappa_retry::ScrappaRetryExt;
 mod scrappa_retry;
 use anyhow::{anyhow, bail, Context, Result};
@@ -382,7 +384,7 @@ async fn get_input(client: &reqwest::Client, config: &ActorConfig) -> Result<Opt
     let response = client
         .get(url)
         .bearer_auth(&config.apify_token)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify INPUT request failed")?;
     if response.status().as_u16() == 404 {
@@ -467,7 +469,7 @@ async fn fetch_scrappa_response(
 ) -> Result<Value> {
     let mut url = config.scrappa_api_base_url.clone();
     params.append_to_url(&mut url);
-    println!("[Scrappa] GET {url}");
+    println!("Sending request to Scrappa API");
     let response = client
         .get(url)
         .header("X-API-Key", &config.scrappa_api_key)
@@ -573,7 +575,7 @@ impl DatasetBudget {
             let response = client
                 .get(url)
                 .bearer_auth(&config.apify_token)
-                .send()
+                .send_apify_with_retry()
                 .await
                 .context("Apify run pricing request failed")?;
             self.run = Some(response_json(response, "Apify run pricing request").await?);
@@ -676,7 +678,7 @@ async fn push_dataset_items(
         .post(url)
         .bearer_auth(&config.apify_token)
         .json(rows)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify dataset write failed")?;
     ensure_success(response, "Apify dataset write").await?;
@@ -699,7 +701,7 @@ async fn put_output(client: &reqwest::Client, config: &ActorConfig, output: &Val
         .put(url)
         .bearer_auth(&config.apify_token)
         .json(output)
-        .send()
+        .send_apify_with_retry()
         .await
         .context("Apify OUTPUT write failed")?;
     ensure_success(response, "Apify OUTPUT write").await
