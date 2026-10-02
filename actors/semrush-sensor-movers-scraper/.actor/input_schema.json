@@ -62,7 +62,7 @@
           "date": {
             "title": "Date",
             "type": "string",
-            "description": "Date sent to the source search. When omitted, the Sensor report date defaults to today.",
+            "description": "Date sent to the source search. When omitted, the report date defaults to two days ago, the most recent day Semrush Sensor has fully published.",
             "editor": "textfield"
           }
         }
@@ -97,7 +97,7 @@
     "date": {
       "title": "Date",
       "type": "string",
-      "description": "Date sent to the source search. When omitted, the Sensor report date defaults to today.",
+      "description": "Date sent to the source search. When omitted, the report date defaults to two days ago, the most recent day Semrush Sensor has fully published.",
       "editor": "textfield"
     },
     "maxResults": {
