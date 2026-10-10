@@ -320,7 +320,7 @@ async fn feed_fallback_returns_only_the_requested_post_with_api_auth() {
                 json!({"message": "Temporarily unavailable", "retryable": true}),
             )
         })
-        .take(6),
+        .take(crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS - 1),
     );
     responses.push(MockResponse::json(
         200,
@@ -341,11 +341,14 @@ async fn feed_fallback_returns_only_the_requested_post_with_api_auth() {
     );
 
     let requests = server.await.unwrap();
-    assert_eq!(requests.len(), 8);
+    assert_eq!(
+        requests.len(),
+        crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS + 1
+    );
     assert!(requests[0].path.starts_with(
         "/instagram/post?url=https%3A%2F%2Fwww.instagram.com%2Finstagram%2Fp%2FDc30nJeRKKz%2F"
     ));
-    assert!(requests[7]
+    assert!(requests[crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS]
         .path
         .starts_with("/instagram/user/posts?username=instagram"));
     for request in requests {
@@ -373,7 +376,7 @@ async fn missing_feed_match_returns_the_original_single_post_error() {
                 json!({"message": "Temporarily unavailable", "retryable": true}),
             )
         })
-        .take(6),
+        .take(crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS - 1),
     );
     responses.push(MockResponse::json(
         200,
@@ -389,7 +392,10 @@ async fn missing_feed_match_returns_the_original_single_post_error() {
         .unwrap_err();
     assert_eq!(error.http_status, Some(503));
     assert_eq!(error.message, "Temporarily unavailable");
-    assert_eq!(server.await.unwrap().len(), 8);
+    assert_eq!(
+        server.await.unwrap().len(),
+        crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS + 1
+    );
 }
 
 #[tokio::test]

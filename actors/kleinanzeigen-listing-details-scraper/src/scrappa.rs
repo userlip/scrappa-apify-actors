@@ -1,7 +1,7 @@
-use crate::scrappa_retry::{ENTRY_TIME_BUDGET, ScrappaRetryExt};
+use crate::scrappa_retry::{ScrappaRetryExt, ENTRY_TIME_BUDGET};
 use std::{error::Error, fmt, time::Duration};
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{anyhow, Context, Result};
 use rand::Rng;
 use reqwest::{Client, Response, Url};
 use serde_json::Value;
@@ -285,8 +285,9 @@ mod tests {
     };
 
     use super::{
-        DETAIL_REQUEST_TIMEOUT_MS, DISCOVERY_REQUEST_TIMEOUT_MS, ScrappaApiError, ScrappaClient,
-        ScrappaTimeoutError, is_retryable_error, parse_json_error, request_url, retry_delay_ms,
+        is_retryable_error, parse_json_error, request_url, retry_delay_ms, ScrappaApiError,
+        ScrappaClient, ScrappaTimeoutError, DETAIL_REQUEST_TIMEOUT_MS,
+        DISCOVERY_REQUEST_TIMEOUT_MS,
     };
     use anyhow::Error;
 
@@ -303,7 +304,11 @@ mod tests {
                 let mut bytes = Vec::new();
                 let mut buffer = [0; 1024];
                 loop {
-                    let count = stream.read(&mut buffer).unwrap();
+                    let count = stream.read(&mut buffer).unwrap_or(0);
+                    if count == 0 {
+                        // The client closed the connection (for example after its deadline).
+                        break;
+                    }
                     bytes.extend_from_slice(&buffer[..count]);
                     if bytes.windows(4).any(|window| window == b"\r\n\r\n") {
                         break;
@@ -397,11 +402,9 @@ mod tests {
         assert_eq!(response["data"]["ok"], true);
         let requests = requests.lock().unwrap();
         assert_eq!(requests.len(), 2);
-        assert!(
-            requests
-                .iter()
-                .all(|request| request.contains("x-api-key: test-key"))
-        );
+        assert!(requests
+            .iter()
+            .all(|request| request.contains("x-api-key: test-key")));
         drop(requests);
         server.join().unwrap();
     }
@@ -409,7 +412,7 @@ mod tests {
     #[tokio::test]
     async fn enforces_the_per_request_deadline() {
         let (base_url, requests, server) = mock_http_server(
-            (0..7)
+            (0..crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS)
                 .map(|_| (200, Duration::from_millis(80), r#"{"ok":true}"#))
                 .collect(),
         );
@@ -420,10 +423,12 @@ mod tests {
             error.to_string(),
             "Scrappa API request timed out after 10ms"
         );
-        assert!(
-            (1..=crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS)
-                .contains(&requests.lock().unwrap().len())
-        );
+        // The mock server serves exactly one connection per attempt; joining it proves
+        // every attempt reached the server before the request count is checked.
         server.join().unwrap();
+        assert_eq!(
+            requests.lock().unwrap().len(),
+            crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        );
     }
 }
