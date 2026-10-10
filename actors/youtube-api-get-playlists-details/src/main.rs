@@ -9,7 +9,7 @@ use std::{env, time::Duration};
 use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
-const SCRAPPA_API_BASE_URL: &str = "https://ytapi.scrappa.co/playlists";
+const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 
 struct ActorConfig {
@@ -20,10 +20,15 @@ struct ActorConfig {
     actor_run_id: String,
     input_key: String,
     apify_token: String,
+    scrappa_api_key: String,
 }
 
 impl ActorConfig {
     fn from_env() -> Result<Self> {
+        let scrappa_api_key = env::var("SCRAPPA_API_KEY")
+            .ok()
+            .filter(|api_key| !api_key.is_empty())
+            .ok_or_else(|| anyhow!("SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."))?;
         Ok(Self {
             apify_api_base_url: base_url_from_env("APIFY_API_PUBLIC_BASE_URL", APIFY_API_BASE_URL)?,
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
@@ -32,6 +37,7 @@ impl ActorConfig {
             actor_run_id: required_env("ACTOR_RUN_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
+            scrappa_api_key,
         })
     }
 }
@@ -80,9 +86,9 @@ fn build_playlist_details_request(
     let id = string_value(input.get("id"))
         .ok_or_else(|| anyhow!("YouTube playlist ID \"id\" is required."))?;
 
-    let mut url = api_base_url.clone();
+    let mut url = endpoint_url(api_base_url, &["playlist"])?;
     url.set_query(None);
-    url.query_pairs_mut().append_pair("id", &id);
+    url.query_pairs_mut().append_pair("playlist_id", &id);
     Ok(PlaylistDetailsRequest { id, url })
 }
 
@@ -128,9 +134,11 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     response_json(response, "Apify INPUT request").await
 }
 
-async fn fetch_playlist_details(client: &Client, url: &Url) -> Result<Value> {
+async fn fetch_playlist_details(client: &Client, config: &ActorConfig, url: &Url) -> Result<Value> {
     let response = client
         .get(url.clone())
+        .header("X-API-Key", &config.scrappa_api_key)
+        .header(reqwest::header::ACCEPT, "application/json")
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
         .send_scrappa_with_retry("Scrappa API request")
         .await
@@ -302,7 +310,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let request = build_playlist_details_request(&input, &config.scrappa_api_base_url)?;
     println!("Fetching data from Scrappa API");
 
-    let data = fetch_playlist_details(client, &request.url).await?;
+    let data = fetch_playlist_details(client, config, &request.url).await?;
     let saved_rows = push_dataset_data(client, config, &data).await?;
     println!(
         "Successfully fetched {} playlist detail result(s) for id: {} (saved {saved_rows})",
@@ -493,12 +501,13 @@ mod tests {
     fn config(base_url: &Url) -> ActorConfig {
         ActorConfig {
             apify_api_base_url: base_url.clone(),
-            scrappa_api_base_url: base_url.join("playlists").unwrap(),
+            scrappa_api_base_url: base_url.clone(),
             default_key_value_store_id: "test-store".to_owned(),
             default_dataset_id: "test-dataset".to_owned(),
             actor_run_id: "test-run".to_owned(),
             input_key: "INPUT".to_owned(),
             apify_token: "test-token-not-a-real-credential".to_owned(),
+            scrappa_api_key: "test-scrappa-key-not-a-real-credential".to_owned(),
         }
     }
 
@@ -518,6 +527,18 @@ mod tests {
             parts.next().unwrap_or_default(),
             body,
         )
+    }
+
+    fn header_value<'a>(request: &'a str, header: &str) -> Option<&'a str> {
+        request
+            .split_once("\r\n\r\n")
+            .unwrap_or((request, ""))
+            .0
+            .lines()
+            .find_map(|line| {
+                let (name, value) = line.split_once(':')?;
+                name.eq_ignore_ascii_case(header).then_some(value.trim())
+            })
     }
 
     fn has_test_bearer_token(request: &str) -> bool {
@@ -550,7 +571,7 @@ mod tests {
     }
 
     #[test]
-    fn builds_the_original_endpoint_and_encodes_the_playlist_id() {
+    fn builds_the_scrappa_endpoint_and_encodes_the_playlist_id() {
         let base_url = Url::parse(SCRAPPA_API_BASE_URL).unwrap();
         let request = build_playlist_details_request(
             &serde_json::json!({"id": " playlist id/with spaces "}),
@@ -559,12 +580,12 @@ mod tests {
         .unwrap();
 
         assert_eq!(request.id, "playlist id/with spaces");
-        assert_eq!(request.url.host_str(), Some("ytapi.scrappa.co"));
-        assert_eq!(request.url.path(), "/playlists");
+        assert_eq!(request.url.host_str(), Some("scrappa.co"));
+        assert_eq!(request.url.path(), "/api/youtube/playlist");
         let id = request
             .url
             .query_pairs()
-            .find(|(key, _)| key == "id")
+            .find(|(key, _)| key == "playlist_id")
             .unwrap()
             .1
             .into_owned();
@@ -572,7 +593,7 @@ mod tests {
         assert!(request
             .url
             .as_str()
-            .contains("id=playlist+id%2Fwith+spaces"));
+            .contains("?playlist_id=playlist+id%2Fwith+spaces"));
     }
 
     #[test]
@@ -664,9 +685,16 @@ mod tests {
         let (method, path, _) = request_parts(&requests[1]);
         assert_eq!(
             (method, path),
-            ("GET", "/playlists?id=playlist+id%2Fwith+spaces")
+            ("GET", "/playlist?playlist_id=playlist+id%2Fwith+spaces")
         );
         assert!(!has_test_bearer_token(&requests[1]));
+        assert_eq!(
+            header_value(&requests[1], "x-api-key"),
+            Some("test-scrappa-key-not-a-real-credential")
+        );
+        for index in [0, 2, 3] {
+            assert!(header_value(&requests[index], "x-api-key").is_none());
+        }
         assert_eq!(request_parts(&requests[2]).1, "/v2/actor-runs/test-run");
         assert!(has_test_bearer_token(&requests[2]));
         let (method, path, body) = request_parts(&requests[3]);

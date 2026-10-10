@@ -6,14 +6,14 @@ use anyhow::{anyhow, bail, Context, Result};
 use reqwest::{Client, Response, StatusCode};
 use serde_json::Value;
 use std::{env, time::Duration};
-use tokio::time::{sleep, timeout};
+use tokio::{task::JoinSet, time::timeout};
 use url::{form_urlencoded, Url};
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
-const SCRAPPA_API_BASE_URL: &str = "https://ytapi.scrappa.co";
+const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const ACTOR_TIMEOUT: Duration = Duration::from_secs(300);
-const MAX_ATTEMPTS: u8 = 1;
+const MAX_CONCURRENT_VIDEO_REQUESTS: usize = 5;
 
 struct ActorConfig {
     apify_api_base_url: Url,
@@ -23,10 +23,15 @@ struct ActorConfig {
     actor_run_id: String,
     input_key: String,
     apify_token: String,
+    scrappa_api_key: String,
 }
 
 impl ActorConfig {
     fn from_env() -> Result<Self> {
+        let scrappa_api_key = env::var("SCRAPPA_API_KEY")
+            .ok()
+            .filter(|api_key| !api_key.is_empty())
+            .ok_or_else(|| anyhow!("SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."))?;
         Ok(Self {
             apify_api_base_url: base_url_from_env("APIFY_API_PUBLIC_BASE_URL", APIFY_API_BASE_URL)?,
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
@@ -35,6 +40,7 @@ impl ActorConfig {
             actor_run_id: required_env("ACTOR_RUN_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
+            scrappa_api_key,
         })
     }
 }
@@ -62,7 +68,7 @@ fn endpoint_url(base_url: &Url, segments: &[&str]) -> Result<Url> {
     Ok(url)
 }
 
-fn build_batch_videos_url(input: &Value, api_base_url: &Url) -> Result<Url> {
+fn batch_video_ids(input: &Value) -> Result<Vec<String>> {
     let ids = input
         .as_object()
         .and_then(|object| object.get("ids"))
@@ -71,10 +77,11 @@ fn build_batch_videos_url(input: &Value, api_base_url: &Url) -> Result<Url> {
         .filter(|ids| !ids.is_empty())
         .ok_or_else(|| anyhow!("Video IDs \"ids\" are required."))?;
 
-    let normalized_ids: Vec<&str> = ids
+    let normalized_ids: Vec<String> = ids
         .split(',')
         .map(str::trim)
         .filter(|id| !id.is_empty())
+        .map(str::to_owned)
         .collect();
     if normalized_ids.is_empty() {
         bail!("Video IDs \"ids\" must include at least one non-empty ID.");
@@ -82,10 +89,13 @@ fn build_batch_videos_url(input: &Value, api_base_url: &Url) -> Result<Url> {
     if normalized_ids.len() > 50 {
         bail!("Video IDs \"ids\" must contain 50 or fewer comma-separated IDs.");
     }
+    Ok(normalized_ids)
+}
 
-    let mut url = endpoint_url(api_base_url, &["videos", "batch"])?;
+fn build_video_url(api_base_url: &Url, id: &str) -> Result<Url> {
+    let mut url = endpoint_url(api_base_url, &["video"])?;
     let query = form_urlencoded::Serializer::new(String::new())
-        .append_pair("ids", &normalized_ids.join(","))
+        .append_pair("video_id", id)
         .finish();
     url.set_query(Some(&query));
     Ok(url)
@@ -132,67 +142,74 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     response_json(response, "Apify INPUT request").await
 }
 
-async fn fetch_batch_videos(client: &Client, url: &Url) -> Result<Vec<Value>> {
-    for attempt in 1..=MAX_ATTEMPTS {
-        let response = client
-            .get(url.clone())
-            .send_scrappa_with_retry("Scrappa API request")
-            .await;
-        let response = match response {
-            Ok(response) => response,
-            Err(error) => {
-                let message = if error.is_timeout() {
-                    format!(
-                        "Scrappa API request timed out after {}s",
-                        REQUEST_TIMEOUT.as_secs()
-                    )
-                } else {
-                    format!("Scrappa API request failed: {error}")
-                };
-                if attempt == MAX_ATTEMPTS {
-                    bail!(message);
-                }
-                eprintln!("{message}; retrying ({attempt}/{MAX_ATTEMPTS})");
-                sleep(Duration::from_secs(u64::from(attempt))).await;
-                continue;
+/// Fetches one video. A 404 means YouTube has no such video; the batch skips it
+/// like the old batch endpoint did, so the other videos still reach the dataset.
+async fn fetch_video(client: Client, url: Url, api_key: String) -> Result<Option<Value>> {
+    let response = client
+        .get(url)
+        .header("X-API-Key", api_key)
+        .header(reqwest::header::ACCEPT, "application/json")
+        .send_scrappa_with_retry("Scrappa API request")
+        .await
+        .map_err(|error| {
+            if error.is_timeout() {
+                anyhow!(
+                    "Scrappa API request timed out after {}s",
+                    REQUEST_TIMEOUT.as_secs()
+                )
+            } else {
+                anyhow!("Scrappa API request failed: {error}")
             }
-        };
+        })?;
 
-        let status = response.status();
-        if !status.is_success() {
-            let reason = status.canonical_reason().unwrap_or("Unknown status");
-            let message = format!(
-                "Scrappa API request failed with {} {reason}",
-                status.as_u16()
-            );
-            let retryable = matches!(
-                status,
-                StatusCode::TOO_MANY_REQUESTS
-                    | StatusCode::INTERNAL_SERVER_ERROR
-                    | StatusCode::BAD_GATEWAY
-                    | StatusCode::SERVICE_UNAVAILABLE
-                    | StatusCode::GATEWAY_TIMEOUT
-            );
-            if attempt == MAX_ATTEMPTS || !retryable {
-                bail!(message);
-            }
-            eprintln!("{message}; retrying ({attempt}/{MAX_ATTEMPTS})");
-            sleep(Duration::from_secs(u64::from(attempt))).await;
-            continue;
-        }
-
-        let data: Value = response
-            .json()
-            .await
-            .context("Scrappa API response was not valid JSON")?;
-        return data
-            .get("videos")
-            .and_then(Value::as_array)
-            .cloned()
-            .ok_or_else(|| anyhow!("Scrappa API response is missing the videos array"));
+    let status = response.status();
+    if status == StatusCode::NOT_FOUND {
+        return Ok(None);
+    }
+    if !status.is_success() {
+        let reason = status.canonical_reason().unwrap_or("Unknown status");
+        bail!(
+            "Scrappa API request failed with {} {reason}",
+            status.as_u16()
+        );
     }
 
-    unreachable!("the retry loop always returns or fails")
+    let data: Value = response
+        .json()
+        .await
+        .context("Scrappa API response was not valid JSON")?;
+    if !data.is_object() {
+        bail!("Scrappa API response is not a video object");
+    }
+    Ok(Some(data))
+}
+
+/// Fetches every video with at most MAX_CONCURRENT_VIDEO_REQUESTS requests in flight
+/// and returns them in input order. The first failed request fails the batch and
+/// aborts the requests that are still running.
+async fn fetch_batch_videos(
+    client: &Client,
+    config: &ActorConfig,
+    ids: &[String],
+) -> Result<Vec<Value>> {
+    let mut videos: Vec<Option<Value>> = vec![None; ids.len()];
+    for (chunk_index, chunk) in ids.chunks(MAX_CONCURRENT_VIDEO_REQUESTS).enumerate() {
+        let mut requests = JoinSet::new();
+        for (offset, id) in chunk.iter().enumerate() {
+            let url = build_video_url(&config.scrappa_api_base_url, id)?;
+            let index = chunk_index * MAX_CONCURRENT_VIDEO_REQUESTS + offset;
+            let request = fetch_video(client.clone(), url, config.scrappa_api_key.clone());
+            requests.spawn(async move { (index, request.await) });
+        }
+        while let Some(joined) = requests.join_next().await {
+            let (index, result) = joined.context("Scrappa API request task failed")?;
+            match result? {
+                Some(video) => videos[index] = Some(video),
+                None => eprintln!("Video {} was not found; skipping it", ids[index]),
+            }
+        }
+    }
+    Ok(videos.into_iter().flatten().collect())
 }
 
 async fn run_dataset_capacity(
@@ -317,10 +334,10 @@ async fn push_dataset_items(client: &Client, config: &ActorConfig, videos: &[Val
 
 async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let input = get_input(client, config).await?;
-    let url = build_batch_videos_url(&input, &config.scrappa_api_base_url)?;
+    let ids = batch_video_ids(&input)?;
     println!("Fetching data from Scrappa API");
 
-    let videos = fetch_batch_videos(client, &url).await?;
+    let videos = fetch_batch_videos(client, config, &ids).await?;
     push_dataset_items(client, config, &videos).await?;
 
     let ids = input.get("ids").and_then(Value::as_str).unwrap_or_default();
@@ -407,11 +424,23 @@ mod tests {
                     if response.status == 0 {
                         continue;
                     }
+                    let body = response.body.replace(
+                        "{video_id}",
+                        &requested_video_id(
+                            &recorded_requests
+                                .lock()
+                                .unwrap()
+                                .last()
+                                .cloned()
+                                .unwrap_or_default(),
+                        ),
+                    );
                     let reason = match response.status {
                         200 => "OK",
                         201 => "Created",
                         400 => "Bad Request",
                         401 => "Unauthorized",
+                        404 => "Not Found",
                         429 => "Too Many Requests",
                         500 => "Internal Server Error",
                         504 => "Gateway Timeout",
@@ -419,7 +448,7 @@ mod tests {
                     };
                     let message = format!(
                         "HTTP/1.1 {} {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-                        response.status, reason, response.body.len(), response.body
+                        response.status, reason, body.len(), body
                     );
                     if stream.write_all(message.as_bytes()).is_err() {
                         break;
@@ -479,6 +508,31 @@ mod tests {
         Ok(String::from_utf8_lossy(&bytes).into_owned())
     }
 
+    /// Reads video_id from a recorded request so mock bodies can echo it back.
+    fn requested_video_id(request: &str) -> String {
+        let path = request_parts(request).1;
+        Url::parse(&format!("http://mock{path}"))
+            .ok()
+            .and_then(|url| {
+                url.query_pairs()
+                    .find(|(key, _)| key == "video_id")
+                    .map(|(_, value)| value.into_owned())
+            })
+            .unwrap_or_default()
+    }
+
+    fn header_value<'a>(request: &'a str, header: &str) -> Option<&'a str> {
+        request
+            .split_once("\r\n\r\n")
+            .unwrap_or((request, ""))
+            .0
+            .lines()
+            .find_map(|line| {
+                let (name, value) = line.split_once(':')?;
+                name.eq_ignore_ascii_case(header).then_some(value.trim())
+            })
+    }
+
     fn response(status: u16, body: &str) -> MockResponse {
         MockResponse {
             status,
@@ -514,6 +568,7 @@ mod tests {
             actor_run_id: "test-run".to_owned(),
             input_key: "INPUT".to_owned(),
             apify_token: "test-token-not-a-real-credential".to_owned(),
+            scrappa_api_key: "test-scrappa-key-not-a-real-credential".to_owned(),
         }
     }
 
@@ -551,55 +606,48 @@ mod tests {
     }
 
     #[test]
-    fn url_builder_normalizes_ids_and_rejects_invalid_counts() {
+    fn ids_are_normalized_and_mapped_to_scrappa_video_urls() {
         let base = Url::parse(SCRAPPA_API_BASE_URL).unwrap();
-        let url = build_batch_videos_url(
-            &serde_json::json!({"ids":" video-one, , video-two "}),
-            &base,
-        )
-        .unwrap();
-        assert_eq!(url.path(), "/videos/batch");
+        let ids = batch_video_ids(&serde_json::json!({"ids":" video-one, , video-two "})).unwrap();
+        assert_eq!(ids, ["video-one", "video-two"]);
         assert_eq!(
-            url.query_pairs().find(|(key, _)| key == "ids").unwrap().1,
-            "video-one,video-two"
+            build_video_url(&base, &ids[0]).unwrap().as_str(),
+            "https://scrappa.co/api/youtube/video?video_id=video-one"
         );
-        assert!(
-            build_batch_videos_url(&serde_json::json!({"ids":" , , "}), &base)
-                .unwrap_err()
-                .to_string()
-                .contains("at least one non-empty ID")
-        );
+        assert!(batch_video_ids(&serde_json::json!({"ids":" , , "}))
+            .unwrap_err()
+            .to_string()
+            .contains("at least one non-empty ID"));
         let too_many = (0..51)
             .map(|index| format!("id-{index}"))
             .collect::<Vec<_>>()
             .join(",");
-        assert!(
-            build_batch_videos_url(&serde_json::json!({"ids":too_many}), &base)
-                .unwrap_err()
-                .to_string()
-                .contains("50 or fewer")
-        );
+        assert!(batch_video_ids(&serde_json::json!({"ids":too_many}))
+            .unwrap_err()
+            .to_string()
+            .contains("50 or fewer"));
     }
 
     #[test]
     fn qa_schema_prefill_survives_the_rust_url_builder() {
         let schema: Value =
             serde_json::from_str(include_str!("../.actor/input_schema.json")).unwrap();
-        let ids = schema["properties"]["ids"]["prefill"].as_str().unwrap();
-        let url = build_batch_videos_url(
-            &serde_json::json!({"ids":ids}),
-            &Url::parse(SCRAPPA_API_BASE_URL).unwrap(),
-        )
-        .unwrap();
+        let prefill = schema["properties"]["ids"]["prefill"].as_str().unwrap();
+        let ids = batch_video_ids(&serde_json::json!({"ids":prefill})).unwrap();
+        assert_eq!(ids, [prefill]);
+        let url = build_video_url(&Url::parse(SCRAPPA_API_BASE_URL).unwrap(), &ids[0]).unwrap();
         assert_eq!(
-            url.query_pairs().find(|(key, _)| key == "ids").unwrap().1,
-            ids
+            url.query_pairs()
+                .find(|(key, _)| key == "video_id")
+                .unwrap()
+                .1,
+            prefill
         );
     }
 
     #[tokio::test]
     async fn local_apify_and_scrappa_mocks_preserve_rows_and_retry_504() {
-        let videos = serde_json::json!([{"id":"7eul_Vt6SZY"},{"id":"6QQQKJJBJOY"}]);
+        let videos = serde_json::json!([{"id":"7eul_Vt6SZY"}]);
         let schema: Value =
             serde_json::from_str(include_str!("../.actor/input_schema.json")).unwrap();
         let ids = schema["properties"]["ids"]["prefill"].as_str().unwrap();
@@ -607,7 +655,7 @@ mod tests {
         let server = MockServer::start(vec![
             response(200, &input.to_string()),
             response(504, "{}"),
-            response(200, &serde_json::json!({"videos":videos}).to_string()),
+            response(200, r#"{"id":"{video_id}"}"#),
             pricing_response(1.0, 0),
             response(201, "{}"),
         ]);
@@ -623,7 +671,7 @@ mod tests {
         );
         let (method, path, _) = request_parts(&requests[1]);
         assert_eq!(method, "GET");
-        assert!(path.starts_with("/videos/batch?ids="));
+        assert_eq!(path, "/video?video_id=7eul_Vt6SZY");
         assert_eq!(request_parts(&requests[1]).1, request_parts(&requests[2]).1);
         assert_eq!(request_parts(&requests[3]).1, "/v2/actor-runs/test-run");
         let (method, path, body) = request_parts(&requests[4]);
@@ -635,8 +683,14 @@ mod tests {
             .all(|request| has_test_bearer_token(request)));
         assert!(requests
             .iter()
-            .filter(|request| request.starts_with("GET /videos/"))
-            .all(|request| !has_test_bearer_token(request)));
+            .filter(|request| request.starts_with("GET /video?"))
+            .all(|request| !has_test_bearer_token(request)
+                && header_value(request, "x-api-key")
+                    == Some("test-scrappa-key-not-a-real-credential")));
+        assert!(requests
+            .iter()
+            .filter(|request| request.contains("/v2/"))
+            .all(|request| header_value(request, "x-api-key").is_none()));
     }
 
     #[tokio::test]
@@ -657,7 +711,8 @@ mod tests {
     async fn capped_run_stores_only_chargeable_items() {
         let server = MockServer::start(vec![
             response(200, r#"{"ids":"video-one,video-two"}"#),
-            response(200, r#"{"videos":[{"id":"video-one"},{"id":"video-two"}]}"#),
+            response(200, r#"{"id":"{video_id}"}"#),
+            response(200, r#"{"id":"{video_id}"}"#),
             pricing_response(0.0003, 0),
             response(201, "{}"),
         ]);
@@ -665,10 +720,10 @@ mod tests {
             .await
             .unwrap();
         let requests = server.requests();
-        assert_eq!(requests.len(), 4);
-        assert_eq!(request_parts(&requests[2]).1, "/v2/actor-runs/test-run");
-        assert!(has_test_bearer_token(&requests[2]));
-        let (_, _, body) = request_parts(&requests[3]);
+        assert_eq!(requests.len(), 5);
+        assert_eq!(request_parts(&requests[3]).1, "/v2/actor-runs/test-run");
+        assert!(has_test_bearer_token(&requests[3]));
+        let (_, _, body) = request_parts(&requests[4]);
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),
             serde_json::json!([{"id":"video-one"}])
@@ -679,7 +734,7 @@ mod tests {
     async fn exhausted_run_skips_dataset_write() {
         let server = MockServer::start(vec![
             response(200, r#"{"ids":"video"}"#),
-            response(200, r#"{"videos":[{"id":"video"}]}"#),
+            response(200, r#"{"id":"video"}"#),
             pricing_response(0.0, 0),
         ]);
         run_actor(&client(), &config(&server.base_url))
@@ -744,12 +799,12 @@ mod tests {
         assert_eq!(bad_request.requests().len(), 2);
         let malformed = MockServer::start(vec![
             response(200, r#"{"ids":"video"}"#),
-            response(200, r#"{"notVideos":[]}"#),
+            response(200, r#"[]"#),
         ]);
         let error = run_actor(&client(), &config(&malformed.base_url))
             .await
             .unwrap_err();
-        assert!(error.to_string().contains("missing the videos array"));
+        assert!(error.to_string().contains("not a video object"));
         assert_eq!(malformed.requests().len(), 2);
     }
 
@@ -758,7 +813,7 @@ mod tests {
         let server = MockServer::start(vec![
             response(200, r#"{"ids":"video"}"#),
             response(503, r#"{"message":"Unavailable"}"#),
-            response(200, r#"{"videos":[{"id":"video"}]}"#),
+            response(200, r#"{"id":"video"}"#),
             pricing_response(1.0, 0),
             response(201, "{}"),
         ]);
@@ -773,5 +828,82 @@ mod tests {
             .unwrap_err();
         assert!(error.to_string().contains("401 Unauthorized"));
         assert_eq!(apify_error.requests().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn missing_videos_are_skipped_like_the_old_batch_endpoint() {
+        let server = MockServer::start(vec![
+            response(200, r#"{"ids":"video-gone"}"#),
+            response(404, r#"{"error":"Video not found"}"#),
+        ]);
+        run_actor(&client(), &config(&server.base_url))
+            .await
+            .unwrap();
+        let requests = server.requests();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(request_parts(&requests[1]).1, "/video?video_id=video-gone");
+    }
+
+    /// Answers each wave of parallel video requests after the client stops opening
+    /// new connections, records the wave size and echoes the requested video ID.
+    fn start_wave_server() -> (Url, Arc<Mutex<Vec<usize>>>, JoinHandle<()>) {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        listener.set_nonblocking(true).unwrap();
+        let base_url = Url::parse(&format!("http://{}", listener.local_addr().unwrap())).unwrap();
+        let waves = Arc::new(Mutex::new(Vec::new()));
+        let recorded_waves = Arc::clone(&waves);
+        let thread = thread::spawn(move || {
+            let deadline = Instant::now() + Duration::from_secs(10);
+            let mut answered = 0;
+            while answered < 12 && Instant::now() < deadline {
+                let mut wave = Vec::new();
+                let mut idle_since = Instant::now();
+                while idle_since.elapsed() < Duration::from_millis(200) {
+                    match listener.accept() {
+                        Ok((stream, _)) => {
+                            stream.set_nonblocking(false).unwrap();
+                            wave.push(stream);
+                            idle_since = Instant::now();
+                        }
+                        Err(_) => thread::sleep(Duration::from_millis(5)),
+                    }
+                }
+                if wave.is_empty() {
+                    continue;
+                }
+                recorded_waves.lock().unwrap().push(wave.len());
+                // Answer in reverse order so completion order differs from input order.
+                for mut stream in wave.into_iter().rev() {
+                    let request = read_request(&mut stream).unwrap_or_default();
+                    let body = format!(r#"{{"id":"{}"}}"#, requested_video_id(&request));
+                    let message = format!(
+                        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                        body.len(),
+                        body
+                    );
+                    let _ = stream.write_all(message.as_bytes());
+                    answered += 1;
+                }
+            }
+        });
+        (base_url, waves, thread)
+    }
+
+    #[tokio::test]
+    async fn fetches_at_most_five_videos_at_once_and_keeps_input_order() {
+        let (scrappa_url, waves, thread) = start_wave_server();
+        let mut config = config(&scrappa_url);
+        config.scrappa_api_base_url = scrappa_url;
+        let ids: Vec<String> = (0..12).map(|index| format!("video-{index:02}")).collect();
+
+        let videos = fetch_batch_videos(&client(), &config, &ids).await.unwrap();
+        thread.join().unwrap();
+
+        let fetched: Vec<&str> = videos
+            .iter()
+            .map(|video| video["id"].as_str().unwrap())
+            .collect();
+        assert_eq!(fetched, ids);
+        assert_eq!(*waves.lock().unwrap(), [5, 5, 2]);
     }
 }

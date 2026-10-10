@@ -8,7 +8,7 @@ use serde_json::Value;
 use std::{env, time::Duration};
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
-const SCRAPPA_API_BASE_URL: &str = "https://ytapi.scrappa.co";
+const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 
 struct ActorConfig {
@@ -19,10 +19,15 @@ struct ActorConfig {
     actor_run_id: String,
     input_key: String,
     apify_token: String,
+    scrappa_api_key: String,
 }
 
 impl ActorConfig {
     fn from_env() -> Result<Self> {
+        let scrappa_api_key = env::var("SCRAPPA_API_KEY")
+            .ok()
+            .filter(|api_key| !api_key.is_empty())
+            .ok_or_else(|| anyhow!("SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."))?;
         Ok(Self {
             apify_api_base_url: base_url_from_env("APIFY_API_PUBLIC_BASE_URL", APIFY_API_BASE_URL)?,
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
@@ -31,6 +36,7 @@ impl ActorConfig {
             actor_run_id: required_env("ACTOR_RUN_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
+            scrappa_api_key,
         })
     }
 }
@@ -67,8 +73,8 @@ fn build_video_details_url(input: &Value, api_base_url: &Url) -> Result<Url> {
         .filter(|id| !id.is_empty())
         .ok_or_else(|| anyhow!("YouTube video ID \"id\" is required."))?;
 
-    let mut url = endpoint_url(api_base_url, &["videos"])?;
-    url.query_pairs_mut().append_pair("id", id);
+    let mut url = endpoint_url(api_base_url, &["video"])?;
+    url.query_pairs_mut().append_pair("video_id", id);
     Ok(url)
 }
 
@@ -195,9 +201,11 @@ fn affordable_dataset_items(run: &Value, requested: usize) -> Result<usize> {
         .count())
 }
 
-async fn fetch_video_details(client: &Client, url: &Url) -> Result<Value> {
+async fn fetch_video_details(client: &Client, config: &ActorConfig, url: &Url) -> Result<Value> {
     let response = client
         .get(url.clone())
+        .header("X-API-Key", &config.scrappa_api_key)
+        .header(reqwest::header::ACCEPT, "application/json")
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
         .send_scrappa_with_retry("Scrappa API request")
         .await
@@ -308,7 +316,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let url = build_video_details_url(&input, &config.scrappa_api_base_url)?;
     println!("Fetching data from Scrappa API");
 
-    let data = fetch_video_details(client, &url).await?;
+    let data = fetch_video_details(client, config, &url).await?;
     let saved_count = push_dataset_data(client, config, &data).await?;
 
     let result_count = data.as_array().map_or(1, Vec::len);
@@ -506,6 +514,7 @@ mod tests {
             actor_run_id: "test-run".to_owned(),
             input_key: "INPUT".to_owned(),
             apify_token: "test-token-not-a-real-credential".to_owned(),
+            scrappa_api_key: "test-scrappa-key-not-a-real-credential".to_owned(),
         }
     }
 
@@ -525,6 +534,18 @@ mod tests {
             parts.next().unwrap_or_default(),
             body,
         )
+    }
+
+    fn header_value<'a>(request: &'a str, header: &str) -> Option<&'a str> {
+        request
+            .split_once("\r\n\r\n")
+            .unwrap_or((request, ""))
+            .0
+            .lines()
+            .find_map(|line| {
+                let (name, value) = line.split_once(':')?;
+                name.eq_ignore_ascii_case(header).then_some(value.trim())
+            })
     }
 
     fn has_test_bearer_token(request: &str) -> bool {
@@ -564,7 +585,15 @@ mod tests {
             request_parts(&requests[0]).1,
             "/v2/key-value-stores/test-store/records/INPUT"
         );
-        assert_eq!(request_parts(&requests[1]).1, "/videos?id=video-id");
+        assert_eq!(request_parts(&requests[1]).1, "/video?video_id=video-id");
+        assert_eq!(
+            header_value(&requests[1], "x-api-key"),
+            Some("test-scrappa-key-not-a-real-credential")
+        );
+        assert!(requests
+            .iter()
+            .enumerate()
+            .all(|(index, request)| index == 1 || header_value(request, "x-api-key").is_none()));
         assert_eq!(request_parts(&requests[2]).1, "/v2/actor-runs/test-run");
         let (method, path, body) = request_parts(&requests[3]);
         assert_eq!((method, path), ("POST", "/v2/datasets/test-dataset/items"));
@@ -576,9 +605,15 @@ mod tests {
         let base = Url::parse(SCRAPPA_API_BASE_URL).unwrap();
         let url =
             build_video_details_url(&serde_json::json!({"id":" dQw4w9WgXcQ "}), &base).unwrap();
-        assert_eq!(url.path(), "/videos");
         assert_eq!(
-            url.query_pairs().find(|(key, _)| key == "id").unwrap().1,
+            url.as_str(),
+            "https://scrappa.co/api/youtube/video?video_id=dQw4w9WgXcQ"
+        );
+        assert_eq!(
+            url.query_pairs()
+                .find(|(key, _)| key == "video_id")
+                .unwrap()
+                .1,
             "dQw4w9WgXcQ"
         );
         for input in [
@@ -604,7 +639,10 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            url.query_pairs().find(|(key, _)| key == "id").unwrap().1,
+            url.query_pairs()
+                .find(|(key, _)| key == "video_id")
+                .unwrap()
+                .1,
             prefill
         );
     }

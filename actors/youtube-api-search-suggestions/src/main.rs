@@ -9,7 +9,7 @@ use std::{env, time::Duration};
 use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
-const SCRAPPA_API_BASE_URL: &str = "https://ytapi.scrappa.co";
+const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 
 struct ActorConfig {
@@ -20,10 +20,15 @@ struct ActorConfig {
     actor_run_id: String,
     input_key: String,
     apify_token: String,
+    scrappa_api_key: String,
 }
 
 impl ActorConfig {
     fn from_env() -> Result<Self> {
+        let scrappa_api_key = env::var("SCRAPPA_API_KEY")
+            .ok()
+            .filter(|api_key| !api_key.is_empty())
+            .ok_or_else(|| anyhow!("SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."))?;
         Ok(Self {
             apify_api_base_url: base_url_from_env("APIFY_API_PUBLIC_BASE_URL", APIFY_API_BASE_URL)?,
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
@@ -32,6 +37,7 @@ impl ActorConfig {
             actor_run_id: required_env("ACTOR_RUN_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
+            scrappa_api_key,
         })
     }
 }
@@ -84,10 +90,10 @@ fn build_suggestions_request(input: &Value, api_base_url: &Url) -> Result<Sugges
         string_value(input.get("q")).ok_or_else(|| anyhow!("Search query \"q\" is required."))?;
     let hl = string_value(input.get("hl"));
     let gl = normalized_country(input.get("gl"));
-    let mut url = endpoint_url(api_base_url, &["search", "suggestions"])?;
+    let mut url = endpoint_url(api_base_url, &["suggestions"])?;
     {
         let mut params = url.query_pairs_mut();
-        params.append_pair("q", &query);
+        params.append_pair("query", &query);
         if let Some(hl) = &hl {
             params.append_pair("hl", hl);
         }
@@ -172,9 +178,14 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     response_json(response, "Apify INPUT request").await
 }
 
-async fn fetch_suggestions(client: &Client, request: &SuggestionsRequest) -> Result<Value> {
+async fn fetch_suggestions(
+    client: &Client,
+    config: &ActorConfig,
+    request: &SuggestionsRequest,
+) -> Result<Value> {
     let response = client
         .get(request.url.clone())
+        .header("X-API-Key", &config.scrappa_api_key)
         .header(reqwest::header::ACCEPT, "application/json")
         .timeout(REQUEST_TIMEOUT)
         .send_scrappa_with_retry("Scrappa API request")
@@ -370,7 +381,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let request = build_suggestions_request(&input, &config.scrappa_api_base_url)?;
     println!("Fetching data from Scrappa API");
 
-    let data = fetch_suggestions(client, &request).await?;
+    let data = fetch_suggestions(client, config, &request).await?;
     let items = suggestions_to_dataset_items(&data, &request);
     let mut dataset_budget = None;
     let saved_items = push_dataset_items(client, config, &mut dataset_budget, &items).await?;
@@ -567,6 +578,7 @@ mod tests {
             actor_run_id: "test-run".to_owned(),
             input_key: "INPUT".to_owned(),
             apify_token: "test-token-not-a-real-credential".to_owned(),
+            scrappa_api_key: "test-scrappa-key-not-a-real-credential".to_owned(),
         }
     }
 
@@ -592,6 +604,18 @@ mod tests {
         url.query_pairs()
             .map(|(key, value)| (key.into_owned(), value.into_owned()))
             .collect()
+    }
+
+    fn header_value<'a>(request: &'a str, header: &str) -> Option<&'a str> {
+        request
+            .split_once("\r\n\r\n")
+            .unwrap_or((request, ""))
+            .0
+            .lines()
+            .find_map(|line| {
+                let (name, value) = line.split_once(':')?;
+                name.eq_ignore_ascii_case(header).then_some(value.trim())
+            })
     }
 
     fn has_test_bearer_token(request: &str) -> bool {
@@ -621,13 +645,13 @@ mod tests {
         assert_eq!(request.hl.as_deref(), Some("en"));
         assert_eq!(request.gl.as_deref(), Some("US"));
         assert_eq!(request.url.scheme(), "https");
-        assert_eq!(request.url.host_str(), Some("ytapi.scrappa.co"));
-        assert_eq!(request.url.path(), "/search/suggestions");
+        assert_eq!(request.url.host_str(), Some("scrappa.co"));
+        assert_eq!(request.url.path(), "/api/youtube/suggestions");
         let params = query_pairs(&request.url);
         assert_eq!(params.len(), 3);
         assert_eq!(
             params[0],
-            ("q".to_owned(), "javascript tutorial /?".to_owned())
+            ("query".to_owned(), "javascript tutorial /?".to_owned())
         );
         assert_eq!(params[1], ("hl".to_owned(), "en".to_owned()));
         assert_eq!(params[2], ("gl".to_owned(), "US".to_owned()));
@@ -635,7 +659,7 @@ mod tests {
         let request = build_suggestions_request(&json!({"q":"news"}), &base_url).unwrap();
         assert_eq!(
             query_pairs(&request.url),
-            vec![("q".to_owned(), "news".to_owned())]
+            vec![("query".to_owned(), "news".to_owned())]
         );
         assert!(build_suggestions_request(&json!({"hl":"en"}), &base_url)
             .unwrap_err()
@@ -661,7 +685,7 @@ mod tests {
         assert_eq!(
             query_pairs(&request.url),
             vec![
-                ("q".to_owned(), "javascript".to_owned()),
+                ("query".to_owned(), "javascript".to_owned()),
                 ("hl".to_owned(), "en".to_owned()),
                 ("gl".to_owned(), "US".to_owned()),
             ]
@@ -733,9 +757,17 @@ mod tests {
             "/v2/key-value-stores/test-store/records/INPUT"
         );
         assert!(has_test_bearer_token(&requests[0]));
-        assert!(request_parts(&requests[1])
-            .1
-            .starts_with("/search/suggestions?"));
+        assert_eq!(
+            request_parts(&requests[1]).1,
+            "/suggestions?query=javascript+tutorial&hl=en&gl=US"
+        );
+        assert_eq!(
+            header_value(&requests[1], "x-api-key"),
+            Some("test-scrappa-key-not-a-real-credential")
+        );
+        for index in [0, 2, 3] {
+            assert!(header_value(&requests[index], "x-api-key").is_none());
+        }
         assert_eq!(request_parts(&requests[2]).1, "/v2/actor-runs/test-run");
         assert!(has_test_bearer_token(&requests[2]));
         let (method, path, body) = request_parts(&requests[3]);

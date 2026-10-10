@@ -9,7 +9,7 @@ use std::{env, time::Duration};
 use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
-const SCRAPPA_API_BASE_URL: &str = "https://ytapi.scrappa.co";
+const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 
 struct ActorConfig {
@@ -19,11 +19,16 @@ struct ActorConfig {
     default_dataset_id: String,
     input_key: String,
     apify_token: String,
+    scrappa_api_key: String,
     actor_run_id: String,
 }
 
 impl ActorConfig {
     fn from_env() -> Result<Self> {
+        let scrappa_api_key = env::var("SCRAPPA_API_KEY")
+            .ok()
+            .filter(|api_key| !api_key.is_empty())
+            .ok_or_else(|| anyhow!("SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."))?;
         Ok(Self {
             apify_api_base_url: base_url_from_env("APIFY_API_PUBLIC_BASE_URL", APIFY_API_BASE_URL)?,
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
@@ -31,6 +36,7 @@ impl ActorConfig {
             default_dataset_id: required_env("ACTOR_DEFAULT_DATASET_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
+            scrappa_api_key,
             actor_run_id: required_env("ACTOR_RUN_ID")?,
         })
     }
@@ -139,6 +145,44 @@ fn positive_limit(value: Option<&Value>) -> Result<Option<u64>> {
     }
 }
 
+/// Search terms the retired ytapi /search/category endpoint used for each category.
+/// Scrappa has no category route, so the actor runs the same video search itself.
+const CATEGORY_SEARCH_TERMS: &[(&str, &str)] = &[
+    ("education", "education tutorial learning"),
+    ("music", "music songs artist"),
+    ("gaming", "gaming gameplay games"),
+    ("news", "news breaking latest"),
+    ("sports", "sports highlights"),
+    ("entertainment", "entertainment comedy"),
+    ("howto", "how to tutorial guide"),
+    ("tech", "technology tech review"),
+    ("science", "science discovery research"),
+    ("travel", "travel vlog destination"),
+    ("food", "cooking recipe food"),
+    ("lifestyle", "lifestyle vlog daily"),
+    ("fitness", "workout fitness exercise"),
+    ("beauty", "makeup beauty skincare"),
+    ("fashion", "fashion style outfit"),
+    ("diy", "diy craft handmade"),
+    ("pets", "pets animals cute"),
+    ("cars", "cars automotive review"),
+    ("movies", "movie trailer review"),
+    ("books", "book review reading"),
+];
+
+/// The old category endpoint returned up to 20 results when no limit was set.
+const DEFAULT_SEARCH_LIMIT: u64 = 20;
+/// Scrappa /api/youtube/search rejects limits above 20.
+const MAX_SEARCH_LIMIT: u64 = 20;
+
+fn category_search_term(category: &str) -> String {
+    let key = category.to_lowercase();
+    CATEGORY_SEARCH_TERMS
+        .iter()
+        .find(|(name, _)| *name == key)
+        .map_or_else(|| category.to_owned(), |(_, term)| (*term).to_owned())
+}
+
 #[derive(Debug)]
 struct CategoryRequest {
     url: Url,
@@ -157,10 +201,11 @@ fn build_category_request(input: &Value, api_base_url: &Url) -> Result<CategoryR
     let features = feature_values(input.get("features"));
     let limit = positive_limit(input.get("limit"))?;
 
-    let mut url = endpoint_url(api_base_url, &["search", "category"])?;
+    let mut url = endpoint_url(api_base_url, &["search"])?;
     {
         let mut params = url.query_pairs_mut();
-        params.append_pair("category", &category);
+        params.append_pair("query", &category_search_term(&category));
+        params.append_pair("type", "video");
         params.append_pair("sort", &sort);
         if let Some(duration) = &duration {
             params.append_pair("duration", duration);
@@ -177,9 +222,8 @@ fn build_category_request(input: &Value, api_base_url: &Url) -> Result<CategoryR
         if !features.is_empty() {
             params.append_pair("features", &features.join(","));
         }
-        if let Some(limit) = limit {
-            params.append_pair("limit", &limit.to_string());
-        }
+        let limit = limit.unwrap_or(DEFAULT_SEARCH_LIMIT).min(MAX_SEARCH_LIMIT);
+        params.append_pair("limit", &limit.to_string());
     }
 
     Ok(CategoryRequest { url, category })
@@ -251,9 +295,14 @@ async fn get_input(client: &Client, config: &ActorConfig) -> Result<Value> {
     response_json(response, "Apify INPUT request").await
 }
 
-async fn fetch_category(client: &Client, request: &CategoryRequest) -> Result<Value> {
+async fn fetch_category(
+    client: &Client,
+    config: &ActorConfig,
+    request: &CategoryRequest,
+) -> Result<Value> {
     let response = client
         .get(request.url.clone())
+        .header("X-API-Key", &config.scrappa_api_key)
         .header(reqwest::header::ACCEPT, "application/json")
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
         .send_scrappa_with_retry("Scrappa API request")
@@ -412,7 +461,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let request = build_category_request(&input, &config.scrappa_api_base_url)?;
     println!("Fetching data from Scrappa API");
 
-    let data = fetch_category(client, &request).await?;
+    let data = fetch_category(client, config, &request).await?;
     let items = category_videos_to_dataset_items(&data);
     if !items.is_empty() {
         let mut budget = run_dataset_capacity(client, config, items.len()).await?;
@@ -532,6 +581,7 @@ mod tests {
             default_dataset_id: "dataset-id".to_owned(),
             input_key: "INPUT".to_owned(),
             apify_token: "test-token".to_owned(),
+            scrappa_api_key: "test-scrappa-key-not-a-real-credential".to_owned(),
             actor_run_id: "run-id".to_owned(),
         }
     }
@@ -574,8 +624,8 @@ mod tests {
         let api_base_url = Url::parse(SCRAPPA_API_BASE_URL).unwrap();
         let request = build_category_request(&input, &api_base_url).unwrap();
         assert_eq!(
-            query_value(&request.url, "category").as_deref(),
-            Some("education")
+            request.url.as_str(),
+            "https://scrappa.co/api/youtube/search?query=education+tutorial+learning&type=video&sort=relevance&duration=short&upload_date=hour&limit=20"
         );
         assert_eq!(
             query_value(&request.url, "sort").as_deref(),
@@ -606,11 +656,12 @@ mod tests {
         let base = Url::parse(SCRAPPA_API_BASE_URL).unwrap();
         let request = build_category_request(&input, &base).unwrap();
 
-        assert_eq!(request.url.path(), "/search/category");
+        assert_eq!(request.url.path(), "/api/youtube/search");
         assert_eq!(
-            query_value(&request.url, "category").as_deref(),
+            query_value(&request.url, "query").as_deref(),
             Some("music & arts")
         );
+        assert_eq!(query_value(&request.url, "type").as_deref(), Some("video"));
         assert_eq!(
             query_value(&request.url, "sort").as_deref(),
             Some("view_count")
@@ -623,7 +674,7 @@ mod tests {
             query_value(&request.url, "upload_date").as_deref(),
             Some("week")
         );
-        assert_eq!(query_value(&request.url, "limit").as_deref(), Some("1024"));
+        assert_eq!(query_value(&request.url, "limit").as_deref(), Some("20"));
         assert_eq!(
             query_value(&request.url, "continuation").as_deref(),
             Some("next/page+token")
@@ -657,10 +708,11 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            query_value(&request.url, "category").as_deref(),
-            Some("music")
+            query_value(&request.url, "query").as_deref(),
+            Some("music songs artist")
         );
         assert_eq!(query_value(&request.url, "sort").as_deref(), Some("rating"));
+        assert_eq!(query_value(&request.url, "limit").as_deref(), Some("20"));
         assert_eq!(
             query_value(&request.url, "features").as_deref(),
             Some("hd,cc,4k")
@@ -698,6 +750,21 @@ mod tests {
                     .contains("Limit must be a positive integer")
             );
         }
+    }
+
+    #[test]
+    fn every_schema_category_maps_to_the_old_search_terms() {
+        let schema: Value = serde_json::from_str(INPUT_SCHEMA).unwrap();
+        let categories = schema["properties"]["category"]["items"]["enum"]
+            .as_array()
+            .unwrap();
+        assert_eq!(categories.len(), CATEGORY_SEARCH_TERMS.len());
+        for category in categories {
+            let category = category.as_str().unwrap();
+            assert_ne!(category_search_term(category), category);
+        }
+        assert_eq!(category_search_term("HowTo"), "how to tutorial guide");
+        assert_eq!(category_search_term("unknown"), "unknown");
     }
 
     #[test]
@@ -758,11 +825,12 @@ mod tests {
             .contains("authorization: bearer test-token"));
         let scrappa_target = requests[1].line.split_whitespace().nth(1).unwrap();
         let scrappa_url = base_url.join(scrappa_target).unwrap();
-        assert_eq!(scrappa_url.path(), "/search/category");
+        assert_eq!(scrappa_url.path(), "/search");
         assert_eq!(
-            query_value(&scrappa_url, "category").as_deref(),
-            Some("education")
+            query_value(&scrappa_url, "query").as_deref(),
+            Some("education tutorial learning")
         );
+        assert_eq!(query_value(&scrappa_url, "type").as_deref(), Some("video"));
         assert_eq!(
             query_value(&scrappa_url, "sort").as_deref(),
             Some("view_count")
@@ -778,6 +846,12 @@ mod tests {
         );
         assert!(requests[1].headers.contains("accept: application/json"));
         assert!(!requests[1].headers.contains("authorization:"));
+        assert!(requests[1]
+            .headers
+            .contains("x-api-key: test-scrappa-key-not-a-real-credential"));
+        for index in [0, 2, 3] {
+            assert!(!requests[index].headers.contains("x-api-key:"));
+        }
         assert!(requests[2]
             .line
             .starts_with("GET /v2/actor-runs/run-id HTTP/1.1"));
