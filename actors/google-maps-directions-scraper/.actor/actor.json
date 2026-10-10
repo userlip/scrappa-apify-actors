@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-maps-directions-scraper",
   "title": "Google Maps Directions Scraper",
   "description": "Compare Google Maps routes by distance, estimated travel time, travel mode and route steps. Enter origin and destination locations, then compare supported travel modes and route alternatives.",

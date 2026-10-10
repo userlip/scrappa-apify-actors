@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 256,
+    "maxMemoryMbytes": 256,
     "name": "youtube-api-get-channel-details",
     "title": "YouTube Channel Details Scraper",
     "description": "Look up a YouTube channel profile with name, description, custom URL and subscriber count. Provide a channel ID for its public profile; a channel handle or display name is not a substitute.",

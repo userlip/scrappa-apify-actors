@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "instagram-tagged-posts-scraper",
   "title": "Instagram Tagged Posts Scraper",
   "description": "Find public Instagram posts that tag an account, with captions, engagement, author profiles, and links. Batch usernames and page through available posts.",

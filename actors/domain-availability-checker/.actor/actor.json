@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "domain-availability-checker",
   "title": "Domain Availability Checker",
   "description": "Check domain registration status and registry events using public RDAP records. Submit one domain or a batch of names to check their current RDAP registration status.",

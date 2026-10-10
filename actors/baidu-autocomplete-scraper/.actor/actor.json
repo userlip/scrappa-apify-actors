@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "baidu-autocomplete-scraper",
   "title": "Baidu Autocomplete Scraper",
   "description": "Expand Baidu search phrases into autocomplete suggestions with position, phrase text, and match details. Batch seed terms to compare localized keyword ideas.",

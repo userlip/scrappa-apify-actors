@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-challenge-details-scraper",
   "title": "TikTok Hashtag Details Scraper",
   "description": "Look up TikTok hashtag challenges with names, descriptions and participant counts. Submit multiple challenge names in one run to retrieve records for each target.",

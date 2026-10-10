@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "trustedshops-shop-profile-scraper",
   "title": "Trusted Shops Shop Profile Scraper",
   "description": "Look up a Trusted Shops profile with shop details, rating and certification status. Submit a shop ID or profile URL, with batch input available for multiple shops.",

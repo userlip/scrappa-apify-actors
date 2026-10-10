@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-user-posts-scraper",
   "title": "TikTok User Posts Scraper",
   "description": "List public videos from a TikTok profile with captions and engagement counts. Set a public TikTok username and continue with the cursor when another page is available.",

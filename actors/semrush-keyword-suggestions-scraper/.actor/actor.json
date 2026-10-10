@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "semrush-keyword-suggestions-scraper",
   "title": "Semrush Keyword Suggestions Scraper",
   "description": "Expand seed keywords into Semrush suggestion phrases. Batch multiple queries to build topic lists for SEO briefs and content research.",

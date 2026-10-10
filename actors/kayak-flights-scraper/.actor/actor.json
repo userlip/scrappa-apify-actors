@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-flights-scraper",
   "title": "Kayak Flights Scraper",
   "description": "Get Kayak one-way or round-trip itineraries with flight legs, travel times, provider counts, and shareable links. Add several origin-destination routes in one run to compare fares or plan trips.",

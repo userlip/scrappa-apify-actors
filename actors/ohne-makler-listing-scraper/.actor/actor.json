@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "ohne-makler-listing-scraper",
   "title": "Ohne-Makler Listing Details Scraper",
   "description": "Extract an Ohne-Makler listing’s asking price, rooms, area, condition, location, photos, energy details, and description. Batch listing IDs for property research.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "billiger-search-scraper",
   "title": "Billiger.de Price Comparison Search Scraper",
   "description": "Compare Billiger.de products with prices, brands, review counts, offer totals, and product links. Batch keywords in one run and page through results to monitor German retail prices.",

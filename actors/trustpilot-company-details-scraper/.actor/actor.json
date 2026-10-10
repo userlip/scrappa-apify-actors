@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "trustpilot-company-details-scraper",
   "title": "Trustpilot Company Details Scraper",
   "description": "Review a Trustpilot company profile with domain, TrustScore, star rating and review count. Submit multiple company domains in one run to retrieve records for each target.",

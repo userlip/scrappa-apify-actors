@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "realestate-com-au-search-scraper",
   "title": "Realestate.com.au Property Search Scraper",
   "description": "Search realestate.com.au by suburb for buy, rent, or sold listings with prices, addresses, property features, agencies, inspections, and links. Batch locations to compare Australian markets.",

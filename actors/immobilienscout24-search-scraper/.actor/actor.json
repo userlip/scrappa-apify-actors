@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "immobilienscout24-search-scraper",
   "title": "ImmobilienScout24 Search Scraper",
   "description": "Search ImmobilienScout24 property listings by city, district or postal code, with filters for property type, price, rooms and floor area.",

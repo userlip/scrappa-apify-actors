@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "apple-app-store-search-scraper",
   "title": "Apple App Store Search Scraper",
   "description": "Search the Apple App Store for app names, publishers, prices, ratings, categories, and links. Submit several search phrases in one run to build catalogs or compare storefront listings.",

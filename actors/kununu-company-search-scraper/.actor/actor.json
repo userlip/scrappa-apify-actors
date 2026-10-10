@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kununu-company-search-scraper",
   "title": "Kununu Company Search Scraper",
   "description": "Search Kununu company profiles with names, slugs, locations, industry IDs, ratings, review counts, and links. Batch keywords and page through employer matches.",

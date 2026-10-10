@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-lens-scraper",
   "title": "Google Lens Visual Search Scraper",
   "description": "Find Google Lens matches from public image URLs, including titles, sources, thumbnails, links, and prices. Submit several images per run to discover visually similar products or pages.",

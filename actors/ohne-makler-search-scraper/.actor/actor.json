@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "ohne-makler-search-scraper",
   "title": "Ohne-Makler Property Search Scraper",
   "description": "Find German property listings on Ohne-Makler with prices, rooms, area, location, coordinates, and listing links. Batch city searches and page through local results.",

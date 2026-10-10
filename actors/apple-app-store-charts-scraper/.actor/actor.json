@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "apple-app-store-charts-scraper",
   "title": "Apple App Store Top Charts Scraper",
   "description": "Get Apple App Store chart rankings with position, app title, developer, product ID, genre, and listing URL. Batch chart types or storefronts to compare app visibility.",

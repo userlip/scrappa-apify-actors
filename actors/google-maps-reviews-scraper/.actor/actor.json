@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "google-maps-reviews-scraper",
   "title": "Google Maps Reviews Scraper",
   "description": "Read Google Maps reviews with star ratings, written feedback, posting dates and owner replies. Start with a place ID and choose a review order or text filter for the public feedback.",

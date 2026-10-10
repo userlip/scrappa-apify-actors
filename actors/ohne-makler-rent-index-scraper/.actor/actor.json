@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "ohne-makler-rent-index-scraper",
   "title": "Ohne-Makler Rent Index Scraper",
   "description": "Read the Ohne-Makler Mietspiegel for German cities, with rent tables, market sections, and available chart data. Batch city and state pairs to compare reference rents.",

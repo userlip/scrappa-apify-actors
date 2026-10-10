@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "apple-app-store-reviews-scraper",
   "title": "Apple App Store Reviews Scraper",
   "description": "Export Apple App Store reviews with star ratings, titles, review text, author names, and dates. Batch app IDs, choose a storefront, and page through customer feedback.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "brave-search-scraper",
   "title": "Brave Search Scraper",
   "description": "Search Brave for ranked web results with titles, snippets, source domains, and links. Submit multiple queries in one run to compare independent search results or track page visibility.",

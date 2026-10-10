@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "kununu-reviews-scraper",
   "title": "Kununu Reviews Scraper",
   "description": "Review kununu employer feedback with company ratings, review text and recommendation scores. Submit multiple company slugs in one run to retrieve records for each target.",

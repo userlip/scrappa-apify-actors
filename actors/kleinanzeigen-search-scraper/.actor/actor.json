@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kleinanzeigen-search-scraper",
   "title": "Kleinanzeigen Search Scraper",
   "description": "Search Kleinanzeigen listings by phrase, location, category and price range. Enter an item phrase and use the location, category and price range fields to narrow local listings.",

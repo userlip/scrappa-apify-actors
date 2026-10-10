@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-hotel-rates-scraper",
   "title": "Kayak Hotel Rates Scraper",
   "description": "Compare Kayak hotel rate groups with room descriptions, booking providers, total prices, and click-through links. Batch hotel IDs and choose future stay dates.",

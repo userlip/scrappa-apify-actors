@@ -6,10 +6,10 @@ use std::{
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{anyhow, bail, Context, Result};
 use httpdate::parse_http_date;
 use reqwest::{Client, Method, RequestBuilder, Response, StatusCode, Url};
-use serde_json::{Map, Number, Value, json};
+use serde_json::{json, Map, Number, Value};
 use tokio::time::sleep;
 
 const DEFAULT_SCRAPPA_URL: &str = "https://scrappa.co/api";
@@ -257,7 +257,7 @@ impl Storage {
         #[cfg(test)]
         let dataset_written = 0;
         #[cfg(not(test))]
-        let dataset_written = self.current_dataset_item_count().await?;
+        let dataset_written = self.current_dataset_item_count(false).await?;
         self.dataset_written = Some(dataset_written);
         let mut allowed = apify_dataset_budget(&run, requested)?;
 
@@ -319,7 +319,7 @@ impl Storage {
                 let written = match self.dataset_written {
                     Some(written) => written,
                     None => {
-                        let written = self.current_dataset_item_count().await?;
+                        let written = self.current_dataset_item_count(true).await?;
                         self.dataset_written = Some(written);
                         written
                     }
@@ -361,7 +361,9 @@ impl Storage {
         }
     }
 
-    async fn current_dataset_item_count(&self) -> Result<usize> {
+    // `settle_when_empty` is false for the run-start lookup: no write is in flight yet,
+    // so the 2 s settle wait would only add idle compute.
+    async fn current_dataset_item_count(&self, settle_when_empty: bool) -> Result<usize> {
         let dataset_id = self.dataset_id.as_deref().unwrap_or_default();
         let mut url = self.api_url(&["v2", "datasets", dataset_id])?;
         url.query_pairs_mut().append_pair("fields", "itemCount");
@@ -395,11 +397,13 @@ impl Storage {
                 .cloned()
                 .ok_or_else(|| anyhow!("Apify dataset items response was not an array"))?;
             if items.is_empty() {
-                if checked_empty_at
-                    .is_none_or(|checked_at| checked_at.elapsed() < DATASET_VERIFY_SETTLE)
-                {
+                if checked_empty_at.is_none_or(|checked_at| {
+                    settle_when_empty && checked_at.elapsed() < DATASET_VERIFY_SETTLE
+                }) {
                     checked_empty_at.get_or_insert_with(Instant::now);
-                    dataset_settle_sleep(DATASET_VERIFY_SETTLE).await;
+                    if settle_when_empty {
+                        dataset_settle_sleep(DATASET_VERIFY_SETTLE).await;
+                    }
                     continue;
                 }
                 return Ok(count);
@@ -1886,12 +1890,10 @@ fn next_page_value(
             json!(next)
         }
         Value::String(value) if pagination.kind == "page" => {
-            json!(
-                value
-                    .parse::<i64>()
-                    .unwrap_or(0)
-                    .saturating_add(pagination.step.max(1))
-            )
+            json!(value
+                .parse::<i64>()
+                .unwrap_or(0)
+                .saturating_add(pagination.step.max(1)))
         }
         Value::String(value) if pagination.kind == "cursor" => json!(value),
         _ => pagination.start.clone(),
@@ -2855,11 +2857,9 @@ mod tests {
         assert_eq!(chunks.len(), 2);
         assert_eq!(chunks[0].items.len(), 500);
         assert_eq!(chunks[1].items.len(), 1);
-        assert!(
-            chunks
-                .iter()
-                .all(|chunk| chunk.body.len() <= MAX_DATASET_PUSH_BYTES)
-        );
+        assert!(chunks
+            .iter()
+            .all(|chunk| chunk.body.len() <= MAX_DATASET_PUSH_BYTES));
 
         let large_item = json!({"value": "x".repeat(MAX_DATASET_PUSH_BYTES)});
         assert!(dataset_item_chunks(&[large_item]).is_err());
@@ -3008,7 +3008,7 @@ mod tests {
             (200, serde_json::to_string(&items).unwrap()),
         ]);
         let mut storage = test_storage(server.base.clone());
-        let count = storage.current_dataset_item_count().await.unwrap();
+        let count = storage.current_dataset_item_count(true).await.unwrap();
         assert_eq!(count, 21);
         storage.dataset_written = Some(count);
 

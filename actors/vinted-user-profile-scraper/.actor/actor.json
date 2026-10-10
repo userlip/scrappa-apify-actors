@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "vinted-user-profile-scraper",
   "title": "Vinted User Profile Scraper",
   "description": "Look up a Vinted seller profile with username, location, feedback and active item count. Paste the seller or user ID shown in the Input section to retrieve its public record.",

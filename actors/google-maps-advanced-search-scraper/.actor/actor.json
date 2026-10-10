@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-maps-advanced-search-scraper",
   "title": "Google Maps Advanced Search Scraper",
   "description": "Find local businesses on Google Maps with names, categories, star ratings and addresses. Set the map center and a business category to find places in a chosen local area.",

@@ -14,6 +14,7 @@
     "test:audit-secrets": "node --test scripts/audit-apify-secrets.test.mjs",
     "test:audit-health": "node --test scripts/audit-apify-health.test.mjs",
     "test:audit-pricing": "node --test scripts/audit-apify-pricing.test.mjs",
+    "test:prebuilt-actor": "node --test scripts/prebuilt-actor.test.mjs",
     "test:store-metadata": "node --test scripts/apply-store-metadata.test.mjs",
     "test:live-actors": "node --test scripts/live-actor-source-utils.test.mjs",
     "verify:live-actors": "node scripts/verify-live-actor-sources.mjs",

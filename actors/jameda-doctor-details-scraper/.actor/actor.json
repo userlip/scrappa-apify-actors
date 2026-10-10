@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "jameda-doctor-details-scraper",
   "title": "Jameda Doctor Details Scraper",
   "description": "Review a Jameda doctor profile with name, specialty, ratings and practice details. Submit one or more public doctor profile URLs to collect specialty and practice information together.",

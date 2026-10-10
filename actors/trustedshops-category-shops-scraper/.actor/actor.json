@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "trustedshops-category-shops-scraper",
   "title": "Trusted Shops Category Shops Scraper",
   "description": "Browse Trusted Shops stores by category with shop names, ratings, review counts, certification status, and profile links. Batch categories and choose a country market.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "pinterest-search-scraper",
   "title": "Pinterest Search Scraper",
   "description": "Find Pinterest pins with titles, descriptions, image links and source pages. Search a subject or style phrase to find public pins and follow their image links back to the source pages.",

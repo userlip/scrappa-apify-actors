@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-collection-posts-scraper",
   "title": "TikTok Collection Videos Scraper",
   "description": "Collect public TikTok collection videos with creators, captions, play counts, likes, and sound references. Batch collection IDs and follow cursor pages.",

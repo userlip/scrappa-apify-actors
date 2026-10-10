@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "instagram-post-comments-scraper",
   "title": "Instagram Comments Scraper",
   "description": "Collect public Instagram comments with text, posting times, likes, and author handles. Add several post shortcodes in one run and page through replies.",

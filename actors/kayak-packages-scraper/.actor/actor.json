@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-packages-scraper",
   "title": "Kayak Vacation Packages Scraper",
   "description": "Find Kayak flight-and-hotel packages with destination, fare, lodging details, provider, and booking link. Batch origin-destination pairs and choose future travel dates.",

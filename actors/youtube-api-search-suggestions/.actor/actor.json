@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "youtube-api-search-suggestions",
   "title": "YouTube Search Suggestions Scraper",
   "description": "Find YouTube search suggestions for a phrase and locale. Enter a phrase and select a language or country to request localized YouTube suggestions.",

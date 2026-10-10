@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-music-details-scraper",
   "title": "TikTok Music Details Scraper",
   "description": "Look up TikTok sound titles, authors, durations, covers, and linked video counts. Batch music URLs to build audio research datasets.",

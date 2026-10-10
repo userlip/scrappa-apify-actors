@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-hotels-autocomplete-scraper",
   "title": "Google Hotels Autocomplete Scraper",
   "description": "Find hotel and destination suggestions on Google Hotels before searching for a stay. Use a city, district or hotel name to get a property suggestion that can refine a later stay search.",

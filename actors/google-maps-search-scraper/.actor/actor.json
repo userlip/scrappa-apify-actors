@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "google-maps-search-scraper",
   "title": "Google Maps Search Scraper",
   "description": "Search Google Maps for local places with names, categories, star ratings and addresses. Enter a business or place query and set the region when you need locally focused results.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "vinted-user-items-scraper",
   "title": "Vinted User Items Scraper",
   "description": "Browse a Vinted seller’s items with listing titles, brands, condition and prices. Submit multiple user IDs in one run to retrieve records for each target.",

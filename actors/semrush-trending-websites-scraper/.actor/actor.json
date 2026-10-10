@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "semrush-trending-websites-scraper",
   "title": "Semrush Trending Websites Scraper",
   "description": "Find trending websites with estimated visits, device shares, and growth rates. Batch country markets to compare domains gaining traffic.",

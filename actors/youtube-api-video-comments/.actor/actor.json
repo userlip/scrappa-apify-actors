@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 128,
+    "maxMemoryMbytes": 128,
     "name": "youtube-api-video-comments",
     "title": "YouTube Video Comments Scraper",
     "description": "Read public YouTube video comments with text, publication time, likes and replies. Enter a YouTube video ID and pass the continuation value to request another page.",

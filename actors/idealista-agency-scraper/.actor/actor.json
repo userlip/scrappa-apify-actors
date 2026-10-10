@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "idealista-agency-scraper",
   "title": "Idealista Agency Scraper",
   "description": "Collect Idealista agency profiles with commercial names, website, contact details, listing totals, languages, and media. Batch agency short names and choose a supported market.",

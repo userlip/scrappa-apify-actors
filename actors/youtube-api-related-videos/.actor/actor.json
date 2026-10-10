@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 128,
+    "maxMemoryMbytes": 128,
     "name": "youtube-api-related-videos",
     "title": "YouTube Related Videos Scraper",
     "description": "Find YouTube videos related to a video ID, with titles, channels and view counts. Enter a YouTube video ID and pass a continuation value to request another page.",

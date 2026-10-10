@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-trends-interest-scraper",
   "title": "Google Trends Interest Scraper",
   "description": "Track relative Google Trends interest over time with dates and a score from 0 to 100. Choose a region, time range and search type to compare interest for one topic over time.",

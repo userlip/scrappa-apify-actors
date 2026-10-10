@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-autocomplete-scraper",
   "title": "Google Autocomplete Keyword Scraper",
   "description": "Get Google autocomplete suggestions with phrases related to each search. Batch seed keywords, choose a language, and export long-tail search ideas.",

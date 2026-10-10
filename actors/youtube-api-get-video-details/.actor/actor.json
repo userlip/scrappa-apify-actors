@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 128,
+    "maxMemoryMbytes": 128,
     "name": "youtube-api-get-video-details",
     "title": "YouTube Video Details Scraper",
     "description": "Look up a YouTube video with title, description, channel and view count. Paste a YouTube video ID to retrieve its public details.",

@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 128,
+    "maxMemoryMbytes": 128,
     "name": "youtube-api-channel-videos",
     "title": "YouTube Channel Videos Scraper",
     "description": "List videos published by a YouTube channel with titles, publication dates, links and views. Enter a channel ID and sort order; the next-page continuation token appears in the run log.",

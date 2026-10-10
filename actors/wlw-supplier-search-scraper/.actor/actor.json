@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "wlw-supplier-search-scraper",
   "title": "WLW Supplier Search Scraper",
   "description": "Search WLW for suppliers with company profiles, product descriptions, categories, selling points, and order details. Batch queries and filter by country or supplier attributes.",

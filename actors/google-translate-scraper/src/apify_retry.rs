@@ -1,15 +1,15 @@
 use std::{
     collections::HashMap,
     sync::{
-        Arc, Mutex, OnceLock,
         atomic::{AtomicU64, Ordering},
+        Arc, Mutex, OnceLock,
     },
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
 use reqwest::{
+    header::{HeaderMap, ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE, HOST, USER_AGENT},
     Client, Error as ReqwestError, Method, Request, RequestBuilder, Response, StatusCode, Url,
-    header::{ACCEPT, AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE, HOST, HeaderMap, USER_AGENT},
 };
 use serde_json::{Number, Value};
 use tokio::sync::Mutex as AsyncMutex;
@@ -28,6 +28,12 @@ type DatasetProgress = Arc<AsyncMutex<Option<usize>>>;
 
 static DATASET_PROGRESS: OnceLock<Mutex<HashMap<String, DatasetProgress>>> = OnceLock::new();
 static IDEMPOTENCY_KEY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+// Datasets whose write offset was already looked up in this process. The first lookup
+// has no earlier write in flight, so it skips the settle wait; lookups after a failed
+// write still wait for late writes.
+#[cfg(not(test))]
+static DATASET_OFFSET_LOOKED_UP: OnceLock<Mutex<std::collections::HashSet<String>>> =
+    OnceLock::new();
 
 pub(crate) trait ApifyRetryExt {
     async fn send_apify_with_retry(self) -> Result<Response, Error>;
@@ -377,6 +383,7 @@ async fn initial_dataset_offset(
     request: &Request,
     items_url: &Url,
     deadline: Instant,
+    settle_when_empty: bool,
 ) -> Result<usize, Error> {
     let mut dataset_url = items_url.clone();
     let path = items_url
@@ -418,10 +425,16 @@ async fn initial_dataset_offset(
         )
         .await?;
         if rows.is_empty() {
-            if checked_empty_at.is_none_or(|checked_at| checked_at.elapsed() < VERIFY_SETTLE) {
+            if checked_empty_at
+                .is_none_or(|checked_at| settle_when_empty && checked_at.elapsed() < VERIFY_SETTLE)
+            {
                 checked_empty_at.get_or_insert_with(Instant::now);
-                settle_sleep(VERIFY_SETTLE.min(deadline.saturating_duration_since(Instant::now())))
+                if settle_when_empty {
+                    settle_sleep(
+                        VERIFY_SETTLE.min(deadline.saturating_duration_since(Instant::now())),
+                    )
                     .await;
+                }
                 continue;
             }
             return Ok(count);
@@ -446,7 +459,17 @@ async fn dataset_offset_for_new_write(
     items_url: &Url,
     deadline: Instant,
 ) -> Result<usize, Error> {
-    initial_dataset_offset(request, items_url, deadline).await
+    let key = format!(
+        "{}{}",
+        items_url.origin().ascii_serialization(),
+        items_url.path()
+    );
+    let looked_up = DATASET_OFFSET_LOOKED_UP.get_or_init(|| Mutex::new(Default::default()));
+    let settle_when_empty = !looked_up
+        .lock()
+        .unwrap_or_else(|error| error.into_inner())
+        .insert(key);
+    initial_dataset_offset(request, items_url, deadline, settle_when_empty).await
 }
 
 enum DatasetVerification {
@@ -1071,11 +1094,9 @@ mod tests {
         assert_eq!(result.status(), StatusCode::BAD_REQUEST);
         let requests = server.finish();
         assert_eq!(method_count(&requests, "POST"), 1);
-        assert!(
-            requests[0]
-                .to_ascii_lowercase()
-                .contains("idempotency-key:")
-        );
+        assert!(requests[0]
+            .to_ascii_lowercase()
+            .contains("idempotency-key:"));
     }
 
     #[tokio::test]
@@ -1158,7 +1179,7 @@ mod tests {
             .build()
             .unwrap();
         let initial_count =
-            initial_dataset_offset(&request, &items_url, Instant::now() + RETRY_BUDGET)
+            initial_dataset_offset(&request, &items_url, Instant::now() + RETRY_BUDGET, true)
                 .await
                 .unwrap();
         assert_eq!(initial_count, 21);

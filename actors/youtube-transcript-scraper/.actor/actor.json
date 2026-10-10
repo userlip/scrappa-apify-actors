@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 128,
+    "maxMemoryMbytes": 128,
     "name": "youtube-transcript-scraper",
     "title": "YouTube Transcript Scraper",
     "description": "Retrieve YouTube caption segments with text, language and timing information. Enter a YouTube video ID and choose a transcript language when needed.",

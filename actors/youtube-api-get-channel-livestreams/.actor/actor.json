@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 256,
+    "maxMemoryMbytes": 256,
     "name": "youtube-api-get-channel-livestreams",
     "title": "YouTube Channel Livestreams Scraper",
     "description": "Find public YouTube livestreams from a channel, with titles, watch links and thumbnails. Choose a supported sort order and continuation value when you need to page through the channel’s streams.",

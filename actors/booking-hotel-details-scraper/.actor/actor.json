@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "booking-hotel-details-scraper",
   "title": "Booking.com Hotel Details Scraper",
   "description": "Review Booking.com hotel pages for the property name, address, guest rating, check-in times and structured hotel details. Submit a hotel URL or a country and hotel slug, with batch input for multiple properties.",

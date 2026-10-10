@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "semrush-domain-overview-scraper",
   "title": "Semrush Domain Overview Scraper",
   "description": "Get Semrush-style domain metrics for keywords, visits, traffic value, authority, backlinks, and referring domains. Batch websites to benchmark search visibility or assess competitors.",

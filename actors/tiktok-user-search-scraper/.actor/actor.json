@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-user-search-scraper",
   "title": "TikTok User Search Scraper",
   "description": "Search public TikTok profiles by keyword and collect handles, display names, follower counts, and verification status. Batch topics to find creators in a niche or map public profiles.",

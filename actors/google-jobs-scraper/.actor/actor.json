@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-jobs-scraper",
   "title": "Google Jobs Scraper",
   "description": "Find Google Jobs postings with job titles, employers, locations and available salary details. Use a role or employer phrase and the supported market settings to find matching openings.",

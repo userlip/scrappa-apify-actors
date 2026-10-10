@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "mobile-de-listing-scraper",
   "title": "mobile.de Listing Details Scraper",
   "description": "Retrieve a mobile.de listing with vehicle attributes, images, seller information, financing options, and links. Batch listing IDs to compare advertised cars in one run.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-finance-search-scraper",
   "title": "Google Finance Search Scraper",
   "description": "Find matching financial instruments on Google Finance by company name or ticker. Look up companies by name or ticker and provide several queries when building a watchlist.",

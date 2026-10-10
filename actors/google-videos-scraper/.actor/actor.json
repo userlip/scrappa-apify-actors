@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-videos-scraper",
   "title": "Google Videos Scraper",
   "description": "Find Google Videos results with titles, video links, publishers and thumbnails. Set the locale and page options to browse more videos relevant to your phrase.",

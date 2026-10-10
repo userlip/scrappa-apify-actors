@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-translate-scraper",
   "title": "Google Translate Scraper",
   "description": "Translate short text with Google Translate and keep the source phrase and its language pair. Provide source text and target language; Google can detect the source language, and batch input supports multiple phrases.",

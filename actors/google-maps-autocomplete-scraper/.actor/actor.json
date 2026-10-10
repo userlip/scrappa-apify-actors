@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "google-maps-autocomplete-scraper",
   "title": "Google Maps Autocomplete Scraper",
   "description": "Find place and business suggestions from Google Maps for a city, address or venue name. Enter the start of an address, business or place name to see matching suggestions.",

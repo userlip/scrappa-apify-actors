@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-news-scraper",
   "title": "Google News Scraper",
   "description": "Find Google News articles with headlines, publishers, publication dates and result links. Set a locale to focus the article list on a market.",

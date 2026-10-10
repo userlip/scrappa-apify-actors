@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-challenge-posts-scraper",
   "title": "TikTok Hashtag Videos Scraper",
   "description": "Collect public TikTok videos linked to a challenge, with captions, creators and engagement counts. Pass one or more challenge IDs; use TikTok Challenge Search or Challenge Details to find an ID first.",

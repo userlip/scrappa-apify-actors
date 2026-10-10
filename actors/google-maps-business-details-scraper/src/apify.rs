@@ -286,8 +286,8 @@ mod tests {
     use url::Url;
 
     use super::{
-        affordable_dataset_items, ApifyClient,
-        DatasetBudget, APIFY_REQUEST_TIMEOUT, DATASET_ITEM_EVENT,
+        affordable_dataset_items, ApifyClient, DatasetBudget, APIFY_REQUEST_TIMEOUT,
+        DATASET_ITEM_EVENT,
     };
     use crate::config::Config;
 

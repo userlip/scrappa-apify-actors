@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "booking-rooms-scraper",
   "title": "Booking.com Rooms & Rates Scraper",
   "description": "Find Booking.com room options with room names, quoted prices, occupancy, bed setup, and availability. Batch hotel URLs, choose travel dates, and compare stays.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-profile-scraper",
   "title": "TikTok Profile Scraper",
   "description": "Look up a public TikTok profile by username, profile URL or numeric user ID. Retrieve its display name, username and available follower counts without searching for posts.",

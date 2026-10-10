@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-patents-search-scraper",
   "title": "Google Patents Search Scraper",
   "description": "Search Google Patents by invention topic, inventor, assignee, date and publication status. Search by invention topic and add supported inventor, assignee or date filters.",

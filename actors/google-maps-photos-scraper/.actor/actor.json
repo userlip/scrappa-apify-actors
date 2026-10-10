@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-maps-photos-scraper",
   "title": "Google Maps Photos Scraper",
   "description": "Browse photos shared on Google Maps place pages, with image links and contributor details. Submit place IDs for one or more locations whose public photos you want to catalog.",

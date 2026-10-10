@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 128,
+    "maxMemoryMbytes": 128,
     "name": "youtube-api-get-playlists-details",
     "title": "YouTube Playlist Details Scraper",
     "description": "Look up a YouTube playlist with its title, description, channel and video count. Paste a YouTube playlist ID to retrieve its details.",

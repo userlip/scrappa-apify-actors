@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "instagram-trending-reels-scraper",
   "title": "Instagram Trending Reels Scraper",
   "description": "Capture trending public Instagram Reels with captions, likes, comments, author handles, and video links. Each run saves a snapshot of the global feed.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-ai-overview-scraper",
   "title": "Google AI Overview Scraper",
   "description": "Capture Google AI Overview answers, answer sections, and query context when available. Batch queries to compare answer coverage and organize observations about AI search results.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "billiger-offers-scraper",
   "title": "Billiger.de Product Offers Scraper",
   "description": "Compare Billiger.de product offers by shop, price, shipping cost, availability, seller rating, and offer link. Batch product IDs to review merchants in one run.",

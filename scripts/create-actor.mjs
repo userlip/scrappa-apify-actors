@@ -15,6 +15,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { prebuiltSourceFiles } from './prebuilt-actor.mjs';
 
 const API = 'https://api.apify.com/v2';
 const TOKEN = process.env.APIFY_TOKEN;
@@ -133,7 +134,7 @@ async function create(dir) {
   const schema = JSON.parse(fs.readFileSync(path.join(dir, '.actor/input_schema.json'), 'utf8'));
   const existing = await api('GET', `/acts/thescrappa~${slug}`, undefined, { allow404: true });
   if (existing) return { slug, status: 'exists', id: existing.id };
-  const files = collectFiles(dir);
+  const files = flags.has('--dry-run') ? collectFiles(dir) : prebuiltSourceFiles(dir);
   const store = spec.storeCopy || {};
   const body = {
     name: slug,
@@ -144,7 +145,7 @@ async function create(dir) {
     categories: spec.categories || store.categories,
     isPublic: false,
     actorPermissionLevel: 'LIMITED_PERMISSIONS',
-    defaultRunOptions: { build: 'latest', memoryMbytes: actorJson.defaultMemoryMbytes || 128, timeoutSecs: actorJson.defaultRunOptions?.timeoutSecs || spec.timeoutSecs || 300 },
+    defaultRunOptions: { build: 'latest', memoryMbytes: actorJson.defaultMemoryMbytes || actorJson.resources?.memoryMbytes || actorJson.minMemoryMbytes || 128, timeoutSecs: actorJson.defaultRunOptions?.timeoutSecs || spec.timeoutSecs || 300 },
     versions: [{
       versionNumber: '1.0',
       sourceType: 'SOURCE_FILES',

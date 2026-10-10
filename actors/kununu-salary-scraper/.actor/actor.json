@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kununu-salary-scraper",
   "title": "Kununu Salary by Job Title Scraper",
   "description": "Get Kununu salary statistics by job title and country, including average pay, ranges, city comparisons, experience groups, and related roles. Batch titles for research.",

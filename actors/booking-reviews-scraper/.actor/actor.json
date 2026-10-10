@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "booking-reviews-scraper",
   "title": "Booking.com Reviews Scraper",
   "description": "Collect Booking.com guest reviews with scores, titles, comments, reviewer names, stay dates, and languages. Batch hotel URLs and page through public feedback.",

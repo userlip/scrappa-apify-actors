@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "geizhals-product-scraper",
   "title": "Geizhals Product & Offers Scraper",
   "description": "Get a Geizhals product record with manufacturer, current merchant offers, price summaries, categories, ratings, and review links. Batch product IDs to compare catalog entries.",

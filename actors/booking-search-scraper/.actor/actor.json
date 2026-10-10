@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "booking-search-scraper",
   "title": "Booking.com Search Scraper",
   "description": "Compare Booking.com stays by property name, guest score, nightly price and review count. Choose destination, dates and guest counts to compare the stays returned for each search.",

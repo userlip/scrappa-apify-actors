@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-finance-indices-scraper",
   "title": "Google Finance Indices Scraper",
   "description": "Compare Google Finance index quotes with tickers, index levels and daily changes. Supply supported index codes to compare their current levels and daily movement.",

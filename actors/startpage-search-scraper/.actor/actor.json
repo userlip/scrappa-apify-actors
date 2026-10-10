@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "startpage-search-scraper",
   "title": "Startpage Search Scraper",
   "description": "Find Startpage results with page titles, descriptions, domains and source links. Submit several phrases in one run and use only the locale and filters listed in the input.",

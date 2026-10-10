@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "idealista-search-scraper",
   "title": "Idealista Property Search Scraper",
   "description": "Search Idealista listings with prices, size, rooms, photos, location, and links. Batch location searches and page through property results across supported European markets.",

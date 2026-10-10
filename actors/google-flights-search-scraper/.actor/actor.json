@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "google-flights-search-scraper",
   "title": "Google Flights Scraper",
   "description": "Compare Google Flights itineraries by fare, airlines, stops and total travel time. Compare routes using a future date and the one-way or round-trip option.",

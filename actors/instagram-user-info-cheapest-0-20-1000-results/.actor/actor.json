@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "instagram-user-info-cheapest-0-20-1000-results",
   "title": "Instagram User Info | Cheapest $0.20/1k results",
   "description": "Review a public Instagram profile with its biography, follower count and account details. Submit one public username or several usernames to retrieve the profiles available to Instagram.",

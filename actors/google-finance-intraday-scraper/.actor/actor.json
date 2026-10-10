@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-finance-intraday-scraper",
   "title": "Google Finance Intraday Scraper",
   "description": "Check Google Finance intraday prices with timestamps, price changes and market volume. Submit one or more tickers to inspect intraday price points available from Google Finance.",

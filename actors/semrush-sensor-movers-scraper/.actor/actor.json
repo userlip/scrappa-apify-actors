@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "semrush-sensor-movers-scraper",
   "title": "Semrush Sensor Winners & Losers Scraper",
   "description": "Track Semrush Sensor domains with ranking changes, keyword counts, and new or lost terms. Batch categories and choose a database for daily monitoring.",

@@ -7,6 +7,10 @@
 // input, and only move `latest` to the new build when the run succeeds with at
 // least one dataset item. The previous `latest` build ID is printed for rollback.
 //
+// The Rust binary is compiled locally in Docker (same rust:1.90-slim-bookworm image
+// the Actor Dockerfiles use) and uploaded gzipped, so the Apify build only copies it.
+// A source build on Apify takes ~140 s on a 4 GB builder (~$0.06); a prebuilt one ~3 s.
+//
 // Usage:
 //   APIFY_TOKEN=... node scripts/deploy-actor.mjs <actor-dir> [<actor-dir> ...] [--dry-run] [--no-promote] [--allow-empty]
 //
@@ -15,6 +19,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { prebuiltSourceFiles } from './prebuilt-actor.mjs';
 
 const API = 'https://api.apify.com/v2';
 const TOKEN = process.env.APIFY_TOKEN;
@@ -111,7 +116,7 @@ async function deploy(dir) {
   if (!(version.envVars || []).some((e) => e.name === 'SCRAPPA_API_KEY')) {
     throw new Error(`${name}: version ${versionNumber} has no SCRAPPA_API_KEY env var, refusing to deploy`);
   }
-  const files = collectFiles(dir);
+  const files = DRY ? collectFiles(dir) : prebuiltSourceFiles(dir);
   console.log(`${name}: version ${versionNumber}, ${files.length} files, previous latest ${latest?.buildId || 'none'}`);
   if (DRY) return { name, status: 'dry-run' };
 

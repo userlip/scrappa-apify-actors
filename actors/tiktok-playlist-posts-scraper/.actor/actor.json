@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-playlist-posts-scraper",
   "title": "TikTok Playlist Videos Scraper",
   "description": "Collect TikTok playlist videos with creators, captions, play counts, likes, and sound references. Batch playlist IDs and follow cursor pages.",
