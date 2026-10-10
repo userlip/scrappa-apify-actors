@@ -10,7 +10,7 @@ use tokio::time::timeout;
 use url::{form_urlencoded, Url};
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
-const SCRAPPA_API_BASE_URL: &str = "https://ytapi.scrappa.co";
+const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 
 struct ActorConfig {
@@ -21,10 +21,15 @@ struct ActorConfig {
     input_key: String,
     actor_run_id: String,
     apify_token: String,
+    scrappa_api_key: String,
 }
 
 impl ActorConfig {
     fn from_env() -> Result<Self> {
+        let scrappa_api_key = env::var("SCRAPPA_API_KEY")
+            .ok()
+            .filter(|api_key| !api_key.is_empty())
+            .ok_or_else(|| anyhow!("SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."))?;
         Ok(Self {
             apify_api_base_url: base_url_from_env("APIFY_API_PUBLIC_BASE_URL", APIFY_API_BASE_URL)?,
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
@@ -33,6 +38,7 @@ impl ActorConfig {
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             actor_run_id: required_env("ACTOR_RUN_ID")?,
             apify_token: required_env("APIFY_TOKEN")?,
+            scrappa_api_key,
         })
     }
 }
@@ -206,10 +212,11 @@ fn scrappa_request_error(error: reqwest::Error) -> anyhow::Error {
     }
 }
 
-async fn fetch_trending(client: &Client, url: &Url) -> Result<Value> {
+async fn fetch_trending(client: &Client, config: &ActorConfig, url: &Url) -> Result<Value> {
     let request = async {
         let response = client
             .get(url.clone())
+            .header("X-API-Key", &config.scrappa_api_key)
             .header(reqwest::header::ACCEPT, "application/json")
             .send_scrappa_with_retry("Scrappa API request")
             .await
@@ -368,7 +375,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let (url, category) = build_trending_url(&input, &config.scrappa_api_base_url)?;
     println!("Fetching data from Scrappa API");
 
-    let data = fetch_trending(client, &url).await?;
+    let data = fetch_trending(client, config, &url).await?;
     let videos = trending_videos_to_dataset_items(&data);
     let saved = push_dataset_items(client, config, videos).await?;
     println!(
@@ -409,7 +416,7 @@ mod tests {
     };
 
     fn base_url() -> Url {
-        Url::parse("https://ytapi.scrappa.co").unwrap()
+        Url::parse(SCRAPPA_API_BASE_URL).unwrap()
     }
 
     fn test_config(server_url: Url) -> ActorConfig {
@@ -421,6 +428,7 @@ mod tests {
             input_key: "INPUT".to_owned(),
             actor_run_id: "run-id".to_owned(),
             apify_token: "test-token".to_owned(),
+            scrappa_api_key: "test-scrappa-key-not-a-real-credential".to_owned(),
         }
     }
     const INPUT_RESPONSE: &str = r#"{"category":["music"],"type":["now"]}"#;
@@ -484,7 +492,7 @@ mod tests {
         assert_eq!(category.as_deref(), Some("music"));
         assert_eq!(
             url.as_str(),
-            "https://ytapi.scrappa.co/trending?category=music&type=now"
+            "https://scrappa.co/api/youtube/trending?category=music&type=now"
         );
 
         let (url, category) = build_trending_url(
@@ -495,12 +503,12 @@ mod tests {
         assert_eq!(category.as_deref(), Some("gaming"));
         assert_eq!(
             url.as_str(),
-            "https://ytapi.scrappa.co/trending?category=gaming"
+            "https://scrappa.co/api/youtube/trending?category=gaming"
         );
 
         let (url, _) =
             build_trending_url(&json!({ "category": 123, "type": false }), &base_url()).unwrap();
-        assert_eq!(url.as_str(), "https://ytapi.scrappa.co/trending");
+        assert_eq!(url.as_str(), "https://scrappa.co/api/youtube/trending");
     }
 
     #[test]
@@ -513,7 +521,7 @@ mod tests {
         assert_eq!(category.as_deref(), Some("news & culture"));
         assert_eq!(
             url.as_str(),
-            "https://ytapi.scrappa.co/trending?category=news+%26+culture&type=now"
+            "https://scrappa.co/api/youtube/trending?category=news+%26+culture&type=now"
         );
     }
 
@@ -579,6 +587,10 @@ mod tests {
         assert!(scrappa_request.starts_with("get /trending?category=music&type=now http/1.1"));
         assert!(scrappa_request.contains("accept: application/json"));
         assert!(!scrappa_request.contains("authorization:"));
+        assert!(scrappa_request.contains("x-api-key: test-scrappa-key-not-a-real-credential"));
+        for index in [0, 2, 3] {
+            assert!(!requests[index].to_ascii_lowercase().contains("x-api-key:"));
+        }
 
         let pricing_request = requests[2].to_ascii_lowercase();
         assert!(pricing_request.starts_with("get /v2/actor-runs/run-id http/1.1"));

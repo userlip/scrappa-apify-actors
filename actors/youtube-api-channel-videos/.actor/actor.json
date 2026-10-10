@@ -9,6 +9,7 @@
     "buildTag": "latest",
     "input": "./input_schema.json",
     "output": "./output_schema.json",
+    "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
     "dockerfile": "./Dockerfile",
     "storages": {
         "dataset": "./dataset_schema.json"

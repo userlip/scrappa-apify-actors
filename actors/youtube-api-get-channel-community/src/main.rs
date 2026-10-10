@@ -9,7 +9,7 @@ use std::{env, time::Duration};
 use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
-const SCRAPPA_API_BASE_URL: &str = "https://ytapi.scrappa.co";
+const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 
 struct ActorConfig {
@@ -20,10 +20,15 @@ struct ActorConfig {
     actor_run_id: String,
     input_key: String,
     apify_token: String,
+    scrappa_api_key: String,
 }
 
 impl ActorConfig {
     fn from_env() -> Result<Self> {
+        let scrappa_api_key = env::var("SCRAPPA_API_KEY")
+            .ok()
+            .filter(|api_key| !api_key.is_empty())
+            .ok_or_else(|| anyhow!("SCRAPPA_API_KEY environment variable is not set. Please configure it in Actor settings."))?;
         Ok(Self {
             apify_api_base_url: base_url_from_env("APIFY_API_PUBLIC_BASE_URL", APIFY_API_BASE_URL)?,
             scrappa_api_base_url: base_url_from_env("SCRAPPA_API_BASE_URL", SCRAPPA_API_BASE_URL)?,
@@ -32,6 +37,7 @@ impl ActorConfig {
             actor_run_id: required_env("ACTOR_RUN_ID")?,
             input_key: env::var("ACTOR_INPUT_KEY").unwrap_or_else(|_| "INPUT".to_owned()),
             apify_token: required_env("APIFY_TOKEN")?,
+            scrappa_api_key,
         })
     }
 }
@@ -111,8 +117,8 @@ fn build_channel_community_url(input: &Value, api_base_url: &Url) -> Result<Url>
                 "Search query \"id\" not provided. Please provide a value for \"id\" in the input."
             )
         })?;
-    let mut url = endpoint_url(api_base_url, &["channels", "community"])?;
-    let mut query = format!("id={}", encode_component(&js_string(id)));
+    let mut url = endpoint_url(api_base_url, &["channel-community"])?;
+    let mut query = format!("channel_id={}", encode_component(&js_string(id)));
 
     if let Some(continuation) = input
         .get("continuation")
@@ -181,9 +187,15 @@ fn scrappa_request_error(error: reqwest::Error) -> anyhow::Error {
     }
 }
 
-async fn fetch_channel_community(client: &Client, url: &Url) -> Result<Value> {
+async fn fetch_channel_community(
+    client: &Client,
+    config: &ActorConfig,
+    url: &Url,
+) -> Result<Value> {
     let response = client
         .get(url.clone())
+        .header("X-API-Key", &config.scrappa_api_key)
+        .header(reqwest::header::ACCEPT, "application/json")
         .timeout(SCRAPPA_REQUEST_TIMEOUT)
         .send_scrappa_with_retry("Scrappa API request")
         .await
@@ -361,7 +373,7 @@ async fn run_actor(client: &Client, config: &ActorConfig) -> Result<()> {
     let url = build_channel_community_url(&input, &config.scrappa_api_base_url)?;
     println!("Fetching data from Scrappa API");
 
-    let response_data = fetch_channel_community(client, &url).await?;
+    let response_data = fetch_channel_community(client, config, &url).await?;
     let posts = response_data
         .get("posts")
         .filter(|posts| !posts.is_null())
@@ -546,6 +558,7 @@ mod tests {
             actor_run_id: "test-run".to_owned(),
             input_key: "INPUT".to_owned(),
             apify_token: "test-token-not-a-real-credential".to_owned(),
+            scrappa_api_key: "test-scrappa-key-not-a-real-credential".to_owned(),
         }
     }
 
@@ -610,7 +623,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             url.as_str(),
-            "https://ytapi.scrappa.co/channels/community?id=UC%20example&continuation=next%20page"
+            "https://scrappa.co/api/youtube/channel-community?channel_id=UC%20example&continuation=next%20page"
         );
     }
 
@@ -635,13 +648,13 @@ mod tests {
             let url = build_channel_community_url(&input, &base_url).unwrap();
             assert_eq!(
                 url.as_str(),
-                "https://ytapi.scrappa.co/channels/community?id=UC123"
+                "https://scrappa.co/api/youtube/channel-community?channel_id=UC123"
             );
         }
     }
 
     #[tokio::test]
-    async fn writes_ordered_post_array_with_apify_auth_only() {
+    async fn writes_ordered_post_array_and_sends_the_scrappa_api_key() {
         let server = MockServer::start(vec![
             response(200, r#"{"id":"UC example","continuation":"next page"}"#),
             response(
@@ -666,10 +679,17 @@ mod tests {
             header_value(&requests[0], "authorization"),
             Some("Bearer test-token-not-a-real-credential")
         );
-        assert!(requests[1]
-            .starts_with("GET /channels/community?id=UC%20example&continuation=next%20page "));
+        assert!(requests[1].starts_with(
+            "GET /channel-community?channel_id=UC%20example&continuation=next%20page "
+        ));
         assert!(header_value(&requests[1], "authorization").is_none());
-        assert!(header_value(&requests[1], "x-api-key").is_none());
+        assert_eq!(
+            header_value(&requests[1], "x-api-key"),
+            Some("test-scrappa-key-not-a-real-credential")
+        );
+        for index in [0, 2, 3] {
+            assert!(header_value(&requests[index], "x-api-key").is_none());
+        }
         assert!(requests[2].starts_with("GET /v2/actor-runs/test-run "));
         assert_eq!(
             header_value(&requests[2], "authorization"),
