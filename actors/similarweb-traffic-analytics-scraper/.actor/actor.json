@@ -11,6 +11,8 @@
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "resources": {
     "memoryMbytes": 128
   },

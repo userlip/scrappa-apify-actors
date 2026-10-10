@@ -33,6 +33,7 @@ const OUTPUT_KEY: &str = "OUTPUT";
 const DOMAIN_RESULT_CHARGE_EVENT: &str = "domain-result";
 const DATASET_ITEM_CHARGE_EVENT: &str = "apify-default-dataset-item";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
+const SCRAPPA_CONCURRENCY: usize = 5;
 const ACTOR_TIMEOUT_STATUS_UPDATE: Duration = Duration::from_secs(1);
 
 struct ActorConfig {
@@ -129,7 +130,8 @@ async fn run_actor_requests(
     let mut no_data = 0;
     let mut status_message = None;
 
-    for (index, request) in requests.iter().enumerate() {
+    let mut next_index = 0;
+    'windows: while next_index < requests.len() {
         if budget.charge_limit_reached_before_fetch() {
             let message = "Charge limit reached before fetching the next Similarweb domain result; no more Scrappa requests will be made.";
             println!(
@@ -145,72 +147,95 @@ async fn run_actor_requests(
             break;
         }
 
-        println!(
-            "Fetching Similarweb traffic analytics for {}",
-            request.domain
-        );
-        let response = match scrappa.get_similarweb(&request.domain).await {
-            Ok(response) => response,
-            Err(error) if is_scrappa_not_found(&error) => {
-                let item = json!({
-                    "success": false,
-                    "domain": request.domain,
-                    "input_domain": request.input_domain,
-                    "request_domain": request.domain,
-                    "status_code": 404,
-                    "error": "No traffic data available",
-                });
-                let result = push_charged_item(http, config, budget, &item, index).await?;
-                if !result.saved {
-                    status_message = result.status_message;
-                    break;
-                }
-
-                processed += 1;
-                no_data += 1;
-                if result.status_message.is_some() {
-                    status_message = result.status_message;
-                    break;
-                }
+        // Fetch a small window concurrently so Apify compute is not idle while
+        // Scrappa answers. The window never exceeds the remaining charge budget.
+        let window_size = SCRAPPA_CONCURRENCY
+            .min(requests.len() - next_index)
+            .min(budget.fetchable_result_count());
+        let window_start = next_index;
+        next_index += window_size;
+        let fetches: Vec<_> = requests[window_start..next_index]
+            .iter()
+            .map(|request| {
                 println!(
-                    "No Similarweb traffic data available for {}",
+                    "Fetching Similarweb traffic analytics for {}",
                     request.domain
                 );
-                continue;
+                let scrappa = scrappa.clone();
+                let domain = request.domain.clone();
+                tokio::spawn(async move { scrappa.get_similarweb(&domain).await })
+            })
+            .collect();
+
+        for (offset, fetch) in fetches.into_iter().enumerate() {
+            let index = window_start + offset;
+            let request = &requests[index];
+            let fetched = fetch
+                .await
+                .map_err(|error| anyhow!("Scrappa request task failed: {error}"))?;
+            let response = match fetched {
+                Ok(response) => response,
+                Err(error) if is_scrappa_not_found(&error) => {
+                    let item = json!({
+                        "success": false,
+                        "domain": request.domain,
+                        "input_domain": request.input_domain,
+                        "request_domain": request.domain,
+                        "status_code": 404,
+                        "error": "No traffic data available",
+                    });
+                    let result = push_charged_item(http, config, budget, &item, index).await?;
+                    if !result.saved {
+                        status_message = result.status_message;
+                        break 'windows;
+                    }
+
+                    processed += 1;
+                    no_data += 1;
+                    if result.status_message.is_some() {
+                        status_message = result.status_message;
+                        break 'windows;
+                    }
+                    println!(
+                        "No Similarweb traffic data available for {}",
+                        request.domain
+                    );
+                    continue;
+                }
+                Err(error) => return Err(error),
+            };
+
+            let (item, is_no_data) = if has_similarweb_traffic_data(&response) {
+                (build_similarweb_dataset_item(&response, request), false)
+            } else {
+                (
+                    json!({
+                        "success": false,
+                        "domain": request.domain,
+                        "input_domain": request.input_domain,
+                        "request_domain": request.domain,
+                        "error": "No traffic data returned",
+                    }),
+                    true,
+                )
+            };
+            let result = push_charged_item(http, config, budget, &item, index).await?;
+            if !result.saved {
+                status_message = result.status_message;
+                break 'windows;
             }
-            Err(error) => return Err(error),
-        };
 
-        let (item, is_no_data) = if has_similarweb_traffic_data(&response) {
-            (build_similarweb_dataset_item(&response, request), false)
-        } else {
-            (
-                json!({
-                    "success": false,
-                    "domain": request.domain,
-                    "input_domain": request.input_domain,
-                    "request_domain": request.domain,
-                    "error": "No traffic data returned",
-                }),
-                true,
-            )
-        };
-        let result = push_charged_item(http, config, budget, &item, index).await?;
-        if !result.saved {
-            status_message = result.status_message;
-            break;
-        }
-
-        processed += 1;
-        if is_no_data {
-            no_data += 1;
-            println!("No Similarweb traffic data returned for {}", request.domain);
-        } else {
-            successful += 1;
-        }
-        if result.status_message.is_some() {
-            status_message = result.status_message;
-            break;
+            processed += 1;
+            if is_no_data {
+                no_data += 1;
+                println!("No Similarweb traffic data returned for {}", request.domain);
+            } else {
+                successful += 1;
+            }
+            if result.status_message.is_some() {
+                status_message = result.status_message;
+                break 'windows;
+            }
         }
     }
 
@@ -512,6 +537,14 @@ impl ChargeBudget {
 
     fn charge_limit_reached_before_fetch(&self) -> bool {
         self.is_pay_per_event && self.max_event_charge_count(DOMAIN_RESULT_CHARGE_EVENT) == 0
+    }
+
+    fn fetchable_result_count(&self) -> usize {
+        if self.is_pay_per_event {
+            self.max_event_charge_count(DOMAIN_RESULT_CHARGE_EVENT)
+        } else {
+            usize::MAX
+        }
     }
 
     fn can_push_result(&self) -> bool {
@@ -859,9 +892,10 @@ mod tests {
         let server = MockServer::start(vec![
             free_run(),
             input(r#"{"domain":" https://www.Google.com/search ","domains":["google.com","github.com/features"]}"#),
-            similarweb(successful_response()),
+            similarweb(successful_response()).for_path("domain=google.com"),
+            similarweb(r#"{"domain":"github.com","global_rank":321}"#)
+                .for_path("domain=github.com"),
             MockResponse::json(201, ""),
-            similarweb(r#"{"domain":"github.com","global_rank":321}"#),
             MockResponse::json(201, ""),
             MockResponse::json(201, ""),
         ])
@@ -889,11 +923,15 @@ mod tests {
             request_header(&requests[2], "user-agent"),
             Some("thescrappa-similarweb-traffic-analytics-scraper/1.0")
         );
-        assert!(request_parts(&requests[2])
-            .1
-            .starts_with("/similarweb?domain=google.com"));
+        let mut scrappa_paths: Vec<_> = requests[2..4]
+            .iter()
+            .map(|request| request_parts(request).1)
+            .collect();
+        scrappa_paths.sort();
+        assert!(scrappa_paths[0].starts_with("/similarweb?domain=github.com"));
+        assert!(scrappa_paths[1].starts_with("/similarweb?domain=google.com"));
 
-        let (method, path, first_item) = request_parts(&requests[3]);
+        let (method, path, first_item) = request_parts(&requests[4]);
         assert_eq!(method, "POST");
         assert_eq!(path, "/v2/datasets/test-dataset/items");
         let first_item: Value = serde_json::from_str(first_item).unwrap();
@@ -921,9 +959,11 @@ mod tests {
         let server = MockServer::start(vec![
             free_run(),
             input(r#"{"domains":["missing.example","empty.example"]}"#),
-            MockResponse::json(404, r#"{"message":"No traffic data available"}"#),
+            MockResponse::json(404, r#"{"message":"No traffic data available"}"#)
+                .for_path("domain=missing.example"),
+            similarweb(r#"{"domain":"empty.example","site_name":"Empty"}"#)
+                .for_path("domain=empty.example"),
             MockResponse::json(201, ""),
-            similarweb(r#"{"domain":"empty.example","site_name":"Empty"}"#),
             MockResponse::json(201, ""),
             MockResponse::json(201, ""),
         ])
@@ -934,7 +974,7 @@ mod tests {
             .unwrap();
 
         let requests = server.requests();
-        let first: Value = serde_json::from_str(request_parts(&requests[3]).2).unwrap();
+        let first: Value = serde_json::from_str(request_parts(&requests[4]).2).unwrap();
         assert_eq!(first["success"], false);
         assert_eq!(first["status_code"], 404);
         assert_eq!(first["error"], "No traffic data available");
