@@ -504,10 +504,7 @@ mod tests {
         assert_eq!(schema["properties"]["sort"]["prefill"], "newest");
         assert_eq!(
             channel_ids(&json!({"ids": schema["properties"]["ids"]["prefill"]})),
-            vec![
-                "UCJZv4d5rbIKd4QHMPkcABCw".to_owned(),
-                "UC_x5XG1OV2P6uZZ5FSM9Ttw".to_owned()
-            ]
+            vec!["UCSHZKyawb77ixDdsGog4iWA".to_owned()]
         );
     }
 
