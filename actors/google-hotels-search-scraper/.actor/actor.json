@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "minMemoryMbytes": 128,
-  "maxMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "google-hotels-search-scraper",
   "title": "Google Hotels Search Scraper",
   "description": "Compare Google Hotels stays by property, guest rating, nightly rate and review count. Set future stay dates and guest counts to compare rates for the destination you choose.",
@@ -14,7 +14,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 128
+    "memoryMbytes": 256
   },
   "defaultRunOptions": {
     "timeoutSecs": 360

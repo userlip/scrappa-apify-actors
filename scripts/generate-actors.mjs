@@ -261,6 +261,8 @@ function actorJson(spec) {
 
   return {
     actorSpecification: 1,
+    minMemoryMbytes: 128,
+    maxMemoryMbytes: 128,
     name: spec.slug,
     title: spec.title,
     description: spec.description,

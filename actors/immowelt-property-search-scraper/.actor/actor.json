@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "minMemoryMbytes": 128,
-  "maxMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "immowelt-property-search-scraper",
   "title": "Immowelt Property Search Scraper",
   "description": "Search Immowelt listings by location and property type, then compare prices, rooms and floor area. Enter a city or area and choose the property type and page options you need.",
@@ -14,7 +14,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 128
+    "memoryMbytes": 256
   },
   "defaultRunOptions": {
     "timeoutSecs": 360

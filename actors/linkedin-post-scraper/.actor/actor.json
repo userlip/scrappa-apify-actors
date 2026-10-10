@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "minMemoryMbytes": 128,
-  "maxMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "linkedin-post-scraper",
   "title": "LinkedIn Post Scraper",
   "description": "Read a public LinkedIn post with its text, author, publication date and reaction count. Paste a public LinkedIn post URL to retrieve its text and engagement details.",
@@ -14,7 +14,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 128
+    "memoryMbytes": 256
   },
   "storages": {
     "dataset": {

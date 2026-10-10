@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "minMemoryMbytes": 128,
-  "maxMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "kununu-jobs-scraper",
   "title": "Kununu Jobs Scraper",
   "description": "Find jobs listed on kununu with titles, employers, company ratings and work arrangements. Search the role or company you have in mind and review work arrangement and employer ratings when shown.",
@@ -19,7 +19,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 128
+    "memoryMbytes": 256
   },
   "defaultRunOptions": {
     "timeoutSecs": 300

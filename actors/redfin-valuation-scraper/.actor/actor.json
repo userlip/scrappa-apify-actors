@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "minMemoryMbytes": 128,
-  "maxMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
   "name": "redfin-valuation-scraper",
   "title": "Redfin Valuation Scraper",
   "description": "Check Redfin’s estimated home value and range alongside comparable property details. Provide a property ID or URL to get Redfin’s estimate and comparables when the home has coverage.",
@@ -14,7 +14,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 128
+    "memoryMbytes": 256
   },
   "defaultRunOptions": {
     "timeoutSecs": 240
