@@ -22,8 +22,9 @@ Follow-up to the Similarweb negative-margin alert. PRs #411, #412, #413.
 - 185/187 Actors on optimized builds. `instagram-trending-reels-scraper` and `mobile-de-listing-scraper` failed the candidate run on Scrappa HTTP 503 and are queued in `~/scrappa-apify-publisher/pending-deploy.txt` (retried every 4 h).
 - Prefill returns 0 results (upstream data, same on old builds): booking-search, booking-reviews, youtube-api-playlists, -channel-podcasts, -get-channel-livestreams, -get-channel-shorts. Deployed with `--allow-empty`.
 
-## Open decisions
+## Decisions applied (2026-10-10, approved)
 
-- `OUTPUT` record: 71 Actors write it ($0.00005 per run, ~1/3 of a single-item run after the changes). Documented in most READMEs, so removing it can break integrations.
-- `apify-actor-start` event ($0.00005): 102 Actors lack it, including the highest-volume ones. Apify then pays the first 5 s of compute per run. It is a price change that Apify announces to users.
-- Failed runs retry Scrappa for 50-90 s (e.g. vinted-search 12,711 failed of 39,186 runs in 30 days). A shorter retry budget cuts unbilled compute but may lose some recoverable runs.
+- `apify-actor-start` event at $0.00005 (one-time, flat) added to the 102 Actors without it. Apify requires 14 days notice: effective 2026-10-24T15:17:56Z. All 187 Actors now have it in their latest pricing entry. From then on Apify pays the first 5 s of compute per run.
+- `OUTPUT` record kept (documented for users).
+- Shorter Scrappa retries (#414): 2 retries (1 s, 2 s backoff), 60 s entry budget; the first attempt keeps its 45 s timeout. Failed runs drop from 50-100 s to a few seconds when Scrappa fails fast. Apify API retries unchanged.
+- Redeployed: 183/187 on the latest code. `google-finance-markets-scraper`, `google-maps-photos-scraper`, `instagram-trending-reels-scraper`, `mobile-de-listing-scraper` failed the candidate run on Scrappa HTTP 503 and are in `~/scrappa-apify-publisher/pending-deploy.txt` (retried every 4 h).
