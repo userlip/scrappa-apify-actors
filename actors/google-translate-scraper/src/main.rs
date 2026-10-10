@@ -14,7 +14,7 @@ use charging::ChargingManager;
 use input::{build_translation_requests, describe_translation_requests};
 use run_translations::run_translations;
 use scrappa::ScrappaClient;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 const SCRAPPA_API_DEFAULT: &str = "https://scrappa.co/api";
 

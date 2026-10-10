@@ -528,7 +528,7 @@ mod tests {
             ("503 Service Unavailable", "upstream unavailable"),
         ];
         responses.extend(
-            std::iter::repeat_with(|| ("503 Service Unavailable", "upstream unavailable")).take(6),
+            std::iter::repeat_with(|| ("503 Service Unavailable", "upstream unavailable")).take(2),
         );
         responses.push(("201 Created", ""));
         let (base_url, server) = mock_server(responses);
@@ -571,8 +571,8 @@ mod tests {
         assert!(
             second_scrappa_request.starts_with("get /api/youtube/chapters?video_id=vid2 http/1.1")
         );
-        assert_eq!(requests.len(), 12);
-        let second_dataset_request = &requests[11];
+        assert_eq!(requests.len(), 8);
+        let second_dataset_request = &requests[7];
         assert_eq!(
             serde_json::from_str::<Value>(second_dataset_request.split_once("\r\n\r\n").unwrap().1)
                 .unwrap(),
@@ -610,7 +610,7 @@ mod tests {
             ("200 OK", GENEROUS_RUN),
             ("200 OK", "not JSON"),
         ];
-        responses.extend(std::iter::repeat_with(|| ("200 OK", "not JSON")).take(6));
+        responses.extend(std::iter::repeat_with(|| ("200 OK", "not JSON")).take(2));
         responses.push(("201 Created", ""));
         responses.push(("200 OK", r#"{"chapters":[{"title":"Second"}]}"#));
         responses.push(("201 Created", ""));
@@ -620,10 +620,10 @@ mod tests {
             .unwrap();
         let requests = server.join().unwrap();
         let failure: Value =
-            serde_json::from_str(requests[9].split_once("\r\n\r\n").unwrap().1).unwrap();
+            serde_json::from_str(requests[5].split_once("\r\n\r\n").unwrap().1).unwrap();
         assert_eq!(failure["id"], "vid1");
         assert_eq!(failure["success"], false);
-        assert_eq!(requests.len(), 12);
+        assert_eq!(requests.len(), 8);
     }
 
     #[tokio::test]
@@ -634,7 +634,7 @@ mod tests {
             ("503 Service Unavailable", "upstream unavailable"),
         ];
         responses.extend(
-            std::iter::repeat_with(|| ("503 Service Unavailable", "upstream unavailable")).take(6),
+            std::iter::repeat_with(|| ("503 Service Unavailable", "upstream unavailable")).take(2),
         );
         responses.push(("201 Created", ""));
         let (base_url, server) = mock_server(responses);
@@ -648,7 +648,7 @@ mod tests {
         );
         let requests = server.join().unwrap();
         assert_eq!(
-            serde_json::from_str::<Value>(requests[9].split_once("\r\n\r\n").unwrap().1).unwrap(),
+            serde_json::from_str::<Value>(requests[5].split_once("\r\n\r\n").unwrap().1).unwrap(),
             json!({ "id": "vid1", "error": "Request failed with status code 503", "success": false })
         );
     }

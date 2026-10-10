@@ -782,7 +782,7 @@ mod tests {
             response(201, ""),
             response(500, "upstream failure"),
         ];
-        responses.extend(std::iter::repeat_with(|| response(500, "upstream failure")).take(6));
+        responses.extend(std::iter::repeat_with(|| response(500, "upstream failure")).take(2));
         responses.push(response(201, ""));
         let server = MockServer::start(responses);
         let mut scrappa_base = server.base_url.clone();
@@ -792,7 +792,7 @@ mod tests {
             .unwrap();
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 12);
+        assert_eq!(requests.len(), 8);
         assert_eq!(
             request_parts(&requests[0]).1,
             "/v2/key-value-stores/test-store/records/INPUT"
@@ -815,7 +815,7 @@ mod tests {
             serde_json::from_str::<Value>(body).unwrap()["details"]["videoCount"],
             "2 videos"
         );
-        let (method, path, body) = request_parts(&requests[11]);
+        let (method, path, body) = request_parts(&requests[7]);
         assert_eq!((method, path), ("POST", "/v2/datasets/test-dataset/items"));
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),

@@ -460,7 +460,7 @@ async fn zero_ppe_limit_is_uncapped_and_keeps_raw_output() {
 fn reports_scrappa_timeout_with_the_original_deadline() {
     assert!(
         failure_message(&anyhow!("Scrappa API request timed out after 45000ms"))
-            .contains("90s Scrappa API budget")
+            .contains("60s Scrappa API budget")
     );
     assert_eq!(SCRAPPA_REQUEST_TIMEOUT, Duration::from_secs(45));
     assert_eq!(APIFY_REQUEST_TIMEOUT, Duration::from_secs(360));

@@ -764,13 +764,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn persistent_504_fails_after_seven_upstream_attempts_without_dataset_rows() {
+    async fn persistent_504_fails_after_three_upstream_attempts_without_dataset_rows() {
         let server = MockServer::start(vec![
             response(200, r#"{"ids":"video"}"#),
-            response(504, "{}"),
-            response(504, "{}"),
-            response(504, "{}"),
-            response(504, "{}"),
             response(504, "{}"),
             response(504, "{}"),
             response(504, "{}"),
@@ -780,7 +776,7 @@ mod tests {
             .unwrap_err();
         assert!(error.to_string().contains("504 Gateway Timeout"));
         let requests = server.requests();
-        assert_eq!(requests.len(), 8);
+        assert_eq!(requests.len(), 4);
         assert!(requests
             .iter()
             .all(|request| !request.starts_with("POST /v2/datasets/")));

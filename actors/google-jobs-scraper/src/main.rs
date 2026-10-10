@@ -221,10 +221,6 @@ mod tests {
             MockResponse::json(504, r#"{"message":"Gateway Timeout"}"#),
             MockResponse::json(503, r#"{"message":"Unavailable"}"#),
             MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
-            MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
-            MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
-            MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
-            MockResponse::json(502, r#"{"message":"Bad Gateway"}"#),
             MockResponse::json(200, r#"{"jobs":[{"id":"fallback-job","title":"Nurse"}]}"#),
         ]);
         let client = test_client(&server);
@@ -238,11 +234,11 @@ mod tests {
         assert_eq!(response["service_used"], "indeed");
         assert_eq!(response["jobs_results"][0]["job_id"], "fallback-job");
         let requests = server.requests();
-        assert_eq!(requests.len(), 8);
-        assert!(requests[..7]
+        assert_eq!(requests.len(), 4);
+        assert!(requests[..3]
             .iter()
             .all(|request| request.starts_with("GET /google/jobs?")));
-        assert!(requests[7].starts_with(
+        assert!(requests[3].starts_with(
             "GET /indeed/jobs?query=nurse&limit=10&location=Austin&country=US&gl=us&hl=en"
         ));
     }

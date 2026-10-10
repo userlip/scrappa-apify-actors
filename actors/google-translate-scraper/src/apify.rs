@@ -1,8 +1,8 @@
 use crate::apify_retry::ApifyRetryExt;
 use std::{env, time::Duration};
 
-use reqwest::{Client, Method, Response, StatusCode, Url, header};
-use serde_json::{Value, json};
+use reqwest::{header, Client, Method, Response, StatusCode, Url};
+use serde_json::{json, Value};
 
 use crate::charging::TRANSLATION_RESULT_CHARGE_EVENT;
 use crate::{
@@ -542,10 +542,8 @@ mod tests {
             request.method == "GET"
                 && request.target == "/v2/datasets/dataset-id/items?offset=0&limit=1"
         }));
-        assert!(
-            requests
-                .iter()
-                .all(|request| request.target != "/v2/actor-runs/test-run/charge")
-        );
+        assert!(requests
+            .iter()
+            .all(|request| request.target != "/v2/actor-runs/test-run/charge"));
     }
 }

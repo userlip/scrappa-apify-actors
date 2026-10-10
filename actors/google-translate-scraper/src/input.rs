@@ -301,15 +301,13 @@ mod tests {
             .unwrap_err(),
             "target must be a language code like en, de, fr-CA, zh-CN, ms-Arab, or mni-Mtei"
         );
-        assert!(
-            build_translation_requests(&json!({
-                "text": "😀".repeat(2_501),
-                "source": "en",
-                "target": "de"
-            }))
-            .unwrap_err()
-            .contains("5000 characters or fewer")
-        );
+        assert!(build_translation_requests(&json!({
+            "text": "😀".repeat(2_501),
+            "source": "en",
+            "target": "de"
+        }))
+        .unwrap_err()
+        .contains("5000 characters or fewer"));
     }
 
     #[test]

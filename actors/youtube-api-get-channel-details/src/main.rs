@@ -654,7 +654,7 @@ mod tests {
             response(201, ""),
             response(429, "{}"),
         ];
-        responses.extend(std::iter::repeat_with(|| response(429, "{}")).take(6));
+        responses.extend(std::iter::repeat_with(|| response(429, "{}")).take(2));
         responses.push(response(201, ""));
         let server = MockServer::start(responses);
         let scrappa_url = server.base_url.join("api/youtube/channel").unwrap();
@@ -664,7 +664,7 @@ mod tests {
         run_actor(&client, &config).await.unwrap();
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 12);
+        assert_eq!(requests.len(), 8);
         assert_eq!(
             request_parts(&requests[0]).1,
             "/v2/key-value-stores/test-store/records/INPUT"
@@ -706,7 +706,7 @@ mod tests {
             request_parts(&requests[4]).1,
             "/api/youtube/channel?channel_id=UC2"
         );
-        let (method, path, body) = request_parts(&requests[11]);
+        let (method, path, body) = request_parts(&requests[7]);
         assert_eq!((method, path), ("POST", "/v2/datasets/test-dataset/items"));
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),

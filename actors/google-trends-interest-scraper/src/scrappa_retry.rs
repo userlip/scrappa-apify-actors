@@ -11,9 +11,9 @@ use reqwest::{
 use serde_json::Value;
 
 pub(crate) const REQUEST_TIMEOUT: Duration = Duration::from_secs(45);
-pub(crate) const ENTRY_TIME_BUDGET: Duration = Duration::from_secs(90);
-pub(crate) const MAX_RETRY_BACKOFF: Duration = Duration::from_secs(15);
-pub(crate) const MAX_SCRAPPA_RETRIES: usize = 6;
+pub(crate) const ENTRY_TIME_BUDGET: Duration = Duration::from_secs(60);
+pub(crate) const MAX_RETRY_BACKOFF: Duration = Duration::from_secs(5);
+pub(crate) const MAX_SCRAPPA_RETRIES: usize = 2;
 pub(crate) const MAX_SCRAPPA_ATTEMPTS: usize = MAX_SCRAPPA_RETRIES + 1;
 const REQUEST_ATTEMPTS: usize = MAX_SCRAPPA_ATTEMPTS;
 
@@ -515,21 +515,11 @@ mod tests {
 
         assert!(matches!(error, MockInvalidJsonError));
         assert_eq!(requests.get(), MAX_SCRAPPA_ATTEMPTS);
-        assert_eq!(
-            delays,
-            vec![
-                Duration::from_secs(1),
-                Duration::from_secs(2),
-                Duration::from_secs(4),
-                Duration::from_secs(8),
-                Duration::from_secs(15),
-                Duration::from_secs(15),
-            ]
-        );
+        assert_eq!(delays, vec![Duration::from_secs(1), Duration::from_secs(2)]);
     }
 
     #[tokio::test]
-    async fn stops_after_seven_attempts_with_the_capped_schedule() {
+    async fn stops_after_three_attempts_with_the_capped_schedule() {
         let requests = Cell::new(0);
         let delays = RefCell::new(Vec::new());
 
@@ -556,14 +546,7 @@ mod tests {
         assert_eq!(requests.get(), MAX_SCRAPPA_ATTEMPTS);
         assert_eq!(
             *delays.borrow(),
-            vec![
-                Duration::from_secs(1),
-                Duration::from_secs(2),
-                Duration::from_secs(4),
-                Duration::from_secs(8),
-                Duration::from_secs(15),
-                Duration::from_secs(15),
-            ]
+            vec![Duration::from_secs(1), Duration::from_secs(2)]
         );
     }
 
@@ -657,9 +640,9 @@ mod tests {
         assert_eq!(retry_delay(0), Duration::from_secs(1));
         assert_eq!(retry_delay(1), Duration::from_secs(2));
         assert_eq!(retry_delay(2), Duration::from_secs(4));
-        assert_eq!(retry_delay(3), Duration::from_secs(8));
-        assert_eq!(retry_delay(4), Duration::from_secs(15));
-        assert_eq!(retry_delay(5), Duration::from_secs(15));
+        assert_eq!(retry_delay(3), Duration::from_secs(5));
+        assert_eq!(retry_delay(4), Duration::from_secs(5));
+        assert_eq!(retry_delay(5), Duration::from_secs(5));
         assert_eq!(retry_delay(100), MAX_RETRY_BACKOFF);
         assert_eq!(parse_retry_after("3"), Some(Duration::from_secs(3)));
         assert_eq!(

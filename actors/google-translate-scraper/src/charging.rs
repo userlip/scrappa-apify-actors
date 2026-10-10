@@ -358,8 +358,8 @@ mod tests {
     #[test]
     fn rejects_invalid_run_price_and_charge_count_data() {
         let mut invalid_price = run("PAY_PER_EVENT", 0.001, json!({}));
-        invalid_price["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]["translation-result"]
-            ["eventPriceUsd"] = json!(-1);
+        invalid_price["data"]["pricingInfo"]["pricingPerEvent"]["actorChargeEvents"]
+            ["translation-result"]["eventPriceUsd"] = json!(-1);
         assert_eq!(
             ChargingManager::from_run(&invalid_price).unwrap_err(),
             "Apify run returned an invalid price for translation-result"

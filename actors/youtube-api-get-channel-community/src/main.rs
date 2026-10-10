@@ -868,14 +868,14 @@ mod tests {
             response(200, r#"{"id":"UC123"}"#),
             response(200, "not-json"),
         ];
-        responses.extend(std::iter::repeat_with(|| response(200, "not-json")).take(6));
+        responses.extend(std::iter::repeat_with(|| response(200, "not-json")).take(2));
         let server = MockServer::start(responses);
         let config = test_config(server.base_url.clone());
 
         let error = run_actor(&Client::new(), &config).await.unwrap_err();
 
         assert!(error.to_string().contains("error decoding response body"));
-        assert_eq!(server.requests().len(), 8);
+        assert_eq!(server.requests().len(), 4);
     }
 
     #[tokio::test]

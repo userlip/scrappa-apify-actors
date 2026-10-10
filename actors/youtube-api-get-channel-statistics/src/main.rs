@@ -437,7 +437,7 @@ mod tests {
             ),
             response(500, ""),
         ];
-        responses.extend(std::iter::repeat_with(|| response(500, "")).take(6));
+        responses.extend(std::iter::repeat_with(|| response(500, "")).take(2));
         responses.push(pricing_response(4.506432, 0, 1));
         responses.push(response(201, ""));
         let server = MockServer::start(responses);
@@ -446,7 +446,7 @@ mod tests {
         run_actor(&client(), &config).await.unwrap();
 
         let requests = server.requests();
-        assert_eq!(requests.len(), 11);
+        assert_eq!(requests.len(), 7);
         assert!(has_header(
             &requests[0],
             "authorization",
@@ -467,17 +467,17 @@ mod tests {
             "/api/youtube/channel?channel_id=UC2"
         );
         assert!(has_header(&requests[2], "x-api-key", "test-scrappa-key"));
-        assert_eq!(request_parts(&requests[9]).1, "/v2/actor-runs/test-run");
+        assert_eq!(request_parts(&requests[5]).1, "/v2/actor-runs/test-run");
         assert!(has_header(
-            &requests[9],
+            &requests[5],
             "authorization",
             "Bearer test-token"
         ));
 
-        let (method, path, body) = request_parts(&requests[10]);
+        let (method, path, body) = request_parts(&requests[6]);
         assert_eq!((method, path), ("POST", "/v2/datasets/test-dataset/items"));
         assert!(has_header(
-            &requests[10],
+            &requests[6],
             "authorization",
             "Bearer test-token"
         ));
@@ -650,7 +650,7 @@ mod tests {
             response(500, ""),
             response(500, ""),
         ];
-        responses.extend(std::iter::repeat_with(|| response(500, "")).take(12));
+        responses.extend(std::iter::repeat_with(|| response(500, "")).take(4));
         responses.push(pricing_response(1.0, 0, 0));
         responses.push(response(201, ""));
         let server = MockServer::start(responses);
@@ -661,8 +661,8 @@ mod tests {
             .to_string()
             .contains("Failed to fetch statistics for all 2 channel(s)."));
         let requests = server.requests();
-        assert_eq!(requests.len(), 17);
-        let (_, _, body) = request_parts(&requests[16]);
+        assert_eq!(requests.len(), 9);
+        let (_, _, body) = request_parts(&requests[8]);
         assert_eq!(
             serde_json::from_str::<Value>(body).unwrap(),
             json!([

@@ -359,7 +359,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn enforces_request_deadline_and_retries_timeouts_up_to_seven_attempts() {
+    async fn enforces_request_deadline_and_retries_timeouts_up_to_three_attempts() {
         let count = Arc::new(AtomicUsize::new(0));
         let server_count = count.clone();
         let server = MockServer::start(move |_| {
@@ -378,6 +378,6 @@ mod tests {
 
         let error = client.get_locations("Berlin", 1).await.unwrap_err();
         assert_eq!(error, ScrappaError::Timeout { timeout_ms: 20 });
-        assert_eq!(count.load(Ordering::SeqCst), 7);
+        assert_eq!(count.load(Ordering::SeqCst), 3);
     }
 }

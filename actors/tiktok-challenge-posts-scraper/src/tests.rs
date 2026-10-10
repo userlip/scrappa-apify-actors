@@ -926,7 +926,7 @@ async fn scrappa_uses_the_api_key_contract_and_retries_upstream_errors() {
 
     assert!(result.unwrap_err().to_string().contains("HTTP 429"));
     let requests = server.requests();
-    assert_eq!(requests.len(), 7);
+    assert_eq!(requests.len(), 3);
     assert_eq!(requests[0].method, "GET");
     assert_eq!(
         requests[0].headers.get("x-api-key").map(String::as_str),

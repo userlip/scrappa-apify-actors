@@ -879,7 +879,7 @@ mod tests {
             response(200, &input.to_string()),
             response(503, "unavailable"),
         ];
-        upstream_responses.extend(std::iter::repeat_with(|| response(503, "unavailable")).take(6));
+        upstream_responses.extend(std::iter::repeat_with(|| response(503, "unavailable")).take(2));
         let upstream_error = MockServer::start(upstream_responses);
         let error = run_actor(&client(SCRAPPA_REQUEST_TIMEOUT), &config(&upstream_error))
             .await
@@ -887,7 +887,7 @@ mod tests {
         assert!(error
             .to_string()
             .contains("Scrappa API request failed with 503 Service Unavailable"));
-        assert_eq!(upstream_error.requests().len(), 8);
+        assert_eq!(upstream_error.requests().len(), 4);
 
         let storage_error = MockServer::start(vec![
             response(200, &input.to_string()),
