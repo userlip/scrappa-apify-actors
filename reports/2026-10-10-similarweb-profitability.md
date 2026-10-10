@@ -25,3 +25,10 @@ Apify alert for `thescrappa/similarweb-traffic-analytics-scraper` (`MDgsOkRoh1bA
 - New: 4.5-4.9 s per run (about 2 s of this is the fixed dataset-offset check at start).
 
 Rollback: revert this PR and deploy.
+
+## Live verification (2026-10-10)
+
+- Deployed build `1.1.8` (`sr8vVszZ0zqJV8FeC`) as `latest` via `scripts/deploy-actor.mjs`. Previous: `1.1.7` (`rDgevIbJffNjQacjA`).
+- Build definition has `minMemoryMbytes`/`maxMemoryMbytes` 128. A run started with `memory=1024` ran with 128 MB.
+- Same 30 domains, owner runs: `1.1.7` 23.5 s / 0.00081 CU; `1.1.8` 7.5 s / 0.00026 CU. Both saved and charged 30 `domain-result` events.
+- At 128 MB, 30 results earn about $0.0048 net and cost about $0.0001-0.0003 compute. A normal 128 MB run is clearly profitable, so the loss most likely came from runs started with much more memory (now capped). Renter run memory is only visible in Console Insights, which was not reachable (CAPTCHA).
