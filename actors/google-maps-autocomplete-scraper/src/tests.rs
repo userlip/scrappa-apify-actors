@@ -276,7 +276,18 @@ async fn scrappa_request_deadline_retries_slow_requests() {
             .to_string();
 
     assert!(error.contains("Scrappa API request timed out after 20ms"));
-    assert_eq!(scrappa.requests().len(), 2);
+    // The mock server handles one slow request at a time, so wait until it has
+    // recorded every attempt the client sent before it gave up.
+    let wait_until = Instant::now() + Duration::from_secs(2);
+    while scrappa.requests().len() < crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+        && Instant::now() < wait_until
+    {
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    assert_eq!(
+        scrappa.requests().len(),
+        crate::scrappa_retry::MAX_SCRAPPA_ATTEMPTS
+    );
     assert_eq!(SCRAPPA_REQUEST_TIMEOUT, Duration::from_secs(60));
 }
 
@@ -522,6 +533,6 @@ async fn scrappa_retries_persistent_upstream_errors_before_returning_them() {
     let error = run_actor(&client, &config).await.unwrap_err().to_string();
 
     assert!(error.contains("Scrappa API error (503): Service temporarily unavailable"));
-    assert_eq!(scrappa.requests().len(), 7);
+    assert_eq!(scrappa.requests().len(), 3);
     assert_eq!(apify.requests().len(), 1);
 }

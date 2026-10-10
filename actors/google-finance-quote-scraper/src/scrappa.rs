@@ -437,10 +437,6 @@ mod tests {
             response(500, r#"{"message":"Internal Server Error"}"#),
             response(500, r#"{"message":"Internal Server Error"}"#),
             response(500, r#"{"message":"Internal Server Error"}"#),
-            response(500, r#"{"message":"Internal Server Error"}"#),
-            response(500, r#"{"message":"Internal Server Error"}"#),
-            response(500, r#"{"message":"Internal Server Error"}"#),
-            response(500, r#"{"message":"Internal Server Error"}"#),
             response(200, r#"{"quote":{"summary":{"symbol":"MSFT"}}}"#),
         ]);
         let client =
@@ -464,21 +460,21 @@ mod tests {
             "scrappa_5xx_after_financial_period_request"
         );
         let requests = server.requests();
-        assert_eq!(requests.len(), 8);
-        assert!(requests[..7].iter().all(|request| {
+        assert_eq!(requests.len(), 4);
+        assert!(requests[..3].iter().all(|request| {
             request
                 .lines()
                 .next()
                 .is_some_and(|line| line.contains("period_type=quarterly"))
         }));
         assert!(
-            requests[7]
+            requests[3]
                 .lines()
                 .next()
                 .is_some_and(|line| !line.contains("period_type="))
         );
         assert!(
-            requests[3]
+            requests[2]
                 .lines()
                 .next()
                 .is_some_and(|line| line.contains("hl=en") && line.contains("symbol=MSFT"))

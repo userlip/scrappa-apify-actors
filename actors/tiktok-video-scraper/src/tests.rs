@@ -574,7 +574,7 @@ async fn scrappa_http_errors_become_dataset_error_rows() {
                 json!({"message":"upstream failed", "errors":{"url":["unavailable"]}}).to_string(),
             )
         })
-        .take(7),
+        .take(3),
     );
     responses.push(("201 Created".to_owned(), String::new()));
     let (address, server) = start_mock_server(responses);
@@ -583,8 +583,8 @@ async fn scrappa_http_errors_become_dataset_error_rows() {
         .await
         .unwrap();
     let requests = server.join().unwrap();
-    assert_eq!(requests.len(), 10);
-    let row: Value = serde_json::from_str(&requests[9].body).unwrap();
+    assert_eq!(requests.len(), 6);
+    let row: Value = serde_json::from_str(&requests[5].body).unwrap();
     assert_eq!(row["result_found"], false);
     assert_eq!(
         row["error_message"],

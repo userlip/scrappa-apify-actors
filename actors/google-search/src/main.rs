@@ -1126,7 +1126,7 @@ mod tests {
                 .contains("Scrappa API request timed out after 20ms"),
             "{error:#}"
         );
-        assert!(actor_error_message(&error).contains("Google Search retries exceeded the 90s"));
+        assert!(actor_error_message(&error).contains("Google Search retries exceeded the 60s"));
         assert_eq!(scrappa.finish().len(), 1);
     }
 

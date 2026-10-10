@@ -151,7 +151,7 @@ mod tests {
         let error = anyhow::anyhow!("Scrappa API request timed out after 60000ms");
         assert_eq!(
             actor_error_message(&error),
-            "Scrappa API request timed out after 60000ms. The TikTok challenge search retries exceeded the 90s Scrappa API budget. Try a more specific keyword or run the request again."
+            "Scrappa API request timed out after 60000ms. The TikTok challenge search retries exceeded the 60s Scrappa API budget. Try a more specific keyword or run the request again."
         );
     }
 }

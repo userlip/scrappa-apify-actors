@@ -536,5 +536,5 @@ async fn invalid_success_json_is_retried_and_never_saved_as_a_profile() {
     let error = client.fetch_user("broken").await.unwrap_err();
 
     assert!(error.to_string().contains("Scrappa API request failed"));
-    assert_eq!(scrappa.requests().len(), 7);
+    assert_eq!(scrappa.requests().len(), 3);
 }

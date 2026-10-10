@@ -179,7 +179,7 @@ mod tests {
         });
         assert_eq!(
             actor_error_message(&error),
-            "Scrappa API request timed out after 45000ms. The Google Finance markets retries exceeded the 90s Scrappa API budget. Narrow the request with trend/index_market, or run it again."
+            "Scrappa API request timed out after 45000ms. The Google Finance markets retries exceeded the 60s Scrappa API budget. Narrow the request with trend/index_market, or run it again."
         );
     }
 }
