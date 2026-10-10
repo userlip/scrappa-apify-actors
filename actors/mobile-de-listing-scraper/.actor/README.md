@@ -31,7 +31,7 @@ Retrieve the full mobile.de record for a listing ID, including vehicle attribute
 {
   "listing_ids": [
     {
-      "listing_id": "457981580"
+      "listing_id": "461430737"
     }
   ],
   "maxResults": 1
@@ -227,7 +227,7 @@ Retrieve the full mobile.de record for a listing ID, including vehicle attribute
   "listing_title": "2023 Volvo XC60 B4 AWD",
   "make": "Volvo",
   "model": "Volvo",
-  "input_listing_id": "457981580",
+  "input_listing_id": "461430737",
   "scraped_at": "2026-10-01T12:00:00Z"
 }
 ```
