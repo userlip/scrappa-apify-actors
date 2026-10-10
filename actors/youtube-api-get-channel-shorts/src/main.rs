@@ -10,6 +10,8 @@ use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api";
+/// Scrappa channel tab to read. YouTube lists these items only on their own tab, never on the Videos tab.
+const CHANNEL_TAB_TYPE: &str = "shorts";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const TARGET_SHORT_COUNT: usize = 10;
 const MAX_FILTER_SCAN_PAGES: usize = 10;
@@ -116,6 +118,7 @@ fn build_channel_shorts_url(
     {
         let mut query = url.query_pairs_mut();
         query.append_pair("channel_id", channel_id);
+        query.append_pair("type", CHANNEL_TAB_TYPE);
         if let Some(sort) = input
             .get("sort")
             .and_then(Value::as_str)
@@ -745,7 +748,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             url.as_str(),
-            "https://scrappa.co/api/youtube/channel-videos?channel_id=UC+example&sort=popular&continuation=next+page"
+            "https://scrappa.co/api/youtube/channel-videos?channel_id=UC+example&type=shorts&sort=popular&continuation=next+page"
         );
 
         let url = build_channel_shorts_url(
@@ -757,7 +760,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             url.as_str(),
-            "https://scrappa.co/api/youtube/channel-videos?channel_id=UC1"
+            "https://scrappa.co/api/youtube/channel-videos?channel_id=UC1&type=shorts"
         );
     }
 
@@ -849,7 +852,7 @@ mod tests {
             Some("Bearer test-token-not-a-real-credential")
         );
         assert!(requests[1]
-            .starts_with("GET /youtube/channel-videos?channel_id=UC1&sort=newest HTTP/1.1"));
+            .starts_with("GET /youtube/channel-videos?channel_id=UC1&type=shorts&sort=newest HTTP/1.1"));
         assert_eq!(
             header_value(&requests[1], "x-api-key"),
             Some("test-scrappa-key")
@@ -860,7 +863,7 @@ mod tests {
         );
         assert!(header_value(&requests[1], "authorization").is_none());
         assert!(requests[2].starts_with(
-            "GET /youtube/channel-videos?channel_id=UC1&sort=newest&continuation=next+page HTTP/1.1"
+            "GET /youtube/channel-videos?channel_id=UC1&type=shorts&sort=newest&continuation=next+page HTTP/1.1"
         ));
         assert!(requests[3].starts_with("GET /v2/actor-runs/test-run "));
         assert_eq!(

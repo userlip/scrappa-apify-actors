@@ -11,6 +11,8 @@ use url::{form_urlencoded, Url};
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube/channel-videos";
+/// Scrappa channel tab to read. YouTube lists these items only on their own tab, never on the Videos tab.
+const CHANNEL_TAB_TYPE: &str = "podcasts";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 
 struct ActorConfig {
@@ -117,6 +119,7 @@ fn build_channel_podcasts_url(input: &Value, id: &str, api_base_url: &Url) -> Re
     let mut url = api_base_url.clone();
     let mut query = form_urlencoded::Serializer::new(String::new());
     query.append_pair("channel_id", id);
+    query.append_pair("type", CHANNEL_TAB_TYPE);
     if let Some(sort) = selected_sort(input).filter(|sort| !sort.trim().is_empty()) {
         query.append_pair("sort", sort);
     }
@@ -519,7 +522,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             url.as_str(),
-            "https://scrappa.co/api/youtube/channel-videos?channel_id=UC+example&sort=popular&continuation=next+page%2F%2B"
+            "https://scrappa.co/api/youtube/channel-videos?channel_id=UC+example&type=podcasts&sort=popular&continuation=next+page%2F%2B"
         );
     }
 
@@ -656,7 +659,7 @@ mod tests {
             .collect();
         assert_eq!(upstream.len(), 3);
         for (request, id) in upstream.iter().zip(["UC1", "UC2", "UC3"]) {
-            assert!(request.contains(format!("channel_id={id}&sort=newest").as_str()));
+            assert!(request.contains(format!("channel_id={id}&type=podcasts&sort=newest").as_str()));
             assert!(request
                 .to_ascii_lowercase()
                 .contains("x-api-key: scrappa-test"));
