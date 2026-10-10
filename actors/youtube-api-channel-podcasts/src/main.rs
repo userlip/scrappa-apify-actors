@@ -495,11 +495,11 @@ mod tests {
             serde_json::from_str(include_str!("../.actor/input_schema.json")).unwrap();
         assert_eq!(
             schema["properties"]["id"]["prefill"],
-            "UCJZv4d5rbIKd4QHMPkcABCw"
+            "UCSHZKyawb77ixDdsGog4iWA"
         );
         assert_eq!(
             schema["properties"]["ids"]["prefill"],
-            "UCJZv4d5rbIKd4QHMPkcABCw,UC_x5XG1OV2P6uZZ5FSM9Ttw"
+            "UCSHZKyawb77ixDdsGog4iWA"
         );
         assert_eq!(schema["properties"]["sort"]["prefill"], "newest");
         assert_eq!(
