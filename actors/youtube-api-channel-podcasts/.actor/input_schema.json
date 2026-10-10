@@ -8,7 +8,7 @@
       "type": "string",
       "description": "Single Youtube Channel ID. Use ids for batch runs.",
       "editor": "textfield",
-      "prefill": "UCJZv4d5rbIKd4QHMPkcABCw"
+      "prefill": "UCSHZKyawb77ixDdsGog4iWA"
     },
     "ids": {
       "title": "Youtube Channel IDs",
@@ -16,7 +16,7 @@
       "description": "Comma-separated Youtube channel IDs. Prefer this for batch runs.",
       "editor": "textfield",
       "pattern": "^\\s*[^,\\s]+(?:\\s*,\\s*[^,\\s]+)*\\s*$",
-      "prefill": "UCJZv4d5rbIKd4QHMPkcABCw,UC_x5XG1OV2P6uZZ5FSM9Ttw"
+      "prefill": "UCSHZKyawb77ixDdsGog4iWA"
     },
     "continuation": {
       "title": "continuation",
