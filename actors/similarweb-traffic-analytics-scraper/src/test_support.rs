@@ -15,6 +15,7 @@ pub(crate) struct MockResponse {
     pub(crate) status: u16,
     pub(crate) body: String,
     pub(crate) delay: Duration,
+    route: Option<String>,
 }
 
 impl MockResponse {
@@ -23,7 +24,15 @@ impl MockResponse {
             status,
             body: body.to_owned(),
             delay: Duration::ZERO,
+            route: None,
         }
+    }
+
+    /// Serves this response only to a request whose request line contains `needle`,
+    /// independent of arrival order. Used for concurrent Scrappa requests.
+    pub(crate) fn for_path(mut self, needle: &str) -> Self {
+        self.route = Some(needle.to_owned());
+        self
     }
 
     pub(crate) fn delayed_json(status: u16, body: &str, delay: Duration) -> Self {
@@ -31,6 +40,7 @@ impl MockResponse {
             status,
             body: body.to_owned(),
             delay,
+            route: None,
         }
     }
 }
@@ -54,10 +64,26 @@ impl MockServer {
                     break;
                 };
                 let request = read_request(&mut stream).await;
+                let request_line = request.lines().next().unwrap_or_default().to_owned();
                 captured_requests.lock().unwrap().push(request);
-                let response = responses.pop_front().unwrap_or_else(|| {
-                    MockResponse::json(500, "unexpected request to mock server")
-                });
+                let position = responses
+                    .iter()
+                    .position(|response| {
+                        response
+                            .route
+                            .as_deref()
+                            .is_some_and(|route| request_line.contains(route))
+                    })
+                    .or_else(|| {
+                        responses
+                            .iter()
+                            .position(|response| response.route.is_none())
+                    });
+                let response = position
+                    .and_then(|index| responses.remove(index))
+                    .unwrap_or_else(|| {
+                        MockResponse::json(500, "unexpected request to mock server")
+                    });
                 if !response.delay.is_zero() {
                     tokio::time::sleep(response.delay).await;
                 }
