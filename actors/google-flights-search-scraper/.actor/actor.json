@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-flights-search-scraper",
   "title": "Google Flights Scraper",
   "description": "Compare Google Flights itineraries by fare, airlines, stops and total travel time. Compare routes using a future date and the one-way or round-trip option.",
@@ -12,11 +14,11 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "timeoutSecs": 240,
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "storages": {
     "dataset": {

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "trustpilot-business-search-scraper",
   "title": "Trustpilot Business Search Scraper",
   "description": "Find Trustpilot businesses by name and compare star ratings, TrustScores and review counts. Search a company name and apply supported market, rating or review-count filters to the business results.",
@@ -20,7 +22,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "timeoutSecs": 360

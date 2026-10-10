@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "geizhals-price-history-scraper",
   "title": "Geizhals Price History Scraper",
   "description": "Track Geizhals prices by product and market with history timestamps, observed prices, and current range values. Batch product IDs and choose a lookback window.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-car-rentals-scraper",
   "title": "Kayak Car Rentals Scraper",
   "description": "Compare Kayak rental cars with provider, company, vehicle description, quoted price, and booking link. Batch pickup locations and set future collection and return dates.",

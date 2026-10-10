@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "immobilienscout24-price-insights-scraper",
   "title": "ImmobilienScout24 Price Insights Scraper",
   "description": "Compare ImmobilienScout24 rent and sale price estimates per square meter for apartments and houses. Enter one or more city or district names to compare rent and sale estimates.",

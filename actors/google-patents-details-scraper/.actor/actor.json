@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-patents-details-scraper",
   "title": "Google Patents Details Scraper",
   "description": "Review Google Patents records with titles, abstracts, inventors and assignees. Submit publication numbers or supported Google Patents URLs to retrieve several records together.",

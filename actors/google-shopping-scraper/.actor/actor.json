@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-shopping-scraper",
   "title": "Google Shopping Scraper",
   "description": "Search Google Shopping for product offers, merchants, prices, ratings, and review counts. Batch product phrases in one run to compare retail listings or monitor prices.",

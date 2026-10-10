@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-trends-related-queries-scraper",
   "title": "Google Trends Related Queries Scraper",
   "description": "Explore related Google Trends queries and topics with their relative interest scores. Choose a region and time range to see which searches are associated with the selected topic.",

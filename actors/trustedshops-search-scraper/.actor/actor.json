@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "trustedshops-search-scraper",
   "title": "Trusted Shops Search Scraper",
   "description": "Find Trusted Shops profiles by name and compare shop ratings, review counts and links. Enter a shop name to find its public Trusted Shops profile and review summary.",
@@ -15,7 +17,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "timeoutSecs": 360

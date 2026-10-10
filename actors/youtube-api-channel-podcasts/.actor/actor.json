@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 256,
+    "maxMemoryMbytes": 256,
     "name": "youtube-api-channel-podcasts",
     "title": "YouTube Channel Podcasts Scraper",
     "description": "List podcast videos published by a YouTube channel with titles, links, durations and engagement data. Submit a channel ID and choose a sort order to collect videos marked as podcasts.",

@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 256,
+    "maxMemoryMbytes": 256,
     "name": "youtube-api-video-chapters",
     "title": "YouTube Video Chapters Scraper",
     "description": "Get YouTube video chapter titles and their start times in seconds. Enter one or more YouTube video IDs to retrieve their chapter lists.",

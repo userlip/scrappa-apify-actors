@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "redfin-property-search-scraper",
   "title": "Redfin Property Search Scraper",
   "description": "Search Redfin homes by market and filters, then compare addresses, prices and room counts. Set a Redfin market or region, then narrow the search by price, rooms or property status.",
@@ -12,7 +14,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "timeoutSecs": 360

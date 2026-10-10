@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "indeed-jobs-scraper",
   "title": "Indeed Jobs Scraper",
   "description": "Search Indeed job listings with titles, employers, locations and salary ranges when provided. Enter the role and location you want to hire for, then review salary details when Indeed publishes them.",
@@ -17,7 +19,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "timeoutSecs": 300

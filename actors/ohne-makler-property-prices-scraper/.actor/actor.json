@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "ohne-makler-property-prices-scraper",
   "title": "Ohne-Makler Property Prices Scraper",
   "description": "Review Ohne-Makler residential price reports by German state, including market tables, charts, and local regions. Batch state slugs to compare property indicators.",

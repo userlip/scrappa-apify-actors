@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "linkedin-job-details-scraper",
   "title": "LinkedIn Job Details Scraper",
   "description": "Review a LinkedIn job post with title, employer, location and employment details. Pass a public LinkedIn job URL or a list of URLs to inspect several vacancies in one run.",

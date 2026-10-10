@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "baidu-trending-scraper",
   "title": "Baidu Trending Searches Scraper",
   "description": "Track Baidu trending searches with topic text, rank, descriptions, and source links. Choose a trending board and collect a fresh batch of topics to monitor search interest in China.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "redfin-property-details-scraper",
   "title": "Redfin Property Details Scraper",
   "description": "Review Redfin home details with address, listed price, bedrooms and bathrooms. Look up one property by ID or URL, or submit a batch to review several homes together.",
@@ -12,7 +14,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "memoryMbytes": 128,

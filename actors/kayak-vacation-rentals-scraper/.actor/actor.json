@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-vacation-rentals-scraper",
   "title": "Kayak Vacation Rentals Scraper",
   "description": "Search Kayak vacation rentals with property names, ratings, amenities, provider prices, and listing links. Batch rental paths and location IDs for future stays.",

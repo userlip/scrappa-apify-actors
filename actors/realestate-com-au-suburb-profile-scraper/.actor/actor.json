@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "realestate-com-au-suburb-profile-scraper",
   "title": "Realestate.com.au Suburb Profile Scraper",
   "description": "Get a realestate.com.au suburb profile with median prices, market trends, rental yields, local areas, and source data. Batch profile URLs to compare Australian housing markets.",

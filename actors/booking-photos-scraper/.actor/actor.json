@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "booking-photos-scraper",
   "title": "Booking.com Hotel Photos Scraper",
   "description": "Extract public Booking.com hotel photo URLs with the property name and canonical page link. Batch hotel URLs to collect image sources for travel and lodging research.",

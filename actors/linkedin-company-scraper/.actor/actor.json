@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "linkedin-company-scraper",
   "title": "LinkedIn Company Scraper - $0.30/1k results",
   "description": "Look up a LinkedIn company profile with industry, employee size, website and follower count. Use public company profile URLs, individually or as a batch, to compare company details.",

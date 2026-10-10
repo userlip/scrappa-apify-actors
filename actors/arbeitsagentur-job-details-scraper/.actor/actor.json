@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "arbeitsagentur-job-details-scraper",
   "title": "Arbeitsagentur Job Details Scraper",
   "description": "Fetch public Arbeitsagentur vacancy details by reference number, including role, employer, work schedule, pay, contract terms, and location. Batch job IDs for vacancy research.",

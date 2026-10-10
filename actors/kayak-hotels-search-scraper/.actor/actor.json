@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-hotels-search-scraper",
   "title": "Kayak Hotels Search Scraper",
   "description": "Search Kayak hotel listings with names, star levels, review scores, amenities, provider prices, and property links. Batch location IDs and compare future stays.",

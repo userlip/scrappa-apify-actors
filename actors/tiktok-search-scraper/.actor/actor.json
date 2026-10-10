@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-search-scraper",
   "title": "TikTok Search Scraper",
   "description": "Search TikTok videos by phrase and collect captions, creator details and play counts. Search video captions or topics, then refine by region, publication time or sort order.",

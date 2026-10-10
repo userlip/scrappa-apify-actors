@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "trustpilot-company-reviews-scraper",
   "title": "Trustpilot Company Reviews Scraper",
   "description": "Read public Trustpilot reviews with reviewer name, rating, title and written feedback. Choose a company domain and apply supported rating, date or reply filters to its public reviews.",
@@ -17,7 +19,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "timeoutSecs": 300

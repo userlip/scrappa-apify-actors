@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-cruises-scraper",
   "title": "Kayak Cruises Scraper",
   "description": "Browse Kayak cruise sailings with ship, departure port, trip length, itinerary, fare, currency, and region. Batch ocean or river product types and sort offers.",

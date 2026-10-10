@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "jameda-reviews-scraper",
   "title": "Jameda Reviews Scraper",
   "description": "Read Jameda patient reviews with ratings, written feedback, posting dates and review titles. Use a doctor profile URL and choose the supported review sort and rating filters.",

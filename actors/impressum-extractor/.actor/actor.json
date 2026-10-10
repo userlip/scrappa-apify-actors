@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "impressum-extractor",
   "title": "Impressum Contact Data Extractor",
   "description": "Extract requested company details such as name, address, email, and phone from website legal notices when available. Batch domains and choose fields and language for each lookup.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "booking-review-scores-scraper",
   "title": "Booking.com Review Scores Scraper",
   "description": "Get a Booking.com hotel’s aggregate rating, total review count, and canonical property URL. Batch hotel pages to compare guest scores without collecting full review text.",

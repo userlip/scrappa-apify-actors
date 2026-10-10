@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "booking-prices-scraper",
   "title": "Booking.com Hotel Prices Scraper",
   "description": "Compare Booking.com hotel prices by destination and stay dates, with property names, quoted prices, review scores, locations, and links. Search several cities in one run.",

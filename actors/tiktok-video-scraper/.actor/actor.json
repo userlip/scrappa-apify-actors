@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-video-scraper",
   "title": "TikTok Video Details Scraper",
   "description": "Look up a public TikTok video with its caption, creator and engagement metrics. Paste a public video URL or submit several URLs, then enable the optional HD setting when required.",

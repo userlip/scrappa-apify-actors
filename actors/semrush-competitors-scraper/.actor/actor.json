@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "semrush-competitors-scraper",
   "title": "Semrush Competitors Scraper",
   "description": "Find organic competitors for a domain with Authority Score, estimated monthly visits, and Semrush Rank. Batch domains in one run to map competing sites or prioritize SEO analysis.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "baidu-images-scraper",
   "title": "Baidu Images Scraper",
   "description": "Get Baidu image results with titles, source pages, original links, previews, and dimensions. Search several phrases in one run to compare visual results.",

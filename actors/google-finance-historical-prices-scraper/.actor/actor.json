@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-finance-historical-prices-scraper",
   "title": "Google Finance Historical Prices Scraper",
   "description": "Track historical Google Finance prices with dates, closing values and daily changes. Choose a ticker, exchange and supported date range to review past daily or interval prices.",

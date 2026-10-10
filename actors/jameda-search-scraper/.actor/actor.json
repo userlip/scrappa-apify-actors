@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "jameda-search-scraper",
   "title": "Jameda Search Scraper",
   "description": "Find Jameda doctors by specialty and location, with names, ratings and practice links. Search by medical specialty and city to find public doctor profiles for a local shortlist.",

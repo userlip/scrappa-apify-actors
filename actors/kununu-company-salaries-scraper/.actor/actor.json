@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kununu-company-salaries-scraper",
   "title": "Kununu Company Salaries Scraper",
   "description": "Collect Kununu salary ranges by employer and country, with job titles, minimums, maximums, medians, averages, and report counts. Batch company slugs for pay comparisons.",

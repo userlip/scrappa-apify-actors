@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-scholar-scraper",
   "title": "Google Scholar Scraper",
   "description": "Search Google Scholar for paper titles, authors, publication details, citations, and available resources. Batch research queries to build literature lists or monitor academic topics.",

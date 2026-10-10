@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "booking-facilities-scraper",
   "title": "Booking.com Hotel Facilities Scraper",
   "description": "Collect Booking.com hotel facilities such as Wi-Fi, pools, fitness options, and restaurants with the property name and page URL. Batch hotels for amenity research.",

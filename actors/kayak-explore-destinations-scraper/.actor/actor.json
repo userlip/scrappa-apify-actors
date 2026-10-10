@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-explore-destinations-scraper",
   "title": "Kayak Explore Cheapest Destinations Scraper",
   "description": "Explore Kayak flight destinations from an origin airport with city, country, date window, airline, stops, duration, and fare-search link. Batch origins and set a map area.",

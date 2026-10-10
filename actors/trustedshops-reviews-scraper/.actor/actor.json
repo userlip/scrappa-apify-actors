@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "trustedshops-reviews-scraper",
   "title": "Trusted Shops Reviews Scraper",
   "description": "Read Trusted Shops reviews with shop names, ratings, written feedback and posting dates. Use a Trusted Shops shop ID or URL and page through the reviews available for that profile.",
@@ -20,7 +22,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "timeoutSecs": 300

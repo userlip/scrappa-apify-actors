@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "instagram-user-reels-scraper",
   "title": "Instagram User Reels Scraper",
   "description": "Collect public Instagram Reels with captions, views, likes, comments, posting times, and links. Add several account usernames and follow cursor pages.",

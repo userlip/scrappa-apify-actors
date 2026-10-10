@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "apple-app-store-app-details-scraper",
   "title": "Apple App Store App Details Scraper",
   "description": "Get Apple App Store app details with publisher, price, rating, privacy labels, version, and related apps. Batch product IDs with a storefront country to enrich app catalogs or compare listings.",

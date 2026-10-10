@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-trending-feed-scraper",
   "title": "TikTok Trending Feed Scraper",
   "description": "Get TikTok trending videos with creator profiles, captions, plays, likes, shares, and sound details. Choose a region to capture its public feed.",

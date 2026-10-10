@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "bing-search-scraper",
   "title": "Bing Search Scraper",
   "description": "Search Bing for ranked titles, page snippets, domains, and links. Batch multiple keywords in one run to monitor rankings, compare competitors, or gather source pages.",

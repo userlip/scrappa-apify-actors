@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "linkedin-search-scraper",
   "title": "LinkedIn Search Scraper - $0.30/1k results",
   "description": "Find LinkedIn pages through search, with titles, displayed links and result snippets. Add a LinkedIn page type such as profile, company, post or job to the search query.",

@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 128,
+    "maxMemoryMbytes": 128,
     "name": "youtube-api-batch-videos",
     "title": "YouTube Batch Video Scraper",
     "description": "Look up YouTube videos by ID to get titles, descriptions, channel names and view counts. Provide one or more comma-separated YouTube video IDs in the IDs input.",

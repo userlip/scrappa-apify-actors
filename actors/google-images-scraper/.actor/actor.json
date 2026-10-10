@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-images-scraper",
   "title": "Google Images Scraper",
   "description": "Find Google Images results with image links, titles, publishers and dimensions. Choose a region and optional image filters to make a visual search more specific.",

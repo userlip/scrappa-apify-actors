@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 256,
+    "maxMemoryMbytes": 256,
     "name": "youtube-api-get-channel-shorts",
     "title": "YouTube Channel Shorts Scraper",
     "description": "Browse Shorts from a YouTube channel with titles, links and view counts. Use a channel ID and continue with the next-page token when YouTube supplies one.",

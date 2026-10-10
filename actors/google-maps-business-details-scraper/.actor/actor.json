@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-maps-business-details-scraper",
   "title": "Google Maps Business Details Scraper",
   "description": "Look up a Google Maps business profile with its address, rating, hours and website. Pass one or more place IDs to look up the matching Google Maps business profiles.",

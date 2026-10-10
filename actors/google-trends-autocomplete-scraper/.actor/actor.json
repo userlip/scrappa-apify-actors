@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-trends-autocomplete-scraper",
   "title": "Google Trends Autocomplete Scraper",
   "description": "Find topic and query suggestions from Google Trends before building a search list. Enter a topic or phrase and choose a region and language to guide related suggestions.",

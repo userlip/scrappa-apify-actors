@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "vinted-search-scraper",
   "title": "Vinted Search Scraper",
   "description": "Find secondhand fashion listings on Vinted with title, brand, condition and price. Search a clothing phrase and narrow inventory with country, brand, size and price filters.",

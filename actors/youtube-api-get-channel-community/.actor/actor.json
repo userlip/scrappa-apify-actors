@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 128,
+    "maxMemoryMbytes": 128,
     "name": "youtube-api-get-channel-community",
     "title": "YouTube Channel Community Posts Scraper",
     "description": "Read public YouTube community posts with text, displayed publication age, likes and comments. Start with a channel ID, then pass a continuation token to request another community-post page.",

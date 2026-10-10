@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "mobile-de-dealer-inventory-scraper",
   "title": "mobile.de Dealer Inventory Scraper",
   "description": "Browse mobile.de dealer inventory with vehicle titles, prices, mileage, registration, images, and listing IDs. Batch dealer IDs to compare used car stock across sellers.",

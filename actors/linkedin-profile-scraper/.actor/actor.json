@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "linkedin-profile-scraper",
   "title": "LinkedIn Profile Scraper - $0.30/1k results",
   "description": "Review a public LinkedIn profile with name, headline, location and follower count. Submit one or more public LinkedIn profile URLs to build a consistent profile dataset.",

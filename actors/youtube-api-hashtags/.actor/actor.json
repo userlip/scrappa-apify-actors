@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 256,
+  "maxMemoryMbytes": 256,
   "name": "youtube-api-hashtags",
   "title": "YouTube Hashtag Videos Scraper",
   "description": "Find public YouTube videos for a hashtag, with titles, channels and view counts. Enter a hashtag and optionally set video length, upload time or sort order.",

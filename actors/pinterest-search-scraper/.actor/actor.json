@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "pinterest-search-scraper",
   "title": "Pinterest Search Scraper",
   "description": "Find Pinterest pins with titles, descriptions, image links and source pages. Search a subject or style phrase to find public pins and follow their image links back to the source pages.",
@@ -11,7 +13,7 @@
   "environmentVariables": {
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
-  "defaultMemoryMbytes": 256,
+  "defaultMemoryMbytes": 128,
   "defaultRunOptions": {
     "timeoutSecs": 360
   },

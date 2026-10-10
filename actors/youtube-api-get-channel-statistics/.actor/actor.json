@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 256,
+    "maxMemoryMbytes": 256,
     "name": "youtube-api-get-channel-statistics",
     "title": "YouTube Channel Statistics Scraper",
     "description": "Review public YouTube channel totals for views, subscribers and published videos. Provide a channel ID to retrieve the public subscriber, view and video totals currently available.",

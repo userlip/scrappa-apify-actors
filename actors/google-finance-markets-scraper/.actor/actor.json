@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-finance-markets-scraper",
   "title": "Google Finance Markets Scraper",
   "description": "Review Google Finance market movers by section, trend and price movement. Choose the market trend and index view that match the movers you want to review.",

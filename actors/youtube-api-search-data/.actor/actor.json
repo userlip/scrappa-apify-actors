@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "youtube-api-search-data",
   "title": "YouTube Search Scraper",
   "description": "Search YouTube videos by phrase with titles, descriptions and channel details. Search a video topic and use the listed duration, type, upload-date and sort filters.",

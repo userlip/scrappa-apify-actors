@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "youtube-api-search-by-category",
   "title": "YouTube Category Search Scraper",
   "description": "Find YouTube videos in selected categories with titles, descriptions and channel details. Choose one or more video categories and supported sort, length or upload-time filters.",

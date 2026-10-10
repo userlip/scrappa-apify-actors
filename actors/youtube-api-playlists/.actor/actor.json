@@ -1,5 +1,7 @@
 {
     "actorSpecification": 1,
+    "minMemoryMbytes": 256,
+    "maxMemoryMbytes": 256,
     "name": "youtube-api-playlists",
     "title": "YouTube Playlist Search Scraper",
     "description": "Find YouTube playlists by phrase, with titles, channel names and playlist links. Enter a playlist search phrase and choose a supported sort order.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-maps-autocomplete-scraper",
   "title": "Google Maps Autocomplete Scraper",
   "description": "Find place and business suggestions from Google Maps for a city, address or venue name. Enter the start of an address, business or place name to see matching suggestions.",
@@ -10,7 +12,7 @@
   "dockerfile": "./Dockerfile",
   "environmentVariables": { "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY" },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "storages": {
     "dataset": {

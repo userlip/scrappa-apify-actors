@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "apple-app-store-developer-scraper",
   "title": "Apple App Store Developer Apps Scraper",
   "description": "List public Apple App Store apps by developer ID with names, genres, prices, ratings, versions, and listing links. Batch developer accounts to map publisher catalogs.",

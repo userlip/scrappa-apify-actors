@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-challenge-search-scraper",
   "title": "TikTok Challenge Search Scraper",
   "description": "Find TikTok challenges by keyword and review their names, IDs and video counts. Enter a challenge keyword to find matching challenge names and IDs for a follow-up lookup.",

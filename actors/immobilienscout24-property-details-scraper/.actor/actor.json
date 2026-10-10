@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "immobilienscout24-property-details-scraper",
   "title": "ImmobilienScout24 Property Details Scraper",
   "description": "Get ImmobilienScout24 listing details such as rent, rooms, address, features, energy class, and images by property ID. Batch IDs to enrich housing records or review German listings.",

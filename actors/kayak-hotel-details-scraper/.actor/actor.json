@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-hotel-details-scraper",
   "title": "Kayak Hotel Details Scraper",
   "description": "Get Kayak hotel property details with name, address, rating, telephone, description, amenities, and image links. Batch property paths to enrich hotel records.",

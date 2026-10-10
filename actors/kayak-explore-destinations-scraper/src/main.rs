@@ -257,7 +257,7 @@ impl Storage {
         #[cfg(test)]
         let dataset_written = 0;
         #[cfg(not(test))]
-        let dataset_written = self.current_dataset_item_count().await?;
+        let dataset_written = self.current_dataset_item_count(false).await?;
         self.dataset_written = Some(dataset_written);
         let mut allowed = apify_dataset_budget(&run, requested)?;
 
@@ -319,7 +319,7 @@ impl Storage {
                 let written = match self.dataset_written {
                     Some(written) => written,
                     None => {
-                        let written = self.current_dataset_item_count().await?;
+                        let written = self.current_dataset_item_count(true).await?;
                         self.dataset_written = Some(written);
                         written
                     }
@@ -361,7 +361,9 @@ impl Storage {
         }
     }
 
-    async fn current_dataset_item_count(&self) -> Result<usize> {
+    // `settle_when_empty` is false for the run-start lookup: no write is in flight yet,
+    // so the 2 s settle wait would only add idle compute.
+    async fn current_dataset_item_count(&self, settle_when_empty: bool) -> Result<usize> {
         let dataset_id = self.dataset_id.as_deref().unwrap_or_default();
         let mut url = self.api_url(&["v2", "datasets", dataset_id])?;
         url.query_pairs_mut().append_pair("fields", "itemCount");
@@ -395,8 +397,9 @@ impl Storage {
                 .cloned()
                 .ok_or_else(|| anyhow!("Apify dataset items response was not an array"))?;
             if items.is_empty() {
-                if checked_empty_at
-                    .is_none_or(|checked_at| checked_at.elapsed() < DATASET_VERIFY_SETTLE)
+                if settle_when_empty
+                    && checked_empty_at
+                        .is_none_or(|checked_at| checked_at.elapsed() < DATASET_VERIFY_SETTLE)
                 {
                     checked_empty_at.get_or_insert_with(Instant::now);
                     dataset_settle_sleep(DATASET_VERIFY_SETTLE).await;
@@ -3008,7 +3011,7 @@ mod tests {
             (200, serde_json::to_string(&items).unwrap()),
         ]);
         let mut storage = test_storage(server.base.clone());
-        let count = storage.current_dataset_item_count().await.unwrap();
+        let count = storage.current_dataset_item_count(true).await.unwrap();
         assert_eq!(count, 21);
         storage.dataset_written = Some(count);
 

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-music-posts-scraper",
   "title": "TikTok Music Posts Scraper",
   "description": "Find TikTok videos using a sound and compare captions, creators and engagement. Submit multiple sound IDs in one run to retrieve records for each target.",

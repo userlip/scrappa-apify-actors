@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-flights-date-range-scraper",
   "title": "Google Flights Cheapest Dates Scraper",
   "description": "Find Google Flights’ cheapest date-range option for airport routes with price, airline, stops, duration, and itinerary legs. Batch routes and choose a future search window.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kleinanzeigen-listing-details-scraper",
   "title": "Kleinanzeigen Listing Details Scraper",
   "description": "Look up a Kleinanzeigen listing for its description, price, photos and seller details. Paste a Kleinanzeigen ad ID for details, or use the supported query input to search by phrase.",

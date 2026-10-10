@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-following-scraper",
   "title": "TikTok Following Scraper",
   "description": "Review public profiles followed by a TikTok account, with usernames and profile details. Choose a public TikTok profile and requested count to list accounts it follows.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "semrush-website-traffic-scraper",
   "title": "Semrush Website Traffic Scraper",
   "description": "Get Semrush-style domain estimates for visits, rankings, engagement, devices, and countries. Batch websites in one run to compare traffic profiles.",

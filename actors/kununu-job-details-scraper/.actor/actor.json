@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kununu-job-details-scraper",
   "title": "Kununu Job Details Scraper",
   "description": "Fetch Kununu job postings with title, employer, location, employment type, salary range, application link, and employer rating context. Batch public job URLs.",

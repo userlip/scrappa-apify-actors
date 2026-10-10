@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "website-content-extractor-scraper",
   "title": "Website Content Extractor",
   "description": "Extract page titles, descriptions, readable text and links from public web pages. Add one or more public page URLs and choose whether to include HTML in the extracted content.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-maps-reviews-scraper",
   "title": "Google Maps Reviews Scraper",
   "description": "Read Google Maps reviews with star ratings, written feedback, posting dates and owner replies. Start with a place ID and choose a review order or text filter for the public feedback.",
@@ -17,7 +19,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "storages": {
     "dataset": {

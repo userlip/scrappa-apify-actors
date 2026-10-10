@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "vinted-item-details-scraper",
   "title": "Vinted Item Details Scraper",
   "description": "Review a Vinted item with its title, description, price, size and condition. Submit multiple listing IDs in one run to retrieve records for each target.",
@@ -12,7 +14,7 @@
     "SCRAPPA_API_KEY": "@SCRAPPA_API_KEY"
   },
   "resources": {
-    "memoryMbytes": 256
+    "memoryMbytes": 128
   },
   "defaultRunOptions": {
     "timeoutSecs": 420

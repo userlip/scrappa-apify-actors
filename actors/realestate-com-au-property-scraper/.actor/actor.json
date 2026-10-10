@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "realestate-com-au-property-scraper",
   "title": "Realestate.com.au Property Details Scraper",
   "description": "Retrieve realestate.com.au property details with price, address, bedrooms, bathrooms, parking, media, agency, and agent information. Batch listing URLs to review Australian homes.",

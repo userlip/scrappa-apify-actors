@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-search-scraper",
   "title": "Google Search Scraper",
   "description": "Find Google Search results with page titles, displayed domains, snippets and links. Use the phrase, location and locale options to shape a Google results page for your query.",

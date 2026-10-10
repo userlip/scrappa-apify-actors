@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "mobile-de-search-scraper",
   "title": "mobile.de Car Search Scraper",
   "description": "Search mobile.de car listings with vehicle titles, makes, models, prices, mileage, registration, images, and listing links. Batch searches and filter stock by price, age, or mileage.",

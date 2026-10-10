@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "idealista-listing-scraper",
   "title": "Idealista Listing Details Scraper",
   "description": "Get Idealista listing details with price, operation, property type, rooms, location, media, agency information, and links. Batch listing IDs across supported European markets.",

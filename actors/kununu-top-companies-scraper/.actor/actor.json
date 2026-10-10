@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kununu-top-companies-scraper",
   "title": "Kununu Top Companies Scraper",
   "description": "Browse Kununu top-company rankings with employer scores, review totals, recommendations, locations, benefits, and award details. Batch country markets and page through results.",

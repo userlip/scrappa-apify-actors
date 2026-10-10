@@ -117,6 +117,8 @@ APIFY_TOKEN=... node scripts/deploy-actor.mjs actors/<dir> [actors/<dir> ...]
 
 The script uploads the directory to the version behind the `latest` build (env vars and the `SCRAPPA_API_KEY` secret stay untouched), builds it under the `candidate` tag, runs the prefilled input, and moves `latest` only when the run succeeds with at least one dataset item. It prints the previous build ID; roll back with `node scripts/deploy-actor.mjs --rollback <actorId> <buildId>`.
 
+The Rust binary is compiled locally in Docker (`rust:1.90-slim-bookworm`, size-optimized release profile, cache in `~/.cache/scrappa-apify-build`) and uploaded gzipped with a runtime-only Dockerfile (`scripts/prebuilt-actor.mjs`). Apify then only copies the binary: about 3 s and $0.001 per build instead of about 140 s and $0.06 on Apify's 4 GB builder. Docker must be available on the deploying machine. Every `actor.json` sets `minMemoryMbytes` and `maxMemoryMbytes` to the default memory so users cannot start runs with more (billed) memory than the binary needs.
+
 ### Creating and publishing a new generated Actor
 
 ```bash

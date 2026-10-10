@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "scrappa-google-search",
   "title": "Google Search Results Scraper",
   "description": "Find Google Search results with page titles, displayed domains, snippets and links. Set the search phrase and regional options to retrieve Google results for a focused market.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kununu-company-details-scraper",
   "title": "Kununu Company Profile Scraper",
   "description": "Get Kununu company profiles with employer identity, location, industry, overall score, recommendations, review totals, and website. Batch company slugs by country.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "tiktok-comments-scraper",
   "title": "TikTok Comments Scraper",
   "description": "Read public TikTok video comments with text, commenter details, likes and replies. Paste a public video URL and choose whether to include replies when the source provides them.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-play-app-details-scraper",
   "title": "Google Play App Details Scraper",
   "description": "Get Google Play app details with developer, rating, review totals, downloads, category, permissions, and media links. Batch package names by country.",

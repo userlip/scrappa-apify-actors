@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "arbeitsagentur-jobs-scraper",
   "title": "Arbeitsagentur Jobs Scraper",
   "description": "Find German job listings from the Federal Employment Agency with titles, employers, locations and work details. Set a job title or occupation and a location, then narrow listings by work type or posting date.",

@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "kayak-hotel-reviews-scraper",
   "title": "Kayak Hotel Reviews Scraper",
   "description": "Collect Kayak hotel review summaries with scores, positive and negative comments, review source, author, and date label. Batch hotel IDs and sort guest feedback.",

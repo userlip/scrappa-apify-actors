@@ -1,5 +1,7 @@
 {
   "actorSpecification": 1,
+  "minMemoryMbytes": 128,
+  "maxMemoryMbytes": 128,
   "name": "google-finance-quote-scraper",
   "title": "Google Finance Quote Scraper",
   "description": "Look up Google Finance share prices with ticker, exchange and percentage change. Enter the ticker and exchange, then request period statistics only when they are useful for your quote.",
