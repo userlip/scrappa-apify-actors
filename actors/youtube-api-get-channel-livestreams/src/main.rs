@@ -10,6 +10,8 @@ use url::Url;
 
 const APIFY_API_BASE_URL: &str = "https://api.apify.com";
 const SCRAPPA_API_BASE_URL: &str = "https://scrappa.co/api/youtube/channel-videos";
+/// Scrappa channel tab to read. YouTube lists these items only on their own tab, never on the Videos tab.
+const CHANNEL_TAB_TYPE: &str = "live";
 const SCRAPPA_REQUEST_TIMEOUT: Duration = Duration::from_secs(60);
 const DEFAULT_TARGET_RESULT_COUNT: usize = 10;
 const MAX_FILTER_SCAN_PAGES: usize = 10;
@@ -283,6 +285,7 @@ fn build_channel_livestreams_url(
     {
         let mut query = url.query_pairs_mut();
         query.append_pair("channel_id", id);
+        query.append_pair("type", CHANNEL_TAB_TYPE);
         if let Some(sort) = sort.filter(|sort| !sort.trim().is_empty()) {
             query.append_pair("sort", sort);
         }
@@ -751,7 +754,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             url.as_str(),
-            "https://scrappa.co/api/youtube/channel-videos?channel_id=UC+example&sort=popular&continuation=next+page"
+            "https://scrappa.co/api/youtube/channel-videos?channel_id=UC+example&type=live&sort=popular&continuation=next+page"
         );
     }
 
@@ -794,9 +797,9 @@ mod tests {
             header_value(&requests[1], "x-api-key"),
             Some("test-scrappa-key")
         );
-        assert!(request_target(&requests[1]).contains("channel_id=UC1&sort=popular"));
+        assert!(request_target(&requests[1]).contains("channel_id=UC1&type=live&sort=popular"));
         assert!(request_target(&requests[2])
-            .contains("channel_id=UC1&sort=popular&continuation=page+2"));
+            .contains("channel_id=UC1&type=live&sort=popular&continuation=page+2"));
         assert!(request_target(&requests[3]).contains("continuation=page+3"));
         assert_eq!(request_target(&requests[4]), "/v2/actor-runs/test-run");
         assert_eq!(
@@ -810,7 +813,7 @@ mod tests {
                 {"id":"live-2","isLive":true}
             ])
         );
-        assert!(request_target(&requests[6]).contains("channel_id=UC2&sort=popular"));
+        assert!(request_target(&requests[6]).contains("channel_id=UC2&type=live&sort=popular"));
         assert_eq!(
             request_body(&requests[7]),
             json!([{"id":"live-3","videoType":"livestream"}])
