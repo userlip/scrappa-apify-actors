@@ -409,9 +409,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn returns_the_transient_error_after_seven_attempts() {
+    async fn returns_the_transient_error_after_three_attempts() {
         let server = MockServer::start(
-            (0..7)
+            (0..3)
                 .map(|_| {
                     MockResponse::json(
                         503,
@@ -431,7 +431,7 @@ mod tests {
                 .to_string()
                 .contains("Stepstone is temporarily unavailable.")
         );
-        assert_eq!(server.requests().len(), 7);
+        assert_eq!(server.requests().len(), 3);
     }
 
     #[tokio::test]

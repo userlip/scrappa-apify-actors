@@ -355,7 +355,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn bounds_each_scrappa_attempt_and_retries_timeouts_up_to_seven_attempts() {
+    async fn bounds_each_scrappa_attempt_and_retries_timeouts_up_to_three_attempts() {
         let server = MockServer::start(|_| {
             MockResponse::json(200, json!({"success": true})).delayed(Duration::from_millis(300))
         });
@@ -374,6 +374,6 @@ mod tests {
 
         assert_eq!(error.message, "Scrappa API request timed out after 50ms");
         assert_eq!(error.status, None);
-        assert_eq!(server.requests().len(), 7);
+        assert_eq!(server.requests().len(), 3);
     }
 }

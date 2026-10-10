@@ -1,7 +1,7 @@
 use crate::scrappa_retry::ScrappaRetryExt;
 use std::{fmt, time::Duration};
 
-use reqwest::{Client, StatusCode, Url, header};
+use reqwest::{header, Client, StatusCode, Url};
 use serde_json::{Map, Value};
 
 use crate::{input::TranslationRequest, run_translations::TranslationRunner};
@@ -285,9 +285,9 @@ mod tests {
         io::{BufRead, BufReader, Read, Write},
         net::{TcpListener, TcpStream},
         sync::{
-            Arc,
             atomic::{AtomicBool, Ordering},
             mpsc::{self, Receiver},
+            Arc,
         },
         thread::{self, JoinHandle},
     };
@@ -422,10 +422,8 @@ mod tests {
 
         assert_eq!(response, json!({"translated_text":"Hallo"}));
         assert_eq!(requests.len(), 1);
-        assert!(
-            requests[0]
-                .starts_with("GET /api/google-translate?text=Good+morning&source=en&target=de ")
-        );
+        assert!(requests[0]
+            .starts_with("GET /api/google-translate?text=Good+morning&source=en&target=de "));
         let lowercase_request = requests[0].to_ascii_lowercase();
         assert!(lowercase_request.contains("x-api-key: test-key\r\n"));
         assert!(
@@ -487,9 +485,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn returns_the_last_transient_http_error_after_seven_attempts() {
+    async fn returns_the_last_transient_http_error_after_three_attempts() {
         let server = MockServer::start(
-            (1..=7)
+            (1..=3)
                 .map(|attempt| MockResponse {
                     status: 503,
                     body: format!(r#"{{"error":"Temporary upstream failure {attempt}."}}"#),
@@ -508,10 +506,10 @@ mod tests {
             error,
             ScrappaError::Http {
                 status: 503,
-                details: "Temporary upstream failure 7.".to_owned(),
+                details: "Temporary upstream failure 3.".to_owned(),
             }
         );
-        assert_eq!(server.requests().len(), 7);
+        assert_eq!(server.requests().len(), 3);
     }
 
     #[test]

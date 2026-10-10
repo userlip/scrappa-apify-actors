@@ -1082,13 +1082,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn persistent_scrappa_503_fails_after_seven_attempts() {
+    async fn persistent_scrappa_503_fails_after_three_attempts() {
         let server = MockServer::start(vec![
             response(200, r#"{"q":"test query"}"#),
-            response(503, "{}"),
-            response(503, "{}"),
-            response(503, "{}"),
-            response(503, "{}"),
             response(503, "{}"),
             response(503, "{}"),
             response(503, "{}"),
@@ -1099,7 +1095,7 @@ mod tests {
                 .unwrap_err();
 
         assert!(format!("{error:#}").contains("503"));
-        assert_eq!(server.requests().len(), 8);
+        assert_eq!(server.requests().len(), 4);
     }
 
     #[tokio::test]
